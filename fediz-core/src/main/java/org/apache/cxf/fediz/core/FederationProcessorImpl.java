@@ -1,0 +1,235 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.cxf.fediz.core;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.Calendar;
+import java.util.Date;
+
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.apache.cxf.fediz.core.saml.SAMLTokenValidator;
+import org.apache.cxf.fediz.core.util.DOMUtils;
+import org.apache.ws.security.WSConstants;
+import org.apache.ws.security.util.XmlSchemaDateFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
+
+public class FederationProcessorImpl implements FederationProcessor {
+
+	private static final Logger LOG = LoggerFactory.getLogger(FederationProcessorImpl.class);
+
+	
+	private String namespace = "http://docs.oasis-open.org/ws-sx/ws-trust/200512";
+	
+	private TokenReplayCache<String> replayCache = null;
+
+	/**
+	 * Default constructor 
+	 */
+
+	public FederationProcessorImpl() {
+		super();
+		replayCache = TokenReplayCacheInMemory.getInstance();
+	}
+	
+	
+	/**
+	 * 
+	 * @param replayCache plugable token cache allowing to provide a replicated cache to be used in clustered scenarios 
+	 */
+	
+	public FederationProcessorImpl(TokenReplayCache<String> replayCache) {
+		super();
+		this.replayCache = replayCache;
+	}
+
+
+
+	@Override
+	public FederationResponse processRequest(FederationRequest request, FederationConfiguration config) {
+		FederationResponse response = null;
+		
+		if (request.getWa().equals(FederationConstants.ACTION_SIGNIN)) {
+			response = this.processSignInRequest(request, config);
+		}
+		
+		return response;
+	}
+	
+	protected FederationResponse processSignInRequest(FederationRequest request, FederationConfiguration config) {
+		
+		byte[] wresult = request.getWresult().getBytes();
+		
+		Document doc = null;
+		Element el = null;
+		try {
+			doc = DOMUtils.readXml(new ByteArrayInputStream(wresult));
+			el = doc.getDocumentElement();
+			
+		} catch (SAXException e) {
+			e.printStackTrace();
+			return null;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+			return null;
+		}
+		
+		
+		
+		if ("RequestSecurityTokenResponseCollection".equals(el.getLocalName())) {
+            el = DOMUtils.getFirstElement(el);
+        }
+        if (!"RequestSecurityTokenResponse".equals(el.getLocalName())) {
+        	throw new RuntimeException("Unexpected element " + el.getLocalName());
+        }
+        el = DOMUtils.getFirstElement(el);
+        Element rst = null;
+        Element lifetimeElem = null;
+        String tt = null;
+
+        while (el != null) {
+            String ln = el.getLocalName();
+            if (namespace.equals(el.getNamespaceURI())) {
+                if ("Lifetime".equals(ln)) {
+                	lifetimeElem = el;
+                } else if ("RequestedSecurityToken".equals(ln)) {
+                    rst = DOMUtils.getFirstElement(el);
+                } else if ("TokenType".equals(ln)) {
+                    tt = DOMUtils.getContent(el);
+                }
+            }
+            el = DOMUtils.getNextElement(el);
+        }
+        if (LOG.isDebugEnabled()) {
+        	LOG.debug("RST: " + rst.toString());
+        	LOG.debug("Lifetime: " + ((lifetimeElem != null) ? lifetimeElem.toString() : "null"));
+        	LOG.debug("Tokentype: " + ((tt != null) ? tt.toString() : "null"));
+        }
+		
+		LifeTime lifeTime = null;
+	    if (lifetimeElem != null) {
+	    	lifeTime = processLifeTime(lifetimeElem);
+	    }
+	    
+	    if (config.isDetectExpiredTokens() && lifeTime != null) {
+		    Calendar cal = Calendar.getInstance();
+		    if ( cal.getTime().after(lifeTime.getExpires()) ) {
+		    	LOG.warn("Token already expired");
+		    }
+		    
+		    if ( cal.getTime().before(lifeTime.getCreated())) {
+		    	LOG.warn("Token not yet valid");
+		    	//[TODO] Add Check clocksqew
+		    }
+	    }
+	    
+	    //[TODO] Exception: TokenExpiredException, TokenInvalidException, TokenCachedException
+
+		//[TODO] Flexible tokenvalidator selection, based on class list
+		SAMLTokenValidator validator = new SAMLTokenValidator();
+		TokenValidatorResponse response = validator.validateAndProcessToken(rst, config);
+		
+		
+		//Check whether token already used for signin
+		if (response.getUniqueTokenId() != null && config.isDetectReplayedTokens()) {
+			// Check whether token has already been processed once, prevent replay attack
+			
+			if (replayCache.getId(response.getUniqueTokenId()) == null) {
+				// not cached
+				replayCache.putId(response.getUniqueTokenId());
+			}
+			else {
+				LOG.error("Replay attack with token id: " +response.getUniqueTokenId());
+				throw new RuntimeException("Replay attack with token id: " +response.getUniqueTokenId());
+			}
+		}
+		
+		// [TODO] Token, WeakReference, SoftReference???
+		FederationResponse fedResponse = new FederationResponse(response.getUsername(),
+				                             response.getIssuer(),
+				                             response.getRoles(),
+				                             response.getClaims(),
+				                             response.getAudience(),
+				                             (lifeTime != null) ? lifeTime.getCreated() : null,
+				                             (lifeTime != null) ? lifeTime.getExpires() : null,
+				                             rst,
+				                             response.getUniqueTokenId());
+		
+		return fedResponse;
+	}
+	
+	
+
+    
+    private LifeTime processLifeTime(Element lifetimeElem) {
+    	//[TODO] Get rid of WSS4J dependency
+        try {
+            Element createdElem = 
+                DOMUtils.getFirstChildWithName(lifetimeElem,
+                                                WSConstants.WSU_NS,
+                                                WSConstants.CREATED_LN);
+            DateFormat zulu = new XmlSchemaDateFormat();
+            
+            Date created = zulu.parse(DOMUtils.getContent(createdElem));
+
+            Element expiresElem = 
+                DOMUtils.getFirstChildWithName(lifetimeElem,
+                                                WSConstants.WSU_NS,
+                                                WSConstants.EXPIRES_LN);
+            Date expires = zulu.parse(DOMUtils.getContent(expiresElem));
+            
+            return new LifeTime(created, expires);
+            
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    public class LifeTime {
+    	
+    	private Date created;
+    	private Date expires;
+    	
+    	    	
+    	public LifeTime(Date created, Date expires) {
+    		this.created = created;
+    		this.expires = expires;
+    	}
+
+		public Date getCreated() {
+			return created;
+		}
+
+		public Date getExpires() {
+			return expires;
+		}
+    	
+    }
+
+}

@@ -1,0 +1,43 @@
+<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+                      http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+	version="3.0" metadata-complete="true">
+
+	<description>
+    WS Federation Tomcat Example
+    </description>
+	<display-name>WS Federation Tomcat Example</display-name>
+
+	<servlet>
+		<servlet-name>FederationServlet</servlet-name>
+		<servlet-class>org.apache.cxf.fediz.service.idp.IdpServlet</servlet-class>
+		<init-param>
+			<param-name>sts.wsdl.url</param-name>
+			<param-value>https://localhost:9443/fedizidpsts/STSService?wsdl</param-value>
+		</init-param>
+		<init-param>
+			<param-name>sts.wsdl.service</param-name>
+			<param-value>SecurityTokenService</param-value>
+		</init-param>
+		<init-param>
+			<param-name>sts.wsdl.endpoint</param-name>
+			<param-value>TransportUT_Port</param-value>
+		</init-param>				
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>FederationServlet</servlet-name>
+		<url-pattern>/</url-pattern>
+	</servlet-mapping>
+
+
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>WEB-INF/beans.xml</param-value>
+	</context-param>
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+
+
+</web-app>
