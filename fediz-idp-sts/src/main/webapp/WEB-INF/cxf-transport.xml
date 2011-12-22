@@ -17,7 +17,7 @@
         http://cxf.apache.org/schemas/configuration/http-conf.xsd
         http://cxf.apache.org/configuration/security
         http://cxf.apache.org/schemas/configuration/security.xsd">
-        
+
 	<import resource="classpath:META-INF/cxf/cxf.xml" />
 
 	<cxf:bus>
@@ -26,24 +26,22 @@
 		</cxf:features>
 	</cxf:bus>
 
-    <bean id="transportSTSProviderBean"
+	<bean id="transportSTSProviderBean"
 		class="org.apache.cxf.ws.security.sts.provider.SecurityTokenServiceProvider">
-		<property name="issueOperation" ref="transportIssueDelegate"/>
-		<property name="validateOperation" ref="transportValidateDelegate"/>
-	</bean>	
-
-	<bean id="transportIssueDelegate"
-		class="org.apache.cxf.sts.operation.TokenIssueOperation">
-		<property name="tokenProviders" ref="transportTokenProviders"/>
-		<property name="services" ref="transportService"/>
-		<property name="stsProperties" ref="transportSTSProperties"/>
-		<property name="claimsManager" ref="claimsManager"/>
+		<property name="issueOperation" ref="transportIssueDelegate" />
+		<property name="validateOperation" ref="transportValidateDelegate" />
 	</bean>
-	
-	<bean id="transportValidateDelegate"
-	    class="org.apache.cxf.sts.operation.TokenValidateOperation">
-	    <property name="tokenValidators" ref="transportTokenValidators"/>
-		<property name="stsProperties" ref="transportSTSProperties"/>
+
+	<bean id="transportIssueDelegate" class="org.apache.cxf.sts.operation.TokenIssueOperation">
+		<property name="tokenProviders" ref="transportTokenProviders" />
+		<property name="services" ref="transportService" />
+		<property name="stsProperties" ref="transportSTSProperties" />
+		<property name="claimsManager" ref="claimsManager" />
+	</bean>
+
+	<bean id="transportValidateDelegate" class="org.apache.cxf.sts.operation.TokenValidateOperation">
+		<property name="tokenValidators" ref="transportTokenValidators" />
+		<property name="stsProperties" ref="transportSTSProperties" />
 	</bean>
 
 	<util:list id="transportTokenProviders">
@@ -55,87 +53,86 @@
 	</util:list>
 
 	<bean id="transportSamlTokenProvider" class="org.apache.cxf.sts.token.provider.SAMLTokenProvider">
-	    <property name="attributeStatementProviders" ref="attributeStatementProvidersList" />
+		<property name="attributeStatementProviders" ref="attributeStatementProvidersList" />
+		<property name="conditionsProvider" ref="conditionsProvider" />
 	</bean>
 
-	<bean id="transportSamlTokenValidator" class="org.apache.cxf.sts.token.validator.SAMLTokenValidator">
+	<bean id="conditionsProvider"
+		class="org.apache.cxf.sts.token.provider.DefaultConditionsProvider">
+		<property name="lifetime" value="1200" />
 	</bean>
-	
-	<bean id="transportX509TokenValidator"
-		class="org.apache.cxf.sts.token.validator.X509TokenValidator">
-    </bean>
-    
-    <bean id="transportUsernameTokenValidator"
-		class="org.apache.cxf.sts.token.validator.UsernameTokenValidator">
-    </bean>
 
-    <util:list id="attributeStatementProvidersList">
-		<ref bean="claimsAttributeProvider"/>
+	<bean id="transportSamlTokenValidator" class="org.apache.cxf.sts.token.validator.SAMLTokenValidator" />
+
+
+	<bean id="transportX509TokenValidator" class="org.apache.cxf.sts.token.validator.X509TokenValidator" />
+
+
+	<bean id="transportUsernameTokenValidator"
+		class="org.apache.cxf.sts.token.validator.UsernameTokenValidator" />
+
+
+	<util:list id="attributeStatementProvidersList">
+		<ref bean="claimsAttributeProvider" />
 	</util:list>
-    
-    <bean id="defaultAttributeProvider"
-		class="org.apache.cxf.sts.token.provider.DefaultAttributeStatementProvider">
-    </bean>
-    
-    <bean id="claimsAttributeProvider"
-		class="org.apache.cxf.sts.claims.ClaimsAttributeStatementProvider">
-    </bean>
-    
-    <import resource="userClaims.xml" />
-    
-    <bean id="claimsManager"
-		class="org.apache.cxf.sts.claims.ClaimsManager">
+
+	<bean id="defaultAttributeProvider"
+		class="org.apache.cxf.sts.token.provider.DefaultAttributeStatementProvider" />
+
+
+	<bean id="claimsAttributeProvider"
+		class="org.apache.cxf.sts.claims.ClaimsAttributeStatementProvider" />
+
+
+	<import resource="userClaims.xml" />
+
+	<bean id="claimsManager" class="org.apache.cxf.sts.claims.ClaimsManager">
 		<property name="claimHandlers" ref="claimHandlerList" />
-    </bean>
-    
-    <util:list id="claimHandlerList">
-		<ref bean="fileClaimsHandler"/>
+	</bean>
+
+	<util:list id="claimHandlerList">
+		<ref bean="fileClaimsHandler" />
 	</util:list>
-    
-    <bean id="fileClaimsHandler"
-		class="org.apache.cxf.fediz.service.sts.FileClaimsHandler">
-		
+
+	<bean id="fileClaimsHandler" class="org.apache.cxf.fediz.service.sts.FileClaimsHandler">
+
 		<property name="userClaims" ref="userClaims" />
-    </bean>
-    
-    <import resource="passwords.xml" />
-    
-    <bean id="upCallBackHandler"
+	</bean>
+
+	<import resource="passwords.xml" />
+
+	<bean id="upCallBackHandler"
 		class="org.apache.cxf.fediz.service.sts.UsernamePasswordCallbackHandler">
 		<property name="passwords" ref="passwords" />
-    </bean>
-    
-    
-    <bean id="transportService"
-        class="org.apache.cxf.sts.service.StaticService">
-        <property name="endpoints" ref="transportEndpoints"/>
-    </bean>
-    
-    <util:list id="transportEndpoints">
-        <value>.*</value>
+	</bean>
+
+
+	<bean id="transportService" class="org.apache.cxf.sts.service.StaticService">
+		<property name="endpoints" ref="transportEndpoints" />
+	</bean>
+
+	<util:list id="transportEndpoints">
+		<value>.*</value>
 		<value>https://localhost:(8081|8083)/doubleit/services/doubleittransport.*</value>
 	</util:list>
-	
-	<bean id="transportSTSProperties"
-	     class="org.apache.cxf.sts.StaticSTSProperties">
-	    <property name="signaturePropertiesFile" value="stsKeystore.properties"/>
-		<property name="signatureUsername" value="mystskey"/>
-		<property name="callbackHandlerClass" value="org.apache.cxf.fediz.service.sts.PasswordCallbackHandler"/>
-		<property name="encryptionPropertiesFile" value="stsKeystore.properties"/>
-		<property name="issuer" value="DoubleItSTSIssuer"/>
-		<property name="encryptionUsername" value="myservicekey"/>
-    </bean>
-     
-	<jaxws:endpoint id="transportSTS1"
-		implementor="#transportSTSProviderBean"
-		address="/STSService" 
-        wsdlLocation="/WEB-INF/wsdl/ws-trust-1.4-service.wsdl"
-        xmlns:ns1="http://docs.oasis-open.org/ws-sx/ws-trust/200512/"
-        serviceName="ns1:SecurityTokenService"
-        endpointName="ns1:TransportUT_Port">
-        <jaxws:properties>
-            <entry key="ws-security.callback-handler" value-ref="upCallBackHandler"/>
-        </jaxws:properties> 
+
+	<bean id="transportSTSProperties" class="org.apache.cxf.sts.StaticSTSProperties">
+		<property name="signaturePropertiesFile" value="stsKeystore.properties" />
+		<property name="signatureUsername" value="mystskey" />
+		<property name="callbackHandlerClass"
+			value="org.apache.cxf.fediz.service.sts.PasswordCallbackHandler" />
+		<property name="encryptionPropertiesFile" value="stsKeystore.properties" />
+		<property name="issuer" value="DoubleItSTSIssuer" />
+		<property name="encryptionUsername" value="myservicekey" />
+	</bean>
+
+	<jaxws:endpoint id="transportSTS1" implementor="#transportSTSProviderBean"
+		address="/STSService" wsdlLocation="/WEB-INF/wsdl/ws-trust-1.4-service.wsdl"
+		xmlns:ns1="http://docs.oasis-open.org/ws-sx/ws-trust/200512/"
+		serviceName="ns1:SecurityTokenService" endpointName="ns1:TransportUT_Port">
+		<jaxws:properties>
+			<entry key="ws-security.callback-handler" value-ref="upCallBackHandler" />
+		</jaxws:properties>
 	</jaxws:endpoint>
 
 </beans>
