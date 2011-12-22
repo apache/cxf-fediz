@@ -238,8 +238,25 @@ public class FederationAuthenticator extends FormAuthenticator {
             	}
         	    Calendar cal = Calendar.getInstance();
         	    if ( cal.getTime().after(wfRes.getTokenExpires()) ) {
-        	    	log.debug("Token already expired");
-        	    	// [TODO] Redirect
+        	    	log.debug("Token already expired. Clean up and redirect");
+        	    	
+        	    	session.removeNote(FEDERATION_NOTE);
+        	    	session.removeNote(Constants.FORM_PRINCIPAL_NOTE);
+        	    	session.setPrincipal(null);
+        	    	request.getSession().removeAttribute(SECURITY_TOKEN);
+        	    	
+                    if (log.isDebugEnabled())
+                        log.debug("Save request in session '" + session.getIdInternal() + "'");
+                    try {
+                        saveRequest(request, session);
+                    } catch (IOException ioe) {
+                        log.debug("Request body too big to save during authentication");
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN,
+                                sm.getString("authenticator.requestBodyTooBig"));
+                        return (false);
+                    }
+                    redirectToLoginPage(request, response, config);
+        	    	
         	    	return (false);
         	    }
             }
