@@ -11,6 +11,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
@@ -27,6 +29,7 @@ import org.apache.cxf.fediz.core.FederationProcessor;
 import org.apache.cxf.fediz.core.FederationProcessorImpl;
 import org.apache.cxf.fediz.core.FederationRequest;
 import org.apache.cxf.fediz.core.FederationResponse;
+import org.apache.cxf.fediz.core.IDPCallback;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 
@@ -47,6 +50,9 @@ public class FederationAuthenticator extends FormAuthenticator {
 
     public static final String SECURITY_TOKEN =
         "org.apache.fediz.SECURITY_TOKEN";
+    
+    protected static final String TRUSTED_ISSUER =
+        "org.apache.cxf.fediz.tomcat.TRUSTED_ISSUER";
 
     /**
      * IssuerURL
@@ -87,6 +93,12 @@ public class FederationAuthenticator extends FormAuthenticator {
      * Role delimiter in claim value
      */
     protected String roleDelimiter = ",";
+    
+    
+    /**
+     * Role delimiter in claim value
+     */
+    protected CallbackHandler issuerCallbackHandler = null;
 
 
     public FederationAuthenticator() {
@@ -103,6 +115,27 @@ public class FederationAuthenticator extends FormAuthenticator {
 
 
     /**
+     * Return the callback handler to figure out the IDP url
+     */
+    public CallbackHandler getIssuerCallbackHandler() {
+        return issuerCallbackHandler;
+    }
+
+
+    /**
+     * Set the callback handler class to figure out the IDP url 
+     */
+    public void setIssuerCallbackHandler(String issuerCallbackHandler) {
+        
+        try {
+            this.issuerCallbackHandler = (CallbackHandler)Thread.currentThread().getContextClassLoader().loadClass(issuerCallbackHandler).newInstance();
+        } catch (Throwable ex) {
+            log.fatal("Callback handler not intialized: " + ex.getMessage());
+        }
+    }
+
+    
+    /**
      * Return the character encoding to use to read the username and password.
      */
     public String getIssuerURL() {
@@ -116,7 +149,6 @@ public class FederationAuthenticator extends FormAuthenticator {
     public void setIssuerURL(String issuerURL) {
         this.issuerURL = issuerURL;
     }
-
 
     /**
      * Return the requested authentication type.
@@ -347,7 +379,26 @@ public class FederationAuthenticator extends FormAuthenticator {
                 //wfReq.setWtrealm(wtrealm);
 
                 FederationConfiguration fedConfig = new FederationConfiguration();
-                fedConfig.setTrustedIssuer(this.getTrustedIssuer());
+                
+                // Has the callback handler returned a trusted issuer, stored in session
+                session = request.getSessionInternal();
+                String trustedIssuer = null;
+                
+                if (session != null) {
+                    trustedIssuer = (String)session.getNote(TRUSTED_ISSUER);
+                    if ( trustedIssuer == null || trustedIssuer.length() == 0) {
+                        trustedIssuer = this.getTrustedIssuer();
+                    } else {
+                        log.debug("Trusted issuer cached in session");
+                        session.removeNote(TRUSTED_ISSUER);
+                    }
+                } else {
+                    log.debug("request session null");
+                }
+                              
+                fedConfig.setTrustedIssuer(trustedIssuer);
+                log.info("Trusted issuer: " + trustedIssuer);
+                
                 fedConfig.setRoleDelimiter(this.getRoleDelimiter());
                 if (this.getRoleClaimURI() == null || this.getRoleClaimURI().length() == 0) {
                     fedConfig.setRoleURI(FederationConstants.DEFAULT_ROLE_URI);
@@ -526,10 +577,27 @@ public class FederationAuthenticator extends FormAuthenticator {
     throws IOException {
 
         String redirectURL = null;
-        String issuerURL = getIssuerURL();
-        if (issuerURL != null && issuerURL.length() > 0) {
-            redirectURL = issuerURL;
+        if (this.getIssuerCallbackHandler() != null) {
+            IDPCallback callback = new IDPCallback(request);
+            try {
+                this.getIssuerCallbackHandler().handle(new Callback[]{callback});
+                redirectURL = callback.getIssuerUrl().toString();
+                String trustedIssuer = callback.getTrustedIssuer();
+                if (trustedIssuer != null && trustedIssuer.length() > 0) {
+                    request.getSessionInternal().setNote(TRUSTED_ISSUER, trustedIssuer);
+                }                
+            } catch (Exception ex) {
+                log.error("Failed to handle callback: " + ex.getMessage());
+            }            
+        } else {
+            String issuerURL = getIssuerURL();
+            if (issuerURL != null && issuerURL.length() > 0) {
+                redirectURL = issuerURL;
+            }
         }
+        log.info("Issuer url: " + redirectURL);
+        
+        
         String loginPage = config.getLoginPage();
         if (redirectURL == null) {
             if (loginPage != null &&  loginPage.length() > 0) {
