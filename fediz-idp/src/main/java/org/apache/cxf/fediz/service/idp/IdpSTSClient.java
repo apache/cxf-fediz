@@ -26,36 +26,37 @@ import org.w3c.dom.Element;
 
 public class IdpSTSClient extends STSClient {
 
-	private static Logger LOG = LoggerFactory.getLogger(IdpSTSClient.class);
-	
-	public IdpSTSClient(Bus b) {
-		super(b);
-	}
+    private static Logger LOG = LoggerFactory.getLogger(IdpSTSClient.class);
 
-	
+    public IdpSTSClient(Bus b) {
+        super(b);
+    }
+
     public String requestSecurityTokenResponse() throws Exception {
         return requestSecurityTokenResponse(null);
     }
 
-    public String requestSecurityTokenResponse(String appliesTo) throws Exception {
+    public String requestSecurityTokenResponse(String appliesTo)
+            throws Exception {
         String action = null;
         if (isSecureConv) {
             action = namespace + "/RST/SCT";
         }
         return requestSecurityTokenResponse(appliesTo, action, "/Issue", null);
     }
-	
-	public String requestSecurityTokenResponse(String appliesTo, String action,
-			String requestType, SecurityToken target) throws Exception {
+
+    public String requestSecurityTokenResponse(String appliesTo, String action,
+            String requestType, SecurityToken target) throws Exception {
         createClient();
         BindingOperationInfo boi = findOperation("/RST/Issue");
 
         client.getRequestContext().putAll(ctx);
         if (action != null) {
-            client.getRequestContext().put(SoapBindingConstants.SOAP_ACTION, action);
+            client.getRequestContext().put(SoapBindingConstants.SOAP_ACTION,
+                    action);
         } else {
-            client.getRequestContext().put(SoapBindingConstants.SOAP_ACTION, 
-                                           namespace + "/RST/Issue");
+            client.getRequestContext().put(SoapBindingConstants.SOAP_ACTION,
+                    namespace + "/RST/Issue");
         }
 
         W3CDOMStreamWriter writer = new W3CDOMStreamWriter();
@@ -64,16 +65,17 @@ public class IdpSTSClient extends STSClient {
         if (context != null) {
             writer.writeAttribute(null, "Context", context);
         }
-        
+
         boolean wroteKeySize = false;
         String keyTypeTemplate = null;
         String sptt = null;
-        
+
         if (template != null) {
             if (this.useSecondaryParameters()) {
-                writer.writeStartElement("wst", "SecondaryParameters", namespace);
+                writer.writeStartElement("wst", "SecondaryParameters",
+                        namespace);
             }
-            
+
             Element tl = DOMUtils.getFirstElement(template);
             while (tl != null) {
                 StaxUtils.copy(tl, writer);
@@ -87,7 +89,7 @@ public class IdpSTSClient extends STSClient {
                 }
                 tl = DOMUtils.getNextElement(tl);
             }
-            
+
             if (this.useSecondaryParameters()) {
                 writer.writeEndElement();
             }
@@ -97,9 +99,9 @@ public class IdpSTSClient extends STSClient {
         if (enableAppliesTo) {
             addAppliesTo(writer, appliesTo);
         }
-        
+
         addClaims(writer);
-        
+
         Element onBehalfOfToken = getOnBehalfOfToken();
         if (onBehalfOfToken != null) {
             writer.writeStartElement("wst", "OnBehalfOf", namespace);
@@ -124,13 +126,15 @@ public class IdpSTSClient extends STSClient {
             keySize = 256;
         }
         if (keyTypeTemplate != null && keyTypeTemplate.endsWith("SymmetricKey")) {
-            requestorEntropy = writeElementsForRSTSymmetricKey(writer, wroteKeySize);
-        } else if (keyTypeTemplate != null && keyTypeTemplate.endsWith("PublicKey")) {
+            requestorEntropy = writeElementsForRSTSymmetricKey(writer,
+                    wroteKeySize);
+        } else if (keyTypeTemplate != null
+                && keyTypeTemplate.endsWith("PublicKey")) {
             crypto = createCrypto(false);
             cert = getCert(crypto);
             writeElementsForRSTPublicKey(writer, cert);
         }
-        
+
         if (target != null) {
             writer.writeStartElement("wst", "RenewTarget", namespace);
             Element el = target.getUnattachedReference();
@@ -147,24 +151,24 @@ public class IdpSTSClient extends STSClient {
             StaxUtils.copy(actAsSecurityToken, writer);
             writer.writeEndElement();
         }
-        
+
         writer.writeEndElement();
 
-		Object obj[] = client.invoke(boi, new DOMSource(writer.getDocument()
-				.getDocumentElement()));
+        Object obj[] = client.invoke(boi, new DOMSource(writer.getDocument()
+                .getDocumentElement()));
 
-		DOMSource rstr = (DOMSource) obj[0];
+        DOMSource rstr = (DOMSource) obj[0];
 
-		StringWriter sw = new StringWriter();
-		try {
-			Transformer t = TransformerFactory.newInstance().newTransformer();
-			t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-			t.transform(rstr, new StreamResult(sw));
-		} catch (TransformerException te) {
-			LOG.warn("nodeToString Transformer Exception");
-		}
-		return sw.toString();
+        StringWriter sw = new StringWriter();
+        try {
+            Transformer t = TransformerFactory.newInstance().newTransformer();
+            t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            t.transform(rstr, new StreamResult(sw));
+        } catch (TransformerException te) {
+            LOG.warn("nodeToString Transformer Exception");
+        }
+        return sw.toString();
 
-	}
+    }
 
 }
