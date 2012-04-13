@@ -1,0 +1,4 @@
+<Context>
+        <Valve className="org.apache.cxf.fediz.tomcat.FederationAuthenticator" issuerURL="https://localhost:9443/fedizidp/" truststoreFile="conf/stsstore.jks" truststorePassword="stsspass" trustedIssuer=".*CN=www.sts.com.*" />
+        <!--Valve className="org.apache.cxf.fediz.tomcat.FederationAuthenticator" issuerCallbackHandler="org.apache.cxf.fediz.tomcat.DummyIDPCallbackHandler" truststoreFile="conf/stsstore.jks" truststorePassword="stsspass" />-->        
+</Context>
