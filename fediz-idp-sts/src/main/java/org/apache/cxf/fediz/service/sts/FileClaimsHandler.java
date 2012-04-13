@@ -29,6 +29,7 @@ import org.apache.cxf.sts.claims.Claim;
 import org.apache.cxf.sts.claims.ClaimCollection;
 import org.apache.cxf.sts.claims.ClaimTypes;
 import org.apache.cxf.sts.claims.ClaimsHandler;
+import org.apache.cxf.sts.claims.ClaimsParameters;
 import org.apache.cxf.sts.claims.RequestClaim;
 import org.apache.cxf.sts.claims.RequestClaimCollection;
 
@@ -38,46 +39,27 @@ import org.apache.cxf.sts.claims.RequestClaimCollection;
 public class FileClaimsHandler implements ClaimsHandler {
 
     public static final URI ROLE = 
-            URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role");
+        URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role");
 
     private Map<String,Map<String,String>> userClaims = null;
-    
-    public void setUserClaims(Map<String,Map<String,String>> userClaims) {
-		this.userClaims = userClaims;
-	}
 
-	public Map<String,Map<String,String>> getUserClaims() {
-		return userClaims;
-	}
-    
+    public void setUserClaims(Map<String,Map<String,String>> userClaims) {
+        this.userClaims = userClaims;
+    }
+
+    public Map<String,Map<String,String>> getUserClaims() {
+        return userClaims;
+    }
+
     @Override
     public ClaimCollection retrieveClaimValues(Principal principal, RequestClaimCollection claims, WebServiceContext context, String realm) {
-    	
-    	if (getUserClaims() == null) {
-    		return new ClaimCollection();
-    	}
-    	
-    	Map<String, String> claimMap = getUserClaims().get(principal.getName());
-    	if (claimMap == null || claimMap.size() == 0) {
-    		return new ClaimCollection();
-    	}
-    	    	
-        if (claims != null && claims.size() > 0) {
-            ClaimCollection claimCollection = new ClaimCollection();
-            for (RequestClaim requestClaim : claims) { 
-            	String claimValue = claimMap.get(requestClaim.getClaimType().toString());
-            	if (claimValue != null) {
-	            	Claim claim = new Claim();
-	                claim.setClaimType(requestClaim.getClaimType());
-	                claim.setIssuer("Test Issuer");
-	                claim.setOriginalIssuer("Original Issuer");
-	                claim.setValue(claimValue);
-	                claimCollection.add(claim);
-            	}   
-            }
-            return claimCollection;
-        }
-        return null;
+
+        ClaimsParameters params = new ClaimsParameters();
+        params.setPrincipal(principal);
+        params.setWebServiceContext(context);
+        params.setRealm(realm);
+
+        return this.retrieveClaimValues(claims, params);
     }
 
     @Override
@@ -90,6 +72,42 @@ public class FileClaimsHandler implements ClaimsHandler {
         return list;
     }
 
-	
+    @Override
+    public ClaimCollection retrieveClaimValues(RequestClaimCollection claims,
+            ClaimsParameters parameters) {
+
+        if (getUserClaims() == null) {
+            return new ClaimCollection();
+        }
+
+        if (claims == null || claims.size() == 0) {
+            return new ClaimCollection();
+        }
+
+        Map<String, String> claimMap = getUserClaims().get(parameters.getPrincipal().getName());
+        if (claimMap == null || claimMap.size() == 0) {
+            return new ClaimCollection();
+        }
+
+        if (claims != null && claims.size() > 0) {
+            ClaimCollection claimCollection = new ClaimCollection();
+            for (RequestClaim requestClaim : claims) { 
+                String claimValue = claimMap.get(requestClaim.getClaimType().toString());
+                if (claimValue != null) {
+                    Claim claim = new Claim();
+                    claim.setClaimType(requestClaim.getClaimType());
+                    claim.setIssuer("Test Issuer");
+                    claim.setOriginalIssuer("Original Issuer");
+                    claim.setValue(claimValue);
+                    claimCollection.add(claim);
+                }   
+            }
+            return claimCollection;
+        }
+        return null;
+
+    }
+
+
 
 }
