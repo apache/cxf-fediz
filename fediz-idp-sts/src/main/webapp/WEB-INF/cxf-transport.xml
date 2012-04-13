@@ -34,6 +34,7 @@
 
 	<bean id="transportIssueDelegate" class="org.apache.cxf.sts.operation.TokenIssueOperation">
 		<property name="tokenProviders" ref="transportTokenProviders" />
+		<property name="tokenValidators" ref="transportTokenValidators" />
 		<property name="services" ref="transportService" />
 		<property name="stsProperties" ref="transportSTSProperties" />
 		<property name="claimsManager" ref="claimsManager" />
@@ -134,6 +135,14 @@
 			<entry key="ws-security.callback-handler" value-ref="upCallBackHandler" />
 		</jaxws:properties>
 	</jaxws:endpoint>
+	
+	<jaxws:endpoint id="transportSTS2" implementor="#transportSTSProviderBean"
+		address="/STSServiceTransport" wsdlLocation="/WEB-INF/wsdl/ws-trust-1.4-service.wsdl"
+		xmlns:ns1="http://docs.oasis-open.org/ws-sx/ws-trust/200512/"
+		serviceName="ns1:SecurityTokenService" endpointName="ns1:Transport_Port">
+		<jaxws:properties>
+		</jaxws:properties>
+	</jaxws:endpoint>	
 
 </beans>
 
