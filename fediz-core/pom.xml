@@ -25,7 +25,7 @@
    		<dependency>
    			<groupId>org.apache.ws.security</groupId>
    			<artifactId>wss4j</artifactId>
-   			<version>1.6.2</version>
+   			<version>${wss4j.version}</version>
    			<scope>compile</scope>
    		</dependency>
      	<dependency>
