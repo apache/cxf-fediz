@@ -44,20 +44,20 @@ import java.security.Principal;
  */
 public class Claim implements Serializable {
 
-	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	
-	private URI claimType;
-	private String issuer;
-	private String originalIssuer;
-	private Principal principal;
-	private String value;
-	private URI namespace = ClaimTypes.URI_BASE;
-	
-	public URI getNamespace() {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+
+    private URI claimType;
+    private String issuer;
+    private String originalIssuer;
+    private Principal principal;
+    private String value;
+    private URI namespace = ClaimTypes.URI_BASE;
+
+    public URI getNamespace() {
         return namespace;
     }
 
@@ -66,43 +66,43 @@ public class Claim implements Serializable {
     }
 
     public String getIssuer() {
-		return issuer;
-	}
+        return issuer;
+    }
 
-	public void setIssuer(String issuer) {
-		this.issuer = issuer;
-	}
+    public void setIssuer(String issuer) {
+        this.issuer = issuer;
+    }
 
-	public String getOriginalIssuer() {
-		return originalIssuer;
-	}
+    public String getOriginalIssuer() {
+        return originalIssuer;
+    }
 
-	public void setOriginalIssuer(String originalIssuer) {
-		this.originalIssuer = originalIssuer;
-	}
+    public void setOriginalIssuer(String originalIssuer) {
+        this.originalIssuer = originalIssuer;
+    }
 
-	public URI getClaimType() {
-		return claimType;
-	}
-	
-	public void setClaimType(URI claimType) {
-		this.claimType = claimType;
-	}
+    public URI getClaimType() {
+        return claimType;
+    }
 
-	public Principal getPrincipal() {
+    public void setClaimType(URI claimType) {
+        this.claimType = claimType;
+    }
+
+    public Principal getPrincipal() {
         return principal;
     }
-    
+
     public void setPrincipal(Principal principal) {
         this.principal = principal;
     }
-    
+
     public void setValue(String value) {
         this.value = value;
     }
-    
+
     public String getValue() {
         return value;
     }
-	
+
 }

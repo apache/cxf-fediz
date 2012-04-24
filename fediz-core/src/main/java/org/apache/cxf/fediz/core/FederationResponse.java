@@ -24,92 +24,92 @@ import java.util.List;
 import org.w3c.dom.Element;
 
 public class FederationResponse {
-	
-	private String audience = null;
-	private String username = null;
-	private List<String> roles = null;
-	private String issuer = null;
-	private List<Claim> claims = null;
-	private Element token = null;
-	private String uniqueTokenId = null;
-	
-	/**
-	* Created time
-	*/
-	private Date tokenCreated = null;
-	
-	/**	* Expiration time
-	*/
-	private Date tokenExpires = null;
-	
 
-	
-	private FederationResponse() {}
+    private String audience = null;
+    private String username = null;
+    private List<String> roles = null;
+    private String issuer = null;
+    private List<Claim> claims = null;
+    private Element token = null;
+    private String uniqueTokenId = null;
 
-	public FederationResponse(String username, String issuer, List<String> roles, List<Claim> claims, String audience, Date created, Date expires, Element token, String uniqueTokenId) {
-		this.username = username;
-		this.issuer = issuer;
-		this.roles = roles;
-		this.claims = claims;
-		this.audience = audience;
-		this.tokenCreated = created;
-		this.tokenExpires = expires;
-		this.token = token;
-		this.uniqueTokenId = uniqueTokenId;
-	}
-	
-	
+    /**
+     * Created time
+     */
+     private Date tokenCreated = null;
 
-	public String getUniqueTokenId() {
-		return uniqueTokenId;
-	}
-
-	public String getAudience() {
-		return audience;
-	}
+     /**	* Expiration time
+      */
+     private Date tokenExpires = null;
 
 
 
-	public String getUsername() {
-		return username;
-	}
+     private FederationResponse() {}
+
+     public FederationResponse(String username, String issuer, List<String> roles, List<Claim> claims, String audience, Date created, Date expires, Element token, String uniqueTokenId) {
+         this.username = username;
+         this.issuer = issuer;
+         this.roles = roles;
+         this.claims = claims;
+         this.audience = audience;
+         this.tokenCreated = created;
+         this.tokenExpires = expires;
+         this.token = token;
+         this.uniqueTokenId = uniqueTokenId;
+     }
 
 
 
-	public List<String> getRoles() {
-		if (roles == null) return null;
-		else return Collections.unmodifiableList(roles);
-	}
+     public String getUniqueTokenId() {
+         return uniqueTokenId;
+     }
+
+     public String getAudience() {
+         return audience;
+     }
 
 
 
-	public String getIssuer() {
-		return issuer;
-	}
+     public String getUsername() {
+         return username;
+     }
 
 
 
-	public List<Claim> getClaims() {
-		if (claims == null) return null;
-		else return Collections.unmodifiableList(claims);
-	}
+     public List<String> getRoles() {
+         if (roles == null) return null;
+         else return Collections.unmodifiableList(roles);
+     }
 
 
 
-	public Date getTokenCreated() {
-		return tokenCreated;
-	}
+     public String getIssuer() {
+         return issuer;
+     }
 
 
 
-	public Date getTokenExpires() {
-		return tokenExpires;
-	}
-	
-	public Element getToken() {
-		return token;
-	}
-	
+     public List<Claim> getClaims() {
+         if (claims == null) return null;
+         else return Collections.unmodifiableList(claims);
+     }
 
-	
+
+
+     public Date getTokenCreated() {
+         return tokenCreated;
+     }
+
+
+
+     public Date getTokenExpires() {
+         return tokenExpires;
+     }
+
+     public Element getToken() {
+         return token;
+     }
+
+
+
 }

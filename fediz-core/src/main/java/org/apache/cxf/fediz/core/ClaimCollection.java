@@ -32,76 +32,76 @@ import java.util.List;
  */
 public class ClaimCollection extends ArrayList<Claim> {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
 
-	public ClaimCollection() {
-		super();
-	}
+    public ClaimCollection() {
+        super();
+    }
 
-	public ClaimCollection(Collection<? extends Claim> c) {
-		super(c);
-	}
+    public ClaimCollection(Collection<? extends Claim> c) {
+        super(c);
+    }
 
-	public ClaimCollection(int initialCapacity) {
-		super(initialCapacity);
-	}
+    public ClaimCollection(int initialCapacity) {
+        super(initialCapacity);
+    }
 
-	@Override
-	public Claim set(int index, Claim element) {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public Claim set(int index, Claim element) {
+        throw new UnsupportedOperationException();
+    }
 
-	@Override
-	public boolean add(Claim e) {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public boolean add(Claim e) {
+        throw new UnsupportedOperationException();
+    }
 
-	@Override
-	public void add(int index, Claim element) {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public void add(int index, Claim element) {
+        throw new UnsupportedOperationException();
+    }
 
-	@Override
-	public Claim remove(int index) {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public Claim remove(int index) {
+        throw new UnsupportedOperationException();
+    }
 
-	@Override
-	public boolean remove(Object o) {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public boolean remove(Object o) {
+        throw new UnsupportedOperationException();
+    }
 
-	@Override
-	public void clear() {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public void clear() {
+        throw new UnsupportedOperationException();
+    }
 
-	@Override
-	public boolean addAll(Collection<? extends Claim> c) {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public boolean addAll(Collection<? extends Claim> c) {
+        throw new UnsupportedOperationException();
+    }
 
-	@Override
-	public boolean addAll(int index, Collection<? extends Claim> c) {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public boolean addAll(int index, Collection<? extends Claim> c) {
+        throw new UnsupportedOperationException();
+    }
 
-	@Override
-	protected void removeRange(int fromIndex, int toIndex) {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    protected void removeRange(int fromIndex, int toIndex) {
+        throw new UnsupportedOperationException();
+    }
 
-	@Override
-	public boolean removeAll(Collection<?> c) {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public boolean removeAll(Collection<?> c) {
+        throw new UnsupportedOperationException();
+    }
 
-	@Override
-	public List<Claim> subList(int fromIndex, int toIndex) {
-		return Collections.unmodifiableList(super.subList(fromIndex, toIndex));
-	}
+    @Override
+    public List<Claim> subList(int fromIndex, int toIndex) {
+        return Collections.unmodifiableList(super.subList(fromIndex, toIndex));
+    }
 
 }

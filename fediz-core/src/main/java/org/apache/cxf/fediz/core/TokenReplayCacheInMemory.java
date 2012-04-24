@@ -25,46 +25,46 @@ import java.util.List;
 //[TODO] add properties TokenReplayCacheExpirationPeriod
 public final class TokenReplayCacheInMemory<T> implements TokenReplayCache<T>{
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 7269477566842444549L;
-	
-	private List<T> cache = null;
-	private static TokenReplayCache<String> instance = null;
-	
-	private TokenReplayCacheInMemory() {
-		cache = Collections.synchronizedList(new ArrayList<T>());
-	}
-	
-	synchronized public static TokenReplayCache<String> getInstance() {
-		if (instance != null) {
-			return instance;
-		}
-		instance = new TokenReplayCacheInMemory<String>();
-		return instance;
-	}
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 7269477566842444549L;
 
-	/* (non-Javadoc)
-	 * @see org.apache.fediz.core.TokenReplayCache#getId(java.lang.String)
-	 */
-	@Override
-	public T getId(String id) {
-		int index = cache.indexOf(id);
-		if (index == -1) {
-			return null;
-		} else {
-			return cache.get(index);
-		}
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.apache.fediz.core.TokenReplayCache#putId(T)
-	 */
-	@Override
-	public void putId(T id) {
-		cache.add(id);
-	}
-	
+    private List<T> cache = null;
+    private static TokenReplayCache<String> instance = null;
+
+    private TokenReplayCacheInMemory() {
+        cache = Collections.synchronizedList(new ArrayList<T>());
+    }
+
+    synchronized public static TokenReplayCache<String> getInstance() {
+        if (instance != null) {
+            return instance;
+        }
+        instance = new TokenReplayCacheInMemory<String>();
+        return instance;
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.fediz.core.TokenReplayCache#getId(java.lang.String)
+     */
+    @Override
+    public T getId(String id) {
+        int index = cache.indexOf(id);
+        if (index == -1) {
+            return null;
+        } else {
+            return cache.get(index);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.fediz.core.TokenReplayCache#putId(T)
+     */
+    @Override
+    public void putId(T id) {
+        cache.add(id);
+    }
+
 
 }

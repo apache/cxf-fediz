@@ -20,21 +20,21 @@ package org.apache.cxf.fediz.core;
 import org.w3c.dom.Element;
 
 public interface TokenValidator {
-    
-	/**
+
+    /**
      * Return true if this TokenValidator implementation is capable of validating the
      * TokenType argument.
      */
     public boolean canHandleTokenType(String tokenType);
-    
-	
+
+
     /**
      * Return true if this TokenValidator implementation is capable of validating the
      * Token argument.
      */
-	public boolean canHandleToken(Element token);
+    public boolean canHandleToken(Element token);
 
-	
+
     /**
      * Validate a Token using the given Element and Configuration.
      */

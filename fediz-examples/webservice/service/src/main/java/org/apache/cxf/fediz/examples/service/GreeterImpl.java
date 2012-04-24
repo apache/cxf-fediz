@@ -28,21 +28,20 @@ public class GreeterImpl implements Greeter {
 
     private static final Logger LOG = Logger.getLogger(GreeterImpl.class.getPackage().getName());
 
-	@Resource
-	WebServiceContext context = null;
+    @Resource
+    WebServiceContext context = null;
 
     public String greetMe() {
         LOG.info("Executing operation greetMe");
         System.out.println("Executing operation greetMe");
         if (context == null) {
-           return "Unknown user";
-        }
-        else {
-           Principal p = context.getUserPrincipal();
-           if (p == null) {
-             return "Principal null";
-           }
-           return p.getName();
+            return "Unknown user";
+        } else {
+            Principal p = context.getUserPrincipal();
+            if (p == null) {
+                return "Principal null";
+            }
+            return p.getName();
         }
     }
 

@@ -19,6 +19,6 @@ package org.apache.cxf.fediz.core;
 
 public interface FederationProcessor {
 
-	public FederationResponse processRequest(FederationRequest request, FederationConfiguration config);
-	
+    public FederationResponse processRequest(FederationRequest request, FederationConfiguration config);
+
 }

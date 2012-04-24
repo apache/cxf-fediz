@@ -26,39 +26,39 @@ import java.util.List;
 @Deprecated
 public class WsFedPrincipal implements Principal {
 
-	protected String username = null;
-	protected List<String> roles = null;
-	protected ClaimCollection claims = null;
+    protected String username = null;
+    protected List<String> roles = null;
+    protected ClaimCollection claims = null;
 
-	
-	public WsFedPrincipal(String username) {
-		this(username, null, null);
-	}
-		
-	public WsFedPrincipal(String username, List<String> roles) {
-		this(username, roles, null);
-	}
-		
-	public WsFedPrincipal(String username, List<String> roles, ClaimCollection claims) {
-		this.username = username;
-		this.roles = roles;
-		this.claims = claims;
-	}
-	
-	
-	@Override
-	public String getName() {
-		return this.username;
-	}
-	
-	
-	public List<String> getRoles() {
-		return Collections.unmodifiableList(this.roles);
-	}
-	
 
-	public ClaimCollection getClaims() {
-		return this.claims;
-	}
-	
+    public WsFedPrincipal(String username) {
+        this(username, null, null);
+    }
+
+    public WsFedPrincipal(String username, List<String> roles) {
+        this(username, roles, null);
+    }
+
+    public WsFedPrincipal(String username, List<String> roles, ClaimCollection claims) {
+        this.username = username;
+        this.roles = roles;
+        this.claims = claims;
+    }
+
+
+    @Override
+    public String getName() {
+        return this.username;
+    }
+
+
+    public List<String> getRoles() {
+        return Collections.unmodifiableList(this.roles);
+    }
+
+
+    public ClaimCollection getClaims() {
+        return this.claims;
+    }
+
 }

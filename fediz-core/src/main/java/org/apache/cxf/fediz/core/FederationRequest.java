@@ -18,31 +18,31 @@
 package org.apache.cxf.fediz.core;
 
 public class FederationRequest {
-	
-	private String wa = null;
-	private String wresult = null;
-	private String wct = null;
-	
-	
-	public String getWct() {
-		return wct;
-	}
-	public void setWct(String wct) {
-		this.wct = wct;
-	}
-	
-	public String getWa() {
-		return wa;
-	}
-	public void setWa(String wa) {
-		this.wa = wa;
-	}
-	public String getWresult() {
-		return wresult;
-	}
-	public void setWresult(String wresult) {
-		this.wresult = wresult;
-	}
 
-	
+    private String wa = null;
+    private String wresult = null;
+    private String wct = null;
+
+
+    public String getWct() {
+        return wct;
+    }
+    public void setWct(String wct) {
+        this.wct = wct;
+    }
+
+    public String getWa() {
+        return wa;
+    }
+    public void setWa(String wa) {
+        this.wa = wa;
+    }
+    public String getWresult() {
+        return wresult;
+    }
+    public void setWresult(String wresult) {
+        this.wresult = wresult;
+    }
+
+
 }

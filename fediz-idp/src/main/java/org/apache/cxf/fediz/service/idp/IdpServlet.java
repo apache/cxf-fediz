@@ -65,8 +65,8 @@ public class IdpServlet extends HttpServlet {
     public static final String SERVLET_PARAM_TOKENTYPE = "ws-trust-tokentype";
 
     /**
-	 * 
-	 */
+     * 
+     */
     private static final long serialVersionUID = -9019993850246851112L;
 
     private String tokenType;
@@ -75,26 +75,26 @@ public class IdpServlet extends HttpServlet {
     public void init() throws ServletException {
         if (getInitParameter("sts.wsdl.url") == null) {
             throw new ServletException(
-                    "Parameter 'sts.wsdl.url' not configured");
+                "Parameter 'sts.wsdl.url' not configured");
         }
         if (getInitParameter("sts.wsdl.service") == null) {
             throw new ServletException(
-                    "Parameter 'sts.wsdl.service' not configured");
+                "Parameter 'sts.wsdl.service' not configured");
         }
         if (getInitParameter("sts.wsdl.endpoint") == null) {
             throw new ServletException(
-                    "Parameter 'sts.wsdl.endpoint' not configured");
+                "Parameter 'sts.wsdl.endpoint' not configured");
         }
 
         tokenType = getInitParameter(SERVLET_PARAM_TOKENTYPE);
         if (tokenType != null && tokenType.length() > 0) {
-           LOG.info("Configured Tokentype: " + tokenType);
+            LOG.info("Configured Tokentype: " + tokenType);
         }
 
     }
 
     public void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+        throws ServletException, IOException {
 
         /*
          * if (request.getPathInfo().contains("jsp")) { return; }
@@ -107,20 +107,20 @@ public class IdpServlet extends HttpServlet {
 
         if (action == null) {
             LOG.error("Bad request. HTTP parameter '" + PARAM_ACTION
-                    + "' missing");
+                      + "' missing");
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parameter "
-                    + PARAM_ACTION + " missing");
+                + PARAM_ACTION + " missing");
             return;
         }
         if (action.equals(ACTION_SIGNIN)) {
             LOG.debug("Sign-In request [" + PARAM_ACTION + "=" + ACTION_SIGNIN
-                    + "] ...");
+                      + "] ...");
 
             if (wtrealm == null || wtrealm.length() == 0) {
                 LOG.error("Bad request. HTTP parameter '" + ACTION_SIGNIN
-                        + "' missing");
+                          + "' missing");
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                        "Parameter " + ACTION_SIGNIN + " missing");
+                                   "Parameter " + ACTION_SIGNIN + " missing");
                 return;
             }
 
@@ -139,7 +139,7 @@ public class IdpServlet extends HttpServlet {
                     if (authType.equalsIgnoreCase("basic")) {
 
                         String decoded = new String(
-                                Base64Utility.decode(encoded));
+                                                    Base64Utility.decode(encoded));
 
                         int colon = decoded.indexOf(':');
                         if (colon < 0) {
@@ -147,19 +147,19 @@ public class IdpServlet extends HttpServlet {
                         } else {
                             username = decoded.substring(0, colon);
                             password = decoded.substring(colon + 1,
-                                    decoded.length());
+                                                         decoded.length());
                         }
                         LOG.debug("Validating user [" + username
-                                + "] and password [" + password + "]");
+                                  + "] and password [" + password + "]");
 
                         try {
                             wresult = requestSecurityToken(username, password,
-                                    wtrealm);
+                                                           wtrealm);
                             request.setAttribute("fed." + PARAM_WRESULT,
-                                    StringEscapeUtils.escapeXml(wresult));
+                                                 StringEscapeUtils.escapeXml(wresult));
                             if (wctx != null) {
                                 request.setAttribute("fed." + PARAM_WCONTEXT,
-                                        StringEscapeUtils.escapeXml(wctx));
+                                                     StringEscapeUtils.escapeXml(wctx));
                             }
                             if (wreply == null) {
                                 request.setAttribute("fed.action", wtrealm);
@@ -169,8 +169,8 @@ public class IdpServlet extends HttpServlet {
                         } catch (Exception ex) {
                             LOG.info("Requesting security token failed", ex);
                             response.sendError(
-                                    HttpServletResponse.SC_FORBIDDEN,
-                                    "Requesting security token failed");
+                                               HttpServletResponse.SC_FORBIDDEN,
+                                "Requesting security token failed");
                             return;
                         }
 
@@ -180,19 +180,19 @@ public class IdpServlet extends HttpServlet {
                         // this.getServletContext().getRequestDispatcher("/WEB-INF/signinresponse.jsp").forward(request,
                         // response);
                         this.getServletContext()
-                                .getRequestDispatcher(
-                                        "/WEB-INF/signinresponse.jsp")
-                                .forward(request, response);
+                        .getRequestDispatcher(
+                            "/WEB-INF/signinresponse.jsp")
+                            .forward(request, response);
 
                     } else {
                         response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                                "Invalid Authorization header");
+                            "Invalid Authorization header");
                         return;
                     }
                 } catch (Exception ex) {
                     LOG.error("Invalid Authorization header", ex);
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                            "Invalid Authorization header");
+                        "Invalid Authorization header");
                     return;
                 }
 
@@ -205,22 +205,22 @@ public class IdpServlet extends HttpServlet {
             }
         } else {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parameter "
-                    + PARAM_ACTION + " with value " + action
-                    + " is not supported");
+                + PARAM_ACTION + " with value " + action
+                + " is not supported");
             return;
         }
     }
 
     private String requestSecurityToken(String username, String password,
-            String wtrealm) throws Exception {
+                                        String wtrealm) throws Exception {
         try {
             Bus bus = BusFactory.getDefaultBus();
             List<String> realmClaims = null;
             ApplicationContext ctx = (ApplicationContext) bus
-                    .getExtension(ApplicationContext.class);
+                .getExtension(ApplicationContext.class);
             try {
                 Map<String, List<String>> realmClaimsMap = (Map<String, List<String>>) ctx
-                        .getBean("realm2ClaimsMap");
+                    .getBean("realm2ClaimsMap");
                 realmClaims = realmClaimsMap.get(wtrealm);
                 if (realmClaims != null && realmClaims.size() > 0) {
                     LOG.debug("claims for realm " + wtrealm);
@@ -243,11 +243,11 @@ public class IdpServlet extends HttpServlet {
 
             sts.setWsdlLocation(getInitParameter("sts.wsdl.url"));
             sts.setServiceQName(new QName(
-                    "http://docs.oasis-open.org/ws-sx/ws-trust/200512/",
-                    getInitParameter("sts.wsdl.service")));
+                                          "http://docs.oasis-open.org/ws-sx/ws-trust/200512/",
+                                          getInitParameter("sts.wsdl.service")));
             sts.setEndpointQName(new QName(
-                    "http://docs.oasis-open.org/ws-sx/ws-trust/200512/",
-                    getInitParameter("sts.wsdl.endpoint")));
+                                           "http://docs.oasis-open.org/ws-sx/ws-trust/200512/",
+                                           getInitParameter("sts.wsdl.endpoint")));
             sts.getProperties().put(SecurityConstants.USERNAME, username);
             sts.getProperties().put(SecurityConstants.PASSWORD, password);
 
@@ -270,7 +270,7 @@ public class IdpServlet extends HttpServlet {
     }
 
     private Element createClaimsElement(List<String> realmClaims)
-            throws Exception {
+        throws Exception {
         if (realmClaims == null || realmClaims.size() == 0)
             return null;
 
@@ -278,15 +278,15 @@ public class IdpServlet extends HttpServlet {
         writer.writeStartElement("wst", "Claims", STSUtils.WST_NS_05_12);
         writer.writeNamespace("wst", STSUtils.WST_NS_05_12);
         writer.writeNamespace("ic",
-                "http://schemas.xmlsoap.org/ws/2005/05/identity");
+            "http://schemas.xmlsoap.org/ws/2005/05/identity");
         writer.writeAttribute("Dialect",
-                "http://schemas.xmlsoap.org/ws/2005/05/identity");
+            "http://schemas.xmlsoap.org/ws/2005/05/identity");
 
         if (realmClaims != null && realmClaims.size() > 0) {
             for (String item : realmClaims) {
                 LOG.debug("claim: " + item);
                 writer.writeStartElement("ic", "ClaimType",
-                        "http://schemas.xmlsoap.org/ws/2005/05/identity");
+                    "http://schemas.xmlsoap.org/ws/2005/05/identity");
                 writer.writeAttribute("Uri", item);
                 writer.writeEndElement();
             }
