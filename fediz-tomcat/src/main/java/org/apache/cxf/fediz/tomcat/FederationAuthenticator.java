@@ -47,51 +47,11 @@ public class FederationAuthenticator extends FormAuthenticator {
 
     protected static final String TRUSTED_ISSUER = "org.apache.cxf.fediz.tomcat.TRUSTED_ISSUER";
 
-    //    /**
-    //     * IssuerURL
-    //     */
-    //    protected String issuerURL = null;
-    //
-    //    /**
-    //     * Requested Authentication type. See
-    //     * org.apache.cxf.fediz.tomcat.WsFedConstants.AUTH_TYPE_*
-    //     */
-    //    protected URI authenticationType = null;
-    //
-    //    /**
-    //     * Trusted Issuer Name
-    //     */
-    //    protected String trustedIssuer = null;
-    //
-    //    /**
-    //     * Truststore file
-    //     */
-    //    protected String truststoreFile = null;
-    //
-    //    /**
-    //     * Truststore password
-    //     */
-    //    protected String truststorePassword = null;
-    //
-    //    /**
-    //     * Role URI in Claim
-    //     */
-    //    protected String roleClaimURI = null;
-    //
-    //    /**
-    //     * Role delimiter in claim value
-    //     */
-    //    protected String roleDelimiter = ",";
 
     /**
      * Fediz Configuration file
      */
     protected String configFile = null;
-
-    //    /**
-    //     * Role delimiter in claim value
-    //     */
-    //    protected CallbackHandler issuerCallbackHandler = null;
 
     private FederationConfigurator configurator = null;
 
@@ -107,115 +67,6 @@ public class FederationAuthenticator extends FormAuthenticator {
         return (info);
     }
 
-    //    /**
-    //     * Return the callback handler to figure out the IDP url
-    //     */
-    //    public CallbackHandler getIssuerCallbackHandler() {
-    //        return issuerCallbackHandler;
-    //    }
-    //
-    //    /**
-    //     * Set the callback handler class to figure out the IDP url
-    //     */
-    //    public void setIssuerCallbackHandler(String issuerCallbackHandler) {
-    //
-    //        try {
-    //            this.issuerCallbackHandler = (CallbackHandler) Thread
-    //                    .currentThread().getContextClassLoader()
-    //                    .loadClass(issuerCallbackHandler).newInstance();
-    //        } catch (Throwable ex) {
-    //            log.fatal("Callback handler not intialized: " + ex.getMessage());
-    //        }
-    //    }
-    //
-    //    /**
-    //     * Return the character encoding to use to read the username and password.
-    //     */
-    //    public String getIssuerURL() {
-    //        return issuerURL;
-    //    }
-    //
-    //    /**
-    //     * Set the character encoding to be used to read the username and password.
-    //     */
-    //    public void setIssuerURL(String issuerURL) {
-    //        this.issuerURL = issuerURL;
-    //    }
-    //
-    //    /**
-    //     * Return the requested authentication type.
-    //     */
-    //    public URI getAuthenticationType() {
-    //        return authenticationType;
-    //    }
-    //
-    //    /**
-    //     * Set the requested authentication type.
-    //     */
-    //    public void setAuthenticationType(String authenticationType) {
-    //        FederationConstants.AUTH_TYPE_MAP.containsKey(authenticationType);
-    //        this.authenticationType = FederationConstants.AUTH_TYPE_MAP
-    //                .get(authenticationType);
-    //    }
-    //
-    //    public String getTruststorePassword() {
-    //        return truststorePassword;
-    //    }
-    //
-    //    public void setTruststorePassword(String truststorePassword) {
-    //        this.truststorePassword = truststorePassword;
-    //    }
-    //
-    //    public String getTruststoreFile() {
-    //        return truststoreFile;
-    //    }
-    //
-    //    public void setTruststoreFile(String truststoreFile) {
-    //        this.truststoreFile = truststoreFile;
-    //    }
-    //
-    //    /**
-    //     * 
-    //     */
-    //    public String getRoleClaimURI() {
-    //        return this.roleClaimURI;
-    //    }
-    //
-    //    /**
-    //     * 
-    //     */
-    //    public void setRoleClaimURI(String roleClaimURI) {
-    //        this.roleClaimURI = roleClaimURI;
-    //    }
-    //
-    //    /**
-    //     * 
-    //     */
-    //    public String getRoleDelimiter() {
-    //        return this.roleDelimiter;
-    //    }
-    //
-    //    /**
-    //     * 
-    //     */
-    //    public void setRoleDelimiter(String roleDelimiter) {
-    //        this.roleDelimiter = roleDelimiter;
-    //    }
-    //
-    //    /**
-    //     * 
-    //     */
-    //    public String getTrustedIssuer() {
-    //        return this.trustedIssuer;
-    //    }
-    //
-    //    /**
-    //     * 
-    //     */
-    //    public void setTrustedIssuer(String trustedIssuer) {
-    //        this.trustedIssuer = trustedIssuer;
-    //    }
-
     public String getConfigFile() {
         return configFile;
     }
@@ -228,8 +79,14 @@ public class FederationAuthenticator extends FormAuthenticator {
     protected synchronized void startInternal() throws LifecycleException {
 
         try {
-            configurator = new FederationConfigurator();
             File f = new File(getConfigFile());
+            if (!f.exists()) {
+                String catalinaHome = System.getProperty("catalina.home");
+                if (catalinaHome != null && catalinaHome.length() > 0) {
+                    f = new File(catalinaHome.concat(File.separator + getConfigFile()));
+                }
+            }
+            configurator = new FederationConfigurator();
             configurator.loadConfig(f);
         } catch (JAXBException e) {
             throw new LifecycleException("Failed to load Fediz configuration",
@@ -430,55 +287,6 @@ public class FederationAuthenticator extends FormAuthenticator {
                 // fedConfig.setTrustedIssuer(trustedIssuer);
                 // log.info("Trusted issuer: " + trustedIssuer);
                 //
-                // fedConfig.setRoleDelimiter(this.getRoleDelimiter());
-                // if (this.getRoleClaimURI() == null
-                // || this.getRoleClaimURI().length() == 0) {
-                // fedConfig.setRoleURI(FederationConstants.DEFAULT_ROLE_URI);
-                // } else {
-                // fedConfig.setRoleURI(URI.create(this.getRoleClaimURI()));
-                // }
-                //
-                // if (this.getTruststoreFile() == null
-                // || this.getTruststoreFile().length() == 0) {
-                // log.error("Truststore file configuration must be checked before redirect to IDP");
-                // // TODO would an exception not be the better solution here ?
-                // return false;
-                // }
-                // if (this.getTruststorePassword() == null
-                // || this.getTruststorePassword().length() == 0) {
-                // log.error("Truststore password configuration must be checked before redirect to IDP");
-                // // TODO would an exception not be the better solution here ?
-                // return false;
-                // } else {
-                // if ((new File(getTruststoreFile())).exists()) {
-                // fedConfig.setTrustStoreFile(this.getTruststoreFile());
-                // } else {
-                // String catalinaHome = System
-                // .getProperty("catalina.home");
-                // if (catalinaHome != null && catalinaHome.length() > 0) {
-                //
-                // String fqTruststoreFile = catalinaHome
-                // .concat(File.separator
-                // + getTruststoreFile());
-                // this.setTruststoreFile(fqTruststoreFile);
-                // fedConfig.setTrustStoreFile(this
-                // .getTruststoreFile());
-                // } else {
-                // log.error("Truststore file configuration not valid");
-                // return false;
-                // }
-                // }
-                //
-                // fedConfig.setTrustStoreFile(this.getTruststoreFile());
-                // fedConfig.setTrustStorePassword(this
-                // .getTruststorePassword());
-                // if (log.isDebugEnabled()) {
-                // log.debug("Truststore file: "
-                // + fedConfig.getTrustStoreFile());
-                // log.debug("Truststore password: "
-                // + fedConfig.getTrustStorePassword());
-                // }
-                // }
 
                 FederationProcessor wfProc = new FederationProcessorImpl();
                 wfRes = wfProc.processRequest(wfReq, fedConfig);
@@ -629,104 +437,6 @@ public class FederationAuthenticator extends FormAuthenticator {
         } else {
             response.sendRedirect(redirectURL);
         }
-
-
-        //        if (this.getIssuerCallbackHandler() != null) {
-        //            org.apache.cxf.fediz.core.spi.IDPCallback callback = new org.apache.cxf.fediz.core.spi.IDPCallback(
-        //                    request);
-        //            try {
-        //                this.getIssuerCallbackHandler().handle(
-        //                        new Callback[] { callback });
-        //                redirectURL = callback.getIssuerUrl().toString();
-        //                String trustedIssuer = callback.getTrustedIssuer();
-        //                if (trustedIssuer != null && trustedIssuer.length() > 0) {
-        //                    request.getSessionInternal().setNote(TRUSTED_ISSUER,
-        //                            trustedIssuer);
-        //                }
-        //            } catch (Exception ex) {
-        //                log.error("Failed to handle callback: " + ex.getMessage());
-        //            }
-        //        } else {
-        //            String issuerURL = ((FederationProtocolType) fedCtx.getProtocol())
-        //                    .getIssuer();
-        //            if (issuerURL != null && issuerURL.length() > 0) {
-        //                redirectURL = issuerURL;
-        //            }
-        //        }
-        //        log.info("Issuer url: " + redirectURL);
-        //
-        //        String loginPage = config.getLoginPage();
-        //        if (redirectURL == null) {
-        //            if (loginPage != null && loginPage.length() > 0) {
-        //                redirectURL = loginPage;
-        //            } else {
-        //                String msg = sm.getString("formAuthenticator.noLoginPage",
-        //                        context.getName());
-        //                log.warn(msg);
-        //                response.sendError(
-        //                        HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
-        //                return;
-        //            }
-        //        }
-        //        StringBuilder sb = new StringBuilder();
-        //
-        //        // StringBuilder sb = new StringBuilder(redirectURL);
-        //        // sb.append('?');
-        //
-        //        sb.append(FederationConstants.PARAM_ACTION).append('=')
-        //                .append(FederationConstants.ACTION_SIGNIN);
-        //
-        //        sb.append('&').append(FederationConstants.PARAM_REPLY).append('=');
-        //        sb.append(URLEncoder
-        //                .encode(request.getRequestURL().toString(), "UTF-8"));
-        //
-        //        String realm = null;
-        //        String contextPath = request.getContextPath();
-        //        String requestUrl = request.getRequestURL().toString();
-        //        String requestPath = new URL(requestUrl).getPath();
-        //
-        //        // Cut request path of request url and add context path if not ROOT
-        //        if (requestPath != null && requestPath.length() > 0) {
-        //            int lastIndex = requestUrl.lastIndexOf(requestPath);
-        //            realm = requestUrl.substring(0, lastIndex);
-        //        } else {
-        //            realm = requestUrl;
-        //        }
-        //        if (contextPath != null && contextPath.length() > 0) {
-        //            // contextPath contains starting slash
-        //            realm = realm + contextPath + "/";
-        //        } else {
-        //            realm = realm + "/";
-        //        }
-        //        log.debug("wtrealm=" + realm);
-        //
-        //        StringBuffer realmSb = new StringBuffer(request.getScheme());
-        //        realmSb.append("://").append(request.getServerName()).append(":")
-        //                .append(request.getServerPort())
-        //                .append(request.getContextPath());
-        //        sb.append('&').append(FederationConstants.PARAM_TREALM).append('=')
-        //                .append(URLEncoder.encode(realm, "UTF-8"));
-        //
-        //        // [TODO] Current time, wct
-        //
-        //        // if (false) {
-        //        // sb.append("&");
-        //        // sb.append("wfresh=jjjj");
-        //        // }
-        //        // if (false) {
-        //        // sb.append("&");
-        //        // sb.append("wauth=jjjj");
-        //        // }
-        //        // if (false) {
-        //        // sb.append("&");wct
-        //        // sb.append("wreq=jjjj");
-        //        // }
-        //        // if (false) {
-        //        // sb.append("&");
-        //        // sb.append("wct=").append("jjjj");
-        //        // }
-
-
     }
 
 }
