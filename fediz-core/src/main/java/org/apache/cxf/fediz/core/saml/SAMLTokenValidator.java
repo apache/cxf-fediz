@@ -22,12 +22,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
-
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -35,9 +33,9 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimCollection;
-import org.apache.cxf.fediz.core.FederationConfiguration;
 import org.apache.cxf.fediz.core.TokenValidator;
 import org.apache.cxf.fediz.core.TokenValidatorResponse;
+import org.apache.cxf.fediz.core.config.FederationContext;
 import org.apache.ws.security.SAMLTokenPrincipal;
 import org.apache.ws.security.WSDocInfo;
 import org.apache.ws.security.WSPasswordCallback;
@@ -58,10 +56,10 @@ import org.w3c.dom.Element;
 
 public class SAMLTokenValidator implements TokenValidator {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SAMLTokenValidator.class);
+    private static final Logger LOG = LoggerFactory
+            .getLogger(SAMLTokenValidator.class);
 
-
-    //[TODO] make sure we answer true only for cases we actually can handle
+    // [TODO] make sure we answer true only for cases we actually can handle
     @Override
     public boolean canHandleTokenType(String tokenType) {
         return true;
@@ -72,29 +70,31 @@ public class SAMLTokenValidator implements TokenValidator {
         return true;
     }
 
-    @Override
-    public TokenValidatorResponse validateAndProcessToken(Element token, FederationConfiguration config) {
+    public TokenValidatorResponse validateAndProcessToken(Element token,
+            FederationContext config) {
 
         try {
 
-            Properties sigProperties = createCryptoProviderProperties(config.getTrustStoreFile(), config.getTrustStorePassword());
+            Properties sigProperties = createCryptoProviderProperties(
+                    config.getTrustStoreFile(), config.getTrustStorePassword());
 
             Crypto sigCrypto = CryptoFactory.getInstance(sigProperties);
             RequestData requestData = new RequestData();
             requestData.setSigCrypto(sigCrypto);
             WSSConfig wssConfig = WSSConfig.getNewInstance();
             requestData.setWssConfig(wssConfig);
-            //not needed as no private key must be read
-            //requestData.setCallbackHandler(new PasswordCallbackHandler(password));
+            // not needed as no private key must be read
+            // requestData.setCallbackHandler(new
+            // PasswordCallbackHandler(password));
 
             AssertionWrapper assertion = new AssertionWrapper(token);
             if (!assertion.isSigned()) {
-                throw new RuntimeException("The received assertion is not signed, and therefore not trusted");
+                throw new RuntimeException(
+                        "The received assertion is not signed, and therefore not trusted");
             }
             // Verify the signature
-            assertion.verifySignature(
-                                      requestData, new WSDocInfo(token.getOwnerDocument())
-                );
+            assertion.verifySignature(requestData,
+                    new WSDocInfo(token.getOwnerDocument()));
 
             // Now verify trust on the signature
             Credential trustCredential = new Credential();
@@ -107,28 +107,32 @@ public class SAMLTokenValidator implements TokenValidator {
 
             String assertionIssuer = assertion.getIssuerString();
 
-            // Finally check that subject DN of the signing certificate matches a known constraint
+            // Finally check that subject DN of the signing certificate matches
+            // a known constraint
             X509Certificate cert = null;
             if (trustCredential.getCertificates() != null) {
                 cert = trustCredential.getCertificates()[0];
             }
 
-            List<String> subjectConstraints = Arrays.asList(config.getTrustedIssuer());
+            // List<String> subjectConstraints =
+            // Arrays.asList(config.getTrustedIssuer());
+            List<String> subjectConstraints = config.getTrustedIssuersNames();
 
             CertConstraintsParser certConstraints = new CertConstraintsParser();
             certConstraints.setSubjectConstraints(subjectConstraints);
 
             if (!certConstraints.matches(cert)) {
-                throw new RuntimeException("Issuer '" + assertionIssuer + "' not trusted");
+                throw new RuntimeException("Issuer '" + assertionIssuer
+                        + "' not trusted");
             }
-
 
             String audience = null;
             List<Claim> claims = null;
             if (assertion.getSamlVersion().equals(SAMLVersion.VERSION_20)) {
                 claims = parseClaimsInAssertion(assertion.getSaml2());
                 audience = getAudienceRestriction(assertion.getSaml2());
-            } else if (assertion.getSamlVersion().equals(SAMLVersion.VERSION_11)) {
+            } else if (assertion.getSamlVersion()
+                    .equals(SAMLVersion.VERSION_11)) {
                 claims = parseClaimsInAssertion(assertion.getSaml1());
                 audience = getAudienceRestriction(assertion.getSaml1());
             }
@@ -137,11 +141,14 @@ public class SAMLTokenValidator implements TokenValidator {
             URI roleURI = config.getRoleURI();
             String delim = config.getRoleDelimiter();
             if (roleURI != null) {
-                for (Claim c: claims) {
-                    URI claimURI = URI.create(c.getNamespace() + "/" + c.getClaimType());
+                for (Claim c : claims) {
+                    URI claimURI = URI.create(c.getNamespace() + "/"
+                            + c.getClaimType());
                     if (roleURI.equals(claimURI)) {
-                        if (delim == null) { delim = ","; }
-                        roles =  parseRoles(c.getValue(), delim);
+                        if (delim == null) {
+                            delim = ",";
+                        }
+                        roles = parseRoles(c.getValue(), delim);
                         claims.remove(c);
                         break;
                     }
@@ -151,29 +158,25 @@ public class SAMLTokenValidator implements TokenValidator {
             SAMLTokenPrincipal p = new SAMLTokenPrincipal(assertion);
 
             TokenValidatorResponse response = new TokenValidatorResponse(
-                                                                         assertion.getId(),
-                                                                         p.getName(),
-                                                                         assertionIssuer,
-                                                                         roles,
-                                                                         claims,
-                                                                         audience);
+                    assertion.getId(), p.getName(), assertionIssuer, roles,
+                    claims, audience);
 
             return response;
 
         } catch (WSSecurityException ex) {
-            //[TODO] proper exception handling
+            // [TODO] proper exception handling
             throw new RuntimeException(ex);
         }
     }
 
-
-    protected List<Claim> parseClaimsInAssertion(org.opensaml.saml1.core.Assertion assertion) {
-        List<org.opensaml.saml1.core.AttributeStatement> attributeStatements = 
-            assertion.getAttributeStatements();
+    protected List<Claim> parseClaimsInAssertion(
+            org.opensaml.saml1.core.Assertion assertion) {
+        List<org.opensaml.saml1.core.AttributeStatement> attributeStatements = assertion
+                .getAttributeStatements();
         if (attributeStatements == null || attributeStatements.isEmpty()) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("No attribute statements found");
-            }            
+            }
             return Collections.emptyList();
         }
         ClaimCollection collection = new ClaimCollection();
@@ -183,10 +186,12 @@ public class SAMLTokenValidator implements TokenValidator {
                 LOG.debug("parsing statement: " + statement.getElementQName());
             }
 
-            List<org.opensaml.saml1.core.Attribute> attributes = statement.getAttributes();
+            List<org.opensaml.saml1.core.Attribute> attributes = statement
+                    .getAttributes();
             for (org.opensaml.saml1.core.Attribute attribute : attributes) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("parsing attribute: " + attribute.getAttributeName());
+                    LOG.debug("parsing attribute: "
+                            + attribute.getAttributeName());
                 }
                 Claim c = new Claim();
                 c.setIssuer(assertion.getIssuer());
@@ -194,7 +199,8 @@ public class SAMLTokenValidator implements TokenValidator {
                 try {
                     c.setClaimType(new URI(attribute.getAttributeName()));
                 } catch (URISyntaxException e) {
-                    LOG.warn("Invalid attribute name in attributestatement: " + e.getMessage());
+                    LOG.warn("Invalid attribute name in attributestatement: "
+                            + e.getMessage());
                     continue;
                 }
                 for (XMLObject attributeValue : attribute.getAttributeValues()) {
@@ -205,16 +211,17 @@ public class SAMLTokenValidator implements TokenValidator {
                     }
                     c.setValue(value);
                     collection.add(c);
-                    break;                    
+                    break;
                 }
             }
         }
         return collection;
     }
 
-    protected List<Claim> parseClaimsInAssertion(org.opensaml.saml2.core.Assertion assertion) {
-        List<org.opensaml.saml2.core.AttributeStatement> attributeStatements = 
-            assertion.getAttributeStatements();
+    protected List<Claim> parseClaimsInAssertion(
+            org.opensaml.saml2.core.Assertion assertion) {
+        List<org.opensaml.saml2.core.AttributeStatement> attributeStatements = assertion
+                .getAttributeStatements();
         if (attributeStatements == null || attributeStatements.isEmpty()) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("No attribute statements found");
@@ -228,7 +235,8 @@ public class SAMLTokenValidator implements TokenValidator {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("parsing statement: " + statement.getElementQName());
             }
-            List<org.opensaml.saml2.core.Attribute> attributes = statement.getAttributes();
+            List<org.opensaml.saml2.core.Attribute> attributes = statement
+                    .getAttributes();
             for (org.opensaml.saml2.core.Attribute attribute : attributes) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("parsing attribute: " + attribute.getName());
@@ -262,20 +270,25 @@ public class SAMLTokenValidator implements TokenValidator {
         return roles;
     }
 
-    protected String getAudienceRestriction(org.opensaml.saml1.core.Assertion assertion) {
+    protected String getAudienceRestriction(
+            org.opensaml.saml1.core.Assertion assertion) {
         String audience = null;
         try {
-            audience = assertion.getConditions().getAudienceRestrictionConditions().get(0).getAudiences().get(0).getUri();
+            audience = assertion.getConditions()
+                    .getAudienceRestrictionConditions().get(0).getAudiences()
+                    .get(0).getUri();
         } catch (Exception ex) {
             LOG.warn("Failed to read audience" + ex.getMessage());
         }
-        return audience; 
+        return audience;
     }
 
-    protected String getAudienceRestriction(org.opensaml.saml2.core.Assertion assertion) {
+    protected String getAudienceRestriction(
+            org.opensaml.saml2.core.Assertion assertion) {
         String audience = null;
         try {
-            audience = assertion.getConditions().getAudienceRestrictions().get(0).getAudiences().get(0).getAudienceURI();
+            audience = assertion.getConditions().getAudienceRestrictions()
+                    .get(0).getAudiences().get(0).getAudienceURI();
         } catch (Exception ex) {
             LOG.warn("Failed to read audience" + ex.getMessage());
         }
@@ -283,37 +296,39 @@ public class SAMLTokenValidator implements TokenValidator {
 
     }
 
-    protected Properties createCryptoProviderProperties(String truststoreFile, String truststorePassword) {
+    protected Properties createCryptoProviderProperties(String truststoreFile,
+            String truststorePassword) {
         Properties p = new Properties();
-        p.put("org.apache.ws.security.crypto.provider", "org.apache.ws.security.components.crypto.Merlin");
+        p.put("org.apache.ws.security.crypto.provider",
+                "org.apache.ws.security.components.crypto.Merlin");
         p.put("org.apache.ws.security.crypto.merlin.keystore.type", "jks");
-        p.put("org.apache.ws.security.crypto.merlin.keystore.password", truststorePassword);
-        p.put("org.apache.ws.security.crypto.merlin.keystore.file", truststoreFile);
+        p.put("org.apache.ws.security.crypto.merlin.keystore.password",
+                truststorePassword);
+        p.put("org.apache.ws.security.crypto.merlin.keystore.file",
+                truststoreFile);
         return p;
     }
 
-
     // A sample MyHandler class
-    class PasswordCallbackHandler implements CallbackHandler
-    {
+    class PasswordCallbackHandler implements CallbackHandler {
         private String password;
 
-        private PasswordCallbackHandler() {}
+        private PasswordCallbackHandler() {
+        }
 
         public PasswordCallbackHandler(String password) {
             this.password = password;
         }
 
-        public void handle(Callback[] callbacks) throws
-        IOException, UnsupportedCallbackException
-        {
+        public void handle(Callback[] callbacks) throws IOException,
+                UnsupportedCallbackException {
             for (int i = 0; i < callbacks.length; i++) {
                 if (callbacks[i] instanceof WSPasswordCallback) {
-                    WSPasswordCallback nc = (WSPasswordCallback)callbacks[i];
+                    WSPasswordCallback nc = (WSPasswordCallback) callbacks[i];
                     nc.setPassword(this.password);
                 } else {
                     throw new UnsupportedCallbackException(callbacks[i],
-                                                           "Unrecognized Callback");
+                            "Unrecognized Callback");
                 }
             }
         }

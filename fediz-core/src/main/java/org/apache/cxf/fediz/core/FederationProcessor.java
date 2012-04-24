@@ -17,8 +17,14 @@
 
 package org.apache.cxf.fediz.core;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.cxf.fediz.core.config.FederationContext;
+
 public interface FederationProcessor {
 
-    public FederationResponse processRequest(FederationRequest request, FederationConfiguration config);
+    public FederationResponse processRequest(FederationRequest request, FederationContext config);
+    
+    public String createSignInRequest(HttpServletRequest request, FederationContext config);
 
 }

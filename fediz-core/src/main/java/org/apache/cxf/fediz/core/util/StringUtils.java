@@ -34,7 +34,8 @@ public final class StringUtils {
     private StringUtils() {
     }
 
-    public static String extract(String string, String startToken, String endToken) {
+    public static String extract(String string, String startToken,
+            String endToken) {
         int start = string.indexOf(startToken) + startToken.length();
         int end = string.lastIndexOf(endToken);
 
@@ -45,7 +46,8 @@ public final class StringUtils {
         return string.substring(start, end);
     }
 
-    public static String wrapper(String string, String startToken, String endToken) {
+    public static String wrapper(String string, String startToken,
+            String endToken) {
         StringBuilder sb = new StringBuilder();
         sb.append(startToken);
         sb.append(string);
@@ -80,7 +82,7 @@ public final class StringUtils {
         }
         return true;
     }
-    
+
     public static boolean isEmpty(List<String> list) {
         if (list == null || list.size() == 0) {
             return true;
@@ -93,16 +95,17 @@ public final class StringUtils {
 
     public static boolean isEqualUri(String uri1, String uri2) {
 
-        if (uri1.substring(uri1.length() - 1).equals("/") && !uri2.substring(uri2.length() - 1).equals("/")) {
+        if (uri1.substring(uri1.length() - 1).equals("/")
+                && !uri2.substring(uri2.length() - 1).equals("/")) {
             return uri1.substring(0, uri1.length() - 1).equals(uri2);
         } else if (uri2.substring(uri2.length() - 1).equals("/")
-                   && !uri1.substring(uri1.length() - 1).equals("/")) {
+                && !uri1.substring(uri1.length() - 1).equals("/")) {
             return uri2.substring(0, uri2.length() - 1).equals(uri1);
         } else {
             return uri1.equals(uri2);
         }
     }
-    
+
     public static String diff(String str1, String str2) {
         int index = str1.lastIndexOf(str2);
         if (index > -1) {
@@ -110,7 +113,7 @@ public final class StringUtils {
         }
         return str1;
     }
-    
+
     public static List<String> getParts(String str, String sperator) {
         List<String> ret = new ArrayList<String>();
         List<String> parts = Arrays.asList(str.split("/"));
@@ -121,7 +124,7 @@ public final class StringUtils {
         }
         return ret;
     }
-    
+
     public static String getFirstNotEmpty(String str, String sperator) {
         List<String> parts = Arrays.asList(str.split("/"));
         for (String part : parts) {
@@ -131,7 +134,7 @@ public final class StringUtils {
         }
         return str;
     }
-    
+
     public static String getFirstNotEmpty(List<String> list) {
         if (isEmpty(list)) {
             return null;
@@ -139,11 +142,11 @@ public final class StringUtils {
         for (String item : list) {
             if (!isEmpty(item)) {
                 return item;
-            }       
+            }
         }
         return null;
     }
-    
+
     public static List<String> getFound(String contents, String regex) {
         if (isEmpty(regex) || isEmpty(contents)) {
             return null;
@@ -151,7 +154,7 @@ public final class StringUtils {
         List<String> results = new ArrayList<String>();
         Pattern pattern = Pattern.compile(regex, Pattern.UNICODE_CASE);
         Matcher matcher = pattern.matcher(contents);
-        
+
         while (matcher.find()) {
             if (matcher.groupCount() > 0) {
                 results.add(matcher.group(1));
@@ -160,8 +163,8 @@ public final class StringUtils {
             }
         }
         return results;
-    } 
-    
+    }
+
     public static String getFirstFound(String contents, String regex) {
         List<String> founds = getFound(contents, regex);
         if (isEmpty(founds)) {
@@ -169,20 +172,22 @@ public final class StringUtils {
         }
         return founds.get(0);
     }
-    
+
     public static String formatVersionNumber(String target) {
-        List<String> found = StringUtils.getFound(target, "\\d+\\.\\d+\\.?\\d*");
+        List<String> found = StringUtils
+                .getFound(target, "\\d+\\.\\d+\\.?\\d*");
         if (isEmpty(found)) {
             return target;
         }
         return getFirstNotEmpty(found);
     }
-    
+
     public static String addDefaultPortIfMissing(String urlString) {
         return addDefaultPortIfMissing(urlString, "80");
     }
-    
-    public static String addDefaultPortIfMissing(String urlString, String defaultPort) {
+
+    public static String addDefaultPortIfMissing(String urlString,
+            String defaultPort) {
         URL url = null;
         try {
             url = new URL(urlString);
@@ -192,19 +197,21 @@ public final class StringUtils {
         if (url.getPort() != -1) {
             return urlString;
         }
-        String regex = "http://([^/]+)";        
+        String regex = "http://([^/]+)";
         String found = StringUtils.getFirstFound(urlString, regex);
         String replacer = "http://" + found + ":" + defaultPort;
-        
+
         if (!StringUtils.isEmpty(found)) {
             urlString = urlString.replaceFirst(regex, replacer);
-        }                
+        }
         return urlString;
     }
- 
+
     /**
      * Return input string with first character in upper case.
-     * @param name input string.
+     * 
+     * @param name
+     *            input string.
      * @return capitalized form.
      */
     public static String capitalize(String name) {
@@ -215,14 +222,13 @@ public final class StringUtils {
         chars[0] = Character.toUpperCase(chars[0]);
         return new String(chars);
     }
-    
+
     public static String uncapitalize(String str) {
         if (str == null || str.length() == 0) {
             return str;
         }
         return new StringBuilder(str.length())
-            .append(Character.toLowerCase(str.charAt(0)))
-            .append(str.substring(1))
-            .toString();
-    }    
+                .append(Character.toLowerCase(str.charAt(0)))
+                .append(str.substring(1)).toString();
+    }
 }

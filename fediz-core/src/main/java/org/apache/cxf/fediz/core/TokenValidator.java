@@ -17,6 +17,7 @@
 
 package org.apache.cxf.fediz.core;
 
+import org.apache.cxf.fediz.core.config.FederationContext;
 import org.w3c.dom.Element;
 
 public interface TokenValidator {
@@ -38,5 +39,5 @@ public interface TokenValidator {
     /**
      * Validate a Token using the given Element and Configuration.
      */
-    TokenValidatorResponse validateAndProcessToken(Element token, FederationConfiguration config);
+    TokenValidatorResponse validateAndProcessToken(Element token, FederationContext config);
 }

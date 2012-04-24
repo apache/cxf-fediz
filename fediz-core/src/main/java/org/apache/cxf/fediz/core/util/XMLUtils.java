@@ -67,13 +67,13 @@ import org.xml.sax.SAXException;
 @SuppressWarnings("PMD")
 public final class XMLUtils {
 
-    //private static final Logger LOG = LogUtils.getL7dLogger(XMLUtils.class);
-    
-    private static final Map<ClassLoader, DocumentBuilderFactory> DOCUMENT_BUILDER_FACTORIES
-        = Collections.synchronizedMap(new WeakHashMap<ClassLoader, DocumentBuilderFactory>());
-    
-    private static final Map<ClassLoader, TransformerFactory> TRANSFORMER_FACTORIES
-        = Collections.synchronizedMap(new WeakHashMap<ClassLoader, TransformerFactory>());
+    // private static final Logger LOG = LogUtils.getL7dLogger(XMLUtils.class);
+
+    private static final Map<ClassLoader, DocumentBuilderFactory> DOCUMENT_BUILDER_FACTORIES = Collections
+            .synchronizedMap(new WeakHashMap<ClassLoader, DocumentBuilderFactory>());
+
+    private static final Map<ClassLoader, TransformerFactory> TRANSFORMER_FACTORIES = Collections
+            .synchronizedMap(new WeakHashMap<ClassLoader, TransformerFactory>());
 
     private XMLUtils() {
     }
@@ -93,6 +93,7 @@ public final class XMLUtils {
         }
         return factory;
     }
+
     private static DocumentBuilderFactory getDocumentBuilderFactory() {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         if (loader == null) {
@@ -109,47 +110,54 @@ public final class XMLUtils {
         }
         return factory;
     }
-    public static Transformer newTransformer() throws TransformerConfigurationException {
+
+    public static Transformer newTransformer()
+            throws TransformerConfigurationException {
         return getTransformerFactory().newTransformer();
     }
-    public static Transformer newTransformer(int indent) throws TransformerConfigurationException {
+
+    public static Transformer newTransformer(int indent)
+            throws TransformerConfigurationException {
         if (indent > 0) {
             TransformerFactory f = TransformerFactory.newInstance();
             try {
-                //sun way of setting indent
+                // sun way of setting indent
                 f.setAttribute("indent-number", Integer.toString(indent));
             } catch (Throwable t) {
-                //ignore
+                // ignore
             }
             return f.newTransformer();
         }
         return getTransformerFactory().newTransformer();
     }
 
-    public static DocumentBuilder getParser() throws ParserConfigurationException {
+    public static DocumentBuilder getParser()
+            throws ParserConfigurationException {
         return getDocumentBuilderFactory().newDocumentBuilder();
     }
 
-    public static Document parse(InputSource is) throws ParserConfigurationException, SAXException,
-        IOException {
+    public static Document parse(InputSource is)
+            throws ParserConfigurationException, SAXException, IOException {
         return getParser().parse(is);
     }
 
-    public static Document parse(File is) throws ParserConfigurationException, SAXException,
-        IOException {
+    public static Document parse(File is) throws ParserConfigurationException,
+            SAXException, IOException {
         return getParser().parse(is);
     }
 
-    public static Document parse(InputStream in) throws ParserConfigurationException, SAXException,
-        IOException {
+    public static Document parse(InputStream in)
+            throws ParserConfigurationException, SAXException, IOException {
         return getParser().parse(in);
     }
 
-    public static Document parse(String in) throws ParserConfigurationException, SAXException, IOException {
+    public static Document parse(String in)
+            throws ParserConfigurationException, SAXException, IOException {
         return parse(in.getBytes());
     }
 
-    public static Document parse(byte[] in) throws ParserConfigurationException, SAXException, IOException {
+    public static Document parse(byte[] in)
+            throws ParserConfigurationException, SAXException, IOException {
         if (in == null) {
             return null;
         }
@@ -163,62 +171,68 @@ public final class XMLUtils {
     public static void writeTo(Node node, OutputStream os) {
         writeTo(new DOMSource(node), os);
     }
+
     public static void writeTo(Node node, OutputStream os, int indent) {
         writeTo(new DOMSource(node), os, indent);
     }
+
     public static void writeTo(Source src, OutputStream os) {
         writeTo(src, os, -1);
     }
+
     public static void writeTo(Node node, Writer os) {
         writeTo(new DOMSource(node), os);
     }
+
     public static void writeTo(Node node, Writer os, int indent) {
         writeTo(new DOMSource(node), os, indent);
     }
+
     public static void writeTo(Source src, Writer os) {
         writeTo(src, os, -1);
     }
+
     public static void writeTo(Source src, OutputStream os, int indent) {
         String enc = null;
         if (src instanceof DOMSource
-            && ((DOMSource)src).getNode() instanceof Document) {
+                && ((DOMSource) src).getNode() instanceof Document) {
             try {
-                enc = ((Document)((DOMSource)src).getNode()).getXmlEncoding();
+                enc = ((Document) ((DOMSource) src).getNode()).getXmlEncoding();
             } catch (Exception ex) {
-                //ignore - not DOM level 3
+                // ignore - not DOM level 3
             }
         }
         writeTo(src, os, indent, enc, "no");
     }
+
     public static void writeTo(Source src, Writer os, int indent) {
         String enc = null;
         if (src instanceof DOMSource
-            && ((DOMSource)src).getNode() instanceof Document) {
+                && ((DOMSource) src).getNode() instanceof Document) {
             try {
-                enc = ((Document)((DOMSource)src).getNode()).getXmlEncoding();
+                enc = ((Document) ((DOMSource) src).getNode()).getXmlEncoding();
             } catch (Exception ex) {
-                //ignore - not DOM level 3
+                // ignore - not DOM level 3
             }
         }
         writeTo(src, os, indent, enc, "no");
     }
-    public static void writeTo(Source src,
-                               OutputStream os,
-                               int indent,
-                               String charset,
-                               String omitXmlDecl) {
+
+    public static void writeTo(Source src, OutputStream os, int indent,
+            String charset, String omitXmlDecl) {
         Transformer it;
         try {
             if (StringUtils.isEmpty(charset)) {
-                charset = "utf-8"; 
+                charset = "utf-8";
             }
 
             it = newTransformer(indent);
             it.setOutputProperty(OutputKeys.METHOD, "xml");
             if (indent > -1) {
                 it.setOutputProperty(OutputKeys.INDENT, "yes");
-                it.setOutputProperty("{http://xml.apache.org/xslt}indent-amount",
-                                     Integer.toString(indent));
+                it.setOutputProperty(
+                        "{http://xml.apache.org/xslt}indent-amount",
+                        Integer.toString(indent));
             }
             it.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, omitXmlDecl);
             it.setOutputProperty(OutputKeys.ENCODING, charset);
@@ -227,23 +241,22 @@ public final class XMLUtils {
             throw new RuntimeException("Failed to configure TRaX", e);
         }
     }
-    public static void writeTo(Source src,
-                               Writer os,
-                               int indent,
-                               String charset,
-                               String omitXmlDecl) {
+
+    public static void writeTo(Source src, Writer os, int indent,
+            String charset, String omitXmlDecl) {
         Transformer it;
         try {
             if (StringUtils.isEmpty(charset)) {
-                charset = "utf-8"; 
+                charset = "utf-8";
             }
 
             it = newTransformer(indent);
             it.setOutputProperty(OutputKeys.METHOD, "xml");
             if (indent > -1) {
                 it.setOutputProperty(OutputKeys.INDENT, "yes");
-                it.setOutputProperty("{http://xml.apache.org/xslt}indent-amount",
-                                     Integer.toString(indent));
+                it.setOutputProperty(
+                        "{http://xml.apache.org/xslt}indent-amount",
+                        Integer.toString(indent));
             }
             it.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, omitXmlDecl);
             it.setOutputProperty(OutputKeys.ENCODING, charset);
@@ -252,11 +265,14 @@ public final class XMLUtils {
             throw new RuntimeException("Failed to configure TRaX", e);
         }
     }
-    public static String toString(Source source) throws TransformerException, IOException {
+
+    public static String toString(Source source) throws TransformerException,
+            IOException {
         return toString(source, null);
     }
 
-    public static String toString(Source source, Properties props) throws TransformerException, IOException {
+    public static String toString(Source source, Properties props)
+            throws TransformerException, IOException {
         StringWriter bos = new StringWriter();
         StreamResult sr = new StreamResult(bos);
         Transformer trans = newTransformer();
@@ -275,6 +291,7 @@ public final class XMLUtils {
         writeTo(node, out, indent);
         return out.toString();
     }
+
     public static String toString(Node node) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         writeTo(node, out);
@@ -294,7 +311,8 @@ public final class XMLUtils {
         return el.getAttributeNode(attrName);
     }
 
-    public static void replaceAttribute(Element element, String attr, String value) {
+    public static void replaceAttribute(Element element, String attr,
+            String value) {
         if (element.hasAttribute(attr)) {
             element.removeAttribute(attr);
         }
@@ -316,12 +334,13 @@ public final class XMLUtils {
         NamedNodeMap attributes = element.getAttributes();
         for (int i = 0; i < attributes.getLength(); i++) {
             Node node = attributes.item(i);
-            System.err.println("## prefix=" + node.getPrefix() + " localname:" + node.getLocalName()
-                               + " value=" + node.getNodeValue());
+            System.err.println("## prefix=" + node.getPrefix() + " localname:"
+                    + node.getLocalName() + " value=" + node.getNodeValue());
         }
     }
 
-    public static QName getNamespace(Map<String, String> namespaces, String str, String defaultNamespace) {
+    public static QName getNamespace(Map<String, String> namespaces,
+            String str, String defaultNamespace) {
         String prefix = null;
         String localName = null;
 
@@ -335,7 +354,7 @@ public final class XMLUtils {
 
         String namespceURI = defaultNamespace;
         if (prefix != null) {
-            namespceURI = (String)namespaces.get(prefix);
+            namespceURI = (String) namespaces.get(prefix);
         }
         return new QName(namespceURI, localName);
     }
@@ -346,7 +365,8 @@ public final class XMLUtils {
 
             it.setOutputProperty(OutputKeys.METHOD, "xml");
             it.setOutputProperty(OutputKeys.INDENT, "yes");
-            it.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            it.setOutputProperty("{http://xml.apache.org/xslt}indent-amount",
+                    "2");
             it.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
             it.transform(new DOMSource(element), new StreamResult(writer));
         } catch (Exception e) {
@@ -355,14 +375,17 @@ public final class XMLUtils {
     }
 
     public static Element createElementNS(Node node, QName name) {
-        return createElementNS(node.getOwnerDocument(), name.getNamespaceURI(), name.getLocalPart());
+        return createElementNS(node.getOwnerDocument(), name.getNamespaceURI(),
+                name.getLocalPart());
     }
 
     public static Element createElementNS(Document root, QName name) {
-        return createElementNS(root, name.getNamespaceURI(), name.getLocalPart());
+        return createElementNS(root, name.getNamespaceURI(),
+                name.getLocalPart());
     }
 
-    public static Element createElementNS(Document root, String namespaceURI, String qualifiedName) {
+    public static Element createElementNS(Document root, String namespaceURI,
+            String qualifiedName) {
         return root.createElementNS(namespaceURI, qualifiedName);
     }
 
@@ -374,7 +397,7 @@ public final class XMLUtils {
         return createTextNode(node.getOwnerDocument(), data);
     }
 
-    public static void removeContents(Node parent) {     
+    public static void removeContents(Node parent) {
         Node node = parent.getFirstChild();
         while (node != null) {
             parent.removeChild(node);
@@ -388,15 +411,17 @@ public final class XMLUtils {
         // Try to get the DOMImplementation from doc first before
         // defaulting to the sun implementation.
         if (docImpl != null && docImpl.hasFeature("LS", "3.0")) {
-            impl = (DOMImplementationLS)docImpl.getFeature("LS", "3.0");
+            impl = (DOMImplementationLS) docImpl.getFeature("LS", "3.0");
         } else {
-            DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
-            impl = (DOMImplementationLS)registry.getDOMImplementation("LS");
+            DOMImplementationRegistry registry = DOMImplementationRegistry
+                    .newInstance();
+            impl = (DOMImplementationLS) registry.getDOMImplementation("LS");
             if (impl == null) {
                 System.setProperty(DOMImplementationRegistry.PROPERTY,
-                                   "com.sun.org.apache.xerces.internal.dom.DOMImplementationSourceImpl");
+                        "com.sun.org.apache.xerces.internal.dom.DOMImplementationSourceImpl");
                 registry = DOMImplementationRegistry.newInstance();
-                impl = (DOMImplementationLS)registry.getDOMImplementation("LS");
+                impl = (DOMImplementationLS) registry
+                        .getDOMImplementation("LS");
             }
         }
         LSOutput output = impl.createLSOutput();
@@ -408,9 +433,11 @@ public final class XMLUtils {
         return new ByteArrayInputStream(buf);
     }
 
-    public static Element fetchElementByNameAttribute(Element parent, String targetName, String nameValue) {
-        
-        List<Element> elemList = DOMUtils.findAllElementsByTagName(parent, targetName);
+    public static Element fetchElementByNameAttribute(Element parent,
+            String targetName, String nameValue) {
+
+        List<Element> elemList = DOMUtils.findAllElementsByTagName(parent,
+                targetName);
         for (Element elem : elemList) {
             if (elem.getAttribute("name").equals(nameValue)) {
                 return elem;
@@ -441,24 +468,24 @@ public final class XMLUtils {
         return new QName(ns, localName, prefix);
     }
 
-    public static Node  fromSource(Source src) throws Exception {
+    public static Node fromSource(Source src) throws Exception {
 
         Transformer trans = TransformerFactory.newInstance().newTransformer();
         DOMResult res = new DOMResult();
         trans.transform(src, res);
         return res.getNode();
     }
-    
+
     public static QName convertStringToQName(String expandedQName) {
         return convertStringToQName(expandedQName, "");
     }
-    
+
     public static QName convertStringToQName(String expandedQName, String prefix) {
         int ind1 = expandedQName.indexOf('{');
         if (ind1 != 0) {
             return new QName(expandedQName);
         }
-        
+
         int ind2 = expandedQName.indexOf('}');
         if (ind2 <= ind1 + 1 || ind2 >= expandedQName.length() - 1) {
             return null;
@@ -467,7 +494,7 @@ public final class XMLUtils {
         String localName = expandedQName.substring(ind2 + 1);
         return new QName(ns, localName, prefix);
     }
-    
+
     public static Set<QName> convertStringsToQNames(List<String> expandedQNames) {
         Set<QName> dropElements = Collections.emptySet();
         if (expandedQNames != null) {
@@ -478,5 +505,5 @@ public final class XMLUtils {
         }
         return dropElements;
     }
-    
+
 }

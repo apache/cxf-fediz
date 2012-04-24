@@ -37,7 +37,8 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimCollection;
-import org.apache.cxf.fediz.tomcat.FederationPrincipal;
+import org.apache.cxf.fediz.core.FederationPrincipal;
+import org.apache.cxf.fediz.tomcat.FederationPrincipalImpl;
 import org.apache.hello_world_soap_http.Greeter;
 import org.w3c.dom.Element;
 
@@ -140,8 +141,8 @@ public class FederationServlet extends HttpServlet {
             out.println("Has role '" + item + "': " + ((request.isUserInRole(item)) ? "<b>yes</b>" : "no") + "<p>" );
         }
 
-        if (p instanceof FederationPrincipal) {
-            FederationPrincipal fp = (FederationPrincipal)p;
+        if (p instanceof FederationPrincipalImpl) {
+            FederationPrincipalImpl fp = (FederationPrincipalImpl)p;
 
             out.println("<br><b>Claims</b><p>");
             ClaimCollection claims = fp.getClaims();
@@ -150,7 +151,7 @@ public class FederationServlet extends HttpServlet {
             }
         }
         else {
-            out.println("Principal is not instance of FederationPrincipal");
+            out.println("Principal is not instance of FederationPrincipalImpl");
         }
 
         Greeter service = (Greeter)ApplicationContextProvider.getContext().getBean("HelloServiceClient");

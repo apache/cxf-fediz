@@ -18,32 +18,25 @@
 package org.apache.cxf.fediz.core;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
-import org.apache.cxf.fediz.core.FederationConfiguration;
-import org.apache.cxf.fediz.core.FederationConstants;
-import org.apache.cxf.fediz.core.FederationProcessor;
-import org.apache.cxf.fediz.core.FederationProcessorImpl;
-import org.apache.cxf.fediz.core.FederationRequest;
-import org.apache.cxf.fediz.core.FederationResponse;
-import org.junit.BeforeClass;
+import java.net.URL;
 
 import junit.framework.Assert;
 
-import static org.apache.cxf.fediz.core.FederationConstants.DEFAULT_ROLE_URI;
+import org.apache.cxf.fediz.core.config.FederationConfigurator;
+import org.apache.cxf.fediz.core.config.FederationContext;
+import org.junit.BeforeClass;
 
 public class FederationProcessorTest {
-
-    private static final String TEST_OTHER_ISSUER = "ZFS IDP DEV";
     private static final String TEST_USER = "alice";
-    private static final String TEST_TRUSTSTORE_FILE = "stsstore.jks";
-    private static final String TEST_TRUSTSTORE_PASSWORD = "stsspass";
     private static final String TEST_RSTR_ISSUER = "DoubleItSTSIssuer";
-    private static final String TEST_CERT_CONSTRAINT = ".*CN=www.sts.com.*";
 
+    private static final String CONFIG_FILE = "fediz_test_config.xml";
+    private static final String CONFIG_FILE_WRONG_ISSUER = "fediz_test_config2.xml";
 
     private static String sRSTR = null;
 
@@ -51,11 +44,13 @@ public class FederationProcessorTest {
     public static void readWResult() {
         InputStream is = null;
         try {
-            is = FederationProcessorTest.class.getResourceAsStream("/RSTR.xml");
+            is = FederationProcessorTest.class
+                    .getResourceAsStream("/RSTR.xml");
             if (is == null) {
                 throw new FileNotFoundException("Failed to get RSTR.xml");
             }
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
+            BufferedReader bufferedReader = new BufferedReader(
+                    new InputStreamReader(is));
             StringBuilder stringBuilder = new StringBuilder();
             String line = null;
             while ((line = bufferedReader.readLine()) != null) {
@@ -75,6 +70,36 @@ public class FederationProcessorTest {
             }
         }
         Assert.assertNotNull("RSTR resource null", sRSTR);
+        Assert.assertNotNull(loadRootConfig());
+
+    }
+
+    private static FederationContext loadRootConfig() {
+        try {
+            FederationConfigurator configurator = new FederationConfigurator();
+            final URL resource = Thread.currentThread().getContextClassLoader()
+                    .getResource(CONFIG_FILE);
+            File f = new File(resource.toURI());
+            configurator.loadConfig(f);
+            return configurator.getFederationContext("ROOT");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private static FederationContext loadOtherIssuerRootConfig() {
+        try {
+            FederationConfigurator configurator = new FederationConfigurator();
+            final URL resource = Thread.currentThread().getContextClassLoader()
+                    .getResource(CONFIG_FILE_WRONG_ISSUER);
+            File f = new File(resource.toURI());
+            configurator.loadConfig(f);
+            return configurator.getFederationContext("ROOT");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
 
     }
 
@@ -84,21 +109,15 @@ public class FederationProcessorTest {
         FederationRequest wfReq = new FederationRequest();
         wfReq.setWa(FederationConstants.ACTION_SIGNIN);
         wfReq.setWresult(sRSTR);
-
-        FederationConfiguration config = new FederationConfiguration();
-        config.setTrustedIssuer(TEST_CERT_CONSTRAINT);
-        config.setRoleDelimiter(";");
-        config.setRoleURI(FederationConstants.DEFAULT_ROLE_URI);
-        config.setTrustStoreFile(TEST_TRUSTSTORE_FILE);
-        config.setTrustStorePassword(TEST_TRUSTSTORE_PASSWORD);
+        FederationContext config = loadRootConfig();
         config.setDetectReplayedTokens(false);
 
         FederationProcessor wfProc = new FederationProcessorImpl();
         FederationResponse wfRes = wfProc.processRequest(wfReq, config);
-        Assert.assertEquals("Principal name wrong", TEST_USER, wfRes.getUsername());
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
     }
-
 
     @org.junit.Test
     public void validateSAML2TokenWithWrongIssuer() {
@@ -106,22 +125,15 @@ public class FederationProcessorTest {
         FederationRequest wfReq = new FederationRequest();
         wfReq.setWa(FederationConstants.ACTION_SIGNIN);
         wfReq.setWresult(sRSTR);
-
-        FederationConfiguration config = new FederationConfiguration();
-        config.setTrustedIssuer(TEST_OTHER_ISSUER);
-        config.setRoleDelimiter(";");
-        config.setRoleURI(FederationConstants.DEFAULT_ROLE_URI);
-        config.setTrustStoreFile(TEST_TRUSTSTORE_FILE);
-        config.setTrustStorePassword(TEST_TRUSTSTORE_PASSWORD);
+        FederationContext config = loadOtherIssuerRootConfig();
         config.setDetectReplayedTokens(false);
-
         FederationProcessor wfProc = new FederationProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
             Assert.fail("Processing must fail because of wrong issuer configured");
-        }
-        catch (RuntimeException ex) {
-            Assert.assertEquals("Exception expected", "Issuer '" + TEST_RSTR_ISSUER + "' not trusted", ex.getMessage());
+        } catch (RuntimeException ex) {
+            Assert.assertEquals("Exception expected", "Issuer '"
+                    + TEST_RSTR_ISSUER + "' not trusted", ex.getMessage());
         }
     }
 
@@ -132,21 +144,16 @@ public class FederationProcessorTest {
         wfReq.setWa(FederationConstants.ACTION_SIGNIN);
         wfReq.setWresult(sRSTR);
 
-        FederationConfiguration config = new FederationConfiguration();
-        config.setTrustedIssuer(TEST_CERT_CONSTRAINT);
-        config.setRoleDelimiter(";");
-        config.setRoleURI(DEFAULT_ROLE_URI);
-        config.setTrustStoreFile(TEST_TRUSTSTORE_FILE);
-        config.setTrustStorePassword(TEST_TRUSTSTORE_PASSWORD);
+        FederationContext config = loadRootConfig();
         config.setDetectReplayedTokens(false);
 
         FederationProcessor wfProc = new FederationProcessorImpl();
         FederationResponse wfRes = wfProc.processRequest(wfReq, config);
-        Assert.assertEquals("Principal name wrong", TEST_USER, wfRes.getUsername());
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("One role must be found", 1, wfRes.getRoles().size());
+        Assert.assertEquals("One role must be found", 1, wfRes.getRoles()
+                .size());
     }
-
-
 
 }

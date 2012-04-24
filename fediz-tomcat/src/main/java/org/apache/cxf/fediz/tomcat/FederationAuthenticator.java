@@ -2,20 +2,17 @@ package org.apache.cxf.fediz.tomcat;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.bind.JAXBException;
 
+import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Session;
 import org.apache.catalina.authenticator.Constants;
 import org.apache.catalina.authenticator.FormAuthenticator;
@@ -23,83 +20,80 @@ import org.apache.catalina.authenticator.SavedRequest;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.deploy.LoginConfig;
-import org.apache.cxf.fediz.core.FederationConfiguration;
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.FederationProcessor;
 import org.apache.cxf.fediz.core.FederationProcessorImpl;
 import org.apache.cxf.fediz.core.FederationRequest;
 import org.apache.cxf.fediz.core.FederationResponse;
-import org.apache.cxf.fediz.core.IDPCallback;
+import org.apache.cxf.fediz.core.config.FederationConfigurator;
+import org.apache.cxf.fediz.core.config.FederationContext;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 
 public class FederationAuthenticator extends FormAuthenticator {
 
-    //[TODO] Expired token
+    // [TODO] Expired token
 
     private static final Log log = LogFactory.getLog(FormAuthenticator.class);
 
     /**
      * Descriptive information about this implementation.
      */
-    protected static final String info =
-        "org.apache.cxf.fediz.tomcat.WsFedAuthenticator/1.0";
+    protected static final String info = "org.apache.cxf.fediz.tomcat.WsFedAuthenticator/1.0";
 
-    public static final String FEDERATION_NOTE =
-        "org.apache.cxf.fediz.tomcat.FEDERATION";
+    public static final String FEDERATION_NOTE = "org.apache.cxf.fediz.tomcat.FEDERATION";
 
-    public static final String SECURITY_TOKEN =
-        "org.apache.fediz.SECURITY_TOKEN";
-    
-    protected static final String TRUSTED_ISSUER =
-        "org.apache.cxf.fediz.tomcat.TRUSTED_ISSUER";
+    public static final String SECURITY_TOKEN = "org.apache.fediz.SECURITY_TOKEN";
+
+    protected static final String TRUSTED_ISSUER = "org.apache.cxf.fediz.tomcat.TRUSTED_ISSUER";
+
+    //    /**
+    //     * IssuerURL
+    //     */
+    //    protected String issuerURL = null;
+    //
+    //    /**
+    //     * Requested Authentication type. See
+    //     * org.apache.cxf.fediz.tomcat.WsFedConstants.AUTH_TYPE_*
+    //     */
+    //    protected URI authenticationType = null;
+    //
+    //    /**
+    //     * Trusted Issuer Name
+    //     */
+    //    protected String trustedIssuer = null;
+    //
+    //    /**
+    //     * Truststore file
+    //     */
+    //    protected String truststoreFile = null;
+    //
+    //    /**
+    //     * Truststore password
+    //     */
+    //    protected String truststorePassword = null;
+    //
+    //    /**
+    //     * Role URI in Claim
+    //     */
+    //    protected String roleClaimURI = null;
+    //
+    //    /**
+    //     * Role delimiter in claim value
+    //     */
+    //    protected String roleDelimiter = ",";
 
     /**
-     * IssuerURL
+     * Fediz Configuration file
      */
-    protected String issuerURL = null;
+    protected String configFile = null;
 
-    /**
-     * Requested Authentication type.
-     * See org.apache.cxf.fediz.tomcat.WsFedConstants.AUTH_TYPE_*
-     */   
-    protected URI authenticationType = null;
+    //    /**
+    //     * Role delimiter in claim value
+    //     */
+    //    protected CallbackHandler issuerCallbackHandler = null;
 
-    /**
-     * Trusted Issuer Name
-     */
-    protected String trustedIssuer = null;
-
-
-    /**
-     * Truststore file
-     */
-    protected String truststoreFile = null;
-
-
-    /**
-     * Truststore password
-     */
-    protected String truststorePassword = null;
-
-
-
-    /**
-     * Role URI in Claim
-     */
-    protected String roleClaimURI = null;
-
-    /**
-     * Role delimiter in claim value
-     */
-    protected String roleDelimiter = ",";
-    
-    
-    /**
-     * Role delimiter in claim value
-     */
-    protected CallbackHandler issuerCallbackHandler = null;
-
+    private FederationConfigurator configurator = null;
 
     public FederationAuthenticator() {
         log.debug("WsFedAuthenticator()");
@@ -113,123 +107,154 @@ public class FederationAuthenticator extends FormAuthenticator {
         return (info);
     }
 
+    //    /**
+    //     * Return the callback handler to figure out the IDP url
+    //     */
+    //    public CallbackHandler getIssuerCallbackHandler() {
+    //        return issuerCallbackHandler;
+    //    }
+    //
+    //    /**
+    //     * Set the callback handler class to figure out the IDP url
+    //     */
+    //    public void setIssuerCallbackHandler(String issuerCallbackHandler) {
+    //
+    //        try {
+    //            this.issuerCallbackHandler = (CallbackHandler) Thread
+    //                    .currentThread().getContextClassLoader()
+    //                    .loadClass(issuerCallbackHandler).newInstance();
+    //        } catch (Throwable ex) {
+    //            log.fatal("Callback handler not intialized: " + ex.getMessage());
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Return the character encoding to use to read the username and password.
+    //     */
+    //    public String getIssuerURL() {
+    //        return issuerURL;
+    //    }
+    //
+    //    /**
+    //     * Set the character encoding to be used to read the username and password.
+    //     */
+    //    public void setIssuerURL(String issuerURL) {
+    //        this.issuerURL = issuerURL;
+    //    }
+    //
+    //    /**
+    //     * Return the requested authentication type.
+    //     */
+    //    public URI getAuthenticationType() {
+    //        return authenticationType;
+    //    }
+    //
+    //    /**
+    //     * Set the requested authentication type.
+    //     */
+    //    public void setAuthenticationType(String authenticationType) {
+    //        FederationConstants.AUTH_TYPE_MAP.containsKey(authenticationType);
+    //        this.authenticationType = FederationConstants.AUTH_TYPE_MAP
+    //                .get(authenticationType);
+    //    }
+    //
+    //    public String getTruststorePassword() {
+    //        return truststorePassword;
+    //    }
+    //
+    //    public void setTruststorePassword(String truststorePassword) {
+    //        this.truststorePassword = truststorePassword;
+    //    }
+    //
+    //    public String getTruststoreFile() {
+    //        return truststoreFile;
+    //    }
+    //
+    //    public void setTruststoreFile(String truststoreFile) {
+    //        this.truststoreFile = truststoreFile;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     */
+    //    public String getRoleClaimURI() {
+    //        return this.roleClaimURI;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     */
+    //    public void setRoleClaimURI(String roleClaimURI) {
+    //        this.roleClaimURI = roleClaimURI;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     */
+    //    public String getRoleDelimiter() {
+    //        return this.roleDelimiter;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     */
+    //    public void setRoleDelimiter(String roleDelimiter) {
+    //        this.roleDelimiter = roleDelimiter;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     */
+    //    public String getTrustedIssuer() {
+    //        return this.trustedIssuer;
+    //    }
+    //
+    //    /**
+    //     * 
+    //     */
+    //    public void setTrustedIssuer(String trustedIssuer) {
+    //        this.trustedIssuer = trustedIssuer;
+    //    }
 
-    /**
-     * Return the callback handler to figure out the IDP url
-     */
-    public CallbackHandler getIssuerCallbackHandler() {
-        return issuerCallbackHandler;
+    public String getConfigFile() {
+        return configFile;
     }
 
-
-    /**
-     * Set the callback handler class to figure out the IDP url 
-     */
-    public void setIssuerCallbackHandler(String issuerCallbackHandler) {
-        
-        try {
-            this.issuerCallbackHandler = (CallbackHandler)Thread.currentThread().getContextClassLoader().loadClass(issuerCallbackHandler).newInstance();
-        } catch (Throwable ex) {
-            log.fatal("Callback handler not intialized: " + ex.getMessage());
-        }
+    public void setConfigFile(String configFile) {
+        this.configFile = configFile;
     }
-
-    
-    /**
-     * Return the character encoding to use to read the username and password.
-     */
-    public String getIssuerURL() {
-        return issuerURL;
-    }
-
-
-    /**
-     * Set the character encoding to be used to read the username and password. 
-     */
-    public void setIssuerURL(String issuerURL) {
-        this.issuerURL = issuerURL;
-    }
-
-    /**
-     * Return the requested authentication type.
-     */
-    public URI getAuthenticationType() {
-        return authenticationType;
-    }
-
-    /**
-     * Set the requested authentication type.
-     */
-    public void setAuthenticationType(String authenticationType) {
-        FederationConstants.AUTH_TYPE_MAP.containsKey(authenticationType);
-        this.authenticationType = FederationConstants.AUTH_TYPE_MAP.get(authenticationType);
-    }
-
-    public String getTruststorePassword() {
-        return truststorePassword;
-    }
-
-    public void setTruststorePassword(String truststorePassword) {
-        this.truststorePassword = truststorePassword;
-    }
-
-
-    public String getTruststoreFile() {
-        return truststoreFile;
-    }
-
-    public void setTruststoreFile(String truststoreFile) {
-        this.truststoreFile = truststoreFile;
-    }
-
-    /**
-     * 
-     */
-    public String getRoleClaimURI() {
-        return this.roleClaimURI;
-    }
-
-    /**
-     * 
-     */
-    public void setRoleClaimURI(String roleClaimURI) {
-        this.roleClaimURI = roleClaimURI;
-    }
-
-    /**
-     * 
-     */
-    public String getRoleDelimiter() {
-        return this.roleDelimiter;
-    }
-
-    /**
-     * 
-     */
-    public void setRoleDelimiter(String roleDelimiter) {
-        this.roleDelimiter = roleDelimiter;
-    }
-
-
-    /**
-     * 
-     */
-    public String getTrustedIssuer() {
-        return this.trustedIssuer;
-    }
-
-    /**
-     * 
-     */
-    public void setTrustedIssuer(String trustedIssuer) {
-        this.trustedIssuer = trustedIssuer;
-    }
-
-
 
     @Override
-    public void invoke(Request request, Response response)
-    throws IOException, ServletException {
+    protected synchronized void startInternal() throws LifecycleException {
+
+        try {
+            configurator = new FederationConfigurator();
+            File f = new File(getConfigFile());
+            configurator.loadConfig(f);
+        } catch (JAXBException e) {
+            throw new LifecycleException("Failed to load Fediz configuration",
+                    e);
+        }
+        super.startInternal();
+
+    }
+
+    private FederationContext getContextConfiguration(String contextName) {
+        if (configurator == null) {
+            throw new IllegalStateException("No Fediz configuration available");
+        }
+        FederationContext config = configurator
+        .getFederationContext(contextName);
+        if (config == null) {
+            throw new IllegalStateException(
+                    "No Fediz configuration for context :" + contextName);
+        }
+        return config;
+    }
+
+    @Override
+    public void invoke(Request request, Response response) throws IOException,
+    ServletException {
 
         log.debug("WsFedAuthenticator:invoke()");
         super.invoke(request, response);
@@ -246,15 +271,14 @@ public class FederationAuthenticator extends FormAuthenticator {
 
         // Have we already authenticated someone?
         Principal principal = request.getUserPrincipal();
-        //String ssoId = (String) request.getNote(Constants.REQ_SSOID_NOTE);
+        // String ssoId = (String) request.getNote(Constants.REQ_SSOID_NOTE);
         if (principal != null) {
             if (log.isDebugEnabled())
-                log.debug("Already authenticated '" +
-                        principal.getName() + "'");
+                log.debug("Already authenticated '" + principal.getName() + "'");
             // Associate the session with any existing SSO session
             /*
-               if (ssoId != null)
-                associate(ssoId, request.getSessionInternal(true));
+             * if (ssoId != null) associate(ssoId,
+             * request.getSessionInternal(true));
              */
 
             // Check whether security token still valid
@@ -262,7 +286,8 @@ public class FederationAuthenticator extends FormAuthenticator {
             if (session == null) {
                 log.debug("Session should not be null after authentication");
             } else {
-                FederationResponse wfRes = (FederationResponse)session.getNote(FEDERATION_NOTE);
+                FederationResponse wfRes = (FederationResponse) session
+                .getNote(FEDERATION_NOTE);
 
                 Date tokenExpires = wfRes.getTokenExpires();
                 if (tokenExpires == null) {
@@ -270,7 +295,7 @@ public class FederationAuthenticator extends FormAuthenticator {
                     return (true);
                 }
                 Calendar cal = Calendar.getInstance();
-                if ( cal.getTime().after(wfRes.getTokenExpires()) ) {
+                if (cal.getTime().after(wfRes.getTokenExpires())) {
                     log.debug("Token already expired. Clean up and redirect");
 
                     session.removeNote(FEDERATION_NOTE);
@@ -279,7 +304,8 @@ public class FederationAuthenticator extends FormAuthenticator {
                     request.getSession().removeAttribute(SECURITY_TOKEN);
 
                     if (log.isDebugEnabled())
-                        log.debug("Save request in session '" + session.getIdInternal() + "'");
+                        log.debug("Save request in session '"
+                                + session.getIdInternal() + "'");
                     try {
                         saveRequest(request, session);
                     } catch (IOException ioe) {
@@ -288,7 +314,8 @@ public class FederationAuthenticator extends FormAuthenticator {
                                 sm.getString("authenticator.requestBodyTooBig"));
                         return (false);
                     }
-                    redirectToLoginPage(request, response, config);
+                    FederationProcessor wfProc = new FederationProcessorImpl();
+                    redirectToIssuer(request, response, wfProc);
 
                     return (false);
                 }
@@ -298,17 +325,16 @@ public class FederationAuthenticator extends FormAuthenticator {
         }
 
         // Is this the re-submit of the original request URI after successful
-        // authentication?  If so, forward the *original* request instead.
+        // authentication? If so, forward the *original* request instead.
         if (matchRequest(request)) {
             session = request.getSessionInternal(true);
             if (log.isDebugEnabled())
                 log.debug("Restore request from session '"
-                        + session.getIdInternal() 
-                        + "'");
-            principal = (Principal)session.getNote(Constants.FORM_PRINCIPAL_NOTE);
-            register(request, response, principal, FederationConstants.WSFED_METHOD,
-                    null,
-                    null);
+                        + session.getIdInternal() + "'");
+            principal = (Principal) session
+            .getNote(Constants.FORM_PRINCIPAL_NOTE);
+            register(request, response, principal,
+                    FederationConstants.WSFED_METHOD, null, null);
 
             if (restoreRequest(request, session)) {
                 if (log.isDebugEnabled())
@@ -323,21 +349,20 @@ public class FederationAuthenticator extends FormAuthenticator {
         }
 
         // Acquire references to objects we will need to evaluate
-        /*        
-        MessageBytes uriMB = MessageBytes.newInstance();
-        CharChunk uriCC = uriMB.getCharChunk();
-        uriCC.setLimit(-1);
-         */        
-        //String contextPath = request.getContextPath();
+        /*
+         * MessageBytes uriMB = MessageBytes.newInstance(); CharChunk uriCC =
+         * uriMB.getCharChunk(); uriCC.setLimit(-1);
+         */
+        // String contextPath = request.getContextPath();
         String requestURI = request.getDecodedRequestURI();
-
 
         String wa = request.getParameter("wa");
         // Unauthenticated -> redirect
         if (wa == null) {
             session = request.getSessionInternal(true);
             if (log.isDebugEnabled())
-                log.debug("Save request in session '" + session.getIdInternal() + "'");
+                log.debug("Save request in session '" + session.getIdInternal()
+                        + "'");
             try {
                 saveRequest(request, session);
             } catch (IOException ioe) {
@@ -346,7 +371,8 @@ public class FederationAuthenticator extends FormAuthenticator {
                         sm.getString("authenticator.requestBodyTooBig"));
                 return (false);
             }
-            redirectToLoginPage(request, response, config);
+            FederationProcessor wfProc = new FederationProcessorImpl();
+            redirectToIssuer(request, response, wfProc);
             return (false);
         }
 
@@ -354,21 +380,21 @@ public class FederationAuthenticator extends FormAuthenticator {
         // If failed, redirect to the error page if they are not correct
         String wresult = request.getParameter("wresult");
         FederationResponse wfRes = null;
-        if ( wa.equals(FederationConstants.ACTION_SIGNIN) ) {
-            if (log.isDebugEnabled())
+        if (wa.equals(FederationConstants.ACTION_SIGNIN)) {
+            if (log.isDebugEnabled()) {
                 log.debug("SignIn request found");
-            log.debug("SignIn action...");
+                log.debug("SignIn action...");
+            }
 
             if (wresult == null) {
                 if (log.isDebugEnabled())
                     log.debug("SignIn request must contain wresult");
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 return (false);
-            }
-            else {
+            } else {
                 request.getResponse().sendAcknowledgement();
-                //processSignInRequest
-                if (log.isDebugEnabled()){
+                // processSignInRequest
+                if (log.isDebugEnabled()) {
                     log.debug("Process SignIn request");
                     log.debug("wresult=\n" + wresult);
                 }
@@ -376,79 +402,92 @@ public class FederationAuthenticator extends FormAuthenticator {
                 FederationRequest wfReq = new FederationRequest();
                 wfReq.setWa(wa);
                 wfReq.setWresult(wresult);
-                //wfReq.setWtrealm(wtrealm);
 
-                FederationConfiguration fedConfig = new FederationConfiguration();
-                
-                // Has the callback handler returned a trusted issuer, stored in session
-                session = request.getSessionInternal();
-                String trustedIssuer = null;
-                
-                if (session != null) {
-                    trustedIssuer = (String)session.getNote(TRUSTED_ISSUER);
-                    if ( trustedIssuer == null || trustedIssuer.length() == 0) {
-                        trustedIssuer = this.getTrustedIssuer();
-                    } else {
-                        log.debug("Trusted issuer cached in session");
-                        session.removeNote(TRUSTED_ISSUER);
-                    }
-                } else {
-                    log.debug("request session null");
+                String contextName = request.getServletContext().getContextPath();
+                if (contextName == null || contextName.isEmpty()) {
+                    contextName = "/";
                 }
-                              
-                fedConfig.setTrustedIssuer(trustedIssuer);
-                log.info("Trusted issuer: " + trustedIssuer);
-                
-                fedConfig.setRoleDelimiter(this.getRoleDelimiter());
-                if (this.getRoleClaimURI() == null || this.getRoleClaimURI().length() == 0) {
-                    fedConfig.setRoleURI(FederationConstants.DEFAULT_ROLE_URI);
-                }
-                else {
-                    fedConfig.setRoleURI(URI.create(this.getRoleClaimURI()));
-                }
+                FederationContext fedConfig = getContextConfiguration(contextName);
 
+                // Has the callback handler returned a trusted issuer, stored in
+                // session
+//                session = request.getSessionInternal();
+//                String trustedIssuer = null;
+//
+//                //[TODO] How to cache trusted issuer from FederationProcessor?
+//                if (session != null) {
+//                    trustedIssuer = (String) session.getNote(TRUSTED_ISSUER);
+//                    if (trustedIssuer == null || trustedIssuer.length() == 0) {
+//                        trustedIssuer = ((FederationProtocolType)fedConfig.getProtocol()).getIssuer();
+//                    } else {
+//                        log.debug("Trusted issuer cached in session");
+//                        session.removeNote(TRUSTED_ISSUER);
+//                    }
+//                } else {
+//                    log.debug("request session null");
+//                }
 
-                if (this.getTruststoreFile() == null || this.getTruststoreFile().length() == 0) {
-                    log.error("Truststore file configuration must be checked before redirect to IDP");
-                    //TODO would an exception not be the better solution here ?
-                    return false;
-                }
-                if (this.getTruststorePassword() == null || this.getTruststorePassword().length() == 0) {
-                    log.error("Truststore password configuration must be checked before redirect to IDP");
-                    //TODO would an exception not be the better solution here ?
-                    return false;
-                }
-                else {
-                    if ( (new File(getTruststoreFile())).exists() ) {
-                        fedConfig.setTrustStoreFile(this.getTruststoreFile());
-                    } else {
-                        String catalinaHome = System.getProperty("catalina.home");
-                        if (catalinaHome != null && catalinaHome.length() > 0) {
-
-                            String fqTruststoreFile = catalinaHome.concat(File.separator + getTruststoreFile());
-                            this.setTruststoreFile(fqTruststoreFile);
-                            fedConfig.setTrustStoreFile(this.getTruststoreFile());
-                        }
-                        else {
-                            log.error("Truststore file configuration not valid");
-                            return false;
-                        }
-                    }
-
-                    fedConfig.setTrustStoreFile(this.getTruststoreFile());
-                    fedConfig.setTrustStorePassword(this.getTruststorePassword());
-                    if (log.isDebugEnabled()) {
-                        log.debug("Truststore file: " + fedConfig.getTrustStoreFile());
-                        log.debug("Truststore password: " + fedConfig.getTrustStorePassword());
-                    }
-                }
-
+                // fedConfig.setTrustedIssuer(trustedIssuer);
+                // log.info("Trusted issuer: " + trustedIssuer);
+                //
+                // fedConfig.setRoleDelimiter(this.getRoleDelimiter());
+                // if (this.getRoleClaimURI() == null
+                // || this.getRoleClaimURI().length() == 0) {
+                // fedConfig.setRoleURI(FederationConstants.DEFAULT_ROLE_URI);
+                // } else {
+                // fedConfig.setRoleURI(URI.create(this.getRoleClaimURI()));
+                // }
+                //
+                // if (this.getTruststoreFile() == null
+                // || this.getTruststoreFile().length() == 0) {
+                // log.error("Truststore file configuration must be checked before redirect to IDP");
+                // // TODO would an exception not be the better solution here ?
+                // return false;
+                // }
+                // if (this.getTruststorePassword() == null
+                // || this.getTruststorePassword().length() == 0) {
+                // log.error("Truststore password configuration must be checked before redirect to IDP");
+                // // TODO would an exception not be the better solution here ?
+                // return false;
+                // } else {
+                // if ((new File(getTruststoreFile())).exists()) {
+                // fedConfig.setTrustStoreFile(this.getTruststoreFile());
+                // } else {
+                // String catalinaHome = System
+                // .getProperty("catalina.home");
+                // if (catalinaHome != null && catalinaHome.length() > 0) {
+                //
+                // String fqTruststoreFile = catalinaHome
+                // .concat(File.separator
+                // + getTruststoreFile());
+                // this.setTruststoreFile(fqTruststoreFile);
+                // fedConfig.setTrustStoreFile(this
+                // .getTruststoreFile());
+                // } else {
+                // log.error("Truststore file configuration not valid");
+                // return false;
+                // }
+                // }
+                //
+                // fedConfig.setTrustStoreFile(this.getTruststoreFile());
+                // fedConfig.setTrustStorePassword(this
+                // .getTruststorePassword());
+                // if (log.isDebugEnabled()) {
+                // log.debug("Truststore file: "
+                // + fedConfig.getTrustStoreFile());
+                // log.debug("Truststore password: "
+                // + fedConfig.getTrustStorePassword());
+                // }
+                // }
 
                 FederationProcessor wfProc = new FederationProcessorImpl();
                 wfRes = wfProc.processRequest(wfReq, fedConfig);
 
-                if ( wfRes.getAudience() != null && request.getRequestURL().indexOf(wfRes.getAudience()) == -1 ) {
-                    log.debug("Audience doesn't match with request URL [" + wfRes.getAudience() + "]  [" + request.getRequestURL() + "]");
+                if (wfRes.getAudience() != null
+                        && request.getRequestURL().indexOf(wfRes.getAudience()) == -1) {
+                    log.debug("Audience doesn't match with request URL ["
+                            + wfRes.getAudience() + "]  ["
+                            + request.getRequestURL() + "]");
                 }
 
                 List<String> roles = wfRes.getRoles();
@@ -457,30 +496,27 @@ public class FederationAuthenticator extends FormAuthenticator {
                     roles.add(new String("Authenticated"));
                 }
 
-                principal = new FederationPrincipal(wfRes.getUsername(), roles, wfRes.getClaims());
+                principal = new FederationPrincipalImpl(wfRes.getUsername(), roles,
+                        wfRes.getClaims());
 
-                //[TODO] Cache lifetime (in session), token (in session/TLS), ?audience?
-                //[TODO] clocksqew
+                // [TODO] Cache lifetime (in session), token (in session/TLS),
+                // ?audience?
+                // [TODO] clocksqew
             }
-        }
-        else {
+        } else {
             log.error("Not supported action found in parameter wa: " + wa);
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return (false);
         }
 
-
-
         /*
-        Realm realm = context.getRealm();
-        if (characterEncoding != null) {
-            request.setCharacterEncoding(characterEncoding);
-
-        String username = request.getParameter(Constants.FORM_USERNAME);
-        String password = request.getParameter(Constants.FORM_PASSWORD);
-        if (log.isDebugEnabled())
-            log.debug("Authenticating username '" + username + "'");
-        principal = realm.authenticate(username, password);
+         * Realm realm = context.getRealm(); if (characterEncoding != null) {
+         * request.setCharacterEncoding(characterEncoding);
+         * 
+         * String username = request.getParameter(Constants.FORM_USERNAME);
+         * String password = request.getParameter(Constants.FORM_PASSWORD); if
+         * (log.isDebugEnabled()) log.debug("Authenticating username '" +
+         * username + "'"); principal = realm.authenticate(username, password);
          */
         if (principal == null) {
             forwardToErrorPage(request, response, config);
@@ -490,16 +526,16 @@ public class FederationAuthenticator extends FormAuthenticator {
         if (log.isDebugEnabled()) {
             log.debug("Authentication of '" + principal + "' was successful");
         }
-        //context.addServletContainerInitializer(sci, classes)
-        //session.addSessionListener(listener)
-        //HttpSessionAttributeListener
+        // context.addServletContainerInitializer(sci, classes)
+        // session.addSessionListener(listener)
+        // HttpSessionAttributeListener
 
         if (session == null)
             session = request.getSessionInternal(false);
         if (session == null) {
             if (containerLog.isDebugEnabled())
-                containerLog.debug
-                ("User took so long to log on the session expired");
+                containerLog
+                .debug("User took so long to log on the session expired");
             if (landingPage == null) {
                 response.sendError(HttpServletResponse.SC_REQUEST_TIMEOUT,
                         sm.getString("authenticator.sessionExpired"));
@@ -527,9 +563,9 @@ public class FederationAuthenticator extends FormAuthenticator {
         request.getSession(true).setAttribute(SECURITY_TOKEN, wfRes.getToken());
 
         /*
-        // Save the username and password as well
-        session.setNote(Constants.SESS_USERNAME_NOTE, username);
-        session.setNote(Constants.SESS_PASSWORD_NOTE, password);
+         * // Save the username and password as well
+         * session.setNote(Constants.SESS_USERNAME_NOTE, username);
+         * session.setNote(Constants.SESS_PASSWORD_NOTE, password);
          */
         // Redirect the user to the original request URI (which will cause
         // the original request to be restored)
@@ -564,111 +600,133 @@ public class FederationAuthenticator extends FormAuthenticator {
     /**
      * Called to redirect to the login page
      * 
-     * @param request Request we are processing
-     * @param response Response we are populating
-     * @param config    Login configuration describing how authentication
-     *              should be performed
-     * @throws IOException  If the forward to the login page fails and the call
-     *                      to {@link HttpServletResponse#sendError(int, String)}
-     *                      throws an {@link IOException}
+     * @param request
+     *            Request we are processing
+     * @param response
+     *            Response we are populating
+     * @param config
+     *            Login configuration describing how authentication should be
+     *            performed
+     * @throws IOException
+     *             If the forward to the login page fails and the call to
+     *             {@link HttpServletResponse#sendError(int, String)} throws an
+     *             {@link IOException}
      */
-    protected void redirectToLoginPage(Request request,
-            HttpServletResponse response, LoginConfig config)
+    protected void redirectToIssuer(Request request,
+            HttpServletResponse response, FederationProcessor processor)
     throws IOException {
 
-        String redirectURL = null;
-        if (this.getIssuerCallbackHandler() != null) {
-            IDPCallback callback = new IDPCallback(request);
-            try {
-                this.getIssuerCallbackHandler().handle(new Callback[]{callback});
-                redirectURL = callback.getIssuerUrl().toString();
-                String trustedIssuer = callback.getTrustedIssuer();
-                if (trustedIssuer != null && trustedIssuer.length() > 0) {
-                    request.getSessionInternal().setNote(TRUSTED_ISSUER, trustedIssuer);
-                }                
-            } catch (Exception ex) {
-                log.error("Failed to handle callback: " + ex.getMessage());
-            }            
-        } else {
-            String issuerURL = getIssuerURL();
-            if (issuerURL != null && issuerURL.length() > 0) {
-                redirectURL = issuerURL;
-            }
+        String contextName = request.getServletContext().getContextPath();
+        if (contextName == null || contextName.isEmpty()) {
+            contextName = "/";
         }
-        log.info("Issuer url: " + redirectURL);
-        
-        
-        String loginPage = config.getLoginPage();
+        FederationContext fedCtx = this.configurator.getFederationContext(contextName);
+        String redirectURL = processor.createSignInRequest(request, fedCtx);
         if (redirectURL == null) {
-            if (loginPage != null &&  loginPage.length() > 0) {
-                redirectURL = loginPage;
-            } else {
-                String msg = sm.getString("formAuthenticator.noLoginPage",
-                        context.getName());
-                log.warn(msg);
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                        msg);
-                return;
-            }
-        }
-        StringBuilder sb = new StringBuilder();
-
-        //StringBuilder sb = new StringBuilder(redirectURL);
-        //sb.append('?');
-
-        sb.append(FederationConstants.PARAM_ACTION).append('=').append(FederationConstants.ACTION_SIGNIN);
-
-        sb.append('&').append(FederationConstants.PARAM_REPLY).append('=');
-        sb.append(URLEncoder.encode(request.getRequestURL().toString(), "UTF-8"));       	
-
-        String realm = null;
-        String contextPath = request.getContextPath();
-        String requestUrl = request.getRequestURL().toString();
-        String requestPath = new URL(requestUrl).getPath();
-        
-        // Cut request path of request url and add context path if not ROOT
-        if (requestPath != null && requestPath.length() > 0) {
-            int lastIndex = requestUrl.lastIndexOf(requestPath);
-            realm = requestUrl.substring(0, lastIndex);
+            log.warn("Failed to create SignInRequest.");
+            response.sendError(
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignInRequest.");
         } else {
-            realm = requestUrl;
+            response.sendRedirect(redirectURL);
         }
-        if (contextPath != null && contextPath.length() > 0) {
-            //contextPath contains starting slash
-            realm = realm + contextPath + "/"; 
-        } else {
-            realm = realm + "/";
-        }
-        log.debug("wtrealm=" + realm);
-        
-        StringBuffer realmSb = new StringBuffer(request.getScheme());
-        realmSb.append("://").append(request.getServerName()).
-        append(":").append(request.getServerPort()).
-        append(request.getContextPath());
-        sb.append('&').append(FederationConstants.PARAM_TREALM).append('=').append(URLEncoder.encode(realm, "UTF-8"));
-
-        //[TODO] Current time, wct
-
-        //        if (false) {
-        //        	sb.append("&");
-        //        	sb.append("wfresh=jjjj"); 
-        //        }
-        //        if (false) {
-        //        	sb.append("&");
-        //        	sb.append("wauth=jjjj"); 
-        //        }
-        //        if (false) {
-        //        	sb.append("&");wct
-        //        	sb.append("wreq=jjjj"); 
-        //        }
-        //        if (false) {
-        //    	    sb.append("&");
-        //    	    sb.append("wct=").append("jjjj");
-        //        }
 
 
-        response.sendRedirect(redirectURL + "?" + sb.toString());
+        //        if (this.getIssuerCallbackHandler() != null) {
+        //            org.apache.cxf.fediz.core.spi.IDPCallback callback = new org.apache.cxf.fediz.core.spi.IDPCallback(
+        //                    request);
+        //            try {
+        //                this.getIssuerCallbackHandler().handle(
+        //                        new Callback[] { callback });
+        //                redirectURL = callback.getIssuerUrl().toString();
+        //                String trustedIssuer = callback.getTrustedIssuer();
+        //                if (trustedIssuer != null && trustedIssuer.length() > 0) {
+        //                    request.getSessionInternal().setNote(TRUSTED_ISSUER,
+        //                            trustedIssuer);
+        //                }
+        //            } catch (Exception ex) {
+        //                log.error("Failed to handle callback: " + ex.getMessage());
+        //            }
+        //        } else {
+        //            String issuerURL = ((FederationProtocolType) fedCtx.getProtocol())
+        //                    .getIssuer();
+        //            if (issuerURL != null && issuerURL.length() > 0) {
+        //                redirectURL = issuerURL;
+        //            }
+        //        }
+        //        log.info("Issuer url: " + redirectURL);
+        //
+        //        String loginPage = config.getLoginPage();
+        //        if (redirectURL == null) {
+        //            if (loginPage != null && loginPage.length() > 0) {
+        //                redirectURL = loginPage;
+        //            } else {
+        //                String msg = sm.getString("formAuthenticator.noLoginPage",
+        //                        context.getName());
+        //                log.warn(msg);
+        //                response.sendError(
+        //                        HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
+        //                return;
+        //            }
+        //        }
+        //        StringBuilder sb = new StringBuilder();
+        //
+        //        // StringBuilder sb = new StringBuilder(redirectURL);
+        //        // sb.append('?');
+        //
+        //        sb.append(FederationConstants.PARAM_ACTION).append('=')
+        //                .append(FederationConstants.ACTION_SIGNIN);
+        //
+        //        sb.append('&').append(FederationConstants.PARAM_REPLY).append('=');
+        //        sb.append(URLEncoder
+        //                .encode(request.getRequestURL().toString(), "UTF-8"));
+        //
+        //        String realm = null;
+        //        String contextPath = request.getContextPath();
+        //        String requestUrl = request.getRequestURL().toString();
+        //        String requestPath = new URL(requestUrl).getPath();
+        //
+        //        // Cut request path of request url and add context path if not ROOT
+        //        if (requestPath != null && requestPath.length() > 0) {
+        //            int lastIndex = requestUrl.lastIndexOf(requestPath);
+        //            realm = requestUrl.substring(0, lastIndex);
+        //        } else {
+        //            realm = requestUrl;
+        //        }
+        //        if (contextPath != null && contextPath.length() > 0) {
+        //            // contextPath contains starting slash
+        //            realm = realm + contextPath + "/";
+        //        } else {
+        //            realm = realm + "/";
+        //        }
+        //        log.debug("wtrealm=" + realm);
+        //
+        //        StringBuffer realmSb = new StringBuffer(request.getScheme());
+        //        realmSb.append("://").append(request.getServerName()).append(":")
+        //                .append(request.getServerPort())
+        //                .append(request.getContextPath());
+        //        sb.append('&').append(FederationConstants.PARAM_TREALM).append('=')
+        //                .append(URLEncoder.encode(realm, "UTF-8"));
+        //
+        //        // [TODO] Current time, wct
+        //
+        //        // if (false) {
+        //        // sb.append("&");
+        //        // sb.append("wfresh=jjjj");
+        //        // }
+        //        // if (false) {
+        //        // sb.append("&");
+        //        // sb.append("wauth=jjjj");
+        //        // }
+        //        // if (false) {
+        //        // sb.append("&");wct
+        //        // sb.append("wreq=jjjj");
+        //        // }
+        //        // if (false) {
+        //        // sb.append("&");
+        //        // sb.append("wct=").append("jjjj");
+        //        // }
+
+
     }
-
 
 }

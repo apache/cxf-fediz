@@ -24,21 +24,20 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-
 /**
- * This class provides the functionality to match a given X509Certificate against a list of
- * regular expressions.
+ * This class provides the functionality to match a given X509Certificate
+ * against a list of regular expressions.
  */
 public class CertConstraintsParser {
-    
+
     /**
      * a collection of compiled regular expression patterns for the subject DN
      */
     private Collection<Pattern> subjectDNPatterns = new ArrayList<Pattern>();
-    
+
     /**
-     * Set a list of Strings corresponding to regular expression constraints on the subject DN
-     * of a certificate
+     * Set a list of Strings corresponding to regular expression constraints on
+     * the subject DN of a certificate
      */
     public void setSubjectConstraints(List<String> constraints) {
         if (constraints != null) {
@@ -47,25 +46,23 @@ public class CertConstraintsParser {
                 try {
                     subjectDNPatterns.add(Pattern.compile(constraint.trim()));
                 } catch (PatternSyntaxException ex) {
-                    //LOG.severe(ex.getMessage());
+                    // LOG.severe(ex.getMessage());
                     throw ex;
                 }
             }
         }
     }
-    
+
     /**
-     * @return      true if the certificate's SubjectDN matches the constraints defined in the
-     *              subject DNConstraints; false, otherwise. The certificate subject DN only
-     *              has to match ONE of the subject cert constraints (not all).
+     * @return true if the certificate's SubjectDN matches the constraints
+     *         defined in the subject DNConstraints; false, otherwise. The
+     *         certificate subject DN only has to match ONE of the subject cert
+     *         constraints (not all).
      */
-    public boolean
-    matches(
-        final java.security.cert.X509Certificate cert
-    ) {
+    public boolean matches(final java.security.cert.X509Certificate cert) {
         if (!subjectDNPatterns.isEmpty()) {
             if (cert == null) {
-                //LOG.fine("The certificate is null so no constraints matching was possible");
+                // LOG.fine("The certificate is null so no constraints matching was possible");
                 return false;
             }
             String subjectName = cert.getSubjectX500Principal().getName();
@@ -73,7 +70,8 @@ public class CertConstraintsParser {
             for (Pattern subjectDNPattern : subjectDNPatterns) {
                 final Matcher matcher = subjectDNPattern.matcher(subjectName);
                 if (matcher.matches()) {
-                    //LOG.fine("Subject DN " + subjectName + " matches with pattern " + subjectDNPattern);
+                    // LOG.fine("Subject DN " + subjectName +
+                    // " matches with pattern " + subjectDNPattern);
                     subjectMatch = true;
                     break;
                 }
@@ -82,7 +80,7 @@ public class CertConstraintsParser {
                 return false;
             }
         }
-        
+
         return true;
     }
 }

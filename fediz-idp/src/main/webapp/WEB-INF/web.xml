@@ -22,7 +22,13 @@
 		<init-param>
 			<param-name>sts.wsdl.endpoint</param-name>
 			<param-value>TransportUT_Port</param-value>
-		</init-param>				
+		</init-param>
+<!--		
+		<init-param>
+			<param-name>ws-trust-tokentype</param-name>
+			<param-value>http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV1.1</param-value>
+		</init-param>
+-->		
 	</servlet>
 
 	<servlet-mapping>
