@@ -27,21 +27,21 @@ import org.apache.ws.security.WSPasswordCallback;
 
 public class UsernamePasswordCallbackHandler implements CallbackHandler {
 
-    private Map<String,String> passwords;
+    private Map<String, String> passwords;
 
-    public void setPasswords(Map<String,String> passwords) {
+    public void setPasswords(Map<String, String> passwords) {
         this.passwords = passwords;
     }
 
-    public Map<String,String> getPasswords() {
+    public Map<String, String> getPasswords() {
         return passwords;
     }
 
-    public void handle(Callback[] callbacks) throws IOException,
-    UnsupportedCallbackException {
+    public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
 
-        if (getPasswords() == null || getPasswords().size() == 0)
+        if (getPasswords() == null || getPasswords().size() == 0) {
             return;
+        }
 
         for (int i = 0; i < callbacks.length; i++) {
             if (callbacks[i] instanceof WSPasswordCallback) { // CXF

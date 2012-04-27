@@ -49,15 +49,6 @@
 			</exclusions>
 			-->
         </dependency>        
-        
-        
-        <!--
-        <dependency>
-            <groupId>com.talend.sf</groupId>
-            <artifactId>cxf-sts-core</artifactId>
-            <version>${sts.version}</version>
-        </dependency>
-        -->
    </dependencies>
 
     <build>

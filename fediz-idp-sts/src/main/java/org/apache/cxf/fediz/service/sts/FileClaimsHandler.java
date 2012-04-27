@@ -41,18 +41,20 @@ public class FileClaimsHandler implements ClaimsHandler {
     public static final URI ROLE = 
         URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role");
 
-    private Map<String,Map<String,String>> userClaims = null;
+    private Map<String, Map<String, String>> userClaims = null;
 
-    public void setUserClaims(Map<String,Map<String,String>> userClaims) {
+    public void setUserClaims(Map<String, Map<String, String>> userClaims) {
         this.userClaims = userClaims;
     }
 
-    public Map<String,Map<String,String>> getUserClaims() {
+    public Map<String, Map<String, String>> getUserClaims() {
         return userClaims;
     }
 
     @Override
-    public ClaimCollection retrieveClaimValues(Principal principal, RequestClaimCollection claims, WebServiceContext context, String realm) {
+    public ClaimCollection retrieveClaimValues(
+        Principal principal, RequestClaimCollection claims, WebServiceContext context, String realm
+    ) {
 
         ClaimsParameters params = new ClaimsParameters();
         params.setPrincipal(principal);
