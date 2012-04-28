@@ -8,8 +8,10 @@
        <artifactId>fediz</artifactId>
        <version>0.6-SNAPSHOT</version>
     </parent>
-    <artifactId>fediz-tomcat-example</artifactId>
-    <name>WS Federation Tomcat example</name>
+
+    <groupId>org.apache.cxf.fediz.examples</groupId>
+    <artifactId>simpleWebapp</artifactId>
+    <name>Fediz Webapp simple</name>
     <packaging>war</packaging>
 
    <properties>

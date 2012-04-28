@@ -6,15 +6,13 @@
    <groupId>org.apache.cxf.fediz</groupId>
    <artifactId>fediz</artifactId>
    <version>0.6-SNAPSHOT</version>
-   <name>WS-Federation</name>
+   <name>Fediz</name>
    <packaging>pom</packaging>
 
    <modules>
-      <module>fediz-core</module>
-      <module>fediz-tomcat</module>
-      <module>fediz-tomcat-example</module>
-      <module>fediz-idp</module>
-      <module>fediz-idp-sts</module>
+      <module>plugin</module>
+      <module>services</module>
+      <module>examples</module>
    </modules>
 
    <build>

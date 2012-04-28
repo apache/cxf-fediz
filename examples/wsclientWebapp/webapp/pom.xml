@@ -9,7 +9,7 @@
        <version>0.6-SNAPSHOT</version>
     </parent>
     <artifactId>webapp</artifactId>
-    <name>WS Federation Tomcat example</name>
+    <name>webservice Client Webapp</name>
     <packaging>war</packaging>
 
    <properties>

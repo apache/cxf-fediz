@@ -9,8 +9,8 @@
        <version>0.6-SNAPSHOT</version>
     </parent>
     <groupId>org.apache.cxf.fediz.examples</groupId>
-    <artifactId>fediz-examples</artifactId>
-    <name>WS Federation examples</name>
+    <artifactId>wsclientWebapp</artifactId>
+    <name>Fediz Webapp WebService Client</name>
    <packaging>pom</packaging>
 
    <modules>
