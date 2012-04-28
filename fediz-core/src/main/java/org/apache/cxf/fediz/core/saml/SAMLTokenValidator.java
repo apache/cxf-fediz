@@ -19,11 +19,12 @@ package org.apache.cxf.fediz.core.saml;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -74,9 +75,15 @@ public class SAMLTokenValidator implements TokenValidator {
             FederationContext config) {
 
         try {
-
+            String trustStoreFile = config.getTrustStoreFile();
+            /*
+            File f = new File(trustStoreFile);
+            if (!f.exists() && config.getRelativePath() != null && !config.getRelativePath().isEmpty()) {
+                trustStoreFile = config.getRelativePath().concat(File.separator + config.getTrustStoreFile());
+            }
+            */
             Properties sigProperties = createCryptoProviderProperties(
-                    config.getTrustStoreFile(), config.getTrustStorePassword());
+                    trustStoreFile, config.getTrustStorePassword());
 
             Crypto sigCrypto = CryptoFactory.getInstance(sigProperties);
             RequestData requestData = new RequestData();
@@ -145,10 +152,19 @@ public class SAMLTokenValidator implements TokenValidator {
                     URI claimURI = URI.create(c.getNamespace() + "/"
                             + c.getClaimType());
                     if (roleURI.equals(claimURI)) {
-                        if (delim == null) {
-                            delim = ",";
+                        Object oValue = c.getValue();
+                        if (oValue instanceof String) {
+                            if (delim == null) {
+                                roles = Collections.singletonList((String)oValue);
+                            } else {
+                                roles = parseRoles((String)oValue, delim);
+                            }
+                        } else if (oValue instanceof List<?>) {
+                            List<String> values = (List<String>)oValue;
+                            roles = Collections.unmodifiableList(values);
+                        } else {
+                            throw new IllegalStateException("Invalid value type of Claim value");
                         }
-                        roles = parseRoles(c.getValue(), delim);
                         claims.remove(c);
                         break;
                     }
@@ -180,6 +196,8 @@ public class SAMLTokenValidator implements TokenValidator {
             return Collections.emptyList();
         }
         ClaimCollection collection = new ClaimCollection();
+        Map<String,Claim> claimsMap = new HashMap<String,Claim>();
+        
 
         for (org.opensaml.saml1.core.AttributeStatement statement : attributeStatements) {
             if (LOG.isDebugEnabled()) {
@@ -196,27 +214,23 @@ public class SAMLTokenValidator implements TokenValidator {
                 Claim c = new Claim();
                 c.setIssuer(assertion.getIssuer());
                 c.setClaimType(URI.create(attribute.getAttributeName()));
-                try {
-                    c.setClaimType(new URI(attribute.getAttributeName()));
-                } catch (URISyntaxException e) {
-                    LOG.warn("Invalid attribute name in attributestatement: "
-                            + e.getMessage());
-                    continue;
-                }
+                List<String> valueList = new ArrayList<String>();
                 for (XMLObject attributeValue : attribute.getAttributeValues()) {
                     Element attributeValueElement = attributeValue.getDOM();
                     String value = attributeValueElement.getTextContent();
                     if (LOG.isDebugEnabled()) {
                         LOG.debug(" [" + value + "]");
                     }
-                    c.setValue(value);
-                    collection.add(c);
-                    break;
+                    valueList.add(value);
                 }
+                mergeClaimToMap(claimsMap, c, valueList);
             }
         }
+        collection.addAll(claimsMap.values());
         return collection;
     }
+
+
 
     protected List<Claim> parseClaimsInAssertion(
             org.opensaml.saml2.core.Assertion assertion) {
@@ -230,6 +244,7 @@ public class SAMLTokenValidator implements TokenValidator {
         }
 
         List<Claim> collection = new ArrayList<Claim>();
+        Map<String,Claim> claimsMap = new HashMap<String,Claim>();
 
         for (org.opensaml.saml2.core.AttributeStatement statement : attributeStatements) {
             if (LOG.isDebugEnabled()) {
@@ -244,22 +259,53 @@ public class SAMLTokenValidator implements TokenValidator {
                 Claim c = new Claim();
                 c.setClaimType(URI.create(attribute.getName()));
                 c.setIssuer(assertion.getIssuer().getNameQualifier());
+                
+                List<String> valueList = new ArrayList<String>();
                 for (XMLObject attributeValue : attribute.getAttributeValues()) {
                     Element attributeValueElement = attributeValue.getDOM();
                     String value = attributeValueElement.getTextContent();
                     if (LOG.isDebugEnabled()) {
                         LOG.debug(" [" + value + "]");
                     }
-                    c.setValue(value);
-                    collection.add(c);
-                    break;
+                    valueList.add(value);
                 }
+                mergeClaimToMap(claimsMap, c, valueList);
             }
         }
+        collection.addAll(claimsMap.values());
         return collection;
 
     }
 
+    protected void mergeClaimToMap(Map<String, Claim> claimsMap, Claim c,
+            List<String> valueList) {
+        Claim t = claimsMap.get(c.getClaimType().toString());
+        if (t != null) {
+            //same SAML attribute already processed. Thus Claim object already created.
+            Object oValue = t.getValue();
+            if (oValue instanceof String) {
+                //one child element AttributeValue only
+                List<String> values = new ArrayList<String>();
+                values.add((String)oValue); //add existing value
+                values.addAll(valueList);
+            } else if (oValue instanceof List<?>) {
+                //more than one child element AttributeValue
+                List<String> values = (List<String>)oValue;
+                values.addAll(valueList);
+            } else {
+                throw new IllegalStateException("Invalid value type of Claim value");
+            }
+        } else {
+            if (valueList.size() == 1) {
+                c.setValue(valueList.get(0));
+            } else {
+                c.setValue(valueList);
+            }
+            // Add claim to map
+            claimsMap.put(c.getClaimType().toString(), c);
+        }
+    }
+    
     protected List<String> parseRoles(String value, String delim) {
         List<String> roles = new ArrayList<String>();
         StringTokenizer st = new StringTokenizer(value, delim);

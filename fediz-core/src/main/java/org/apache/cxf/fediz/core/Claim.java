@@ -54,7 +54,7 @@ public class Claim implements Serializable {
     private String issuer;
     private String originalIssuer;
     private Principal principal;
-    private String value;
+    private Object value;
     private URI namespace = ClaimTypes.URI_BASE;
 
     public URI getNamespace() {
@@ -97,11 +97,11 @@ public class Claim implements Serializable {
         this.principal = principal;
     }
 
-    public void setValue(String value) {
+    public void setValue(Object value) {
         this.value = value;
     }
 
-    public String getValue() {
+    public Object getValue() {
         return value;
     }
 

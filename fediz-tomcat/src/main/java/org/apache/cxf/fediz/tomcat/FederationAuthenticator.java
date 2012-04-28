@@ -88,6 +88,7 @@ public class FederationAuthenticator extends FormAuthenticator {
             }
             configurator = new FederationConfigurator();
             configurator.loadConfig(f);
+            log.debug("Fediz configuration read from " + f.getAbsolutePath());
         } catch (JAXBException e) {
             throw new LifecycleException("Failed to load Fediz configuration",
                     e);
@@ -100,11 +101,9 @@ public class FederationAuthenticator extends FormAuthenticator {
         if (configurator == null) {
             throw new IllegalStateException("No Fediz configuration available");
         }
-        FederationContext config = configurator
-        .getFederationContext(contextName);
+        FederationContext config = configurator.getFederationContext(contextName);
         if (config == null) {
-            throw new IllegalStateException(
-                    "No Fediz configuration for context :" + contextName);
+            throw new IllegalStateException("No Fediz configuration for context :" + contextName);
         }
         return config;
     }
@@ -406,15 +405,14 @@ public class FederationAuthenticator extends FormAuthenticator {
     }
 
     /**
-     * Called to redirect to the login page
+     * Called to redirect to the IDP/Issuer
      * 
      * @param request
      *            Request we are processing
      * @param response
      *            Response we are populating
-     * @param config
-     *            Login configuration describing how authentication should be
-     *            performed
+     * @param processor
+     *            FederationProcessor
      * @throws IOException
      *             If the forward to the login page fails and the call to
      *             {@link HttpServletResponse#sendError(int, String)} throws an

@@ -35,6 +35,7 @@ public class FederationConfiguration {
     private boolean detectReplayedTokens = true;
     private long tokenReplayCacheExpirationTime = 0;
     private boolean detectExpiredTokens = true;
+    private String relativePath;
 
     //[TODO] TokenReplayCacheExpirationPeriod
     //[TODO] DetectReplayedTokens
@@ -118,6 +119,12 @@ public class FederationConfiguration {
     }
     public String getTrustStorePassword() {
         return trustStorePassword;
+    }
+    public void setRelativePath(String relativePath) {
+        this.relativePath = relativePath;
+    }
+    public String getRelativePath() {
+        return relativePath;
     }
 
 }
