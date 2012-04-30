@@ -2,11 +2,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-	<parent>
+   <parent>
        <groupId>org.apache.cxf.fediz</groupId>
-       <artifactId>fediz</artifactId>
+       <artifactId>fediz-parent</artifactId>
        <version>0.6-SNAPSHOT</version>
-	</parent>
+       <relativePath>../../parent/pom.xml</relativePath>
+   </parent>
 	<artifactId>fediz-tomcat</artifactId>
 	<name>Apache Fediz Plugin Tomcat</name>
 	<packaging>jar</packaging>
