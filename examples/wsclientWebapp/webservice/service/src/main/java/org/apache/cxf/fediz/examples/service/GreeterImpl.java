@@ -17,8 +17,10 @@
 
 package org.apache.cxf.fediz.examples.service;
 
-import java.util.logging.Logger;
 import java.security.Principal;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Resource;
 import javax.xml.ws.WebServiceContext;
@@ -26,7 +28,7 @@ import org.apache.hello_world_soap_http.Greeter;
 
 public class GreeterImpl implements Greeter {
 
-    private static final Logger LOG = Logger.getLogger(GreeterImpl.class.getPackage().getName());
+    private final static Logger LOG = LoggerFactory.getLogger(GreeterImpl.class.getPackage().getName());
 
     @Resource
     WebServiceContext context = null;

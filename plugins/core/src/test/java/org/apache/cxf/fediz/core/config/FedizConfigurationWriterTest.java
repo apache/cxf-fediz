@@ -19,7 +19,6 @@ public class FedizConfigurationWriterTest {
 
     private static final String ISSUER = "http://url_to_the_issuer";
     private static final String PROTOCOL_VERSION = "1.0.0";
-    private static final String REQUEST = "request value";
     private static final String REPLY = "reply value";
     private static final String TARGET_REALM = "target realm";
     private static final String HOME_REALM_CLASS = "org.apache.fediz.realm.MyHomeRealm.class";
@@ -30,7 +29,6 @@ public class FedizConfigurationWriterTest {
     private static final String KEYSTORE_FILE = "stsstore.jks";
 
     private static final String FILE_TYPE = "file";
-    private static final String RESOURCE_TYPE = "resource";
 
     private static final String KEYSTORE_PASSWORD = "stsspass";
     private static final String AUDIENCE_URI_1 = "http://host_one:port/url";
@@ -132,8 +130,7 @@ public class FedizConfigurationWriterTest {
         jaxbContext.createMarshaller().marshal(configOut, writer);
 
         StringReader reader = new StringReader(writer.toString());
-        FedizConfig configIn = (FedizConfig) jaxbContext.createUnmarshaller()
-                .unmarshal(reader);
+        jaxbContext.createUnmarshaller().unmarshal(reader);
     }
 
     @org.junit.Test

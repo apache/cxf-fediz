@@ -101,27 +101,26 @@ public class FederationContext {
 
     public URI getRoleURI() {
         ProtocolType pt = config.getProtocol();
-        if (pt != null && pt instanceof FederationProtocolType) {
+        if (pt == null) {
+            throw new IllegalConfigurationException("Missing ProtocolType");
+        }
+        if (pt instanceof FederationProtocolType) {
             try {
                 return new URI(((FederationProtocolType) pt).getRoleURI());
             } catch (URISyntaxException e) {
                 throw new IllegalConfigurationException("Invalid Role URI", e);
             }
         }
-        if (pt != null && !(pt instanceof FederationProtocolType)) {
+        else {
             throw new IllegalConfigurationException(
                     "Unknown Protocoltype, only FederationProtocolType is currently suported");
         }
-        if (pt == null) {
-            throw new IllegalConfigurationException("Missing ProtocolType");
-        }
-        return null;
 
     }
 
     public String getRoleDelimiter() {
         ProtocolType pt = config.getProtocol();
-        if (pt != null && pt instanceof FederationProtocolType) {
+        if (pt != null && (pt instanceof FederationProtocolType)) {
             return ((FederationProtocolType) pt).getRoleDelimiter();
         }
         throw new IllegalConfigurationException(
@@ -150,8 +149,7 @@ public class FederationContext {
                     "Only one Trusted Issuer Keystore supported");
         }
         TrustManagersType trustManager = managers.get(0);
-        KeyStoreType storeType = trustManager.getKeyStore();
-        return storeType;
+        return trustManager.getKeyStore();
     }
 
     public void setRelativePath(String relativePath) {

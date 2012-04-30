@@ -26,7 +26,7 @@ import org.w3c.dom.Element;
 
 public class IdpSTSClient extends STSClient {
 
-    private static Logger LOG = LoggerFactory.getLogger(IdpSTSClient.class);
+    private final static Logger LOG = LoggerFactory.getLogger(IdpSTSClient.class);
 
     public IdpSTSClient(Bus b) {
         super(b);

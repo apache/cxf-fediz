@@ -39,7 +39,7 @@ import org.apache.ws.security.util.DOM2Writer;
  */ 
 public class ThreadLocalCallbackHandler implements CallbackHandler {
 
-    private static Logger log = LoggerFactory.getLogger(ThreadLocalCallbackHandler.class);
+    private final static Logger log = LoggerFactory.getLogger(ThreadLocalCallbackHandler.class);
 
 
     public void handle(Callback[] callbacks)

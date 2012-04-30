@@ -44,7 +44,7 @@ import org.w3c.dom.Element;
 
 public class IdpServlet extends HttpServlet {
 
-    private static Logger LOG = LoggerFactory.getLogger(IdpServlet.class);
+    private final static Logger LOG = LoggerFactory.getLogger(IdpServlet.class);
 
     public static final String PARAM_ACTION = "wa";
 
@@ -255,8 +255,7 @@ public class IdpServlet extends HttpServlet {
             if (claims != null) {
                 sts.setClaims(claims);
             }
-            String rstr = sts.requestSecurityTokenResponse(wtrealm);
-            return rstr;
+            return sts.requestSecurityTokenResponse(wtrealm);
         } catch (org.apache.cxf.binding.soap.SoapFault ex) {
             QName faultCode = ex.getFaultCode();
             if (faultCode.equals(STSException.FAILED_AUTH)) {
