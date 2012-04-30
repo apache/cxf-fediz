@@ -9,7 +9,7 @@
        <version>0.6-SNAPSHOT</version>
     </parent>
     <artifactId>fediz-idp</artifactId>
-    <name>Fediz IDP</name>
+    <name>Apache Fediz IDP</name>
     <packaging>war</packaging>
 
     <dependencyManagement>

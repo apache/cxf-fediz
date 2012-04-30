@@ -18,6 +18,7 @@
 package org.apache.cxf.fediz.core;
 
 import org.apache.cxf.fediz.core.config.FederationContext;
+
 import org.w3c.dom.Element;
 
 public interface TokenValidator {

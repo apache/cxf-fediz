@@ -17,6 +17,7 @@
 
 package org.apache.cxf.fediz.core.saml;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.security.cert.X509Certificate;
@@ -76,12 +77,12 @@ public class SAMLTokenValidator implements TokenValidator {
 
         try {
             String trustStoreFile = config.getTrustStoreFile();
-            /*
+            
             File f = new File(trustStoreFile);
             if (!f.exists() && config.getRelativePath() != null && !config.getRelativePath().isEmpty()) {
                 trustStoreFile = config.getRelativePath().concat(File.separator + config.getTrustStoreFile());
             }
-            */
+            
             Properties sigProperties = createCryptoProviderProperties(
                     trustStoreFile, config.getTrustStorePassword());
 

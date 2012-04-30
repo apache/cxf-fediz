@@ -73,7 +73,7 @@ public class FederationProcessorImpl implements FederationProcessor {
 
     @Override
     public FederationResponse processRequest(FederationRequest request,
-            FederationContext config) {
+                                             FederationContext config) {
         FederationResponse response = null;
         if (request.getWa().equals(FederationConstants.ACTION_SIGNIN)) {
             response = this.processSignInRequest(request, config);
@@ -233,7 +233,7 @@ public class FederationProcessorImpl implements FederationProcessor {
 
     @Override
     public String createSignInRequest(HttpServletRequest request,
-            FederationContext config) {
+                                      FederationContext config) {
 
         String redirectURL = null;
         //        if (this.getIssuerCallbackHandler() != null) {

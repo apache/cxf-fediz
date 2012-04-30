@@ -9,7 +9,7 @@
        <version>0.6-SNAPSHOT</version>
     </parent>
     <artifactId>fediz-idp-sts</artifactId>
-    <name>Fediz STS</name>
+    <name>Apache Fediz STS</name>
     <packaging>war</packaging>
 
    <properties>

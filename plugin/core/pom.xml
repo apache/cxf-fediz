@@ -8,7 +8,7 @@
        <version>0.6-SNAPSHOT</version>
    </parent>
    <artifactId>fediz-core</artifactId>
-   <name>Fediz Core</name>
+   <name>Apache Fediz Plugin Core</name>
    <packaging>jar</packaging>
 
     <properties>

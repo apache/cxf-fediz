@@ -32,6 +32,7 @@ public class FederationContext {
 
     private boolean detectExpiredTokens = true;
     private boolean detectReplayedTokens = true;
+    private String relativePath;
 
     public FederationContext(ContextConfig config) {
         this.config = config;
@@ -151,6 +152,14 @@ public class FederationContext {
         TrustManagersType trustManager = managers.get(0);
         KeyStoreType storeType = trustManager.getKeyStore();
         return storeType;
+    }
+
+    public void setRelativePath(String relativePath) {
+        this.relativePath = relativePath;
+    }
+
+    public String getRelativePath() {
+        return relativePath;
     }
 
 }

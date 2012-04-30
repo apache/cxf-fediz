@@ -8,7 +8,7 @@
        <version>0.6-SNAPSHOT</version>
 	</parent>
 	<artifactId>fediz-tomcat</artifactId>
-	<name>Fediz Tomcat plugin</name>
+	<name>Apache Fediz Plugin Tomcat</name>
 	<packaging>jar</packaging>
 
    <properties>
