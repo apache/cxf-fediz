@@ -20,10 +20,40 @@
       <jdk.version>1.6</jdk.version>
       <compiler.fork>false</compiler.fork>
       <cxf.build-utils.version>2.4.1</cxf.build-utils.version>
+
+      <fediz.protect-xmlschema-collections>false</fediz.protect-xmlschema-collections>
+      <fediz.surefire.fork.mode>once</fediz.surefire.fork.mode>
+      <fediz.surefire.format>brief</fediz.surefire.format>
+      <fediz.surefire.usefile>false</fediz.surefire.usefile>
+      <fediz.surefire.parallel.mode />
+      <fediz.surefire.fork.vmargs>-ea</fediz.surefire.fork.vmargs>
+      <fediz.server.launcher.vmargs>-ea</fediz.server.launcher.vmargs>
+      <fediz.surefire.enable.assertions>true</fediz.surefire.enable.assertions>
+      <fediz.compile.flags>-Xlint:unchecked,deprecation,fallthrough,finally</fediz.compile.flags>
+      <fediz.compile.show.deprecation>true</fediz.compile.show.deprecation>
+      <fediz.codegenplugin.forkmode>once</fediz.codegenplugin.forkmode>
+      <fediz.manifest.location>${project.build.outputDirectory}/META-INF/MANIFEST.MF</fediz.manifest.location>
+      <fediz.eclipse.outputDirectory>${basedir}/target/classes</fediz.eclipse.outputDirectory>
+
+      <!-- OSGi related properties -->
+
+      <!-- please maintain alphabetical order here -->
+      <fediz.jaxb21.version>2.1</fediz.jaxb21.version>
+      <fediz.jaxb21.impl.version>2.1.13</fediz.jaxb21.impl.version>
+      <fediz.jaxb21.xjc.version>2.1.13</fediz.jaxb21.xjc.version>
+      <fediz.jaxb22.version>2.2.6</fediz.jaxb22.version>
+      <fediz.jaxb22.impl.version>2.2.5</fediz.jaxb22.impl.version>
+      <fediz.jaxb22.xjc.version>2.2.5</fediz.jaxb22.xjc.version>
+
+      <fediz.checkstyle.extension />
+      <fediz.downloadSources>true</fediz.downloadSources>
+
+      <fediz.pmd.eclipse.ruleset>cxf-pmd-ruleset.xml</fediz.pmd.eclipse.ruleset>
+
+      <fediz.resources.base.path />
    </properties>
 
    <modules>
-      <module>parent</module>
       <module>plugins</module>
       <module>services</module>
       <module>examples</module>
@@ -199,10 +229,57 @@
                     <artifactId>maven-plugin-plugin</artifactId>
                     <version>2.8</version>
                 </plugin>
+                <!-- TODO commented out for now
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <configuration>
+                        <archive>
+                            <manifestEntries>
+                                <Bundle-SymbolicName>${fediz.osgi.symbolic.name}.source</Bundle-SymbolicName>
+                                <Eclipse-SourceBundle>${fediz.osgi.symbolic.name};version="${fediz.osgi.version.clean}"</Eclipse-SourceBundle>
+                            </manifestEntries>
+                        </archive>
+                    </configuration>
+                </plugin>
+                -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-eclipse-plugin</artifactId>
-                    <version>2.8</version>
+                    <configuration>
+                        <outputDirectory>${fediz.eclipse.outputDirectory}</outputDirectory>
+                        <buildcommands>
+                            <java.lang.String>org.eclipse.jdt.core.javabuilder</java.lang.String>
+                            <java.lang.String>net.sf.eclipsecs.core.CheckstyleBuilder</java.lang.String>
+                            <java.lang.String>net.sourceforge.pmd.eclipse.plugin.pmdBuilder</java.lang.String>
+                        </buildcommands>
+                        <projectnatures>
+                            <nature>org.eclipse.jdt.core.javanature</nature>
+                            <nature>net.sf.eclipsecs.core.CheckstyleNature</nature>
+                            <nature>net.sourceforge.pmd.eclipse.plugin.pmdNature</nature>
+                        </projectnatures>
+                        <ajdtVersion>none</ajdtVersion>
+                        <additionalConfig>
+                            <file>
+                                <name>.checkstyle</name>
+                                <location>/cxf-eclipse-checkstyle${fediz.checkstyle.extension}</location>
+                            </file>
+                            <file>
+                                <name>.pmd</name>
+                                <location>/cxf-eclipse-pmd</location>
+                            </file>
+                            <file>
+                                <name>.ruleset</name>
+                                <location>/${fediz.pmd.eclipse.ruleset}</location>
+                            </file>
+                        </additionalConfig>
+                    </configuration>
+                </plugin>
+<!-- Comment out for now
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>2.9.1</version>
                     <dependencies>
                         <dependency>
                             <groupId>org.apache.cxf.build-utils</groupId>
@@ -210,7 +287,120 @@
                             <version>${cxf.build-utils.version}</version>
                         </dependency>
                     </dependencies>
+                    <configuration>
+                        <encoding>UTF-8</encoding>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>validate</id>
+                            <phase>validate</phase>
+                            <configuration>
+                                <configLocation>${fediz.resources.base.path}cxf-checkstyle${fediz.checkstyle.extension}.xml</configLocation>
+                                <consoleOutput>true</consoleOutput>
+                                <failsOnError>true</failsOnError>
+                                <linkXRef>false</linkXRef>
+                                <suppressionsLocation>${fediz.resources.base.path}cxf-checkstyle-suppressions.xml</suppressionsLocation>
+                                <sourceDirectory>${basedir}/src</sourceDirectory>
+                                <excludes>**/archetype-resources/**/*.java</excludes>
+                            </configuration>
+                            <goals>
+                                <goal>checkstyle</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-pmd-plugin</artifactId>
+                    <version>2.7.1</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.apache.cxf.build-utils</groupId>
+                            <artifactId>cxf-buildtools</artifactId>
+                            <version>${cxf.build-utils.version}</version>
+                        </dependency>
+                    </dependencies>
+                    <configuration>
+                        <rulesets>
+                            <ruleset>${fediz.resources.base.path}cxf-pmd-ruleset.xml</ruleset>
+                            <ruleset>${fediz.resources.base.path}cxf-pmd-custom.xml</ruleset>
+                        </rulesets>
+                        <sourceEncoding>UTF-8</sourceEncoding>
+                        <targetJdk>1.5</targetJdk>
+                        <linkXRef>false</linkXRef>
+                        <includeTests>true</includeTests>
+                        <verbose>true</verbose>
+                        <excludeRoots>
+                            <excludeRoot>${basedir}/src/main/generated</excludeRoot>
+                        </excludeRoots>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>validate</id>
+                            <phase>validate</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+-->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                        <includes>
+                            <include>**/*Test.java</include>
+                            <include>**/*TestCase.java</include>
+                            <include>**/*TestCases.java</include>
+                        </includes>
+                        <!-- do not exclude **/Abstract*Test.java **/Abstract*TestCase.java -->
+                        <excludes>
+                            <exclude>**/*$*</exclude>
+                        </excludes>
+                        <!--disableXmlReport>true</disableXmlReport-->
+                        <runOrder>alphabetical</runOrder>
+                        <reportFormat>${fediz.surefire.format}</reportFormat>
+                        <useFile>${fediz.surefire.usefile}</useFile>
+                        <forkMode>${fediz.surefire.fork.mode}</forkMode>
+                        <childDelegation>false</childDelegation>
+                        <argLine>${fediz.surefire.fork.vmargs}</argLine>
+                        <enableAssertions>${fediz.surefire.enable.assertions}</enableAssertions>
+                        <parallel>${fediz.surefire.parallel.mode}</parallel>
+                        <systemPropertyVariables>
+                            <cxf.useRandomFirstPort>true</cxf.useRandomFirstPort>
+                            <org.apache.ws.commons.schema.protectReadOnlyCollections>${fediz.protect-xmlschema-collections}</org.apache.ws.commons.schema.protectReadOnlyCollections>
+                            <cxf.validateServiceSchemas>${fediz.validateServices}</cxf.validateServiceSchemas>
+                            <java.awt.headless>${java.awt.headless}</java.awt.headless>
+                            <java.util.logging.config.file>${basedir}/target/test-classes/logging.properties</java.util.logging.config.file>
+                            <server.launcher.vmargs>${fediz.server.launcher.vmargs}</server.launcher.vmargs>
+                            <!-- If we close the port after a client in the same JVM has opened a keep-alive
+                            connection, on some Linux's, the socket remains consumed until
+                            some timeout occurs.   That may cause some tests to timeout/hang. -->
+                            <org.apache.cxf.transports.http_jetty.DontClosePort>false</org.apache.cxf.transports.http_jetty.DontClosePort>
+                        </systemPropertyVariables>
+                    </configuration>
+                </plugin>
+                <!-- TODO commented out for now
+                Error assembling JAR: Manifest file: /projects/svn/fediz/plugins/core/target/classes/META-INF/MANIFEST.MF does not exist.
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <configuration>
+                        <archive>
+                            <manifestFile>${fediz.manifest.location}</manifestFile>
+                            <manifestEntries>
+                                <Specification-Title>${project.name}</Specification-Title>
+                                <Specification-Vendor>The Apache Software Foundation</Specification-Vendor>
+                                <Implementation-Title>${project.name}</Implementation-Title>
+                                <Implementation-Vendor-Id>org.apache</Implementation-Vendor-Id>
+                                <Implementation-Vendor>The Apache Software Foundation</Implementation-Vendor>
+                            </manifestEntries>
+                        </archive>
+                    </configuration>
+                </plugin>
+                -->
+
 <!-- TODO
                 <plugin>
                   <groupId>org.apache.rat</groupId>
@@ -257,64 +447,6 @@
             </plugins>
         </pluginManagement>
     </build>
-<!--
-   <build>
-      <plugins>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>2.3.2</version>
-            <configuration>
-               <source>${jdk.version}</source>
-               <target>${jdk.version}</target>
-            </configuration>
-         </plugin>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-eclipse-plugin</artifactId>
-            <version>2.8</version>
-            <configuration>
-               <downloadSources>true</downloadSources>
-            </configuration>
-         </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-pmd-plugin</artifactId>
-                <version>2.5</version>
-                <configuration>
-                    <linkXRef>false</linkXRef>
-                    <failOnViolation>true</failOnViolation>
-                    <verbose>true</verbose>
-                    <targetJdk>${jdk.version}</targetJdk>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>validate</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>2.1.2</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-      </plugins>
-   </build>
--->
-
 
    <profiles>
         <profile>
@@ -357,6 +489,110 @@
                             <workspace>${eclipse.workspace.dir}</workspace>
                             <workspaceCodeStylesURL>file:etc/eclipse/CXFCodeFormatter.xml</workspaceCodeStylesURL>
                         </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>jdk15</id>
+            <activation>
+                <jdk>1.5</jdk>
+            </activation>
+            <properties>
+                <fediz.jaxb.version>${fediz.jaxb22.version}</fediz.jaxb.version>
+                <fediz.jaxb.impl.version>${fediz.jaxb22.impl.version}</fediz.jaxb.impl.version>
+                <fediz.jaxb.xjc.version>${fediz.jaxb22.impl.version}</fediz.jaxb.xjc.version>
+                <jdk.version>1.5</jdk.version>
+            </properties>
+        </profile>
+        <profile>
+            <id>jdk17</id>
+            <activation>
+                <jdk>1.7</jdk>
+            </activation>
+            <properties>
+                <fediz.jaxb.version>${fediz.jaxb22.version}</fediz.jaxb.version>
+                <fediz.jaxb.impl.version>${fediz.jaxb22.impl.version}</fediz.jaxb.impl.version>
+                <fediz.jaxb.xjc.version>${fediz.jaxb22.impl.version}</fediz.jaxb.xjc.version>
+                <jdk.version>1.6</jdk.version>
+            </properties>
+        </profile>
+        <profile>
+            <id>fastinstall</id>
+            <properties>
+                <maven.test.skip>true</maven.test.skip>
+                <pmd.skip>true</pmd.skip>
+                <checkstyle.skip>true</checkstyle.skip>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>nochecks</id>
+            <properties>
+                <pmd.skip>true</pmd.skip>
+                <checkstyle.skip>true</checkstyle.skip>
+            </properties>
+        </profile>
+
+        <profile>
+            <!-- default profile enables checkstyle and Xlint stuff -->
+            <id>sourcecheck</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-checkstyle-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <showDeprecation>${fediz.compile.show.deprecation}</showDeprecation>
+                            <showWarnings>true</showWarnings>
+                            <compilerArgument>${fediz.compile.flags}</compilerArgument>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-pmd-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>set.eclipse.output</id>
+            <properties>
+                <fediz.eclipse.outputDirectory>${basedir}/eclipse-classes</fediz.eclipse.outputDirectory>
+            </properties>
+        </profile>
+
+        <profile>
+            <!-- pmd and checkstyle, no tests. -->
+            <id>justsourcecheck</id>
+            <properties>
+                <maven.test.skip.exec>true</maven.test.skip.exec>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-checkstyle-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <showDeprecation>true</showDeprecation>
+                            <showWarnings>true</showWarnings>
+                            <compilerArgument>${fediz.compile.flags}</compilerArgument>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-pmd-plugin</artifactId>
                     </plugin>
                 </plugins>
             </build>

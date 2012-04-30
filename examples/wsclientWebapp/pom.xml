@@ -3,12 +3,11 @@
    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
    <modelVersion>4.0.0</modelVersion>
-    <parent>
-       <groupId>org.apache.cxf.fediz</groupId>
-       <artifactId>fediz-parent</artifactId>
+   <parent>
+       <groupId>org.apache.cxf.fediz.examples</groupId>
+       <artifactId>examples</artifactId>
        <version>0.6-SNAPSHOT</version>
-       <relativePath>../../parent/pom.xml</relativePath>
-    </parent>
+   </parent>
     <groupId>org.apache.cxf.fediz.examples</groupId>
     <artifactId>wsclientWebapp</artifactId>
     <name>Fediz Webapp WebService Client</name>

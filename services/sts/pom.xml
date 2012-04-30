@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
    <parent>
        <groupId>org.apache.cxf.fediz</groupId>
-       <artifactId>fediz-parent</artifactId>
+       <artifactId>fediz</artifactId>
        <version>0.6-SNAPSHOT</version>
-       <relativePath>../../parent/pom.xml</relativePath>
+       <relativePath>../../pom.xml</relativePath>
    </parent>
     <artifactId>fediz-idp-sts</artifactId>
     <name>Apache Fediz STS</name>

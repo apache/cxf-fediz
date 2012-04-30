@@ -4,9 +4,9 @@
    <modelVersion>4.0.0</modelVersion>
    <parent>
        <groupId>org.apache.cxf.fediz</groupId>
-       <artifactId>fediz-parent</artifactId>
+       <artifactId>fediz</artifactId>
        <version>0.6-SNAPSHOT</version>
-       <relativePath>../../parent/pom.xml</relativePath>
+       <relativePath>../../pom.xml</relativePath>
    </parent>
    <artifactId>fediz-core</artifactId>
    <name>Apache Fediz Plugin Core</name>
