@@ -262,7 +262,7 @@
                         <additionalConfig>
                             <file>
                                 <name>.checkstyle</name>
-                                <location>/cxf-eclipse-checkstyle${fediz.checkstyle.extension}</location>
+                                <location>/cxf-eclipse-checkstyle</location>
                             </file>
                             <file>
                                 <name>.pmd</name>
@@ -270,10 +270,17 @@
                             </file>
                             <file>
                                 <name>.ruleset</name>
-                                <location>/${fediz.pmd.eclipse.ruleset}</location>
+                                <location>/cxf-pmd-ruleset.xml</location>
                             </file>
                         </additionalConfig>
                     </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.apache.cxf.build-utils</groupId>
+                            <artifactId>cxf-buildtools</artifactId>
+                            <version>${cxf.build-utils.version}</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
 <!-- Comment out for now
                 <plugin>
