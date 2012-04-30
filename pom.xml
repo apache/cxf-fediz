@@ -10,7 +10,7 @@
    <packaging>pom</packaging>
 
    <modules>
-      <module>plugin</module>
+      <module>plugins</module>
       <module>services</module>
       <module>examples</module>
    </modules>
