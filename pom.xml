@@ -51,6 +51,16 @@
       <fediz.resources.base.path />
    </properties>
 
+    <scm>
+        <connection>scm:svn:http://svn.apache.org/repos/asf/fediz/trunk</connection>
+        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/fediz/trunk</developerConnection>
+    </scm>
+
+    <issueManagement>
+        <system>jira</system>
+        <url>https://issues.apache.org/jira/browse/FEDIZ</url>
+    </issueManagement>
+
    <distributionManagement>
        <repository>
            <id>apache.releases.https</id>
@@ -63,6 +73,109 @@
            <url>https://repository.apache.org/content/repositories/snapshots</url>
        </snapshotRepository>
    </distributionManagement>
+
+   <repositories>
+       <repository>
+           <id>apache.snapshots</id>
+           <url>http://repository.apache.org/snapshots/</url>
+           <name>Apache Snapshot Repo</name>
+           <snapshots>
+               <enabled>true</enabled>
+           </snapshots>
+           <releases>
+               <enabled>false</enabled>
+           </releases>
+       </repository>
+   </repositories>
+   <pluginRepositories>
+       <pluginRepository>
+           <id>apache.snapshots</id>
+           <url>http://repository.apache.org/snapshots/</url>
+           <name>Apache Snapshot Repo</name>
+           <snapshots>
+               <enabled>true</enabled>
+           </snapshots>
+           <releases>
+               <enabled>false</enabled>
+           </releases>
+       </pluginRepository>
+   </pluginRepositories>
+
+    <inceptionYear>2011</inceptionYear>
+    <mailingLists>
+        <mailingList>
+            <name>Apache CXF User List</name>
+            <subscribe>users-subscribe@cxf.apache.org</subscribe>
+            <unsubscribe>users-unsubscribe@cxf.apache.org</unsubscribe>
+            <post>users@cxf.apache.org</post>
+            <archive>http://mail-archives.apache.org/mod_mbox/cxf-users</archive>
+        </mailingList>
+        <mailingList>
+            <name>Apache CXF Developer List</name>
+            <subscribe>dev-subscribe@cxf.apache.org</subscribe>
+            <unsubscribe>dev-unsubscribe@cxf.apache.org</unsubscribe>
+            <post>dev@cxf.apache.org</post>
+            <archive>http://mail-archives.apache.org/mod_mbox/cxf-dev</archive>
+        </mailingList>
+        <mailingList>
+            <name>Apache CXF Commits List</name>
+            <subscribe>commits-subscribe@cxf.apache.org</subscribe>
+            <unsubscribe>commits-unsubscribe@cxf.apache.org</unsubscribe>
+            <post>commits@cxf.apache.org</post>
+            <archive>http://mail-archives.apache.org/mod_mbox/cxf-commits</archive>
+        </mailingList>
+        <mailingList>
+            <name>Apache CXF Issues List</name>
+            <subscribe>issues-subscribe@cxf.apache.org</subscribe>
+            <unsubscribe>issues-unsubscribe@cxf.apache.org</unsubscribe>
+            <post>issues@cxf.apache.org</post>
+            <archive>http://mail-archives.apache.org/mod_mbox/cxf-issues</archive>
+        </mailingList>
+        <mailingList>
+            <name>Apache CXF Build Notifications List</name>
+            <subscribe>notifications-subscribe@cxf.apache.org</subscribe>
+            <unsubscribe>notifications-unsubscribe@cxf.apache.org</unsubscribe>
+            <post>notifications@cxf.apache.org</post>
+            <archive>http://mail-archives.apache.org/mod_mbox/cxf-notifications</archive>
+        </mailingList>
+    </mailingLists>
+
+    <developers>
+        <developer>
+            <name>The Apache CXF Team</name>
+            <email>dev@cxf.apache.org</email>
+            <url>http://cxf.apache.org</url>
+            <organization>Apache Software Foundation</organization>
+            <organizationUrl>http://apache.org/</organizationUrl>
+            <properties>
+                <picUrl>http://cxf.apache.org/images/cxf.png</picUrl>
+            </properties>
+        </developer>
+    </developers>
+   
+    <ciManagement>
+        <system>Hudson</system>
+        <url>https://builds.apache.org/view/A-F/view/CXF/job/CXF-Fediz/</url>
+        <notifiers>
+            <notifier>
+                <type>mail</type>
+                <configuration>
+                    <address>notifications@cxf.apache.org</address>
+                </configuration>
+            </notifier>
+        </notifiers>
+    </ciManagement>
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <organization>
+        <name>The Apache Software Foundation</name>
+        <url>http://www.apache.org/</url>
+    </organization>
 
    <modules>
       <module>plugins</module>
@@ -617,31 +730,6 @@
         </profile>
    </profiles>
 
-   <repositories>
-       <repository>
-           <id>apache.snapshots</id>
-           <url>http://repository.apache.org/snapshots/</url>
-           <name>Apache Snapshot Repo</name>
-           <snapshots>
-               <enabled>true</enabled>
-           </snapshots>
-           <releases>
-               <enabled>false</enabled>
-           </releases>
-       </repository>
-   </repositories>
-   <pluginRepositories>
-       <pluginRepository>
-           <id>apache.snapshots</id>
-           <url>http://repository.apache.org/snapshots/</url>
-           <name>Apache Snapshot Repo</name>
-           <snapshots>
-               <enabled>true</enabled>
-           </snapshots>
-           <releases>
-               <enabled>false</enabled>
-           </releases>
-       </pluginRepository>
-   </pluginRepositories>
+
 
 </project>
