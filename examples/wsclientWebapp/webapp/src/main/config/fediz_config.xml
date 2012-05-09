@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<FedizConfig>
+	<contextConfig name="/fedizhelloworld">
+		<audienceUris>
+			<audienceItem>http://host_one:port/url</audienceItem>
+		</audienceUris>
+		<certificateValidation>ChainTrust</certificateValidation>
+		<trustedIssuers>
+			<trustedIssuerItem provider=".*CN=www.sts.com.*">
+				<keyStore file="/projects/fediz/tomcat-rp2/conf/stsstore.jks" password="stsspass" type="file" />
+			</trustedIssuerItem>
+		</trustedIssuers>
+		<maximumClockSkew>1000</maximumClockSkew>
+		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			xsi:type="federationProtocolType" version="1.0.0">
+			<!--<realm>target realm</realm>-->
+			<issuer>https://localhost:9443/fedizidp/</issuer>
+			<roleDelimiter>,</roleDelimiter>
+			<roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
+			<!--<authenticationType value="some auth type" type="String" />
+			<homeRealm value="org.apache.fediz.realm.MyHomeRealm.class"
+				type="Class" />-->
+			<freshness>10000</freshness>
+			<!--<reply>reply value</reply>-->
+			<!--<request>REQUEST</request>-->
+			<claimTypesRequested>
+				<claimType type="a particular claim type" optional="true" />
+			</claimTypesRequested>
+		</protocol>
+	</contextConfig>
+</FedizConfig>
