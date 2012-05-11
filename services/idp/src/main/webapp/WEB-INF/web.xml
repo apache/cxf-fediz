@@ -13,7 +13,7 @@
 		<servlet-class>org.apache.cxf.fediz.service.idp.IdpServlet</servlet-class>
 		<init-param>
 			<param-name>sts.wsdl.url</param-name>
-			<param-value>https://localhost:9443/fedizidpsts/STSService?wsdl</param-value>
+			<param-value>https://localhost:8443/fedizidpsts/STSService?wsdl</param-value>
 		</init-param>
 		<init-param>
 			<param-name>sts.wsdl.service</param-name>
