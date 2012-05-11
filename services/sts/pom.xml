@@ -20,53 +20,53 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
-   <parent>
-       <groupId>org.apache.cxf.fediz</groupId>
-       <artifactId>fediz</artifactId>
-       <version>0.6-SNAPSHOT</version>
-       <relativePath>../../pom.xml</relativePath>
-   </parent>
-    <artifactId>fediz-idp-sts</artifactId>
-    <name>Apache Fediz STS</name>
-    <packaging>war</packaging>
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.apache.cxf.fediz</groupId>
+		<artifactId>fediz</artifactId>
+		<version>0.6-SNAPSHOT</version>
+		<relativePath>../../pom.xml</relativePath>
+	</parent>
+	<artifactId>fediz-idp-sts</artifactId>
+	<name>Apache Fediz STS</name>
+	<packaging>war</packaging>
 
-   <properties>
-      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-   </properties>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
 
-   <dependencies>
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-transports-http</artifactId>
-            <version>${cxf.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-frontend-jaxws</artifactId>
-            <version>${cxf.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-ws-policy</artifactId>
-            <version>${cxf.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.cxf.services.sts</groupId>
-            <artifactId>cxf-services-sts-core</artifactId>
-            <version>${cxf.version}</version>
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-transports-http</artifactId>
+			<version>${cxf.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-frontend-jaxws</artifactId>
+			<version>${cxf.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-ws-policy</artifactId>
+			<version>${cxf.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.cxf.services.sts</groupId>
+			<artifactId>cxf-services-sts-core</artifactId>
+			<version>${cxf.version}</version>
             <!--
             <exclusions>
-				<exclusion>
-					<artifactId>slf4j-jdk14</artifactId>
-					<groupId>org.slf4j</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>slf4j-api</artifactId>
-					<groupId>org.slf4j</groupId>
-				</exclusion>
-			</exclusions>
-			-->
+                                <exclusion>
+                                        <artifactId>slf4j-jdk14</artifactId>
+                                        <groupId>org.slf4j</groupId>
+                                </exclusion>
+                                <exclusion>
+                                        <artifactId>slf4j-api</artifactId>
+                                        <groupId>org.slf4j</groupId>
+                                </exclusion>
+                        </exclusions>
+                        -->
         </dependency>        
    </dependencies>
 
@@ -85,15 +85,15 @@
             </plugin>
             -->
             <plugin><!--for mvn tomcat:deploy/:undeploy/:redeploy -->
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>tomcat-maven-plugin</artifactId>
-				<version>1.1</version>
-				<configuration>
-					<server>myTomcat</server>
-					<url>http://localhost:9080/manager/text</url>
-					<path>/${project.build.finalName}</path>
-				</configuration>
-			</plugin>
+                                <groupId>org.codehaus.mojo</groupId>
+                                <artifactId>tomcat-maven-plugin</artifactId>
+                                <version>1.1</version>
+                                <configuration>
+                                        <server>myTomcat</server>
+                                        <url>http://localhost:9080/manager/text</url>
+                                        <path>/${project.build.finalName}</path>
+                                </configuration>
+                        </plugin>
         </plugins>
         <!-- Name of the generated WAR file -->
         <finalName>fedizidpsts</finalName>

@@ -19,35 +19,35 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-   <modelVersion>4.0.0</modelVersion>
-   <parent>
-       <groupId>org.apache.cxf.fediz</groupId>
-       <artifactId>fediz</artifactId>
-       <version>0.6-SNAPSHOT</version>
-       <relativePath>../../pom.xml</relativePath>
-   </parent>
-   <artifactId>fediz-core</artifactId>
-   <name>Apache Fediz Plugin Core</name>
-   <packaging>jar</packaging>
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.apache.cxf.fediz</groupId>
+		<artifactId>fediz</artifactId>
+		<version>0.6-SNAPSHOT</version>
+		<relativePath>../../pom.xml</relativePath>
+	</parent>
+	<artifactId>fediz-core</artifactId>
+	<name>Apache Fediz Plugin Core</name>
+	<packaging>jar</packaging>
 
-    <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>  
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
 
-   <dependencies>
-   		<dependency>
+	<dependencies>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.8.2</version>
 			<scope>test</scope>
 		</dependency>
-   		<dependency>
-   			<groupId>org.apache.ws.security</groupId>
-   			<artifactId>wss4j</artifactId>
-   			<version>${wss4j.version}</version>
-   			<scope>compile</scope>
-   		</dependency>
-     	<dependency>
+		<dependency>
+			<groupId>org.apache.ws.security</groupId>
+			<artifactId>wss4j</artifactId>
+			<version>${wss4j.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-jdk14</artifactId>
 			<version>1.6.1</version>
@@ -58,14 +58,14 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>1.6.1</version>
 		</dependency>
-                <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>2.5</version>
-            <scope>provided</scope>
-        </dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.5</version>
+			<scope>provided</scope>
+		</dependency>
 
-   </dependencies>
+	</dependencies>
     
 </project>
  

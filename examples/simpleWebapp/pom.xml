@@ -20,31 +20,31 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
-   <parent>
-       <groupId>org.apache.cxf.fediz.examples</groupId>
-       <artifactId>examples</artifactId>
-       <version>0.6-SNAPSHOT</version>
-   </parent>
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.apache.cxf.fediz.examples</groupId>
+		<artifactId>examples</artifactId>
+		<version>0.6-SNAPSHOT</version>
+	</parent>
 
-    <groupId>org.apache.cxf.fediz.examples</groupId>
-    <artifactId>simpleWebapp</artifactId>
-    <name>Apache Fediz Webapp simple</name>
-    <packaging>war</packaging>
+	<groupId>org.apache.cxf.fediz.examples</groupId>
+	<artifactId>simpleWebapp</artifactId>
+	<name>Apache Fediz Webapp simple</name>
+	<packaging>war</packaging>
 
-   <properties>
-      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-   </properties>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
 
-    <dependencies>
+	<dependencies>
     <!-- 
-		<dependency>
-			<groupId>org.apache.tomcat</groupId>
-			<artifactId>tomcat-catalina</artifactId>
-			<version>${tomcat.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		 -->
+                <dependency>
+                        <groupId>org.apache.tomcat</groupId>
+                        <artifactId>tomcat-catalina</artifactId>
+                        <version>${tomcat.version}</version>
+                        <scope>provided</scope>
+                </dependency>
+                 -->
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
@@ -52,21 +52,21 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-        	<groupId>org.apache.cxf.fediz</groupId>
-        	<artifactId>fediz-core</artifactId>
-        	<version>0.6-SNAPSHOT</version>
-        	<scope>provided</scope>
+                <groupId>org.apache.cxf.fediz</groupId>
+                <artifactId>fediz-core</artifactId>
+                <version>0.6-SNAPSHOT</version>
+                <scope>provided</scope>
         </dependency>
         <dependency>
-        	<groupId>org.apache.cxf.fediz</groupId>
-        	<artifactId>fediz-tomcat</artifactId>
-        	<version>0.6-SNAPSHOT</version>
-        	<scope>provided</scope>
+                <groupId>org.apache.cxf.fediz</groupId>
+                <artifactId>fediz-tomcat</artifactId>
+                <version>0.6-SNAPSHOT</version>
+                <scope>provided</scope>
         </dependency>
         <dependency>
-        	<groupId>org.apache.commons</groupId>
-        	<artifactId>commons-lang3</artifactId>
-        	<version>3.0.1</version>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>3.0.1</version>
         </dependency>
     </dependencies>
 
@@ -85,15 +85,15 @@
             </plugin>
             -->
             <plugin><!--for mvn tomcat:deploy/:undeploy/:redeploy -->
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>tomcat-maven-plugin</artifactId>
-				<version>1.1</version>
-				<configuration>
-					<server>myTomcat</server>
-					<url>http://localhost:8080/manager/text</url>
-					<path>/${project.build.finalName}</path>
-				</configuration>
-			</plugin>
+                                <groupId>org.codehaus.mojo</groupId>
+                                <artifactId>tomcat-maven-plugin</artifactId>
+                                <version>1.1</version>
+                                <configuration>
+                                        <server>myTomcat</server>
+                                        <url>http://localhost:8080/manager/text</url>
+                                        <path>/${project.build.finalName}</path>
+                                </configuration>
+                        </plugin>
         </plugins>
         <!-- Name of the generated WAR file -->
         <finalName>fedizhelloworld</finalName>

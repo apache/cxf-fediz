@@ -584,13 +584,13 @@
                         <stagingRepositoryId>apache.cxf.site</stagingRepositoryId>
                         <stagingSiteURL>scp://people.apache.org/www/cxf.apache.org/maven-site-${project.version}</stagingSiteURL>
                     </configuration>
-		    <dependencies>
-		      <dependency>
-			<groupId>org.apache.maven.wagon</groupId>
-			<artifactId>wagon-ssh</artifactId>
-			<version>2.1</version>
-		      </dependency>
-		    </dependencies>
+                    <dependencies>
+                      <dependency>
+                        <groupId>org.apache.maven.wagon</groupId>
+                        <artifactId>wagon-ssh</artifactId>
+                        <version>2.1</version>
+                      </dependency>
+                    </dependencies>
                 </plugin>
 -->
             </plugins>
