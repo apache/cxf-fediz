@@ -15,30 +15,39 @@
  * limitations under the License.
  */
 
-package org.apache.cxf.fediz.core.spi;
+package org.apache.cxf.fediz.core.config;
 
-import javax.servlet.http.HttpServletRequest;
+import org.apache.cxf.fediz.core.config.jaxb.ValidationType;
 
-public class WAuthCallback extends AbstractServletCallback {
+public enum CertificateValidationMethod {
 
-    private String wauth = null;
+    PEER_TRUST("PeerTrust"),
 
-    public WAuthCallback(HttpServletRequest request) {
-        super(request);
+    CHAIN_TRUST("ChainTrust");
+    private final String value;
+
+    CertificateValidationMethod(String v) {
+        value = v;
     }
-/*
-    public WAuthCallback(HttpServletRequest request, String wauth) {
-        this(request);
-        this.wauth = wauth;
-    }
-    */
-
-    public String getWAuth() {
-        return wauth;
+    CertificateValidationMethod(ValidationType type) {
+        value = type.value();
     }
 
-    public void setWAuth(String wauth) {
-        this.wauth = wauth;
+    public String value() {
+        return value;
     }
 
+    ValidationType validationType = null;
+    
+    public static CertificateValidationMethod fromValue(String v) {
+        for (CertificateValidationMethod c: CertificateValidationMethod.values()) {
+            if (c.value.equals(v)) {
+                return c;
+            }
+        }
+        throw new IllegalArgumentException(v);
+    }
+
+    
+    
 }

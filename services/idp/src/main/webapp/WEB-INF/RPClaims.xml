@@ -13,6 +13,8 @@
 			value-ref="claimsWsfedhelloworld" />
 		<entry key="http://localhost:8080/fedizhelloworld/"
 			value-ref="claimsWsfedhelloworld2" />
+		<entry key="https://localhost:8443/fedizhelloworld/"
+			value-ref="claimsWsfedhelloworld2" />
 	</util:map>
 
 

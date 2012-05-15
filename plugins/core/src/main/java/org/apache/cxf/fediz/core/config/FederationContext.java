@@ -21,9 +21,15 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
+import org.apache.cxf.fediz.core.config.jaxb.CertificateStores;
+import org.apache.cxf.fediz.core.config.jaxb.ContextConfig;
+import org.apache.cxf.fediz.core.config.jaxb.FederationProtocolType;
+import org.apache.cxf.fediz.core.config.jaxb.ProtocolType;
+import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
+import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
+import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuers;
 import org.apache.cxf.fediz.core.exception.IllegalConfigurationException;
 
 public class FederationContext {
@@ -42,24 +48,41 @@ public class FederationContext {
         return config.getAudienceUris().getAudienceItem();
     }
 
-    public ValidationType getCertificateValidation() {
-        return config.getCertificateValidation();
+    public List<TrustedIssuer> getTrustedIssuers(){
+        TrustedIssuers issuers = config.getTrustedIssuers();
+        List<TrustedIssuerType> trustManagers =  issuers.getIssuer();
+        List<TrustedIssuer> trustedIssuers = new ArrayList<TrustedIssuer>();
+        for(TrustedIssuerType manager:trustManagers){
+            trustedIssuers.add(new TrustedIssuer(manager));
+        }
+        return trustedIssuers; 
     }
-
-    public TrustedIssuers getTrustedIssuers() {
-        return config.getTrustedIssuers();
+    
+    
+    public List<TrustManager> getCertificateStores(){
+        CertificateStores certStores = config.getCertificateStores();
+        List<TrustManagersType> trustManagers =  certStores.getTrustManager();
+        List<TrustManager> trustedIssuers = new ArrayList<TrustManager>();
+        for(TrustManagersType manager:trustManagers){
+            trustedIssuers.add(new TrustManager(manager));
+        }
+        return trustedIssuers; 
     }
-
+    
     public BigInteger getMaximumClockSkew() {
         return config.getMaximumClockSkew();
     }
 
-    public TrustManagersType getServiceCertificate() {
-        return config.getServiceCertificate();
-    }
+//    public TrustManager getServiceCertificate() {
+//        return new TrustManager(config.getServiceCertificate());
+//    }
 
-    public ProtocolType getProtocol() {
-        return config.getProtocol();
+    public Protocol getProtocol() {
+        ProtocolType type = config.getProtocol();
+        if(type instanceof FederationProtocolType){
+            return new FederationProtocol(type);
+        }
+        return null;
     }
 
     public String getName() {
@@ -86,18 +109,20 @@ public class FederationContext {
         this.detectReplayedTokens = detectReplayedTokens;
     }
 
+    /*
     public List<String> getTrustedIssuersNames() {
         TrustedIssuers issuers = config.getTrustedIssuers();
         List<String> issuerNames = new ArrayList<String>();
         if (issuers != null) {
             for (TrustManagersType t : issuers.getTrustedIssuerItem()) {
-                issuerNames.add(t.getProvider());
+                issuerNames.add(t.getName());
             }
             return issuerNames;
         } else {
             return Collections.<String> emptyList();
         }
     }
+    */
 
     public URI getRoleURI() {
         ProtocolType pt = config.getProtocol();
@@ -127,19 +152,22 @@ public class FederationContext {
                 "No FederationProtocolType found");
     }
 
+    /*
     public String getTrustStoreFile() {
-        KeyStoreType storeType = getTrustStore();
+        KeyStore storeType = getTrustStore();
         return storeType.getFile();
     }
 
     public String getTrustStorePassword() {
-        KeyStoreType storeType = getTrustStore();
+        KeyStore storeType = getTrustStore();
         return storeType.getPassword();
     }
+    
 
-    private KeyStoreType getTrustStore() {
-        List<TrustManagersType> managers = config.getTrustedIssuers()
-                .getTrustedIssuerItem();
+    private KeyStore getTrustStore() {
+
+        List<TrustManager> managers =  getTrustedIssuers();
+        
         if (managers == null) {
             throw new IllegalConfigurationException(
                     "No Trusted Issuers Keystore found");
@@ -148,9 +176,11 @@ public class FederationContext {
             throw new IllegalConfigurationException(
                     "Only one Trusted Issuer Keystore supported");
         }
-        TrustManagersType trustManager = managers.get(0);
+        
+        TrustManager trustManager = managers.get(0);
         return trustManager.getKeyStore();
     }
+    */
 
     public void setRelativePath(String relativePath) {
         this.relativePath = relativePath;

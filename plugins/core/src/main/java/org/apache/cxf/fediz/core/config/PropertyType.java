@@ -15,30 +15,39 @@
  * limitations under the License.
  */
 
-package org.apache.cxf.fediz.core.spi;
+package org.apache.cxf.fediz.core.config;
 
-import javax.servlet.http.HttpServletRequest;
+import org.apache.cxf.fediz.core.config.jaxb.ArgumentType;
 
-public class WAuthCallback extends AbstractServletCallback {
+public enum PropertyType {
+    CLASS("Class"),
+    
+    STRING("String");
+    private final String value;
 
-    private String wauth = null;
+    
 
-    public WAuthCallback(HttpServletRequest request) {
-        super(request);
-    }
-/*
-    public WAuthCallback(HttpServletRequest request, String wauth) {
-        this(request);
-        this.wauth = wauth;
-    }
-    */
-
-    public String getWAuth() {
-        return wauth;
+    PropertyType(String v) {
+        value = v;
     }
 
-    public void setWAuth(String wauth) {
-        this.wauth = wauth;
+    
+    PropertyType(ArgumentType arg) {
+        value = arg.value();
     }
 
+    public String value() {
+        return value;
+    }
+
+    public static PropertyType fromValue(String v) {
+        for (PropertyType c: PropertyType.values()) {
+            if (c.value.equals(v)) {
+                return c;
+            }
+        }
+        throw new IllegalArgumentException(v);
+    }
+
+    
 }

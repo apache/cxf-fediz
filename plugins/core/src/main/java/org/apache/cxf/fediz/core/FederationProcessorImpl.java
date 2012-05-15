@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.cxf.fediz.core.config.FederationContext;
-import org.apache.cxf.fediz.core.config.FederationProtocolType;
+import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.saml.SAMLTokenValidator;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.ws.security.WSConstants;
@@ -254,7 +254,7 @@ public class FederationProcessorImpl implements FederationProcessor {
         //        } 
         try
         {
-            String issuerURL = ((FederationProtocolType) config.getProtocol()).getIssuer();
+            String issuerURL = ((FederationProtocol) config.getProtocol()).getIssuer();
             if (issuerURL != null && issuerURL.length() > 0) {
                 redirectURL = issuerURL;
             }

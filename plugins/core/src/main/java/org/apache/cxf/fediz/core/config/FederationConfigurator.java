@@ -20,9 +20,14 @@ package org.apache.cxf.fediz.core.config;
 import java.io.File;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+
+import org.apache.cxf.fediz.core.config.jaxb.ContextConfig;
+import org.apache.cxf.fediz.core.config.jaxb.FedizConfig;
 
 public class FederationConfigurator {
 
@@ -59,6 +64,14 @@ public class FederationConfigurator {
         return jaxbContext;
     }
 
+    public List<FederationContext> getFederationContextList(){
+        List<FederationContext> ctxList = new ArrayList<FederationContext>();
+        for (ContextConfig config : rootConfig.getContextConfig()) {
+            ctxList.add(new FederationContext(config));            
+        }
+        return ctxList;
+    }
+    
     public FederationContext getFederationContext(String contextName) {
         ContextConfig config = getContextConfig(contextName);
         if (config == null) {

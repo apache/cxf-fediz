@@ -38,6 +38,9 @@ import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.TokenValidator;
 import org.apache.cxf.fediz.core.TokenValidatorResponse;
 import org.apache.cxf.fediz.core.config.FederationContext;
+import org.apache.cxf.fediz.core.config.KeyStore;
+import org.apache.cxf.fediz.core.config.TrustManager;
+import org.apache.cxf.fediz.core.config.TrustedIssuer;
 import org.apache.ws.security.SAMLTokenPrincipal;
 import org.apache.ws.security.WSDocInfo;
 import org.apache.ws.security.WSPasswordCallback;
@@ -76,15 +79,24 @@ public class SAMLTokenValidator implements TokenValidator {
             FederationContext config) {
 
         try {
-            String trustStoreFile = config.getTrustStoreFile();
+            String trustStoreFile;
+            String trustStorePw;
+            //[TODO] Support more than one truststore
+            TrustManager tm = config.getCertificateStores().get(0);
+            KeyStore ks = tm.getKeyStore();
+            if (ks.getFile() != null && !ks.getFile().isEmpty()) {
+                trustStoreFile = ks.getFile();
+                trustStorePw = ks.getPassword();
+            } else {
+                throw new IllegalStateException("No certificate store configured");
+            }
             
             File f = new File(trustStoreFile);
             if (!f.exists() && config.getRelativePath() != null && !config.getRelativePath().isEmpty()) {
-                trustStoreFile = config.getRelativePath().concat(File.separator + config.getTrustStoreFile());
+                trustStoreFile = config.getRelativePath().concat(File.separator + trustStoreFile);
             }
             
-            Properties sigProperties = createCryptoProviderProperties(
-                    trustStoreFile, config.getTrustStorePassword());
+            Properties sigProperties = createCryptoProviderProperties(trustStoreFile, trustStorePw);
 
             Crypto sigCrypto = CryptoFactory.getInstance(sigProperties);
             RequestData requestData = new RequestData();
@@ -122,9 +134,10 @@ public class SAMLTokenValidator implements TokenValidator {
                 cert = trustCredential.getCertificates()[0];
             }
 
-            // List<String> subjectConstraints =
-            // Arrays.asList(config.getTrustedIssuer());
-            List<String> subjectConstraints = config.getTrustedIssuersNames();
+            // [TODO] Support more than one trusted issuer
+            List<TrustedIssuer> trustedIssuers = config.getTrustedIssuers();
+            TrustedIssuer ti = trustedIssuers.get(0);
+            List<String> subjectConstraints = Collections.singletonList(ti.getSubject());
 
             CertConstraintsParser certConstraints = new CertConstraintsParser();
             certConstraints.setSubjectConstraints(subjectConstraints);

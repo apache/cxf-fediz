@@ -4,11 +4,14 @@
 		<audienceUris>
 			<audienceItem>http://host_one:port/url</audienceItem>
 		</audienceUris>
-		<certificateValidation>ChainTrust</certificateValidation>
+		<certificateStores>
+			<trustManager>
+				<keyStore file="conf/stsstore.jks" password="stsspass" type="JKS" />
+			</trustManager>
+		</certificateStores>
 		<trustedIssuers>
-			<trustedIssuerItem provider=".*CN=www.sts.com.*">
-				<keyStore file="/projects/fediz/tomcat-rp2/conf/stsstore.jks" password="stsspass" type="file" />
-			</trustedIssuerItem>
+			<issuer subject=".*CN=www.sts.com.*" certificateValidation="ChainTrust"
+				name="DoubleItSTSIssuer" />
 		</trustedIssuers>
 		<maximumClockSkew>1000</maximumClockSkew>
 		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"

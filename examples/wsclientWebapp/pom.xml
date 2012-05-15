@@ -24,11 +24,11 @@
    <parent>
        <groupId>org.apache.cxf.fediz.examples</groupId>
        <artifactId>examples</artifactId>
-       <version>0.6-SNAPSHOT</version>
+       <version>1.0-SNAPSHOT</version>
    </parent>
     <groupId>org.apache.cxf.fediz.examples</groupId>
     <artifactId>wsclientWebapp</artifactId>
-    <name>Apache Fediz Webapp WebService Client</name>
+    <name>Apache Fediz Examples - Webapp WS Client</name>
    <packaging>pom</packaging>
 
    <modules>

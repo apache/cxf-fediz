@@ -15,30 +15,38 @@
  * limitations under the License.
  */
 
-package org.apache.cxf.fediz.core.spi;
+package org.apache.cxf.fediz.core.config;
 
-import javax.servlet.http.HttpServletRequest;
+import org.apache.cxf.fediz.core.config.jaxb.ProtocolType;
 
-public class WAuthCallback extends AbstractServletCallback {
+public abstract class Protocol {
+    private ProtocolType protocolType = null;
 
-    private String wauth = null;
-
-    public WAuthCallback(HttpServletRequest request) {
-        super(request);
-    }
-/*
-    public WAuthCallback(HttpServletRequest request, String wauth) {
-        this(request);
-        this.wauth = wauth;
-    }
-    */
-
-    public String getWAuth() {
-        return wauth;
+    public Protocol(ProtocolType protocolType) {
+        super();
+        this.protocolType = protocolType;
     }
 
-    public void setWAuth(String wauth) {
-        this.wauth = wauth;
+    protected ProtocolType getProtocolType() {
+        return protocolType;
     }
+
+    protected void setProtocolType(ProtocolType protocolType) {
+        this.protocolType = protocolType;
+    }
+
+    public int hashCode() {
+        return protocolType.hashCode();
+    }
+
+    public boolean equals(Object obj) {
+        return protocolType.equals(obj);
+    }
+
+    public String toString() {
+        return protocolType.toString();
+    }
+    
+    
 
 }

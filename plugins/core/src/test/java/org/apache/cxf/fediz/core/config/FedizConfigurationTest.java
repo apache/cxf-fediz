@@ -9,12 +9,28 @@ import java.math.BigInteger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
+import org.apache.cxf.fediz.core.config.jaxb.ArgumentType;
+import org.apache.cxf.fediz.core.config.jaxb.AudienceUris;
+import org.apache.cxf.fediz.core.config.jaxb.AuthenticationType;
+import org.apache.cxf.fediz.core.config.jaxb.CertificateStores;
+import org.apache.cxf.fediz.core.config.jaxb.ClaimType;
+import org.apache.cxf.fediz.core.config.jaxb.ClaimTypesRequested;
+import org.apache.cxf.fediz.core.config.jaxb.ContextConfig;
+import org.apache.cxf.fediz.core.config.jaxb.FederationProtocolType;
+import org.apache.cxf.fediz.core.config.jaxb.FedizConfig;
+import org.apache.cxf.fediz.core.config.jaxb.HomeRealm;
+import org.apache.cxf.fediz.core.config.jaxb.KeyStoreType;
+import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
+import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
+import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuers;
+import org.apache.cxf.fediz.core.config.jaxb.ValidationType;
 import org.junit.Assert;
 
 public class FedizConfigurationTest {
 
     private static final String ISSUER = "http://url_to_the_issuer";
     private static final String PROTOCOL_VERSION = "1.0.0";
+    //private static final String REQUEST = "request value";
     private static final String REPLY = "reply value";
     private static final String TARGET_REALM = "target realm";
     private static final String HOME_REALM_CLASS = "org.apache.fediz.realm.MyHomeRealm.class";
@@ -22,20 +38,13 @@ public class FedizConfigurationTest {
 
     private static final String CONFIG_NAME = "ROOT";
     private static final String CLOCK_SKEW = "1000";
-    private static final String KEYSTORE_FILE = "/path/keystore.jks";
-    private static final String FACTORY_ALGORITHM_1 = "factory algorithm 1";
-    private static final String FACTORY_ALGORITHM_2 = "factory algorithm 2";
-    private static final String RESOURCE_TYPE = "resource";
 
-    private static final String FILE_TYPE = "file";
     private static final String KEYSTORE_PASSWORD_1 = "passw0rd1";
     private static final String KEYSTORE_RESOURCE_PATH_1 = "org.apache.fediz.kestore1";
     private static final String KEYSTORE_PASSWORD_2 = "passw0rd2";
     private static final String KEYSTORE_RESOURCE_PATH_2 = "org.apache.fediz.kestore2";
     private static final String KEYSTORE_PASSWORD_3 = "passw0rd3";
     private static final String KEYSTORE_RESOURCE_PATH_3 = "org.apache.fediz.kestore3";
-    private static final String CERT_STORE_FILE_1 = "/path/truststore.jks";
-    private static final String CERT_STORE_FILE_2 = "/path/keyfile.pem";
     private static final String AUTH_TYPE_VALUE = "some auth type";
 
     private static final String AUDIENCE_URI_1 = "http://host_one:port/url";
@@ -46,6 +55,10 @@ public class FedizConfigurationTest {
     private static final String ROLE_URI = "http://someserver:8080/path/roles.uri";
     private static final String CLAIM_TYPE_1 = "a particular claim type";
     private static final String CLAIM_TYPE_2 = "a second particular claim type";
+    private static final String SUBJECT_VALUE_1 = ".*CN=www.sts1.com.*";
+    private static final String SUBJECT_VALUE_2 = ".*CN=www.sts2.com.*";
+    private static final String SUBJECT_VALUE_3 = ".*CN=www.sts3.com.*";
+    
 
     private static final String CONFIG_FILE = "./fedizconfig.xml";
 
@@ -57,59 +70,62 @@ public class FedizConfigurationTest {
 
         config.setName(CONFIG_NAME);
         config.setMaximumClockSkew(new BigInteger(CLOCK_SKEW));
-        config.setCertificateValidation(ValidationType.CHAIN_TRUST);
 
-        TrustManagersType tm0 = new TrustManagersType();
-
-        CertStoreType cs0 = new CertStoreType();
-        cs0.setFile(KEYSTORE_FILE);
-        tm0.setCertStore(cs0);
-        tm0.setFactoryAlgorithm(FACTORY_ALGORITHM_1);
-
+        CertificateStores certStores = new CertificateStores();
+        
+        TrustManagersType tm0 = new TrustManagersType();       
         KeyStoreType ks0 = new KeyStoreType();
-        ks0.setType(RESOURCE_TYPE);
+        ks0.setType("JKS");
         ks0.setPassword(KEYSTORE_PASSWORD_1);
         ks0.setResource(KEYSTORE_RESOURCE_PATH_1);
-
         tm0.setKeyStore(ks0);
-
-        config.setServiceCertificate(tm0);
+        
+        certStores.getTrustManager().add(tm0);
+        
+        TrustManagersType tm1 = new TrustManagersType();
+        KeyStoreType ks1 = new KeyStoreType();
+        ks1.setType("JKS");
+        ks1.setPassword(KEYSTORE_PASSWORD_2);
+        ks1.setResource(KEYSTORE_RESOURCE_PATH_2);
+        tm1.setKeyStore(ks1);
+        
+        certStores.getTrustManager().add(tm1);
+        
+        TrustManagersType tm2 = new TrustManagersType();
+        KeyStoreType ks2 = new KeyStoreType();
+        ks2.setType("JKS");
+        ks2.setPassword(KEYSTORE_PASSWORD_3);
+        ks2.setResource(KEYSTORE_RESOURCE_PATH_3);
+        tm2.setKeyStore(ks2);
+        
+        certStores.getTrustManager().add(tm2);
+        
+        config.setCertificateStores(certStores);
+        
+        TrustedIssuers trustedIssuers = new TrustedIssuers();
+        
+        TrustedIssuerType ti0 = new TrustedIssuerType();
+        ti0.setCertificateValidation(ValidationType.CHAIN_TRUST);
+        ti0.setName("issuer1");
+        ti0.setSubject(SUBJECT_VALUE_1);
+        trustedIssuers.getIssuer().add(ti0);
+        
+        TrustedIssuerType ti1 = new TrustedIssuerType();
+        ti1.setCertificateValidation(ValidationType.CHAIN_TRUST);
+        ti1.setName("issuer1");
+        ti1.setSubject(SUBJECT_VALUE_2);
+        trustedIssuers.getIssuer().add(ti1);
+        
+        TrustedIssuerType ti2 = new TrustedIssuerType();
+        ti2.setCertificateValidation(ValidationType.CHAIN_TRUST);
+        ti2.setName("issuer1");
+        ti2.setSubject(SUBJECT_VALUE_3);
+        trustedIssuers.getIssuer().add(ti2);
+        
+        config.setTrustedIssuers(trustedIssuers);
 
         FederationProtocolType protocol = new FederationProtocolType();
         config.setProtocol(protocol);
-
-        TrustedIssuers trustedIssuer = new TrustedIssuers();
-
-        TrustManagersType tm1 = new TrustManagersType();
-        CertStoreType cs1 = new CertStoreType();
-        cs1.setFile(CERT_STORE_FILE_1);
-        tm1.setCertStore(cs1);
-        tm1.setFactoryAlgorithm(FACTORY_ALGORITHM_2);
-
-        KeyStoreType ks1 = new KeyStoreType();
-        ks1.setType(RESOURCE_TYPE);
-        ks1.setPassword(KEYSTORE_PASSWORD_2);
-        ks1.setResource(KEYSTORE_RESOURCE_PATH_2);
-
-        tm1.setKeyStore(ks1);
-        trustedIssuer.getTrustedIssuerItem().add(tm1);
-
-        TrustManagersType tm2 = new TrustManagersType();
-
-        CertStoreType cs2 = new CertStoreType();
-        cs2.setFile(CERT_STORE_FILE_2);
-        tm2.setCertStore(cs2);
-        tm2.setFactoryAlgorithm(FACTORY_ALGORITHM_2);
-
-        KeyStoreType ks2 = new KeyStoreType();
-        ks2.setType(FILE_TYPE);
-        ks2.setPassword(KEYSTORE_PASSWORD_3);
-        ks2.setResource(KEYSTORE_RESOURCE_PATH_3);
-
-        tm2.setKeyStore(ks2);
-        trustedIssuer.getTrustedIssuerItem().add(tm2);
-
-        config.setTrustedIssuers(trustedIssuer);
 
         AuthenticationType authType = new AuthenticationType();
         authType.setType(ArgumentType.STRING);
@@ -164,7 +180,7 @@ public class FedizConfigurationTest {
 
         StringWriter writer = new StringWriter();
         jaxbContext.createMarshaller().marshal(configOut, writer);
-
+        
         StringReader reader = new StringReader(writer.toString());
         jaxbContext.createUnmarshaller().unmarshal(reader);
     }

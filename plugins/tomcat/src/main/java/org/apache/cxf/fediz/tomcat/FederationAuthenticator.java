@@ -105,6 +105,10 @@ public class FederationAuthenticator extends FormAuthenticator {
         if (config == null) {
             throw new IllegalStateException("No Fediz configuration for context :" + contextName);
         }
+        String catalinaHome = System.getProperty("catalina.home");
+        if (catalinaHome != null && catalinaHome.length() > 0) {
+            config.setRelativePath(catalinaHome);
+        }
         return config;
     }
 

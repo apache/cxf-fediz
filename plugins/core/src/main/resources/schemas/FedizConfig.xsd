@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	elementFormDefault="qualified" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<xs:element name="FedizConfig">
+		<xs:complexType>
+			<xs:sequence minOccurs="1" maxOccurs="unbounded">
+				<xs:element ref="contextConfig" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="contextConfig">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="audienceUris" />
+				<xs:element ref="certificateValidation" />
+				<xs:element ref="certificateStores" />
+				<xs:element ref="maximumClockSkew" />
+				<xs:element ref="serviceCertificate" />
+				<xs:element ref="trustedIssuers" />
+				<xs:element ref="protocol" />
+			</xs:sequence>
+			<xs:attribute name="name" use="required" type="xs:string" />
+
+		</xs:complexType>
+	</xs:element>
+
+	<!-- <xs:element name="trustedIssuerItem" type="TrustManagersType" /> <xs:element 
+		name="trustedIssuers"> <xs:complexType> <xs:sequence minOccurs="1" maxOccurs="unbounded"> 
+		<xs:element ref="trustedIssuerItem" /> </xs:sequence> </xs:complexType> </xs:element> -->
+
+	<xs:element name="trustedIssuers">
+		<xs:complexType>
+			<xs:sequence minOccurs="1" maxOccurs="unbounded">
+				<xs:element name="issuer" type="TrustedIssuerType" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:complexType name="TrustedIssuerType">
+		<xs:attribute name="name" type="xs:string" use="optional" />
+		<xs:attribute name="certificateValidation" type="validationType"
+			use="optional" />
+		<xs:attribute name="subject" type="xs:string" use="optional" />
+	</xs:complexType>
+
+	<xs:element name="certificateStores">
+		<xs:complexType>
+			<xs:sequence minOccurs="1" maxOccurs="unbounded">
+				<xs:element name="trustManager" type="TrustManagersType" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+
+	<!-- <xs:element name="audienceUris" type="xs:anyURI"/> -->
+	<xs:element name="audienceUris">
+		<xs:complexType>
+			<xs:sequence minOccurs="1" maxOccurs="unbounded">
+				<xs:element ref="audienceItem" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="audienceItem" type="xs:anyURI" />
+
+	<xs:element name="certificateValidation" type="validationType" />
+
+	<xs:simpleType name="validationType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="PeerTrust" />
+			<xs:enumeration value="ChainTrust" />
+		</xs:restriction>
+	</xs:simpleType>
+
+
+
+	<xs:element name="maximumClockSkew" type="xs:integer" />
+
+	<!-- keystore type -->
+	<xs:element name="serviceCertificate" type="KeyManagersType" />
+
+	<xs:element name="protocol" type="protocolType" />
+
+	<xs:complexType name="federationProtocolType">
+		<xs:complexContent>
+			<xs:extension base="protocolType">
+				<xs:sequence>
+					<xs:element ref="realm" />
+					<xs:element ref="issuer" />
+					<xs:element ref="roleDelimiter" />
+					<xs:element ref="roleURI" />
+					<xs:element ref="authenticationType" />
+					<xs:element ref="homeRealm" />
+					<xs:element ref="freshness" />
+					<xs:element ref="reply" />
+					<xs:element ref="request" />
+					<xs:element ref="claimTypesRequested" />
+					<xs:sequence minOccurs="1" maxOccurs="unbounded">
+						<xs:element ref="securityTokenValidators" />
+					</xs:sequence>
+				</xs:sequence>
+				<!-- <xs:attribute name="roleDelimiter" type="xs:string"/> -->
+				<!--<xs:attribute name="roleURI" use="required" type="xs:string"/> -->
+				<xs:attribute name="version" use="required" type="xs:string" />
+				<!--<xs:attribute name="realm" use="required" type="xs:string"/> -->
+				<!--<xs:attribute name="freshness" use="required" type="xs:string"/> -->
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:element name="roleDelimiter" type="xs:string" />
+	<xs:element name="roleURI" type="xs:string" />
+	<xs:element name="realm" type="xs:string" />
+	<xs:element name="issuer" type="xs:anyURI" />
+	<xs:element name="freshness" type="xs:string" />
+
+	<xs:complexType name="protocolType" abstract="true" />
+
+	<xs:element name="homeRealm">
+		<xs:complexType>
+			<xs:attribute name="type" use="required" type="argumentType" />
+			<xs:attribute name="value" use="required" type="xs:string" />
+		</xs:complexType>
+	</xs:element>
+
+
+	<xs:element name="authenticationType">
+		<xs:complexType>
+			<xs:attribute name="type" use="required" type="argumentType" />
+			<xs:attribute name="value" use="required" type="xs:string" />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:simpleType name="argumentType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Class" />
+			<xs:enumeration value="String" />
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:element name="reply" type="xs:string" />
+
+	<xs:element name="request" type="xs:string" />
+
+	<xs:element name="claimTypesRequested">
+		<xs:complexType>
+			<xs:sequence minOccurs="1" maxOccurs="unbounded">
+				<xs:element ref="claimType" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="claimType">
+		<xs:complexType>
+			<xs:attribute name="optional" use="required" type="optionalType" />
+			<xs:attribute name="type" use="required" type="xs:string" />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="securityTokenValidators" type="xs:string" />
+
+	<xs:simpleType name="optionalType">
+		<xs:restriction base="xs:boolean" />
+	</xs:simpleType>
+
+
+	<xs:complexType name="TrustManagersType">
+		<xs:annotation>
+			<xs:documentation>
+				This structure contains the specification of JSSE
+				TrustManagers for
+				a single Keystore used for trusted certificates.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence minOccurs="1" maxOccurs="1">
+			<xs:element name="keyStore" type="KeyStoreType" minOccurs="1">
+				<xs:annotation>
+					<xs:documentation>
+						This element contains the KeyStore used as a
+						trust
+						store.
+                  </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="provider" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>
+					This attribute contains the KeyManagers provider
+					name.
+				</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="factoryAlgorithm" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>
+					This attribute contains the algorithm the KeyManagers Factory
+					will use in creating the KeyManagers from the KeyStore. Most
+					common examples are "PKIX".
+                </xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+
+	<xs:complexType name="KeyStoreType">
+		<xs:annotation>
+			<xs:documentation>
+				A KeyStoreType represents the information needed to
+				load a collection
+				of key and certificate material from a desired
+				location.
+				The "url", "file", and "resource" attributes are intended
+				to be
+				mutually exclusive, though this assumption is not encoded in
+				schema.
+				The precedence order observed by the runtime is
+				1) "file", 2)
+				"resource", and 3) "url".
+        </xs:documentation>
+		</xs:annotation>
+		<xs:attribute name="type" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>
+					This attribute specifies the type of the keystore.
+					It is highly correlated to the provider. Most common examples
+					are
+					"jks" "pkcs12".
+            </xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="password" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>
+					This attribute specifes the integrity password for
+					the keystore.
+					This is not the password that unlock keys within the
+					keystore.
+				</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="provider" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>
+					This attribute specifies the keystore
+					implementation provider.
+					Most common examples are "SUN".
+				</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="url" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>
+					This attribute specifies the URL location of the
+					keystore.
+					This element should be a properly accessible URL, such as
+					"http://..." "file:///...", etc. Only one attribute of
+					"url",
+					"file", or "resource" is allowed.
+            </xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="file" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>
+					This attribute specifies the File location of the
+					keystore.
+					This element should be a properly accessible file from the
+					working directory. Only one attribute of
+					"url", "file", or
+					"resource" is allowed.
+            </xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="resource" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>
+					This attribute specifies the Resource location of
+					the keystore.
+					This element should be a properly accessible on the
+					classpath.
+					Only one attribute of "url", "file", or "resource" is
+					allowed.
+            </xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+
+	<xs:complexType name="CertStoreType">
+		<xs:annotation>
+			<xs:documentation>
+				A CertStoreType represents a catenated sequence of
+				X.509 certificates,
+				in PEM or DER format.
+				The "url", "file", and
+				"resource" attributes are intended to be
+				mutually exclusive, though
+				this assumption is not encoded in schema.
+				The precedence order
+				observed by the runtime is
+				1) "file", 2) "resource", and 3) "url".
+			</xs:documentation>
+		</xs:annotation>
+		<xs:attribute name="file" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>
+					This attribute specifies the File location of the
+					certificate store.
+					This element should be a properly accessible file
+					from the working directory. Only one attribute of
+					"url", "file", or
+					"resource" is allowed.
+            </xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="resource" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>
+					This attribute specifies the Resource location of
+					the certificate store.
+					This element should be a properly accessible
+					on the classpath.
+					Only one attribute of "url", "file", or "resource"
+					is allowed.
+            </xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="url" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>
+					This attribute specifies the URL location of the
+					certificate store.
+					This element should be a properly accessible URL,
+					such as
+					"http://..." "file:///...", etc. Only one attribute of
+					"url", "file", or "resource" is allowed.
+            </xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+
+
+
+	<xs:complexType name="KeyManagersType">
+		<xs:annotation>
+			<xs:documentation>
+				This structure specifies the JSSE based KeyManagers
+				for a single Keystore.
+        </xs:documentation>
+		</xs:annotation>
+
+		<xs:sequence>
+			<xs:element name="keyStore" type="KeyStoreType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						This element specified the Keystore for these
+						JSSE KeyManagers.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="keyPassword" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>
+					This attribute contains the password that unlocks
+					the keys within the keystore.
+                </xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="provider" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>
+					This attribute contains the KeyManagers provider name.
+				</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="factoryAlgorithm" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>
+					This attribute contains the algorithm the KeyManagers Factory
+					will use in creating the KeyManagers from the KeyStore. Most
+					common examples are "PKIX".
+                </xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+
+
+</xs:schema>
