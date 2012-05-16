@@ -36,6 +36,7 @@ import org.apache.catalina.authenticator.SavedRequest;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.deploy.LoginConfig;
+import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.FederationProcessor;
 import org.apache.cxf.fediz.core.FederationProcessorImpl;
@@ -309,12 +310,30 @@ public class FederationAuthenticator extends FormAuthenticator {
 
                 FederationProcessor wfProc = new FederationProcessorImpl();
                 wfRes = wfProc.processRequest(wfReq, fedConfig);
-
-                if (wfRes.getAudience() != null
-                        && request.getRequestURL().indexOf(wfRes.getAudience()) == -1) {
-                    log.debug("Audience doesn't match with request URL ["
-                            + wfRes.getAudience() + "]  ["
-                            + request.getRequestURL() + "]");
+                
+                // Validate the AudienceRestriction in Security Token (e.g. SAML) 
+                // against the configured list of audienceURIs
+                if (wfRes.getAudience() != null) {
+                    List<String> audienceURIs = fedConfig.getAudienceUris();
+                    boolean validAudience = false;
+                    for (String a : audienceURIs) {
+                        if (wfRes.getAudience().startsWith(a)) {
+                            validAudience = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!validAudience) {
+                        log.warn("Token AudienceRestriction [" + wfRes.getAudience() + "] doesn't match with specified list of URIs.");
+                            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                            return (false);
+                    }
+                    
+                    if (log.isDebugEnabled() && request.getRequestURL().indexOf(wfRes.getAudience()) == -1) {
+                        log.debug("Token AudienceRestriction doesn't match with request URL ["
+                                + wfRes.getAudience() + "]  ["
+                                + request.getRequestURL() + "]");
+                    }
                 }
 
                 List<String> roles = wfRes.getRoles();

@@ -267,22 +267,32 @@ public class FederationProcessorImpl implements FederationProcessor {
                     .encode(request.getRequestURL().toString(), "UTF-8"));
 
             String realm = null;
-            String contextPath = request.getContextPath();
-            String requestUrl = request.getRequestURL().toString();
-            String requestPath = new URL(requestUrl).getPath();
-
-            // Cut request path of request url and add context path if not ROOT
-            if (requestPath != null && requestPath.length() > 0) {
-                int lastIndex = requestUrl.lastIndexOf(requestPath);
-                realm = requestUrl.substring(0, lastIndex);
+            FederationProtocol fp = null;
+            if (config.getProtocol() instanceof FederationProtocol) {
+                fp = (FederationProtocol)config.getProtocol();
             } else {
-                realm = requestUrl;
+                LOG.error("Unsupported protocol");
+                throw new IllegalStateException("Unsupported protocol");
             }
-            if (contextPath != null && contextPath.length() > 0) {
-                // contextPath contains starting slash
-                realm = realm + contextPath + "/";
+            if (fp.getRealm() != null) {
+                realm = fp.getRealm();
             } else {
-                realm = realm + "/";
+                String contextPath = request.getContextPath();
+                String requestUrl = request.getRequestURL().toString();
+                String requestPath = new URL(requestUrl).getPath();
+                // Cut request path of request url and add context path if not ROOT
+                if (requestPath != null && requestPath.length() > 0) {
+                    int lastIndex = requestUrl.lastIndexOf(requestPath);
+                    realm = requestUrl.substring(0, lastIndex);
+                } else {
+                    realm = requestUrl;
+                }
+                if (contextPath != null && contextPath.length() > 0) {
+                    // contextPath contains starting slash
+                    realm = realm + contextPath + "/";
+                } else {
+                    realm = realm + "/";
+                }
             }
             LOG.debug("wtrealm=" + realm);
 

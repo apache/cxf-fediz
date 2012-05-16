@@ -2,7 +2,7 @@
 <FedizConfig>
 	<contextConfig name="/fedizhelloworld">
 		<audienceUris>
-			<audienceItem>http://host_one:port/url</audienceItem>
+			<audienceItem>https://localhost:8443/fedizhelloworld/</audienceItem>
 		</audienceUris>
 		<certificateStores>
 			<trustManager>
