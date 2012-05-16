@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
 
 public class IdpSTSClient extends STSClient {
 
-    private final static Logger LOG = LoggerFactory.getLogger(IdpSTSClient.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IdpSTSClient.class);
 
     public IdpSTSClient(Bus b) {
         super(b);
@@ -56,8 +56,7 @@ public class IdpSTSClient extends STSClient {
         return requestSecurityTokenResponse(null);
     }
 
-    public String requestSecurityTokenResponse(String appliesTo)
-            throws Exception {
+    public String requestSecurityTokenResponse(String appliesTo) throws Exception {
         String action = null;
         if (isSecureConv) {
             action = namespace + "/RST/SCT";

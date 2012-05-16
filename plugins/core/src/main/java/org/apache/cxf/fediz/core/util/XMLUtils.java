@@ -1,18 +1,20 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.cxf.fediz.core.util;
@@ -70,10 +72,10 @@ public final class XMLUtils {
     // private static final Logger LOG = LogUtils.getL7dLogger(XMLUtils.class);
 
     private static final Map<ClassLoader, DocumentBuilderFactory> DOCUMENT_BUILDER_FACTORIES = Collections
-            .synchronizedMap(new WeakHashMap<ClassLoader, DocumentBuilderFactory>());
+        .synchronizedMap(new WeakHashMap<ClassLoader, DocumentBuilderFactory>());
 
     private static final Map<ClassLoader, TransformerFactory> TRANSFORMER_FACTORIES = Collections
-            .synchronizedMap(new WeakHashMap<ClassLoader, TransformerFactory>());
+        .synchronizedMap(new WeakHashMap<ClassLoader, TransformerFactory>());
 
     private XMLUtils() {
     }
@@ -111,13 +113,11 @@ public final class XMLUtils {
         return factory;
     }
 
-    public static Transformer newTransformer()
-            throws TransformerConfigurationException {
+    public static Transformer newTransformer() throws TransformerConfigurationException {
         return getTransformerFactory().newTransformer();
     }
 
-    public static Transformer newTransformer(int indent)
-            throws TransformerConfigurationException {
+    public static Transformer newTransformer(int indent) throws TransformerConfigurationException {
         if (indent > 0) {
             TransformerFactory f = TransformerFactory.newInstance();
             try {
@@ -131,33 +131,29 @@ public final class XMLUtils {
         return getTransformerFactory().newTransformer();
     }
 
-    public static DocumentBuilder getParser()
-            throws ParserConfigurationException {
+    public static DocumentBuilder getParser() throws ParserConfigurationException {
         return getDocumentBuilderFactory().newDocumentBuilder();
     }
 
-    public static Document parse(InputSource is)
-            throws ParserConfigurationException, SAXException, IOException {
+    public static Document parse(InputSource is) throws ParserConfigurationException, SAXException,
+        IOException {
         return getParser().parse(is);
     }
 
-    public static Document parse(File is) throws ParserConfigurationException,
-            SAXException, IOException {
+    public static Document parse(File is) throws ParserConfigurationException, SAXException, IOException {
         return getParser().parse(is);
     }
 
-    public static Document parse(InputStream in)
-            throws ParserConfigurationException, SAXException, IOException {
+    public static Document parse(InputStream in) throws ParserConfigurationException, SAXException,
+        IOException {
         return getParser().parse(in);
     }
 
-    public static Document parse(String in)
-            throws ParserConfigurationException, SAXException, IOException {
+    public static Document parse(String in) throws ParserConfigurationException, SAXException, IOException {
         return parse(in.getBytes());
     }
 
-    public static Document parse(byte[] in)
-            throws ParserConfigurationException, SAXException, IOException {
+    public static Document parse(byte[] in) throws ParserConfigurationException, SAXException, IOException {
         if (in == null) {
             return null;
         }
@@ -194,10 +190,9 @@ public final class XMLUtils {
 
     public static void writeTo(Source src, OutputStream os, int indent) {
         String enc = null;
-        if (src instanceof DOMSource
-                && ((DOMSource) src).getNode() instanceof Document) {
+        if (src instanceof DOMSource && ((DOMSource)src).getNode() instanceof Document) {
             try {
-                enc = ((Document) ((DOMSource) src).getNode()).getXmlEncoding();
+                enc = ((Document)((DOMSource)src).getNode()).getXmlEncoding();
             } catch (Exception ex) {
                 // ignore - not DOM level 3
             }
@@ -207,10 +202,9 @@ public final class XMLUtils {
 
     public static void writeTo(Source src, Writer os, int indent) {
         String enc = null;
-        if (src instanceof DOMSource
-                && ((DOMSource) src).getNode() instanceof Document) {
+        if (src instanceof DOMSource && ((DOMSource)src).getNode() instanceof Document) {
             try {
-                enc = ((Document) ((DOMSource) src).getNode()).getXmlEncoding();
+                enc = ((Document)((DOMSource)src).getNode()).getXmlEncoding();
             } catch (Exception ex) {
                 // ignore - not DOM level 3
             }
@@ -218,8 +212,7 @@ public final class XMLUtils {
         writeTo(src, os, indent, enc, "no");
     }
 
-    public static void writeTo(Source src, OutputStream os, int indent,
-            String charset, String omitXmlDecl) {
+    public static void writeTo(Source src, OutputStream os, int indent, String charset, String omitXmlDecl) {
         Transformer it;
         try {
             if (StringUtils.isEmpty(charset)) {
@@ -230,9 +223,7 @@ public final class XMLUtils {
             it.setOutputProperty(OutputKeys.METHOD, "xml");
             if (indent > -1) {
                 it.setOutputProperty(OutputKeys.INDENT, "yes");
-                it.setOutputProperty(
-                        "{http://xml.apache.org/xslt}indent-amount",
-                        Integer.toString(indent));
+                it.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", Integer.toString(indent));
             }
             it.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, omitXmlDecl);
             it.setOutputProperty(OutputKeys.ENCODING, charset);
@@ -242,8 +233,7 @@ public final class XMLUtils {
         }
     }
 
-    public static void writeTo(Source src, Writer os, int indent,
-            String charset, String omitXmlDecl) {
+    public static void writeTo(Source src, Writer os, int indent, String charset, String omitXmlDecl) {
         Transformer it;
         try {
             if (StringUtils.isEmpty(charset)) {
@@ -254,9 +244,7 @@ public final class XMLUtils {
             it.setOutputProperty(OutputKeys.METHOD, "xml");
             if (indent > -1) {
                 it.setOutputProperty(OutputKeys.INDENT, "yes");
-                it.setOutputProperty(
-                        "{http://xml.apache.org/xslt}indent-amount",
-                        Integer.toString(indent));
+                it.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", Integer.toString(indent));
             }
             it.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, omitXmlDecl);
             it.setOutputProperty(OutputKeys.ENCODING, charset);
@@ -266,13 +254,11 @@ public final class XMLUtils {
         }
     }
 
-    public static String toString(Source source) throws TransformerException,
-            IOException {
+    public static String toString(Source source) throws TransformerException, IOException {
         return toString(source, null);
     }
 
-    public static String toString(Source source, Properties props)
-            throws TransformerException, IOException {
+    public static String toString(Source source, Properties props) throws TransformerException, IOException {
         StringWriter bos = new StringWriter();
         StreamResult sr = new StreamResult(bos);
         Transformer trans = newTransformer();
@@ -311,8 +297,7 @@ public final class XMLUtils {
         return el.getAttributeNode(attrName);
     }
 
-    public static void replaceAttribute(Element element, String attr,
-            String value) {
+    public static void replaceAttribute(Element element, String attr, String value) {
         if (element.hasAttribute(attr)) {
             element.removeAttribute(attr);
         }
@@ -334,13 +319,12 @@ public final class XMLUtils {
         NamedNodeMap attributes = element.getAttributes();
         for (int i = 0; i < attributes.getLength(); i++) {
             Node node = attributes.item(i);
-            System.err.println("## prefix=" + node.getPrefix() + " localname:"
-                    + node.getLocalName() + " value=" + node.getNodeValue());
+            System.err.println("## prefix=" + node.getPrefix() + " localname:" + node.getLocalName()
+                               + " value=" + node.getNodeValue());
         }
     }
 
-    public static QName getNamespace(Map<String, String> namespaces,
-            String str, String defaultNamespace) {
+    public static QName getNamespace(Map<String, String> namespaces, String str, String defaultNamespace) {
         String prefix = null;
         String localName = null;
 
@@ -354,7 +338,7 @@ public final class XMLUtils {
 
         String namespceURI = defaultNamespace;
         if (prefix != null) {
-            namespceURI = (String) namespaces.get(prefix);
+            namespceURI = (String)namespaces.get(prefix);
         }
         return new QName(namespceURI, localName);
     }
@@ -365,8 +349,7 @@ public final class XMLUtils {
 
             it.setOutputProperty(OutputKeys.METHOD, "xml");
             it.setOutputProperty(OutputKeys.INDENT, "yes");
-            it.setOutputProperty("{http://xml.apache.org/xslt}indent-amount",
-                    "2");
+            it.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
             it.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
             it.transform(new DOMSource(element), new StreamResult(writer));
         } catch (Exception e) {
@@ -375,17 +358,14 @@ public final class XMLUtils {
     }
 
     public static Element createElementNS(Node node, QName name) {
-        return createElementNS(node.getOwnerDocument(), name.getNamespaceURI(),
-                name.getLocalPart());
+        return createElementNS(node.getOwnerDocument(), name.getNamespaceURI(), name.getLocalPart());
     }
 
     public static Element createElementNS(Document root, QName name) {
-        return createElementNS(root, name.getNamespaceURI(),
-                name.getLocalPart());
+        return createElementNS(root, name.getNamespaceURI(), name.getLocalPart());
     }
 
-    public static Element createElementNS(Document root, String namespaceURI,
-            String qualifiedName) {
+    public static Element createElementNS(Document root, String namespaceURI, String qualifiedName) {
         return root.createElementNS(namespaceURI, qualifiedName);
     }
 
@@ -411,17 +391,15 @@ public final class XMLUtils {
         // Try to get the DOMImplementation from doc first before
         // defaulting to the sun implementation.
         if (docImpl != null && docImpl.hasFeature("LS", "3.0")) {
-            impl = (DOMImplementationLS) docImpl.getFeature("LS", "3.0");
+            impl = (DOMImplementationLS)docImpl.getFeature("LS", "3.0");
         } else {
-            DOMImplementationRegistry registry = DOMImplementationRegistry
-                    .newInstance();
-            impl = (DOMImplementationLS) registry.getDOMImplementation("LS");
+            DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
+            impl = (DOMImplementationLS)registry.getDOMImplementation("LS");
             if (impl == null) {
                 System.setProperty(DOMImplementationRegistry.PROPERTY,
-                        "com.sun.org.apache.xerces.internal.dom.DOMImplementationSourceImpl");
+                                   "com.sun.org.apache.xerces.internal.dom.DOMImplementationSourceImpl");
                 registry = DOMImplementationRegistry.newInstance();
-                impl = (DOMImplementationLS) registry
-                        .getDOMImplementation("LS");
+                impl = (DOMImplementationLS)registry.getDOMImplementation("LS");
             }
         }
         LSOutput output = impl.createLSOutput();
@@ -433,11 +411,9 @@ public final class XMLUtils {
         return new ByteArrayInputStream(buf);
     }
 
-    public static Element fetchElementByNameAttribute(Element parent,
-            String targetName, String nameValue) {
+    public static Element fetchElementByNameAttribute(Element parent, String targetName, String nameValue) {
 
-        List<Element> elemList = DOMUtils.findAllElementsByTagName(parent,
-                targetName);
+        List<Element> elemList = DOMUtils.findAllElementsByTagName(parent, targetName);
         for (Element elem : elemList) {
             if (elem.getAttribute("name").equals(nameValue)) {
                 return elem;

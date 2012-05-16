@@ -29,6 +29,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 
+import org.w3c.dom.Element;
+
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
@@ -41,11 +43,8 @@ import org.apache.ws.security.WSConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
-import org.w3c.dom.Element;
 
 public class IdpServlet extends HttpServlet {
-
-    private final static Logger LOG = LoggerFactory.getLogger(IdpServlet.class);
 
     public static final String PARAM_ACTION = "wa";
 
@@ -64,6 +63,9 @@ public class IdpServlet extends HttpServlet {
     public static final String AUTH_HEADER_NAME = "WWW-Authenticate";
 
     public static final String SERVLET_PARAM_TOKENTYPE = "ws-trust-tokentype";
+    
+    private static final Logger LOG = LoggerFactory.getLogger(IdpServlet.class);
+
 
     /**
      * 
@@ -94,6 +96,7 @@ public class IdpServlet extends HttpServlet {
 
     }
 
+    //CHECKSTYLE:OFF
     public void doGet(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
 
@@ -169,8 +172,7 @@ public class IdpServlet extends HttpServlet {
                             }
                         } catch (Exception ex) {
                             LOG.info("Requesting security token failed", ex);
-                            response.sendError(
-                                               HttpServletResponse.SC_FORBIDDEN,
+                            response.sendError(HttpServletResponse.SC_FORBIDDEN,
                                 "Requesting security token failed");
                             return;
                         }
@@ -180,14 +182,11 @@ public class IdpServlet extends HttpServlet {
                         // response);
                         // this.getServletContext().getRequestDispatcher("/WEB-INF/signinresponse.jsp").forward(request,
                         // response);
-                        this.getServletContext()
-                        .getRequestDispatcher(
-                            "/WEB-INF/signinresponse.jsp")
+                        this.getServletContext().getRequestDispatcher("/WEB-INF/signinresponse.jsp")
                             .forward(request, response);
 
                     } else {
-                        response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                            "Invalid Authorization header");
+                        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid Authorization header");
                         return;
                     }
                 } catch (Exception ex) {

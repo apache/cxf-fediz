@@ -1,18 +1,20 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.cxf.fediz.core;
@@ -29,6 +31,10 @@ import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
+
 import org.apache.cxf.fediz.core.config.FederationContext;
 import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.saml.SAMLTokenValidator;
@@ -37,9 +43,7 @@ import org.apache.ws.security.WSConstants;
 import org.apache.ws.security.util.XmlSchemaDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
+
 
 public class FederationProcessorImpl implements FederationProcessor {
 
@@ -229,29 +233,27 @@ public class FederationProcessorImpl implements FederationProcessor {
     }
 
     @Override
-    public String createSignInRequest(HttpServletRequest request,
-                                      FederationContext config) {
+    public String createSignInRequest(HttpServletRequest request, FederationContext config) {
 
         String redirectURL = null;
-        //        if (this.getIssuerCallbackHandler() != null) {
-        //            org.apache.cxf.fediz.core.spi.IDPCallback callback = new org.apache.cxf.fediz.core.spi.IDPCallback(
-        //                    request);
-        //            try {
-        //                this.getIssuerCallbackHandler().handle(
-        //                        new Callback[] { callback });
-        //                redirectURL = callback.getIssuerUrl().toString();
-        //                String trustedIssuer = callback.getTrustedIssuer();
-        //                if (trustedIssuer != null && trustedIssuer.length() > 0) {
-        //                    request.getSessionInternal().setNote(TRUSTED_ISSUER,
-        //                            trustedIssuer);
-        //                }
-        //            } catch (Exception ex) {
-        //                log.error("Failed to handle callback: " + ex.getMessage());
-        //            }
-        //        } 
-        try
-        {
-            String issuerURL = ((FederationProtocol) config.getProtocol()).getIssuer();
+        // if (this.getIssuerCallbackHandler() != null) {
+        // org.apache.cxf.fediz.core.spi.IDPCallback callback = new org.apache.cxf.fediz.core.spi.IDPCallback(
+        // request);
+        // try {
+        // this.getIssuerCallbackHandler().handle(
+        // new Callback[] { callback });
+        // redirectURL = callback.getIssuerUrl().toString();
+        // String trustedIssuer = callback.getTrustedIssuer();
+        // if (trustedIssuer != null && trustedIssuer.length() > 0) {
+        // request.getSessionInternal().setNote(TRUSTED_ISSUER,
+        // trustedIssuer);
+        // }
+        // } catch (Exception ex) {
+        // log.error("Failed to handle callback: " + ex.getMessage());
+        // }
+        // }
+        try {
+            String issuerURL = ((FederationProtocol)config.getProtocol()).getIssuer();
             if (issuerURL != null && issuerURL.length() > 0) {
                 redirectURL = issuerURL;
             }
@@ -259,12 +261,10 @@ public class FederationProcessorImpl implements FederationProcessor {
 
             StringBuilder sb = new StringBuilder();
 
-            sb.append(FederationConstants.PARAM_ACTION).append('=')
-            .append(FederationConstants.ACTION_SIGNIN);
+            sb.append(FederationConstants.PARAM_ACTION).append('=').append(FederationConstants.ACTION_SIGNIN);
 
             sb.append('&').append(FederationConstants.PARAM_REPLY).append('=');
-            sb.append(URLEncoder
-                    .encode(request.getRequestURL().toString(), "UTF-8"));
+            sb.append(URLEncoder.encode(request.getRequestURL().toString(), "UTF-8"));
 
             String realm = null;
             FederationProtocol fp = null;
@@ -297,11 +297,10 @@ public class FederationProcessorImpl implements FederationProcessor {
             LOG.debug("wtrealm=" + realm);
 
             StringBuffer realmSb = new StringBuffer(request.getScheme());
-            realmSb.append("://").append(request.getServerName()).append(":")
-            .append(request.getServerPort())
-            .append(request.getContextPath());
+            realmSb.append("://").append(request.getServerName()).append(":").append(request.getServerPort())
+                .append(request.getContextPath());
             sb.append('&').append(FederationConstants.PARAM_TREALM).append('=')
-            .append(URLEncoder.encode(realm, "UTF-8"));
+                .append(URLEncoder.encode(realm, "UTF-8"));
             redirectURL = redirectURL + "?" + sb.toString();
         } catch (Exception ex) {
             LOG.error("Failed to create SignInRequest", ex);

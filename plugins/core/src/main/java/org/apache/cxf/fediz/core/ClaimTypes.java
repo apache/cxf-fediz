@@ -1,18 +1,20 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.cxf.fediz.core;
@@ -24,6 +26,7 @@ import java.net.URI;
  * 
  * @author Oliver Wulff
  */
+//CHECKSTYLE:OFF
 public interface ClaimTypes {
     /**
      * The base XML namespace URI that is used by the claim types
@@ -66,7 +69,8 @@ public interface ClaimTypes {
 
     /**
      * (/ in [RFC 2256]) Locality component of a Subject's address information.
-     * According to RFC 2256: This attribute contains the name of a locality, such as a city, county or other geographic region.
+     * According to RFC 2256: This attribute contains the name of a locality, such as a city,
+     * county or other geographic region.
      */
     URI LOCALITY = 
         URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/locality"); 
@@ -95,21 +99,24 @@ public interface ClaimTypes {
 
     /**
      * (homePhone in inetOrgPerson) Primary or home telephone number of a Subject.
-     * According to inetOrgPerson using [RFC 1274]: This attribute type specifies a home telephone number associated with a person.
+     * According to inetOrgPerson using [RFC 1274]: This attribute type specifies
+     * a home telephone number associated with a person.
      */
     URI HOMEPHONE = 
         URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/homephone");
 
     /**
      * (telephoneNumber in X.500 Person) Secondary or work telephone number of a Subject.
-     * According to X.500(2001): This attribute type specifies an office/campus telephone number associated with a person.
+     * According to X.500(2001): This attribute type specifies an
+     * office/campus telephone number associated with a person.
      */
     URI OTHERPHONE = 
         URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/otherphone");    
 
     /**
      * (mobile in inetOrgPerson) Mobile telephone number of a Subject.
-     * According to inetOrgPerson using [RFC 1274]: This attribute type specifies a mobile telephone number associated with a person.
+     * According to inetOrgPerson using [RFC 1274]: This attribute type specifies a
+     * mobile telephone number associated with a person.
      */
     URI MOBILEPHONE = 
         URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/mobilephone");

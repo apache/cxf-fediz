@@ -1,18 +1,20 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.cxf.fediz.core.config;
@@ -31,19 +33,17 @@ import org.apache.cxf.fediz.core.config.jaxb.FedizConfig;
 
 public class FederationConfigurator {
 
-    private FedizConfig rootConfig = null;
+    private FedizConfig rootConfig;
 
-    private JAXBContext jaxbContext = null;
+    private JAXBContext jaxbContext;
 
     public FedizConfig loadConfig(File f) throws JAXBException {
-        rootConfig = (FedizConfig) getJaxbContext().createUnmarshaller()
-                .unmarshal(f);
+        rootConfig = (FedizConfig) getJaxbContext().createUnmarshaller().unmarshal(f);
         return rootConfig;
     }
 
     public FedizConfig loadConfig(Reader reader) throws JAXBException {
-        rootConfig = (FedizConfig) getJaxbContext().createUnmarshaller()
-                .unmarshal(reader);
+        rootConfig = (FedizConfig) getJaxbContext().createUnmarshaller().unmarshal(reader);
         return rootConfig;
     }
 
@@ -64,7 +64,7 @@ public class FederationConfigurator {
         return jaxbContext;
     }
 
-    public List<FederationContext> getFederationContextList(){
+    public List<FederationContext> getFederationContextList() {
         List<FederationContext> ctxList = new ArrayList<FederationContext>();
         for (ContextConfig config : rootConfig.getContextConfig()) {
             ctxList.add(new FederationContext(config));            
@@ -80,8 +80,7 @@ public class FederationConfigurator {
         return new FederationContext(config);
     }
 
-    public ContextConfig getContextConfig(String contextName)
-            throws IllegalArgumentException {
+    public ContextConfig getContextConfig(String contextName) throws IllegalArgumentException {
         if (contextName == null || contextName.isEmpty()) {
             throw new IllegalArgumentException("Invalid Context Name '" + contextName + "'");
         }

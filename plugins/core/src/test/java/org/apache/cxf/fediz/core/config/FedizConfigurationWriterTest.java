@@ -1,3 +1,22 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.apache.cxf.fediz.core.config;
 
 import java.io.File;
@@ -56,6 +75,7 @@ public class FedizConfigurationWriterTest {
 
     private static final String CONFIG_FILE = "./target/fediz_test_config.xml";
 
+    //CHECKSTYLE:OFF
     private FedizConfig createConfiguration() throws JAXBException {
 
         FedizConfig rootConfig = new FedizConfig();
@@ -64,18 +84,6 @@ public class FedizConfigurationWriterTest {
 
         config.setName(CONFIG_NAME);
         config.setMaximumClockSkew(new BigInteger(CLOCK_SKEW));
-        //config.setCertificateValidation(ValidationType.CHAIN_TRUST);
-
-        // TrustManagersType tm0 = new TrustManagersType();
-        //
-        // KeyStoreType ks0 = new KeyStoreType();
-        // ks0.setType(FILE_TYPE);
-        // ks0.setPassword(KEYSTORE_PASSWORD);
-        // ks0.setFile(KEYSTORE_FILE);
-        //
-        // tm0.setKeyStore(ks0);
-        //
-        // config.setServiceCertificate(tm0);
 
         FederationProtocolType protocol = new FederationProtocolType();
         config.setProtocol(protocol);
@@ -198,8 +206,7 @@ public class FedizConfigurationWriterTest {
         AudienceUris audience = config.getAudienceUris();
         Assert.assertEquals(1, audience.getAudienceItem().size());
         Assert.assertTrue(config.getProtocol() instanceof FederationProtocolType);
-        FederationProtocolType fp = (FederationProtocolType) config
-                .getProtocol();
+        FederationProtocolType fp = (FederationProtocolType)config.getProtocol();
 
         Assert.assertEquals(HOME_REALM_CLASS, fp.getHomeRealm().getValue());
         //Assert.assertEquals(config.getCertificateValidation(),ValidationType.CHAIN_TRUST);
@@ -211,24 +218,24 @@ public class FedizConfigurationWriterTest {
         Protocol protocol = fedContext.getProtocol();
         Assert.assertTrue(protocol instanceof FederationProtocol);
         FederationProtocol fedProtocol = (FederationProtocol) protocol;
-        Assert.assertEquals(TARGET_REALM,fedProtocol.getRealm());
+        Assert.assertEquals(TARGET_REALM, fedProtocol.getRealm());
         
         Authentication auth = fedProtocol.getAuthenticationType();
-        Assert.assertEquals(auth.getType(),PropertyType.STRING);
-        Assert.assertEquals(auth.getValue(),AUTH_TYPE_VALUE);
+        Assert.assertEquals(auth.getType(), PropertyType.STRING);
+        Assert.assertEquals(auth.getValue(), AUTH_TYPE_VALUE);
         
         //Assert.assertEquals(ValidationMethod.CHAIN_TRUST, fedContext.getCertificateValidation());
         List<String> audienceUris = fedContext.getAudienceUris();
-        Assert.assertEquals(1,audienceUris.size());
+        Assert.assertEquals(1, audienceUris.size());
         List<TrustedIssuer> trustedIssuers = fedContext.getTrustedIssuers();
-        Assert.assertEquals(1,trustedIssuers.size());
+        Assert.assertEquals(1, trustedIssuers.size());
         TrustedIssuer issuer = trustedIssuers.get(0);
         Assert.assertEquals(TRUST_ISSUER_NAME, issuer.getName());
         Assert.assertEquals(CertificateValidationMethod.CHAIN_TRUST, issuer.getCertificateValidationMethod());
         Assert.assertEquals(TRUST_ISSUER_CERT_CONSTRAINT, issuer.getSubject());
         
         List<TrustManager> trustManagers = fedContext.getCertificateStores();
-        Assert.assertEquals(1,trustManagers.size());
+        Assert.assertEquals(1, trustManagers.size());
         TrustManager manager = trustManagers.get(0);
         KeyStore keyStore = manager.getKeyStore();
         Assert.assertEquals(JKS_TYPE, keyStore.getType());

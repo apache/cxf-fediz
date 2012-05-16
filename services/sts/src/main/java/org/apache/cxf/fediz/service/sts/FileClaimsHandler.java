@@ -39,7 +39,7 @@ public class FileClaimsHandler implements ClaimsHandler {
     public static final URI ROLE = 
         URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role");
 
-    private Map<String, Map<String, String>> userClaims = null;
+    private Map<String, Map<String, String>> userClaims;
 
     public void setUserClaims(Map<String, Map<String, String>> userClaims) {
         this.userClaims = userClaims;
@@ -51,7 +51,7 @@ public class FileClaimsHandler implements ClaimsHandler {
 
     @Override
     public List<URI> getSupportedClaimTypes() {
-        ArrayList<URI> list = new ArrayList<URI>();
+        List<URI> list = new ArrayList<URI>();
         list.add(ClaimTypes.EMAILADDRESS);
         list.add(ClaimTypes.LASTNAME);
         list.add(ClaimTypes.FIRSTNAME);
