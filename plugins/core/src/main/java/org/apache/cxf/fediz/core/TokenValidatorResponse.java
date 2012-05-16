@@ -21,12 +21,12 @@ import java.util.List;
 
 public class TokenValidatorResponse {
 
-    private String username = null;
-    private String uniqueTokenId = null;
-    private List<String> roles = null;
-    private String issuer = null;
-    private String audience = null;
-    private List<Claim> claims = null;
+    private String username;
+    private String uniqueTokenId;
+    private List<String> roles;
+    private String issuer;
+    private String audience;
+    private List<Claim> claims;
 
 
 

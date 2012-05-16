@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FederationConstants {
+public final class FederationConstants {
 
     public static final String WSFED_METHOD = "WSFED";
 

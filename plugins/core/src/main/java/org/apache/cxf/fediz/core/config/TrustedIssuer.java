@@ -21,7 +21,7 @@ import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
 import org.apache.cxf.fediz.core.config.jaxb.ValidationType;
 
 public class TrustedIssuer {
-    private TrustedIssuerType trustedIssuerType = null;
+    private TrustedIssuerType trustedIssuerType;
 
         
     public TrustedIssuer(TrustedIssuerType trustedIssuerType) {
@@ -65,9 +65,8 @@ public class TrustedIssuer {
         }
     }
     
-    
 
-   public int hashCode() {
+    public int hashCode() {
         return trustedIssuerType.hashCode();
     }
     

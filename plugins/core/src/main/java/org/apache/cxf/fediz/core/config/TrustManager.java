@@ -20,25 +20,20 @@ package org.apache.cxf.fediz.core.config;
 import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
 
 public class TrustManager {
-    private TrustManagersType trustManagerType = null;
+    private TrustManagersType trustManagerType;
 
-        
     public TrustManager(TrustManagersType trustManagerType) {
         super();
         this.trustManagerType = trustManagerType;
     }
-
-   
 
     public KeyStore getKeyStore() {
         return new KeyStore(trustManagerType.getKeyStore());
     }
 
     public void setKeyStore(KeyStore keyStore) {
-        trustManagerType.setKeyStore(keyStore.getKesyStoreType());
+        trustManagerType.setKeyStore(keyStore.getkeyStoreType());
     }
-
- 
 
     public String getProvider() {
         return trustManagerType.getProvider();
@@ -48,7 +43,7 @@ public class TrustManager {
         trustManagerType.setProvider(value);
     }
 
-   public int hashCode() {
+    public int hashCode() {
         return trustManagerType.hashCode();
     }
     

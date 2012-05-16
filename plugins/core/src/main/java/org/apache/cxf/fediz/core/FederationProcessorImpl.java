@@ -43,17 +43,15 @@ import org.xml.sax.SAXException;
 
 public class FederationProcessorImpl implements FederationProcessor {
 
-    private static final Logger LOG = LoggerFactory
-    .getLogger(FederationProcessorImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FederationProcessorImpl.class);
 
     private String namespace = "http://docs.oasis-open.org/ws-sx/ws-trust/200512";
 
-    private TokenReplayCache<String> replayCache = null;
+    private TokenReplayCache<String> replayCache;
 
     /**
      * Default constructor
      */
-
     public FederationProcessorImpl() {
         super();
         replayCache = TokenReplayCacheInMemory.getInstance();
@@ -65,7 +63,6 @@ public class FederationProcessorImpl implements FederationProcessor {
      *            plugable token cache allowing to provide a replicated cache to
      *            be used in clustered scenarios
      */
-
     public FederationProcessorImpl(TokenReplayCache<String> replayCache) {
         super();
         this.replayCache = replayCache;

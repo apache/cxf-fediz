@@ -77,13 +77,8 @@
 		<ref bean="claimsAttributeProvider" />
 	</util:list>
 
-	<bean id="defaultAttributeProvider"
-		class="org.apache.cxf.sts.token.provider.DefaultAttributeStatementProvider" />
-
-
 	<bean id="claimsAttributeProvider"
 		class="org.apache.cxf.sts.claims.ClaimsAttributeStatementProvider" />
-
 
 	<import resource="userClaims.xml" />
 

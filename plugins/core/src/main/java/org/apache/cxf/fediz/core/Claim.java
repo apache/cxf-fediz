@@ -44,7 +44,6 @@ import java.security.Principal;
  */
 public class Claim implements Serializable {
 
-
     /**
      * 
      */

@@ -25,12 +25,9 @@ public enum PropertyType {
     STRING("String");
     private final String value;
 
-    
-
     PropertyType(String v) {
         value = v;
     }
-
     
     PropertyType(ArgumentType arg) {
         value = arg.value();

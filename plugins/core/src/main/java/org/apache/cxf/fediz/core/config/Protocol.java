@@ -20,7 +20,7 @@ package org.apache.cxf.fediz.core.config;
 import org.apache.cxf.fediz.core.config.jaxb.ProtocolType;
 
 public abstract class Protocol {
-    private ProtocolType protocolType = null;
+    private ProtocolType protocolType;
 
     public Protocol(ProtocolType protocolType) {
         super();

@@ -21,7 +21,7 @@ import org.apache.cxf.fediz.core.config.jaxb.ClaimType;
 
 public class Claim {
 
-    private ClaimType claimType = null;
+    private ClaimType claimType;
 
     public Claim(ClaimType claimType) {
         super();

@@ -19,9 +19,9 @@ package org.apache.cxf.fediz.core;
 
 public class FederationRequest {
 
-    private String wa = null;
-    private String wresult = null;
-    private String wct = null;
+    private String wa;
+    private String wresult;
+    private String wct;
 
 
     public String getWct() {

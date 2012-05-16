@@ -20,79 +20,79 @@ package org.apache.cxf.fediz.core.config;
 import org.apache.cxf.fediz.core.config.jaxb.KeyStoreType;
 
 public class KeyStore {
-    private KeyStoreType kesyStoreType = null;
+    private KeyStoreType keyStoreType;
 
-    public KeyStore(KeyStoreType kesyStoreType) {
+    public KeyStore(KeyStoreType keyStoreType) {
         super();
-        this.kesyStoreType = kesyStoreType;
+        this.keyStoreType = keyStoreType;
     }
 
-    protected KeyStoreType getKesyStoreType() {
-        return kesyStoreType;
+    protected KeyStoreType getkeyStoreType() {
+        return keyStoreType;
     }
 
-    protected void setKesyStoreType(KeyStoreType kesyStoreType) {
-        this.kesyStoreType = kesyStoreType;
+    protected void setkeyStoreType(KeyStoreType keyStoreType) {
+        this.keyStoreType = keyStoreType;
     }
 
     public String getType() {
-        return kesyStoreType.getType();
+        return keyStoreType.getType();
     }
 
     public void setType(String value) {
-        kesyStoreType.setType(value);
+        keyStoreType.setType(value);
     }
 
     public String getPassword() {
-        return kesyStoreType.getPassword();
+        return keyStoreType.getPassword();
     }
 
     public void setPassword(String value) {
-        kesyStoreType.setPassword(value);
+        keyStoreType.setPassword(value);
     }
 
     public String getProvider() {
-        return kesyStoreType.getProvider();
+        return keyStoreType.getProvider();
     }
 
     public void setProvider(String value) {
-        kesyStoreType.setProvider(value);
+        keyStoreType.setProvider(value);
     }
 
     public String getUrl() {
-        return kesyStoreType.getUrl();
+        return keyStoreType.getUrl();
     }
 
     public void setUrl(String value) {
-        kesyStoreType.setUrl(value);
+        keyStoreType.setUrl(value);
     }
 
     public String getFile() {
-        return kesyStoreType.getFile();
+        return keyStoreType.getFile();
     }
 
     public void setFile(String value) {
-        kesyStoreType.setFile(value);
+        keyStoreType.setFile(value);
     }
 
     public String getResource() {
-        return kesyStoreType.getResource();
+        return keyStoreType.getResource();
     }
 
     public void setResource(String value) {
-        kesyStoreType.setResource(value);
+        keyStoreType.setResource(value);
     }
 
     public int hashCode() {
-        return kesyStoreType.hashCode();
+        return keyStoreType.hashCode();
     }
 
     public boolean equals(Object obj) {
-        return kesyStoreType.equals(obj);
+        return keyStoreType.equals(obj);
     }
 
     public String toString() {
-        return kesyStoreType.toString();
+        return keyStoreType.toString();
     }
 
 }

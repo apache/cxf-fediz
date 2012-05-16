@@ -21,7 +21,6 @@ import org.apache.cxf.fediz.core.config.jaxb.FederationProtocolType;
 import org.apache.cxf.fediz.core.config.jaxb.FedizConfig;
 import org.apache.cxf.fediz.core.config.jaxb.HomeRealm;
 import org.apache.cxf.fediz.core.config.jaxb.KeyStoreType;
-import org.apache.cxf.fediz.core.config.jaxb.ProtocolType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuers;
@@ -55,7 +54,7 @@ public class FedizConfigurationWriterTest {
 
     private static final String CLAIM_TYPE_1 = "a particular claim type";
 
-    private static final String CONFIG_FILE = "./fediz_test_config.xml";
+    private static final String CONFIG_FILE = "./target/fediz_test_config.xml";
 
     private FedizConfig createConfiguration() throws JAXBException {
 

@@ -373,9 +373,6 @@ public class SAMLTokenValidator implements TokenValidator {
     class PasswordCallbackHandler implements CallbackHandler {
         private String password;
 
-        private PasswordCallbackHandler() {
-        }
-
         public PasswordCallbackHandler(String password) {
             this.password = password;
         }

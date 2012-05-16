@@ -25,26 +25,24 @@ import org.w3c.dom.Element;
 
 public class FederationResponse {
 
-    private String audience = null;
-    private String username = null;
-    private List<String> roles = null;
-    private String issuer = null;
-    private List<Claim> claims = null;
-    private Element token = null;
-    private String uniqueTokenId = null;
+    private String audience;
+    private String username;
+    private List<String> roles;
+    private String issuer;
+    private List<Claim> claims;
+    private Element token;
+    private String uniqueTokenId;
 
     /**
      * Created time
      */
-     private Date tokenCreated = null;
+     private Date tokenCreated;
 
-     /**	* Expiration time
+     /**
+      * Expiration time
       */
-     private Date tokenExpires = null;
+     private Date tokenExpires;
 
-
-
-     private FederationResponse() {}
 
      public FederationResponse(String username, String issuer, List<String> roles, List<Claim> claims, String audience, Date created, Date expires, Element token, String uniqueTokenId) {
          this.username = username;
@@ -58,8 +56,6 @@ public class FederationResponse {
          this.uniqueTokenId = uniqueTokenId;
      }
 
-
-
      public String getUniqueTokenId() {
          return uniqueTokenId;
      }
@@ -68,39 +64,31 @@ public class FederationResponse {
          return audience;
      }
 
-
-
      public String getUsername() {
          return username;
      }
 
-
-
      public List<String> getRoles() {
-         if (roles == null) return null;
-         else return Collections.unmodifiableList(roles);
+         if (roles == null) {
+             return null;
+         }
+         return Collections.unmodifiableList(roles);
      }
-
-
 
      public String getIssuer() {
          return issuer;
      }
 
-
-
      public List<Claim> getClaims() {
-         if (claims == null) return null;
-         else return Collections.unmodifiableList(claims);
+         if (claims == null) {
+             return null;
+         }
+         return Collections.unmodifiableList(claims);
      }
-
-
 
      public Date getTokenCreated() {
          return tokenCreated;
      }
-
-
 
      public Date getTokenExpires() {
          return tokenExpires;
@@ -109,7 +97,6 @@ public class FederationResponse {
      public Element getToken() {
          return token;
      }
-
 
 
 }

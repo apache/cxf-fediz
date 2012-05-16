@@ -20,7 +20,7 @@ package org.apache.cxf.fediz.core.config;
 import org.apache.cxf.fediz.core.config.jaxb.CertStoreType;
 
 public class CertStore {
-    private CertStoreType certStoreType = null;
+    private CertStoreType certStoreType;
 
     public CertStore(CertStoreType certStoreType) {
         super();

@@ -21,7 +21,7 @@ import org.apache.cxf.fediz.core.config.jaxb.ArgumentType;
 import org.apache.cxf.fediz.core.config.jaxb.AuthenticationType;
 
 public class Authentication {
-    private AuthenticationType authType = null;
+    private AuthenticationType authType;
 
     public Authentication(AuthenticationType authType) {
         super();

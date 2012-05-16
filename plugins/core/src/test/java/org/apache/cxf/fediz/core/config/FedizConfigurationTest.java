@@ -60,7 +60,7 @@ public class FedizConfigurationTest {
     private static final String SUBJECT_VALUE_3 = ".*CN=www.sts3.com.*";
     
 
-    private static final String CONFIG_FILE = "./fedizconfig.xml";
+    private static final String CONFIG_FILE = "./target/fedizconfig.xml";
 
     private FedizConfig createConfiguration() throws JAXBException {
 

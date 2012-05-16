@@ -3,7 +3,7 @@ package org.apache.cxf.fediz.core.config;
 import org.apache.cxf.fediz.core.config.jaxb.ArgumentType;
 
 public class HomeRealm {
-    private org.apache.cxf.fediz.core.config.jaxb.HomeRealm homeRealm = null;
+    private org.apache.cxf.fediz.core.config.jaxb.HomeRealm homeRealm;
 
     public HomeRealm(org.apache.cxf.fediz.core.config.jaxb.HomeRealm homeRealm) {
         super();

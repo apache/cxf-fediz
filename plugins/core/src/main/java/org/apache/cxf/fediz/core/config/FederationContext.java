@@ -34,7 +34,7 @@ import org.apache.cxf.fediz.core.exception.IllegalConfigurationException;
 
 public class FederationContext {
 
-    private ContextConfig config = null;
+    private ContextConfig config;
 
     private boolean detectExpiredTokens = true;
     private boolean detectReplayedTokens = true;
