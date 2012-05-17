@@ -474,6 +474,7 @@
                         </rulesets>
                         <sourceEncoding>UTF-8</sourceEncoding>
                         <targetJdk>${jdk.version}</targetJdk>
+                        <failOnViolation>true</failOnViolation>
                         <linkXRef>false</linkXRef>
                         <includeTests>true</includeTests>
                         <verbose>true</verbose>
