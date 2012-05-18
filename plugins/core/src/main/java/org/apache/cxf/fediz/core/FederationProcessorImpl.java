@@ -49,8 +49,6 @@ public class FederationProcessorImpl implements FederationProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(FederationProcessorImpl.class);
 
-    private String namespace = "http://docs.oasis-open.org/ws-sx/ws-trust/200512";
-
     private TokenReplayCache<String> replayCache;
 
     /**
@@ -118,7 +116,8 @@ public class FederationProcessorImpl implements FederationProcessor {
 
         while (el != null) {
             String ln = el.getLocalName();
-            if (namespace.equals(el.getNamespaceURI())) {
+            if (FederationConstants.WS_TRUST_13_NS.equals(el.getNamespaceURI()) 
+                || FederationConstants.WS_TRUST_2005_02_NS.equals(el.getNamespaceURI())) {
                 if ("Lifetime".equals(ln)) {
                     lifetimeElem = el;
                 } else if ("RequestedSecurityToken".equals(ln)) {
@@ -136,7 +135,10 @@ public class FederationProcessorImpl implements FederationProcessor {
                             : "null"));
             LOG.debug("Tokentype: " + ((tt != null) ? tt.toString() : "null"));
         }
-
+        if (rst == null) {
+            LOG.info("RST is null");
+            throw new RuntimeException("RST is null");
+        }
         LifeTime lifeTime = null;
         if (lifetimeElem != null) {
             lifeTime = processLifeTime(lifetimeElem);

@@ -207,6 +207,11 @@ public final class FederationConstants {
     public static final URI AUTH_TYPE_SMARTCARD = URI
         .create("http://docs.oasis-open.org/wsfed/authorization/200706/authntypes/smartcard");
 
+    public static final String WS_TRUST_13_NS = "http://docs.oasis-open.org/ws-sx/ws-trust/200512";
+    
+    public static final String WS_TRUST_2005_02_NS = "http://schemas.xmlsoap.org/ws/2005/02/trust";
+    
+    
     private FederationConstants() {
         
     }
