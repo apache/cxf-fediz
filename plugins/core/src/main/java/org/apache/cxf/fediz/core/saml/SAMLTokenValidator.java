@@ -192,7 +192,7 @@ public class SAMLTokenValidator implements TokenValidator {
 
             TokenValidatorResponse response = new TokenValidatorResponse(
                     assertion.getId(), p.getName(), assertionIssuer, roles,
-                    claims, audience);
+                    new ClaimCollection(claims), audience);
 
             return response;
 
@@ -212,9 +212,8 @@ public class SAMLTokenValidator implements TokenValidator {
             }
             return Collections.emptyList();
         }
-        ClaimCollection collection = new ClaimCollection();
+        List<Claim> collection = new ArrayList<Claim>();
         Map<String, Claim> claimsMap = new HashMap<String, Claim>();
-        
 
         for (org.opensaml.saml1.core.AttributeStatement statement : attributeStatements) {
             if (LOG.isDebugEnabled()) {
