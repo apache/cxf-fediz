@@ -32,7 +32,7 @@
 
 	<servlet-mapping>
 		<servlet-name>FederationServlet</servlet-name>
-		<url-pattern>/secureservlet/fed</url-pattern>
+		<url-pattern>/secure/fedservlet</url-pattern>
 	</servlet-mapping>
 
 	<security-role>
