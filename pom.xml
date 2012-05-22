@@ -20,62 +20,62 @@
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-   <modelVersion>4.0.0</modelVersion>
-   <groupId>org.apache.cxf.fediz</groupId>
-   <artifactId>fediz</artifactId>
-   <version>1.0-SNAPSHOT</version>
-   <name>Apache Fediz</name>
-   <packaging>pom</packaging>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.apache.cxf.fediz</groupId>
+    <artifactId>fediz</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <name>Apache Fediz</name>
+    <packaging>pom</packaging>
 
-   <parent>
-       <groupId>org.apache</groupId>
-       <artifactId>apache</artifactId>
-       <version>9</version>
-   </parent>
+    <parent>
+        <groupId>org.apache</groupId>
+        <artifactId>apache</artifactId>
+        <version>9</version>
+    </parent>
 
-   <properties>
-      <slf4j.version>1.6.1</slf4j.version>
-      <spring.version>3.0.7.RELEASE</spring.version>
-      <tomcat.version>7.0.27</tomcat.version>
-      <jetty.version>8.1.3.v20120416</jetty.version>
-      <junit.version>4.8.2</junit.version>
-      <tomcat.url>http://localhost:8080/manager/text</tomcat.url>
-      <cxf.version>2.6.1-SNAPSHOT</cxf.version>
-      <wss4j.version>1.6.5</wss4j.version>
-      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-      <jdk.version>1.6</jdk.version>
-      <compiler.fork>false</compiler.fork>
-      <cxf.build-utils.version>2.4.1</cxf.build-utils.version>
+    <properties>
+        <slf4j.version>1.6.1</slf4j.version>
+        <spring.version>3.0.7.RELEASE</spring.version>
+        <tomcat.version>7.0.27</tomcat.version>
+        <jetty.version>8.1.3.v20120416</jetty.version>
+        <junit.version>4.8.2</junit.version>
+        <tomcat.url>http://localhost:8080/manager/text</tomcat.url>
+        <cxf.version>2.6.1-SNAPSHOT</cxf.version>
+        <wss4j.version>1.6.5</wss4j.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <jdk.version>1.6</jdk.version>
+        <compiler.fork>false</compiler.fork>
+        <cxf.build-utils.version>2.4.1</cxf.build-utils.version>
 
-      <fediz.protect-xmlschema-collections>false</fediz.protect-xmlschema-collections>
-      <fediz.surefire.fork.mode>once</fediz.surefire.fork.mode>
-      <fediz.surefire.format>brief</fediz.surefire.format>
-      <fediz.surefire.usefile>false</fediz.surefire.usefile>
-      <fediz.surefire.parallel.mode />
-      <fediz.surefire.fork.vmargs>-ea</fediz.surefire.fork.vmargs>
-      <fediz.server.launcher.vmargs>-ea</fediz.server.launcher.vmargs>
-      <fediz.surefire.enable.assertions>true</fediz.surefire.enable.assertions>
-      <fediz.compile.flags>-Xlint:unchecked,deprecation,fallthrough,finally</fediz.compile.flags>
-      <fediz.compile.show.deprecation>true</fediz.compile.show.deprecation>
-      <fediz.codegenplugin.forkmode>once</fediz.codegenplugin.forkmode>
-      <fediz.manifest.location>${project.build.outputDirectory}/META-INF/MANIFEST.MF</fediz.manifest.location>
-      <fediz.eclipse.outputDirectory>${basedir}/target/classes</fediz.eclipse.outputDirectory>
+        <fediz.protect-xmlschema-collections>false</fediz.protect-xmlschema-collections>
+        <fediz.surefire.fork.mode>once</fediz.surefire.fork.mode>
+        <fediz.surefire.format>brief</fediz.surefire.format>
+        <fediz.surefire.usefile>false</fediz.surefire.usefile>
+        <fediz.surefire.parallel.mode />
+        <fediz.surefire.fork.vmargs>-ea</fediz.surefire.fork.vmargs>
+        <fediz.server.launcher.vmargs>-ea</fediz.server.launcher.vmargs>
+        <fediz.surefire.enable.assertions>true</fediz.surefire.enable.assertions>
+        <fediz.compile.flags>-Xlint:unchecked,deprecation,fallthrough,finally</fediz.compile.flags>
+        <fediz.compile.show.deprecation>true</fediz.compile.show.deprecation>
+        <fediz.codegenplugin.forkmode>once</fediz.codegenplugin.forkmode>
+        <fediz.manifest.location>${project.build.outputDirectory}/META-INF/MANIFEST.MF</fediz.manifest.location>
+        <fediz.eclipse.outputDirectory>${basedir}/target/classes</fediz.eclipse.outputDirectory>
 
-      <!-- OSGi related properties -->
+        <!-- OSGi related properties -->
 
-      <!-- please maintain alphabetical order here -->
-      <fediz.jaxb21.version>2.1</fediz.jaxb21.version>
-      <fediz.jaxb21.impl.version>2.1.13</fediz.jaxb21.impl.version>
-      <fediz.jaxb21.xjc.version>2.1.13</fediz.jaxb21.xjc.version>
-      <fediz.jaxb22.version>2.2.6</fediz.jaxb22.version>
-      <fediz.jaxb22.impl.version>2.2.5</fediz.jaxb22.impl.version>
-      <fediz.jaxb22.xjc.version>2.2.5</fediz.jaxb22.xjc.version>
+        <!-- please maintain alphabetical order here -->
+        <fediz.jaxb21.version>2.1</fediz.jaxb21.version>
+        <fediz.jaxb21.impl.version>2.1.13</fediz.jaxb21.impl.version>
+        <fediz.jaxb21.xjc.version>2.1.13</fediz.jaxb21.xjc.version>
+        <fediz.jaxb22.version>2.2.6</fediz.jaxb22.version>
+        <fediz.jaxb22.impl.version>2.2.5</fediz.jaxb22.impl.version>
+        <fediz.jaxb22.xjc.version>2.2.5</fediz.jaxb22.xjc.version>
 
-      <fediz.checkstyle.extension />
-      <fediz.downloadSources>true</fediz.downloadSources>
+        <fediz.checkstyle.extension />
+        <fediz.downloadSources>true</fediz.downloadSources>
 
-      <fediz.resources.base.path />
-   </properties>
+        <fediz.resources.base.path />
+    </properties>
 
     <scm>
         <connection>scm:svn:http://svn.apache.org/repos/asf/fediz/trunk</connection>
@@ -88,45 +88,45 @@
         <url>https://issues.apache.org/jira/browse/FEDIZ</url>
     </issueManagement>
 
-   <distributionManagement>
-       <repository>
-           <id>apache.releases.https</id>
-           <name>Apache Release Distribution Repository</name>
-           <url>https://repository.apache.org/service/local/staging/deploy/maven2</url>
-       </repository>
-       <snapshotRepository>
-           <id>apache.snapshots.https</id>
-           <name>Apache Development Snapshot Repository</name>
-           <url>https://repository.apache.org/content/repositories/snapshots</url>
-       </snapshotRepository>
-   </distributionManagement>
+    <distributionManagement>
+        <repository>
+            <id>apache.releases.https</id>
+            <name>Apache Release Distribution Repository</name>
+            <url>https://repository.apache.org/service/local/staging/deploy/maven2</url>
+        </repository>
+        <snapshotRepository>
+            <id>apache.snapshots.https</id>
+            <name>Apache Development Snapshot Repository</name>
+            <url>https://repository.apache.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 
-   <repositories>
-       <repository>
-           <id>apache.snapshots</id>
-           <url>http://repository.apache.org/snapshots/</url>
-           <name>Apache Snapshot Repo</name>
-           <snapshots>
-               <enabled>true</enabled>
-           </snapshots>
-           <releases>
-               <enabled>false</enabled>
-           </releases>
-       </repository>
-   </repositories>
-   <pluginRepositories>
-       <pluginRepository>
-           <id>apache.snapshots</id>
-           <url>http://repository.apache.org/snapshots/</url>
-           <name>Apache Snapshot Repo</name>
-           <snapshots>
-               <enabled>true</enabled>
-           </snapshots>
-           <releases>
-               <enabled>false</enabled>
-           </releases>
-       </pluginRepository>
-   </pluginRepositories>
+    <repositories>
+        <repository>
+            <id>apache.snapshots</id>
+            <url>http://repository.apache.org/snapshots/</url>
+            <name>Apache Snapshot Repo</name>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>apache.snapshots</id>
+            <url>http://repository.apache.org/snapshots/</url>
+            <name>Apache Snapshot Repo</name>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
 
     <inceptionYear>2011</inceptionYear>
     <mailingLists>
@@ -180,6 +180,7 @@
         </developer>
     </developers>
    
+
     <ciManagement>
         <system>Hudson</system>
         <url>https://builds.apache.org/view/A-F/view/CXF/job/CXF-Fediz/</url>
@@ -204,11 +205,12 @@
         <url>http://www.apache.org/</url>
     </organization>
 
-   <modules>
-      <module>plugins</module>
-      <module>services</module>
-      <module>examples</module>
-   </modules>
+    <modules>
+        <module>plugins</module>
+        <module>services</module>
+        <module>examples</module>
+        <module>apache-fediz</module>
+    </modules>
 
     <build>
         <defaultGoal>install</defaultGoal>
@@ -217,7 +219,7 @@
             <plugins>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>properties-maven-plugin </artifactId>
+                    <artifactId>properties-maven-plugin</artifactId>
                     <version>1.0-alpha-2</version>
                 </plugin>
                 <plugin>
@@ -557,26 +559,26 @@
                 -->
 
                 <plugin>
-                  <groupId>org.apache.rat</groupId>
-                  <artifactId>apache-rat-plugin</artifactId>
-                  <version>0.7</version>
-                  <configuration>
-                      <numUnapprovedLicenses>350</numUnapprovedLicenses>
-                      <excludeSubProjects>false</excludeSubProjects>
-                      <excludes>
-                          <exclude>.git/**</exclude>
-                          <exclude>.gitignore</exclude>
-                          <exclude>velocity.log</exclude>
-                          <exclude>**/target/**</exclude>
-                          <!--<exclude>distribution/**</exclude>-->
-                          <exclude>**/jaxb.index</exclude>
-                          <exclude>**/META-INF/MANIFEST</exclude>
-                          <exclude>**/src/test/**/*.txt</exclude>
-                          <exclude>**/.classpath</exclude>
-                          <exclude>**/.settings/**/*</exclude>
-                          <exclude>**/.project</exclude>
-                      </excludes>
-                  </configuration>
+                    <groupId>org.apache.rat</groupId>
+                    <artifactId>apache-rat-plugin</artifactId>
+                    <version>0.7</version>
+                    <configuration>
+                        <numUnapprovedLicenses>350</numUnapprovedLicenses>
+                        <excludeSubProjects>false</excludeSubProjects>
+                        <excludes>
+                            <exclude>.git/**</exclude>
+                            <exclude>.gitignore</exclude>
+                            <exclude>velocity.log</exclude>
+                            <exclude>**/target/**</exclude>
+                            <!--<exclude>distribution/**</exclude>-->
+                            <exclude>**/jaxb.index</exclude>
+                            <exclude>**/META-INF/MANIFEST</exclude>
+                            <exclude>**/src/test/**/*.txt</exclude>
+                            <exclude>**/.classpath</exclude>
+                            <exclude>**/.settings/**/*</exclude>
+                            <exclude>**/.project</exclude>
+                        </excludes>
+                    </configuration>
                 </plugin>
                 <!-- TODO commented out for now
                 <plugin>
@@ -603,7 +605,7 @@
         </pluginManagement>
     </build>
 
-   <profiles>
+    <profiles>
         <profile>
             <id>setup.eclipse</id>
             <properties>
@@ -754,7 +756,7 @@
                 </plugins>
             </build>
         </profile>
-   </profiles>
+    </profiles>
 
 
 
