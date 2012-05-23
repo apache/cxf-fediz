@@ -25,7 +25,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.util.Calendar;
 import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
@@ -145,12 +144,12 @@ public class FederationProcessorImpl implements FederationProcessor {
         }
 
         if (config.isDetectExpiredTokens() && lifeTime != null) {
-            Calendar cal = Calendar.getInstance();
-            if (cal.getTime().after(lifeTime.getExpires())) {
+            Date currentDate = new Date();
+            if (currentDate.after(lifeTime.getExpires())) {
                 LOG.warn("Token already expired");
             }
 
-            if (cal.getTime().before(lifeTime.getCreated())) {
+            if (currentDate.before(lifeTime.getCreated())) {
                 LOG.warn("Token not yet valid");
                 // [TODO] Add Check clocksqew
             }
