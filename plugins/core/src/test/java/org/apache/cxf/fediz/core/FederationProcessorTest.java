@@ -129,6 +129,7 @@ public class FederationProcessorTest {
         wfReq.setWresult(sRSTR);
         FederationContext config = loadRootConfig();
         config.setDetectReplayedTokens(false);
+        config.setDetectExpiredTokens(false);
 
         FederationProcessor wfProc = new FederationProcessorImpl();
         FederationResponse wfRes = wfProc.processRequest(wfReq, config);
@@ -145,6 +146,7 @@ public class FederationProcessorTest {
         wfReq.setWresult(sRSTR);
         FederationContext config = loadOtherIssuerRootConfig();
         config.setDetectReplayedTokens(false);
+        config.setDetectExpiredTokens(false);
         FederationProcessor wfProc = new FederationProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
@@ -164,6 +166,7 @@ public class FederationProcessorTest {
 
         FederationContext config = loadRootConfig();
         config.setDetectReplayedTokens(false);
+        config.setDetectExpiredTokens(false);
 
         FederationProcessor wfProc = new FederationProcessorImpl();
         FederationResponse wfRes = wfProc.processRequest(wfReq, config);
@@ -181,6 +184,7 @@ public class FederationProcessorTest {
         wfReq.setWa(FederationConstants.ACTION_SIGNIN);
         wfReq.setWresult(sRSTRREPLAY);
         FederationContext config = loadRootConfig();
+        config.setDetectExpiredTokens(false);
 
         FederationProcessor wfProc = new FederationProcessorImpl();
         FederationResponse wfRes = wfProc.processRequest(wfReq, config);

@@ -45,6 +45,7 @@ import org.apache.cxf.fediz.core.config.FederationContext;
 import org.apache.cxf.fediz.core.config.KeyStore;
 import org.apache.cxf.fediz.core.config.TrustManager;
 import org.apache.cxf.fediz.core.config.TrustedIssuer;
+
 import org.apache.ws.security.SAMLTokenPrincipal;
 import org.apache.ws.security.WSDocInfo;
 import org.apache.ws.security.WSPasswordCallback;
@@ -57,8 +58,11 @@ import org.apache.ws.security.saml.SAMLKeyInfo;
 import org.apache.ws.security.saml.ext.AssertionWrapper;
 import org.apache.ws.security.validate.Credential;
 import org.apache.ws.security.validate.SignatureTrustValidator;
+import org.joda.time.DateTime;
 import org.opensaml.common.SAMLVersion;
 import org.opensaml.xml.XMLObject;
+import org.opensaml.xml.validation.ValidationException;
+import org.opensaml.xml.validation.ValidatorSuite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,6 +70,12 @@ import org.slf4j.LoggerFactory;
 public class SAMLTokenValidator implements TokenValidator {
 
     private static final Logger LOG = LoggerFactory.getLogger(SAMLTokenValidator.class);
+    
+    /**
+     * The time in seconds in the future within which the NotBefore time of an incoming 
+     * Assertion is valid. The default is 60 seconds.
+     */
+    private int futureTTL = 60;
 
     // [TODO] make sure we answer true only for cases we actually can handle
     @Override
@@ -76,6 +86,14 @@ public class SAMLTokenValidator implements TokenValidator {
     @Override
     public boolean canHandleToken(Element token) {
         return true;
+    }
+    
+    /**
+     * Set the time in seconds in the future within which the NotBefore time of an incoming 
+     * Assertion is valid. The default is 60 seconds.
+     */
+    public void setFutureTTL(int newFutureTTL) {
+        futureTTL = newFutureTTL;
     }
 
     public TokenValidatorResponse validateAndProcessToken(Element token,
@@ -118,6 +136,16 @@ public class SAMLTokenValidator implements TokenValidator {
             // Verify the signature
             assertion.verifySignature(requestData,
                     new WSDocInfo(token.getOwnerDocument()));
+            
+            // Validate the assertion against schemas/profiles
+            validateAssertion(assertion);
+            
+            // Validate Conditions
+            if (config.isDetectExpiredTokens() && !validateConditions(assertion)) {
+                throw new RuntimeException(
+                    "Error in validating conditions of the received Assertion"
+                );
+            }
 
             // Now verify trust on the signature
             Credential trustCredential = new Credential();
@@ -369,6 +397,67 @@ public class SAMLTokenValidator implements TokenValidator {
         p.put("org.apache.ws.security.crypto.merlin.keystore.file",
                 truststoreFile);
         return p;
+    }
+    
+    /**
+     * Validate the assertion against schemas/profiles
+     */
+    protected void validateAssertion(AssertionWrapper assertion) throws WSSecurityException {
+        if (assertion.getSaml1() != null) {
+            ValidatorSuite schemaValidators = 
+                org.opensaml.Configuration.getValidatorSuite("saml1-schema-validator");
+            ValidatorSuite specValidators = 
+                org.opensaml.Configuration.getValidatorSuite("saml1-spec-validator");
+            try {
+                schemaValidators.validate(assertion.getSaml1());
+                specValidators.validate(assertion.getSaml1());
+            } catch (ValidationException e) {
+                LOG.debug("Saml Validation error: " + e.getMessage());
+                throw new WSSecurityException(WSSecurityException.FAILURE, "invalidSAMLsecurity");
+            }
+        } else if (assertion.getSaml2() != null) {
+            ValidatorSuite schemaValidators = 
+                org.opensaml.Configuration.getValidatorSuite("saml2-core-schema-validator");
+            ValidatorSuite specValidators = 
+                org.opensaml.Configuration.getValidatorSuite("saml2-core-spec-validator");
+            try {
+                schemaValidators.validate(assertion.getSaml2());
+                specValidators.validate(assertion.getSaml2());
+            } catch (ValidationException e) {
+                LOG.debug("Saml Validation error: " + e.getMessage());
+                throw new WSSecurityException(WSSecurityException.FAILURE, "invalidSAMLsecurity");
+            }
+        }
+    }
+    
+    protected boolean validateConditions(
+        AssertionWrapper assertion
+    ) {
+        DateTime validFrom = null;
+        DateTime validTill = null;
+        if (assertion.getSamlVersion().equals(SAMLVersion.VERSION_20)) {
+            validFrom = assertion.getSaml2().getConditions().getNotBefore();
+            validTill = assertion.getSaml2().getConditions().getNotOnOrAfter();
+        } else {
+            validFrom = assertion.getSaml1().getConditions().getNotBefore();
+            validTill = assertion.getSaml1().getConditions().getNotOnOrAfter();
+        }
+        
+        if (validFrom != null) {
+            DateTime currentTime = new DateTime();
+            currentTime = currentTime.plusSeconds(futureTTL);
+            if (validFrom.isAfter(currentTime)) {
+                LOG.warn("SAML Token condition (Not Before) not met");
+                return false;
+            }
+        }
+        
+        if (validTill != null && validTill.isBeforeNow()) {
+            LOG.debug("SAML Token condition (Not On Or After) not met");
+            return false;
+        }
+        
+        return true;
     }
 
     // A sample MyHandler class
