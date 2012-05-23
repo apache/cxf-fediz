@@ -16,13 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.cxf.fediz.common;
 
-package org.apache.cxf.fediz.core;
+import java.io.File;
 
-public interface TokenReplayCache<T> {
-
-    T getId(T id);
-
-    void putId(T id);
-
+/**
+ * A utility class for security tests
+ */
+public final class SecurityTestUtil {
+    
+    private SecurityTestUtil() {
+        // complete
+    }
+    
+    public static void cleanup() {
+        String tmpDir = System.getProperty("java.io.tmpdir");
+        if (tmpDir != null) {
+            File replayCacheFile = 
+                new File(tmpDir + File.separator + "fediz-replay-cache.data");
+            if (replayCacheFile.exists()) {
+                replayCacheFile.delete();
+            }
+        }
+    }
+    
 }

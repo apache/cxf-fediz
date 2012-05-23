@@ -29,6 +29,7 @@ import java.util.List;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
+import org.apache.cxf.fediz.common.SecurityTestUtil;
 import org.apache.cxf.fediz.core.config.jaxb.ArgumentType;
 import org.apache.cxf.fediz.core.config.jaxb.AudienceUris;
 import org.apache.cxf.fediz.core.config.jaxb.AuthenticationType;
@@ -44,6 +45,7 @@ import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuers;
 import org.apache.cxf.fediz.core.config.jaxb.ValidationType;
+import org.junit.AfterClass;
 import org.junit.Assert;
 
 public class FedizConfigurationWriterTest {
@@ -74,6 +76,11 @@ public class FedizConfigurationWriterTest {
     private static final String CLAIM_TYPE_1 = "a particular claim type";
 
     private static final String CONFIG_FILE = "./target/fediz_test_config.xml";
+    
+    @AfterClass
+    public static void cleanup() {
+        SecurityTestUtil.cleanup();
+    }
 
     //CHECKSTYLE:OFF
     private FedizConfig createConfiguration() throws JAXBException {

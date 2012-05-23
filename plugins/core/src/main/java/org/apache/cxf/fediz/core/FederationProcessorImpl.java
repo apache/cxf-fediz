@@ -56,7 +56,7 @@ public class FederationProcessorImpl implements FederationProcessor {
      */
     public FederationProcessorImpl() {
         super();
-        replayCache = TokenReplayCacheInMemory.getInstance();
+        replayCache = new EHCacheTokenReplayCache();
     }
 
     /**

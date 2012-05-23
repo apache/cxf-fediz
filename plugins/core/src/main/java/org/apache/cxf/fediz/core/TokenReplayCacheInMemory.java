@@ -48,7 +48,7 @@ public final class TokenReplayCacheInMemory<T> implements TokenReplayCache<T> {
     }
 
     @Override
-    public T getId(String id) {
+    public T getId(T id) {
         int index = cache.indexOf(id);
         if (index == -1) {
             return null;

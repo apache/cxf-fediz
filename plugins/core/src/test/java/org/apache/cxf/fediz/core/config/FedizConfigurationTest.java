@@ -28,6 +28,7 @@ import java.math.BigInteger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
+import org.apache.cxf.fediz.common.SecurityTestUtil;
 import org.apache.cxf.fediz.core.config.jaxb.ArgumentType;
 import org.apache.cxf.fediz.core.config.jaxb.AudienceUris;
 import org.apache.cxf.fediz.core.config.jaxb.AuthenticationType;
@@ -43,6 +44,7 @@ import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuers;
 import org.apache.cxf.fediz.core.config.jaxb.ValidationType;
+import org.junit.AfterClass;
 import org.junit.Assert;
 
 public class FedizConfigurationTest {
@@ -80,6 +82,11 @@ public class FedizConfigurationTest {
     
 
     private static final String CONFIG_FILE = "./target/fedizconfig.xml";
+    
+    @AfterClass
+    public static void cleanup() {
+        SecurityTestUtil.cleanup();
+    }
 
     //CHECKSTYLE:OFF
     private FedizConfig createConfiguration() throws JAXBException {

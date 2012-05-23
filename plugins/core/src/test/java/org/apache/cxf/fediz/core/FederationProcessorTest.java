@@ -29,9 +29,13 @@ import java.net.URL;
 
 import junit.framework.Assert;
 
+import org.apache.cxf.fediz.common.SecurityTestUtil;
 import org.apache.cxf.fediz.core.config.FederationConfigurator;
 import org.apache.cxf.fediz.core.config.FederationContext;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
+
+import static org.junit.Assert.fail;
 
 public class FederationProcessorTest {
     private static final String TEST_USER = "alice";
@@ -41,13 +45,30 @@ public class FederationProcessorTest {
     private static final String CONFIG_FILE_WRONG_ISSUER = "fediz_test_config2.xml";
 
     private static String sRSTR;
+    private static String sRSTRREPLAY;
 
     @BeforeClass
     public static void readWResult() {
+        try {
+            sRSTR = loadResource("RSTR.xml");
+            sRSTRREPLAY = loadResource("RSTR_replay.xml");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Assert.assertNotNull("RSTR resource null", sRSTR);
+        Assert.assertNotNull(loadRootConfig());
+
+    }
+    
+    @AfterClass
+    public static void cleanup() {
+        SecurityTestUtil.cleanup();
+    }
+    
+    private static String loadResource(String filename) throws IOException {
         InputStream is = null;
         try {
-            is = FederationProcessorTest.class
-                    .getResourceAsStream("/RSTR.xml");
+            is = FederationProcessorTest.class.getResourceAsStream("/" + filename);
             if (is == null) {
                 throw new FileNotFoundException("Failed to get RSTR.xml");
             }
@@ -59,9 +80,7 @@ public class FederationProcessorTest {
                 stringBuilder.append(line + "\n");
             }
             bufferedReader.close();
-            sRSTR = stringBuilder.toString();
-        } catch (Exception e) {
-            e.printStackTrace();
+            return stringBuilder.toString();
         } finally {
             if (is != null) {
                 try {
@@ -71,9 +90,6 @@ public class FederationProcessorTest {
                 }
             }
         }
-        Assert.assertNotNull("RSTR resource null", sRSTR);
-        Assert.assertNotNull(loadRootConfig());
-
     }
 
     private static FederationContext loadRootConfig() {
@@ -157,5 +173,29 @@ public class FederationProcessorTest {
         Assert.assertEquals("One role must be found", 1, wfRes.getRoles()
                 .size());
     }
+    
+    @org.junit.Test
+    public void testReplayAttack() {
+
+        FederationRequest wfReq = new FederationRequest();
+        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
+        wfReq.setWresult(sRSTRREPLAY);
+        FederationContext config = loadRootConfig();
+
+        FederationProcessor wfProc = new FederationProcessorImpl();
+        FederationResponse wfRes = wfProc.processRequest(wfReq, config);
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
+        
+        wfProc = new FederationProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            fail("Failure expected on a replay attack");
+        } catch (Exception ex) {
+            // expected
+        }
+    }
+
 
 }
