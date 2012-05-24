@@ -32,11 +32,12 @@ import org.apache.ws.security.util.Loader;
 
 /**
  * An in-memory EHCache implementation of the TokenReplayCache interface. 
- * The default TTL is 60 minutes.
+ * The default TTL is 60 minutes and the max TTL is 12 hours.
  */
 public class EHCacheTokenReplayCache implements TokenReplayCache<String>, Closeable {
     
     public static final long DEFAULT_TTL = 3600L;
+    public static final long MAX_TTL = DEFAULT_TTL * 12L;
     private static final String CACHE_KEY = "fediz-replay-cache";
     private Ehcache cache;
     private CacheManager cacheManager;
@@ -85,19 +86,32 @@ public class EHCacheTokenReplayCache implements TokenReplayCache<String>, Closea
      */
     @Override
     public void putId(String id) {
+        putId(id, ttl);
+    }
+    
+    /**
+     * Add the given identifier to the cache.
+     * @param identifier The identifier to be added
+     * @param timeToLive The length of time to cache the Identifier in seconds
+     */
+    @Override
+    public void putId(String id, long timeToLive) {
         if (id == null || "".equals(id)) {
             return;
         }
         
-        int parsedTTL = (int)ttl;
-        if (ttl != (long)parsedTTL) {
-            // Fall back to 60 minutes if the default TTL is set incorrectly
-            parsedTTL = 3600;
+        int parsedTTL = (int)timeToLive;
+        if (timeToLive != (long)parsedTTL || parsedTTL < 0 || parsedTTL > MAX_TTL) {
+            // Default to configured value
+            parsedTTL = (int)ttl;
+            if (ttl != (long)parsedTTL) {
+                // Fall back to 60 minutes if the default TTL is set incorrectly
+                parsedTTL = 3600;
+            }
         }
         
         cache.put(new Element(id, id, false, parsedTTL, parsedTTL));
     }
-    
     
     /**
      * Return the given identifier if it is contained in the cache, otherwise null.

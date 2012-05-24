@@ -171,7 +171,19 @@ public class FederationProcessorImpl implements FederationProcessor {
 
             if (replayCache.getId(response.getUniqueTokenId()) == null) {
                 // not cached
-                replayCache.putId(response.getUniqueTokenId());
+                Date expires = null;
+                if (lifeTime != null && lifeTime.getExpires() != null) {
+                    expires = lifeTime.getExpires();
+                } else {
+                    expires = response.getExpires();
+                }
+                if (expires != null) {
+                    Date currentTime = new Date();
+                    long ttl = expires.getTime() - currentTime.getTime();
+                    replayCache.putId(response.getUniqueTokenId(), ttl / 1000L);
+                } else {
+                    replayCache.putId(response.getUniqueTokenId());
+                }
             } else {
                 LOG.error("Replay attack with token id: "
                         + response.getUniqueTokenId());

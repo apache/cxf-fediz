@@ -61,6 +61,11 @@ public final class TokenReplayCacheInMemory<T> implements TokenReplayCache<T> {
     public void putId(T id) {
         cache.add(id);
     }
+    
+    @Override
+    public void putId(T id, long timeToLive) {
+        cache.add(id);
+    }
 
 
 }

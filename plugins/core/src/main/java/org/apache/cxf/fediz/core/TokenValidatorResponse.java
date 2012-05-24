@@ -19,6 +19,7 @@
 
 package org.apache.cxf.fediz.core;
 
+import java.util.Date;
 import java.util.List;
 
 public class TokenValidatorResponse {
@@ -29,6 +30,7 @@ public class TokenValidatorResponse {
     private String issuer;
     private String audience;
     private List<Claim> claims;
+    private Date expires;
 
 
 
@@ -62,6 +64,14 @@ public class TokenValidatorResponse {
         return claims;
     }
 
+
+    public Date getExpires() {
+        return expires;
+    }
+
+    public void setExpires(Date expires) {
+        this.expires = expires;
+    }
 
 
 }

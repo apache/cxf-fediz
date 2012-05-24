@@ -25,4 +25,5 @@ public interface TokenReplayCache<T> {
 
     void putId(T id);
 
+    void putId(T id, long timeToLive);
 }
