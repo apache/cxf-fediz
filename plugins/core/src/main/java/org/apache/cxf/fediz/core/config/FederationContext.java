@@ -20,8 +20,6 @@
 package org.apache.cxf.fediz.core.config;
 
 import java.math.BigInteger;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +30,6 @@ import org.apache.cxf.fediz.core.config.jaxb.ProtocolType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuers;
-import org.apache.cxf.fediz.core.exception.IllegalConfigurationException;
 
 public class FederationContext {
 
@@ -112,20 +109,6 @@ public class FederationContext {
     }
 
     /*
-    public List<String> getTrustedIssuersNames() {
-        TrustedIssuers issuers = config.getTrustedIssuers();
-        List<String> issuerNames = new ArrayList<String>();
-        if (issuers != null) {
-            for (TrustManagersType t : issuers.getTrustedIssuerItem()) {
-                issuerNames.add(t.getName());
-            }
-            return issuerNames;
-        } else {
-            return Collections.<String> emptyList();
-        }
-    }
-     */
-
     public URI getRoleURI() {
         ProtocolType pt = config.getProtocol();
         if (pt == null) {
@@ -151,6 +134,7 @@ public class FederationContext {
         }
         throw new IllegalConfigurationException("No FederationProtocolType found");
     }
+    */
 
     /*
     public String getTrustStoreFile() {

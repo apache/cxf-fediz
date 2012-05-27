@@ -22,13 +22,24 @@ package org.apache.cxf.fediz.core.config;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.security.auth.callback.CallbackHandler;
+import org.apache.cxf.fediz.core.config.jaxb.ArgumentType;
+import org.apache.cxf.fediz.core.config.jaxb.CallbackType;
 import org.apache.cxf.fediz.core.config.jaxb.ClaimType;
 import org.apache.cxf.fediz.core.config.jaxb.ClaimTypesRequested;
 import org.apache.cxf.fediz.core.config.jaxb.FederationProtocolType;
 import org.apache.cxf.fediz.core.config.jaxb.ProtocolType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FederationProtocol extends Protocol {
 
+    private static final Logger LOG = LoggerFactory.getLogger(FederationProtocol.class);
+    
+    private Object authenticationType;
+    private Object issuer;
+    private Object homeRealm;
+    
     public FederationProtocol(ProtocolType protocolType) {
         super(protocolType);
     }
@@ -53,16 +64,8 @@ public class FederationProtocol extends Protocol {
         getFederationProtocol().setRealm(value);
     }
 
-    public String getIssuer() {
-        return getFederationProtocol().getIssuer();
-    }
-
     public boolean equals(Object obj) {
         return getFederationProtocol().equals(obj);
-    }
-
-    public void setIssuer(String value) {
-        getFederationProtocol().setIssuer(value);
     }
 
     public String getRoleDelimiter() {
@@ -81,22 +84,108 @@ public class FederationProtocol extends Protocol {
         getFederationProtocol().setRoleURI(value);
     }
 
-    public Authentication getAuthenticationType() {
-        return new Authentication(getFederationProtocol().getAuthenticationType());
+    public Object getAuthenticationType() {
+        if (this.authenticationType != null) {
+            return this.authenticationType;
+        }
+        CallbackType cbt = getFederationProtocol().getAuthenticationType();
+        if (cbt.getType().equals(ArgumentType.STRING)) {
+            this.authenticationType = new String(cbt.getValue());
+        } else if (cbt.getType().equals(ArgumentType.CLASS)) {
+            try {
+                this.authenticationType = 
+                    Thread.currentThread().getContextClassLoader().loadClass(cbt.getValue()).newInstance();
+            } catch (Exception e) {
+                LOG.error("Failed to create instance of " + cbt.getValue(), e);
+                throw new IllegalStateException("Failed to create instance of " + cbt.getValue());
+            }            
+        } else {
+            LOG.error("Only String and Class are supported for 'AuthenticationType'");
+            throw new IllegalStateException("Only String and Class are supported for AuthenticationType");
+        }
+        return this.authenticationType;
     }
 
-    public void setAuthenticationType(Authentication value) {
-        getFederationProtocol().setAuthenticationType(value.getAuthType());
+    public void setAuthenticationType(Object value) {
+        final boolean isString = value instanceof String;
+        final boolean isCallbackHandler = value instanceof CallbackHandler;
+        if (isString || isCallbackHandler) {
+            this.authenticationType = value;
+        } else {
+            LOG.error("Unsupported 'AuthenticationType' object");
+            throw new IllegalArgumentException("Unsupported 'AuthenticationType' object. Type must be "
+                                               + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
+        }
+    }
+    
+    public Object getHomeRealm() {
+        if (this.homeRealm != null) {
+            return this.homeRealm;
+        }
+        CallbackType cbt = getFederationProtocol().getHomeRealm();
+        if (cbt.getType().equals(ArgumentType.STRING)) {
+            this.homeRealm = new String(cbt.getValue());
+        } else if (cbt.getType().equals(ArgumentType.CLASS)) {
+            try {
+                this.homeRealm =
+                    Thread.currentThread().getContextClassLoader().loadClass(cbt.getValue()).newInstance();
+            } catch (Exception e) {
+                LOG.error("Failed to create instance of " + cbt.getValue(), e);
+                throw new IllegalStateException("Failed to create instance of " + cbt.getValue());
+            }            
+        } else {
+            LOG.error("Only String and Class are supported for 'HomeRealm'");
+            throw new IllegalStateException("Only String and Class are supported for 'HomeRealm'");
+        }
+        return this.homeRealm;
     }
 
-    public HomeRealm getHomeRealm() {
-        return new HomeRealm(getFederationProtocol().getHomeRealm());
+    public void setHomeRealm(Object value) {
+        final boolean isString = value instanceof String;
+        final boolean isCallbackHandler = value instanceof CallbackHandler;
+        if (isString || isCallbackHandler) {
+            this.homeRealm = value;
+        } else {
+            LOG.error("Unsupported 'HomeRealm' object");
+            throw new IllegalArgumentException("Unsupported 'HomeRealm' object. Type must be "
+                                               + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
+        }
+    }
+    
+    public Object getIssuer() {
+        if (this.issuer != null) {
+            return this.issuer;
+        }
+        CallbackType cbt = getFederationProtocol().getIssuer();
+        if (cbt.getType().equals(ArgumentType.STRING)) {
+            this.issuer = new String(cbt.getValue());
+        } else if (cbt.getType().equals(ArgumentType.CLASS)) {
+            try {
+                this.issuer = 
+                    Thread.currentThread().getContextClassLoader().loadClass(cbt.getValue()).newInstance();
+            } catch (Exception e) {
+                LOG.error("Failed to create instance of " + cbt.getValue(), e);
+                throw new IllegalStateException("Failed to create instance of " + cbt.getValue());
+            }
+        } else {
+            LOG.error("Only String and Class are supported for 'Issuer'");
+            throw new IllegalStateException("Only String and Class are supported for 'Issuer'");
+        }
+        return this.issuer;
     }
 
-    public void setHomeRealm(HomeRealm value) {
-        getFederationProtocol().setHomeRealm(value.getHomeRealm());
+    public void setIssuer(Object value) {
+        final boolean isString = value instanceof String;
+        final boolean isCallbackHandler = value instanceof CallbackHandler;
+        if (isString || isCallbackHandler) {
+            this.issuer = value;
+        } else {
+            LOG.error("Unsupported 'Issuer' object");
+            throw new IllegalArgumentException("Unsupported 'Issuer' object. Type must be "
+                                               + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
+        }
     }
-
+    
     public String getFreshness() {
         return getFederationProtocol().getFreshness();
     }

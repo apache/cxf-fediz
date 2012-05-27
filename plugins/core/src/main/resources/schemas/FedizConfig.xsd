@@ -112,25 +112,22 @@
 	<xs:element name="roleDelimiter" type="xs:string" />
 	<xs:element name="roleURI" type="xs:string" />
 	<xs:element name="realm" type="xs:string" />
-	<xs:element name="issuer" type="xs:anyURI" />
+	
 	<xs:element name="freshness" type="xs:string" />
 
 	<xs:complexType name="protocolType" abstract="true" />
+ 
+	<xs:complexType name="CallbackType">
+		<xs:simpleContent>
+			<xs:extension base="xs:string">
+				<xs:attribute name="type" type="argumentType" />
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
 
-	<xs:element name="homeRealm">
-		<xs:complexType>
-			<xs:attribute name="type" use="required" type="argumentType" />
-			<xs:attribute name="value" use="required" type="xs:string" />
-		</xs:complexType>
-	</xs:element>
-
-
-	<xs:element name="authenticationType">
-		<xs:complexType>
-			<xs:attribute name="type" use="required" type="argumentType" />
-			<xs:attribute name="value" use="required" type="xs:string" />
-		</xs:complexType>
-	</xs:element>
+	<xs:element name="issuer" type="CallbackType" />
+	<xs:element name="homeRealm" type="CallbackType" />
+	<xs:element name="authenticationType" type="CallbackType" />
 
 	<xs:simpleType name="argumentType">
 		<xs:restriction base="xs:string">

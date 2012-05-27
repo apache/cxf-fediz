@@ -27,6 +27,8 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
 
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -37,6 +39,9 @@ import org.xml.sax.SAXException;
 import org.apache.cxf.fediz.core.config.FederationContext;
 import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.saml.SAMLTokenValidator;
+import org.apache.cxf.fediz.core.spi.HomeRealmCallback;
+import org.apache.cxf.fediz.core.spi.IDPCallback;
+import org.apache.cxf.fediz.core.spi.WAuthCallback;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.ws.security.WSConstants;
 import org.apache.ws.security.util.XmlSchemaDateFormat;
@@ -249,28 +254,45 @@ public class FederationProcessorImpl implements FederationProcessor {
     public String createSignInRequest(HttpServletRequest request, FederationContext config) {
 
         String redirectURL = null;
-        // if (this.getIssuerCallbackHandler() != null) {
-        // org.apache.cxf.fediz.core.spi.IDPCallback callback = new org.apache.cxf.fediz.core.spi.IDPCallback(
-        // request);
-        // try {
-        // this.getIssuerCallbackHandler().handle(
-        // new Callback[] { callback });
-        // redirectURL = callback.getIssuerUrl().toString();
-        // String trustedIssuer = callback.getTrustedIssuer();
-        // if (trustedIssuer != null && trustedIssuer.length() > 0) {
-        // request.getSessionInternal().setNote(TRUSTED_ISSUER,
-        // trustedIssuer);
-        // }
-        // } catch (Exception ex) {
-        // log.error("Failed to handle callback: " + ex.getMessage());
-        // }
-        // }
         try {
-            String issuerURL = ((FederationProtocol)config.getProtocol()).getIssuer();
+            Object issuerObj = ((FederationProtocol)config.getProtocol()).getIssuer();
+            String issuerURL = null;
+            if (issuerObj instanceof String) {
+                issuerURL = (String)issuerObj;
+            } else if (issuerObj instanceof CallbackHandler) {
+                CallbackHandler issuerCB = (CallbackHandler)issuerObj;
+                IDPCallback callback = new IDPCallback(request);
+                issuerCB.handle(new Callback[] {callback});
+                issuerURL = callback.getIssuerUrl().toString();
+            }
+            LOG.info("Issuer url: " + issuerURL);
             if (issuerURL != null && issuerURL.length() > 0) {
                 redirectURL = issuerURL;
             }
-            LOG.info("Issuer url: " + redirectURL);
+            
+            Object wAuthObj = ((FederationProtocol)config.getProtocol()).getAuthenticationType();
+            String wAuth = null;
+            if (wAuthObj instanceof String) {
+                wAuth = (String)wAuthObj;
+            } else if (wAuthObj instanceof CallbackHandler) {
+                CallbackHandler wauthCB = (CallbackHandler)wAuthObj;
+                WAuthCallback callback = new WAuthCallback(request);
+                wauthCB.handle(new Callback[] {callback});
+                wAuth = callback.getWauth();
+            }
+            LOG.info("WAuth: " + wAuth);
+            
+            Object homeRealmObj = ((FederationProtocol)config.getProtocol()).getHomeRealm();
+            String homeRealm = null;
+            if (homeRealmObj instanceof String) {
+                homeRealm = (String)homeRealmObj;
+            } else if (homeRealmObj instanceof CallbackHandler) {
+                CallbackHandler hrCB = (CallbackHandler)homeRealmObj;
+                HomeRealmCallback callback = new HomeRealmCallback(request);
+                hrCB.handle(new Callback[] {callback});
+                homeRealm = callback.getHomeRealm();
+            }
+            LOG.info("HomeRealm: " + homeRealm);
 
             StringBuilder sb = new StringBuilder();
 
@@ -309,11 +331,21 @@ public class FederationProcessorImpl implements FederationProcessor {
             }
             LOG.debug("wtrealm=" + realm);
 
-            StringBuffer realmSb = new StringBuffer(request.getScheme());
-            realmSb.append("://").append(request.getServerName()).append(":").append(request.getServerPort())
-                .append(request.getContextPath());
             sb.append('&').append(FederationConstants.PARAM_TREALM).append('=')
                 .append(URLEncoder.encode(realm, "UTF-8"));
+            
+            // add authentication type parameter wauth if set
+            if (wAuth != null && wAuth.length() > 0) {
+                sb.append('&').append(FederationConstants.PARAM_AUTH_TYPE).append('=')
+                    .append(URLEncoder.encode(wAuth, "UTF-8"));
+            }
+            
+            // add home realm parameter whr if set
+            if (homeRealm != null && homeRealm.length() > 0) {
+                sb.append('&').append(FederationConstants.PARAM_HOME_REALM).append('=')
+                    .append(URLEncoder.encode(homeRealm, "UTF-8"));
+            }
+            
             redirectURL = redirectURL + "?" + sb.toString();
         } catch (Exception ex) {
             LOG.error("Failed to create SignInRequest", ex);

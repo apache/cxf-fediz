@@ -19,24 +19,22 @@
 
 package org.apache.cxf.fediz.core.spi;
 
-import java.net.URL;
-
 import javax.servlet.http.HttpServletRequest;
 
-public class IDPCallback extends AbstractServletCallback {
+public class HomeRealmCallback extends AbstractServletCallback {
 
-    private URL issuerUrl;
+    private String homeRealm;
 
-    public IDPCallback(HttpServletRequest request) {
+    public HomeRealmCallback(HttpServletRequest request) {
         super(request);
     }
 
-    public URL getIssuerUrl() {
-        return issuerUrl;
+    public String getHomeRealm() {
+        return homeRealm;
     }
 
-    public void setIssuerUrl(URL issuerUrl) {
-        this.issuerUrl = issuerUrl;
+    public void setHomeRealm(String homeRealm) {
+        this.homeRealm = homeRealm;
     }
 
 }

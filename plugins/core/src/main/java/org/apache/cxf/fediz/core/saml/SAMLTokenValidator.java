@@ -43,6 +43,7 @@ import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.TokenValidator;
 import org.apache.cxf.fediz.core.TokenValidatorResponse;
 import org.apache.cxf.fediz.core.config.FederationContext;
+import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.config.KeyStore;
 import org.apache.cxf.fediz.core.config.TrustManager;
 import org.apache.cxf.fediz.core.config.TrustedIssuer;
@@ -191,8 +192,9 @@ public class SAMLTokenValidator implements TokenValidator {
             }
 
             List<String> roles = null;
-            URI roleURI = config.getRoleURI();
-            String delim = config.getRoleDelimiter();
+            FederationProtocol fp = (FederationProtocol)config.getProtocol();
+            URI roleURI = URI.create(fp.getRoleURI());
+            String delim = fp.getRoleDelimiter();
             if (roleURI != null) {
                 for (Claim c : claims) {
                     URI claimURI = URI.create(c.getNamespace() + "/"

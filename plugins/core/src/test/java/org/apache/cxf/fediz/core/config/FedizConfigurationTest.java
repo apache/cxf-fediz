@@ -31,14 +31,13 @@ import javax.xml.bind.JAXBException;
 import org.apache.cxf.fediz.common.SecurityTestUtil;
 import org.apache.cxf.fediz.core.config.jaxb.ArgumentType;
 import org.apache.cxf.fediz.core.config.jaxb.AudienceUris;
-import org.apache.cxf.fediz.core.config.jaxb.AuthenticationType;
+import org.apache.cxf.fediz.core.config.jaxb.CallbackType;
 import org.apache.cxf.fediz.core.config.jaxb.CertificateStores;
 import org.apache.cxf.fediz.core.config.jaxb.ClaimType;
 import org.apache.cxf.fediz.core.config.jaxb.ClaimTypesRequested;
 import org.apache.cxf.fediz.core.config.jaxb.ContextConfig;
 import org.apache.cxf.fediz.core.config.jaxb.FederationProtocolType;
 import org.apache.cxf.fediz.core.config.jaxb.FedizConfig;
-import org.apache.cxf.fediz.core.config.jaxb.HomeRealm;
 import org.apache.cxf.fediz.core.config.jaxb.KeyStoreType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
@@ -154,7 +153,7 @@ public class FedizConfigurationTest {
         FederationProtocolType protocol = new FederationProtocolType();
         config.setProtocol(protocol);
 
-        AuthenticationType authType = new AuthenticationType();
+        CallbackType authType = new CallbackType();
         authType.setType(ArgumentType.STRING);
         authType.setValue(AUTH_TYPE_VALUE);
 
@@ -183,7 +182,7 @@ public class FedizConfigurationTest {
 
         protocol.setFreshness(FRESHNESS_VALUE);
 
-        HomeRealm homeRealm = new HomeRealm();
+        CallbackType homeRealm = new CallbackType();
         homeRealm.setType(ArgumentType.CLASS);
         homeRealm.setValue(HOME_REALM_CLASS);
 
@@ -192,7 +191,10 @@ public class FedizConfigurationTest {
         protocol.setReply(REPLY);
         protocol.setRequest("REQUEST");
         protocol.setVersion(PROTOCOL_VERSION);
-        protocol.setIssuer(ISSUER);
+        
+        CallbackType issuer = new CallbackType();
+        issuer.setValue(ISSUER);
+        protocol.setIssuer(issuer);
 
         return rootConfig;
 
@@ -217,11 +219,12 @@ public class FedizConfigurationTest {
         final JAXBContext jaxbContext = JAXBContext
                 .newInstance(FedizConfig.class);
 
-        FederationConfigurator configurator = new FederationConfigurator();
         FedizConfig configOut = createConfiguration();
         StringWriter writer = new StringWriter();
         jaxbContext.createMarshaller().marshal(configOut, writer);
         StringReader reader = new StringReader(writer.toString());
+        
+        FederationConfigurator configurator = new FederationConfigurator();
         configurator.loadConfig(reader);
 
         File f = new File(CONFIG_FILE);

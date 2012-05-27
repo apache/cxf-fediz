@@ -32,14 +32,13 @@ import javax.xml.bind.JAXBException;
 import org.apache.cxf.fediz.common.SecurityTestUtil;
 import org.apache.cxf.fediz.core.config.jaxb.ArgumentType;
 import org.apache.cxf.fediz.core.config.jaxb.AudienceUris;
-import org.apache.cxf.fediz.core.config.jaxb.AuthenticationType;
+import org.apache.cxf.fediz.core.config.jaxb.CallbackType;
 import org.apache.cxf.fediz.core.config.jaxb.CertificateStores;
 import org.apache.cxf.fediz.core.config.jaxb.ClaimType;
 import org.apache.cxf.fediz.core.config.jaxb.ClaimTypesRequested;
 import org.apache.cxf.fediz.core.config.jaxb.ContextConfig;
 import org.apache.cxf.fediz.core.config.jaxb.FederationProtocolType;
 import org.apache.cxf.fediz.core.config.jaxb.FedizConfig;
-import org.apache.cxf.fediz.core.config.jaxb.HomeRealm;
 import org.apache.cxf.fediz.core.config.jaxb.KeyStoreType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
@@ -115,7 +114,7 @@ public class FedizConfigurationWriterTest {
         certStores.getTrustManager().add(truststore);
         config.setCertificateStores(certStores);
 
-        AuthenticationType authType = new AuthenticationType();
+        CallbackType authType = new CallbackType();
         authType.setType(ArgumentType.STRING);
         authType.setValue(AUTH_TYPE_VALUE);
 
@@ -137,7 +136,7 @@ public class FedizConfigurationWriterTest {
 
         protocol.setFreshness(FRESHNESS_VALUE);
 
-        HomeRealm homeRealm = new HomeRealm();
+        CallbackType homeRealm = new CallbackType();
         homeRealm.setType(ArgumentType.CLASS);
         homeRealm.setValue(HOME_REALM_CLASS);
 
@@ -146,7 +145,10 @@ public class FedizConfigurationWriterTest {
         protocol.setReply(REPLY);
         protocol.setRequest("REQUEST");
         protocol.setVersion(PROTOCOL_VERSION);
-        protocol.setIssuer(ISSUER);
+        
+        CallbackType issuer = new CallbackType();
+        issuer.setValue(ISSUER);
+        protocol.setIssuer(issuer);
 
         return rootConfig;
 
@@ -227,9 +229,9 @@ public class FedizConfigurationWriterTest {
         FederationProtocol fedProtocol = (FederationProtocol) protocol;
         Assert.assertEquals(TARGET_REALM, fedProtocol.getRealm());
         
-        Authentication auth = fedProtocol.getAuthenticationType();
-        Assert.assertEquals(auth.getType(), PropertyType.STRING);
-        Assert.assertEquals(auth.getValue(), AUTH_TYPE_VALUE);
+        Object auth = fedProtocol.getAuthenticationType();
+        Assert.assertTrue(auth instanceof String);
+        Assert.assertEquals((String)auth, AUTH_TYPE_VALUE);
         
         //Assert.assertEquals(ValidationMethod.CHAIN_TRUST, fedContext.getCertificateValidation());
         List<String> audienceUris = fedContext.getAudienceUris();
