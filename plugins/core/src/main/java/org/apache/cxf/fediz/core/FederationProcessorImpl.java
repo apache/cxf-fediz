@@ -272,28 +272,32 @@ public class FederationProcessorImpl implements FederationProcessor {
             
             Object wAuthObj = ((FederationProtocol)config.getProtocol()).getAuthenticationType();
             String wAuth = null;
-            if (wAuthObj instanceof String) {
-                wAuth = (String)wAuthObj;
-            } else if (wAuthObj instanceof CallbackHandler) {
-                CallbackHandler wauthCB = (CallbackHandler)wAuthObj;
-                WAuthCallback callback = new WAuthCallback(request);
-                wauthCB.handle(new Callback[] {callback});
-                wAuth = callback.getWauth();
+            if (wAuthObj != null) {
+                if (wAuthObj instanceof String) {
+                    wAuth = (String)wAuthObj;
+                } else if (wAuthObj instanceof CallbackHandler) {
+                    CallbackHandler wauthCB = (CallbackHandler)wAuthObj;
+                    WAuthCallback callback = new WAuthCallback(request);
+                    wauthCB.handle(new Callback[] {callback});
+                    wAuth = callback.getWauth();
+                }  
             }
             LOG.info("WAuth: " + wAuth);
             
             Object homeRealmObj = ((FederationProtocol)config.getProtocol()).getHomeRealm();
             String homeRealm = null;
-            if (homeRealmObj instanceof String) {
-                homeRealm = (String)homeRealmObj;
-            } else if (homeRealmObj instanceof CallbackHandler) {
-                CallbackHandler hrCB = (CallbackHandler)homeRealmObj;
-                HomeRealmCallback callback = new HomeRealmCallback(request);
-                hrCB.handle(new Callback[] {callback});
-                homeRealm = callback.getHomeRealm();
+            if (homeRealmObj != null) {
+                if (homeRealmObj instanceof String) {
+                    homeRealm = (String)homeRealmObj;
+                } else if (homeRealmObj instanceof CallbackHandler) {
+                    CallbackHandler hrCB = (CallbackHandler)homeRealmObj;
+                    HomeRealmCallback callback = new HomeRealmCallback(request);
+                    hrCB.handle(new Callback[] {callback});
+                    homeRealm = callback.getHomeRealm();
+                }
             }
             LOG.info("HomeRealm: " + homeRealm);
-
+            
             StringBuilder sb = new StringBuilder();
 
             sb.append(FederationConstants.PARAM_ACTION).append('=').append(FederationConstants.ACTION_SIGNIN);

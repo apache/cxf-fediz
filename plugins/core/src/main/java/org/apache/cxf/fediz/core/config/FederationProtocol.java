@@ -89,7 +89,10 @@ public class FederationProtocol extends Protocol {
             return this.authenticationType;
         }
         CallbackType cbt = getFederationProtocol().getAuthenticationType();
-        if (cbt.getType().equals(ArgumentType.STRING)) {
+        if (cbt == null) {
+            return null;
+        }
+        if (cbt.getType() == null || cbt.getType().equals(ArgumentType.STRING)) {
             this.authenticationType = new String(cbt.getValue());
         } else if (cbt.getType().equals(ArgumentType.CLASS)) {
             try {
@@ -123,7 +126,10 @@ public class FederationProtocol extends Protocol {
             return this.homeRealm;
         }
         CallbackType cbt = getFederationProtocol().getHomeRealm();
-        if (cbt.getType().equals(ArgumentType.STRING)) {
+        if (cbt == null) {
+            return null;
+        }
+        if (cbt.getType() == null || cbt.getType().equals(ArgumentType.STRING)) {
             this.homeRealm = new String(cbt.getValue());
         } else if (cbt.getType().equals(ArgumentType.CLASS)) {
             try {
@@ -157,7 +163,7 @@ public class FederationProtocol extends Protocol {
             return this.issuer;
         }
         CallbackType cbt = getFederationProtocol().getIssuer();
-        if (cbt.getType().equals(ArgumentType.STRING)) {
+        if (cbt.getType() == null || cbt.getType().equals(ArgumentType.STRING)) {
             this.issuer = new String(cbt.getValue());
         } else if (cbt.getType().equals(ArgumentType.CLASS)) {
             try {
