@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.List;
 
 //[TODO] add properties TokenReplayCacheExpirationPeriod
-public final class TokenReplayCacheInMemory<T> implements TokenReplayCache<T> {
+public final class InMemoryTokenReplayCache<T> implements TokenReplayCache<T> {
 
     /**
      * 
@@ -35,7 +35,7 @@ public final class TokenReplayCacheInMemory<T> implements TokenReplayCache<T> {
     
     private List<T> cache;
     
-    private TokenReplayCacheInMemory() {
+    private InMemoryTokenReplayCache() {
         cache = Collections.synchronizedList(new ArrayList<T>());
     }
 
@@ -43,7 +43,7 @@ public final class TokenReplayCacheInMemory<T> implements TokenReplayCache<T> {
         if (instance != null) {
             return instance;
         }
-        instance = new TokenReplayCacheInMemory<String>();
+        instance = new InMemoryTokenReplayCache<String>();
         return instance;
     }
 
