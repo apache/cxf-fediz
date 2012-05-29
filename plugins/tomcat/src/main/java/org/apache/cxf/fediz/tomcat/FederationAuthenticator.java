@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -186,8 +185,8 @@ public class FederationAuthenticator extends FormAuthenticator {
                     LOG.debug("Token doesn't expire");
                     return true;
                 }
-                Calendar cal = Calendar.getInstance();
-                if (cal.getTime().after(wfRes.getTokenExpires())) {
+                Date currentTime = new Date();
+                if (currentTime.after(wfRes.getTokenExpires())) {
                     LOG.debug("Token already expired. Clean up and redirect");
 
                     session.removeNote(FEDERATION_NOTE);
