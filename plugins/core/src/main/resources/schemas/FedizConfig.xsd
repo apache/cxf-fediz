@@ -16,6 +16,7 @@
 				<xs:element ref="certificateValidation" />
 				<xs:element ref="certificateStores" />
 				<xs:element ref="maximumClockSkew" />
+				<xs:element ref="tokenReplayCache" />
 				<xs:element ref="serviceCertificate" />
 				<xs:element ref="trustedIssuers" />
 				<xs:element ref="protocol" />
@@ -76,6 +77,8 @@
 
 
 	<xs:element name="maximumClockSkew" type="xs:integer" />
+	
+	<xs:element name="tokenReplayCache" type="xs:string" />
 
 	<!-- keystore type -->
 	<xs:element name="serviceCertificate" type="KeyManagersType" />
@@ -229,7 +232,7 @@
 		<xs:attribute name="password" type="xs:string">
 			<xs:annotation>
 				<xs:documentation>
-					This attribute specifes the integrity password for
+					This attribute specifies the integrity password for
 					the keystore.
 					This is not the password that unlock keys within the
 					keystore.

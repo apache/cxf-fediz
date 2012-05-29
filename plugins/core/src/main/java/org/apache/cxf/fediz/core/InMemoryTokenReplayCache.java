@@ -19,6 +19,7 @@
 
 package org.apache.cxf.fediz.core;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -65,6 +66,15 @@ public final class InMemoryTokenReplayCache<T> implements TokenReplayCache<T> {
     @Override
     public void putId(T id, long timeToLive) {
         cache.add(id);
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (cache != null) {
+            cache.clear();
+            cache = null;
+        }
+        instance = null;
     }
 
 

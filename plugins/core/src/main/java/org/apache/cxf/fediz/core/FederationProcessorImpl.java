@@ -53,25 +53,11 @@ public class FederationProcessorImpl implements FederationProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(FederationProcessorImpl.class);
 
-    private TokenReplayCache<String> replayCache;
-
     /**
      * Default constructor
      */
     public FederationProcessorImpl() {
         super();
-        replayCache = new EHCacheTokenReplayCache();
-    }
-
-    /**
-     * 
-     * @param replayCache
-     *            plugable token cache allowing to provide a replicated cache to
-     *            be used in clustered scenarios
-     */
-    public FederationProcessorImpl(TokenReplayCache<String> replayCache) {
-        super();
-        this.replayCache = replayCache;
     }
 
     @Override
@@ -174,7 +160,7 @@ public class FederationProcessorImpl implements FederationProcessor {
             // Check whether token has already been processed once, prevent
             // replay attack
 
-            if (replayCache.getId(response.getUniqueTokenId()) == null) {
+            if (config.getTokenReplayCache().getId(response.getUniqueTokenId()) == null) {
                 // not cached
                 Date expires = null;
                 if (lifeTime != null && lifeTime.getExpires() != null) {
@@ -185,9 +171,9 @@ public class FederationProcessorImpl implements FederationProcessor {
                 if (expires != null) {
                     Date currentTime = new Date();
                     long ttl = expires.getTime() - currentTime.getTime();
-                    replayCache.putId(response.getUniqueTokenId(), ttl / 1000L);
+                    config.getTokenReplayCache().putId(response.getUniqueTokenId(), ttl / 1000L);
                 } else {
-                    replayCache.putId(response.getUniqueTokenId());
+                    config.getTokenReplayCache().putId(response.getUniqueTokenId());
                 }
             } else {
                 LOG.error("Replay attack with token id: "

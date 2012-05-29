@@ -36,15 +36,26 @@ public class FederationConfigurator {
     private FedizConfig rootConfig;
 
     private JAXBContext jaxbContext;
+    
+    private List<FederationContext> federationContextList;
 
     public FedizConfig loadConfig(File f) throws JAXBException {
         rootConfig = (FedizConfig) getJaxbContext().createUnmarshaller().unmarshal(f);
+        parseFederationContextList();
         return rootConfig;
     }
 
     public FedizConfig loadConfig(Reader reader) throws JAXBException {
         rootConfig = (FedizConfig) getJaxbContext().createUnmarshaller().unmarshal(reader);
+        parseFederationContextList();
         return rootConfig;
+    }
+    
+    private void parseFederationContextList() {
+        federationContextList = new ArrayList<FederationContext>();
+        for (ContextConfig config : rootConfig.getContextConfig()) {
+            federationContextList.add(new FederationContext(config));            
+        }
     }
 
     public void saveConfiguration(File f) throws JAXBException {
@@ -65,19 +76,23 @@ public class FederationConfigurator {
     }
 
     public List<FederationContext> getFederationContextList() {
-        List<FederationContext> ctxList = new ArrayList<FederationContext>();
-        for (ContextConfig config : rootConfig.getContextConfig()) {
-            ctxList.add(new FederationContext(config));            
-        }
-        return ctxList;
+        return federationContextList;
     }
     
     public FederationContext getFederationContext(String contextName) {
-        ContextConfig config = getContextConfig(contextName);
-        if (config == null) {
-            return null;
+        if (contextName == null || contextName.isEmpty()) {
+            throw new IllegalArgumentException("Invalid Context Name '" + contextName + "'");
         }
-        return new FederationContext(config);
+        if (rootConfig == null) {
+            throw new IllegalArgumentException("No configuration loaded");
+        }
+        for (FederationContext fedContext : federationContextList) {
+            if (fedContext.getName().equals(contextName)) {
+                return fedContext;
+            }
+        }
+        
+        return null;
     }
 
     public ContextConfig getContextConfig(String contextName) throws IllegalArgumentException {

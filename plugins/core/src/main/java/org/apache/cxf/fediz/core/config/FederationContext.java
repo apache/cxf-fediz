@@ -19,10 +19,14 @@
 
 package org.apache.cxf.fediz.core.config;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.cxf.fediz.core.EHCacheTokenReplayCache;
+import org.apache.cxf.fediz.core.TokenReplayCache;
 import org.apache.cxf.fediz.core.config.jaxb.CertificateStores;
 import org.apache.cxf.fediz.core.config.jaxb.ContextConfig;
 import org.apache.cxf.fediz.core.config.jaxb.FederationProtocolType;
@@ -31,13 +35,16 @@ import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuers;
 
-public class FederationContext {
+import org.apache.ws.security.util.Loader;
+
+public class FederationContext implements Closeable {
 
     private ContextConfig config;
 
     private boolean detectExpiredTokens = true;
     private boolean detectReplayedTokens = true;
     private String relativePath;
+    private TokenReplayCache<String> replayCache;
 
     public FederationContext(ContextConfig config) {
         this.config = config;
@@ -82,6 +89,29 @@ public class FederationContext {
             return new FederationProtocol(type);
         }
         return null;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public TokenReplayCache<String> getTokenReplayCache() {
+        if (replayCache != null) {
+            return replayCache;
+        }
+        String replayCacheString = config.getTokenReplayCache();
+        if (replayCacheString == null || "".equals(replayCacheString)) {
+            replayCache = new EHCacheTokenReplayCache();
+        } else {
+            try {
+                Class<?> replayCacheClass = Loader.loadClass(replayCacheString);
+                replayCache = (TokenReplayCache<String>) replayCacheClass.newInstance();
+            } catch (ClassNotFoundException e) {
+                replayCache = new EHCacheTokenReplayCache();
+            } catch (InstantiationException e) {
+                replayCache = new EHCacheTokenReplayCache();
+            } catch (IllegalAccessException e) {
+                replayCache = new EHCacheTokenReplayCache();
+            }
+        }
+        return replayCache;
     }
 
     public String getName() {
@@ -172,6 +202,13 @@ public class FederationContext {
 
     public String getRelativePath() {
         return relativePath;
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (replayCache != null) {
+            replayCache.close();
+        }
     }
 
 }

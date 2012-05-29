@@ -110,6 +110,23 @@ public class FederationAuthenticator extends FormAuthenticator {
         super.startInternal();
 
     }
+    
+    @Override
+    protected synchronized void stopInternal() throws LifecycleException {
+        if (configurator != null) {
+            List<FederationContext> fedContextList = configurator.getFederationContextList();
+            if (fedContextList != null) {
+                for (FederationContext fedContext : fedContextList) {
+                    try {
+                        fedContext.close();
+                    } catch (IOException ex) {
+                        //
+                    }
+                }
+            }
+        }
+        super.stopInternal();
+    }
 
     private FederationContext getContextConfiguration(String contextName) {
         if (configurator == null) {
