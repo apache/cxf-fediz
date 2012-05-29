@@ -76,7 +76,7 @@
 
 
 
-	<xs:element name="maximumClockSkew" type="xs:integer" />
+	<xs:element name="maximumClockSkew" type="xs:integer" default="60"/>
 	
 	<xs:element name="tokenReplayCache" type="xs:string" />
 

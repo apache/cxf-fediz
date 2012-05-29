@@ -73,12 +73,6 @@ public class SAMLTokenValidator implements TokenValidator {
 
     private static final Logger LOG = LoggerFactory.getLogger(SAMLTokenValidator.class);
     
-    /**
-     * The time in seconds in the future within which the NotBefore time of an incoming 
-     * Assertion is valid. The default is 60 seconds.
-     */
-    private int futureTTL = 60;
-
     // [TODO] make sure we answer true only for cases we actually can handle
     @Override
     public boolean canHandleTokenType(String tokenType) {
@@ -90,14 +84,6 @@ public class SAMLTokenValidator implements TokenValidator {
         return true;
     }
     
-    /**
-     * Set the time in seconds in the future within which the NotBefore time of an incoming 
-     * Assertion is valid. The default is 60 seconds.
-     */
-    public void setFutureTTL(int newFutureTTL) {
-        futureTTL = newFutureTTL;
-    }
-
     public TokenValidatorResponse validateAndProcessToken(Element token,
             FederationContext config) {
 
@@ -143,7 +129,7 @@ public class SAMLTokenValidator implements TokenValidator {
             validateAssertion(assertion);
             
             // Validate Conditions
-            if (config.isDetectExpiredTokens() && !validateConditions(assertion)) {
+            if (config.isDetectExpiredTokens() && !validateConditions(assertion, config)) {
                 throw new RuntimeException(
                     "Error in validating conditions of the received Assertion"
                 );
@@ -435,7 +421,8 @@ public class SAMLTokenValidator implements TokenValidator {
     }
     
     protected boolean validateConditions(
-        AssertionWrapper assertion
+        AssertionWrapper assertion,
+        FederationContext config
     ) {
         DateTime validFrom = null;
         DateTime validTill = null;
@@ -449,7 +436,7 @@ public class SAMLTokenValidator implements TokenValidator {
         
         if (validFrom != null) {
             DateTime currentTime = new DateTime();
-            currentTime = currentTime.plusSeconds(futureTTL);
+            currentTime = currentTime.plusSeconds(config.getMaximumClockSkew().intValue());
             if (validFrom.isAfter(currentTime)) {
                 LOG.warn("SAML Token condition (Not Before) not met");
                 return false;
