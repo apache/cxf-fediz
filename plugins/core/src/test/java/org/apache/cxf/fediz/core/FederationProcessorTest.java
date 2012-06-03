@@ -19,44 +19,62 @@
 
 package org.apache.cxf.fediz.core;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
+
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.UnsupportedCallbackException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import junit.framework.Assert;
 
+import org.apache.cxf.fediz.common.STSUtil;
 import org.apache.cxf.fediz.common.SecurityTestUtil;
+import org.apache.cxf.fediz.core.AbstractSAMLCallbackHandler.MultiValue;
 import org.apache.cxf.fediz.core.config.FederationConfigurator;
 import org.apache.cxf.fediz.core.config.FederationContext;
+import org.apache.cxf.fediz.core.config.FederationProtocol;
+import org.apache.ws.security.WSPasswordCallback;
+import org.apache.ws.security.WSSecurityException;
+import org.apache.ws.security.components.crypto.Crypto;
+import org.apache.ws.security.components.crypto.CryptoFactory;
+import org.apache.ws.security.saml.ext.AssertionWrapper;
+import org.apache.ws.security.saml.ext.SAMLParms;
+import org.apache.ws.security.saml.ext.bean.ConditionsBean;
+import org.apache.ws.security.saml.ext.builder.SAML2Constants;
+import org.apache.ws.security.util.DOM2Writer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+
 
 import static org.junit.Assert.fail;
 
 public class FederationProcessorTest {
     private static final String TEST_USER = "alice";
-    private static final String TEST_RSTR_ISSUER = "DoubleItSTSIssuer";
-
+    private static final String TEST_RSTR_ISSUER = "FedizSTSIssuer";
+    private static final String TEST_AUDIENCE = "https://localhost/fedizhelloworld";
+    
     private static final String CONFIG_FILE = "fediz_test_config.xml";
-    private static final String CONFIG_FILE_WRONG_ISSUER = "fediz_test_config2.xml";
-
-    private static String sRSTR;
-    private static String sRSTRREPLAY;
-
+    
+    private static Crypto crypto;
+    private static CallbackHandler cbPasswordHandler;
+    private static FederationConfigurator configurator;
+    
+    
     @BeforeClass
-    public static void readWResult() {
+    public static void init() {
         try {
-            sRSTR = loadResource("RSTR.xml");
-            sRSTRREPLAY = loadResource("RSTR_replay.xml");
+            crypto = CryptoFactory.getInstance("signature.properties");
+            cbPasswordHandler = new KeystoreCallbackHandler();
+            getFederationConfigurator();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Assert.assertNotNull("RSTR resource null", sRSTR);
-        Assert.assertNotNull(loadRootConfig());
+        Assert.assertNotNull(configurator);
 
     }
     
@@ -65,126 +83,205 @@ public class FederationProcessorTest {
         SecurityTestUtil.cleanup();
     }
     
-    private static String loadResource(String filename) throws IOException {
-        InputStream is = null;
-        try {
-            is = FederationProcessorTest.class.getResourceAsStream("/" + filename);
-            if (is == null) {
-                throw new FileNotFoundException("Failed to get RSTR.xml");
-            }
-            BufferedReader bufferedReader = new BufferedReader(
-                    new InputStreamReader(is));
-            StringBuilder stringBuilder = new StringBuilder();
-            String line = null;
-            while ((line = bufferedReader.readLine()) != null) {
-                stringBuilder.append(line + "\n");
-            }
-            bufferedReader.close();
-            return stringBuilder.toString();
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
 
-    private static FederationContext loadRootConfig() {
+    private static FederationConfigurator getFederationConfigurator() {
+        if (configurator != null) {
+            return configurator;
+        }
         try {
-            FederationConfigurator configurator = new FederationConfigurator();
+            configurator = new FederationConfigurator();
             final URL resource = Thread.currentThread().getContextClassLoader()
                     .getResource(CONFIG_FILE);
             File f = new File(resource.toURI());
             configurator.loadConfig(f);
-            return configurator.getFederationContext("ROOT");
+            return configurator;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    private static FederationContext loadOtherIssuerRootConfig() {
-        try {
-            FederationConfigurator configurator = new FederationConfigurator();
-            final URL resource = Thread.currentThread().getContextClassLoader()
-                    .getResource(CONFIG_FILE_WRONG_ISSUER);
-            File f = new File(resource.toURI());
-            configurator.loadConfig(f);
-            return configurator.getFederationContext("ROOT");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-
-    }
-
+    /**
+     * Validate SAML 2 token which includes the role attribute with 2 values
+     * Roles are encoded as a multi-value saml attribute
+     */
     @org.junit.Test
-    public void validateSAML2Token() {
-
+    public void validateSAML2Token() throws Exception {
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        ConditionsBean cp = new ConditionsBean();
+        cp.setAudienceURI(TEST_AUDIENCE);
+        callbackHandler.setConditions(cp);
+        
+        SAMLParms samlParms = new SAMLParms();
+        samlParms.setCallbackHandler(callbackHandler);
+        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        String rstr = createSamlToken(assertion, "mystskey");
+        
         FederationRequest wfReq = new FederationRequest();
         wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(sRSTR);
-        FederationContext config = loadRootConfig();
-        config.setDetectReplayedTokens(false);
-        config.setDetectExpiredTokens(false);
+        wfReq.setWresult(rstr);
+        
+        configurator = null;
+        FederationContext config = getFederationConfigurator().getFederationContext("ROOT");
+        
+        FederationProcessor wfProc = new FederationProcessorImpl();
+        FederationResponse wfRes = wfProc.processRequest(wfReq, config);
+        
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
+                            .size());
+        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+    }
+    
+    /**
+     * Validate SAML 2 token which includes the role attribute with 2 values
+     * Roles are encoded as a multiple saml attributes with the same name
+     */
+    @org.junit.Test
+    public void validateSAML2TokenRoleMultiAttributes() throws Exception {
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        callbackHandler.setMultiValueType(MultiValue.MULTI_ATTR);
+        ConditionsBean cp = new ConditionsBean();
+        cp.setAudienceURI(TEST_AUDIENCE);
+        callbackHandler.setConditions(cp);
+        
+        SAMLParms samlParms = new SAMLParms();
+        samlParms.setCallbackHandler(callbackHandler);
+        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        String rstr = createSamlToken(assertion, "mystskey");
+        
+        FederationRequest wfReq = new FederationRequest();
+        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
+        wfReq.setWresult(rstr);
+        
+        configurator = null;
+        FederationContext config = getFederationConfigurator().getFederationContext("ROOT");
 
         FederationProcessor wfProc = new FederationProcessorImpl();
         FederationResponse wfRes = wfProc.processRequest(wfReq, config);
+        
         Assert.assertEquals("Principal name wrong", TEST_USER,
-                wfRes.getUsername());
+                            wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
+                            .size());
     }
 
+    /**
+     * Validate SAML 2 token which includes the role attribute with 2 values
+     * Roles are encoded as a single saml attribute with encoded value
+     */
     @org.junit.Test
-    public void validateSAML2TokenWithWrongIssuer() {
-
+    public void validateSAML2TokenRoleEncodedValue() throws Exception {
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        callbackHandler.setMultiValueType(MultiValue.ENC_VALUE);
+        ConditionsBean cp = new ConditionsBean();
+        cp.setAudienceURI(TEST_AUDIENCE);
+        callbackHandler.setConditions(cp);
+        
+        SAMLParms samlParms = new SAMLParms();
+        samlParms.setCallbackHandler(callbackHandler);
+        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        String rstr = createSamlToken(assertion, "mystskey");
+        
         FederationRequest wfReq = new FederationRequest();
         wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(sRSTR);
-        FederationContext config = loadOtherIssuerRootConfig();
-        config.setDetectReplayedTokens(false);
-        config.setDetectExpiredTokens(false);
+        wfReq.setWresult(rstr);
+        
+        configurator = null;
+        FederationContext config = getFederationConfigurator().getFederationContext("ROOT");
+        FederationProtocol fp = (FederationProtocol)config.getProtocol();
+        fp.setRoleDelimiter(",");
+
+        FederationProcessor wfProc = new FederationProcessorImpl();
+        FederationResponse wfRes = wfProc.processRequest(wfReq, config);
+        
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
+                            .size());
+    }
+    
+    /**
+     * Validate SAML 2 token which includes the role attribute with 2 values
+     * The configured subject of the trusted issuer doesn't match with
+     * the issuer of the SAML token
+     */
+    @org.junit.Test
+    public void validateSAML2TokenUntrustedIssuer() throws Exception {
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        ConditionsBean cp = new ConditionsBean();
+        cp.setAudienceURI(TEST_AUDIENCE);
+        callbackHandler.setConditions(cp);
+        
+        SAMLParms samlParms = new SAMLParms();
+        samlParms.setCallbackHandler(callbackHandler);
+        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        
+        String rstr = createSamlToken(assertion, "mystskey");
+        FederationRequest wfReq = new FederationRequest();
+        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
+        wfReq.setWresult(rstr);
+        
+        // Load and update the config to enforce an error
+        configurator = null;
+        FederationContext config = getFederationConfigurator().getFederationContext("ROOT");
+        config.getTrustedIssuers().get(0).setSubject("wrong-issuer-name");        
+        
         FederationProcessor wfProc = new FederationProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
             Assert.fail("Processing must fail because of wrong issuer configured");
         } catch (RuntimeException ex) {
-            Assert.assertEquals("Exception expected", "Issuer '"
-                    + TEST_RSTR_ISSUER + "' not trusted", ex.getMessage());
+            // expected
         }
     }
 
+    /**
+     * Validate SAML 2 token twice which causes an exception
+     * due to replay attack
+     */
     @org.junit.Test
-    public void validateSAML2TokenForRoles() {
-
+    public void testReplayAttack() throws Exception {
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        ConditionsBean cp = new ConditionsBean();
+        cp.setAudienceURI(TEST_AUDIENCE);
+        callbackHandler.setConditions(cp);
+        
+        SAMLParms samlParms = new SAMLParms();
+        samlParms.setCallbackHandler(callbackHandler);
+        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        String rstr = createSamlToken(assertion, "mystskey");
+        
         FederationRequest wfReq = new FederationRequest();
         wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(sRSTR);
-
-        FederationContext config = loadRootConfig();
-        config.setDetectReplayedTokens(false);
-        config.setDetectExpiredTokens(false);
-
-        FederationProcessor wfProc = new FederationProcessorImpl();
-        FederationResponse wfRes = wfProc.processRequest(wfReq, config);
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("One role must be found", 1, wfRes.getRoles()
-                .size());
-    }
-    
-    @org.junit.Test
-    public void testReplayAttack() {
-
-        FederationRequest wfReq = new FederationRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(sRSTRREPLAY);
-        FederationContext config = loadRootConfig();
-        config.setDetectExpiredTokens(false);
+        wfReq.setWresult(rstr);
+        
+        configurator = null;
+        FederationContext config = getFederationConfigurator().getFederationContext("ROOT");
 
         FederationProcessor wfProc = new FederationProcessorImpl();
         FederationResponse wfRes = wfProc.processRequest(wfReq, config);
@@ -200,6 +297,164 @@ public class FederationProcessorTest {
             // expected
         }
     }
+    
+    
+    /**
+     * Validate SAML 2 token which includes the role attribute with 2 values
+     * The configured subject of the trusted issuer doesn't match with
+     * the issuer of the SAML token
+     */
+    @org.junit.Test
+    public void validateSAML2TokenSeveralCertStore() throws Exception {
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        ConditionsBean cp = new ConditionsBean();
+        cp.setAudienceURI(TEST_AUDIENCE);
+        callbackHandler.setConditions(cp);
+        
+        SAMLParms samlParms = new SAMLParms();
+        samlParms.setCallbackHandler(callbackHandler);
+        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        
+        String rstr = createSamlToken(assertion, "mystskey");
+        FederationRequest wfReq = new FederationRequest();
+        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
+        wfReq.setWresult(rstr);
+        
+        // Load and update the config to enforce an error
+        configurator = null;
+        FederationContext config = getFederationConfigurator().getFederationContext("ROOT2");
+        
+        FederationProcessor wfProc = new FederationProcessorImpl();
+        FederationResponse wfRes = wfProc.processRequest(wfReq, config);
+        
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
+                            .size());
+    }
 
+    /**
+     * Validate SAML 2 token which includes the role attribute with 2 values
+     * The configured subject of the trusted issuer doesn't match with
+     * the issuer of the SAML token
+     */
+    @org.junit.Test
+    public void validateSAML2TokenSeveralCertStoreTrustedIssuer() throws Exception {
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        ConditionsBean cp = new ConditionsBean();
+        cp.setAudienceURI(TEST_AUDIENCE);
+        callbackHandler.setConditions(cp);
+        
+        SAMLParms samlParms = new SAMLParms();
+        samlParms.setCallbackHandler(callbackHandler);
+        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        
+        String rstr = createSamlToken(assertion, "mystskey");
+        FederationRequest wfReq = new FederationRequest();
+        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
+        wfReq.setWresult(rstr);
+        
+        // Load and update the config to enforce an error
+        configurator = null;
+        FederationContext config = getFederationConfigurator().getFederationContext("ROOT3");
+        
+        FederationProcessor wfProc = new FederationProcessorImpl();
+        FederationResponse wfRes = wfProc.processRequest(wfReq, config);
+        
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
+                            .size());
+    }
+    
+    
+    private String createSamlToken(AssertionWrapper assertion, String alias) throws IOException,
+        UnsupportedCallbackException, WSSecurityException, Exception {
+        WSPasswordCallback[] cb = {new WSPasswordCallback(alias, WSPasswordCallback.SIGNATURE)};
+        cbPasswordHandler.handle(cb);
+        String password = cb[0].getPassword();
+        
+        assertion.signAssertion(alias, password, crypto, false);
+        Document doc = STSUtil.toSOAPPart(STSUtil.SAMPLE_RSTR_COLL_MSG);
+        Element token = assertion.toDOM(doc);
+             
+        Element e = FederationProcessorTest.findElement(doc, "RequestedSecurityToken",
+                                                        FederationConstants.WS_TRUST_13_NS);
+        e.appendChild(token);
+        return DOM2Writer.nodeToString(doc);
+    }
+    
+
+    
+    
+    /**
+     * Returns the first element that matches <code>name</code> and
+     * <code>namespace</code>. <p/> This is a replacement for a XPath lookup
+     * <code>//name</code> with the given namespace. It's somewhat faster than
+     * XPath, and we do not deal with prefixes, just with the real namespace URI
+     * 
+     * @param startNode Where to start the search
+     * @param name Local name of the element
+     * @param namespace Namespace URI of the element
+     * @return The found element or <code>null</code>
+     */
+    public static Element findElement(Node startNode, String name, String namespace) {
+        //
+        // Replace the formerly recursive implementation with a depth-first-loop
+        // lookup
+        //
+        if (startNode == null) {
+            return null;
+        }
+        Node startParent = startNode.getParentNode();
+        Node processedNode = null;
+
+        while (startNode != null) {
+            // start node processing at this point
+            if (startNode.getNodeType() == Node.ELEMENT_NODE
+                && startNode.getLocalName().equals(name)) {
+                String ns = startNode.getNamespaceURI();
+                if (ns != null && ns.equals(namespace)) {
+                    return (Element)startNode;
+                }
+
+                if ((namespace == null || namespace.length() == 0)
+                    && (ns == null || ns.length() == 0)) {
+                    return (Element)startNode;
+                }
+            }
+            processedNode = startNode;
+            startNode = startNode.getFirstChild();
+
+            // no child, this node is done.
+            if (startNode == null) {
+                // close node processing, get sibling
+                startNode = processedNode.getNextSibling();
+            }
+            // no more siblings, get parent, all children
+            // of parent are processed.
+            while (startNode == null) {
+                processedNode = processedNode.getParentNode();
+                if (processedNode == startParent) {
+                    return null;
+                }
+                // close parent node processing (processed node now)
+                startNode = processedNode.getNextSibling();
+            }
+        }
+        return null;
+    }
+
+    
 
 }

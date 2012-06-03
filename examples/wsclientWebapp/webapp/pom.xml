@@ -92,6 +92,10 @@
 					<artifactId>wss4j</artifactId>
 					<groupId>org.apache.ws.security</groupId>
 				</exclusion>
+                                <exclusion>
+                                        <artifactId>ehcache-core</artifactId>
+                                        <groupId>net.sf.ehcache</groupId>
+                                </exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
