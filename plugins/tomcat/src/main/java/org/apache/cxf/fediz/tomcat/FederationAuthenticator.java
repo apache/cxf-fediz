@@ -304,28 +304,6 @@ public class FederationAuthenticator extends FormAuthenticator {
                 }
                 FederationContext fedConfig = getContextConfiguration(contextName);
 
-                // Has the callback handler returned a trusted issuer, stored in
-                // session
-//                session = request.getSessionInternal();
-//                String trustedIssuer = null;
-//
-//                //[TODO] How to cache trusted issuer from FederationProcessor?
-//                if (session != null) {
-//                    trustedIssuer = (String) session.getNote(TRUSTED_ISSUER);
-//                    if (trustedIssuer == null || trustedIssuer.length() == 0) {
-//                        trustedIssuer = ((FederationProtocolType)fedConfig.getProtocol()).getIssuer();
-//                    } else {
-//                        log.debug("Trusted issuer cached in session");
-//                        session.removeNote(TRUSTED_ISSUER);
-//                    }
-//                } else {
-//                    log.debug("request session null");
-//                }
-
-                // fedConfig.setTrustedIssuer(trustedIssuer);
-                // log.info("Trusted issuer: " + trustedIssuer);
-                //
-
                 FederationProcessor wfProc = new FederationProcessorImpl();
                 wfRes = wfProc.processRequest(wfReq, fedConfig);
                 
@@ -363,10 +341,6 @@ public class FederationAuthenticator extends FormAuthenticator {
 
                 principal = new FederationPrincipalImpl(wfRes.getUsername(), roles,
                         wfRes.getClaims());
-
-                // [TODO] Cache lifetime (in session), token (in session/TLS),
-                // ?audience?
-                // [TODO] clocksqew
             }
         } else {
             LOG.error("Not supported action found in parameter wa: " + wa);

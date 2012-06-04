@@ -422,10 +422,10 @@ public class FederationProcessorTest {
     
     /**
      * Validate SAML 2 token which is not yet valid (in 30 seconds)
-     * but within the maximum clock sqew range (60 seconds)
+     * but within the maximum clock skew range (60 seconds)
      */
     @org.junit.Test
-    public void validateSAML2TokenClockSqewRange() throws Exception {
+    public void validateSAML2TokenClockSkewRange() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
         callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);

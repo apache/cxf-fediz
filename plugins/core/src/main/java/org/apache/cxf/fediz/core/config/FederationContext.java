@@ -45,9 +45,17 @@ public class FederationContext implements Closeable {
     private boolean detectReplayedTokens = true;
     private String relativePath;
     private TokenReplayCache<String> replayCache;
+    private FederationProtocol protocol;
+    
 
     public FederationContext(ContextConfig config) {
         this.config = config;
+        
+    }
+    
+    public void init() {
+        //get validators initialized
+        getProtocol();
     }
 
     public List<String> getAudienceUris() {
@@ -64,7 +72,7 @@ public class FederationContext implements Closeable {
         return trustedIssuers; 
     }
 
-
+    //[TODO] Return Keystore
     public List<TrustManager> getCertificateStores() {
         CertificateStores certStores = config.getCertificateStores();
         List<TrustManagersType> trustManagers =  certStores.getTrustManager();
@@ -79,8 +87,8 @@ public class FederationContext implements Closeable {
         return config.getMaximumClockSkew();
     }
     
-    public void setMaximumClockSkew(BigInteger maximumClockSqew) {
-        config.setMaximumClockSkew(maximumClockSqew);
+    public void setMaximumClockSkew(BigInteger maximumClockSkew) {
+        config.setMaximumClockSkew(maximumClockSkew);
     }
 
     //    public TrustManager getServiceCertificate() {
@@ -88,11 +96,14 @@ public class FederationContext implements Closeable {
     //    }
 
     public Protocol getProtocol() {
+        if (protocol != null) {
+            return protocol;
+        }
         ProtocolType type = config.getProtocol();
         if (type instanceof FederationProtocolType) {
-            return new FederationProtocol(type);
+            protocol = new FederationProtocol(type);
         }
-        return null;
+        return protocol;
     }
     
     @SuppressWarnings("unchecked")

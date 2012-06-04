@@ -26,6 +26,7 @@ import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.List;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -38,7 +39,6 @@ import org.xml.sax.SAXException;
 
 import org.apache.cxf.fediz.core.config.FederationContext;
 import org.apache.cxf.fediz.core.config.FederationProtocol;
-import org.apache.cxf.fediz.core.saml.SAMLTokenValidator;
 import org.apache.cxf.fediz.core.spi.HomeRealmCallback;
 import org.apache.cxf.fediz.core.spi.IDPCallback;
 import org.apache.cxf.fediz.core.spi.WAuthCallback;
@@ -139,64 +139,76 @@ public class FederationProcessorImpl implements FederationProcessor {
             if (currentDate.after(lifeTime.getExpires())) {
                 LOG.warn("Token already expired");
             }
-
             if (currentDate.before(lifeTime.getCreated())) {
                 LOG.warn("Token not yet valid");
-                // [TODO] Add Check clocksqew
+                // [TODO] Add Check clockskew
             }
         }
 
-        // [TODO] Exception: TokenExpiredException, TokenInvalidException,
-        // TokenCachedException
-
-        // [TODO] Flexible tokenvalidator selection, based on class list
-        SAMLTokenValidator validator = new SAMLTokenValidator();
-        TokenValidatorResponse response = validator.validateAndProcessToken(
-                rst, config);
+        // [TODO] Exception: TokenExpiredException, TokenInvalidException, TokenCachedException
+        // throw new FedizRuntimeException("Error in providing a token", ex, FedizRuntimeException.TOKEN_EXPIRED);
+        
+        TokenValidatorResponse validatorResponse = null;
+        List<TokenValidator> validators = ((FederationProtocol)config.getProtocol()).getTokenValidators();
+        for (TokenValidator validator : validators) {
+            boolean canHandle = false;
+            if (tt != null) {
+                canHandle = validator.canHandleTokenType(tt);
+            } else {
+                canHandle = validator.canHandleToken(rst);
+            }
+            if (canHandle) {
+                try {
+                    validatorResponse = validator.validateAndProcessToken(rst, config);
+                } catch (RuntimeException ex) {
+                    LOG.warn("Failed to validate token", ex);
+                    throw ex;
+                }
+                break;
+            }
+        }
 
         // Check whether token already used for signin
-        if (response.getUniqueTokenId() != null
+        if (validatorResponse.getUniqueTokenId() != null
                 && config.isDetectReplayedTokens()) {
             // Check whether token has already been processed once, prevent
             // replay attack
 
-            if (config.getTokenReplayCache().getId(response.getUniqueTokenId()) == null) {
+            if (config.getTokenReplayCache().getId(validatorResponse.getUniqueTokenId()) == null) {
                 // not cached
                 Date expires = null;
                 if (lifeTime != null && lifeTime.getExpires() != null) {
                     expires = lifeTime.getExpires();
                 } else {
-                    expires = response.getExpires();
+                    expires = validatorResponse.getExpires();
                 }
                 if (expires != null) {
                     Date currentTime = new Date();
                     long ttl = expires.getTime() - currentTime.getTime();
-                    config.getTokenReplayCache().putId(response.getUniqueTokenId(), ttl / 1000L);
+                    config.getTokenReplayCache().putId(validatorResponse.getUniqueTokenId(), ttl / 1000L);
                 } else {
-                    config.getTokenReplayCache().putId(response.getUniqueTokenId());
+                    config.getTokenReplayCache().putId(validatorResponse.getUniqueTokenId());
                 }
             } else {
                 LOG.error("Replay attack with token id: "
-                        + response.getUniqueTokenId());
+                        + validatorResponse.getUniqueTokenId());
                 throw new RuntimeException("Replay attack with token id: "
-                        + response.getUniqueTokenId());
+                        + validatorResponse.getUniqueTokenId());
             }
         }
 
-        // [TODO] Token, WeakReference, SoftReference???
         FederationResponse fedResponse = new FederationResponse(
-                response.getUsername(), response.getIssuer(),
-                response.getRoles(), response.getClaims(),
-                response.getAudience(),
+                validatorResponse.getUsername(), validatorResponse.getIssuer(),
+                validatorResponse.getRoles(), validatorResponse.getClaims(),
+                validatorResponse.getAudience(),
                 (lifeTime != null) ? lifeTime.getCreated() : null,
                         (lifeTime != null) ? lifeTime.getExpires() : null, rst,
-                                response.getUniqueTokenId());
+                            validatorResponse.getUniqueTokenId());
 
         return fedResponse;
     }
 
     private LifeTime processLifeTime(Element lifetimeElem) {
-        // [TODO] Get rid of WSS4J dependency
         try {
             Element createdElem = DOMUtils.getFirstChildWithName(lifetimeElem,
                     WSConstants.WSU_NS, WSConstants.CREATED_LN);
@@ -346,10 +358,6 @@ public class FederationProcessorImpl implements FederationProcessor {
         // if (false) {
         // sb.append("&");
         // sb.append("wfresh=jjjj");
-        // }
-        // if (false) {
-        // sb.append("&");
-        // sb.append("wauth=jjjj");
         // }
         // if (false) {
         // sb.append("&");wct

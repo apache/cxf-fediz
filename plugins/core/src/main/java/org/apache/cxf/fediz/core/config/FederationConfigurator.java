@@ -88,6 +88,7 @@ public class FederationConfigurator {
         }
         for (FederationContext fedContext : federationContextList) {
             if (fedContext.getName().equals(contextName)) {
+                fedContext.init();
                 return fedContext;
             }
         }

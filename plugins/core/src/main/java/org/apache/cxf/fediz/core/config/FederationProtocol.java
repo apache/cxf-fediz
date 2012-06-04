@@ -23,12 +23,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.security.auth.callback.CallbackHandler;
+
+import org.apache.cxf.fediz.core.TokenValidator;
 import org.apache.cxf.fediz.core.config.jaxb.ArgumentType;
 import org.apache.cxf.fediz.core.config.jaxb.CallbackType;
 import org.apache.cxf.fediz.core.config.jaxb.ClaimType;
 import org.apache.cxf.fediz.core.config.jaxb.ClaimTypesRequested;
 import org.apache.cxf.fediz.core.config.jaxb.FederationProtocolType;
 import org.apache.cxf.fediz.core.config.jaxb.ProtocolType;
+import org.apache.cxf.fediz.core.saml.SAMLTokenValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,9 +42,13 @@ public class FederationProtocol extends Protocol {
     private Object authenticationType;
     private Object issuer;
     private Object homeRealm;
+    private List<TokenValidator> validators = new ArrayList<TokenValidator>();
     
     public FederationProtocol(ProtocolType protocolType) {
         super(protocolType);
+        // [TODO] Flexible tokenvalidator selection, based on class list
+        SAMLTokenValidator validator = new SAMLTokenValidator();
+        validators.add(validator);
     }
 
     protected FederationProtocolType getFederationProtocol() {
@@ -229,8 +236,8 @@ public class FederationProtocol extends Protocol {
         getFederationProtocol().setClaimTypesRequested(value);
     }
 
-    public List<String> getSecurityTokenValidators() {
-        return getFederationProtocol().getSecurityTokenValidators();
+    public List<TokenValidator> getTokenValidators() {
+        return validators;
     }
 
     public String getVersion() {

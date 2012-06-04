@@ -100,7 +100,7 @@
 					<xs:element ref="request" />
 					<xs:element ref="claimTypesRequested" />
 					<xs:sequence minOccurs="1" maxOccurs="unbounded">
-						<xs:element ref="securityTokenValidators" />
+					<xs:element ref="tokenValidators" />
 					</xs:sequence>
 				</xs:sequence>
 				<!-- <xs:attribute name="roleDelimiter" type="xs:string"/> -->
@@ -158,7 +158,7 @@
 		</xs:complexType>
 	</xs:element>
 
-	<xs:element name="securityTokenValidators" type="xs:string" />
+	<xs:element name="tokenValidators" type="xs:string" />
 
 	<xs:simpleType name="optionalType">
 		<xs:restriction base="xs:boolean" />

@@ -45,6 +45,7 @@ import org.apache.cxf.fediz.core.config.TrustedIssuer;
 import org.apache.cxf.fediz.core.saml.SamlAssertionValidator.TRUST_TYPE;
 
 import org.apache.ws.security.SAMLTokenPrincipal;
+import org.apache.ws.security.WSConstants;
 import org.apache.ws.security.WSDocInfo;
 import org.apache.ws.security.WSSConfig;
 import org.apache.ws.security.WSSecurityException;
@@ -65,15 +66,23 @@ public class SAMLTokenValidator implements TokenValidator {
 
     private static final Logger LOG = LoggerFactory.getLogger(SAMLTokenValidator.class);
     
-    // [TODO] make sure we answer true only for cases we actually can handle
+
     @Override
     public boolean canHandleTokenType(String tokenType) {
-        return true;
+        if (WSConstants.WSS_SAML2_TOKEN_TYPE.equals(tokenType) || WSConstants.SAML2_NS.equals(tokenType)
+            || WSConstants.WSS_SAML_TOKEN_TYPE.equals(tokenType) || WSConstants.SAML_NS.equals(tokenType)) {
+            return true;
+        }
+        return false;
     }
 
     @Override
     public boolean canHandleToken(Element token) {
-        return true;
+        String ns = token.getNamespaceURI();
+        if (WSConstants.SAML2_NS.equals(ns) || WSConstants.SAML_NS.equals(ns)) {
+            return true;
+        }
+        return false;
     }
     
     public TokenValidatorResponse validateAndProcessToken(Element token,
