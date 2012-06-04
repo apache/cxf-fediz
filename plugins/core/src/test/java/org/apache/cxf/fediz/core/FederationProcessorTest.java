@@ -21,6 +21,7 @@ package org.apache.cxf.fediz.core;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.URL;
 
 import javax.security.auth.callback.CallbackHandler;
@@ -47,6 +48,7 @@ import org.apache.ws.security.saml.ext.SAMLParms;
 import org.apache.ws.security.saml.ext.bean.ConditionsBean;
 import org.apache.ws.security.saml.ext.builder.SAML2Constants;
 import org.apache.ws.security.util.DOM2Writer;
+import org.joda.time.DateTime;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
@@ -366,6 +368,91 @@ public class FederationProcessorTest {
         // Load and update the config to enforce an error
         configurator = null;
         FederationContext config = getFederationConfigurator().getFederationContext("ROOT3");
+        
+        FederationProcessor wfProc = new FederationProcessorImpl();
+        FederationResponse wfRes = wfProc.processRequest(wfReq, config);
+        
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
+                            .size());
+    }
+    
+    /**
+     * Validate SAML 2 token which is expired
+     */
+    @org.junit.Test
+    public void validateSAML2TokenExpired() throws Exception {
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        ConditionsBean cp = new ConditionsBean();
+        DateTime currentTime = new DateTime();
+        currentTime = currentTime.minusSeconds(60);
+        cp.setNotAfter(currentTime);
+        currentTime = new DateTime();
+        currentTime = currentTime.minusSeconds(300);
+        cp.setNotBefore(currentTime);
+        cp.setAudienceURI(TEST_AUDIENCE);
+        callbackHandler.setConditions(cp);
+        
+        SAMLParms samlParms = new SAMLParms();
+        samlParms.setCallbackHandler(callbackHandler);
+        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        String rstr = createSamlToken(assertion, "mystskey");
+        
+        FederationRequest wfReq = new FederationRequest();
+        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
+        wfReq.setWresult(rstr);
+        
+        configurator = null;
+        FederationContext config = getFederationConfigurator().getFederationContext("ROOT");
+
+        FederationProcessor wfProc = new FederationProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            fail("Failure expected on expired SAML token");
+        } catch (Exception ex) {
+            // expected
+        }
+    }
+    
+    /**
+     * Validate SAML 2 token which is not yet valid (in 30 seconds)
+     * but within the maximum clock sqew range (60 seconds)
+     */
+    @org.junit.Test
+    public void validateSAML2TokenClockSqewRange() throws Exception {
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        ConditionsBean cp = new ConditionsBean();
+        DateTime currentTime = new DateTime();
+        currentTime = currentTime.plusSeconds(300);
+        cp.setNotAfter(currentTime);
+        currentTime = new DateTime();
+        currentTime = currentTime.plusSeconds(30);
+        cp.setNotBefore(currentTime);
+        cp.setAudienceURI(TEST_AUDIENCE);
+        callbackHandler.setConditions(cp);
+        
+        SAMLParms samlParms = new SAMLParms();
+        samlParms.setCallbackHandler(callbackHandler);
+        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        String rstr = createSamlToken(assertion, "mystskey");
+        
+        FederationRequest wfReq = new FederationRequest();
+        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
+        wfReq.setWresult(rstr);
+        
+        configurator = null;
+        FederationContext config = getFederationConfigurator().getFederationContext("ROOT");
+        config.setMaximumClockSkew(BigInteger.valueOf(60));
         
         FederationProcessor wfProc = new FederationProcessorImpl();
         FederationResponse wfRes = wfProc.processRequest(wfReq, config);

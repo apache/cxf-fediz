@@ -78,6 +78,10 @@ public class FederationContext implements Closeable {
     public BigInteger getMaximumClockSkew() {
         return config.getMaximumClockSkew();
     }
+    
+    public void setMaximumClockSkew(BigInteger maximumClockSqew) {
+        config.setMaximumClockSkew(maximumClockSqew);
+    }
 
     //    public TrustManager getServiceCertificate() {
     //        return new TrustManager(config.getServiceCertificate());
@@ -118,18 +122,16 @@ public class FederationContext implements Closeable {
         return config.getName();
     }
 
-    /**
-     * helpers to support existing testcases
-     */
 
     public boolean isDetectExpiredTokens() {
         return detectExpiredTokens;
     }
-
+    
     public void setDetectExpiredTokens(boolean detectExpiredTokens) {
         this.detectExpiredTokens = detectExpiredTokens;
     }
 
+    
     public boolean isDetectReplayedTokens() {
         return detectReplayedTokens;
     }
@@ -137,64 +139,6 @@ public class FederationContext implements Closeable {
     public void setDetectReplayedTokens(boolean detectReplayedTokens) {
         this.detectReplayedTokens = detectReplayedTokens;
     }
-
-    /*
-    public URI getRoleURI() {
-        ProtocolType pt = config.getProtocol();
-        if (pt == null) {
-            throw new IllegalConfigurationException("Missing ProtocolType");
-        }
-        if (pt instanceof FederationProtocolType) {
-            try {
-                return new URI(((FederationProtocolType) pt).getRoleURI());
-            } catch (URISyntaxException e) {
-                throw new IllegalConfigurationException("Invalid Role URI", e);
-            }
-        } else {
-            throw new IllegalConfigurationException(
-                "Unknown Protocoltype, only FederationProtocolType is currently suported");
-        }
-
-    }
-
-    public String getRoleDelimiter() {
-        ProtocolType pt = config.getProtocol();
-        if (pt != null && (pt instanceof FederationProtocolType)) {
-            return ((FederationProtocolType) pt).getRoleDelimiter();
-        }
-        throw new IllegalConfigurationException("No FederationProtocolType found");
-    }
-    */
-
-    /*
-    public String getTrustStoreFile() {
-        KeyStore storeType = getTrustStore();
-        return storeType.getFile();
-    }
-
-    public String getTrustStorePassword() {
-        KeyStore storeType = getTrustStore();
-        return storeType.getPassword();
-    }
-
-
-    private KeyStore getTrustStore() {
-
-        List<TrustManager> managers =  getTrustedIssuers();
-
-        if (managers == null) {
-            throw new IllegalConfigurationException(
-                    "No Trusted Issuers Keystore found");
-        }
-        if (managers.size() > 1) {
-            throw new IllegalConfigurationException(
-                    "Only one Trusted Issuer Keystore supported");
-        }
-
-        TrustManager trustManager = managers.get(0);
-        return trustManager.getKeyStore();
-    }
-     */
 
     public void setRelativePath(String relativePath) {
         this.relativePath = relativePath;

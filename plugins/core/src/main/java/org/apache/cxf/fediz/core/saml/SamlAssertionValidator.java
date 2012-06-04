@@ -144,8 +144,7 @@ public class SamlAssertionValidator implements Validator {
         }
         
         // Check conditions
-        //[TODO] Commented out due to testcase issue
-        //checkConditions(assertion);
+        checkConditions(assertion);
         
         // Validate the assertion against schemas/profiles
         validateAssertion(assertion);
