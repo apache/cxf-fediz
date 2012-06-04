@@ -20,25 +20,36 @@
 package org.apache.cxf.fediz.core.config;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.cxf.fediz.core.EHCacheTokenReplayCache;
 import org.apache.cxf.fediz.core.TokenReplayCache;
 import org.apache.cxf.fediz.core.config.jaxb.CertificateStores;
 import org.apache.cxf.fediz.core.config.jaxb.ContextConfig;
 import org.apache.cxf.fediz.core.config.jaxb.FederationProtocolType;
+import org.apache.cxf.fediz.core.config.jaxb.KeyStoreType;
 import org.apache.cxf.fediz.core.config.jaxb.ProtocolType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuers;
+import org.apache.cxf.fediz.core.exception.IllegalConfigurationException;
 
+import org.apache.ws.security.WSSecurityException;
+import org.apache.ws.security.components.crypto.Crypto;
+import org.apache.ws.security.components.crypto.CryptoFactory;
 import org.apache.ws.security.util.Loader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FederationContext implements Closeable {
 
+    private static final Logger LOG = LoggerFactory.getLogger(FederationContext.class);
+    
     private ContextConfig config;
 
     private boolean detectExpiredTokens = true;
@@ -46,6 +57,7 @@ public class FederationContext implements Closeable {
     private String relativePath;
     private TokenReplayCache<String> replayCache;
     private FederationProtocol protocol;
+    private List<TrustManager> certificateStores;
     
 
     public FederationContext(ContextConfig config) {
@@ -71,16 +83,28 @@ public class FederationContext implements Closeable {
         }
         return trustedIssuers; 
     }
-
-    //[TODO] Return Keystore
+    
     public List<TrustManager> getCertificateStores() {
-        CertificateStores certStores = config.getCertificateStores();
-        List<TrustManagersType> trustManagers =  certStores.getTrustManager();
-        List<TrustManager> trustedIssuers = new ArrayList<TrustManager>();
-        for (TrustManagersType manager:trustManagers) {
-            trustedIssuers.add(new TrustManager(manager));
+        if (certificateStores != null) {
+            return certificateStores;
         }
-        return trustedIssuers; 
+        certificateStores = new ArrayList<TrustManager>();
+        CertificateStores certStores = config.getCertificateStores();
+        List<TrustManagersType> trustManagers = certStores.getTrustManager();
+        for (TrustManagersType manager:trustManagers) {
+            TrustManager tm = new TrustManager(manager);
+            Properties sigProperties = createCryptoProperties(manager);
+            Crypto crypto;
+            try {
+                crypto = CryptoFactory.getInstance(sigProperties);
+                tm.setCrypto(crypto);
+                certificateStores.add(tm);
+            } catch (WSSecurityException e) {
+                LOG.error("Failed to load keystore '" + tm.getName() + "'");
+                throw new IllegalConfigurationException("Failed to load keystore '" + tm.getName() + "'");
+            }
+        }
+        return certificateStores; 
     }
 
     public BigInteger getMaximumClockSkew() {
@@ -164,6 +188,38 @@ public class FederationContext implements Closeable {
         if (replayCache != null) {
             replayCache.close();
         }
+    }
+    
+    private Properties createCryptoProperties(TrustManagersType tm) {
+        String trustStoreFile = null;
+        String trustStorePw = null;
+        KeyStoreType ks = tm.getKeyStore();
+        if (ks.getFile() != null && !ks.getFile().isEmpty()) {
+            trustStoreFile = ks.getFile();
+            trustStorePw = ks.getPassword();
+        } else {
+            throw new IllegalStateException("No certificate store configured");
+        }
+        File f = new File(trustStoreFile);
+        if (!f.exists() && getRelativePath() != null && !getRelativePath().isEmpty()) {
+            trustStoreFile = getRelativePath().concat(File.separator + trustStoreFile);
+        }
+        
+        if (trustStoreFile == null || trustStoreFile.isEmpty()) {
+            throw new NullPointerException("truststoreFile not configured");
+        }
+        if (trustStorePw == null || trustStorePw.isEmpty()) {
+            throw new NullPointerException("trustStorePw not configured");
+        }
+        Properties p = new Properties();
+        p.put("org.apache.ws.security.crypto.provider",
+                "org.apache.ws.security.components.crypto.Merlin");
+        p.put("org.apache.ws.security.crypto.merlin.keystore.type", "jks");
+        p.put("org.apache.ws.security.crypto.merlin.keystore.password",
+              trustStorePw);
+        p.put("org.apache.ws.security.crypto.merlin.keystore.file",
+              trustStoreFile);
+        return p;
     }
 
 }

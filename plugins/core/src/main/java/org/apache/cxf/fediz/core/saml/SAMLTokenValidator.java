@@ -19,7 +19,6 @@
 
 package org.apache.cxf.fediz.core.saml;
 
-import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,7 +26,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.StringTokenizer;
 
 import org.w3c.dom.Element;
@@ -39,7 +37,6 @@ import org.apache.cxf.fediz.core.TokenValidatorResponse;
 import org.apache.cxf.fediz.core.config.CertificateValidationMethod;
 import org.apache.cxf.fediz.core.config.FederationContext;
 import org.apache.cxf.fediz.core.config.FederationProtocol;
-import org.apache.cxf.fediz.core.config.KeyStore;
 import org.apache.cxf.fediz.core.config.TrustManager;
 import org.apache.cxf.fediz.core.config.TrustedIssuer;
 import org.apache.cxf.fediz.core.saml.SamlAssertionValidator.TRUST_TYPE;
@@ -49,8 +46,6 @@ import org.apache.ws.security.WSConstants;
 import org.apache.ws.security.WSDocInfo;
 import org.apache.ws.security.WSSConfig;
 import org.apache.ws.security.WSSecurityException;
-import org.apache.ws.security.components.crypto.Crypto;
-import org.apache.ws.security.components.crypto.CryptoFactory;
 import org.apache.ws.security.handler.RequestData;
 import org.apache.ws.security.saml.SAMLKeyInfo;
 import org.apache.ws.security.saml.ext.AssertionWrapper;
@@ -133,16 +128,14 @@ public class SAMLTokenValidator implements TokenValidator {
                 try {
                     for (TrustManager tm: config.getCertificateStores()) {
                         try {
-                            Properties sigProperties = createCryptoProperties(config, tm);
-                            Crypto sigCrypto = CryptoFactory.getInstance(sigProperties);
-                            requestData.setSigCrypto(sigCrypto);
+                            requestData.setSigCrypto(tm.getCrypto());
                             trustValidator.validate(trustCredential, requestData);
                             trusted = true;
                             break;
                         } catch (Exception ex) {
                             if (LOG.isDebugEnabled()) {
                                 LOG.debug("Issuer '" + ti.getName() + "' not validated in keystore '"
-                                          + tm.getKeyStore().getFile() + "'");
+                                          + tm.getName() + "'");
                             }
                         }
                     }
@@ -379,37 +372,6 @@ public class SAMLTokenValidator implements TokenValidator {
 
     }
 
-    private Properties createCryptoProperties(FederationContext config, TrustManager tm) {
-        String trustStoreFile = null;
-        String trustStorePw = null;
-        KeyStore ks = tm.getKeyStore();
-        if (ks.getFile() != null && !ks.getFile().isEmpty()) {
-            trustStoreFile = ks.getFile();
-            trustStorePw = ks.getPassword();
-        } else {
-            throw new IllegalStateException("No certificate store configured");
-        }
-        File f = new File(trustStoreFile);
-        if (!f.exists() && config.getRelativePath() != null && !config.getRelativePath().isEmpty()) {
-            trustStoreFile = config.getRelativePath().concat(File.separator + trustStoreFile);
-        }
-        
-        if (trustStoreFile == null || trustStoreFile.isEmpty()) {
-            throw new NullPointerException("truststoreFile not configured");
-        }
-        if (trustStorePw == null || trustStorePw.isEmpty()) {
-            throw new NullPointerException("trustStorePw not configured");
-        }
-        Properties p = new Properties();
-        p.put("org.apache.ws.security.crypto.provider",
-                "org.apache.ws.security.components.crypto.Merlin");
-        p.put("org.apache.ws.security.crypto.merlin.keystore.type", "jks");
-        p.put("org.apache.ws.security.crypto.merlin.keystore.password",
-              trustStorePw);
-        p.put("org.apache.ws.security.crypto.merlin.keystore.file",
-              trustStoreFile);
-        return p;
-    }
     
     private Date getExpires(AssertionWrapper assertion) {
         DateTime validTill = null;

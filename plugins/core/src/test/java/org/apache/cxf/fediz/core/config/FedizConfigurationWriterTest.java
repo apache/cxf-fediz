@@ -245,11 +245,6 @@ public class FedizConfigurationWriterTest {
         
         List<TrustManager> trustManagers = fedContext.getCertificateStores();
         Assert.assertEquals(1, trustManagers.size());
-        TrustManager manager = trustManagers.get(0);
-        KeyStore keyStore = manager.getKeyStore();
-        Assert.assertEquals(JKS_TYPE, keyStore.getType());
-        Assert.assertEquals(KEYSTORE_FILE, keyStore.getFile());
-        Assert.assertEquals(KEYSTORE_PASSWORD, keyStore.getPassword());
 
     }
 

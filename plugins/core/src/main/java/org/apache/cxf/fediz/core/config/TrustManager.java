@@ -20,31 +20,40 @@
 package org.apache.cxf.fediz.core.config;
 
 import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
+import org.apache.ws.security.components.crypto.Crypto;
 
 public class TrustManager {
     private TrustManagersType trustManagerType;
+    private Crypto crypto;
+    private String name;
 
     public TrustManager(TrustManagersType trustManagerType) {
         super();
         this.trustManagerType = trustManagerType;
     }
 
-    public KeyStore getKeyStore() {
-        return new KeyStore(trustManagerType.getKeyStore());
+    public String getName() {
+        if (name != null) {
+            return name;
+        }
+        if (trustManagerType.getKeyStore().getFile() != null) {
+            name = trustManagerType.getKeyStore().getFile();
+        } else if (trustManagerType.getKeyStore().getUrl() != null) {
+            name = trustManagerType.getKeyStore().getUrl();
+        } else if (trustManagerType.getKeyStore().getResource() != null) {
+            name = trustManagerType.getKeyStore().getResource();
+        }
+        return name;
     }
 
-    public void setKeyStore(KeyStore keyStore) {
-        trustManagerType.setKeyStore(keyStore.getKeyStoreType());
+    public Crypto getCrypto() {
+        return crypto;
     }
 
-    public String getProvider() {
-        return trustManagerType.getProvider();
+    public void setCrypto(Crypto crypto) {
+        this.crypto = crypto;
     }
-
-    public void setProvider(String value) {
-        trustManagerType.setProvider(value);
-    }
-
+    
     public int hashCode() {
         return trustManagerType.hashCode();
     }
