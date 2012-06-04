@@ -52,17 +52,6 @@
 		</auth-constraint>
 	</security-constraint>
 
-	<security-constraint>
-		<web-resource-collection>
-			<web-resource-name>Servlet Protected Area</web-resource-name>
-			<url-pattern>/secureservlet/*</url-pattern>
-		</web-resource-collection>
-		<auth-constraint>
-			<!-- it does not work to not list a role, no authentication triggered -->
-			<role-name>*</role-name>
-		</auth-constraint>
-	</security-constraint>
-
 	<login-config>
 		<auth-method>WSFED</auth-method>
 		<realm-name>WSFED</realm-name>
