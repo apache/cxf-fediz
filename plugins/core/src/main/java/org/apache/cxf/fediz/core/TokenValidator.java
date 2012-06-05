@@ -21,6 +21,7 @@ package org.apache.cxf.fediz.core;
 
 import org.w3c.dom.Element;
 import org.apache.cxf.fediz.core.config.FederationContext;
+import org.apache.cxf.fediz.core.exception.ProcessingException;
 
 public interface TokenValidator {
 
@@ -40,6 +41,7 @@ public interface TokenValidator {
 
     /**
      * Validate a Token using the given Element and Configuration.
+     * @throws ProcessingException 
      */
-    TokenValidatorResponse validateAndProcessToken(Element token, FederationContext config);
+    TokenValidatorResponse validateAndProcessToken(Element token, FederationContext config) throws ProcessingException;
 }

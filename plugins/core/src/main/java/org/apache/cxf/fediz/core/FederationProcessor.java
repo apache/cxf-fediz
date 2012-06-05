@@ -22,11 +22,12 @@ package org.apache.cxf.fediz.core;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.cxf.fediz.core.config.FederationContext;
+import org.apache.cxf.fediz.core.exception.ProcessingException;
 
 public interface FederationProcessor {
 
-    FederationResponse processRequest(FederationRequest request, FederationContext config);
+    FederationResponse processRequest(FederationRequest request, FederationContext config) throws ProcessingException;
     
-    String createSignInRequest(HttpServletRequest request, FederationContext config);
+    String createSignInRequest(HttpServletRequest request, FederationContext config) throws ProcessingException;
 
 }

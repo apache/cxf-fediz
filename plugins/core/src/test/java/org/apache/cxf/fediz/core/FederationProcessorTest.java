@@ -40,6 +40,8 @@ import org.apache.cxf.fediz.core.AbstractSAMLCallbackHandler.MultiValue;
 import org.apache.cxf.fediz.core.config.FederationConfigurator;
 import org.apache.cxf.fediz.core.config.FederationContext;
 import org.apache.cxf.fediz.core.config.FederationProtocol;
+import org.apache.cxf.fediz.core.exception.ProcessingException;
+import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.ws.security.WSPasswordCallback;
 import org.apache.ws.security.WSSecurityException;
 import org.apache.ws.security.components.crypto.Crypto;
@@ -104,6 +106,80 @@ public class FederationProcessorTest {
         }
     }
 
+    
+    /**
+     * Validate RSTR without RequestedSecurityToken element
+     */
+    @org.junit.Test
+    public void validateRSTRWithoutToken() throws Exception {
+        Document doc = STSUtil.toSOAPPart(STSUtil.SAMPLE_RSTR_COLL_MSG);
+        
+        FederationRequest wfReq = new FederationRequest();
+        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
+        wfReq.setWresult(DOM2Writer.nodeToString(doc));
+        
+        configurator = null;
+        FederationContext config = getFederationConfigurator().getFederationContext("ROOT");
+
+        FederationProcessor wfProc = new FederationProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            fail("Failure expected on missing security token in RSTR");
+        } catch (ProcessingException ex) {
+            if (!TYPE.BAD_REQUEST.equals(ex.getType())) {
+                fail("Expected ProcessingException with BAD_REQUEST type");
+            }
+        }
+    }
+    
+    /**
+     * Validate FederationRequest with unknown action
+     */
+    @org.junit.Test
+    public void validateRequestUnknownAction() throws Exception {
+        Document doc = STSUtil.toSOAPPart(STSUtil.SAMPLE_RSTR_COLL_MSG);
+        
+        FederationRequest wfReq = new FederationRequest();
+        wfReq.setWa("gugus");
+        wfReq.setWresult(DOM2Writer.nodeToString(doc));
+        
+        configurator = null;
+        FederationContext config = getFederationConfigurator().getFederationContext("ROOT");
+
+        FederationProcessor wfProc = new FederationProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            fail("Failure expected due to invalid action");
+        } catch (ProcessingException ex) {
+            if (!TYPE.INVALID_REQUEST.equals(ex.getType())) {
+                fail("Expected ProcessingException with INVALID_REQUEST type");
+            }
+        }
+    }
+    
+    /**
+     *Validate FederationRequest with invalid RSTR/wresult
+     */
+    @org.junit.Test
+    public void validateSignInInvalidWResult() throws Exception {
+        FederationRequest wfReq = new FederationRequest();
+        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
+        wfReq.setWresult("gugus");
+        
+        configurator = null;
+        FederationContext config = getFederationConfigurator().getFederationContext("ROOT");
+
+        FederationProcessor wfProc = new FederationProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            fail("Failure expected due to invalid wresult");
+        } catch (ProcessingException ex) {
+            if (!TYPE.INVALID_REQUEST.equals(ex.getType())) {
+                fail("Expected ProcessingException with INVALID_REQUEST type");
+            }
+        }
+    }
+    
     /**
      * Validate SAML 2 token which includes the role attribute with 2 values
      * Roles are encoded as a multi-value saml attribute
@@ -122,7 +198,7 @@ public class FederationProcessorTest {
         SAMLParms samlParms = new SAMLParms();
         samlParms.setCallbackHandler(callbackHandler);
         AssertionWrapper assertion = new AssertionWrapper(samlParms);
-        String rstr = createSamlToken(assertion, "mystskey");
+        String rstr = createSamlToken(assertion, "mystskey", true);
         
         FederationRequest wfReq = new FederationRequest();
         wfReq.setWa(FederationConstants.ACTION_SIGNIN);
@@ -161,7 +237,7 @@ public class FederationProcessorTest {
         SAMLParms samlParms = new SAMLParms();
         samlParms.setCallbackHandler(callbackHandler);
         AssertionWrapper assertion = new AssertionWrapper(samlParms);
-        String rstr = createSamlToken(assertion, "mystskey");
+        String rstr = createSamlToken(assertion, "mystskey", true);
         
         FederationRequest wfReq = new FederationRequest();
         wfReq.setWa(FederationConstants.ACTION_SIGNIN);
@@ -199,7 +275,7 @@ public class FederationProcessorTest {
         SAMLParms samlParms = new SAMLParms();
         samlParms.setCallbackHandler(callbackHandler);
         AssertionWrapper assertion = new AssertionWrapper(samlParms);
-        String rstr = createSamlToken(assertion, "mystskey");
+        String rstr = createSamlToken(assertion, "mystskey", true);
         
         FederationRequest wfReq = new FederationRequest();
         wfReq.setWa(FederationConstants.ACTION_SIGNIN);
@@ -240,7 +316,7 @@ public class FederationProcessorTest {
         samlParms.setCallbackHandler(callbackHandler);
         AssertionWrapper assertion = new AssertionWrapper(samlParms);
         
-        String rstr = createSamlToken(assertion, "mystskey");
+        String rstr = createSamlToken(assertion, "mystskey", true);
         FederationRequest wfReq = new FederationRequest();
         wfReq.setWa(FederationConstants.ACTION_SIGNIN);
         wfReq.setWresult(rstr);
@@ -253,12 +329,54 @@ public class FederationProcessorTest {
         FederationProcessor wfProc = new FederationProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
-            Assert.fail("Processing must fail because of wrong issuer configured");
-        } catch (RuntimeException ex) {
-            // expected
+            Assert.fail("Processing must fail because of untrusted issuer configured");
+        } catch (ProcessingException ex) {
+            if (!TYPE.ISSUER_NOT_TRUSTED.equals(ex.getType())) {
+                fail("Expected ProcessingException with ISSUER_NOT_TRUSTED type");
+            }
         }
     }
 
+    /**
+     * Validate SAML 2 token which includes the role attribute with 2 values
+     * The configured subject of the trusted issuer doesn't match with
+     * the issuer of the SAML token
+     */
+    @org.junit.Test
+    public void validateUnsignedSAML2Token() throws Exception {
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        ConditionsBean cp = new ConditionsBean();
+        cp.setAudienceURI(TEST_AUDIENCE);
+        callbackHandler.setConditions(cp);
+        
+        SAMLParms samlParms = new SAMLParms();
+        samlParms.setCallbackHandler(callbackHandler);
+        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        
+        String rstr = createSamlToken(assertion, "mystskey", false);
+        FederationRequest wfReq = new FederationRequest();
+        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
+        wfReq.setWresult(rstr);
+        
+        // Load and update the config to enforce an error
+        configurator = null;
+        FederationContext config = getFederationConfigurator().getFederationContext("ROOT");       
+        
+        FederationProcessor wfProc = new FederationProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            Assert.fail("Processing must fail because of missing signature");
+        } catch (ProcessingException ex) {
+            if (!TYPE.TOKEN_NO_SIGNATURE.equals(ex.getType())) {
+                fail("Expected ProcessingException with TOKEN_NO_SIGNATURE type");
+            }
+        }
+    }
+    
     /**
      * Validate SAML 2 token twice which causes an exception
      * due to replay attack
@@ -277,7 +395,7 @@ public class FederationProcessorTest {
         SAMLParms samlParms = new SAMLParms();
         samlParms.setCallbackHandler(callbackHandler);
         AssertionWrapper assertion = new AssertionWrapper(samlParms);
-        String rstr = createSamlToken(assertion, "mystskey");
+        String rstr = createSamlToken(assertion, "mystskey", true);
         
         FederationRequest wfReq = new FederationRequest();
         wfReq.setWa(FederationConstants.ACTION_SIGNIN);
@@ -296,8 +414,10 @@ public class FederationProcessorTest {
         try {
             wfProc.processRequest(wfReq, config);
             fail("Failure expected on a replay attack");
-        } catch (Exception ex) {
-            // expected
+        } catch (ProcessingException ex) {
+            if (!TYPE.TOKEN_REPLAY.equals(ex.getType())) {
+                fail("Expected ProcessingException with TOKEN_REPLAY type");
+            }
         }
     }
     
@@ -322,7 +442,7 @@ public class FederationProcessorTest {
         samlParms.setCallbackHandler(callbackHandler);
         AssertionWrapper assertion = new AssertionWrapper(samlParms);
         
-        String rstr = createSamlToken(assertion, "mystskey");
+        String rstr = createSamlToken(assertion, "mystskey", true);
         FederationRequest wfReq = new FederationRequest();
         wfReq.setWa(FederationConstants.ACTION_SIGNIN);
         wfReq.setWresult(rstr);
@@ -361,7 +481,7 @@ public class FederationProcessorTest {
         samlParms.setCallbackHandler(callbackHandler);
         AssertionWrapper assertion = new AssertionWrapper(samlParms);
         
-        String rstr = createSamlToken(assertion, "mystskey");
+        String rstr = createSamlToken(assertion, "mystskey", true);
         FederationRequest wfReq = new FederationRequest();
         wfReq.setWa(FederationConstants.ACTION_SIGNIN);
         wfReq.setWresult(rstr);
@@ -403,7 +523,7 @@ public class FederationProcessorTest {
         SAMLParms samlParms = new SAMLParms();
         samlParms.setCallbackHandler(callbackHandler);
         AssertionWrapper assertion = new AssertionWrapper(samlParms);
-        String rstr = createSamlToken(assertion, "mystskey");
+        String rstr = createSamlToken(assertion, "mystskey", true);
         
         FederationRequest wfReq = new FederationRequest();
         wfReq.setWa(FederationConstants.ACTION_SIGNIN);
@@ -416,8 +536,10 @@ public class FederationProcessorTest {
         try {
             wfProc.processRequest(wfReq, config);
             fail("Failure expected on expired SAML token");
-        } catch (Exception ex) {
-            // expected
+        } catch (ProcessingException ex) {
+            if (!TYPE.TOKEN_EXPIRED.equals(ex.getType())) {
+                fail("Expected ProcessingException with TOKEN_EXPIRED type");
+            }
         }
     }
     
@@ -445,7 +567,7 @@ public class FederationProcessorTest {
         SAMLParms samlParms = new SAMLParms();
         samlParms.setCallbackHandler(callbackHandler);
         AssertionWrapper assertion = new AssertionWrapper(samlParms);
-        String rstr = createSamlToken(assertion, "mystskey");
+        String rstr = createSamlToken(assertion, "mystskey", true);
         
         FederationRequest wfReq = new FederationRequest();
         wfReq.setWa(FederationConstants.ACTION_SIGNIN);
@@ -483,7 +605,7 @@ public class FederationProcessorTest {
         SAMLParms samlParms = new SAMLParms();
         samlParms.setCallbackHandler(callbackHandler);
         AssertionWrapper assertion = new AssertionWrapper(samlParms);
-        String rstr = createSamlToken(assertion, "mystskey");
+        String rstr = createSamlToken(assertion, "mystskey", true);
         
         FederationRequest wfReq = new FederationRequest();
         wfReq.setWa(FederationConstants.ACTION_SIGNIN);
@@ -506,13 +628,15 @@ public class FederationProcessorTest {
     }
     
     
-    private String createSamlToken(AssertionWrapper assertion, String alias) throws IOException,
+    private String createSamlToken(AssertionWrapper assertion, String alias, boolean sign) throws IOException,
         UnsupportedCallbackException, WSSecurityException, Exception {
         WSPasswordCallback[] cb = {new WSPasswordCallback(alias, WSPasswordCallback.SIGNATURE)};
         cbPasswordHandler.handle(cb);
         String password = cb[0].getPassword();
         
-        assertion.signAssertion(alias, password, crypto, false);
+        if (sign) {
+            assertion.signAssertion(alias, password, crypto, false);
+        }
         Document doc = STSUtil.toSOAPPart(STSUtil.SAMPLE_RSTR_COLL_MSG);
         Element token = assertion.toDOM(doc);
              

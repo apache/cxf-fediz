@@ -55,7 +55,7 @@ public class FederationProtocol extends Protocol {
                     obj = Thread.currentThread().getContextClassLoader().loadClass(validatorClassname).newInstance();
                 } catch (Exception ex) {
                     LOG.error("Failed to instantiate TokenValidator implementation class: '"
-                              + validatorClassname + "'", ex);
+                              + validatorClassname + "'\n" + ex.getClass().getCanonicalName() + ": " + ex.getMessage());
                 }
                 if (obj instanceof TokenValidator) {
                     validators.add((TokenValidator)obj);

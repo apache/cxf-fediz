@@ -64,7 +64,6 @@ public class TokenValidatorResponse {
         return claims;
     }
 
-
     public Date getExpires() {
         return expires;
     }

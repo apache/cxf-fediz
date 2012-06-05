@@ -39,6 +39,8 @@ import org.apache.cxf.fediz.core.config.FederationContext;
 import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.config.TrustManager;
 import org.apache.cxf.fediz.core.config.TrustedIssuer;
+import org.apache.cxf.fediz.core.exception.ProcessingException;
+import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.core.saml.SamlAssertionValidator.TRUST_TYPE;
 
 import org.apache.ws.security.SAMLTokenPrincipal;
@@ -81,7 +83,7 @@ public class SAMLTokenValidator implements TokenValidator {
     }
     
     public TokenValidatorResponse validateAndProcessToken(Element token,
-            FederationContext config) {
+            FederationContext config) throws ProcessingException {
 
         try {          
             RequestData requestData = new RequestData();
@@ -93,8 +95,8 @@ public class SAMLTokenValidator implements TokenValidator {
 
             AssertionWrapper assertion = new AssertionWrapper(token);
             if (!assertion.isSigned()) {
-                throw new RuntimeException(
-                        "The received assertion is not signed, and therefore not trusted");
+                LOG.warn("Assertion is not signed");
+                throw new ProcessingException(TYPE.TOKEN_NO_SIGNATURE);
             }
             // Verify the signature
             assertion.verifySignature(requestData,
@@ -152,8 +154,15 @@ public class SAMLTokenValidator implements TokenValidator {
             }
             
             if (!trusted) {
-                throw new RuntimeException("Issuer '" + assertionIssuer
-                        + "' not trusted");
+                // Condition already checked in SamlAssertionValidator
+                // Minor performance impact on untrusted and expired tokens
+                if (!isConditionValid(assertion, config.getMaximumClockSkew().intValue())) {
+                    LOG.warn("Security token expired");
+                    throw new ProcessingException(TYPE.TOKEN_EXPIRED);
+                } else {
+                    LOG.warn("Issuer '" + assertionIssuer + "' not trusted");
+                    throw new ProcessingException(TYPE.ISSUER_NOT_TRUSTED);
+                }
             }
 
             String audience = null;
@@ -187,7 +196,8 @@ public class SAMLTokenValidator implements TokenValidator {
                             List<String> values = (List<String>)oValue;
                             roles = Collections.unmodifiableList(values);
                         } else {
-                            throw new IllegalStateException("Invalid value type of Claim value");
+                            LOG.error("Unsupported value type of Claim value");
+                            throw new IllegalStateException("Unsupported value type of Claim value");
                         }
                         claims.remove(c);
                         break;
@@ -205,8 +215,8 @@ public class SAMLTokenValidator implements TokenValidator {
             return response;
 
         } catch (WSSecurityException ex) {
-            // [TODO] proper exception handling
-            throw new RuntimeException(ex);
+            LOG.error("Security token validation failed", ex);
+            throw new ProcessingException(TYPE.TOKEN_INVALID);
         }
     }
 
@@ -323,7 +333,8 @@ public class SAMLTokenValidator implements TokenValidator {
                 values.addAll(valueList);
                 t.setValue(values);
             } else {
-                throw new IllegalStateException("Invalid value type of Claim value");
+                LOG.error("Unsupported value type of Claim value");
+                throw new IllegalStateException("Unsupported value type of Claim value");
             }
         } else {
             if (valueList.size() == 1) {
@@ -386,5 +397,38 @@ public class SAMLTokenValidator implements TokenValidator {
         }
         return validTill.toDate();
     }
+    
+    /**
+     * Check the Conditions of the Assertion.
+     */
+    protected boolean isConditionValid(AssertionWrapper assertion, int maxClockSkew) throws WSSecurityException {
+        DateTime validFrom = null;
+        DateTime validTill = null;
+        if (assertion.getSamlVersion().equals(SAMLVersion.VERSION_20)
+            && assertion.getSaml2().getConditions() != null) {
+            validFrom = assertion.getSaml2().getConditions().getNotBefore();
+            validTill = assertion.getSaml2().getConditions().getNotOnOrAfter();
+        } else if (assertion.getSamlVersion().equals(SAMLVersion.VERSION_11)
+            && assertion.getSaml1().getConditions() != null) {
+            validFrom = assertion.getSaml1().getConditions().getNotBefore();
+            validTill = assertion.getSaml1().getConditions().getNotOnOrAfter();
+        }
+        
+        if (validFrom != null) {
+            DateTime currentTime = new DateTime();
+            currentTime = currentTime.plusSeconds(maxClockSkew);
+            if (validFrom.isAfter(currentTime)) {
+                LOG.debug("SAML Token condition (Not Before) not met");
+                return false;
+            }
+        }
+
+        if (validTill != null && validTill.isBeforeNow()) {
+            LOG.debug("SAML Token condition (Not On Or After) not met");
+            return false;
+        }
+        return true;
+    }
+    
 
 }

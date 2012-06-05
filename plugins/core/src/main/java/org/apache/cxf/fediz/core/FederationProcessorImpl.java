@@ -20,7 +20,6 @@
 package org.apache.cxf.fediz.core;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.DateFormat;
@@ -31,14 +30,14 @@ import java.util.List;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.servlet.http.HttpServletRequest;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
 
 import org.apache.cxf.fediz.core.config.FederationContext;
 import org.apache.cxf.fediz.core.config.FederationProtocol;
+import org.apache.cxf.fediz.core.exception.ProcessingException;
+import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.core.spi.HomeRealmCallback;
 import org.apache.cxf.fediz.core.spi.IDPCallback;
 import org.apache.cxf.fediz.core.spi.WAuthCallback;
@@ -62,17 +61,22 @@ public class FederationProcessorImpl implements FederationProcessor {
 
     @Override
     public FederationResponse processRequest(FederationRequest request,
-                                             FederationContext config) {
+                                             FederationContext config)
+        throws ProcessingException {
         FederationResponse response = null;
-        if (request.getWa().equals(FederationConstants.ACTION_SIGNIN)) {
+        if (FederationConstants.ACTION_SIGNIN.equals(request.getWa())) {
             response = this.processSignInRequest(request, config);
+        } else {
+            LOG.error("Invalid action '" + request.getWa() + "'");
+            throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
         return response;
     }
 
     protected FederationResponse processSignInRequest(
-            FederationRequest request, FederationContext config) {
-
+            FederationRequest request, FederationContext config)
+        throws ProcessingException {
+        
         byte[] wresult = request.getWresult().getBytes();
 
         Document doc = null;
@@ -81,23 +85,17 @@ public class FederationProcessorImpl implements FederationProcessor {
             doc = DOMUtils.readXml(new ByteArrayInputStream(wresult));
             el = doc.getDocumentElement();
 
-        } catch (SAXException e) {
-            e.printStackTrace();
-            return null;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-            return null;
+        } catch (Exception e) {
+            LOG.warn("Failed to parse wresult: " + e.getMessage());
+            throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
 
         if ("RequestSecurityTokenResponseCollection".equals(el.getLocalName())) {
             el = DOMUtils.getFirstElement(el);
         }
         if (!"RequestSecurityTokenResponse".equals(el.getLocalName())) {
-            throw new RuntimeException("Unexpected element "
-                    + el.getLocalName());
+            LOG.warn("Unexpected root element of wresult: '" + el.getLocalName() + "'");
+            throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
         el = DOMUtils.getFirstElement(el);
         Element rst = null;
@@ -119,15 +117,15 @@ public class FederationProcessorImpl implements FederationProcessor {
             el = DOMUtils.getNextElement(el);
         }
         if (LOG.isDebugEnabled()) {
-            LOG.debug("RST: " + rst.toString());
+            LOG.debug("RST: " + ((rst != null) ? rst.toString() : "null"));
             LOG.debug("Lifetime: "
                     + ((lifetimeElem != null) ? lifetimeElem.toString()
                             : "null"));
             LOG.debug("Tokentype: " + ((tt != null) ? tt.toString() : "null"));
         }
         if (rst == null) {
-            LOG.info("RST is null");
-            throw new RuntimeException("RST is null");
+            LOG.warn("RequestedSecurityToken element not found in wresult");
+            throw new ProcessingException(TYPE.BAD_REQUEST);
         }
         LifeTime lifeTime = null;
         if (lifetimeElem != null) {
@@ -145,9 +143,6 @@ public class FederationProcessorImpl implements FederationProcessor {
             }
         }
 
-        // [TODO] Exception: TokenExpiredException, TokenInvalidException, TokenCachedException
-        // throw new FedizRuntimeException("Error in providing a token", ex, FedizRuntimeException.TOKEN_EXPIRED);
-        
         TokenValidatorResponse validatorResponse = null;
         List<TokenValidator> validators = ((FederationProtocol)config.getProtocol()).getTokenValidators();
         for (TokenValidator validator : validators) {
@@ -160,11 +155,16 @@ public class FederationProcessorImpl implements FederationProcessor {
             if (canHandle) {
                 try {
                     validatorResponse = validator.validateAndProcessToken(rst, config);
-                } catch (RuntimeException ex) {
-                    LOG.warn("Failed to validate token", ex);
+                } catch (ProcessingException ex) {
                     throw ex;
+                } catch (Exception ex) {
+                    LOG.warn("Failed to validate token", ex);
+                    throw new ProcessingException(TYPE.TOKEN_INVALID);
                 }
                 break;
+            } else {
+                LOG.warn("No security token validator found for '" + tt + "'");
+                throw new ProcessingException(TYPE.BAD_REQUEST);
             }
         }
 
@@ -173,7 +173,6 @@ public class FederationProcessorImpl implements FederationProcessor {
                 && config.isDetectReplayedTokens()) {
             // Check whether token has already been processed once, prevent
             // replay attack
-
             if (config.getTokenReplayCache().getId(validatorResponse.getUniqueTokenId()) == null) {
                 // not cached
                 Date expires = null;
@@ -190,10 +189,9 @@ public class FederationProcessorImpl implements FederationProcessor {
                     config.getTokenReplayCache().putId(validatorResponse.getUniqueTokenId());
                 }
             } else {
-                LOG.error("Replay attack with token id: "
-                        + validatorResponse.getUniqueTokenId());
-                throw new RuntimeException("Replay attack with token id: "
-                        + validatorResponse.getUniqueTokenId());
+                LOG.error("Replay attack with token id: " + validatorResponse.getUniqueTokenId());
+                throw new ProcessingException("Replay attack with token id: "
+                        + validatorResponse.getUniqueTokenId(), TYPE.TOKEN_REPLAY);
             }
         }
 
@@ -208,7 +206,7 @@ public class FederationProcessorImpl implements FederationProcessor {
         return fedResponse;
     }
 
-    private LifeTime processLifeTime(Element lifetimeElem) {
+    private LifeTime processLifeTime(Element lifetimeElem) throws ProcessingException {
         try {
             Element createdElem = DOMUtils.getFirstChildWithName(lifetimeElem,
                     WSConstants.WSU_NS, WSConstants.CREATED_LN);
@@ -223,9 +221,9 @@ public class FederationProcessorImpl implements FederationProcessor {
             return new LifeTime(created, expires);
 
         } catch (ParseException e) {
-            e.printStackTrace();
+            LOG.error("Failed to parse lifetime element in wresult: " + e.getMessage());
+            throw new ProcessingException(TYPE.BAD_REQUEST);
         }
-        return null;
     }
 
     public class LifeTime {
@@ -249,7 +247,8 @@ public class FederationProcessorImpl implements FederationProcessor {
     }
 
     @Override
-    public String createSignInRequest(HttpServletRequest request, FederationContext config) {
+    public String createSignInRequest(HttpServletRequest request, FederationContext config)
+        throws ProcessingException {
 
         String redirectURL = null;
         try {
@@ -351,7 +350,7 @@ public class FederationProcessorImpl implements FederationProcessor {
             redirectURL = redirectURL + "?" + sb.toString();
         } catch (Exception ex) {
             LOG.error("Failed to create SignInRequest", ex);
-            return null;
+            throw new ProcessingException("Failed to create SignInRequest");
         }
         // [TODO] Current time, wct
 

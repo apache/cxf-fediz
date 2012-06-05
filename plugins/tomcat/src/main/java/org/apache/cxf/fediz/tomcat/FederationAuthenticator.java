@@ -45,6 +45,7 @@ import org.apache.cxf.fediz.core.FederationRequest;
 import org.apache.cxf.fediz.core.FederationResponse;
 import org.apache.cxf.fediz.core.config.FederationConfigurator;
 import org.apache.cxf.fediz.core.config.FederationContext;
+import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 
@@ -305,7 +306,14 @@ public class FederationAuthenticator extends FormAuthenticator {
                 FederationContext fedConfig = getContextConfiguration(contextName);
 
                 FederationProcessor wfProc = new FederationProcessorImpl();
-                wfRes = wfProc.processRequest(wfReq, fedConfig);
+                try {
+                    wfRes = wfProc.processRequest(wfReq, fedConfig);
+                } catch (ProcessingException ex) {
+                    LOG.error("Federation processing failed: " + ex.getMessage());
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                    return false;
+                }
+                
                 
                 // Validate the AudienceRestriction in Security Token (e.g. SAML) 
                 // against the configured list of audienceURIs
@@ -460,14 +468,22 @@ public class FederationAuthenticator extends FormAuthenticator {
             contextName = "/";
         }
         FederationContext fedCtx = this.configurator.getFederationContext(contextName);
-        String redirectURL = processor.createSignInRequest(request, fedCtx);
-        if (redirectURL == null) {
-            LOG.warn("Failed to create SignInRequest.");
+        String redirectURL = null;
+        try {
+            redirectURL = processor.createSignInRequest(request, fedCtx);
+            if (redirectURL != null) {
+                response.sendRedirect(redirectURL);
+            } else {
+                LOG.warn("Failed to create SignInRequest.");
+                response.sendError(
+                        HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignInRequest.");
+            }
+        } catch (ProcessingException ex) {
+            LOG.warn("Failed to create SignInRequest: " + ex.getMessage());
             response.sendError(
-                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignInRequest.");
-        } else {
-            response.sendRedirect(redirectURL);
+                               HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignInRequest.");
         }
+        
     }
 
 }
