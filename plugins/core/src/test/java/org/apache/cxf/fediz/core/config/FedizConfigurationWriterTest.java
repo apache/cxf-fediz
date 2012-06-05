@@ -40,6 +40,7 @@ import org.apache.cxf.fediz.core.config.jaxb.ContextConfig;
 import org.apache.cxf.fediz.core.config.jaxb.FederationProtocolType;
 import org.apache.cxf.fediz.core.config.jaxb.FedizConfig;
 import org.apache.cxf.fediz.core.config.jaxb.KeyStoreType;
+import org.apache.cxf.fediz.core.config.jaxb.TokenValidators;
 import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuers;
@@ -73,6 +74,7 @@ public class FedizConfigurationWriterTest {
     private static final String AUTH_TYPE_VALUE = "some auth type";
 
     private static final String CLAIM_TYPE_1 = "a particular claim type";
+    private static final String CLAIM_TYPE_2 = "another claim type";
 
     private static final String CONFIG_FILE = "./target/fediz_test_config.xml";
     
@@ -131,6 +133,10 @@ public class FedizConfigurationWriterTest {
         claimType.setOptional(true);
         claimType.setType(CLAIM_TYPE_1);
         claimTypeReq.getClaimType().add(claimType);
+        ClaimType claimType2 = new ClaimType();
+        claimType2.setOptional(true);
+        claimType2.setType(CLAIM_TYPE_2);
+        claimTypeReq.getClaimType().add(claimType2);
 
         protocol.setClaimTypesRequested(claimTypeReq);
 
@@ -149,6 +155,11 @@ public class FedizConfigurationWriterTest {
         CallbackType issuer = new CallbackType();
         issuer.setValue(ISSUER);
         protocol.setIssuer(issuer);
+        
+        TokenValidators x = new TokenValidators();
+        x.getValidator().add("org.apache.cxf.fediz.CustomValidator");
+        x.getValidator().add("org.apache.cxf.fediz.CustomValidator2");
+        protocol.setTokenValidators(x);
 
         return rootConfig;
 

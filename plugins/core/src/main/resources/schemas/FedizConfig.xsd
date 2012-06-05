@@ -99,9 +99,7 @@
 					<xs:element ref="reply" />
 					<xs:element ref="request" />
 					<xs:element ref="claimTypesRequested" />
-					<xs:sequence minOccurs="1" maxOccurs="unbounded">
 					<xs:element ref="tokenValidators" />
-					</xs:sequence>
 				</xs:sequence>
 				<!-- <xs:attribute name="roleDelimiter" type="xs:string"/> -->
 				<!--<xs:attribute name="roleURI" use="required" type="xs:string"/> -->
@@ -158,7 +156,13 @@
 		</xs:complexType>
 	</xs:element>
 
-	<xs:element name="tokenValidators" type="xs:string" />
+    <xs:element name="tokenValidators">
+		<xs:complexType>
+			<xs:sequence minOccurs="1" maxOccurs="unbounded">
+				<xs:element name="validator" type="xs:string" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
 
 	<xs:simpleType name="optionalType">
 		<xs:restriction base="xs:boolean" />

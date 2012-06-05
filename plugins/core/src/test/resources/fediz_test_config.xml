@@ -108,4 +108,40 @@
 			</claimTypesRequested>
 		</protocol>
 	</contextConfig>
+	<contextConfig name="CUSTTOK">
+		<audienceUris>
+			<audienceItem>http://host_one:port/url</audienceItem>
+		</audienceUris>
+		<certificateStores>
+			<trustManager>
+				<keyStore file="stsstore.jks" password="stsspass"
+					type="JKS" />
+			</trustManager>		
+		</certificateStores>
+		<trustedIssuers>
+			<issuer subject=".*CN=www.sts.com.*" certificateValidation="ChainTrust"
+				name="FedizSTSIssuer" />				
+		</trustedIssuers>
+
+		<maximumClockSkew>1000</maximumClockSkew>
+		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			xsi:type="federationProtocolType" version="1.2">
+			<realm>target realm</realm>
+			<issuer>http://url_to_the_issuer</issuer>
+			<roleDelimiter>;</roleDelimiter>
+			<roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
+			<authenticationType value="some auth type" type="String" />
+			<homeRealm type="Class">org.apache.fediz.realm.MyHomeRealm.class</homeRealm>
+			<freshness>10000</freshness>
+			<reply>reply value</reply>
+			<request>REQUEST</request>
+			<claimTypesRequested>
+				<claimType type="a particular claim type" optional="true" />
+			</claimTypesRequested>
+			<tokenValidators>
+				<validator>org.apache.cxf.fediz.core.CustomValidator</validator>
+				<validator>org.apache.cxf.fediz.core.CustomValidator2</validator>
+			</tokenValidators>
+		</protocol>
+	</contextConfig>	
 </FedizConfig>

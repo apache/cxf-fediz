@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URL;
+import java.util.List;
 
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
@@ -56,9 +57,9 @@ import org.junit.BeforeClass;
 import static org.junit.Assert.fail;
 
 public class FederationProcessorTest {
-    private static final String TEST_USER = "alice";
-    private static final String TEST_RSTR_ISSUER = "FedizSTSIssuer";
-    private static final String TEST_AUDIENCE = "https://localhost/fedizhelloworld";
+    static final String TEST_USER = "alice";
+    static final String TEST_RSTR_ISSUER = "FedizSTSIssuer";
+    static final String TEST_AUDIENCE = "https://localhost/fedizhelloworld";
     
     private static final String CONFIG_FILE = "fediz_test_config.xml";
     
@@ -462,6 +463,46 @@ public class FederationProcessorTest {
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
         Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
                             .size());
+    }
+
+    /**
+     * "Validate" SAML 2 token with a custom token validator
+     * If a validator is configured it precedes the SAMLTokenValidator as part of Fediz
+     */
+    @org.junit.Test
+    public void validateSAML2TokenCustomValidator() throws Exception {
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        ConditionsBean cp = new ConditionsBean();
+        cp.setAudienceURI(TEST_AUDIENCE);
+        callbackHandler.setConditions(cp);
+        
+        SAMLParms samlParms = new SAMLParms();
+        samlParms.setCallbackHandler(callbackHandler);
+        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        String rstr = createSamlToken(assertion, "mystskey");
+        
+        FederationRequest wfReq = new FederationRequest();
+        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
+        wfReq.setWresult(rstr);
+        
+        configurator = null;
+        FederationContext config = getFederationConfigurator().getFederationContext("CUSTTOK");
+        FederationProtocol fp = (FederationProtocol)config.getProtocol();
+        List<TokenValidator> validators = fp.getTokenValidators();
+        Assert.assertEquals("Two validators must be found", 2, validators.size());
+        Assert.assertEquals("First validator must be custom validator",
+                            CustomValidator.class.getName(), validators.get(0).getClass().getName());
+        
+        FederationProcessor wfProc = new FederationProcessorImpl();
+        FederationResponse wfRes = wfProc.processRequest(wfReq, config);
+        
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
     }
     
     

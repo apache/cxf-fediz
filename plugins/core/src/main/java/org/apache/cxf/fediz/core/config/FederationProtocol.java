@@ -46,9 +46,30 @@ public class FederationProtocol extends Protocol {
     
     public FederationProtocol(ProtocolType protocolType) {
         super(protocolType);
-        // [TODO] Flexible tokenvalidator selection, based on class list
+        
+        FederationProtocolType fp = (FederationProtocolType)protocolType;
+        if (fp.getTokenValidators() != null && fp.getTokenValidators().getValidator() != null) {
+            for (String validatorClassname : fp.getTokenValidators().getValidator()) {
+                Object obj = null;
+                try {
+                    obj = Thread.currentThread().getContextClassLoader().loadClass(validatorClassname).newInstance();
+                } catch (Exception ex) {
+                    LOG.error("Failed to instantiate TokenValidator implementation class: '"
+                              + validatorClassname + "'", ex);
+                }
+                if (obj instanceof TokenValidator) {
+                    validators.add((TokenValidator)obj);
+                } else if (obj != null) {
+                    LOG.error("Invalid TokenValidator implementation class: '" + validatorClassname + "'");
+                }
+            }
+        }
+        
+        // add SAMLTokenValidator as the last one
+        // Fediz chooses the first validator in the list if its
+        // canHandleToken or canHandleTokenType method return true
         SAMLTokenValidator validator = new SAMLTokenValidator();
-        validators.add(validator);
+        validators.add(validators.size(), validator);
     }
 
     protected FederationProtocolType getFederationProtocol() {
