@@ -178,9 +178,9 @@ public class SAMLTokenValidator implements TokenValidator {
 
             List<String> roles = null;
             FederationProtocol fp = (FederationProtocol)config.getProtocol();
-            URI roleURI = URI.create(fp.getRoleURI());
-            String delim = fp.getRoleDelimiter();
-            if (roleURI != null) {
+            if (fp.getRoleURI() != null) {
+                URI roleURI = URI.create(fp.getRoleURI());
+                String delim = fp.getRoleDelimiter();
                 for (Claim c : claims) {
                     URI claimURI = URI.create(c.getNamespace() + "/"
                             + c.getClaimType());
@@ -204,7 +204,7 @@ public class SAMLTokenValidator implements TokenValidator {
                     }
                 }
             }
-
+            
             SAMLTokenPrincipal p = new SAMLTokenPrincipal(assertion);
 
             TokenValidatorResponse response = new TokenValidatorResponse(

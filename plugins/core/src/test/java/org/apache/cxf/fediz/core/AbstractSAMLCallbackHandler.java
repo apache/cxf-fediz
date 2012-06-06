@@ -170,6 +170,21 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
         } else if (statement == Statement.ATTR) {
             AttributeStatementBean attrStateBean = new AttributeStatementBean();
             
+            if (this.roles == null) {
+                AttributeBean attributeBean = new AttributeBean();
+                if (subjectBean != null) {
+                    attrStateBean.setSubject(subjectBean);
+                    attributeBean.setSimpleName("name");
+                    attributeBean.setQualifiedName("dummy-ns");
+                } else {
+                    attributeBean.setQualifiedName("dummy-ns");
+                }
+                attributeBean.setAttributeValues(Collections.singletonList("myvalue"));
+                attrStateBean.setSamlAttributes(Collections.singletonList(attributeBean));
+                callback.setAttributeStatementData(Collections.singletonList(attrStateBean));
+                return;
+            }
+            
             if (this.multiValueType.equals(MultiValue.MULTI_VALUE)
                 || this.multiValueType.equals(MultiValue.ENC_VALUE)) {
 //              <saml:Attribute xmlns:saml="urn:oasis:names:tc:SAML:1.0:assertion"
@@ -226,7 +241,6 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
                 }
                 attrStateBean.setSamlAttributes(attrBeans);
             }
-            
             callback.setAttributeStatementData(Collections.singletonList(attrStateBean));
                        
         } else {

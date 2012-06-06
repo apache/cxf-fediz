@@ -55,7 +55,7 @@ Demo Web Service
 The main and only code lives in the class GreeterImpl. It reads the authenticated principal from the JAX-WS WebServiceContext
 and returns the principal name to the Web Service Client (Web Application).
 
-The interesting pieces are in beans.xml and the WS-SecurityPolicy definition in the WSDL hello_world.wsdl.
+The interesting pieces are in applicationContext.xml and the WS-SecurityPolicy definition in the WSDL hello_world.wsdl.
 
 There is no security related programming required. CXF processes the information in the Spring configuration and
 the policy document and enforces that.

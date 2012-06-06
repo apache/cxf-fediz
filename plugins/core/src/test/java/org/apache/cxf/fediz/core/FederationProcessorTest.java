@@ -181,6 +181,81 @@ public class FederationProcessorTest {
     }
     
     /**
+     * Validate SAML 2 token which doesn't include the role SAML attribute
+     */
+    @org.junit.Test
+    public void validateSAML2TokenWithoutRoles() throws Exception {
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        callbackHandler.setRoles(null);
+        ConditionsBean cp = new ConditionsBean();
+        cp.setAudienceURI(TEST_AUDIENCE);
+        callbackHandler.setConditions(cp);
+        
+        SAMLParms samlParms = new SAMLParms();
+        samlParms.setCallbackHandler(callbackHandler);
+        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        String rstr = createSamlToken(assertion, "mystskey", true);
+        
+        FederationRequest wfReq = new FederationRequest();
+        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
+        wfReq.setWresult(rstr);
+        
+        configurator = null;
+        FederationContext config = getFederationConfigurator().getFederationContext("ROOT");
+        
+        FederationProcessor wfProc = new FederationProcessorImpl();
+        FederationResponse wfRes = wfProc.processRequest(wfReq, config);
+        
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("No roles must be found", null, wfRes.getRoles());
+        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+    }
+    
+    /**
+     * Validate SAML 2 token which includes role attribute
+     * but RoleURI is not configured
+     */
+    @org.junit.Test
+    public void validateSAML2TokenRoleURINotConfigured() throws Exception {
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        ConditionsBean cp = new ConditionsBean();
+        cp.setAudienceURI(TEST_AUDIENCE);
+        callbackHandler.setConditions(cp);
+        
+        SAMLParms samlParms = new SAMLParms();
+        samlParms.setCallbackHandler(callbackHandler);
+        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        String rstr = createSamlToken(assertion, "mystskey", true);
+        
+        FederationRequest wfReq = new FederationRequest();
+        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
+        wfReq.setWresult(rstr);
+        
+        configurator = null;
+        FederationContext config = getFederationConfigurator().getFederationContext("ROOT");
+        ((FederationProtocol)config.getProtocol()).setRoleURI(null);
+        
+        FederationProcessor wfProc = new FederationProcessorImpl();
+        FederationResponse wfRes = wfProc.processRequest(wfReq, config);
+        
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Two roles must be found", null, wfRes.getRoles());
+        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+    }
+    
+    /**
      * Validate SAML 2 token which includes the role attribute with 2 values
      * Roles are encoded as a multi-value saml attribute
      */
