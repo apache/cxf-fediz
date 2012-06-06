@@ -32,7 +32,7 @@ included with each sample.
 4. Reporting Problems
 
 If you have any problems or want to send feedback of any kind, please e-mail the
-CXF dev list, dev@cxf.apache.org.  You can also file issues in JIRA at:
+CXF user list, user@cxf.apache.org.  You can also file issues in JIRA at:
 
 http://issues.apache.org/jira/browse/FEDIZ
 
