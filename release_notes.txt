@@ -1,0 +1,58 @@
+Apache CXF Fediz 1.0.0 Release Notes
+
+1. Overview
+
+The 1.0.x versions of Apache CXF Fediz is the first version of Fediz that
+provides the following features:
+
+* WS-Federation 1.0/1.1/1.2
+* SAML 1.1/2.0 Tokens
+* Custom token support
+* Publish WS-Federation Metadata document
+* Role information encoded as AttributeStatement in SAML 1.1/2.0 tokens
+* Claims information provided by FederationPrincipal interface
+
+
+2. Installation Prerequisites 
+
+Before installing Apache CXF Fediz, make sure the following products,
+with the specified versions, are installed on your system:
+
+    * Java 6 Development Kit
+    * Apache Maven 2.2.1 or 3.x to build the samples
+
+
+3. Building the Samples
+
+Building the samples included in the binary distribution is easy. Change to
+the examples directory and follow the build instructions in the README.txt file 
+included with each sample.
+
+
+4. Reporting Problems
+
+If you have any problems or want to send feedback of any kind, please e-mail the
+CXF dev list, dev@cxf.apache.org.  You can also file issues in JIRA at:
+
+http://issues.apache.org/jira/browse/FEDIZ
+
+
+5. Migration notes:
+
+N.A.
+
+
+6. Specific issues, features, and improvements fixed in this version
+
+** Bug
+
+** Improvement
+
+** New Feature
+
+** Task
+
+** Test
+
+
+

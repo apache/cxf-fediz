@@ -51,15 +51,10 @@
             <version>2.5</version>
             <scope>provided</scope>
         </dependency>
+        <!-- Required to cast Principal to FederationPrincipal -->
         <dependency>
                 <groupId>org.apache.cxf.fediz</groupId>
                 <artifactId>fediz-core</artifactId>
-                <version>${project.version}</version>
-                <scope>provided</scope>
-        </dependency>
-        <dependency>
-                <groupId>org.apache.cxf.fediz</groupId>
-                <artifactId>fediz-tomcat</artifactId>
                 <version>${project.version}</version>
                 <scope>provided</scope>
         </dependency>

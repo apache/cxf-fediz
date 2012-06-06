@@ -46,6 +46,13 @@ Prerequisite
 ------------
 Please review the README in the samples main directory before continuing.
 
+Copy the Fediz Configuration file into the directory 'conf' of the Tomcat installation. The configuration file
+is located in src/main/config/fediz_config.xml of this example.
+
+This configuration references the java keystore 'conf/stsstore.jks' which contains the certificate to validate
+a SAML token issued by the IDP/STS. This keystore is located in webapps/fedizidpsts/WEB-INF/classes/stsstore.jks (deployed)
+or in services/sts/src/main/resources/stsstore.jks (source)
+
 
 Building the demo using Maven
 -----------------------------

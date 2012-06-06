@@ -1,0 +1,53 @@
+Building Apache CXF Fediz
+=========================
+
+Initial Setup
+-------------
+
+1) Install J2SE 6.0 SDK, which can be downloaded from 
+   http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-javase6-419409.html
+
+2) Make sure that your JAVA_HOME environment variable is set to the newly installed 
+   JDK location, and that your PATH includes %JAVA_HOME%\bin (windows) or 
+   $JAVA_HOME$/bin (unix).
+
+3) Install Maven 2.2.1 or newer, which can be downloaded from 
+   http://maven.apache.org/download.html. Make sure that your PATH includes 
+   the MVN_HOME/bin directory. 
+
+
+Building
+--------
+
+1) Change to the top level directory of Apache CXF Fediz source distribution.
+2) Run
+	$> mvn.
+   This will compile Apache CXF Fediz and run all of the tests in the Apache CXF Fediz source
+   distribution. Alternatively, you can run
+         $> mvn -Pfastinstall.
+   This will compile Apache CXF Fediz without running the tests and takes less
+   time to build.
+   Depending on the load of remote Maven repositories, you may have 
+   to run "mvn" several times utill the required dependencies are 
+   all located in your local maven repository. It usually takes some time for 
+   maven to download required dependencies in the first build.
+
+
+Source Directory structure
+--------------------------
+
+ + plugins               contains the sources of the federation plugin
+      + core             the core module contains the majority of functionality which is Servlet container agnostic
+      + tomcat           the tomcat module is the bridge of the core to the tomcat specific security engine
+
+ + services              contains the sources of the Identity Provider
+      + sts              the sts module contains the configured CXF STS which supports the usecases for Federation
+      + idp              the idp module is the bridge of the STS to a WS-Trust/SOAP unaware browser
+
+ + examples
+      + simpleWebapp     this example shows how to protect a simple web application using the fediz plugin
+      + wsclientWebapp   this example shows how a protected web application calls a web service protected by the STS
+           + webapp      contains the web application
+           + webservice  contains the web services implementation
+
+
