@@ -136,18 +136,19 @@ public class FederationContext implements Closeable {
             return replayCache;
         }
         String replayCacheString = config.getTokenReplayCache();
+        String cacheKey = "fediz-replay-cache-" + config.getName();
         if (replayCacheString == null || "".equals(replayCacheString)) {
-            replayCache = new EHCacheTokenReplayCache();
+            replayCache = new EHCacheTokenReplayCache(cacheKey);
         } else {
             try {
                 Class<?> replayCacheClass = Loader.loadClass(replayCacheString);
                 replayCache = (TokenReplayCache<String>) replayCacheClass.newInstance();
             } catch (ClassNotFoundException e) {
-                replayCache = new EHCacheTokenReplayCache();
+                replayCache = new EHCacheTokenReplayCache(cacheKey);
             } catch (InstantiationException e) {
-                replayCache = new EHCacheTokenReplayCache();
+                replayCache = new EHCacheTokenReplayCache(cacheKey);
             } catch (IllegalAccessException e) {
-                replayCache = new EHCacheTokenReplayCache();
+                replayCache = new EHCacheTokenReplayCache(cacheKey);
             }
         }
         return replayCache;

@@ -37,29 +37,28 @@ public class EHCacheTokenReplayCache implements TokenReplayCache<String> {
     
     public static final long DEFAULT_TTL = 3600L;
     public static final long MAX_TTL = DEFAULT_TTL * 12L;
-    private static final String CACHE_KEY = "fediz-replay-cache";
     private Ehcache cache;
     private CacheManager cacheManager;
     private long ttl = DEFAULT_TTL;
     
-    public EHCacheTokenReplayCache() {
+    public EHCacheTokenReplayCache(String key) {
         String defaultConfigFile = "fediz-ehcache.xml";
         URL configFileURL = Loader.getResource(defaultConfigFile);
-        createCache(configFileURL);
+        createCache(key, configFileURL);
     }
     
-    public EHCacheTokenReplayCache(URL configFileURL) {
-        createCache(configFileURL);
+    public EHCacheTokenReplayCache(String key, URL configFileURL) {
+        createCache(key, configFileURL);
     }
     
-    private void createCache(URL configFileURL) {
+    private void createCache(String key, URL configFileURL) {
         if (configFileURL == null) {
             cacheManager = CacheManager.create();
         } else {
             cacheManager = CacheManager.create(configFileURL);
         }
         
-        Ehcache newCache = new Cache(CACHE_KEY, 50000, true, false, DEFAULT_TTL, DEFAULT_TTL);
+        Ehcache newCache = new Cache(key, 50000, true, false, DEFAULT_TTL, DEFAULT_TTL);
         cache = cacheManager.addCacheIfAbsent(newCache);
     }
     

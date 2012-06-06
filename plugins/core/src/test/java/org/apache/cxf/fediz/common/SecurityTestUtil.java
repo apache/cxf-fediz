@@ -32,10 +32,13 @@ public final class SecurityTestUtil {
     public static void cleanup() {
         String tmpDir = System.getProperty("java.io.tmpdir");
         if (tmpDir != null) {
-            File replayCacheFile = 
-                new File(tmpDir + File.separator + "fediz-replay-cache.data");
-            if (replayCacheFile.exists()) {
-                replayCacheFile.delete();
+            File[] tmpFiles = new File(tmpDir).listFiles();
+            if (tmpFiles != null) {
+                for (File tmpFile : tmpFiles) {
+                    if (tmpFile.exists() && tmpFile.getName().startsWith("fediz-replay-cache")) {
+                        tmpFile.delete();
+                    }
+                }
             }
         }
     }
