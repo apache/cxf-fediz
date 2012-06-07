@@ -140,7 +140,7 @@
 			</claimTypesRequested>
 			<tokenValidators>
 				<validator>org.apache.cxf.fediz.core.CustomValidator</validator>
-				<validator>org.apache.cxf.fediz.core.CustomValidator2</validator>
+				<validator>org.apache.cxf.fediz.core.NonexistentCustomValidator</validator>
 			</tokenValidators>
 		</protocol>
 	</contextConfig>	

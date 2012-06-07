@@ -89,7 +89,7 @@ public class EHCacheTokenReplayCache implements TokenReplayCache<String> {
     
     /**
      * Add the given identifier to the cache.
-     * @param identifier The identifier to be added
+     * @param id The identifier to be added
      * @param timeToLive The length of time to cache the Identifier in seconds
      */
     @Override

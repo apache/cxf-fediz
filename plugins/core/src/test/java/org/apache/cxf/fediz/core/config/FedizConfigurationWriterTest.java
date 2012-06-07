@@ -158,7 +158,7 @@ public class FedizConfigurationWriterTest {
         
         TokenValidators x = new TokenValidators();
         x.getValidator().add("org.apache.cxf.fediz.CustomValidator");
-        x.getValidator().add("org.apache.cxf.fediz.CustomValidator2");
+        x.getValidator().add("org.apache.cxf.fediz.core.NonexistentCustomValidator");
         protocol.setTokenValidators(x);
 
         return rootConfig;

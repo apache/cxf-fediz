@@ -267,10 +267,9 @@
                     <version>2.8</version>
                     <configuration>
                         <attach>true</attach>
-                        <source>${jdk.version}</source>
+                        <source>1.5</source>
                         <quiet>true</quiet>
                         <bottom>Apache Fediz</bottom>
-                        <javadocVersion>1.5</javadocVersion>
                         <encoding>UTF-8</encoding>
                         <detectOfflineLinks>false</detectOfflineLinks>
                         <notimestamp>true</notimestamp>
