@@ -49,11 +49,13 @@ import org.apache.ws.security.components.crypto.CryptoFactory;
 import org.apache.ws.security.saml.ext.AssertionWrapper;
 import org.apache.ws.security.saml.ext.SAMLParms;
 import org.apache.ws.security.saml.ext.bean.ConditionsBean;
+import org.apache.ws.security.saml.ext.builder.SAML1Constants;
 import org.apache.ws.security.saml.ext.builder.SAML2Constants;
 import org.apache.ws.security.util.DOM2Writer;
 import org.joda.time.DateTime;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.opensaml.common.SAMLVersion;
 
 
 import static org.junit.Assert.fail;
@@ -180,6 +182,85 @@ public class FederationProcessorTest {
         }
     }
     
+
+    
+    /**
+     * Validate SAML 2 token which includes the role attribute with 2 values
+     * Roles are encoded as a multi-value saml attribute
+     */
+    @org.junit.Test
+    public void validateSAML2Token() throws Exception {
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        ConditionsBean cp = new ConditionsBean();
+        cp.setAudienceURI(TEST_AUDIENCE);
+        callbackHandler.setConditions(cp);
+        
+        SAMLParms samlParms = new SAMLParms();
+        samlParms.setCallbackHandler(callbackHandler);
+        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        String rstr = createSamlToken(assertion, "mystskey", true);
+        
+        FederationRequest wfReq = new FederationRequest();
+        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
+        wfReq.setWresult(rstr);
+        
+        configurator = null;
+        FederationContext config = getFederationConfigurator().getFederationContext("ROOT");
+        
+        FederationProcessor wfProc = new FederationProcessorImpl();
+        FederationResponse wfRes = wfProc.processRequest(wfReq, config);
+        
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
+                            .size());
+        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+    }
+    
+    /**
+     * Validate SAML 2 token which includes the role attribute with 2 values
+     * Roles are encoded as a multi-value saml attribute
+     * Not RequestedSecurityTokenCollection in this test, default in all others
+     */
+    @org.junit.Test
+    public void validateSAML2TokenRSTR() throws Exception {
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        ConditionsBean cp = new ConditionsBean();
+        cp.setAudienceURI(TEST_AUDIENCE);
+        callbackHandler.setConditions(cp);
+        
+        SAMLParms samlParms = new SAMLParms();
+        samlParms.setCallbackHandler(callbackHandler);
+        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        String rstr = createSamlToken(assertion, "mystskey", true, STSUtil.SAMPLE_RSTR_MSG);
+        
+        FederationRequest wfReq = new FederationRequest();
+        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
+        wfReq.setWresult(rstr);
+        
+        configurator = null;
+        FederationContext config = getFederationConfigurator().getFederationContext("ROOT");
+        
+        FederationProcessor wfProc = new FederationProcessorImpl();
+        FederationResponse wfRes = wfProc.processRequest(wfReq, config);
+        
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
+                            .size());
+        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+    }
+    
     /**
      * Validate SAML 2 token which doesn't include the role SAML attribute
      */
@@ -256,14 +337,14 @@ public class FederationProcessorTest {
     }
     
     /**
-     * Validate SAML 2 token which includes the role attribute with 2 values
+     * Validate SAML 1.1 token which includes the role attribute with 2 values
      * Roles are encoded as a multi-value saml attribute
      */
     @org.junit.Test
-    public void validateSAML2Token() throws Exception {
-        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
-        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
-        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+    public void validateSAML1Token() throws Exception {
+        SAML1CallbackHandler callbackHandler = new SAML1CallbackHandler();
+        callbackHandler.setStatement(SAML1CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML1Constants.CONF_BEARER);
         callbackHandler.setIssuer(TEST_RSTR_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
         ConditionsBean cp = new ConditionsBean();
@@ -272,9 +353,48 @@ public class FederationProcessorTest {
         
         SAMLParms samlParms = new SAMLParms();
         samlParms.setCallbackHandler(callbackHandler);
+        samlParms.setSAMLVersion(SAMLVersion.VERSION_11);
         AssertionWrapper assertion = new AssertionWrapper(samlParms);
         String rstr = createSamlToken(assertion, "mystskey", true);
+        FederationRequest wfReq = new FederationRequest();
+        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
+        wfReq.setWresult(rstr);
         
+        configurator = null;
+        FederationContext config = getFederationConfigurator().getFederationContext("ROOT");
+        
+        FederationProcessor wfProc = new FederationProcessorImpl();
+        FederationResponse wfRes = wfProc.processRequest(wfReq, config);
+        
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
+                            .size());
+        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+    }
+    
+    /**
+     * Validate SAML 1.1 token which includes the role attribute with 2 values
+     * Roles are encoded as a multi-value saml attribute
+     * Token embedded in RSTR 2005/02 - WS Federation 1.0
+     */
+    @org.junit.Test
+    public void validateSAML1TokenWSFed10() throws Exception {
+        SAML1CallbackHandler callbackHandler = new SAML1CallbackHandler();
+        callbackHandler.setStatement(SAML1CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML1Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        ConditionsBean cp = new ConditionsBean();
+        cp.setAudienceURI(TEST_AUDIENCE);
+        callbackHandler.setConditions(cp);
+        
+        SAMLParms samlParms = new SAMLParms();
+        samlParms.setCallbackHandler(callbackHandler);
+        samlParms.setSAMLVersion(SAMLVersion.VERSION_11);
+        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        String rstr = createSamlToken(assertion, "mystskey", true, STSUtil.SAMPLE_RSTR_2005_02_MSG);
         FederationRequest wfReq = new FederationRequest();
         wfReq.setWa(FederationConstants.ACTION_SIGNIN);
         wfReq.setWresult(rstr);
@@ -703,20 +823,31 @@ public class FederationProcessorTest {
     }
     
     
-    private String createSamlToken(AssertionWrapper assertion, String alias, boolean sign) throws IOException,
-        UnsupportedCallbackException, WSSecurityException, Exception {
-        WSPasswordCallback[] cb = {new WSPasswordCallback(alias, WSPasswordCallback.SIGNATURE)};
+    private String createSamlToken(AssertionWrapper assertion, String alias, boolean sign)
+        throws IOException, UnsupportedCallbackException, WSSecurityException, Exception {
+        return createSamlToken(assertion, alias, sign, STSUtil.SAMPLE_RSTR_COLL_MSG);
+    }
+    
+    private String createSamlToken(AssertionWrapper assertion, String alias, boolean sign, String rstr)
+        throws IOException, UnsupportedCallbackException, WSSecurityException, Exception {
+        WSPasswordCallback[] cb = {
+            new WSPasswordCallback(alias, WSPasswordCallback.SIGNATURE)
+        };
         cbPasswordHandler.handle(cb);
         String password = cb[0].getPassword();
-        
+
         if (sign) {
             assertion.signAssertion(alias, password, crypto, false);
         }
-        Document doc = STSUtil.toSOAPPart(STSUtil.SAMPLE_RSTR_COLL_MSG);
+        Document doc = STSUtil.toSOAPPart(rstr);
         Element token = assertion.toDOM(doc);
-             
+
         Element e = FederationProcessorTest.findElement(doc, "RequestedSecurityToken",
                                                         FederationConstants.WS_TRUST_13_NS);
+        if (e == null) {
+            e = FederationProcessorTest.findElement(doc, "RequestedSecurityToken",
+                                                    FederationConstants.WS_TRUST_2005_02_NS);
+        }
         e.appendChild(token);
         return DOM2Writer.nodeToString(doc);
     }

@@ -27,20 +27,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 public class STSUtil {
     
-    public static final String SAMPLE_RSTR_MSG = 
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" 
-        + "<SOAP-ENV:Envelope "
-        +   "xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" "
-        +   "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" "
-        +   "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">" 
-        +   "<SOAP-ENV:Body>" 
-        +       "<add xmlns=\"http://ws.apache.org/counter/counter_port_type\">" 
-        +           "<value xmlns=\"\">15</value>" 
-        +       "</add>" 
-        +   "</SOAP-ENV:Body>" 
-        + "</SOAP-ENV:Envelope>";
-
-    
+ 
     public static final String SAMPLE_RSTR_COLL_MSG = 
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
         + "<RequestSecurityTokenResponseCollection "
@@ -50,6 +37,22 @@ public class STSUtil {
         +     "</RequestedSecurityToken>"
         +   "</RequestSecurityTokenResponse>"
         + "</RequestSecurityTokenResponseCollection>";
+    
+    public static final String SAMPLE_RSTR_MSG = 
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+        + "<RequestSecurityTokenResponse "
+        +   "xmlns=\"http://docs.oasis-open.org/ws-sx/ws-trust/200512\"> "
+        +   "<RequestedSecurityToken>"
+        +   "</RequestedSecurityToken>"
+        + "</RequestSecurityTokenResponse>";
+    
+    public static final String SAMPLE_RSTR_2005_02_MSG = 
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+        + "<RequestSecurityTokenResponse "
+        +   "xmlns=\"http://schemas.xmlsoap.org/ws/2005/02/trust\"> "
+        +   "<RequestedSecurityToken>"
+        +   "</RequestedSecurityToken>"
+        + "</RequestSecurityTokenResponse>";
     
     
     private static DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
