@@ -38,6 +38,7 @@ import org.apache.cxf.fediz.core.config.FederationContext;
 import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
+import org.apache.cxf.fediz.core.metadata.MetadataWriter;
 import org.apache.cxf.fediz.core.spi.HomeRealmCallback;
 import org.apache.cxf.fediz.core.spi.IDPCallback;
 import org.apache.cxf.fediz.core.spi.WAuthCallback;
@@ -72,7 +73,12 @@ public class FederationProcessorImpl implements FederationProcessor {
         }
         return response;
     }
+    
 
+    public Document getMetaData(FederationContext config) throws ProcessingException {
+        return new MetadataWriter().getMetaData(config);
+    }
+    
     protected FederationResponse processSignInRequest(
             FederationRequest request, FederationContext config)
         throws ProcessingException {

@@ -20,14 +20,17 @@
 package org.apache.cxf.fediz.core;
 
 import javax.servlet.http.HttpServletRequest;
-
+import org.w3c.dom.Document;
 import org.apache.cxf.fediz.core.config.FederationContext;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
+
 
 public interface FederationProcessor {
 
     FederationResponse processRequest(FederationRequest request, FederationContext config) throws ProcessingException;
     
     String createSignInRequest(HttpServletRequest request, FederationContext config) throws ProcessingException;
+
+    Document getMetaData(FederationContext config) throws ProcessingException;
 
 }

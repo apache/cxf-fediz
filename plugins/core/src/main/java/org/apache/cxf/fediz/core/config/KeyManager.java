@@ -19,34 +19,34 @@
 
 package org.apache.cxf.fediz.core.config;
 
-import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
+import org.apache.cxf.fediz.core.config.jaxb.KeyManagersType;
 import org.apache.ws.security.components.crypto.Crypto;
 
-public class TrustManager {
+public class KeyManager {
     
-    private TrustManagersType trustManagerType;
+    private KeyManagersType keyManagerType;
     private Crypto crypto;
     private String name;
 
-    public TrustManager(TrustManagersType trustManagerType) {
+    public KeyManager(KeyManagersType keyManager) {
         super();
-        this.trustManagerType = trustManagerType;
+        this.keyManagerType = keyManager;
     }
-
+    
     public String getName() {
         if (name != null) {
             return name;
         }
-        if (trustManagerType.getKeyStore().getFile() != null) {
-            name = trustManagerType.getKeyStore().getFile();
-        } else if (trustManagerType.getKeyStore().getUrl() != null) {
-            name = trustManagerType.getKeyStore().getUrl();
-        } else if (trustManagerType.getKeyStore().getResource() != null) {
-            name = trustManagerType.getKeyStore().getResource();
+        if (keyManagerType.getKeyStore().getFile() != null) {
+            name = keyManagerType.getKeyStore().getFile();
+        } else if (keyManagerType.getKeyStore().getUrl() != null) {
+            name = keyManagerType.getKeyStore().getUrl();
+        } else if (keyManagerType.getKeyStore().getResource() != null) {
+            name = keyManagerType.getKeyStore().getResource();
         }
         return name;
     }
-
+    
     public Crypto getCrypto() {
         return crypto;
     }
@@ -54,17 +54,13 @@ public class TrustManager {
     public void setCrypto(Crypto crypto) {
         this.crypto = crypto;
     }
-    
-    public int hashCode() {
-        return trustManagerType.hashCode();
-    }
-    
-    public boolean equals(Object obj) {
-        return trustManagerType.equals(obj);
-    }
 
-    public String toString() {
-        return trustManagerType.toString();
+    public String getKeyAlias() {
+        return keyManagerType.getKeyAlias();
+    }
+    
+    public String getKeyPassword() {
+        return keyManagerType.getKeyPassword();
     }
     
 

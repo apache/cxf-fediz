@@ -18,6 +18,7 @@
 				<xs:element ref="maximumClockSkew" />
 				<xs:element ref="tokenReplayCache" />
 				<xs:element ref="serviceCertificate" />
+				<xs:element ref="signingKey" />
 				<xs:element ref="trustedIssuers" />
 				<xs:element ref="protocol" />
 			</xs:sequence>
@@ -82,6 +83,7 @@
 
 	<!-- keystore type -->
 	<xs:element name="serviceCertificate" type="KeyManagersType" />
+	<xs:element name="signingKey" type="KeyManagersType" />
 
 	<xs:element name="protocol" type="protocolType" />
 
@@ -371,6 +373,15 @@
                 </xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
+		<xs:attribute name="keyAlias" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>
+					This attribute contains the alias of the selected 
+					key within the keystore.
+                </xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		
 		<xs:attribute name="provider" type="xs:string">
 			<xs:annotation>
 				<xs:documentation>

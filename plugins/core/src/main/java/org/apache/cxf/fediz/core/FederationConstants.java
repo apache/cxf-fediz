@@ -211,6 +211,13 @@ public final class FederationConstants {
     
     public static final String WS_TRUST_2005_02_NS = "http://schemas.xmlsoap.org/ws/2005/02/trust";
     
+    public static final String SAML2_METADATA_NS = "urn:oasis:names:tc:SAML:2.0:metadata";
+    
+    public static final String WS_FEDERATION_NS = "http://docs.oasis-open.org/wsfed/federation/200706";
+    
+    public static final String WS_ADDRESSING_NS = "http://www.w3.org/2005/08/addressing";
+    
+    public static final String SCHEMA_INSTANCE_NS = "http://www.w3.org/2001/XMLSchema-instance";  
     
     private FederationConstants() {
         

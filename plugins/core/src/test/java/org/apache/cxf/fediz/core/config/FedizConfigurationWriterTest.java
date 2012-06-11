@@ -39,6 +39,7 @@ import org.apache.cxf.fediz.core.config.jaxb.ClaimTypesRequested;
 import org.apache.cxf.fediz.core.config.jaxb.ContextConfig;
 import org.apache.cxf.fediz.core.config.jaxb.FederationProtocolType;
 import org.apache.cxf.fediz.core.config.jaxb.FedizConfig;
+import org.apache.cxf.fediz.core.config.jaxb.KeyManagersType;
 import org.apache.cxf.fediz.core.config.jaxb.KeyStoreType;
 import org.apache.cxf.fediz.core.config.jaxb.TokenValidators;
 import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
@@ -69,6 +70,9 @@ public class FedizConfigurationWriterTest {
     private static final String JKS_TYPE = "JKS";
 
     private static final String KEYSTORE_PASSWORD = "stsspass";
+    private static final String KEY_PASSWORD = "stskpass";
+    private static final String KEY_ALIAS = "mystskey";
+    
     private static final String AUDIENCE_URI_1 = "http://host_one:port/url";
 
     private static final String AUTH_TYPE_VALUE = "some auth type";
@@ -77,6 +81,8 @@ public class FedizConfigurationWriterTest {
     private static final String CLAIM_TYPE_2 = "another claim type";
 
     private static final String CONFIG_FILE = "./target/fediz_test_config.xml";
+    
+    
     
     @AfterClass
     public static void cleanup() {
@@ -96,6 +102,18 @@ public class FedizConfigurationWriterTest {
         FederationProtocolType protocol = new FederationProtocolType();
         config.setProtocol(protocol);
 
+        KeyManagersType sigManager = new KeyManagersType();
+        sigManager.setKeyPassword(KEY_PASSWORD);
+        sigManager.setKeyAlias(KEY_ALIAS);
+        
+        KeyStoreType sigStore = new KeyStoreType();
+        sigStore.setType(JKS_TYPE);
+        sigStore.setPassword(KEYSTORE_PASSWORD);//integrity password
+        sigStore.setFile(KEYSTORE_FILE);
+        sigManager.setKeyStore(sigStore);
+        
+        config.setSigningKey(sigManager);
+        
         TrustedIssuers trustedIssuers = new TrustedIssuers();
              
         TrustedIssuerType trustedIssuer = new TrustedIssuerType();

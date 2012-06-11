@@ -32,6 +32,7 @@ import org.apache.cxf.fediz.core.TokenReplayCache;
 import org.apache.cxf.fediz.core.config.jaxb.CertificateStores;
 import org.apache.cxf.fediz.core.config.jaxb.ContextConfig;
 import org.apache.cxf.fediz.core.config.jaxb.FederationProtocolType;
+import org.apache.cxf.fediz.core.config.jaxb.KeyManagersType;
 import org.apache.cxf.fediz.core.config.jaxb.KeyStoreType;
 import org.apache.cxf.fediz.core.config.jaxb.ProtocolType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
@@ -58,6 +59,7 @@ public class FederationContext implements Closeable {
     private TokenReplayCache<String> replayCache;
     private FederationProtocol protocol;
     private List<TrustManager> certificateStores;
+    private KeyManager keyManager;
     
 
     public FederationContext(ContextConfig config) {
@@ -100,7 +102,7 @@ public class FederationContext implements Closeable {
                 tm.setCrypto(crypto);
                 certificateStores.add(tm);
             } catch (WSSecurityException e) {
-                LOG.error("Failed to load keystore '" + tm.getName() + "'");
+                LOG.error("Failed to load keystore '" + tm.getName() + "'", e);
                 throw new IllegalConfigurationException("Failed to load keystore '" + tm.getName() + "'");
             }
         }
@@ -130,6 +132,30 @@ public class FederationContext implements Closeable {
         return protocol;
     }
     
+    
+    
+    public KeyManager getSigningKey() {
+        //return new KeyManager(config.getSigningKey());
+        
+        if (keyManager != null) {
+            return keyManager;
+        }
+        keyManager = new KeyManager(config.getSigningKey());
+        Properties sigProperties = createCryptoProperties(config.getSigningKey());
+        Crypto crypto;
+        try {
+            crypto = CryptoFactory.getInstance(sigProperties);
+            keyManager.setCrypto(crypto);
+        } catch (WSSecurityException e) {
+            keyManager = null;
+            LOG.error("Failed to load keystore '" + keyManager.getName() + "'", e);
+            throw new IllegalConfigurationException("Failed to load keystore '" + keyManager.getName() + "'");
+        }
+        
+        return keyManager; 
+        
+    }
+
     @SuppressWarnings("unchecked")
     public TokenReplayCache<String> getTokenReplayCache() {
         if (replayCache != null) {
@@ -222,5 +248,44 @@ public class FederationContext implements Closeable {
               trustStoreFile);
         return p;
     }
+    
+    private Properties createCryptoProperties(KeyManagersType km) {
+        String keyStoreFile = null;
+        String keyStorePw = null;
+        String keyType = "jks";
+        KeyStoreType ks = km.getKeyStore();
+        if (ks.getFile() != null && !ks.getFile().isEmpty()) {
+            keyStoreFile = ks.getFile();
+            keyStorePw = ks.getPassword();
+        } else {
+            throw new IllegalStateException("No certificate store configured");
+        }
+        File f = new File(keyStoreFile);
+        if (!f.exists() && getRelativePath() != null && !getRelativePath().isEmpty()) {
+            keyStoreFile = getRelativePath().concat(File.separator + keyStoreFile);
+        }
+        
+        if (keyStoreFile == null || keyStoreFile.isEmpty()) {
+            throw new NullPointerException("truststoreFile not configured");
+        }
+        if (keyStorePw == null || keyStorePw.isEmpty()) {
+            throw new NullPointerException("trustStorePw not configured");
+        }
+        if (ks.getType() != null) {
+            keyType = ks.getType();
+        }
+        
+        Properties p = new Properties();
+        p.put("org.apache.ws.security.crypto.provider",
+                "org.apache.ws.security.components.crypto.Merlin");
+        p.put("org.apache.ws.security.crypto.merlin.keystore.type", keyType);
+        p.put("org.apache.ws.security.crypto.merlin.keystore.password",
+              keyStorePw);
+        p.put("org.apache.ws.security.crypto.merlin.keystore.file",
+              keyStoreFile);
+        return p;
+    }
+    
+    
 
 }

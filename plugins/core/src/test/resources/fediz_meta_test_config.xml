@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<FedizConfig>
+	<contextConfig name="ROOT">
+		<audienceUris>
+			<audienceItem>http://Server:Port/value from first audienceUri config property</audienceItem>
+		</audienceUris>
+		<certificateStores>
+			<trustManager>
+				<keyStore file="stsstore.jks" password="stsspass"
+					type="JKS" />
+			</trustManager>
+		</certificateStores>
+		<trustedIssuers>
+			<issuer subject=".*CN=www.sts.com.*" certificateValidation="ChainTrust"
+				name="DoubleItSTSIssuer" />
+		</trustedIssuers>
+		<maximumClockSkew>1000</maximumClockSkew>
+		<signingKey keyAlias="mystskey" keyPassword="stskpass">
+			<keyStore file="stsstore.jks" password="stsspass" type="JKS" />
+		</signingKey>
+		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			xsi:type="federationProtocolType" version="1.2">
+			<realm>http://Server:Port/value from protocol.realm config property </realm>
+			<issuer>http://Server:Port/value from protocol.issuer config property</issuer>
+			<roleDelimiter>;</roleDelimiter>
+			<roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
+			<authenticationType value="some auth type" type="String" />
+			<homeRealm type="Class">org.apache.fediz.realm.MyHomeRealm.class</homeRealm>
+			<freshness>10000</freshness>
+			<reply>reply value</reply>
+			<request>REQUEST</request>
+			<claimTypesRequested>
+				<claimType type="a particular claim type" optional="true" />
+				<claimType type="another optional claim type" optional="true" />
+				<claimType type="and an mandatory claim type" optional="false" />
+			</claimTypesRequested>
+		</protocol>
+	</contextConfig>
+	<contextConfig name="ROOT_NO_KEY">
+		<audienceUris>
+			<audienceItem>http://Server:Port/value from first audienceUri config property</audienceItem>
+		</audienceUris>
+		<certificateStores>
+			<trustManager>
+				<keyStore file="stsstore.jks" password="stsspass"
+					type="JKS" />
+			</trustManager>
+		</certificateStores>
+		<trustedIssuers>
+			<issuer subject=".*CN=www.sts.com.*" certificateValidation="ChainTrust"
+				name="DoubleItSTSIssuer" />
+		</trustedIssuers>
+		<maximumClockSkew>1000</maximumClockSkew>
+		<signingKey keyPassword="stskpass">
+			<keyStore file="stsstore.jks" password="stsspass" type="JKS" />
+		</signingKey>
+		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			xsi:type="federationProtocolType" version="1.2">
+			<realm>http://Server:Port/value from protocol.realm config property </realm>
+			<issuer>http://Server:Port/value from protocol.issuer config property</issuer>
+			<roleDelimiter>;</roleDelimiter>
+			<roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
+			<authenticationType value="some auth type" type="String" />
+			<homeRealm type="Class">org.apache.fediz.realm.MyHomeRealm.class</homeRealm>
+			<freshness>10000</freshness>
+			<reply>reply value</reply>
+			<request>REQUEST</request>
+			<claimTypesRequested>
+				<claimType type="a particular claim type" optional="true" />
+				<claimType type="another optional claim type" optional="true" />
+				<claimType type="and an mandatory claim type" optional="false" />
+			</claimTypesRequested>
+		</protocol>
+	</contextConfig>
+	<contextConfig name="ROOT_NO_SIGNINGKEY">
+		<audienceUris>
+			<audienceItem>http://Server:Port/value from first audienceUri config property</audienceItem>
+		</audienceUris>
+		<certificateStores>
+			<trustManager>
+				<keyStore file="stsstore.jks" password="stsspass"
+					type="JKS" />
+			</trustManager>
+		</certificateStores>
+		<trustedIssuers>
+			<issuer subject=".*CN=www.sts.com.*" certificateValidation="ChainTrust"
+				name="DoubleItSTSIssuer" />
+		</trustedIssuers>
+		<maximumClockSkew>1000</maximumClockSkew>
+		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			xsi:type="federationProtocolType" version="1.2">
+			<realm>http://Server:Port/value from protocol.realm config property </realm>
+			<issuer>http://Server:Port/value from protocol.issuer config property</issuer>
+			<roleDelimiter>;</roleDelimiter>
+			<roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
+			<authenticationType value="some auth type" type="String" />
+			<homeRealm type="Class">org.apache.fediz.realm.MyHomeRealm.class</homeRealm>
+			<freshness>10000</freshness>
+			<reply>reply value</reply>
+			<request>REQUEST</request>
+			<claimTypesRequested>
+				<claimType type="a particular claim type" optional="true" />
+				<claimType type="another optional claim type" optional="true" />
+				<claimType type="and an mandatory claim type" optional="false" />
+			</claimTypesRequested>
+		</protocol>
+	</contextConfig>
+</FedizConfig>
