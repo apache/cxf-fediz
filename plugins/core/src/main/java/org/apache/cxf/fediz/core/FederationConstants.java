@@ -217,7 +217,9 @@ public final class FederationConstants {
     
     public static final String WS_ADDRESSING_NS = "http://www.w3.org/2005/08/addressing";
     
-    public static final String SCHEMA_INSTANCE_NS = "http://www.w3.org/2001/XMLSchema-instance";  
+    public static final String SCHEMA_INSTANCE_NS = "http://www.w3.org/2001/XMLSchema-instance";
+    
+    public static final String METADATA_PATH_URI = "FederationMetadata/2007-06/FederationMetadata.xml";
     
     private FederationConstants() {
         
