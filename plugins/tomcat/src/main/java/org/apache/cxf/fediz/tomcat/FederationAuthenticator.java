@@ -21,6 +21,7 @@ package org.apache.cxf.fediz.tomcat;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -29,6 +30,8 @@ import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXBException;
+
+import org.w3c.dom.Document;
 
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Session;
@@ -48,6 +51,8 @@ import org.apache.cxf.fediz.core.config.FederationContext;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
+import org.apache.ws.security.util.DOM2Writer;
+
 
 public class FederationAuthenticator extends FormAuthenticator {
 
@@ -148,6 +153,30 @@ public class FederationAuthenticator extends FormAuthenticator {
     ServletException {
 
         LOG.debug("WsFedAuthenticator:invoke()");
+        if (request.getRequestURL().indexOf(FederationConstants.METADATA_PATH_URI) != -1) {
+            if (LOG.isInfoEnabled()) {
+                LOG.info("WS-Federation Metadata document requested");
+            }
+            response.setContentType("text/xml");
+            PrintWriter out = response.getWriter();
+            
+            String contextName = request.getServletContext().getContextPath();
+            if (contextName == null || contextName.isEmpty()) {
+                contextName = "/";
+            }
+            FederationContext fedConfig = getContextConfiguration(contextName);
+            FederationProcessor wfProc = new FederationProcessorImpl();
+            try {
+                Document metadata = wfProc.getMetaData(fedConfig);
+                out.write(DOM2Writer.nodeToString(metadata));
+                return;
+            } catch (Exception ex) {
+                LOG.error("Failed to get metadata document: " + ex.getMessage());
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                return;
+            }            
+        }
+        
         super.invoke(request, response);
 
     }
