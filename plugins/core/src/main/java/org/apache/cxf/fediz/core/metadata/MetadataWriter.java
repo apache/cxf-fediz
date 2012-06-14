@@ -98,13 +98,19 @@ public class MetadataWriter {
             writer.writeAttribute("ID", referenceID);
             
             String audience = "_someID";
+            String serviceURL = null;
             if (protocol instanceof FederationProtocol) {
+                serviceURL = ((FederationProtocol)protocol).getApplicationServiceURL();
                 List<String> audienceList = config.getAudienceUris();
                 if (audienceList != null && audienceList.size() > 0 && !"".equals(audienceList.get(0))) {
                     audience = audienceList.get(0);
                 }
             }
-            writer.writeAttribute("entityID", audience);
+            if (serviceURL == null) {
+                serviceURL = audience;
+            }
+            
+            writer.writeAttribute("entityID", serviceURL);
 
             writer.writeNamespace("fed", WS_FEDERATION_NS);
             writer.writeNamespace("wsa", WS_ADDRESSING_NS);
@@ -119,7 +125,7 @@ public class MetadataWriter {
             writer.writeStartElement("wsa", "EndpointReference", WS_ADDRESSING_NS);
 
             writer.writeStartElement("wsa", "Address", WS_ADDRESSING_NS);
-            writer.writeCharacters(audience);
+            writer.writeCharacters(serviceURL);
             
             writer.writeEndElement(); // Address
             writer.writeEndElement(); // EndpointReference

@@ -21,6 +21,7 @@
 		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 			xsi:type="federationProtocolType" version="1.2">
 			<realm>http://Server:Port/value from protocol.realm config property </realm>
+			<applicationServiceURL>http://Server:port/value from protocol.applicationServiceURL config property</applicationServiceURL>
 			<issuer>http://Server:Port/value from protocol.issuer config property</issuer>
 			<roleDelimiter>;</roleDelimiter>
 			<roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>

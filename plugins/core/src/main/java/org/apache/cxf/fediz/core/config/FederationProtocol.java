@@ -111,6 +111,14 @@ public class FederationProtocol extends Protocol {
     public void setRoleURI(String value) {
         getFederationProtocol().setRoleURI(value);
     }
+    
+    public String getApplicationServiceURL() {
+        return getFederationProtocol().getApplicationServiceURL();
+    }
+
+    public void setApplicationServiceURL(String value) {
+        getFederationProtocol().setApplicationServiceURL(value);
+    }
 
     public Object getAuthenticationType() {
         if (this.authenticationType != null) {

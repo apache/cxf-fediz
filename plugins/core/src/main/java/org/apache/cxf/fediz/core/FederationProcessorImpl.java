@@ -358,7 +358,7 @@ public class FederationProcessorImpl implements FederationProcessor {
                     .append(URLEncoder.encode(homeRealm, "UTF-8"));
             }
             
-            // add wct
+            // add current time parameter wct
             Date creationTime = new Date();
             XmlSchemaDateFormat fmt = new XmlSchemaDateFormat();
             String wct = fmt.format(creationTime);

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	elementFormDefault="qualified" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	
 	<xs:element name="FedizConfig">
 		<xs:complexType>
 			<xs:sequence minOccurs="1" maxOccurs="unbounded">
@@ -27,10 +28,6 @@
 		</xs:complexType>
 	</xs:element>
 
-	<!-- <xs:element name="trustedIssuerItem" type="TrustManagersType" /> <xs:element 
-		name="trustedIssuers"> <xs:complexType> <xs:sequence minOccurs="1" maxOccurs="unbounded"> 
-		<xs:element ref="trustedIssuerItem" /> </xs:sequence> </xs:complexType> </xs:element> -->
-
 	<xs:element name="trustedIssuers">
 		<xs:complexType>
 			<xs:sequence minOccurs="1" maxOccurs="unbounded">
@@ -54,8 +51,6 @@
 		</xs:complexType>
 	</xs:element>
 
-
-	<!-- <xs:element name="audienceUris" type="xs:anyURI"/> -->
 	<xs:element name="audienceUris">
 		<xs:complexType>
 			<xs:sequence minOccurs="1" maxOccurs="unbounded">
@@ -75,14 +70,12 @@
 		</xs:restriction>
 	</xs:simpleType>
 
-
-
 	<xs:element name="maximumClockSkew" type="xs:integer" default="60"/>
 	
 	<xs:element name="tokenReplayCache" type="xs:string" />
 
-	<!-- keystore type -->
 	<xs:element name="serviceCertificate" type="KeyManagersType" />
+	
 	<xs:element name="signingKey" type="KeyManagersType" />
 
 	<xs:element name="protocol" type="protocolType" />
@@ -102,12 +95,9 @@
 					<xs:element ref="request" />
 					<xs:element ref="claimTypesRequested" />
 					<xs:element ref="tokenValidators" />
+					<xs:element ref="applicationServiceURL" />
 				</xs:sequence>
-				<!-- <xs:attribute name="roleDelimiter" type="xs:string"/> -->
-				<!--<xs:attribute name="roleURI" use="required" type="xs:string"/> -->
 				<xs:attribute name="version" use="required" type="xs:string" />
-				<!--<xs:attribute name="realm" use="required" type="xs:string"/> -->
-				<!--<xs:attribute name="freshness" use="required" type="xs:string"/> -->
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
@@ -115,6 +105,7 @@
 	<xs:element name="roleDelimiter" type="xs:string" />
 	<xs:element name="roleURI" type="xs:string" />
 	<xs:element name="realm" type="xs:string" />
+	<xs:element name="applicationServiceURL" type="xs:string" />
 	
 	<xs:element name="freshness" type="xs:string" />
 

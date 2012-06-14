@@ -55,6 +55,7 @@ import org.apache.ws.security.util.DOM2Writer;
 import org.joda.time.DateTime;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.opensaml.common.SAMLVersion;
 
 
@@ -182,7 +183,13 @@ public class FederationProcessorTest {
         }
     }
     
-
+    @Ignore
+    @org.junit.Test
+    public void validateTokenAndCreateMetadata() throws Exception {
+        validateSAML2Token();
+        FederationMetaDataTest other = new FederationMetaDataTest();
+        other.validateMetaDataWithAlias();
+    }
     
     /**
      * Validate SAML 2 token which includes the role attribute with 2 values
