@@ -45,6 +45,7 @@ import org.apache.cxf.fediz.core.spi.WAuthCallback;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.ws.security.WSConstants;
 import org.apache.ws.security.util.XmlSchemaDateFormat;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -141,11 +142,15 @@ public class FederationProcessorImpl implements FederationProcessor {
         if (config.isDetectExpiredTokens() && lifeTime != null) {
             Date currentDate = new Date();
             if (currentDate.after(lifeTime.getExpires())) {
-                LOG.warn("Token already expired");
+                LOG.warn("RSTR Lifetime expired");
+                throw new ProcessingException(TYPE.TOKEN_EXPIRED);
             }
-            if (currentDate.before(lifeTime.getCreated())) {
-                LOG.warn("Token not yet valid");
-                // [TODO] Add Check clockskew
+            DateTime currentTime = new DateTime();
+            DateTime validFrom = new DateTime(lifeTime.created);
+            currentTime = currentTime.plusSeconds(config.getMaximumClockSkew().intValue());
+            if (validFrom.isAfter(currentTime)) {
+                LOG.debug("RSTR Lifetime not yet valid");
+                throw new ProcessingException(TYPE.TOKEN_INVALID);
             }
         }
 
@@ -353,25 +358,18 @@ public class FederationProcessorImpl implements FederationProcessor {
                     .append(URLEncoder.encode(homeRealm, "UTF-8"));
             }
             
+            // add wct
+            Date creationTime = new Date();
+            XmlSchemaDateFormat fmt = new XmlSchemaDateFormat();
+            String wct = fmt.format(creationTime);
+            sb.append('&').append(FederationConstants.PARAM_CURRENT_TIME).append('=')
+            .append(URLEncoder.encode(wct, "UTF-8"));
+            
             redirectURL = redirectURL + "?" + sb.toString();
         } catch (Exception ex) {
             LOG.error("Failed to create SignInRequest", ex);
             throw new ProcessingException("Failed to create SignInRequest");
-        }
-        // [TODO] Current time, wct
-
-        // if (false) {
-        // sb.append("&");
-        // sb.append("wfresh=jjjj");
-        // }
-        // if (false) {
-        // sb.append("&");wct
-        // sb.append("wreq=jjjj");
-        // }
-        // if (false) {
-        // sb.append("&");
-        // sb.append("wct=").append("jjjj");
-        // }
+        }        
         return redirectURL;
     }
 
