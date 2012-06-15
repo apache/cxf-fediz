@@ -295,6 +295,7 @@ public class MetadataWriter {
         // location of the resulting XMLSignature's parent element.
         //DOMSignContext dsc = new DOMSignContext(keyEntry.getPrivateKey(), doc.getDocumentElement());
         DOMSignContext dsc = new DOMSignContext(keyEntry, doc.getDocumentElement());
+        dsc.setIdAttributeNS(doc.getDocumentElement(), null, "ID");
         dsc.setNextSibling(doc.getDocumentElement().getFirstChild());
 
         // Create the XMLSignature, but don't sign it yet.

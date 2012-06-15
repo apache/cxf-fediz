@@ -55,7 +55,6 @@ import org.apache.ws.security.util.DOM2Writer;
 import org.joda.time.DateTime;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.opensaml.common.SAMLVersion;
 
 
@@ -183,7 +182,6 @@ public class FederationProcessorTest {
         }
     }
     
-    @Ignore
     @org.junit.Test
     public void validateTokenAndCreateMetadata() throws Exception {
         validateSAML2Token();
