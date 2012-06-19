@@ -22,7 +22,7 @@
 	<parent>
 		<groupId>org.apache.cxf.fediz.examples</groupId>
 		<artifactId>webservice</artifactId>
-		<version>1.0.0</version>
+		<version>1.0.1-SNAPSHOT</version>
 	</parent>
 	<groupId>org.apache.cxf.fediz.examples.webservice</groupId>
 	<artifactId>service-war</artifactId>
