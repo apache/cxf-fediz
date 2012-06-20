@@ -26,6 +26,9 @@ import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
+import net.sf.ehcache.config.CacheConfiguration;
+import net.sf.ehcache.config.Configuration;
+import net.sf.ehcache.config.ConfigurationFactory;
 
 import org.apache.ws.security.util.Loader;
 
@@ -55,10 +58,13 @@ public class EHCacheTokenReplayCache implements TokenReplayCache<String> {
         if (configFileURL == null) {
             cacheManager = CacheManager.create();
         } else {
-            cacheManager = CacheManager.create(configFileURL);
+            Configuration conf = ConfigurationFactory.parseConfiguration(configFileURL);
+            cacheManager = CacheManager.create(conf);
         }
         
-        Ehcache newCache = new Cache(key, 50000, true, false, DEFAULT_TTL, DEFAULT_TTL);
+        CacheConfiguration cc = EHCacheUtil.getCacheConfiguration(key, cacheManager);
+        
+        Ehcache newCache = new Cache(cc);
         cache = cacheManager.addCacheIfAbsent(newCache);
     }
     

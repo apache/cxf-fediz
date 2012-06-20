@@ -48,6 +48,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class FederationContext implements Closeable {
+    
+    public static final String CACHE_KEY_PREFIX = "fediz.replay.cache";
 
     private static final Logger LOG = LoggerFactory.getLogger(FederationContext.class);
     
@@ -162,7 +164,7 @@ public class FederationContext implements Closeable {
             return replayCache;
         }
         String replayCacheString = config.getTokenReplayCache();
-        String cacheKey = "fediz-replay-cache-" + config.getName();
+        String cacheKey = CACHE_KEY_PREFIX + "-" + config.getName();
         if (replayCacheString == null || "".equals(replayCacheString)) {
             replayCache = new EHCacheTokenReplayCache(cacheKey);
         } else {
