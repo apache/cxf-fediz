@@ -60,16 +60,16 @@
 	<http:conduit name="{http://docs.oasis-open.org/ws-sx/ws-trust/200512/}Transport_Port.http-conduit">
 		<http:tlsClientParameters disableCNCheck="true">
 			<sec:trustManagers>
-				<sec:keyStore type="jks" password="tompass" resource="tomcatKeystore.jks" />
+				<sec:keyStore type="jks" password="waspass" resource="webappKeystore.jks" />
 			</sec:trustManagers>
 		</http:tlsClientParameters>
 	</http:conduit>
 
-    <!--  STS WSDL download -->
+        <!--  STS WSDL download -->
 	<http:conduit name="https://localhost:9443/.*">
 		<http:tlsClientParameters disableCNCheck="true">
 			<sec:trustManagers>
-				<sec:keyStore type="jks" password="tompass" resource="tomcatKeystore.jks" />
+				<sec:keyStore type="jks" password="waspass" resource="webappKeystore.jks" />
 			</sec:trustManagers>
 		</http:tlsClientParameters>
 	</http:conduit>
@@ -78,7 +78,7 @@
 		name="{http://apache.org/hello_world_soap_http}GreeterSoapPort.http-conduit">
 		<http:tlsClientParameters disableCNCheck="true">
 			<sec:trustManagers>
-				<sec:keyStore type="jks" password="tompass" resource="tomcatKeystore.jks" />
+				<sec:keyStore type="jks" password="waspass" resource="webappKeystore.jks" />
 			</sec:trustManagers>
 		</http:tlsClientParameters>
 	</http:conduit>

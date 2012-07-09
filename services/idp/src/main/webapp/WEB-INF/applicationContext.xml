@@ -30,7 +30,7 @@
     <http:conduit name="https://localhost:9443/.*">
       <http:tlsClientParameters disableCNCheck="true">
         <sec:trustManagers>
-          <sec:keyStore type="jks" password="cspass" resource="clientstore.jks"/>
+          <sec:keyStore type="jks" password="ispass" resource="idpstore.jks"/>
         </sec:trustManagers>
       </http:tlsClientParameters>
    </http:conduit>
