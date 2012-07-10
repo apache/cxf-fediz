@@ -52,7 +52,6 @@
     <bean id="utService"
         class="org.apache.cxf.sts.service.StaticService">
         <property name="endpoints" ref="utEndpoints"/>
-        <property name="encryptionName" value="myservicekey"/>
     </bean>
     
     <util:list id="utEndpoints">
@@ -64,8 +63,9 @@
 	    <property name="signatureProperties" value="stsKeystore.properties"/>
 		<property name="signatureUsername" value="mystskey"/>
 		<property name="callbackHandlerClass" value="org.apache.cxf.sts.war.PasswordCallbackHandler"/>
-		<property name="encryptionProperties" value="stsKeystore.properties"/>
+		<property name="encryptionPropertiesFile" value="stsKeystore.properties"/>
 		<property name="issuer" value="DoubleItSTSIssuer"/>
+		<property name="encryptionUsername" value="myservicekey" />
     </bean>
     
 	<jaxws:endpoint id="UTSTS"
