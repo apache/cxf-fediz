@@ -15,7 +15,6 @@
         http://cxf.apache.org/schemas/jaxws.xsd
         http://www.springframework.org/schema/util
         http://www.springframework.org/schema/util/spring-util-2.0.xsd">
-    <import resource="cxf-transport.xml"/>    
 
     <cxf:bus>
         <cxf:features>
