@@ -1,0 +1,44 @@
+<html>
+<head/>
+<body>
+<p>The below lists the sample sample (<strong>non-production use!</strong>) self-signed keystores used in running the FEDIZ samples. 
+Don't use the provided keystores in production--everyone has them!  At a minimum, regenerate new keys using the scripts (with different 
+passwords) below.  These will be just self-signed keys however, for real production use having third-party signed CA keys 
+is recommended.</p>
+
+<table border="1" bgcolor="#FFFFCC" align="center">
+<tr bgcolor="#FFCCCC">
+<th>Keystore (Password)</th><th>Alias (Password)</th><th>Location</th><th>Creation Script Used</th><th>Needs to trust</th><th>Is trusted by</th></tr>
+<tr><td colspan="6"><strong><em>Tomcat Keystores:  The Tomcat keys can be simply placed in the root folder of each Tomcat installation.  They are used to configure SSL for the Tomcat instances as described here: <a href="http://cxf.apache.org/fediz-tomcat.html">http://cxf.apache.org/fediz-tomcat.html</a>.  For Tomcat keys only, the keystore password and the private key password needs to be the same.</em></strong></tr>
+<tr><td>tomcat-idp.jks (tompass)</td><td>mytomidpkey (tompass)</td><td>base folder of Tomcat instance holding the IDP and IDP STS</td>
+    <td><code>keytool -genkeypair -validity 730 -alias mytomidpkey -keystore tomcat-idp.jks -dname "cn=localhost" -keypass tompass -storepass tompass</code><br/><br/><code>keytool -keystore tomcat-idp.jks -storepass tompass -export -alias mytomidpkey -file MyTCIDP.cer</code></td>
+    <td>Nobody</td><td>IDP app</td></tr> 
+<tr><td>tomcat-rp.jks (tompass)</td><td>mytomrpkey (tompass)</td><td>base folder of Tomcat instance holding the relying party applications for both samples (simpleWebapp and wsclientWebapp)</td>
+    <td><code>keytool -genkeypair -validity 730 -alias mytomrpkey -keystore tomcat-rp.jks -dname "cn=localhost" -keypass tompass -storepass tompass</code></td>
+    <td>Nobody</td><td>Nobody</td></tr> 
+<tr><td>tomcat-wsp.jks (tompass)</td><td>mytomwspkey (tompass)</td><td>base folder of Tomcat instance holding the web service provider in the second (wsClientWebapp) sample</td>
+    <td><code>keytool -genkeypair -validity 730 -alias mytomwspkey -keystore tomcat-wsp.jks -dname "cn=localhost" -keypass tompass -storepass tompass</code><br/><br/><code>keytool -keystore tomcat-wsp.jks -storepass tompass -export -alias mytomwspkey -file MyTCWSP.cer</code></td>
+    <td>Nobody</td><td>wsclientWebapp's webapp module</td></tr> 
+<tr><td colspan="6"><strong><em>Service Keystores:  These Fediz services form the core of the product and can be used with both the sample webapps provided and of course your own web applications.</em></strong></tr>
+<tr><td>idpstore.jks (ispass)</td><td>myidpkey (ikpass)</td><td>services/idp/src/main/resources/idpstore.jks</td>
+    <td><code>keytool -genkey -keyalg RSA -sigalg SHA1withRSA -validity 730 -alias myidpkey -keypass ikpass -storepass ispass -keystore idpstore.jks</code><br/><br/><code>keytool -import -trustcacerts -keystore idpstore.jks -storepass ispass -alias mytomidpkey -file MyTCIDP.cer -noprompt</code><br/><br/><code>keytool -export -rfc -keystore idpstore.jks -storepass ispass -alias myidpkey -file MyIDP.cer</code></td>
+    <td>mytomidpkey (because of SSL call to IDP STS)</td><td>IDP STS</td></tr> 
+<tr><td>stsstore.jks (stsspass)</td><td>mystskey (stskpass)</td><td>services/sts/src/main/resources/stsstore.jks</td>
+    <td><code>
+keytool -genkey -keyalg RSA -sigalg SHA1withRSA -validity 730 -alias mystskey -keypass stskpass -storepass stsspass -keystore stsstore.jks<br/><br/>
+keytool -import -trustcacerts -keystore stsstore.jks -storepass stsspass -alias myidpkey -file MyIDP.cer -noprompt<br/><br/>
+keytool -export -rfc -keystore stsstore.jks -storepass stsspass -alias mystskey -file MySTS.cer
+</code>
+</td>
+    <td>myidpkey (because of X.509 auth between IDP and IDP STS)</td><td>wsclientWebapp's webservice</td></tr> 
+<tr><td colspan="6"><strong><em>Sample Keystores: No production value, just used for running the "wsclientWebapp" sample provided with Fediz.  (simpleWebapp has/uses no keys).</em></strong></tr>
+<tr><td>webappKeystore.jks (waspass)</td><td>mywakey (wakpass)</td><td>examples/wsclientWebapp/webapp/src/main/resources/webappKeystore.jks</td>
+    <td><code>keytool -genkey -keyalg RSA -sigalg SHA1withRSA -validity 730 -alias mywakey -keypass wakpass -storepass waspass -keystore webappKeystore.jks<br/><br/>
+keytool -import -trustcacerts -keystore webappKeystore.jks -storepass waspass -alias mytomidpkey -file MyTCIDP.cer -noprompt<br/><br/>
+keytool -import -trustcacerts -keystore webappKeystore.jks -storepass waspass -alias mytomwspkey -file MyTCWSP.cer -noprompt<br/><br/>
+</code></td>
+    <td>mytomidpkey (to access IDP STS via HTTPS, mytomwspkey (to access web service via HTTPS)</td><td>Nobody</td></tr> 
+<tr><td>webserviceKeystore.jks (wsspass)</td><td>N/A (no key, just a truststore)</td><td>examples/wsclientWebapp/webservice/service/src/main/resources/webserviceKeystore.jks</td>
+    <td><code>keytool -import -trustcacerts -keystore webserviceKeystore.jks -storepass wsspass -alias mystskey -file MySTS.cer -noprompt</code></td>
+    <td>IDP STS (signature verification)</td><td>Nobody</td></tr> 
+</table>

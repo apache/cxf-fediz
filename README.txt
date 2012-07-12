@@ -1,6 +1,6 @@
 Welcome to Apache CXF Fediz!
 ============================
-Fediz helps you to secure your web applications and delegates security enforcement
+Fediz helps you secure your web applications by delegating security enforcement
 to the underlying application server. With Fediz, authentication is externalized
 from your web application to an identity provider installed as a dedicated server component.
 The supported standard is WS-Federation 1.2 Passive Requestor Profile.
@@ -48,14 +48,14 @@ software:
 Getting Started
 ===============
 
-For an Apache CXF Fediz source distribution, please read BUILDING.txt for 
-instructions on building Apache CXF Fediz. 
+For an Apache CXF Fediz source distribution, please read BUILDING.txt 
+in this folder for instructions on building Apache CXF Fediz. 
 
 For an Apache CXF Fediz binary distribution, please read release_notes.txt
 for installation instructions and list of supported and unsupported 
 features.
 
-Alternatively, you can also find out how to get started here:
+Check the Fediz website for the latest news:
 http://cxf.apache.org/fediz.html
 
 If you need more help try talking to us on our mailing lists:
@@ -73,4 +73,3 @@ Thank you for using CXF Fediz!
 
 The Apache CXF Team
 http://cxf.apache.org/
-

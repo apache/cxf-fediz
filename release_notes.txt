@@ -18,9 +18,8 @@ provides the following features:
 Before installing Apache CXF Fediz, make sure the following products,
 with the specified versions, are installed on your system:
 
-    * Java 6 Development Kit
+    * Java 6 or 7 Development Kit
     * Apache Maven 2.2.1 or 3.x to build the samples
-
 
 3. Building the Samples
 
@@ -28,8 +27,14 @@ Building the samples included in the binary distribution is easy. Change to
 the examples directory and follow the build instructions in the README.txt file 
 included with each sample.
 
+4. Replacing provided keystores
 
-4. Reporting Problems
+The sample keystores provided are fine for development and prototyping use
+but make sure to replace them for any production use, see
+see examples/samplekeys/HowToGenerateKeysREADME.html for key generation
+information.
+
+5. Reporting Problems
 
 If you have any problems or want to send feedback of any kind, please e-mail the
 CXF user list, users@cxf.apache.org.  You can also file issues in JIRA at:
@@ -37,12 +42,12 @@ CXF user list, users@cxf.apache.org.  You can also file issues in JIRA at:
 http://issues.apache.org/jira/browse/FEDIZ
 
 
-5. Migration notes:
+6. Migration notes:
 
 N.A.
 
 
-6. Specific issues, features, and improvements fixed in this version
+7. Specific issues, features, and improvements fixed in this version
 
 ** Bug
 
@@ -53,6 +58,5 @@ N.A.
 ** Task
 
 ** Test
-
 
 
