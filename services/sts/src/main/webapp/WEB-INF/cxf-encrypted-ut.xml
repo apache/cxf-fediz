@@ -33,6 +33,7 @@
 		<property name="tokenProviders" ref="encryptedUtSamlTokenProvider"/>
 		<property name="services" ref="encryptedUtService"/>
 		<property name="stsProperties" ref="encryptedUtSTSProperties"/>
+		<property name="encryptIssuedToken" value="true" />
 	</bean>
 	
 	<bean id="encryptedUtValidateDelegate"
