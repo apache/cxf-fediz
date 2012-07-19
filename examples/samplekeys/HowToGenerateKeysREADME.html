@@ -13,9 +13,9 @@ is recommended.</p>
 <tr><td>tomcat-idp.jks (tompass)</td><td>mytomidpkey (tompass)</td><td>base folder of Tomcat instance holding the IDP and IDP STS</td>
     <td><code>keytool -genkeypair -validity 730 -alias mytomidpkey -keystore tomcat-idp.jks -dname "cn=localhost" -keypass tompass -storepass tompass</code><br/><br/><code>keytool -keystore tomcat-idp.jks -storepass tompass -export -alias mytomidpkey -file MyTCIDP.cer</code></td>
     <td>Nobody</td><td>IDP app</td></tr> 
-<tr><td>tomcat-rp.jks (tompass)</td><td>mytomrpkey (tompass)</td><td>base folder of Tomcat instance holding the relying party applications for both samples (simpleWebapp and wsclientWebapp)</td>
-    <td><code>keytool -genkeypair -validity 730 -alias mytomrpkey -keystore tomcat-rp.jks -dname "cn=localhost" -keypass tompass -storepass tompass</code></td>
-    <td>Nobody</td><td>Nobody</td></tr> 
+<tr><td>tomcat-rp.jks (tompass)</td><td>mytomrpkey (tompass)</td><td>base folder of Tomcat instance holding the relying party applications for both samples (simpleWebapp and wsclientWebapp); has Tomcat Fediz plugin configured to make STS calls</td>
+    <td><code>keytool -genkeypair -validity 730 -alias mytomrpkey -keystore tomcat-rp.jks -dname "cn=localhost" -keypass tompass -storepass tompass<br/><br/>keytool -import -trustcacerts -keystore tomcat-rp.jks -storepass tompass -alias mystskey -file MySTS.cer -noprompt (see stsstore.jks below for MySTS.cer)</code></td>
+    <td>IDP STS (Fediz Tomcat plugin makes STS call)</td><td>Nobody</td></tr> 
 <tr><td>tomcat-wsp.jks (tompass)</td><td>mytomwspkey (tompass)</td><td>base folder of Tomcat instance holding the web service provider in the second (wsClientWebapp) sample</td>
     <td><code>keytool -genkeypair -validity 730 -alias mytomwspkey -keystore tomcat-wsp.jks -dname "cn=localhost" -keypass tompass -storepass tompass</code><br/><br/><code>keytool -keystore tomcat-wsp.jks -storepass tompass -export -alias mytomwspkey -file MyTCWSP.cer</code></td>
     <td>Nobody</td><td>wsclientWebapp's webapp module</td></tr> 
