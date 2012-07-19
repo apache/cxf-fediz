@@ -6,7 +6,7 @@
 		</audienceUris>
 		<certificateStores>
 			<trustManager>
-				<keyStore file="conf/stsstore.jks" password="stsspass" type="JKS" />
+				<keyStore file="tomcat-rp.jks" password="tompass" type="JKS" />
 			</trustManager>
 		</certificateStores>
 		<trustedIssuers>
