@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- Place in Tomcat conf folder or other location as designated in this sample's webapp/META-INF/context.xml file. 
+     Keystore referenced below must have IDP STS' public cert included in it.  This example re-uses the Tomcat SSL 
+     keystore (tomcat-rp.jks) for this task; alternatively you may wish to use a Fediz-specific keystore instead. 
+-->
 <FedizConfig>
 	<contextConfig name="/fedizhelloworld">
 		<audienceUris>
@@ -31,3 +35,4 @@
 		</protocol>
 	</contextConfig>
 </FedizConfig>
+
