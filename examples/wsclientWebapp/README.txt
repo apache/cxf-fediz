@@ -1,135 +1,115 @@
 Web Service Client Web Application Demo
 =======================================
 
-This demo shows a more complext scenario where a Web Application is deployed as in the example 'simpleWebapp'.
-The difference is that this demo Web Application calls a Web Services which is protected by a SAML token which
-must be issued by a Security Token Service (STS). The STS is part of the Fediz Identity Provider (IDP).
-The Web Application requests a SAML token for the Web Service *on behalf of* the user who logged into the 
-Web Application. Finally, the Web Service knows which browser user triggered the Web Service call.
+This demo builds on the simpleWebapp sample to show a Relying Party (RP) web application using an IDP-provided SAML token to access a third-party web service.  Here the IDP authenticates the browser user that the web application requested the token on behalf of, and uses its STS to issue the token which fulfills the web service's security requirements.  From the SAML token the Web Service is informed which browser user triggered the Web Service call.
 
 The Demo consist of three parts:
 
-- Enable Fediz in Servlet Container (ex. Tomcat)
-- Install the Fediz Identity Provider (IDP)
-- Build the Demo Web Application
-- Build the Demo Web Service
+- Configure Fediz in the IDP and RP Tomcat instances
+- Configure Tomcat instance holding the web service provider
+- Build/deploy the Demo Web Application
+- Build/deploy the Demo Web Service
+
+Please review the README in the samples main directory before continuing.
+You may wish to run the simpleWebapp demo first as this is an extended demo.
 
 
-Fediz configuration in Tomcat
------------------------------
-
-The Tomcat installation must be updated before a Web Application can be deployed.
-
-The following wiki page gives instructions how to do that:
+Configure Tomcat instances used for RP and IDP
+----------------------------------------------
+The Tomcat installation holding the relying parties (the demo Web application 
+for this sample) must be configured properly before applications can be 
+deployed to it.  See this wiki page for instructions:
 http://cxf.apache.org/fediz-tomcat.html
 
+Copy the Fediz Configuration file into the directory 'conf' of the Tomcat-RP
+ installation. The configuration file is located in 
+src/main/config/fediz_config.xml of this example.  This configuration
+references the java keystore 'tomcat-rp.jks' from examples/samplekeys which
+contains the STS' public certificate to validate a SAML token issued by the
+IDP/STS.
 
-Fediz Identity Provider (IDP)
------------------------------
+It's also assumed the separate Tomcat instance hosting the Fediz IDP and IDP
+ STS has been configured and is running as described here:  
+http://cxf.apache.org/fediz-idp.html.  To confirm the STS is working, check
+that the WSDL is viewable from the browser using the URL given on that page.
 
-The IDP is the central security server to whom unauthenticated requests are redirected. Its responsibility is
-to authenticate the browser user and issue a security token which fulfills the Web Application requirements.
 
-The following wiki page gives instructions how to set up the IDP:
-http://cxf.apache.org/fediz-idp.html
+Configure Tomcat instance used for Web Service Provider
+-------------------------------------------------------
+To better model a real-world environment the web service provider is hosted
+on a third Tomcat instance separate from the RP and IDP Tomcat instances.
+You can follow the Tomcat configuration instructions given here for the IDP
+Tomcat instance: 
+http://cxf.apache.org/fediz-idp.html#FedizIDP-Tomcatserver.xmlconfiguration 
+but (1) use Tomcat ports different from the IDP and RP instances, perhaps 
+10080 for HTTP, 10443 for HTTPS, and 10005 as the server communication port, 
+and (2) don't reuse the Tomcat IDP keystore, the examples/samplekeys folder
+has a third sample (don't use in production!) tomcat-wsp.jks keystore that 
+can be used instead.
 
 
 Demo Web Application
 ---------------------
+The main code lives in the class FederationServlet. This class has been
+extended by an implementation of the method doPost().  The doGet 
+implementation is the same as in the demo 'simpleWebapp'.
 
-The main code lives in the class FederationServlet. This class has been extended by an implementation of the method doPost().
-The doGet implementation is the same as in the demo 'simpleWebapp'.
-The Web Application contains a service.jsp which provides a button to trigger the Web Service call which is in the
-doPost implementation. CXF requests a SAML token from the STS on behalf of the security token used during the
-Web Application Login before sending the SOAP request to the Web Service.
+The Web Application contains a service.jsp which provides a button to 
+trigger the Web Service call which is in the doPost implementation. CXF
+then requests a SAML token from the STS on behalf of the security token
+used during the Web Application Login before sending the SOAP request to 
+the Web Service.
 
-The FederationServlet prints the String returned from the Web Service (which is the authenticated Browser user).
-
-There is not security related programming required. CXF processes the information in the Spring configuration and
-the policy document and enforces that.
+The FederationServlet prints the string (showing the authenticated browser 
+user) returned from the Web Service.
 
 
 Demo Web Service
 ---------------------
+The main and only code lives in the class GreeterImpl. It reads the 
+authenticated principal from the JAX-WS WebServiceContext and returns
+the principal name to the Web Service Client (Web Application).
 
-The main and only code lives in the class GreeterImpl. It reads the authenticated principal from the JAX-WS WebServiceContext
-and returns the principal name to the Web Service Client (Web Application).
-
-The interesting pieces are in applicationContext.xml and the WS-SecurityPolicy definition in the WSDL hello_world.wsdl.
-
-There is no security related programming required. CXF processes the information in the Spring configuration and
-the policy document and enforces that.
-
-
-More details are provided on this blog:
-http://owulff.blogspot.com/2012/04/sso-across-web-applications-and-web_16.html
-
-
-Prerequisite
-------------
-Please review the README in the samples main directory before continuing.
-It's recommended to run the demo simpleWebapp first as this is an extended demo.
-
-Copy the Fediz Configuration file into the directory 'conf' of the Tomcat installation. The configuration file
-is located in src/main/config/fediz_config.xml of this example.
-
-This configuration references the java keystore 'conf/stsstore.jks' which contains the certificate to validate
-a SAML token issued by the IDP/STS. This keystore is located in webapps/fedizidpsts/WEB-INF/classes/stsstore.jks (deployed)
-or in services/sts/src/main/resources/stsstore.jks (source)
+The interesting pieces are in applicationContext.xml and the 
+WS-SecurityPolicy definition in the WSDL hello_world.wsdl, no security
+related programming is required within the Java code.
 
 
 Building the demo using Maven
 -----------------------------
-
 From the base directory of this sample (i.e., where this README file is
-located), the pom.xml file is used to build and run the demo. 
+located), the pom.xml file is used to build and run the demo. From a 
+command prompt, enter:
 
-Using either UNIX or Windows:
-
-  mvn clean install   (builds the demo and creates a WAR file for Servlet deployment)
+mvn clean install   (builds the demo and creates two WAR files for 
+Servlet deployment to the Tomcat-RP and Tomcat-WSP instances)
 
 
 Deploying the demo to Tomcat
 ----------------------------
-
-You can manually copy the generated WAR file to the Tomcat webapps folder, or, if you
-have Maven and Tomcat set up to use the Tomcat Maven Plugin (http://mojo.codehaus.org/tomcat-maven-plugin/)
-you can use the mvn tomcat:redeploy command instead.  Important: if you're using this 
-command, and are using Tomcat 6 instead of Tomcat 7, update the tomcat-maven-plugin configuration 
-in the pom.xml, switching to the the Tomcat 6-specific "url" element.
-
-It's recommended to deploy the Web Service into a different Container instance than the Web Application.
+You can manually copy each generated WAR file to the appropriate
+Tomcat webapps folder, or use the Tomcat Maven Plugin as described 
+in the README file in the example folder root.
 
 
 Test the demo
 -------------
+Enter the following URL into the browser (TCP port depends on 
+your HTTP settings):
 
-Enter the following URL into the browser (TCP port depends on your HTTP settings):
+1) https://localhost:8443/fedizhelloworld/secure/fedservlet
 
-1)
-https://localhost:8443/fedizhelloworld/secure/fedservlet
-
-The browser is redirected to the IDP and prompts for username and password. As described in the IDP installation,
-the following users are already set up:
+The browser is redirected to the IDP and prompts for username and
+password. As described in the IDP installation, the following 
+users are already set up:
 
 User: alice   Password: ecila
 User: bob     Password: bob
 User: ted     Password: det
 
-2)
-https://localhost:8443/fedizhelloworld/secure/service.jsp
+2) https://localhost:8443/fedizhelloworld/secure/service.jsp
 
 Click "Call Service"
+The authenticated user will be displayed again.
 
-Your authenticated user must be printed again.
-
-
-Using Eclipse to run and test the demo
---------------------------------------
-
-run the following in the demo base directory
-
-mvn eclipse:eclipse
-
-Then use Import / Existing projects into workspace and browse to the wsclientWebapp directory. Import the project.
 
