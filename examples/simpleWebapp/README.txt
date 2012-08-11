@@ -33,16 +33,6 @@ check that the WSDL is viewable from the browser using the URL given
 on that page.
 
 
-Fediz Identity Provider (IDP)
------------------------------
-The IDP is the central security server to whom unauthenticated requests are redirected.
-Its responsibility is to authenticate the browser user and issue a security token which
-fulfills the Web Application requirements.
-
-The following wiki page gives instructions how to set up the IDP:
-http://cxf.apache.org/fediz-idp.html
-
-
 Demo Web Application
 ---------------------
 The main code lives in the class FederationServlet. This Servlet is protected
