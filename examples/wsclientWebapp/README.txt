@@ -64,8 +64,8 @@ The FederationServlet prints the string (showing the authenticated browser
 user) returned from the Web Service.
 
 
-Demo Web Service
----------------------
+Demo Web Service Provider
+-------------------------
 The main and only code lives in the class GreeterImpl. It reads the 
 authenticated principal from the JAX-WS WebServiceContext and returns
 the principal name to the Web Service Client (Web Application).
@@ -90,6 +90,10 @@ Deploying the demo to Tomcat
 You can manually copy each generated WAR file to the appropriate
 Tomcat webapps folder, or use the Tomcat Maven Plugin as described 
 in the README file in the example folder root.
+
+After deploying the web service provider, make sure you can see its
+WSDL at http://localhost:10080/fedizservice/GreeterService?wsdl
+to confirm it has successfully loaded.
 
 
 Test the demo
