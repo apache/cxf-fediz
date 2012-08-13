@@ -4,33 +4,29 @@ Simple Web Application Demo
 This demo shows how to build and deploy an SSO protected using Apache CXF Fediz
 web application.
 
-The Demo consist of three parts:
+Running this sample consists of four steps:
 
-- Configure Fediz in the IDP and RP Tomcat instances
-- Install the Fediz Identity Provider (IDP)
-- Build the Demo Web Application
+- Configure the Tomcat-IDP and Tomcat-RP instances
+- Building the demo using Maven
+- Deploying the demo to the Tomcat-RP instance
+- Testing the demo
 
 Please review the README in the samples main directory before continuing.
 
-Configure Tomcat instances used for RP and IDP
-----------------------------------------------
-The Tomcat installation holding the relying parties (the demo Web application
+Configure the Tomcat-IDP and Tomcat-RP instances
+------------------------------------------------
+First, make sure the separate Tomcat instance hosting the Fediz IDP and IDP
+STS has been configured and is running as described here:  
+http://cxf.apache.org/fediz-idp.html.  Confirm the STS is active by
+checking that the WSDL is viewable from the browser using the URL given
+on that page--don't proceed further unless it is.
+
+Next, the Tomcat installation holding the relying parties (the demo Web application
 for this sample) must be configured properly before applications can be
 deployed to it.  See this wiki page for instructions:
-http://cxf.apache.org/fediz-tomcat.html
-
-Copy the Fediz Configuration file into the directory 'conf' of the Tomcat-RP
-installation. The configuration file is located in 
-src/main/config/fediz_config.xml of this example.  This configuration
-references the java keystore 'tomcat-rp.jks' from examples/samplekeys
-which contains the STS' public certificate to validate a SAML token
-issued by the IDP/STS.
-
-It's also assumed the separate Tomcat instance hosting the Fediz IDP and IDP
-STS has been configured and is running as described here:  
-http://cxf.apache.org/fediz-idp.html.  To confirm the STS is working,
-check that the WSDL is viewable from the browser using the URL given
-on that page.
+http://cxf.apache.org/fediz-tomcat.html -- the "Installation" and "HTTPS
+Configuration" sections are the only parts that need configuration for this
+sample. 
 
 
 Demo Web Application
@@ -58,9 +54,15 @@ command prompt, enter:
 
 Deploying the demo to Tomcat
 ----------------------------
-You can manually copy the generated WAR file to the Tomcat-RP's webapps folder, 
-or use the Tomcat Maven Plugin as described in the README file in the example folder
-root.
+First copy this sample's Fediz Configuration file (src/main/config/fediz_config.xml)
+into the Tomcat-RP's conf folder.  This configuration references the 
+Java keystore 'tomcat-rp.jks' available in Fediz' examples/samplekeys folder 
+but should already be in the Tomcat RP's root folder when you configured this
+instance as stated in the prerequisites.
+
+Then, either manually copy this sample's generated WAR file to the Tomcat-RP's 
+webapps folder, or use the Tomcat Maven Plugin as described in the README file 
+in the example folder root.
 
 
 Test the demo
