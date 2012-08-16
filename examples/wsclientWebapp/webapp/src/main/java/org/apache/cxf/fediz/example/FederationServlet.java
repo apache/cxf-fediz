@@ -66,7 +66,6 @@ public class FederationServlet extends HttpServlet {
         out.println("Request url: " + request.getRequestURL().toString() + "<p>");
 
 
-
         out.println("<br><b>User</b><p>");
         Principal p = request.getUserPrincipal();
         if (p != null) {
@@ -101,7 +100,7 @@ public class FederationServlet extends HttpServlet {
                 StringWriter buffer = new StringWriter();
                 transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
                 transformer.transform(new DOMSource(el),
-                        new StreamResult(buffer));
+                                      new StreamResult(buffer));
                 token = buffer.toString();
                 out.println("<p>" + StringEscapeUtils.escapeXml(token));
             } catch (Exception ex) {

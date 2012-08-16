@@ -17,33 +17,26 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.apache.cxf.fediz.examples</groupId>
-		<artifactId>examples</artifactId>
-		<version>1.0.1-SNAPSHOT</version>
-	</parent>
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.apache.cxf.fediz</groupId>
+        <artifactId>examples</artifactId>
+        <version>1.0.1-SNAPSHOT</version>
+    </parent>
 
-	<groupId>org.apache.cxf.fediz.examples</groupId>
-	<artifactId>simpleWebapp</artifactId>
-	<name>Apache Fediz Examples - Webapp Simple</name>
-	<packaging>war</packaging>
+    <groupId>org.apache.cxf.fediz.examples.simpleWebapp</groupId>
+    <artifactId>simpleWebapp</artifactId>
+    <name>Fediz Example: SimpleWebapp</name>
+    <packaging>war</packaging>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
-	<dependencies>
-    <!-- 
-                <dependency>
-                        <groupId>org.apache.tomcat</groupId>
-                        <artifactId>tomcat-catalina</artifactId>
-                        <version>${tomcat.version}</version>
-                        <scope>provided</scope>
-                </dependency>
-                 -->
+    <dependencies>
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
@@ -52,42 +45,30 @@
         </dependency>
         <!-- Required to cast Principal to FederationPrincipal -->
         <dependency>
-                <groupId>org.apache.cxf.fediz</groupId>
-                <artifactId>fediz-core</artifactId>
-                <version>${project.version}</version>
-                <scope>provided</scope>
+            <groupId>org.apache.cxf.fediz</groupId>
+            <artifactId>fediz-core</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>3.0.1</version>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.0.1</version>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
-            <!--
-            <plugin>
-                <groupId>org.apache.tomcat.maven</groupId>
+            <plugin><!--for mvn tomcat:deploy/:undeploy/:redeploy -->
+                <groupId>org.codehaus.mojo</groupId>
                 <artifactId>tomcat-maven-plugin</artifactId>
-                <version>2.0-SNAPSHOT</version>
+                <version>1.1</version>
                 <configuration>
-                     <server>myTomcat</server>
-                     <url>http://localhost:8080/manager/text</url>
-                     <warFile>${project.build.finalName}.war</warFile>
+                    <server>myTomcat</server>
+                    <url>http://localhost:8080/manager/text</url>
+                    <path>/${project.build.finalName}</path>
                 </configuration>
             </plugin>
-            -->
-            <plugin><!--for mvn tomcat:deploy/:undeploy/:redeploy -->
-                                <groupId>org.codehaus.mojo</groupId>
-                                <artifactId>tomcat-maven-plugin</artifactId>
-                                <version>1.1</version>
-                                <configuration>
-                                        <server>myTomcat</server>
-                                        <url>http://localhost:8080/manager/text</url>
-                                        <path>/${project.build.finalName}</path>
-                                </configuration>
-                        </plugin>
         </plugins>
         <!-- Name of the generated WAR file -->
         <finalName>fedizhelloworld</finalName>

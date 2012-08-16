@@ -16,22 +16,23 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-   <modelVersion>4.0.0</modelVersion>
-   <parent>
-       <groupId>org.apache.cxf.fediz.examples</groupId>
-       <artifactId>examples</artifactId>
-       <version>1.0.1-SNAPSHOT</version>
-   </parent>
-    <groupId>org.apache.cxf.fediz.examples</groupId>
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.apache.cxf.fediz</groupId>
+        <artifactId>examples</artifactId>
+        <version>1.0.1-SNAPSHOT</version>
+    </parent>
+    <groupId>org.apache.cxf.fediz.examples.wsclientWebapp</groupId>
     <artifactId>wsclientWebapp</artifactId>
-    <name>Apache Fediz Examples - Webapp WS Client</name>
-   <packaging>pom</packaging>
+    <name>Fediz Example: WSClientWebapp</name>
+    <packaging>pom</packaging>
 
-   <modules>
-      <module>webservice</module>
-      <module>webapp</module>
-   </modules>
+    <modules>
+        <module>webservice</module>
+        <module>webapp</module>
+    </modules>
 
 </project>
