@@ -70,7 +70,7 @@
 		</xs:restriction>
 	</xs:simpleType>
 
-	<xs:element name="maximumClockSkew" type="xs:integer" default="60"/>
+	<xs:element name="maximumClockSkew" type="xs:integer" default="5"/>
 	
 	<xs:element name="tokenReplayCache" type="xs:string" />
 

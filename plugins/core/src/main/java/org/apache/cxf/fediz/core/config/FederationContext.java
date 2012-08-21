@@ -112,7 +112,11 @@ public class FederationContext implements Closeable {
     }
 
     public BigInteger getMaximumClockSkew() {
-        return config.getMaximumClockSkew();
+        if (config.getMaximumClockSkew() == null) {
+            return BigInteger.valueOf(5L);
+        } else {
+            return config.getMaximumClockSkew();
+        }
     }
     
     public void setMaximumClockSkew(BigInteger maximumClockSkew) {
