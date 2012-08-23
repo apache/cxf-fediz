@@ -41,6 +41,7 @@ public class Claim implements Serializable {
     private Object value;
     private URI namespace = ClaimTypes.URI_BASE;
 
+    // To deprecate as ClaimType is fully qualified
     public URI getNamespace() {
         return namespace;
     }

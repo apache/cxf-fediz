@@ -32,6 +32,7 @@ import org.w3c.dom.Element;
 
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimCollection;
+import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.core.TokenValidator;
 import org.apache.cxf.fediz.core.TokenValidatorResponse;
 import org.apache.cxf.fediz.core.config.CertificateValidationMethod;
@@ -182,9 +183,7 @@ public class SAMLTokenValidator implements TokenValidator {
                 URI roleURI = URI.create(fp.getRoleURI());
                 String delim = fp.getRoleDelimiter();
                 for (Claim c : claims) {
-                    URI claimURI = URI.create(c.getNamespace() + "/"
-                            + c.getClaimType());
-                    if (roleURI.equals(claimURI)) {
+                    if (roleURI.equals(c.getClaimType())) {
                         Object oValue = c.getValue();
                         if (oValue instanceof String) {
                             if (delim == null) {
@@ -247,7 +246,32 @@ public class SAMLTokenValidator implements TokenValidator {
                 }
                 Claim c = new Claim();
                 c.setIssuer(assertion.getIssuer());
-                c.setClaimType(URI.create(attribute.getAttributeName()));
+                if (attribute.getAttributeNamespace() != null) {
+                    URI attrName = URI.create(attribute.getAttributeName());
+                    if (attrName.isAbsolute()) {
+                        // Workaround for CXF-4484
+                        c.setClaimType(attrName);
+                        if (attribute.getAttributeName().startsWith(attribute.getAttributeNamespace())) {
+                            LOG.info("AttributeName fully qualified '" + attribute.getAttributeName()
+                                     + "' but does match with AttributeNamespace '"
+                                     + attribute.getAttributeNamespace() + "'");
+                        } else {
+                            LOG.warn("AttributeName fully qualified '" + attribute.getAttributeName()
+                                     + "' but does NOT match with AttributeNamespace (ignored) '"
+                                     + attribute.getAttributeNamespace() + "'");
+                        }
+                    } else {
+                        if (attribute.getAttributeNamespace().endsWith("/")) {
+                            c.setClaimType(URI.create(attribute.getAttributeNamespace()
+                                                      + attribute.getAttributeName()));
+                        } else {
+                            c.setClaimType(URI.create(attribute.getAttributeNamespace()
+                                                      + "/" + attribute.getAttributeName()));
+                        }
+                    }
+                } else {
+                    c.setClaimType(URI.create(attribute.getAttributeName()));
+                }
                 List<String> valueList = new ArrayList<String>();
                 for (XMLObject attributeValue : attribute.getAttributeValues()) {
                     Element attributeValueElement = attributeValue.getDOM();
@@ -291,8 +315,14 @@ public class SAMLTokenValidator implements TokenValidator {
                     LOG.debug("parsing attribute: " + attribute.getName());
                 }
                 Claim c = new Claim();
-                if (attribute.getName().startsWith(c.getNamespace().toString())) {
-                    c.setClaimType(URI.create(attribute.getName().substring(c.getNamespace().toString().length() + 1)));
+                // Workaround for CXF-4484 
+                // Value of Attribute Name not fully qualified
+                // if NameFormat is http://schemas.xmlsoap.org/ws/2005/05/identity/claims
+                // but ClaimType value must be fully qualified as Namespace attribute goes away
+                URI attrName = URI.create(attribute.getName());
+                if (attribute.getNameFormat().equals(ClaimTypes.URI_BASE.toString()) 
+                    && !attrName.isAbsolute()) {
+                    c.setClaimType(URI.create(ClaimTypes.URI_BASE + "/" + attribute.getName()));
                 } else {
                     c.setClaimType(URI.create(attribute.getName()));
                 }

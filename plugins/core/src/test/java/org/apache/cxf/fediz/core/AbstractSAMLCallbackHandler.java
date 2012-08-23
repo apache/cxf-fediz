@@ -20,6 +20,7 @@
 package org.apache.cxf.fediz.core;
 
 
+import java.net.URI;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,6 +66,9 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
         MULTI_VALUE, MULTI_ATTR, ENC_VALUE
     };
     
+    public static final URI CLAIM_TYPE_LANGUAGE = 
+        URI.create("http://schemas.mycompany.com/claims/language");
+    
     protected String subjectName;
     protected String subjectQualifier;
     protected String confirmationMethod;
@@ -84,6 +88,11 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
     protected Map<String, String> claims;
     protected MultiValue multiValueType = MultiValue.MULTI_VALUE;
     protected String roleSeperator = ",";
+    protected String roleAttributeName = FederationConstants.DEFAULT_ROLE_URI.toString();
+    protected String countryClaimName = ClaimTypes.COUNTRY.toString();
+    protected String customClaimName = CLAIM_TYPE_LANGUAGE.toString();
+    protected String attributeNameFormat = "urn:oasis:names:tc:SAML:2.0:attrname-format:unspecified";
+    protected boolean useNameFormatAsNamespace;
     
     public void setSubjectConfirmationData(SubjectConfirmationDataBean subjectConfirmationData) {
         this.subjectConfirmationData = subjectConfirmationData;
@@ -150,9 +159,50 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
         this.multiValueType = multiValueType;
     }
     
+    public void setRoleAttributeName(String roleAttributeName) {
+        this.roleAttributeName = roleAttributeName;
+    }
+    
+    public String getRoleAttributeName() {
+        return this.roleAttributeName;
+    }
+    
+    public void setCountryClaimName(String countryClaimName) {
+        this.countryClaimName = countryClaimName;
+    }
+    
+    public String getCountryClaimName() {
+        return this.countryClaimName;
+    }
+
+    public void setCustomClaimName(String customClaimName) {
+        this.customClaimName = customClaimName;
+    }
+    
+    public String getCustomClaimName() {
+        return this.customClaimName;
+    }
+
+    public void setAttributeNameFormat(String attributeNameFormat) {
+        this.attributeNameFormat = attributeNameFormat;
+    }
+    
+    public String getAttributeNameFormat() {
+        return this.attributeNameFormat;
+    }
+    
+    public boolean isUseNameFormatAsNamespace() {
+        return useNameFormatAsNamespace;
+    }
+
+    public void setUseNameFormatAsNamespace(boolean useNameFormatAsNamespace) {
+        this.useNameFormatAsNamespace = useNameFormatAsNamespace;
+    }
+
     /**
      * Note that the SubjectBean parameter should be null for SAML2.0
      */
+    //CHECKSTYLE:OFF
     protected void createAndSetStatement(SubjectBean subjectBean, SAMLCallback callback) {
         if (statement == Statement.AUTHN) {
             AuthenticationStatementBean authBean = new AuthenticationStatementBean();
@@ -169,11 +219,13 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
             callback.setAuthenticationStatementData(Collections.singletonList(authBean));
         } else if (statement == Statement.ATTR) {
             AttributeStatementBean attrStateBean = new AttributeStatementBean();
+            if (subjectBean != null) {
+                attrStateBean.setSubject(subjectBean);
+            }
             
             if (this.roles == null) {
                 AttributeBean attributeBean = new AttributeBean();
                 if (subjectBean != null) {
-                    attrStateBean.setSubject(subjectBean);
                     attributeBean.setSimpleName("name");
                     attributeBean.setQualifiedName("dummy-ns");
                 } else {
@@ -185,6 +237,8 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
                 return;
             }
             
+            List<AttributeBean> attributeList = new ArrayList<AttributeBean>();
+                        
             if (this.multiValueType.equals(MultiValue.MULTI_VALUE)
                 || this.multiValueType.equals(MultiValue.ENC_VALUE)) {
 //              <saml:Attribute xmlns:saml="urn:oasis:names:tc:SAML:1.0:assertion"
@@ -199,11 +253,21 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
 //            </saml:Attribute>
                 AttributeBean attributeBean = new AttributeBean();
                 if (subjectBean != null) {
-                    attrStateBean.setSubject(subjectBean);
-                    attributeBean.setSimpleName("role");
-                    attributeBean.setQualifiedName(FederationConstants.DEFAULT_ROLE_URI.toString());
+                    // SAML 1.1
+                    if (this.isUseNameFormatAsNamespace()) {
+                        //Workaround for CXF-4484
+                        attributeBean.setSimpleName(this.roleAttributeName);
+                        //QualifiedName maps to AttributeNamespace in SAML1ComponentBuilder.createSamlv1Attribute()
+                        attributeBean.setQualifiedName(ClaimTypes.URI_BASE.toString());
+                    } else {
+                        attributeBean.setSimpleName(getNameOfClaimType(this.roleAttributeName));
+                        //QualifiedName maps to AttributeNamespace in SAML1ComponentBuilder.createSamlv1Attribute()
+                        attributeBean.setQualifiedName(getNamespaceOfClaimType(this.roleAttributeName));
+                    }
                 } else {
-                    attributeBean.setQualifiedName(FederationConstants.DEFAULT_ROLE_URI.toString());
+                    // SAML 2.0
+                    attributeBean.setQualifiedName(this.roleAttributeName);
+                    attributeBean.setNameFormat(this.getAttributeNameFormat());
                 }
                 if (this.multiValueType.equals(MultiValue.MULTI_VALUE)) {
                     attributeBean.setAttributeValues(roles);
@@ -215,7 +279,7 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
                     String value = sb.substring(0, sb.length() - this.roleSeperator.length());
                     attributeBean.setAttributeValues(Collections.singletonList(value));
                 }
-                attrStateBean.setSamlAttributes(Collections.singletonList(attributeBean));
+                attributeList.add(attributeBean);
             } else if (this.multiValueType.equals(MultiValue.MULTI_ATTR)) {
 //              <saml:Attribute xmlns:saml="urn:oasis:names:tc:SAML:1.0:assertion"
 //                AttributeNamespace="http://schemas.xmlsoap.org/claims" AttributeName="roles">
@@ -226,21 +290,70 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
 //                <saml:AttributeValue>Value2</saml:AttributeValue>
 //              </saml:Attribute>
                 
-                List<AttributeBean> attrBeans = new ArrayList<AttributeBean>();
+                //List<AttributeBean> attrBeans = new ArrayList<AttributeBean>();
                 for (String role: roles) {
                     AttributeBean attributeBean = new AttributeBean();
                     if (subjectBean != null) {
-                        attrStateBean.setSubject(subjectBean);
-                        attributeBean.setSimpleName("role");
-                        attributeBean.setQualifiedName(FederationConstants.DEFAULT_ROLE_URI.toString());
+                        // SAML 1.1
+                        if (this.isUseNameFormatAsNamespace()) {
+                            //Workaround for CXF-4484
+                            attributeBean.setSimpleName(this.roleAttributeName);
+                            //QualifiedName maps to AttributeNamespace in SAML1ComponentBuilder.createSamlv1Attribute()
+                            attributeBean.setQualifiedName(ClaimTypes.URI_BASE.toString());
+                        } else {
+                            attributeBean.setSimpleName(getNameOfClaimType(this.roleAttributeName));
+                            //QualifiedName maps to AttributeNamespace in SAML1ComponentBuilder.createSamlv1Attribute()
+                            attributeBean.setQualifiedName(getNamespaceOfClaimType(this.roleAttributeName));
+                        }
                     } else {
-                        attributeBean.setQualifiedName(FederationConstants.DEFAULT_ROLE_URI.toString());
+                        // SAML 2.0
+                        attributeBean.setQualifiedName(this.roleAttributeName);
+                        attributeBean.setNameFormat(this.getAttributeNameFormat());
                     }
                     attributeBean.setAttributeValues(Collections.singletonList(role));
-                    attrBeans.add(attributeBean);
+                    attributeList.add(attributeBean);
                 }
-                attrStateBean.setSamlAttributes(attrBeans);
             }
+            
+            //ClaimTypes.COUNTRY
+            AttributeBean attributeBean = new AttributeBean();
+            if (subjectBean != null) {
+                //SAML 1.1
+                attributeBean.setSimpleName(getNameOfClaimType(this.countryClaimName));
+                //QualifiedName maps to AttributeNamespace in SAML1ComponentBuilder.createSamlv1Attribute()
+                attributeBean.setQualifiedName(getNamespaceOfClaimType(this.countryClaimName));
+                
+            } else {
+                //SAML 2.0
+                attributeBean.setQualifiedName(this.countryClaimName);
+                attributeBean.setNameFormat(this.getAttributeNameFormat());
+            }
+            attributeBean.setAttributeValues(Collections.singletonList("CH"));
+            attributeList.add(attributeBean);
+            
+            //custom claim language
+            AttributeBean attributeBean2 = new AttributeBean();
+            if (subjectBean != null) {
+                // SAML 1.1
+                if (this.isUseNameFormatAsNamespace()) {
+                    //Workaround for CXF-4484
+                    attributeBean2.setSimpleName(this.customClaimName);
+                    //QualifiedName maps to AttributeNamespace in SAML1ComponentBuilder.createSamlv1Attribute()
+                    attributeBean2.setQualifiedName(ClaimTypes.URI_BASE.toString());
+                } else {
+                    attributeBean2.setSimpleName(getNameOfClaimType(this.customClaimName));
+                    //QualifiedName maps to AttributeNamespace in SAML1ComponentBuilder.createSamlv1Attribute()
+                    attributeBean2.setQualifiedName(getNamespaceOfClaimType(this.customClaimName));
+                }
+            } else {
+                // SAML 2
+                attributeBean2.setQualifiedName(this.customClaimName);
+                attributeBean2.setNameFormat(this.getAttributeNameFormat());
+            }
+            attributeBean2.setAttributeValues(Collections.singletonList("CH"));
+            attributeList.add(attributeBean2);
+            
+            attrStateBean.setSamlAttributes(attributeList);
             callback.setAttributeStatementData(Collections.singletonList(attrStateBean));
                        
         } else {
@@ -292,5 +405,15 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
             keyInfo.setElement(keyInfoElement);
         }
         return keyInfo;
+    }
+    
+    protected String getNamespaceOfClaimType(String claimType) {
+        int i = claimType.lastIndexOf("/");
+        return claimType.substring(0, i);
+    }
+    
+    protected String getNameOfClaimType(String claimType) {
+        int i = claimType.lastIndexOf("/");
+        return claimType.substring(i + 1);
     }
 }

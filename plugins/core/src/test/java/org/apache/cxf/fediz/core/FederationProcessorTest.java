@@ -225,6 +225,8 @@ public class FederationProcessorTest {
         Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
                             .size());
         Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+        assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
+        
     }
     
     /**
@@ -304,6 +306,82 @@ public class FederationProcessorTest {
     }
     
     /**
+     * Validate SAML 2 token where role information is provided
+     * within another SAML attribute
+     */
+    @org.junit.Test
+    public void validateSAML2TokenDifferentRoleURI() throws Exception {
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        callbackHandler.setRoleAttributeName("http://schemas.mycompany.com/claims/role");
+        ConditionsBean cp = new ConditionsBean();
+        cp.setAudienceURI(TEST_AUDIENCE);
+        callbackHandler.setConditions(cp);
+        
+        SAMLParms samlParms = new SAMLParms();
+        samlParms.setCallbackHandler(callbackHandler);
+        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        String rstr = createSamlToken(assertion, "mystskey", true);
+        
+        FederationRequest wfReq = new FederationRequest();
+        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
+        wfReq.setWresult(rstr);
+        
+        configurator = null;
+        FederationContext config = getFederationConfigurator().getFederationContext("CUSTOMROLEURI");
+        
+        FederationProcessor wfProc = new FederationProcessorImpl();
+        FederationResponse wfRes = wfProc.processRequest(wfReq, config);
+        
+        Assert.assertEquals("Principal name wrong", TEST_USER, wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles().size());
+        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+        assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
+    }
+    
+    /**
+     * Validate SAML 2 token where role information is provided
+     * within another SAML attribute
+     */
+    @org.junit.Test
+    public void validateSAML1TokenDifferentRoleURI() throws Exception {
+        SAML1CallbackHandler callbackHandler = new SAML1CallbackHandler();
+        callbackHandler.setStatement(SAML1CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        callbackHandler.setRoleAttributeName("http://schemas.mycompany.com/claims/role");
+        ConditionsBean cp = new ConditionsBean();
+        cp.setAudienceURI(TEST_AUDIENCE);
+        callbackHandler.setConditions(cp);
+        
+        SAMLParms samlParms = new SAMLParms();
+        samlParms.setCallbackHandler(callbackHandler);
+        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        String rstr = createSamlToken(assertion, "mystskey", true);
+        
+        FederationRequest wfReq = new FederationRequest();
+        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
+        wfReq.setWresult(rstr);
+        
+        configurator = null;
+        FederationContext config = getFederationConfigurator().getFederationContext("CUSTOMROLEURI");
+        
+        FederationProcessor wfProc = new FederationProcessorImpl();
+        FederationResponse wfRes = wfProc.processRequest(wfReq, config);
+        
+        Assert.assertEquals("Principal name wrong", TEST_USER, wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles().size());
+        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+        assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
+    }
+    
+    /**
      * Validate SAML 2 token which includes role attribute
      * but RoleURI is not configured
      */
@@ -361,6 +439,7 @@ public class FederationProcessorTest {
         samlParms.setSAMLVersion(SAMLVersion.VERSION_11);
         AssertionWrapper assertion = new AssertionWrapper(samlParms);
         String rstr = createSamlToken(assertion, "mystskey", true);
+        
         FederationRequest wfReq = new FederationRequest();
         wfReq.setWa(FederationConstants.ACTION_SIGNIN);
         wfReq.setWresult(rstr);
@@ -377,6 +456,7 @@ public class FederationProcessorTest {
         Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
                             .size());
         Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+        assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
     }
     
     /**
@@ -454,6 +534,7 @@ public class FederationProcessorTest {
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
         Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
                             .size());
+        assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
     }
 
     /**
@@ -494,6 +575,7 @@ public class FederationProcessorTest {
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
         Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
                             .size());
+        assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
     }
     
     /**
@@ -956,6 +1038,15 @@ public class FederationProcessorTest {
         return null;
     }
 
+    private void assertClaims(List<Claim> claims, String roleClaimType) {
+        for (Claim c : claims) {
+            Assert.assertTrue("Invalid ClaimType URI: " + c.getClaimType(), 
+                              c.getClaimType().equals(roleClaimType)
+                              || c.getClaimType().equals(ClaimTypes.COUNTRY)
+                              || c.getClaimType().equals(AbstractSAMLCallbackHandler.CLAIM_TYPE_LANGUAGE)
+                              );
+        }
+    }
     
 
 }
