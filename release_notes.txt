@@ -1,9 +1,8 @@
-Apache CXF Fediz 1.0.0 Release Notes
+Apache CXF Fediz 1.0.1 Release Notes
 
 1. Overview
 
-The 1.0.x versions of Apache CXF Fediz is the first version of Fediz that
-provides the following features:
+The 1.0.x versions of Apache CXF Fediz provide the following features:
 
 * WS-Federation 1.0/1.1/1.2
 * SAML 1.1/2.0 Tokens
@@ -55,12 +54,16 @@ N.A.
 
 8. Specific issues, features, and improvements fixed in this version
 
+Release Notes - CXF-Fediz - Version 1.0.1
+
 ** Bug
+    * [FEDIZ-24] - maximumClockSkew is not optional
 
 ** Improvement
+    * [FEDIZ-22] - Improved support for other claims encoding in SAML attributes
 
 ** New Feature
-
+ 
 ** Task
 
 ** Test
