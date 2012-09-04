@@ -23,7 +23,7 @@ import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
 import org.apache.cxf.fediz.core.config.jaxb.ValidationType;
 
 public class TrustedIssuer {
-    private TrustedIssuerType trustedIssuerType;
+    private final TrustedIssuerType trustedIssuerType;
 
         
     public TrustedIssuer(TrustedIssuerType trustedIssuerType) {
@@ -48,22 +48,31 @@ public class TrustedIssuer {
     }
 
     public CertificateValidationMethod getCertificateValidationMethod() {
-        if (ValidationType.CHAIN_TRUST.equals(trustedIssuerType.getCertificateValidation())) {
+        ValidationType certificateValidation = trustedIssuerType.getCertificateValidation();
+        if (ValidationType.CHAIN_TRUST.equals(certificateValidation)) {
             return CertificateValidationMethod.CHAIN_TRUST;
-        } else if (ValidationType.PEER_TRUST.equals(trustedIssuerType.getCertificateValidation())) {
+        } else if (ValidationType.PEER_TRUST.equals(certificateValidation)) {
             return CertificateValidationMethod.PEER_TRUST;
         } else {
-            throw new IllegalStateException("Not supported certificate validation type");
+            throw new IllegalStateException(
+                    "Not supported certificate validation type: " + certificateValidation.value()
+            );
         }
     }
     
-    public void setCertificateValidationMethod(CertificateValidationMethod validationMethod) {
+    public void setCertificateValidationMethod(
+            final CertificateValidationMethod validationMethod
+    ) {
         if (CertificateValidationMethod.CHAIN_TRUST.equals(validationMethod)) {
             trustedIssuerType.setCertificateValidation(ValidationType.CHAIN_TRUST);
         } else if (CertificateValidationMethod.PEER_TRUST.equals(validationMethod)) {
             trustedIssuerType.setCertificateValidation(ValidationType.PEER_TRUST);
         } else {
-            throw new IllegalStateException("Not supported certificate validation type");
+            String error = "Not supported certificate validation type";
+            if (validationMethod != null) {
+                error += ": " + validationMethod.value(); 
+            }
+            throw new IllegalStateException(error);
         }
     }
     
