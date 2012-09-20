@@ -320,7 +320,7 @@ public class SAMLTokenValidator implements TokenValidator {
                 // if NameFormat is http://schemas.xmlsoap.org/ws/2005/05/identity/claims
                 // but ClaimType value must be fully qualified as Namespace attribute goes away
                 URI attrName = URI.create(attribute.getName());
-                if (attribute.getNameFormat().equals(ClaimTypes.URI_BASE.toString()) 
+                if (ClaimTypes.URI_BASE.toString().equals(attribute.getNameFormat())
                     && !attrName.isAbsolute()) {
                     c.setClaimType(URI.create(ClaimTypes.URI_BASE + "/" + attribute.getName()));
                 } else {
