@@ -19,13 +19,12 @@
 package org.apache.cxf.fediz.service.sts;
 
 import java.net.URI;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.cxf.sts.claims.Claim;
 import org.apache.cxf.sts.claims.ClaimCollection;
-import org.apache.cxf.sts.claims.ClaimTypes;
 import org.apache.cxf.sts.claims.ClaimsHandler;
 import org.apache.cxf.sts.claims.ClaimsParameters;
 import org.apache.cxf.sts.claims.RequestClaim;
@@ -40,6 +39,7 @@ public class FileClaimsHandler implements ClaimsHandler {
         URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role");
 
     private Map<String, Map<String, String>> userClaims;
+    private List<URI> supportedClaims;
 
     public void setUserClaims(Map<String, Map<String, String>> userClaims) {
         this.userClaims = userClaims;
@@ -48,16 +48,16 @@ public class FileClaimsHandler implements ClaimsHandler {
     public Map<String, Map<String, String>> getUserClaims() {
         return userClaims;
     }
-
+    
+    public void setSupportedClaims(List<URI> supportedClaims) {
+        this.supportedClaims = supportedClaims;
+    }
+    
     @Override
     public List<URI> getSupportedClaimTypes() {
-        List<URI> list = new ArrayList<URI>();
-        list.add(ClaimTypes.EMAILADDRESS);
-        list.add(ClaimTypes.LASTNAME);
-        list.add(ClaimTypes.FIRSTNAME);
-        list.add(ROLE);
-        return list;
+        return Collections.unmodifiableList(this.supportedClaims);
     }
+    
 
     @Override
     public ClaimCollection retrieveClaimValues(RequestClaimCollection claims,

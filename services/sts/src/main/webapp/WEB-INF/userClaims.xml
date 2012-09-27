@@ -49,5 +49,12 @@
 		<entry key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role"
 			value="" />			
 	</util:map>
+	
+	<util:list id="supportedClaims">
+		<value>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname</value>
+		<value>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname</value>
+		<value>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress</value>
+		<value>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</value>
+	</util:list>
 
 </beans>
