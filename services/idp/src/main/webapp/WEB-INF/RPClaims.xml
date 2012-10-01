@@ -15,6 +15,10 @@
 			value-ref="claimsWsfedhelloworld2" />
 		<entry key="https://localhost:8443/fedizhelloworld/"
 			value-ref="claimsWsfedhelloworld2" />
+		<entry key="urn:fediz:fedizhelloworld"
+			value-ref="claimsWsfedhelloworld2" />
+		<entry key="urn:fediz:fedizhelloworld2"
+			value-ref="claimsWsfedhelloworld" />  			
 	</util:map>
 
 

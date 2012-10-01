@@ -27,6 +27,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.xml.namespace.QName;
 
 import org.w3c.dom.Element;
@@ -38,6 +39,7 @@ import org.apache.cxf.common.util.Base64Utility;
 import org.apache.cxf.staxutils.W3CDOMStreamWriter;
 import org.apache.cxf.ws.security.SecurityConstants;
 import org.apache.cxf.ws.security.sts.provider.STSException;
+import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.cxf.ws.security.trust.STSUtils;
 import org.apache.ws.security.WSConstants;
 import org.slf4j.Logger;
@@ -45,7 +47,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 
 public class IdpServlet extends HttpServlet {
-
+    
     public static final String PARAM_ACTION = "wa";
 
     public static final String ACTION_SIGNIN = "wsignin1.0";
@@ -63,6 +65,10 @@ public class IdpServlet extends HttpServlet {
     public static final String AUTH_HEADER_NAME = "WWW-Authenticate";
 
     public static final String SERVLET_PARAM_TOKENTYPE = "ws-trust-tokentype";
+    
+    public static final String IDP_TOKEN = "idp-token";
+    
+    public static final String IDP_USER = "idp-user";
     
     private static final Logger LOG = LoggerFactory.getLogger(IdpServlet.class);
 
@@ -84,14 +90,29 @@ public class IdpServlet extends HttpServlet {
             throw new ServletException(
                 "Parameter 'sts.wsdl.service' not configured");
         }
-        if (getInitParameter("sts.wsdl.endpoint") == null) {
+        if (getInitParameter("sts.UT.wsdl.endpoint") == null) {
             throw new ServletException(
-                "Parameter 'sts.wsdl.endpoint' not configured");
+                "Parameter 'sts.UT.wsdl.endpoint' not configured");
         }
+        if (getInitParameter("sts.RP.wsdl.endpoint") == null) {
+            throw new ServletException(
+                "Parameter 'sts.RP.wsdl.endpoint' not configured");
+        }
+        if (getInitParameter("sts.UT.uri") == null) {
+            throw new ServletException(
+                "Parameter 'sts.UT.uri' not configured");
+        }
+        if (getInitParameter("sts.RP.uri") == null) {
+            throw new ServletException(
+                "Parameter 'sts.RP.uri' not configured");
+        } 
 
         tokenType = getInitParameter(SERVLET_PARAM_TOKENTYPE);
         if (tokenType != null && tokenType.length() > 0) {
             LOG.info("Configured Tokentype: " + tokenType);
+        }
+        if (getInitParameter("token.internal.lifetime") != null) {
+            LOG.info("Configured token lifetime: " + getInitParameter("token.internal.lifetime"));
         }
 
     }
@@ -99,10 +120,6 @@ public class IdpServlet extends HttpServlet {
     //CHECKSTYLE:OFF
     public void doGet(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
-
-        /*
-         * if (request.getPathInfo().contains("jsp")) { return; }
-         */
 
         String action = request.getParameter(PARAM_ACTION);
         String wtrealm = request.getParameter(PARAM_WTREALM);
@@ -127,24 +144,60 @@ public class IdpServlet extends HttpServlet {
                                    "Parameter " + ACTION_SIGNIN + " missing");
                 return;
             }
-
-            String wresult = null;
-            String auth = request.getHeader("Authorization");
-            LOG.debug("Authorization header: " + auth);
-            if (auth != null) {
-                String username = null;
-                String password = null;
-
-                try {
-                    StringTokenizer st = new StringTokenizer(auth, " ");
-                    String authType = st.nextToken();
-                    String encoded = st.nextToken();
-
-                    if (authType.equalsIgnoreCase("basic")) {
-
+            boolean authenticationRequired = false;
+            SecurityToken idpToken = null;
+            HttpSession session = request.getSession(false);
+            if (session != null) {
+                idpToken = (SecurityToken)session.getAttribute(IDP_TOKEN);
+                String user = (String)session.getAttribute(IDP_USER);
+                if (idpToken == null) {
+                    LOG.error("IDP token not found");
+                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "IDP token not found");
+                    return;
+                } else {
+                    if (idpToken.isExpired()) {
+                        LOG.info("IDP token of '" + user + "' expired. Require authentication.");
+                        authenticationRequired = idpToken.isExpired();
+                    } else {
+                        LOG.debug("Session found for '" + user + "'.");
+                    }
+                }
+            } else {
+                authenticationRequired = true;
+            }
+            
+            if (authenticationRequired) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Authentication required ...");
+                }
+                String auth = request.getHeader("Authorization");
+                LOG.debug("Authorization header: " + auth);
+                
+                if (auth == null) {
+                    // request authentication from browser
+                    StringBuilder value = new StringBuilder(16);
+                    value.append("Basic realm=\"IDP\"");
+                    response.setHeader(AUTH_HEADER_NAME, value.toString());
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
+                } else {
+                    String username = null;
+                    String password = null;
+    
+                    try {
+                        StringTokenizer st = new StringTokenizer(auth, " ");
+                        String authType = st.nextToken();
+                        String encoded = st.nextToken();
+    
+                        if (!authType.equalsIgnoreCase("basic")) {
+                            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid Authorization header");
+                            return;
+                        }
+    
                         String decoded = new String(
                                                     Base64Utility.decode(encoded));
-
+    
                         int colon = decoded.indexOf(':');
                         if (colon < 0) {
                             username = decoded;
@@ -153,56 +206,63 @@ public class IdpServlet extends HttpServlet {
                             password = decoded.substring(colon + 1,
                                                          decoded.length());
                         }
-                        LOG.debug("Validating user [" + username
-                                  + "] and password [" + password + "]");
-
+                        if (LOG.isInfoEnabled()) {
+                            LOG.info("Validating user '" + username + "'...");    
+                        }
+                        
                         try {
-                            wresult = requestSecurityToken(username, password,
-                                                           wtrealm);
-                            request.setAttribute("fed." + PARAM_WRESULT,
-                                                 StringEscapeUtils.escapeXml(wresult));
-                            if (wctx != null) {
-                                request.setAttribute("fed." + PARAM_WCONTEXT,
-                                                     StringEscapeUtils.escapeXml(wctx));
-                            }
-                            if (wreply == null) {
-                                request.setAttribute("fed.action", wtrealm);
-                            } else {
-                                request.setAttribute("fed.action", wreply);
-                            }
+                            idpToken = requestSecurityTokenForIDP(username, password, "urn:fediz:idp");
+                            session = request.getSession(true);
+                            session.setAttribute(IDP_TOKEN, idpToken);
+                            session.setAttribute(IDP_USER, username);
                         } catch (Exception ex) {
-                            LOG.info("Requesting security token failed", ex);
+                            LOG.info("Requesting IDP security token failed", ex);
                             response.sendError(HttpServletResponse.SC_FORBIDDEN,
-                                "Requesting security token failed");
+                                "Requesting IDP security token failed");
                             return;
                         }
-
-                        LOG.debug("Forward to jsp...");
-                        // request.getRequestDispatcher("WEB-INF/signinresponse.jsp").forward(request,
-                        // response);
-                        // this.getServletContext().getRequestDispatcher("/WEB-INF/signinresponse.jsp").forward(request,
-                        // response);
-                        this.getServletContext().getRequestDispatcher("/WEB-INF/signinresponse.jsp")
-                            .forward(request, response);
-
-                    } else {
-                        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid Authorization header");
+                    } catch (Exception ex) {
+                        LOG.error("Invalid Authorization header", ex);
+                        response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                            "Invalid Authorization header");
                         return;
                     }
-                } catch (Exception ex) {
-                    LOG.error("Invalid Authorization header", ex);
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                        "Invalid Authorization header");
-                    return;
+                
                 }
+            }                
 
-            } else {
-                StringBuilder value = new StringBuilder(16);
-                value.append("Basic realm=\"IDP\"");
-                response.setHeader(AUTH_HEADER_NAME, value.toString());
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            
+            // Get token on-behalf-of the IDP token
+            String wresult = null;
+            String user = (String)session.getAttribute(IDP_USER);
+            if (LOG.isInfoEnabled()) {
+                LOG.info("Requesting token on-behalf-of '" + user + "' for relying party '" + wtrealm);
+            }
+
+            try {
+                wresult = requestSecurityTokenForRP(idpToken, wtrealm);
+                request.setAttribute("fed." + PARAM_WRESULT,
+                                     StringEscapeUtils.escapeXml(wresult));
+                if (wctx != null) {
+                    request.setAttribute("fed." + PARAM_WCONTEXT,
+                                         StringEscapeUtils.escapeXml(wctx));
+                }
+                if (wreply == null) {
+                    request.setAttribute("fed.action", wtrealm);
+                } else {
+                    request.setAttribute("fed.action", wreply);
+                }
+            } catch (Exception ex) {
+                LOG.info("Requesting security token failed", ex);
+                response.sendError(HttpServletResponse.SC_FORBIDDEN,
+                    "Requesting security token failed");
                 return;
             }
+
+            LOG.debug("Forward to jsp...");
+            this.getServletContext().getRequestDispatcher("/WEB-INF/signinresponse.jsp")
+                .forward(request, response);
+            
         } else {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parameter "
                 + PARAM_ACTION + " with value " + action
@@ -210,9 +270,40 @@ public class IdpServlet extends HttpServlet {
             return;
         }
     }
+    
+    private SecurityToken requestSecurityTokenForIDP(String username, String password, String appliesTo) throws Exception {
+        Bus bus = BusFactory.getDefaultBus();
+        
+        IdpSTSClient sts = new IdpSTSClient(bus);
+        sts.setAddressingNamespace("http://www.w3.org/2005/08/addressing");
+        if (tokenType != null && tokenType.length() > 0) {
+            sts.setTokenType(tokenType);
+        } else {
+            sts.setTokenType(WSConstants.WSS_SAML2_TOKEN_TYPE);
+        }
+        sts.setKeyType("http://docs.oasis-open.org/ws-sx/ws-trust/200512/Bearer");
 
-    private String requestSecurityToken(String username, String password,
-                                        String wtrealm) throws Exception {
+        sts.setWsdlLocation(getInitParameter("sts.wsdl.url") + getInitParameter("sts.UT.uri") + "?wsdl");
+        sts.setServiceQName(new QName(
+                                      "http://docs.oasis-open.org/ws-sx/ws-trust/200512/",
+                                      getInitParameter("sts.wsdl.service")));
+        sts.setEndpointQName(new QName(
+                                       "http://docs.oasis-open.org/ws-sx/ws-trust/200512/",
+                                       getInitParameter("sts.UT.wsdl.endpoint")));
+        sts.getProperties().put(SecurityConstants.USERNAME, username);
+        sts.getProperties().put(SecurityConstants.PASSWORD, password);
+        
+        if (getInitParameter("token.internal.lifetime") != null) {
+            sts.setEnableLifetime(true);
+            int ttl = Integer.parseInt(getInitParameter("token.internal.lifetime"));
+            sts.setTtl(ttl);
+        }
+        
+        return sts.requestSecurityToken(appliesTo);
+    }
+
+    private String requestSecurityTokenForRP(SecurityToken onbehalfof,
+                                        String appliesTo) throws Exception {
         try {
             Bus bus = BusFactory.getDefaultBus();
             List<String> realmClaims = null;
@@ -222,9 +313,9 @@ public class IdpServlet extends HttpServlet {
                 @SuppressWarnings("unchecked")
                 Map<String, List<String>> realmClaimsMap = (Map<String, List<String>>) ctx
                     .getBean("realm2ClaimsMap");
-                realmClaims = realmClaimsMap.get(wtrealm);
+                realmClaims = realmClaimsMap.get(appliesTo);
                 if (realmClaims != null && realmClaims.size() > 0 && LOG.isDebugEnabled()) {
-                    LOG.debug("claims for realm " + wtrealm);
+                    LOG.debug("claims for realm " + appliesTo);
                     for (String item : realmClaims) {
                         LOG.debug("  " + item);
                     }
@@ -242,25 +333,25 @@ public class IdpServlet extends HttpServlet {
             }
             sts.setKeyType("http://docs.oasis-open.org/ws-sx/ws-trust/200512/Bearer");
 
-            sts.setWsdlLocation(getInitParameter("sts.wsdl.url"));
+            sts.setWsdlLocation(getInitParameter("sts.wsdl.url") + getInitParameter("sts.RP.uri") + "?wsdl");
             sts.setServiceQName(new QName(
                                           "http://docs.oasis-open.org/ws-sx/ws-trust/200512/",
                                           getInitParameter("sts.wsdl.service")));
             sts.setEndpointQName(new QName(
                                            "http://docs.oasis-open.org/ws-sx/ws-trust/200512/",
-                                           getInitParameter("sts.wsdl.endpoint")));
-            sts.getProperties().put(SecurityConstants.USERNAME, username);
-            sts.getProperties().put(SecurityConstants.PASSWORD, password);
+                                           getInitParameter("sts.RP.wsdl.endpoint")));
+            
+            sts.setOnBehalfOf(onbehalfof.getToken());
 
             Element claims = createClaimsElement(realmClaims);
             if (claims != null) {
                 sts.setClaims(claims);
             }
-            return sts.requestSecurityTokenResponse(wtrealm);
+            return sts.requestSecurityTokenResponse(appliesTo);
         } catch (org.apache.cxf.binding.soap.SoapFault ex) {
             QName faultCode = ex.getFaultCode();
             if (faultCode.equals(STSException.FAILED_AUTH)) {
-                LOG.warn("Failed authentication for '" + username + "'");
+                LOG.warn("Failed authentication for '" + onbehalfof.getPrincipal().getName() + "'");
             }
             throw ex;
         } catch (Exception ex) {
