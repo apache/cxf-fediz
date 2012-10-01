@@ -8,7 +8,19 @@
     </description>
 	<display-name>WS Federation Tomcat Example</display-name>
 
-
+	<filter>
+		<filter-name>LogoutFilter</filter-name>
+		<filter-class>org.apache.cxf.fediz.service.idp.LogoutFilter</filter-class>
+		<init-param>
+			<param-name>logout.uri</param-name>
+			<param-value>logout</param-value>
+		</init-param>
+	</filter>
+	
+	<filter-mapping>
+		<filter-name>LogoutFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
 	
 	<servlet>
 		<servlet-name>FederationServlet</servlet-name>
