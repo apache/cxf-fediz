@@ -100,9 +100,9 @@ public class FederationAuthenticator extends FormAuthenticator {
         try {
             File f = new File(getConfigFile());
             if (!f.exists()) {
-                String catalinaHome = System.getProperty("catalina.home");
-                if (catalinaHome != null && catalinaHome.length() > 0) {
-                    f = new File(catalinaHome.concat(File.separator + getConfigFile()));
+                String catalinaBase = System.getProperty("catalina.base");
+                if (catalinaBase != null && catalinaBase.length() > 0) {
+                    f = new File(catalinaBase.concat(File.separator + getConfigFile()));
                 }
             }
             configurator = new FederationConfigurator();
@@ -141,9 +141,9 @@ public class FederationAuthenticator extends FormAuthenticator {
         if (config == null) {
             throw new IllegalStateException("No Fediz configuration for context :" + contextName);
         }
-        String catalinaHome = System.getProperty("catalina.home");
-        if (catalinaHome != null && catalinaHome.length() > 0) {
-            config.setRelativePath(catalinaHome);
+        String catalinaBase = System.getProperty("catalina.base");
+        if (catalinaBase != null && catalinaBase.length() > 0) {
+            config.setRelativePath(catalinaBase);
         }
         return config;
     }
