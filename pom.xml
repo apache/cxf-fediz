@@ -39,7 +39,7 @@
         <jetty.version>8.1.3.v20120416</jetty.version>
         <junit.version>4.8.2</junit.version>
         <tomcat.url>http://localhost:8080/manager/text</tomcat.url>
-        <cxf.version>2.6.2</cxf.version>
+        <cxf.version>2.6.3</cxf.version>
         <wss4j.version>1.6.7</wss4j.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>1.6</jdk.version>
