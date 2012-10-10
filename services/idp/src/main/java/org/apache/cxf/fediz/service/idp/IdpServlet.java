@@ -71,6 +71,20 @@ public class IdpServlet extends HttpServlet {
     public static final String IDP_USER = "idp-user";
     
     private static final Logger LOG = LoggerFactory.getLogger(IdpServlet.class);
+    
+    private static final String S_PARAM_TOKEN_INTERNAL_LIFETIME = "token.internal.lifetime";
+
+    private static final String S_PARAM_STS_RP_URI = "sts.RP.uri";
+
+    private static final String S_PARAM_STS_UT_URI = "sts.UT.uri";
+
+    private static final String S_PARAM_STS_RP_WSDL_ENDPOINT = "sts.RP.wsdl.endpoint";
+
+    private static final String S_PARAM_STS_UT_WSDL_ENDPOINT = "sts.UT.wsdl.endpoint";
+
+    private static final String S_PARAM_STS_WSDL_SERVICE = "sts.wsdl.service";
+
+    private static final String S_PARAM_STS_WSDL_URL = "sts.wsdl.url";
 
 
     /**
@@ -82,37 +96,37 @@ public class IdpServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        if (getInitParameter("sts.wsdl.url") == null) {
+        if (getInitParameter(S_PARAM_STS_WSDL_URL) == null) {
             throw new ServletException(
-                "Parameter 'sts.wsdl.url' not configured");
+                "Parameter '" + S_PARAM_STS_WSDL_URL + "' not configured");
         }
-        if (getInitParameter("sts.wsdl.service") == null) {
+        if (getInitParameter(S_PARAM_STS_WSDL_SERVICE) == null) {
             throw new ServletException(
-                "Parameter 'sts.wsdl.service' not configured");
+                "Parameter '" + S_PARAM_STS_WSDL_SERVICE + "' not configured");
         }
-        if (getInitParameter("sts.UT.wsdl.endpoint") == null) {
+        if (getInitParameter(S_PARAM_STS_UT_WSDL_ENDPOINT) == null) {
             throw new ServletException(
-                "Parameter 'sts.UT.wsdl.endpoint' not configured");
+                "Parameter '" + S_PARAM_STS_UT_WSDL_ENDPOINT + "' not configured");
         }
-        if (getInitParameter("sts.RP.wsdl.endpoint") == null) {
+        if (getInitParameter(S_PARAM_STS_RP_WSDL_ENDPOINT) == null) {
             throw new ServletException(
-                "Parameter 'sts.RP.wsdl.endpoint' not configured");
+                "Parameter '" + S_PARAM_STS_RP_WSDL_ENDPOINT + "' not configured");
         }
-        if (getInitParameter("sts.UT.uri") == null) {
+        if (getInitParameter(S_PARAM_STS_UT_URI) == null) {
             throw new ServletException(
-                "Parameter 'sts.UT.uri' not configured");
+                "Parameter '" + S_PARAM_STS_UT_URI + "' not configured");
         }
-        if (getInitParameter("sts.RP.uri") == null) {
+        if (getInitParameter(S_PARAM_STS_RP_URI) == null) {
             throw new ServletException(
-                "Parameter 'sts.RP.uri' not configured");
+                "Parameter '" + S_PARAM_STS_RP_URI + "' not configured");
         } 
 
         tokenType = getInitParameter(SERVLET_PARAM_TOKENTYPE);
         if (tokenType != null && tokenType.length() > 0) {
             LOG.info("Configured Tokentype: " + tokenType);
         }
-        if (getInitParameter("token.internal.lifetime") != null) {
-            LOG.info("Configured token lifetime: " + getInitParameter("token.internal.lifetime"));
+        if (getInitParameter(S_PARAM_TOKEN_INTERNAL_LIFETIME) != null) {
+            LOG.info("Configured token lifetime: " + getInitParameter(S_PARAM_TOKEN_INTERNAL_LIFETIME));
         }
 
     }
@@ -283,19 +297,19 @@ public class IdpServlet extends HttpServlet {
         }
         sts.setKeyType("http://docs.oasis-open.org/ws-sx/ws-trust/200512/Bearer");
 
-        sts.setWsdlLocation(getInitParameter("sts.wsdl.url") + getInitParameter("sts.UT.uri") + "?wsdl");
+        sts.setWsdlLocation(getInitParameter(S_PARAM_STS_WSDL_URL) + getInitParameter(S_PARAM_STS_UT_URI) + "?wsdl");
         sts.setServiceQName(new QName(
                                       "http://docs.oasis-open.org/ws-sx/ws-trust/200512/",
-                                      getInitParameter("sts.wsdl.service")));
+                                      getInitParameter(S_PARAM_STS_WSDL_SERVICE)));
         sts.setEndpointQName(new QName(
                                        "http://docs.oasis-open.org/ws-sx/ws-trust/200512/",
-                                       getInitParameter("sts.UT.wsdl.endpoint")));
+                                       getInitParameter(S_PARAM_STS_UT_WSDL_ENDPOINT)));
         sts.getProperties().put(SecurityConstants.USERNAME, username);
         sts.getProperties().put(SecurityConstants.PASSWORD, password);
         
-        if (getInitParameter("token.internal.lifetime") != null) {
+        if (getInitParameter(S_PARAM_TOKEN_INTERNAL_LIFETIME) != null) {
             sts.setEnableLifetime(true);
-            int ttl = Integer.parseInt(getInitParameter("token.internal.lifetime"));
+            int ttl = Integer.parseInt(getInitParameter(S_PARAM_TOKEN_INTERNAL_LIFETIME));
             sts.setTtl(ttl);
         }
         
@@ -333,13 +347,13 @@ public class IdpServlet extends HttpServlet {
             }
             sts.setKeyType("http://docs.oasis-open.org/ws-sx/ws-trust/200512/Bearer");
 
-            sts.setWsdlLocation(getInitParameter("sts.wsdl.url") + getInitParameter("sts.RP.uri") + "?wsdl");
+            sts.setWsdlLocation(getInitParameter(S_PARAM_STS_WSDL_URL) + getInitParameter(S_PARAM_STS_RP_URI) + "?wsdl");
             sts.setServiceQName(new QName(
                                           "http://docs.oasis-open.org/ws-sx/ws-trust/200512/",
-                                          getInitParameter("sts.wsdl.service")));
+                                          getInitParameter(S_PARAM_STS_WSDL_SERVICE)));
             sts.setEndpointQName(new QName(
                                            "http://docs.oasis-open.org/ws-sx/ws-trust/200512/",
-                                           getInitParameter("sts.RP.wsdl.endpoint")));
+                                           getInitParameter(S_PARAM_STS_RP_WSDL_ENDPOINT)));
             
             sts.setOnBehalfOf(onbehalfof.getToken());
 
