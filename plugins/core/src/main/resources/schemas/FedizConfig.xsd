@@ -107,7 +107,7 @@
 	<xs:element name="realm" type="xs:string" />
 	<xs:element name="applicationServiceURL" type="xs:string" />
 	
-	<xs:element name="freshness" type="xs:string" />
+	
 
 	<xs:complexType name="protocolType" abstract="true" />
  
@@ -122,6 +122,7 @@
 	<xs:element name="issuer" type="CallbackType" />
 	<xs:element name="homeRealm" type="CallbackType" />
 	<xs:element name="authenticationType" type="CallbackType" />
+	<xs:element name="freshness" type="CallbackType" />
 
 	<xs:simpleType name="argumentType">
 		<xs:restriction base="xs:string">

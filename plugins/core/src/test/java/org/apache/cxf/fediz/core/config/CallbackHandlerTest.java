@@ -118,8 +118,11 @@ public class CallbackHandlerTest {
         claimType.setType(CLAIM_TYPE);
         claimTypeReq.getClaimType().add(claimType);
         protocol.setClaimTypesRequested(claimTypeReq);
-
-        protocol.setFreshness(FRESHNESS_VALUE);
+        
+        CallbackType freshness = new CallbackType();
+        freshness.setValue(FRESHNESS_VALUE);
+        protocol.setFreshness(freshness);
+        
         protocol.setRealm(TARGET_REALM);
         protocol.setReply(REPLY);
         protocol.setRequest("REQUEST");

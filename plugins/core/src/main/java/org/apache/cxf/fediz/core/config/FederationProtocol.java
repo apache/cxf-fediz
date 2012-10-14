@@ -42,6 +42,7 @@ public class FederationProtocol extends Protocol {
     private Object authenticationType;
     private Object issuer;
     private Object homeRealm;
+    private Object freshness;
     private List<TokenValidator> validators = new ArrayList<TokenValidator>();
     
     public FederationProtocol(ProtocolType protocolType) {
@@ -228,12 +229,41 @@ public class FederationProtocol extends Protocol {
         }
     }
     
-    public String getFreshness() {
-        return getFederationProtocol().getFreshness();
+    public Object getFreshness() {
+        if (this.freshness != null) {
+            return this.freshness;
+        }
+        CallbackType cbt = getFederationProtocol().getFreshness();
+        if (cbt == null) {
+            return null;
+        }
+        if (cbt.getType() == null || cbt.getType().equals(ArgumentType.STRING)) {
+            this.freshness = new String(cbt.getValue());
+        } else if (cbt.getType().equals(ArgumentType.CLASS)) {
+            try {
+                this.freshness =
+                    Thread.currentThread().getContextClassLoader().loadClass(cbt.getValue()).newInstance();
+            } catch (Exception e) {
+                LOG.error("Failed to create instance of " + cbt.getValue(), e);
+                throw new IllegalStateException("Failed to create instance of " + cbt.getValue());
+            }            
+        } else {
+            LOG.error("Only String and Class are supported for 'Freshness'");
+            throw new IllegalStateException("Only String and Class are supported for 'Freshness'");
+        }
+        return this.freshness;
     }
 
-    public void setFreshness(String value) {
-        getFederationProtocol().setFreshness(value);
+    public void setFreshness(Object value) {
+        final boolean isString = value instanceof String;
+        final boolean isCallbackHandler = value instanceof CallbackHandler;
+        if (isString || isCallbackHandler) {
+            this.freshness = value;
+        } else {
+            LOG.error("Unsupported 'Freshness' object");
+            throw new IllegalArgumentException("Unsupported 'Freshness' object. Type must be "
+                                               + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
+        }
     }
 
     public String getReply() {

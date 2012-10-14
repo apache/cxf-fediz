@@ -180,7 +180,9 @@ public class FedizConfigurationTest {
 
         protocol.setClaimTypesRequested(claimTypeReq);
 
-        protocol.setFreshness(FRESHNESS_VALUE);
+        CallbackType freshness = new CallbackType();
+        freshness.setValue(FRESHNESS_VALUE);
+        protocol.setFreshness(freshness);
 
         CallbackType homeRealm = new CallbackType();
         homeRealm.setType(ArgumentType.CLASS);

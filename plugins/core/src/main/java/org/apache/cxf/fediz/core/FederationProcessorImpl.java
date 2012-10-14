@@ -39,6 +39,7 @@ import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.core.metadata.MetadataWriter;
+import org.apache.cxf.fediz.core.spi.FreshnessCallback;
 import org.apache.cxf.fediz.core.spi.HomeRealmCallback;
 import org.apache.cxf.fediz.core.spi.IDPCallback;
 import org.apache.cxf.fediz.core.spi.WAuthCallback;
@@ -65,6 +66,11 @@ public class FederationProcessorImpl implements FederationProcessor {
     public FederationResponse processRequest(FederationRequest request,
                                              FederationContext config)
         throws ProcessingException {
+        
+        if (!(config.getProtocol() instanceof FederationProtocol)) {
+            LOG.error("Unsupported protocol");
+            throw new IllegalStateException("Unsupported protocol");
+        }
         FederationResponse response = null;
         if (FederationConstants.ACTION_SIGNIN.equals(request.getWa())) {
             response = this.processSignInRequest(request, config);
@@ -263,6 +269,11 @@ public class FederationProcessorImpl implements FederationProcessor {
 
         String redirectURL = null;
         try {
+            if (!(config.getProtocol() instanceof FederationProtocol)) {
+                LOG.error("Unsupported protocol");
+                throw new IllegalStateException("Unsupported protocol");
+            }
+            
             Object issuerObj = ((FederationProtocol)config.getProtocol()).getIssuer();
             String issuerURL = null;
             if (issuerObj instanceof String) {
@@ -306,24 +317,27 @@ public class FederationProcessorImpl implements FederationProcessor {
             }
             LOG.info("HomeRealm: " + homeRealm);
             
+            Object freshnessObj = ((FederationProtocol)config.getProtocol()).getFreshness();
+            String freshness = null;
+            if (freshnessObj != null) {
+                if (freshnessObj instanceof String) {
+                    freshness = (String)freshnessObj;
+                } else if (freshnessObj instanceof CallbackHandler) {
+                    CallbackHandler frCB = (CallbackHandler)freshnessObj;
+                    FreshnessCallback callback = new FreshnessCallback(request);
+                    frCB.handle(new Callback[] {callback});
+                    freshness = callback.getFreshness();
+                }
+            }
+            LOG.info("Freshness: " + freshness);
+             
             StringBuilder sb = new StringBuilder();
-
             sb.append(FederationConstants.PARAM_ACTION).append('=').append(FederationConstants.ACTION_SIGNIN);
-
             sb.append('&').append(FederationConstants.PARAM_REPLY).append('=');
             sb.append(URLEncoder.encode(request.getRequestURL().toString(), "UTF-8"));
 
-            String realm = null;
-            FederationProtocol fp = null;
-            if (config.getProtocol() instanceof FederationProtocol) {
-                fp = (FederationProtocol)config.getProtocol();
-            } else {
-                LOG.error("Unsupported protocol");
-                throw new IllegalStateException("Unsupported protocol");
-            }
-            if (fp.getRealm() != null) {
-                realm = fp.getRealm();
-            } else {
+            String realm = ((FederationProtocol)config.getProtocol()).getRealm();
+            if (realm == null) {
                 String contextPath = request.getContextPath();
                 String requestUrl = request.getRequestURL().toString();
                 String requestPath = new URL(requestUrl).getPath();
@@ -356,6 +370,12 @@ public class FederationProcessorImpl implements FederationProcessor {
             if (homeRealm != null && homeRealm.length() > 0) {
                 sb.append('&').append(FederationConstants.PARAM_HOME_REALM).append('=')
                     .append(URLEncoder.encode(homeRealm, "UTF-8"));
+            }
+            
+            // add freshness parameter wfresh if set
+            if (freshness != null && freshness.length() > 0) {
+                sb.append('&').append(FederationConstants.PARAM_FRESHNESS).append('=')
+                    .append(URLEncoder.encode(freshness, "UTF-8"));
             }
             
             // add current time parameter wct

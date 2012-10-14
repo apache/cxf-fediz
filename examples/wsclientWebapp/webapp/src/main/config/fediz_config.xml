@@ -26,7 +26,7 @@
 			<roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
 			<!--<authenticationType type="String">some auth type</authenticationType>-->
 			<!--<homeRealm type="Class">org.apache.fediz.realm.MyHomeRealm</homeRealm>-->
-			<freshness>10000</freshness>
+			<!--<freshness>0</freshness>-->
 			<!--<reply>reply value</reply>-->
 			<!--<request>REQUEST</request>-->
 			<claimTypesRequested>

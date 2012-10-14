@@ -61,6 +61,8 @@ public class IdpServlet extends HttpServlet {
     public static final String PARAM_WRESULT = "wresult";
 
     public static final String PARAM_WCONTEXT = "wctx";
+    
+    public static final String PARAM_WFRESH = "wfresh";
 
     public static final String AUTH_HEADER_NAME = "WWW-Authenticate";
 
@@ -139,6 +141,7 @@ public class IdpServlet extends HttpServlet {
         String wtrealm = request.getParameter(PARAM_WTREALM);
         String wctx = request.getParameter(PARAM_WCONTEXT);
         String wreply = request.getParameter(PARAM_WREPLY);
+        String wfresh = request.getParameter(PARAM_WFRESH);
 
         if (action == null) {
             LOG.error("Bad request. HTTP parameter '" + PARAM_ACTION
@@ -173,6 +176,9 @@ public class IdpServlet extends HttpServlet {
                     if (idpToken.isExpired()) {
                         LOG.info("IDP token of '" + user + "' expired. Require authentication.");
                         authenticationRequired = idpToken.isExpired();
+                    } else if (wfresh != null && wfresh.equals("0")) {
+                        LOG.info("IDP token of '" + user + "' valid but relying party requested new authentication");
+                        authenticationRequired = true;
                     } else {
                         LOG.debug("Session found for '" + user + "'.");
                     }
@@ -193,6 +199,7 @@ public class IdpServlet extends HttpServlet {
                     StringBuilder value = new StringBuilder(16);
                     value.append("Basic realm=\"IDP\"");
                     response.setHeader(AUTH_HEADER_NAME, value.toString());
+                    response.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private");
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
                     return;
                 } else {
@@ -274,6 +281,7 @@ public class IdpServlet extends HttpServlet {
             }
 
             LOG.debug("Forward to jsp...");
+            response.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private");
             this.getServletContext().getRequestDispatcher("/WEB-INF/signinresponse.jsp")
                 .forward(request, response);
             
