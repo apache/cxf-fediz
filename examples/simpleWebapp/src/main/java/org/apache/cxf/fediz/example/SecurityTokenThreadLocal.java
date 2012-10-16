@@ -35,7 +35,11 @@ public final class SecurityTokenThreadLocal {
     }    
         
     public static void setToken(Element token) {
-        TLS.set(token);
+        if (token == null) { 
+            TLS.remove();
+        } else {
+            TLS.set(token);
+        }
     }
 
     public static Element getToken() {
