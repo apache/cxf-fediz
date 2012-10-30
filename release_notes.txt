@@ -1,4 +1,4 @@
-Apache CXF Fediz 1.0.1 Release Notes
+Apache CXF Fediz 1.0.2 Release Notes
 
 1. Overview
 
@@ -53,6 +53,28 @@ N.A.
 
 
 8. Specific issues, features, and improvements fixed in this version
+
+
+Release Notes - CXF-Fediz - Version 1.0.2
+
+** Bug
+    * [FEDIZ-26] - SAMLTokenValidator throws a NPE when an Attribute of the Assertion does not have a NameFormat
+
+** Improvement
+    * [FEDIZ-18] - Make supported claims configurable in FileClaimsHandler
+    * [FEDIZ-20] - IDP should maintain authentication state
+    * [FEDIZ-17] - Current Fediz STS exposes SOAP 1.1 end point
+    * [FEDIZ-25] - Look for fediz_config.xml in catalina base too
+
+** New Feature
+    * [FEDIZ-30] - Relying Party can enforce re-authentication using wfresh parameter
+    * [FEDIZ-28] - Logout capability in IDP
+ 
+** Task
+    * [FEDIZ-29] - Migrate to CXF 2.6.3
+
+** Test
+
 
 Release Notes - CXF-Fediz - Version 1.0.1
 
