@@ -58,8 +58,8 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>org.apache.cxf.fediz.examples.wsclientWebapp</groupId>
-            <artifactId>wsclientWebapp-webservice-common</artifactId>
+            <groupId>org.apache.cxf.fediz.examples.wsclientWebapp.webservice</groupId>
+            <artifactId>common</artifactId>
             <version>${project.version}</version>
         </dependency>
 
