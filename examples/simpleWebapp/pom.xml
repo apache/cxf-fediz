@@ -26,7 +26,7 @@
         <version>1.0.3-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.apache.cxf.fediz.examples.simpleWebapp</groupId>
+    <groupId>org.apache.cxf.fediz.examples</groupId>
     <artifactId>simpleWebapp</artifactId>
     <name>Fediz Example: SimpleWebapp</name>
     <packaging>war</packaging>

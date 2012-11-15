@@ -21,10 +21,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.apache.cxf.fediz.examples.wsclientWebapp</groupId>
-        <artifactId>wsclientWebapp-webservice</artifactId>
+        <artifactId>webservice</artifactId>
         <version>1.0.3-SNAPSHOT</version>
     </parent>
-    <artifactId>wsclientWebapp-webservice-war</artifactId>
+    <groupId>org.apache.cxf.fediz.examples.wsclientWebapp.webservice</groupId>
+    <artifactId>fedizservice</artifactId>
     <name>Fediz Example: WSClientWebapp (web service WAR)</name>
     <packaging>war</packaging>
 

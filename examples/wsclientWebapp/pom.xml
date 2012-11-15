@@ -24,7 +24,7 @@
         <artifactId>examples</artifactId>
         <version>1.0.3-SNAPSHOT</version>
     </parent>
-    <groupId>org.apache.cxf.fediz.examples.wsclientWebapp</groupId>
+    <groupId>org.apache.cxf.fediz.examples</groupId>
     <artifactId>wsclientWebapp</artifactId>
     <name>Fediz Example: WSClientWebapp</name>
     <packaging>pom</packaging>
