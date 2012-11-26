@@ -32,6 +32,6 @@
    <modules>
       <module>core</module>
       <module>tomcat</module>
-      <!--<module>jetty</module>-->
+      <module>jetty</module>
    </modules>
 </project>
