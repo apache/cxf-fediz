@@ -38,6 +38,7 @@ import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.xml.XmlConfiguration;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 
 
 public class BrowserTest {
@@ -65,7 +66,9 @@ public class BrowserTest {
         System.out.println(server.isRunning());
     }
     
+    //Ignore still IDP/STS is mocked also
     @org.junit.Test
+    @Ignore
     public void testGetSecureUrl() throws Exception {
         String uri = "http://localhost:8080/fedizhelloworld/secure/fedservlet";
         DefaultHttpClient httpclient = new DefaultHttpClient();
