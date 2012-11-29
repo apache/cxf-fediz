@@ -19,6 +19,7 @@
 package org.apache.cxf.fediz.service.idp;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
@@ -90,11 +91,46 @@ public class FederationPostFilter extends AbstractAuthFilter {
             throw new ProcessingException("Requesting security token failed");          
         }
 
-        LOG.debug("Forward to jsp...");
-        response.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private");
-        request.getRequestDispatcher("/WEB-INF/signinresponse.jsp")
-            .forward(request, response);
+        setResponseBody(request, response);
+        context.put(AbstractAuthFilter.PROCESSING_STATE, AbstractAuthFilter.ProcessingState.SEND_RESPONSE);
 
     }
-
+    
+    private void setResponseBody(HttpServletRequest request, HttpServletResponse response) {
+        
+        try {
+            response.setContentType("text/html");
+            PrintWriter out = response.getWriter();
+            
+            out.println("<html>");
+            out.println("<head><title>IDP SignIn Response Form</title></head>");
+            out.println("<body>");
+            out.println("<form method=\"POST\" name=\"hiddenform\" action=\"" 
+                        + request.getAttribute("fed.action") + "\">");
+            out.println("<input type=\"hidden\" name=\"wa\" value=\"wsignin1.0\" />");
+            out.println("<input type=\"hidden\" name=\"wresult\" value=\"" 
+                        + request.getAttribute("fed.wresult") + "\"/>");
+            out.println("<input type=\"hidden\" name=\"wctx\" value=\"" 
+                        + request.getAttribute("fed.wctx") + "\"/>");
+            out.println("<noscript>");
+            out.println("<p>Script is disabled. Click Submit to continue.</p>");
+            out.println("<input type=\"submit\" value=\"Submit\" />");
+            out.println("</noscript>");
+            out.println("</form>");
+            out.println("<script language=\"javascript\">window.setTimeout('document.forms[0].submit()',0);</script>");
+            out.println("</body>");
+            out.println("</html>");
+            
+        } catch (IOException ex) {
+            LOG.error("Failed to create SignInResponse message", ex);
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                                   "Failed to create SignInResponse message");
+            } catch (IOException e) {
+                LOG.error("Failed to write error reponse", e);
+            }
+        }
+        
+    }
 }
+
