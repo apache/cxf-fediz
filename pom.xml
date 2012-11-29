@@ -206,8 +206,8 @@
     </organization>
 
     <modules>
-        <module>plugins</module>
         <module>services</module>
+        <module>plugins</module>
         <module>examples</module>
         <module>apache-fediz</module>
     </modules>
