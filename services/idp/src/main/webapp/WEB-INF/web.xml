@@ -53,6 +53,19 @@
 	</filter>
 	
 	<filter>
+		<filter-name>FormAuthenticationFilter</filter-name>
+		<filter-class>org.apache.cxf.fediz.service.idp.HttpFormAuthenticationFilter</filter-class>
+		<init-param>
+			<param-name>pre-state</param-name>
+			<param-value>USERNAME_PASSWORD_REQUIRED</param-value>
+		</init-param>
+		<init-param>
+			<param-name>next-state</param-name>
+			<param-value>SECURITY_TOKEN_REQUIRED</param-value>
+		</init-param>		
+	</filter>
+	
+	<filter>
 		<filter-name>STSClientFilterRequestor</filter-name>
 		<filter-class>org.apache.cxf.fediz.service.idp.STSClientFilter</filter-class>
 		<init-param>
@@ -207,12 +220,20 @@
 		<filter-name>AuthenticationFilter</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
-
+     
 	<filter-mapping>
 		<filter-name>BasicAuthenticationFilter</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 	
+	<!-- FORM based authentication -->
+	<!--
+	<filter-mapping>
+		<filter-name>FormAuthenticationFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	-->
+	
 	<filter-mapping>
 		<filter-name>STSClientFilterRequestor</filter-name>
 		<url-pattern>/*</url-pattern>
@@ -220,6 +241,7 @@
 	
 	<filter-mapping>
 		<filter-name>STSClientFilterRequestor</filter-name>
+                
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 	
