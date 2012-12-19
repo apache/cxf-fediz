@@ -37,10 +37,16 @@
 
 	<security-role>
 		<role-name>Manager</role-name>
-		<role-name>User</role-name>
-		<role-name>Admin</role-name>
-		<role-name>Authenticated</role-name>
 	</security-role>
+	<security-role>
+		<role-name>User</role-name>
+	</security-role>
+	<security-role>
+		<role-name>Admin</role-name>
+	</security-role>
+	<security-role>
+		<role-name>Authenticated</role-name>
+	</security-role>				
 
 	<security-constraint>
 		<web-resource-collection>
