@@ -155,7 +155,10 @@
 			<param-name>sts.rstr.content-type</param-name>
 			<param-value>RSTR</param-value>
 		</init-param>		
-		
+		<init-param>
+			<param-name>sts.claims.required</param-name>
+			<param-value>true</param-value>
+		</init-param>		
 	</filter>	
 
 	<filter>
