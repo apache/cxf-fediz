@@ -12,7 +12,7 @@
     <Call name="addConnector">
       <Arg>
           <New class="org.eclipse.jetty.server.nio.SelectChannelConnector">
-            <Set name="port">9080</Set>
+            <Set name="port">54568</Set>
           </New>
       </Arg>
     </Call>
@@ -27,7 +27,7 @@
              <Set name="keyManagerPassword">tompass</Set>
            </New>
          </Arg>
-         <Set name="port">9443</Set>
+         <Set name="port">54567</Set>
          <Set name="maxIdleTime">30000</Set>
        </New>
      </Arg>

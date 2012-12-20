@@ -6,8 +6,7 @@
 <FedizConfig>
 	<contextConfig name="/fedizhelloworld">
 		<audienceUris>
-			<audienceItem>https://localhost:8443/fedizhelloworld/</audienceItem>
-			<audienceItem>http://localhost:8080/fedizhelloworld/</audienceItem>
+			<audienceItem>urn:org:apache:cxf:fediz:fedizhelloworld</audienceItem>
 		</audienceUris>
 		<certificateStores>
 			<trustManager>
@@ -21,8 +20,8 @@
 		<maximumClockSkew>1000</maximumClockSkew>
 		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 			xsi:type="federationProtocolType" version="1.0.0">
-			<!--<realm>target realm</realm>-->
-			<issuer>https://localhost:9443/fedizidp/</issuer>
+                        <realm>urn:org:apache:cxf:fediz:fedizhelloworld</realm>
+			<issuer>https://localhost:54567/fedizidp/</issuer>
 			<roleDelimiter>,</roleDelimiter>
 			<roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
 			<!--<authenticationType type="String">some auth type</authenticationType>-->

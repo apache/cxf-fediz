@@ -100,15 +100,15 @@ public class BrowserTest {
         System.out.println(server.isRunning());
     }
     
-    //Ignore still IDP/STS is mocked also
+
     @org.junit.Test
     public void testGetSecureUrl() throws Exception {
-        String uri = "http://localhost:8080/fedizhelloworld/secure/fedservlet";
+        String uri = "http://localhost:54566/fedizhelloworld/secure/fedservlet";
         DefaultHttpClient httpclient = new DefaultHttpClient();
         String user = "alice";
         try {
             httpclient.getCredentialsProvider().setCredentials(
-                    new AuthScope("localhost", 9443),
+                    new AuthScope("localhost", 54567),
                     new UsernamePasswordCredentials(user, "ecila"));
 
             KeyStore trustStore  = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -124,7 +124,7 @@ public class BrowserTest {
             }
 
             SSLSocketFactory socketFactory = new SSLSocketFactory(trustStore);
-            Scheme sch = new Scheme("https", 9443, socketFactory);
+            Scheme sch = new Scheme("https", 54567, socketFactory);
             httpclient.getConnectionManager().getSchemeRegistry().register(sch);
             
             HttpGet httpget = new HttpGet(uri);
