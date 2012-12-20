@@ -20,6 +20,7 @@
 package org.apache.cxf.fediz.jetty;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.security.auth.Subject;
@@ -40,7 +41,7 @@ import org.eclipse.jetty.util.log.Logger;
 public class FederationLoginService extends AbstractLifeCycle implements LoginService {
     private static final Logger LOG = Log.getLogger(FederationLoginService.class);
 
-    protected IdentityService identityService;
+    protected IdentityService identityService = new FederationIdentityService();
     protected String name;
     
 
@@ -126,9 +127,6 @@ public class FederationLoginService extends AbstractLifeCycle implements LoginSe
             String[] aRoles = new String[roles.size()];
             roles.toArray(aRoles);
             
-            //[TODO] Create FederationUserIdentity here
-            //FederationReponse should be protected and
-            //not accessible in Principal
             return identityService.newUserIdentity(subject, user, aRoles);
 
         } catch (Exception ex) {
@@ -139,8 +137,13 @@ public class FederationLoginService extends AbstractLifeCycle implements LoginSe
     }
 
     public boolean validate(UserIdentity user) {
-        //[TODO] check validity of token???
-        return true;
+        try {
+            FederationUserIdentity fui = (FederationUserIdentity)user;
+            return fui.getExpiryDate().after(new Date());
+        } catch (ClassCastException ex) {
+            LOG.warn("UserIdentity must be instance of FederationUserIdentity");
+            throw new IllegalStateException("UserIdentity must be instance of FederationUserIdentity");
+        }
     }
 
     @Override

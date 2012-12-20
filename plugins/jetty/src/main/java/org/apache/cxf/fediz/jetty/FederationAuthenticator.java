@@ -134,16 +134,6 @@ public class FederationAuthenticator extends LoginAuthenticator {
         if (uri == null) {
             uri = URIUtil.SLASH;
         }
-        
-        /*
-         * mandatory|=isJSecurityCheck(uri); if (!mandatory) return _deferred;
-         */
-
-        /*
-         * not the case if
-         * (isLoginOrErrorPage(URIUtil.addPaths(request.getServletPath(),request.getPathInfo()))) return
-         * Authentication.NOT_CHECKED;
-         */
 
         HttpSession session = request.getSession(true);
 
@@ -152,7 +142,6 @@ public class FederationAuthenticator extends LoginAuthenticator {
             String wresult = request.getParameter("wresult");
             
             // Handle a request for authentication.
-            
             if (wa != null) {
 
                 FederationResponse wfRes = null;
@@ -301,8 +290,6 @@ public class FederationAuthenticator extends LoginAuthenticator {
             
             FederationProcessor wfProc = new FederationProcessorImpl();
             redirectToIssuer(request, response, wfProc);
-            //response.sendRedirect(response.encodeRedirectURL(URIUtil.addPaths(request.getContextPath(),
-            //                                                                  formLoginPage)));
 
             return Authentication.SEND_CONTINUE;
 

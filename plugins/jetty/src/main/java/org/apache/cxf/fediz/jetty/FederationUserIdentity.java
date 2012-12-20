@@ -21,22 +21,26 @@ package org.apache.cxf.fediz.jetty;
 
 
 import java.security.Principal;
-import java.util.List;
+import java.util.Date;
 
 import javax.security.auth.Subject;
 
+import org.apache.cxf.fediz.core.FederationResponse;
 import org.eclipse.jetty.server.UserIdentity;
 
 public class FederationUserIdentity implements UserIdentity {
     
     private Subject subject;
     private Principal principal;
-    private List<String> roles;
+    private String[] roles;
+    private FederationResponse fedResponse;
 
-    public FederationUserIdentity(Subject subject, Principal principal, List<String> roles) {
+    public FederationUserIdentity(Subject subject, Principal principal,
+                                  String[] roles, FederationResponse fedResponse) {
         this.subject = subject;
         this.principal = principal;
         this.roles = roles;
+        this.fedResponse = fedResponse;
     }
 
 
@@ -49,7 +53,32 @@ public class FederationUserIdentity implements UserIdentity {
     }
 
     public boolean isUserInRole(String role, Scope scope) {
-        return roles.contains(role);
+        if (scope != null && scope.getRoleRefMap() != null) {
+            role = scope.getRoleRefMap().get(role);
+        }
+        
+        for (String r : this.roles) {
+            if (r.equals(role)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public Date getExpiryDate() {
+        return fedResponse.getTokenExpires();
+    }
+    
+    public String getIssuer() {
+        return fedResponse.getIssuer();
+    }
+    
+    public String getAudience() {
+        return fedResponse.getAudience();
+    }
+    
+    public String getId() {
+        return fedResponse.getUniqueTokenId();
     }
 
 }
