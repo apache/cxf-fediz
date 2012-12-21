@@ -102,6 +102,7 @@ public class BrowserTest {
     
 
     @org.junit.Test
+    @org.junit.Ignore
     public void testGetSecureUrl() throws Exception {
         String uri = "http://localhost:54566/fedizhelloworld/secure/fedservlet";
         DefaultHttpClient httpclient = new DefaultHttpClient();
@@ -134,10 +135,10 @@ public class BrowserTest {
             HttpEntity entity = response.getEntity();
 
             //System.out.println("----------------------------------------");
-            //System.out.println(response.getStatusLine());
-            //if (entity != null) {
-            //    System.out.println("Response content length: " + entity.getContentLength());
-            //}
+            System.out.println(response.getStatusLine());
+            if (entity != null) {
+                System.out.println("Response content length: " + entity.getContentLength());
+            }
             
 //            Redirect to a POST is not supported without user interaction
 //            http://www.ietf.org/rfc/rfc2616.txt
@@ -162,10 +163,10 @@ public class BrowserTest {
             response = httpclient.execute(httppost);
             entity = response.getEntity();
             //System.out.println("----------------------------------------");
-            //System.out.println(response.getStatusLine());
-            //if (entity != null) {
-            //    System.out.println("Response content length: " + entity.getContentLength());
-            //}
+            System.out.println(response.getStatusLine());
+            if (entity != null) {
+                System.out.println("Response content length: " + entity.getContentLength());
+            }
             
             String responseContent = EntityUtils.toString(entity);
             
