@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util-2.0.xsd">
+
+
+	<util:map id="realm2ClaimsMap">
+		<entry key="http://localhost:8080/fedizhelloworldother/"
+			value-ref="claimsWsfedhelloworld" />
+		<entry key="http://localhost:8080/fedizhelloworld/"
+			value-ref="claimsWsfedhelloworld2" />
+		<entry key="https://localhost:8443/fedizhelloworld/"
+			value-ref="claimsWsfedhelloworld2" />
+		<entry key="urn:org:apache:cxf:fediz:fedizhelloworld"
+			value-ref="claimsWsfedhelloworld2" />
+		<entry key="urn:org:apache:cxf:fediz:fedizhelloworld2"
+			value-ref="claimsWsfedhelloworld" />  			
+	</util:map>
+
+
+
+	<util:list id="claimsWsfedhelloworld">
+		<value>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname</value>
+		<value>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname</value>
+	</util:list>
+
+	<util:list id="claimsWsfedhelloworld2">
+		<value>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname</value>
+		<value>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname</value>
+		<value>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress</value>
+		<value>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</value>
+	</util:list>
+
+</beans>
