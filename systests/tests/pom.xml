@@ -118,21 +118,21 @@
 							<artifactItems>
 								<artifactItem>
 									<groupId>org.apache.cxf.fediz.systests</groupId>
-									<artifactId>fediz-idp</artifactId>
+									<artifactId>systests-fediz-idp</artifactId>
 									<version>${project.version}</version>
 									<type>war</type>
 									<overWrite>true</overWrite>
 								</artifactItem>
 								<artifactItem>
 									<groupId>org.apache.cxf.fediz.systests</groupId>
-									<artifactId>fediz-idp-sts</artifactId>
+									<artifactId>systests-fediz-idp-sts</artifactId>
 									<version>${project.version}</version>
 									<type>war</type>
 									<overWrite>true</overWrite>
 								</artifactItem>
 								<artifactItem>
 									<groupId>org.apache.cxf.fediz.systests</groupId>
-									<artifactId>simpleWebapp</artifactId>
+									<artifactId>systests-simpleWebapp</artifactId>
 									<version>${project.version}</version>
 									<type>war</type>
 									<overWrite>true</overWrite>
