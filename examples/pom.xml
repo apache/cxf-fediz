@@ -27,11 +27,12 @@
     </parent>
     <groupId>org.apache.cxf.fediz</groupId>
     <artifactId>examples</artifactId>
-    <name>Apache CXF Fediz Examples</name>
+    <name>Apache Fediz Examples</name>
     <packaging>pom</packaging>
 
     <modules>
         <module>simpleWebapp</module>
         <module>wsclientWebapp</module>
+        <module>springWebapp</module>
     </modules>
 </project>
