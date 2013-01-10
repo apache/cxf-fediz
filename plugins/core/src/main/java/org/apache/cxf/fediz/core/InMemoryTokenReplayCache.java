@@ -27,25 +27,10 @@ import java.util.List;
 //[TODO] add properties TokenReplayCacheExpirationPeriod
 public final class InMemoryTokenReplayCache<T> implements TokenReplayCache<T> {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 7269477566842444549L;
-
-    private static TokenReplayCache<String> instance;
-    
     private List<T> cache;
     
-    private InMemoryTokenReplayCache() {
+    public InMemoryTokenReplayCache() {
         cache = Collections.synchronizedList(new ArrayList<T>());
-    }
-
-    public static synchronized TokenReplayCache<String> getInstance() {
-        if (instance != null) {
-            return instance;
-        }
-        instance = new InMemoryTokenReplayCache<String>();
-        return instance;
     }
 
     @Override
@@ -74,7 +59,6 @@ public final class InMemoryTokenReplayCache<T> implements TokenReplayCache<T> {
             cache.clear();
             cache = null;
         }
-        instance = null;
     }
 
 
