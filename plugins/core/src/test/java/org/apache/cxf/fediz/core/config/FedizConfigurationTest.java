@@ -29,6 +29,9 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
 import org.apache.cxf.fediz.common.SecurityTestUtil;
+import org.apache.cxf.fediz.core.EHCacheTokenReplayCache;
+import org.apache.cxf.fediz.core.InMemoryTokenReplayCache;
+import org.apache.cxf.fediz.core.TokenReplayCache;
 import org.apache.cxf.fediz.core.config.jaxb.ArgumentType;
 import org.apache.cxf.fediz.core.config.jaxb.AudienceUris;
 import org.apache.cxf.fediz.core.config.jaxb.CallbackType;
@@ -265,6 +268,48 @@ public class FedizConfigurationTest {
 
         Assert.assertEquals(HOME_REALM_CLASS, fp.getHomeRealm().getValue());
 
+    }
+    
+    @org.junit.Test
+    public void testTokenReplayCache() throws JAXBException, IOException {
+        FedizConfig config = createConfiguration();
+        
+        // Test the default TokenReplayCache
+        TokenReplayCache<String> defaultReplayCache = parseConfigAndReturnTokenReplayCache(config);
+        Assert.assertNotNull(defaultReplayCache);
+        Assert.assertTrue(defaultReplayCache instanceof EHCacheTokenReplayCache);
+        
+        // Now test setting another TokenReplayCache
+        ContextConfig contextConfig = config.getContextConfig().get(0);
+        contextConfig.setTokenReplayCache("org.apache.cxf.fediz.core.InMemoryTokenReplayCache");
+        
+        TokenReplayCache<String> newReplayCache = parseConfigAndReturnTokenReplayCache(config);
+        Assert.assertNotNull(newReplayCache);
+        Assert.assertTrue(newReplayCache instanceof InMemoryTokenReplayCache);
+        
+        // Now test setting another TokenReplayCache
+        contextConfig.setTokenReplayCache("org.apache.cxf.fediz.core.EHCacheTokenReplayCache");
+        
+        newReplayCache = parseConfigAndReturnTokenReplayCache(config);
+        Assert.assertNotNull(newReplayCache);
+        Assert.assertTrue(newReplayCache instanceof EHCacheTokenReplayCache);
+    }
+    
+    private TokenReplayCache<String> parseConfigAndReturnTokenReplayCache(FedizConfig config) 
+        throws JAXBException {
+        final JAXBContext jaxbContext = JAXBContext.newInstance(FedizConfig.class);
+        
+        StringWriter writer = new StringWriter();
+        jaxbContext.createMarshaller().marshal(config, writer);
+        StringReader reader = new StringReader(writer.toString());
+        
+        FederationConfigurator configurator = new FederationConfigurator();
+        configurator.loadConfig(reader);
+
+        FederationContext fedContext = configurator.getFederationContext(CONFIG_NAME);
+        Assert.assertNotNull(fedContext);
+        
+        return fedContext.getTokenReplayCache();
     }
 
 }
