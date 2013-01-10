@@ -32,20 +32,27 @@
     </parent>
 
     <properties>
+        <commons.lang.version>3.0.1</commons.lang.version>
+        <commons.logging.version>1.1.1</commons.logging.version>
+        <cxf.version>2.6.5</cxf.version>
+        <cxf.build-utils.version>2.4.1</cxf.build-utils.version>
         <ehcache.version>2.5.1</ehcache.version>
-        <slf4j.version>1.6.5</slf4j.version>
-        <spring.version>3.0.7.RELEASE</spring.version>
-        <tomcat.version>7.0.27</tomcat.version>
+        <httpclient.version>4.2.2</httpclient.version>
+        <jericho.version>3.2</jericho.version>
         <jetty.version>8.1.8.v20121106</jetty.version>
         <!--<jetty.version>7.6.8.v20121106</jetty.version>-->
         <junit.version>4.8.2</junit.version>
-        <tomcat.url>http://localhost:8080/manager/text</tomcat.url>
-        <cxf.version>2.6.5</cxf.version>
+        <log4j.version>1.2.15</log4j.version>
+        <servlet.version>2.5</servlet.version>
+        <slf4j.version>1.6.5</slf4j.version>
+        <spring.version>3.0.7.RELEASE</spring.version>
+        <tomcat.version>7.0.27</tomcat.version>
         <wss4j.version>1.6.9</wss4j.version>
+
+        <tomcat.url>http://localhost:8080/manager/text</tomcat.url>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>1.6</jdk.version>
         <compiler.fork>false</compiler.fork>
-        <cxf.build-utils.version>2.4.1</cxf.build-utils.version>
 
         <fediz.protect-xmlschema-collections>false</fediz.protect-xmlschema-collections>
         <fediz.surefire.fork.mode>once</fediz.surefire.fork.mode>
