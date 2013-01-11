@@ -96,6 +96,8 @@ public class IdpServlet extends HttpServlet {
 
     private String tokenType;
 
+    private Bus bus;
+
     @Override
     public void init() throws ServletException {
         if (getInitParameter(S_PARAM_STS_WSDL_URL) == null) {
@@ -294,9 +296,9 @@ public class IdpServlet extends HttpServlet {
     }
     
     private SecurityToken requestSecurityTokenForIDP(String username, String password, String appliesTo) throws Exception {
-        Bus bus = BusFactory.getDefaultBus();
+        Bus cxfBus = getBus();
         
-        IdpSTSClient sts = new IdpSTSClient(bus);
+        IdpSTSClient sts = new IdpSTSClient(cxfBus);
         sts.setAddressingNamespace("http://www.w3.org/2005/08/addressing");
         if (tokenType != null && tokenType.length() > 0) {
             sts.setTokenType(tokenType);
@@ -327,9 +329,9 @@ public class IdpServlet extends HttpServlet {
     private String requestSecurityTokenForRP(SecurityToken onbehalfof,
                                         String appliesTo) throws Exception {
         try {
-            Bus bus = BusFactory.getDefaultBus();
+            Bus cxfBus = getBus();
             List<String> realmClaims = null;
-            ApplicationContext ctx = (ApplicationContext) bus
+            ApplicationContext ctx = (ApplicationContext) cxfBus
                 .getExtension(ApplicationContext.class);
             try {
                 @SuppressWarnings("unchecked")
@@ -346,7 +348,7 @@ public class IdpServlet extends HttpServlet {
                 LOG.error("Failed to read bean 'realm2ClaimsMap'", ex);
             }
 
-            IdpSTSClient sts = new IdpSTSClient(bus);
+            IdpSTSClient sts = new IdpSTSClient(cxfBus);
             sts.setAddressingNamespace("http://www.w3.org/2005/08/addressing");
             if (tokenType != null && tokenType.length() > 0) {
                 sts.setTokenType(tokenType);
@@ -411,4 +413,11 @@ public class IdpServlet extends HttpServlet {
         return writer.getDocument().getDocumentElement();
     }
 
+    public void setBus(Bus bus) {
+        this.bus = bus;
+    }
+
+    public Bus getBus() {
+        return (bus != null) ? bus : BusFactory.getDefaultBus();
+    }
 }
