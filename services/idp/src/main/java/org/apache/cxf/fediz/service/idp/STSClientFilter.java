@@ -90,6 +90,8 @@ public class STSClientFilter extends AbstractAuthFilter {
     protected String appliesTo; // $wtrealm
     protected String contentType;  //token, rstr
 
+    protected Bus bus;
+
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         super.init(filterConfig);
@@ -188,9 +190,9 @@ public class STSClientFilter extends AbstractAuthFilter {
                 return;
             }
 
-            Bus bus = BusFactory.getDefaultBus();
+            Bus cxfBus = getBus();
 
-            IdpSTSClient sts = new IdpSTSClient(bus);
+            IdpSTSClient sts = new IdpSTSClient(cxfBus);
             sts.setAddressingNamespace("http://www.w3.org/2005/08/addressing");
             if (tokenType != null && tokenType.length() > 0) {
                 sts.setTokenType(tokenType);
@@ -240,7 +242,7 @@ public class STSClientFilter extends AbstractAuthFilter {
 
             if (this.claimsRequired) {
                 List<String> realmClaims = null;
-                ApplicationContext ctx = (ApplicationContext) bus
+                ApplicationContext ctx = (ApplicationContext) cxfBus
                 .getExtension(ApplicationContext.class);
                 try {
                     @SuppressWarnings("unchecked")
@@ -344,4 +346,12 @@ public class STSClientFilter extends AbstractAuthFilter {
         return writer.getDocument().getDocumentElement();
     }
 
+    public void setBus(Bus bus) {
+        this.bus = bus;
+    }
+
+    public Bus getBus() {
+        // do not store a referance to the default bus
+        return (bus != null) ? bus : BusFactory.getDefaultBus();
+    }
 }
