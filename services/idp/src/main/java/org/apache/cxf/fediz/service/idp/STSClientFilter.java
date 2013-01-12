@@ -19,6 +19,8 @@
 package org.apache.cxf.fediz.service.idp;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
@@ -89,6 +91,7 @@ public class STSClientFilter extends AbstractAuthFilter {
     protected String tokenStoreName;
     protected String appliesTo; // $wtrealm
     protected String contentType;  //token, rstr
+    protected boolean isPortSet;
 
     protected Bus bus;
 
@@ -105,6 +108,17 @@ public class STSClientFilter extends AbstractAuthFilter {
             throw new ServletException(
                                        "Parameter '" + PARAM_STS_WSDL_URL + "' not configured");
         }
+        
+        try {
+            URL url = new URL(stsWsdlUrl);
+            isPortSet = url.getPort() > 0;
+            if (!isPortSet) {
+                LOG.info("Port is 0 for '" + PARAM_STS_WSDL_URL + "'. Port evaluated when processing first request.");
+            }
+        } catch (MalformedURLException e) {
+            LOG.error("Invalid Url '" + stsWsdlUrl + "': "  + e.getMessage());
+        }
+        
 
         stsWsdlService = filterConfig.getInitParameter(PARAM_STS_WSDL_SERVICE);
         if (stsWsdlService == null) {
@@ -200,7 +214,17 @@ public class STSClientFilter extends AbstractAuthFilter {
                 sts.setTokenType(WSConstants.WSS_SAML2_TOKEN_TYPE);
             }
             sts.setKeyType("http://docs.oasis-open.org/ws-sx/ws-trust/200512/Bearer");
-
+            
+            if (!isPortSet) {
+                try {
+                    URL url = new URL(stsWsdlUrl);
+                    URL updatedUrl = new URL(url.getProtocol(), url.getHost(), request.getLocalPort(), url.getFile());
+                    setSTSWsdlUrl(updatedUrl.toString());
+                    LOG.info("STS WSDL URL updated to " + updatedUrl.toString());
+                } catch (MalformedURLException e) {
+                    LOG.error("Invalid Url '" + stsWsdlUrl + "': "  + e.getMessage());
+                }
+            }
             sts.setWsdlLocation(stsWsdlUrl);
             sts.setServiceQName(new QName(
                                           "http://docs.oasis-open.org/ws-sx/ws-trust/200512/",
@@ -344,6 +368,11 @@ public class STSClientFilter extends AbstractAuthFilter {
         writer.writeEndElement();
 
         return writer.getDocument().getDocumentElement();
+    }
+    
+    private synchronized void setSTSWsdlUrl(String wsdlUrl) {
+        this.stsWsdlUrl = wsdlUrl;
+        this.isPortSet = true;
     }
 
     public void setBus(Bus bus) {
