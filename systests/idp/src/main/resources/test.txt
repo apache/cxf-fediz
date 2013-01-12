@@ -1,2 +1,0 @@
-${idp.https.port}
-${rp.https.port}
