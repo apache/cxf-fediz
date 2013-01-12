@@ -19,6 +19,8 @@
 package org.apache.cxf.fediz.service.idp;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -94,15 +96,29 @@ public class IdpServlet extends HttpServlet {
      */
     private static final long serialVersionUID = -9019993850246851112L;
 
+    protected boolean isPortSet;
+    
+    protected String stsWsdlUrl;
+    
     private String tokenType;
 
     private Bus bus;
 
     @Override
     public void init() throws ServletException {
-        if (getInitParameter(S_PARAM_STS_WSDL_URL) == null) {
+        stsWsdlUrl = getInitParameter(S_PARAM_STS_WSDL_URL);
+        if (stsWsdlUrl == null) {
             throw new ServletException(
                 "Parameter '" + S_PARAM_STS_WSDL_URL + "' not configured");
+        }
+        try {
+            URL url = new URL(stsWsdlUrl);
+            isPortSet = url.getPort() > 0;
+            if (!isPortSet) {
+                LOG.info("Port is 0 for '" + S_PARAM_STS_WSDL_URL + "'. Port evaluated when processing first request.");
+            }
+        } catch (MalformedURLException e) {
+            LOG.error("Invalid Url '" + stsWsdlUrl + "': "  + e.getMessage());
         }
         if (getInitParameter(S_PARAM_STS_WSDL_SERVICE) == null) {
             throw new ServletException(
@@ -138,6 +154,17 @@ public class IdpServlet extends HttpServlet {
     //CHECKSTYLE:OFF
     public void doGet(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
+
+        if (!isPortSet) {
+            try {
+                URL url = new URL(stsWsdlUrl);
+                URL updatedUrl = new URL(url.getProtocol(), url.getHost(), request.getLocalPort(), url.getFile());
+                setSTSWsdlUrl(updatedUrl.toString());
+                LOG.info("STS WSDL URL updated to " + updatedUrl.toString());
+            } catch (MalformedURLException e) {
+                LOG.error("Invalid Url '" + stsWsdlUrl + "': "  + e.getMessage());
+            }
+        }
 
         String action = request.getParameter(PARAM_ACTION);
         String wtrealm = request.getParameter(PARAM_WTREALM);
@@ -307,7 +334,7 @@ public class IdpServlet extends HttpServlet {
         }
         sts.setKeyType("http://docs.oasis-open.org/ws-sx/ws-trust/200512/Bearer");
 
-        sts.setWsdlLocation(getInitParameter(S_PARAM_STS_WSDL_URL) + getInitParameter(S_PARAM_STS_UT_URI) + "?wsdl");
+        sts.setWsdlLocation(this.stsWsdlUrl + getInitParameter(S_PARAM_STS_UT_URI) + "?wsdl");
         sts.setServiceQName(new QName(
                                       "http://docs.oasis-open.org/ws-sx/ws-trust/200512/",
                                       getInitParameter(S_PARAM_STS_WSDL_SERVICE)));
@@ -357,7 +384,7 @@ public class IdpServlet extends HttpServlet {
             }
             sts.setKeyType("http://docs.oasis-open.org/ws-sx/ws-trust/200512/Bearer");
 
-            sts.setWsdlLocation(getInitParameter(S_PARAM_STS_WSDL_URL) + getInitParameter(S_PARAM_STS_RP_URI) + "?wsdl");
+            sts.setWsdlLocation(this.stsWsdlUrl + getInitParameter(S_PARAM_STS_RP_URI) + "?wsdl");
             sts.setServiceQName(new QName(
                                           "http://docs.oasis-open.org/ws-sx/ws-trust/200512/",
                                           getInitParameter(S_PARAM_STS_WSDL_SERVICE)));
@@ -411,6 +438,11 @@ public class IdpServlet extends HttpServlet {
         writer.writeEndElement();
 
         return writer.getDocument().getDocumentElement();
+    }
+    
+    private synchronized void setSTSWsdlUrl(String wsdlUrl) {
+        this.stsWsdlUrl = wsdlUrl;
+        this.isPortSet = true;
     }
 
     public void setBus(Bus bus) {

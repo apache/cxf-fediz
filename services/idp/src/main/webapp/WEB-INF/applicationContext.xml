@@ -27,7 +27,7 @@
 	</cxf:bus>
 
     
-    <http:conduit name="https://localhost:9443/.*">
+    <http:conduit name="*.http-conduit">
       <http:tlsClientParameters disableCNCheck="true">
         <sec:trustManagers>
           <sec:keyStore type="jks" password="ispass" resource="idpstore.jks"/>
