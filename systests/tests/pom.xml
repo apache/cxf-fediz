@@ -31,6 +31,7 @@
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
     <dependencies>
         <dependency>
@@ -69,28 +70,20 @@
         </dependency>
         <dependency>
             <groupId>org.apache.cxf.fediz</groupId>
-            <artifactId>fediz-core</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.cxf.fediz</groupId>
             <artifactId>fediz-jetty</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>${httpclient.version}</version>
+            <version>4.2.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>net.htmlparser.jericho</groupId>
             <artifactId>jericho-html</artifactId>
-            <version>${jericho.version}</version>
+            <version>3.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -130,15 +123,15 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>org.apache.cxf.fediz.systests</groupId>
-                                    <artifactId>systests-fediz-idp</artifactId>
+                                    <groupId>org.apache.cxf.fediz</groupId>
+                                    <artifactId>fediz-idp</artifactId>
                                     <version>${project.version}</version>
                                     <type>war</type>
                                     <overWrite>true</overWrite>
                                 </artifactItem>
                                 <artifactItem>
-                                    <groupId>org.apache.cxf.fediz.systests</groupId>
-                                    <artifactId>systests-fediz-idp-sts</artifactId>
+                                    <groupId>org.apache.cxf.fediz</groupId>
+                                    <artifactId>fediz-idp-sts</artifactId>
                                     <version>${project.version}</version>
                                     <type>war</type>
                                     <overWrite>true</overWrite>
@@ -161,13 +154,46 @@
                 </executions>
             </plugin>
             <plugin>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.12.2</version>
+                <inherited>true</inherited>
+                <executions>
+                    <execution>
+                        <id>integration-test</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
+                        <configuration>
+                            <skip>false</skip>
+                            <systemPropertyVariables>
+                                <wt.headless>true</wt.headless>
+                                <idp.https.port>${idp.https.port}</idp.https.port>
+                                <rp.https.port>${rp.https.port}</rp.https.port>
+                            </systemPropertyVariables>
+                            <includes>
+                                <include>**/integrationtests/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>verify</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.12</version>
+                <inherited>true</inherited>
                 <configuration>
-                    <systemPropertyVariables>
-                        <idp.https.port>${idp.https.port}</idp.https.port>
-                        <rp.https.port>${rp.https.port}</rp.https.port>
-                    </systemPropertyVariables>
+                    <excludes>
+                        <exclude>**/integrationtests/**</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
         </plugins>

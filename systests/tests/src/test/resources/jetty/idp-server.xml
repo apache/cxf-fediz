@@ -32,14 +32,14 @@
 		    <Item>
 		      <New class="org.eclipse.jetty.webapp.WebAppContext">
 	            <Set name="contextPath">/fedizidp</Set>
-	            <Set name="war">./target/systests-fediz-idp.war</Set>
+	            <Set name="war">./target/fediz-idp.war</Set>
 	            <Set name="throwUnavailableOnStartupException">true</Set>
 	          </New>
 	        </Item>
 	        <Item>
 		      <New class="org.eclipse.jetty.webapp.WebAppContext">
 	            <Set name="contextPath">/fedizidpsts</Set>
-	            <Set name="war">./target/systests-fediz-idp-sts.war</Set>
+	            <Set name="war">./target/fediz-idp-sts.war</Set>
 	            <Set name="throwUnavailableOnStartupException">true</Set>
 	          </New>	          
 		    </Item>

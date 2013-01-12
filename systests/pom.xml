@@ -56,8 +56,10 @@
 
 
    <modules>
+<!--
       <module>idp</module>
       <module>sts</module>
+-->
       <module>simpleWebapp</module>
 <!--
       <module>springWebapp</module>
