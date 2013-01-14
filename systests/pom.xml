@@ -29,42 +29,14 @@
    <name>Apache Fediz System tests</name>
    <packaging>pom</packaging>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>1.7</version>
-        <executions>
-          <execution>
-            <id>reserve-network-port</id>
-            <goals>
-              <goal>reserve-network-port</goal>
-            </goals>
-            <phase>initialize</phase>
-            <configuration>
-              <portNames>
-                <portName>idp.https.port</portName>
-                <portName>rp.https.port</portName>
-              </portNames>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
-
-
    <modules>
-<!--
-      <module>idp</module>
-      <module>sts</module>
--->
+      <module>tests</module>
       <module>simpleWebapp</module>
 <!--
       <module>springWebapp</module>
 -->
-      <module>tests</module>
+      <module>jetty8</module>
+<!--      <module>tomcat7</module>-->
    </modules>
 
 </project>

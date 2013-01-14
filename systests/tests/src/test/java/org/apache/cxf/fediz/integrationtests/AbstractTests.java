@@ -28,8 +28,6 @@ import java.util.List;
 import net.htmlparser.jericho.FormField;
 import net.htmlparser.jericho.FormFields;
 import net.htmlparser.jericho.Source;
-
-
 import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.http.Consts;
 import org.apache.http.HttpEntity;
@@ -46,87 +44,30 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.util.resource.Resource;
-import org.eclipse.jetty.xml.XmlConfiguration;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 
+public abstract class AbstractTests {
 
-public class JettyTest {
-
-    private static String idpHttpsPort;
-    private static String rpHttpsPort;
-    
-    private static Server idpServer;
-    private static Server rpServer;
-    
-    @BeforeClass
-    public static void init() {
-        System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
-
-        System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
-
-        System.setProperty("org.apache.commons.logging.simplelog.log.httpclient.wire", "debug");
-
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.commons.httpclient", "debug");
-
-        idpHttpsPort = System.getProperty("idp.https.port");
-        Assert.assertNotNull(idpHttpsPort);
-        rpHttpsPort = System.getProperty("rp.https.port");
-        Assert.assertNotNull(rpHttpsPort);
-
-        initIdp();
-        Assert.assertTrue("IDP server not running", idpServer.isRunning());
-        initRp();
-        Assert.assertTrue("RP server not running", rpServer.isRunning());
+    public AbstractTests() {
+        super();
     }
-    
-    private static void initIdp() {
-        try {
-            Resource testServerConfig = Resource.newSystemResource("jetty/rp-server.xml");
-            XmlConfiguration configuration = new XmlConfiguration(testServerConfig.getInputStream());
-            idpServer = (Server)configuration.configure();   
-            idpServer.start();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-    
-    private static void initRp() {
-        try {
-            Resource testServerConfig = Resource.newSystemResource("jetty/idp-server.xml");
-            XmlConfiguration configuration = new XmlConfiguration(testServerConfig.getInputStream());
-            rpServer = (Server)configuration.configure();
-            rpServer.start();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-    
-    /*
-    @org.junit.Test
-    @Ignore
-    public void testStart() throws Exception {
-        System.out.println(System.getProperty("jetty.home"));
-        System.out.println(Server.getVersion());
-        System.out.println(server.isRunning());
-    }
-    */
+
+    public abstract String getIdpHttpsPort();
+
+    public abstract String getRpHttpsPort();
 
     @org.junit.Test
     public void testUserAlice() throws Exception {
-        String url = "https://localhost:" + rpHttpsPort + "/fedizhelloworld/secure/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
         String response = sendHttpGet(url, user, password);
-        
+
         Assert.assertTrue("Principal not " + user, response.indexOf("userPrincipal=" + user) > 0);
         Assert.assertTrue("User " + user + " does not have role Admin", response.indexOf("role:Admin=false") > 0);
         Assert.assertTrue("User " + user + " does not have role Manager", response.indexOf("role:Manager=false") > 0);
         Assert.assertTrue("User " + user + " must have role User", response.indexOf("role:User=true") > 0);
-        
+
         String claim = ClaimTypes.FIRSTNAME.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
                           response.indexOf(claim + "=Alice") > 0);
@@ -136,21 +77,21 @@ public class JettyTest {
         claim = ClaimTypes.EMAILADDRESS.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@mycompany.org'",
                           response.indexOf(claim + "=alice@mycompany.org") > 0);
-        
+
     }
-    
+
     @org.junit.Test
     public void testUserBob() throws Exception {
-        String url = "https://localhost:" + rpHttpsPort + "/fedizhelloworld/secure/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         String user = "bob";
         String password = "bob";
         String response = sendHttpGet(url, user, password);
-        
+
         Assert.assertTrue("Principal not " + user, response.indexOf("userPrincipal=" + user) > 0);
         Assert.assertTrue("User " + user + " does not have role Admin", response.indexOf("role:Admin=true") > 0);
         Assert.assertTrue("User " + user + " does not have role Manager", response.indexOf("role:Manager=true") > 0);
         Assert.assertTrue("User " + user + " must have role User", response.indexOf("role:User=true") > 0);
-        
+
         String claim = ClaimTypes.FIRSTNAME.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'Bob'",
                           response.indexOf(claim + "=Bob") > 0);
@@ -161,19 +102,19 @@ public class JettyTest {
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'bobwindsor@idp.org'",
                           response.indexOf(claim + "=bobwindsor@idp.org") > 0);
     }
-    
+
     @org.junit.Test
     public void testUserTed() throws Exception {
-        String url = "https://localhost:" + rpHttpsPort + "/fedizhelloworld/secure/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         String user = "ted";
         String password = "det";
         String response = sendHttpGet(url, user, password);
-        
+
         Assert.assertTrue("Principal not " + user, response.indexOf("userPrincipal=" + user) > 0);
         Assert.assertTrue("User " + user + " does not have role Admin", response.indexOf("role:Admin=false") > 0);
         Assert.assertTrue("User " + user + " does not have role Manager", response.indexOf("role:Manager=false") > 0);
         Assert.assertTrue("User " + user + " must have role User", response.indexOf("role:User=false") > 0);
-        
+
         String claim = ClaimTypes.FIRSTNAME.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'Ted'",
                           response.indexOf(claim + "=Ted") > 0);
@@ -184,44 +125,44 @@ public class JettyTest {
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'tcooper@hereiam.org'",
                           response.indexOf(claim + "=tcooper@hereiam.org") > 0);
     }
-    
+
     @org.junit.Test
     public void testUserAliceNoAccess() throws Exception {
-        String url = "https://localhost:" + rpHttpsPort + "/fedizhelloworld/secure/admin/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/admin/fedservlet";
         String user = "alice";
         String password = "ecila";
         sendHttpGet(url, user, password, 200, 403);        
     }
-    
+
     @org.junit.Ignore
     @org.junit.Test
     public void testUserAliceWrongPassword() throws Exception {
-        String url = "https://localhost:" + rpHttpsPort + "/fedizhelloworld/secure/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         String user = "alice";
         String password = "alice";
         //[TODO] Fix IDP return code from 500 to 401
         sendHttpGet(url, user, password, 500, 0);        
     }
-    
+
     @org.junit.Test
     public void testUserTedNoAccess() throws Exception {
-        String url = "https://localhost:" + rpHttpsPort + "/fedizhelloworld/secure/admin/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/admin/fedservlet";
         String user = "ted";
         String password = "det";
         sendHttpGet(url, user, password, 200, 403);        
     }
-    
+
     private String sendHttpGet(String url, String user, String password) throws Exception {
         return sendHttpGet(url, user, password, 200, 200);
     }
-    
-    private String sendHttpGet(String url, String user, String password, 
-                               int returnCodeIDP, int returnCodeRP) throws Exception {
+
+    private String sendHttpGet(String url, String user, String password, int returnCodeIDP, int returnCodeRP)
+        throws Exception {
         DefaultHttpClient httpclient = new DefaultHttpClient();
         try {
             httpclient.getCredentialsProvider().setCredentials(
-                    new AuthScope("localhost", Integer.parseInt(idpHttpsPort)),
-                    new UsernamePasswordCredentials(user, password));
+                new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+                new UsernamePasswordCredentials(user, password));
 
             KeyStore trustStore  = KeyStore.getInstance(KeyStore.getDefaultType());
             FileInputStream instream = new FileInputStream(new File("./target/test-classes/server.jks"));
@@ -236,16 +177,16 @@ public class JettyTest {
             }
 
             SSLSocketFactory socketFactory = new SSLSocketFactory(trustStore);
-            Scheme schIdp = new Scheme("https", Integer.parseInt(idpHttpsPort), socketFactory);
+            Scheme schIdp = new Scheme("https", Integer.parseInt(getIdpHttpsPort()), socketFactory);
             httpclient.getConnectionManager().getSchemeRegistry().register(schIdp);
-            Scheme schRp = new Scheme("https", Integer.parseInt(rpHttpsPort), socketFactory);
+            Scheme schRp = new Scheme("https", Integer.parseInt(getRpHttpsPort()), socketFactory);
             httpclient.getConnectionManager().getSchemeRegistry().register(schRp);
 
             HttpGet httpget = new HttpGet(url);
 
             HttpResponse response = httpclient.execute(httpget);
             HttpEntity entity = response.getEntity();
-            
+
             System.out.println(response.getStatusLine());
             if (entity != null) {
                 System.out.println("Response content length: " + entity.getContentLength());
@@ -253,21 +194,21 @@ public class JettyTest {
             Assert.assertTrue("IDP HTTP Response code: " + response.getStatusLine().getStatusCode()
                               + " [Expected: " + returnCodeIDP + "]",
                               returnCodeIDP == response.getStatusLine().getStatusCode());
-            
+
             if (response.getStatusLine().getStatusCode() != 200) {
                 return null;
             }
-            
-//            Redirect to a POST is not supported without user interaction
-//            http://www.ietf.org/rfc/rfc2616.txt
-//            If the 301 status code is received in response to a request other
-//            than GET or HEAD, the user agent MUST NOT automatically redirect the
-//            request unless it can be confirmed by the user, since this might
-//            change the conditions under which the request was issued.
-            
+
+            //            Redirect to a POST is not supported without user interaction
+            //            http://www.ietf.org/rfc/rfc2616.txt
+            //            If the 301 status code is received in response to a request other
+            //            than GET or HEAD, the user agent MUST NOT automatically redirect the
+            //            request unless it can be confirmed by the user, since this might
+            //            change the conditions under which the request was issued.
+
             httpclient.setRedirectStrategy(new LaxRedirectStrategy());
             HttpPost httppost = new HttpPost(url);
- 
+
             Source source = new Source(EntityUtils.toString(entity));
             List <NameValuePair> nvps = new ArrayList <NameValuePair>();
             FormFields formFields = source.getFormFields();
@@ -279,17 +220,17 @@ public class JettyTest {
             httppost.setEntity(new UrlEncodedFormEntity(nvps, Consts.UTF_8));
 
             response = httpclient.execute(httppost);
-            
+
             entity = response.getEntity();
             System.out.println(response.getStatusLine());
             Assert.assertTrue("RP HTTP Response code: " + response.getStatusLine().getStatusCode()
                               + " [Expected: " + returnCodeRP + "]",
                               returnCodeRP == response.getStatusLine().getStatusCode());
-            
+
             if (entity != null) {
                 System.out.println("Response content length: " + entity.getContentLength());
             }
-            
+
             return EntityUtils.toString(entity);
         } finally {
             // When HttpClient instance is no longer needed,
@@ -297,27 +238,7 @@ public class JettyTest {
             // immediate deallocation of all system resources
             httpclient.getConnectionManager().shutdown();
         }
-        
+
     }
-    
-    
-    @AfterClass
-    public static void cleanup() {
-        if (idpServer != null && idpServer.isStarted()) {
-            try {
-                idpServer.stop();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        if (rpServer != null && rpServer.isStarted()) {
-            try {
-                rpServer.stop();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-    
-    
+
 }
