@@ -36,7 +36,7 @@
       <module>springWebapp</module>
 -->
       <module>jetty8</module>
-<!--      <module>tomcat7</module>-->
+      <module>tomcat7</module>
    </modules>
 
 </project>
