@@ -71,6 +71,7 @@
                 <include>org.apache.cxf.fediz:fediz-idp</include>
                 <include>org.apache.cxf.fediz:fediz-idp-sts</include>
             </includes>
+            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
             <scope>runtime</scope>
         </dependencySet>
         <dependencySet>

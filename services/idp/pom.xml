@@ -93,6 +93,6 @@
             </plugin>
         </plugins>
         <!-- Name of the generated WAR file -->
-        <finalName>fedizidp</finalName>
+        <finalName>fediz-idp</finalName>
     </build>
 </project>

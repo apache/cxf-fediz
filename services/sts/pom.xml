@@ -97,6 +97,6 @@
             </plugin>
         </plugins>
         <!-- Name of the generated WAR file -->
-        <finalName>fedizidpsts</finalName>
+        <finalName>fediz-idp-sts</finalName>
     </build>
 </project>

@@ -31,14 +31,14 @@
 		  <Array type="org.eclipse.jetty.server.Handler">
 		    <Item>
 		      <New class="org.eclipse.jetty.webapp.WebAppContext">
-	            <Set name="contextPath">/fedizidp</Set>
+	            <Set name="contextPath">/fediz-idp</Set>
 	            <Set name="war">./target/fediz-idp.war</Set>
 	            <Set name="throwUnavailableOnStartupException">true</Set>
 	          </New>
 	        </Item>
 	        <Item>
 		      <New class="org.eclipse.jetty.webapp.WebAppContext">
-	            <Set name="contextPath">/fedizidpsts</Set>
+	            <Set name="contextPath">/fediz-idp-sts</Set>
 	            <Set name="war">./target/fediz-idp-sts.war</Set>
 	            <Set name="throwUnavailableOnStartupException">true</Set>
 	          </New>	          

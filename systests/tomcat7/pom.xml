@@ -143,7 +143,7 @@
                            <version>${project.version}</version>
                            <type>war</type>
                            <overWrite>true</overWrite>
-                           <outputDirectory>target/tomcat/idp/webapps/fedizidp</outputDirectory>
+                           <outputDirectory>target/tomcat/idp/webapps/fediz-idp</outputDirectory>
                         </artifactItem>
                         <artifactItem>
                            <groupId>org.apache.cxf.fediz</groupId>
@@ -151,7 +151,7 @@
                            <version>${project.version}</version>
                            <type>war</type>
                            <overWrite>true</overWrite>
-                           <outputDirectory>target/tomcat/idp/webapps/fedizidpsts</outputDirectory>
+                           <outputDirectory>target/tomcat/idp/webapps/fediz-idp-sts</outputDirectory>
                         </artifactItem>
                         <artifactItem>
                            <groupId>org.apache.cxf.fediz.systests</groupId>

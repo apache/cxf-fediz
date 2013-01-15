@@ -86,8 +86,8 @@ public class TomcatTest extends AbstractTests {
 
             idpServer.getService().addConnector(httpsConnector);
             
-            idpServer.addWebapp("/fedizidpsts", "fedizidpsts");
-            idpServer.addWebapp("/fedizidp", "fedizidp");
+            idpServer.addWebapp("/fediz-idp-sts", "fediz-idp-sts");
+            idpServer.addWebapp("/fediz-idp", "fediz-idp");
             
             idpServer.start();
         } catch (Exception e) {
