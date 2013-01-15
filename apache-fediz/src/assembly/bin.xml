@@ -28,13 +28,6 @@
 
     <fileSets>
         <fileSet>
-            <directory>src/main/release</directory>
-            <outputDirectory>apache-fediz-${project.version}</outputDirectory>
-            <includes>
-                <include>**/*</include>
-            </includes>
-        </fileSet>
-        <fileSet>
             <directory>target/maven-shared-archive-resources/META-INF</directory>
             <outputDirectory>apache-fediz-${project.version}</outputDirectory>
             <includes>
@@ -53,6 +46,7 @@
                 <exclude>**/build/**/*</exclude>
                 <exclude>**/target/**/*</exclude>
                 <exclude>**/interopfest/**</exclude>
+                <exclude>**/.*/**</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -60,6 +54,14 @@
             <outputDirectory>apache-fediz-${project.version}/plugins</outputDirectory>
             <includes>
                 <include>**/README.txt</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>../</directory>
+            <outputDirectory>apache-fediz-${project.version}</outputDirectory>
+            <includes>
+                <include>README.txt</include>
+                <include>release_notes.txt</include>
             </includes>
         </fileSet>
     </fileSets>
