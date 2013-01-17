@@ -185,16 +185,16 @@ public class SAMLTokenValidator implements TokenValidator {
                 for (Claim c : claims) {
                     if (roleURI.equals(c.getClaimType())) {
                         Object oValue = c.getValue();
-                        if (oValue instanceof String) {
+                        if ((oValue instanceof String) && !"".equals((String)oValue)) {
                             if (delim == null) {
                                 roles = Collections.singletonList((String)oValue);
                             } else {
                                 roles = parseRoles((String)oValue, delim);
                             }
-                        } else if (oValue instanceof List<?>) {
+                        } else if ((oValue instanceof List<?>) && !((List<?>)oValue).isEmpty()) {
                             List<String> values = (List<String>)oValue;
                             roles = Collections.unmodifiableList(values);
-                        } else {
+                        } else if (!((oValue instanceof String) || (oValue instanceof List<?>))) {
                             LOG.error("Unsupported value type of Claim value");
                             throw new IllegalStateException("Unsupported value type of Claim value");
                         }
@@ -279,9 +279,7 @@ public class SAMLTokenValidator implements TokenValidator {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug(" [" + value + "]");
                     }
-                    if (!"".equals(value)) {
-                        valueList.add(value);
-                    }
+                    valueList.add(value);
                 }
                 mergeClaimToMap(claimsMap, c, valueList);
             }
@@ -337,9 +335,7 @@ public class SAMLTokenValidator implements TokenValidator {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug(" [" + value + "]");
                     }
-                    if (!"".equals(value)) {
-                        valueList.add(value);
-                    }
+                    valueList.add(value);
                 }
                 mergeClaimToMap(claimsMap, c, valueList);
             }
