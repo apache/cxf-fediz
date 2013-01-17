@@ -279,7 +279,9 @@ public class SAMLTokenValidator implements TokenValidator {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug(" [" + value + "]");
                     }
-                    valueList.add(value);
+                    if (!"".equals(value)) {
+                        valueList.add(value);
+                    }
                 }
                 mergeClaimToMap(claimsMap, c, valueList);
             }
@@ -335,7 +337,9 @@ public class SAMLTokenValidator implements TokenValidator {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug(" [" + value + "]");
                     }
-                    valueList.add(value);
+                    if (!"".equals(value)) {
+                        valueList.add(value);
+                    }
                 }
                 mergeClaimToMap(claimsMap, c, valueList);
             }
