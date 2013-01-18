@@ -86,7 +86,7 @@
                 <sec:intercept-url pattern="/secure/manager/**" access="ROLE_MANAGER"/>
                 <sec:intercept-url pattern="/secure/admin/**" access="ROLE_ADMIN"/>
                 <sec:intercept-url pattern="/secure/user/**" access="ROLE_USER,ROLE_ADMIN,ROLE_MANAGER"/>
-                <sec:intercept-url pattern="/secure/fedservlet" access="ROLE_USER,ROLE_ADMIN,ROLE_MANAGER"/>
+                <sec:intercept-url pattern="/secure/fedservlet" access="ROLE_USER,ROLE_ADMIN,ROLE_MANAGER,ROLE_AUTHENTICATED"/>
             </sec:filter-invocation-definition-source>
         </property>
     </bean>

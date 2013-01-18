@@ -15,7 +15,7 @@
 		<servlet-name>FederationServlet</servlet-name>
 		<url-pattern>/secure/fedservlet</url-pattern>
 	</servlet-mapping>
-	
+
 	<servlet-mapping>
 		<servlet-name>FederationServlet</servlet-name>
 		<url-pattern>/secure/admin/fedservlet</url-pattern>
@@ -85,7 +85,7 @@
 			<role-name>Manager</role-name>
 		</auth-constraint>
 	</security-constraint>	
-	
+
 	<login-config>
 		<auth-method>WSFED</auth-method>
 		<realm-name>WSFED</realm-name>
