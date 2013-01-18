@@ -34,5 +34,6 @@
       <module>tomcat</module>
       <module>jetty</module>
       <module>spring</module>
+      <module>cxf</module>
    </modules>
 </project>
