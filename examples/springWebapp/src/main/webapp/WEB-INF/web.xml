@@ -26,10 +26,27 @@
         <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
     </filter>
 
+    <!-- Optional: Cache the security token in Thread Local Storage -->
+	<filter>
+		<filter-name>FederationFilter</filter-name>
+		<filter-class>org.apache.cxf.fediz.cxf.web.FederationFilter</filter-class>
+		<!--
+		<init-param>
+			<param-name>security.token.attribute</param-name>
+			<param-value>org.apache.fediz.SECURITY_TOKEN</param-value>
+		</init-param>
+		-->
+	</filter>
+
     <filter-mapping>
       <filter-name>filterChainProxy</filter-name>
       <url-pattern>/*</url-pattern>
     </filter-mapping>
+
+	<filter-mapping>
+		<filter-name>FederationFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
 
     <!--
       - Loads the root application context of this web app at startup.

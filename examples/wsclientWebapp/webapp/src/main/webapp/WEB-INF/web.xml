@@ -6,14 +6,15 @@
 	<description>WS Federation WS-Client Web Application Example</description>
 	<display-name>WS Federation WS-Client Web Application Example</display-name>
 
-  <context-param>
-    <param-name>contextConfigLocation</param-name>
-    <param-value>WEB-INF/applicationContext.xml</param-value>
-  </context-param>
-  <listener>
-    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-  </listener>
-
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>WEB-INF/applicationContext.xml</param-value>
+    </context-param>
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+  
+    <!-- Required: Cache the security token in Thread Local Storage -->
 	<filter>
 		<filter-name>FederationFilter</filter-name>
 		<filter-class>org.apache.cxf.fediz.cxf.web.FederationFilter</filter-class>

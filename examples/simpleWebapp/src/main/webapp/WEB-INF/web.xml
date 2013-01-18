@@ -6,6 +6,23 @@
 	<description>WS Federation Simple Web Application Example</description>
 	<display-name>WS Federation Simple Web Application Example</display-name>
 
+    <!-- Optional: Cache the security token in Thread Local Storage -->
+	<filter>
+		<filter-name>FederationFilter</filter-name>
+		<filter-class>org.apache.cxf.fediz.cxf.web.FederationFilter</filter-class>
+		<!--
+		<init-param>
+			<param-name>security.token.attribute</param-name>
+			<param-value>org.apache.fediz.SECURITY_TOKEN</param-value>
+		</init-param>
+		-->
+	</filter>
+
+	<filter-mapping>
+		<filter-name>FederationFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
 	<servlet>
 		<servlet-name>FederationServlet</servlet-name>
 		<servlet-class>org.apache.cxf.fediz.example.FederationServlet</servlet-class>
