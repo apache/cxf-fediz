@@ -75,6 +75,8 @@ public class FederationAuthenticator extends LoginAuthenticator {
     public static final String J_POST = "org.eclipse.jetty.security.form_POST";
 
     private static final Logger LOG = Log.getLogger(FederationAuthenticator.class);
+    
+    private static final String SECURITY_TOKEN_ATTR = "org.apache.fediz.SECURITY_TOKEN";
        
     private String configFile;
     private FederationConfigurator configurator;
@@ -176,6 +178,9 @@ public class FederationAuthenticator extends LoginAuthenticator {
                         if (user != null)
                         {
                             session=renewSession(request,response);
+                            
+                            FederationUserIdentity  fui = (FederationUserIdentity)user;
+                            session.setAttribute(SECURITY_TOKEN_ATTR, fui.getToken());
 
                             // Redirect to original request
                             String nuri;

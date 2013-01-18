@@ -25,6 +25,8 @@ import java.util.Date;
 
 import javax.security.auth.Subject;
 
+import org.w3c.dom.Element;
+
 import org.apache.cxf.fediz.core.FederationResponse;
 import org.eclipse.jetty.server.UserIdentity;
 
@@ -79,6 +81,10 @@ public class FederationUserIdentity implements UserIdentity {
     
     public String getId() {
         return fedResponse.getUniqueTokenId();
+    }
+    
+    public Element getToken() {
+        return fedResponse.getToken();
     }
 
 }
