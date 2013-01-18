@@ -26,7 +26,7 @@
 	</cxf:bus>
 
 	<bean id="delegationCallbackHandler"
-		class="org.apache.cxf.fediz.example.ThreadLocalCallbackHandler" />
+		class="org.apache.cxf.fediz.cxf.web.ThreadLocalCallbackHandler" />
 
 	<jaxws:client id="HelloServiceClient" serviceName="svc:GreeterService"
 		xmlns:svc="http://apache.org/hello_world_soap_http"
