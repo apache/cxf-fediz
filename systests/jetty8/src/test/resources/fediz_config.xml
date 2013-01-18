@@ -29,5 +29,30 @@
 			</claimTypesRequested>
 		</protocol>
 	</contextConfig>
+	<contextConfig name="/fedizspringhelloworld">
+		<audienceUris>
+			<audienceItem>urn:org:apache:cxf:fediz:fedizhelloworld</audienceItem>
+		</audienceUris>
+		<certificateStores>
+			<trustManager>
+				<keyStore file="stsstore.jks" password="stsspass" type="JKS" />
+			</trustManager>
+		</certificateStores>
+		<trustedIssuers>
+			<issuer subject=".*CN=www.sts.com.*" certificateValidation="ChainTrust"
+				name="DoubleItSTSIssuer" />
+		</trustedIssuers>
+		<maximumClockSkew>1000</maximumClockSkew>
+		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			xsi:type="federationProtocolType" version="1.0.0">
+                        <realm>urn:org:apache:cxf:fediz:fedizhelloworld</realm>
+			<issuer>https://localhost:${idp.https.port}/fedizidp/</issuer>
+			<roleDelimiter>,</roleDelimiter>
+			<roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
+			<claimTypesRequested>
+				<claimType type="a particular claim type" optional="true" />
+			</claimTypesRequested>
+		</protocol>
+	</contextConfig>	
 </FedizConfig>
 

@@ -170,5 +170,9 @@ public class TomcatTest extends AbstractTests {
         return rpHttpsPort;
     }
     
+    @Override
+    public String getServletContextName() {
+        return "fedizhelloworld";
+    }
     
 }

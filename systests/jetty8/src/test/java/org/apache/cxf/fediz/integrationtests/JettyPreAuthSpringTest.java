@@ -20,12 +20,13 @@
 package org.apache.cxf.fediz.integrationtests;
 
 
+
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 
 
-public class JettyTest extends AbstractTests {
+public class JettyPreAuthSpringTest extends AbstractTests {
 
     static String idpHttpsPort;
     static String rpHttpsPort;
@@ -69,7 +70,7 @@ public class JettyTest extends AbstractTests {
     
     @Override
     public String getServletContextName() {
-        return "fedizhelloworld";
+        return "fedizspringhelloworld";
     }
     
     

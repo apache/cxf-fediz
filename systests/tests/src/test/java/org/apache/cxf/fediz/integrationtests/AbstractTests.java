@@ -55,10 +55,12 @@ public abstract class AbstractTests {
     public abstract String getIdpHttpsPort();
 
     public abstract String getRpHttpsPort();
+    
+    public abstract String getServletContextName();
 
     @org.junit.Test
     public void testUserAlice() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
         String response = sendHttpGet(url, user, password);
@@ -82,7 +84,7 @@ public abstract class AbstractTests {
 
     @org.junit.Test
     public void testUserBob() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
         String user = "bob";
         String password = "bob";
         String response = sendHttpGet(url, user, password);
@@ -105,7 +107,7 @@ public abstract class AbstractTests {
 
     @org.junit.Test
     public void testUserTed() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
         String user = "ted";
         String password = "det";
         String response = sendHttpGet(url, user, password);
@@ -128,7 +130,8 @@ public abstract class AbstractTests {
 
     @org.junit.Test
     public void testUserAliceNoAccess() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/admin/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/"
+            + getServletContextName() + "/secure/admin/fedservlet";
         String user = "alice";
         String password = "ecila";
         sendHttpGet(url, user, password, 200, 403);        
@@ -137,7 +140,8 @@ public abstract class AbstractTests {
     @org.junit.Ignore
     @org.junit.Test
     public void testUserAliceWrongPassword() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/"
+            + getServletContextName() + "/secure/fedservlet";
         String user = "alice";
         String password = "alice";
         //[TODO] Fix IDP return code from 500 to 401
@@ -146,7 +150,8 @@ public abstract class AbstractTests {
 
     @org.junit.Test
     public void testUserTedNoAccess() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/admin/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/"
+            + getServletContextName() + "/secure/admin/fedservlet";
         String user = "ted";
         String password = "det";
         sendHttpGet(url, user, password, 200, 403);        
@@ -158,6 +163,7 @@ public abstract class AbstractTests {
 
     private String sendHttpGet(String url, String user, String password, int returnCodeIDP, int returnCodeRP)
         throws Exception {
+        System.out.println(">>>User: " + user + " Password: " + password + " URL: " + url);
         DefaultHttpClient httpclient = new DefaultHttpClient();
         try {
             httpclient.getCredentialsProvider().setCredentials(
@@ -232,6 +238,9 @@ public abstract class AbstractTests {
             }
 
             return EntityUtils.toString(entity);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw ex;
         } finally {
             // When HttpClient instance is no longer needed,
             // shut down the connection manager to ensure

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure.dtd">
  
-<Configure id="FileServer" class="org.eclipse.jetty.server.Server">
+<Configure id="RPServer" class="org.eclipse.jetty.server.Server">
  
 	<Call class="org.eclipse.jetty.util.log.Log" name="getRootLogger">
 	  <Call name="setDebugEnabled">
@@ -44,6 +44,21 @@
 	            </Get>
 	          </New>
 		    </Item>
+		    <Item>
+		      <New class="org.eclipse.jetty.webapp.WebAppContext">
+	            <Set name="contextPath">/fedizspringhelloworld</Set>
+	            <Set name="war">./target/systests-springWebapp.war</Set>
+	            <Set name="throwUnavailableOnStartupException">true</Set>
+	             
+	            <Get name="securityHandler">
+	              <Set name="authenticator">
+	                <New class="org.apache.cxf.fediz.jetty.FederationAuthenticator">
+	                  <Set name="configFile">./target/test-classes/fediz_config.xml</Set>
+	                </New>
+	              </Set>
+	            </Get>
+	          </New>
+		    </Item>		    
 		  </Array>
         </Set>
       </New>

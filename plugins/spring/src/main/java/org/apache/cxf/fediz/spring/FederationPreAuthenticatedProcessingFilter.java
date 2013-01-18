@@ -61,9 +61,11 @@ public class FederationPreAuthenticatedProcessingFilter extends AbstractPreAuthe
             if (obj != null)  {
                 return obj;
             } else {
+                logger.error("Session must contain Federation response");
                 throw new IllegalStateException("Session must contain Federation response");
             }
         } else {
+            logger.error("Principal must be instance of FederationPrincipal: " + principal.toString());
             throw new IllegalStateException("Principal must be instance of FederationPrincipal");
         }
         //return "N/A";
