@@ -181,7 +181,7 @@ public class STSClientFilter extends AbstractAuthFilter {
         }
         
         contentType = filterConfig.getInitParameter(PARAM_RSTR_CONTENT_TYPE);
-        if (PARAM_RSTR_CONTENT_TYPE == null) {
+        if (contentType == null) {
             throw new ServletException(
                                        "Parameter '" + PARAM_RSTR_CONTENT_TYPE + "' not configured");
         }
@@ -233,7 +233,7 @@ public class STSClientFilter extends AbstractAuthFilter {
                                            "http://docs.oasis-open.org/ws-sx/ws-trust/200512/",
                                            stsWsdlEndpoint));
             String username = null;
-            if (authenticationType.equals(AuthenticationType.USERNAME_PASSWORD.toString())) {
+            if (AuthenticationType.USERNAME_PASSWORD.name().equals(authenticationType)) {
                 username = (String)context.get(AuthContext.AUTH_USERNAME);
                 String password = (String)context.get(AuthContext.AUTH_PASSWORD);
                 context.remove(AuthContext.AUTH_USERNAME);
