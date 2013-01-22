@@ -201,7 +201,14 @@ public class STSClientFilter extends AbstractAuthFilter {
             
             if (context.get(tokenStoreName) != null) {
                 LOG.info("Security token '" + tokenStoreName + "' already created.");
-                return;
+                Object token = context.get(tokenStoreName);
+                if ((token instanceof SecurityToken)
+                    && ((SecurityToken)token).isExpired()) {
+                    LOG.info("Security token '" + tokenStoreName + "' has expired.");
+                    context.remove(tokenStoreName);
+                } else {
+                    return;
+                }
             }
 
             Bus cxfBus = getBus();
