@@ -116,6 +116,7 @@ public class FederationFilter extends AbstractAuthFilter {
             context.put(PARAM_WREPLY, wreply);
             context.put(PARAM_WAUTH, wauth);
             context.put(PARAM_ACTION, action);
+            context.put(PARAM_WFRESH, wfresh);
 
 
             SecurityToken idpToken = null;
