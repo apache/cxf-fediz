@@ -261,7 +261,7 @@ public class IdpServlet extends HttpServlet {
                         }
                         
                         try {
-                            idpToken = requestSecurityTokenForIDP(username, password, "urn:fediz:idp");
+                            idpToken = requestSecurityTokenForIDP(username, password, "urn:fediz:idp", wfresh);
                             session = request.getSession(true);
                             session.setAttribute(IDP_TOKEN, idpToken);
                             session.setAttribute(IDP_USER, username);
@@ -290,7 +290,7 @@ public class IdpServlet extends HttpServlet {
             }
 
             try {
-                wresult = requestSecurityTokenForRP(idpToken, wtrealm);
+                wresult = requestSecurityTokenForRP(idpToken, wtrealm, wfresh);
                 request.setAttribute("fed." + PARAM_WRESULT,
                                      StringEscapeUtils.escapeXml(wresult));
                 if (wctx != null) {
@@ -322,7 +322,9 @@ public class IdpServlet extends HttpServlet {
         }
     }
     
-    private SecurityToken requestSecurityTokenForIDP(String username, String password, String appliesTo) throws Exception {
+    private SecurityToken requestSecurityTokenForIDP(
+        String username, String password, String appliesTo, String wfresh
+    ) throws Exception {
         Bus cxfBus = getBus();
         
         IdpSTSClient sts = new IdpSTSClient(cxfBus);
@@ -348,13 +350,16 @@ public class IdpServlet extends HttpServlet {
             sts.setEnableLifetime(true);
             int ttl = Integer.parseInt(getInitParameter(S_PARAM_TOKEN_INTERNAL_LIFETIME));
             sts.setTtl(ttl);
+        } else {
+            // Set TTL on the request
+            configureTTL(sts, wfresh);
         }
         
         return sts.requestSecurityToken(appliesTo);
     }
 
     private String requestSecurityTokenForRP(SecurityToken onbehalfof,
-                                        String appliesTo) throws Exception {
+                                        String appliesTo, String wfresh) throws Exception {
         try {
             Bus cxfBus = getBus();
             List<String> realmClaims = null;
@@ -393,6 +398,9 @@ public class IdpServlet extends HttpServlet {
                                            getInitParameter(S_PARAM_STS_RP_WSDL_ENDPOINT)));
             
             sts.setOnBehalfOf(onbehalfof.getToken());
+            
+            // Set TTL on the request
+            configureTTL(sts, wfresh);
 
             Element claims = createClaimsElement(realmClaims);
             if (claims != null) {
@@ -438,6 +446,20 @@ public class IdpServlet extends HttpServlet {
         writer.writeEndElement();
 
         return writer.getDocument().getDocumentElement();
+    }
+    
+    private void configureTTL(IdpSTSClient sts, String wfresh) {
+        if (wfresh != null) {
+            try {
+                int ttl = Integer.parseInt(wfresh);
+                if (ttl > 0) {
+                    sts.setTtl(ttl * 60);                    
+                    sts.setEnableLifetime(true);
+                }
+            } catch (NumberFormatException ex) {
+                LOG.error("Invalid wfresh value '" + wfresh + "': "  + ex.getMessage());
+            }
+        }
     }
     
     private synchronized void setSTSWsdlUrl(String wsdlUrl) {
