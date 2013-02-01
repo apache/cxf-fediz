@@ -19,6 +19,7 @@
 package org.apache.cxf.fediz.service.idp;
 
 import java.io.IOException;
+import java.util.Date;
 
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
@@ -128,11 +129,12 @@ public class FederationFilter extends AbstractAuthFilter {
             } else {
                 if (idpToken.isExpired()) {
                     LOG.info("IDP token of '" + user + "' expired. Require authentication.");
-                    authenticationRequired = idpToken.isExpired();
-                } else if (wfresh != null && wfresh.equals("0")) {
-                    LOG.info("IDP token of '" + user + "' valid but relying party requested new authentication");
                     authenticationRequired = true;
-                } else {
+                } else if (wfresh != null) {
+                    authenticationRequired = parseWfresh(wfresh, user, idpToken);
+                }
+                
+                if (!authenticationRequired) {
                     LOG.debug("Session found for '" + user + "'.");
                     //Add it to the request context
                     context.put(sessionToken, idpToken);
@@ -149,6 +151,30 @@ public class FederationFilter extends AbstractAuthFilter {
         }
     }
 
+    /*
+     * Return true if authentication is required after parsing wfresh
+     */
+    private boolean parseWfresh(String wfresh, String user, SecurityToken idpToken) {
+        if ("0".equals(wfresh)) {
+            LOG.info("IDP token of '" + user + "' valid but relying party requested new authentication");
+            return true;
+        } else {
+            long ttl = Long.parseLong(wfresh);
+            if (ttl > 0) {
+                Date createdDate = idpToken.getCreated();
+                Date expiryDate = new Date();
+                expiryDate.setTime(createdDate.getTime() + (ttl * 60L * 1000L));
+                if (expiryDate.before(new Date())) {
+                    LOG.info("IDP token of '" + user 
+                             + "' valid but relying party requested new authentication via wfresh: " + wfresh);
+                    return true;
+                }
+            } else {
+                LOG.info("wfresh value of " + wfresh + " is invalid");
+            }
+        }
+        return false;
+    }
 
 
 }

@@ -248,9 +248,14 @@ public class STSClientFilter extends AbstractAuthFilter {
                 sts.getProperties().put(SecurityConstants.USERNAME, username);
                 sts.getProperties().put(SecurityConstants.PASSWORD, password);
             }
-
-            // Set TTL on the request if wfresh is configured
-            configureTTL(sts, context);
+            
+            /*
+            if (getInitParameter(S_PARAM_TOKEN_INTERNAL_LIFETIME) != null) {
+                sts.setEnableLifetime(true);
+                int ttl = Integer.parseInt(getInitParameter(S_PARAM_TOKEN_INTERNAL_LIFETIME));
+                sts.setTtl(ttl);
+            }
+            */
 
             if (appliesTo.startsWith("$")) {
                 resolvedAppliesTo = (String)context.get(appliesTo.substring(1));
@@ -368,21 +373,6 @@ public class STSClientFilter extends AbstractAuthFilter {
         writer.writeEndElement();
 
         return writer.getDocument().getDocumentElement();
-    }
-    
-    private void configureTTL(IdpSTSClient sts, AuthContext context) {
-        String wfresh = (String)context.get(FederationFilter.PARAM_WFRESH);
-        if (wfresh != null) {
-            try {
-                int ttl = Integer.parseInt(wfresh);
-                if (ttl > 0) {
-                    sts.setTtl(ttl * 60);                    
-                    sts.setEnableLifetime(true);
-                }
-            } catch (NumberFormatException ex) {
-                LOG.error("Invalid wfresh value '" + wfresh + "': "  + ex.getMessage());
-            }
-        }
     }
     
     private synchronized void setSTSWsdlUrl(String wsdlUrl) {
