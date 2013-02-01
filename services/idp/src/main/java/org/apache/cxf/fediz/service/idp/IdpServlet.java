@@ -21,6 +21,7 @@ package org.apache.cxf.fediz.service.idp;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -205,10 +206,11 @@ public class IdpServlet extends HttpServlet {
                     if (idpToken.isExpired()) {
                         LOG.info("IDP token of '" + user + "' expired. Require authentication.");
                         authenticationRequired = idpToken.isExpired();
-                    } else if (wfresh != null && wfresh.equals("0")) {
-                        LOG.info("IDP token of '" + user + "' valid but relying party requested new authentication");
-                        authenticationRequired = true;
-                    } else {
+                    } else if (wfresh != null) {
+                        authenticationRequired = parseWfresh(wfresh, user, idpToken);
+                    }
+                    
+                    if (!authenticationRequired) {
                         LOG.debug("Session found for '" + user + "'.");
                     }
                 }
@@ -261,7 +263,7 @@ public class IdpServlet extends HttpServlet {
                         }
                         
                         try {
-                            idpToken = requestSecurityTokenForIDP(username, password, "urn:fediz:idp", wfresh);
+                            idpToken = requestSecurityTokenForIDP(username, password, "urn:fediz:idp");
                             session = request.getSession(true);
                             session.setAttribute(IDP_TOKEN, idpToken);
                             session.setAttribute(IDP_USER, username);
@@ -290,7 +292,7 @@ public class IdpServlet extends HttpServlet {
             }
 
             try {
-                wresult = requestSecurityTokenForRP(idpToken, wtrealm, wfresh);
+                wresult = requestSecurityTokenForRP(idpToken, wtrealm);
                 request.setAttribute("fed." + PARAM_WRESULT,
                                      StringEscapeUtils.escapeXml(wresult));
                 if (wctx != null) {
@@ -323,7 +325,7 @@ public class IdpServlet extends HttpServlet {
     }
     
     private SecurityToken requestSecurityTokenForIDP(
-        String username, String password, String appliesTo, String wfresh
+        String username, String password, String appliesTo
     ) throws Exception {
         Bus cxfBus = getBus();
         
@@ -350,16 +352,13 @@ public class IdpServlet extends HttpServlet {
             sts.setEnableLifetime(true);
             int ttl = Integer.parseInt(getInitParameter(S_PARAM_TOKEN_INTERNAL_LIFETIME));
             sts.setTtl(ttl);
-        } else {
-            // Set TTL on the request
-            configureTTL(sts, wfresh);
         }
         
         return sts.requestSecurityToken(appliesTo);
     }
 
     private String requestSecurityTokenForRP(SecurityToken onbehalfof,
-                                        String appliesTo, String wfresh) throws Exception {
+                                        String appliesTo) throws Exception {
         try {
             Bus cxfBus = getBus();
             List<String> realmClaims = null;
@@ -399,9 +398,6 @@ public class IdpServlet extends HttpServlet {
             
             sts.setOnBehalfOf(onbehalfof.getToken());
             
-            // Set TTL on the request
-            configureTTL(sts, wfresh);
-
             Element claims = createClaimsElement(realmClaims);
             if (claims != null) {
                 sts.setClaims(claims);
@@ -448,18 +444,29 @@ public class IdpServlet extends HttpServlet {
         return writer.getDocument().getDocumentElement();
     }
     
-    private void configureTTL(IdpSTSClient sts, String wfresh) {
-        if (wfresh != null) {
-            try {
-                int ttl = Integer.parseInt(wfresh);
-                if (ttl > 0) {
-                    sts.setTtl(ttl * 60);                    
-                    sts.setEnableLifetime(true);
+    /*
+     * Return true if authentication is required after parsing wfresh
+     */
+    private boolean parseWfresh(String wfresh, String user, SecurityToken idpToken) {
+        if ("0".equals(wfresh)) {
+            LOG.info("IDP token of '" + user + "' valid but relying party requested new authentication");
+            return true;
+        } else {
+            long ttl = Long.parseLong(wfresh);
+            if (ttl > 0) {
+                Date createdDate = idpToken.getCreated();
+                Date expiryDate = new Date();
+                expiryDate.setTime(createdDate.getTime() + (ttl * 60L * 1000L));
+                if (expiryDate.before(new Date())) {
+                    LOG.info("IDP token of '" + user 
+                             + "' valid but relying party requested new authentication via wfresh: " + wfresh);
+                    return true;
                 }
-            } catch (NumberFormatException ex) {
-                LOG.error("Invalid wfresh value '" + wfresh + "': "  + ex.getMessage());
+            } else {
+                LOG.info("wfresh value of " + wfresh + " is invalid");
             }
         }
+        return false;
     }
     
     private synchronized void setSTSWsdlUrl(String wsdlUrl) {
