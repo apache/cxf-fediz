@@ -90,6 +90,8 @@ public class IdpServlet extends HttpServlet {
     private static final String S_PARAM_STS_WSDL_SERVICE = "sts.wsdl.service";
 
     private static final String S_PARAM_STS_WSDL_URL = "sts.wsdl.url";
+    
+    private static final String S_PARAM_STS_USE_WFRESH_FOR_TTL = "sts.use.wfresh.for.ttl";
 
 
     /**
@@ -100,6 +102,8 @@ public class IdpServlet extends HttpServlet {
     protected boolean isPortSet;
     
     protected String stsWsdlUrl;
+    
+    protected boolean useWfreshForTTL;
     
     private String tokenType;
 
@@ -148,6 +152,20 @@ public class IdpServlet extends HttpServlet {
         }
         if (getInitParameter(S_PARAM_TOKEN_INTERNAL_LIFETIME) != null) {
             LOG.info("Configured token lifetime: " + getInitParameter(S_PARAM_TOKEN_INTERNAL_LIFETIME));
+        }
+        
+        try {
+            String wfreshParam = getInitParameter(S_PARAM_STS_USE_WFRESH_FOR_TTL);
+            if (wfreshParam != null) {
+                useWfreshForTTL = Boolean.valueOf(wfreshParam).booleanValue();
+            } else {
+                useWfreshForTTL = true;
+            }
+        } catch (Exception ex) {
+            LOG.error("Failed to parse parameter '" + S_PARAM_STS_USE_WFRESH_FOR_TTL + "': " 
+                + ex.toString());
+            throw new ServletException("Failed to parse parameter '" 
+                + S_PARAM_STS_USE_WFRESH_FOR_TTL + "'");
         }
 
     }
@@ -263,7 +281,8 @@ public class IdpServlet extends HttpServlet {
                         }
                         
                         try {
-                            idpToken = requestSecurityTokenForIDP(username, password, "urn:fediz:idp");
+                            idpToken = 
+                                requestSecurityTokenForIDP(username, password, "urn:fediz:idp", wfresh);
                             session = request.getSession(true);
                             session.setAttribute(IDP_TOKEN, idpToken);
                             session.setAttribute(IDP_USER, username);
@@ -325,7 +344,7 @@ public class IdpServlet extends HttpServlet {
     }
     
     private SecurityToken requestSecurityTokenForIDP(
-        String username, String password, String appliesTo
+        String username, String password, String appliesTo, String wfresh
     ) throws Exception {
         Bus cxfBus = getBus();
         
@@ -348,13 +367,31 @@ public class IdpServlet extends HttpServlet {
         sts.getProperties().put(SecurityConstants.USERNAME, username);
         sts.getProperties().put(SecurityConstants.PASSWORD, password);
         
+        configureTTL(sts, wfresh);
+
+        return sts.requestSecurityToken(appliesTo);
+    }
+    
+    private void configureTTL(IdpSTSClient sts, String wfresh) {
+        if (wfresh != null) {
+            try {
+                int ttl = Integer.parseInt(wfresh);
+                if (ttl > 0) {
+                    sts.setTtl(ttl * 60);                    
+                    sts.setEnableLifetime(true);
+                    return;
+                }
+            } catch (NumberFormatException ex) {
+                LOG.error("Invalid wfresh value '" + wfresh + "': "  + ex.getMessage());
+            }
+        }
+        
+        // wfresh not set so fall back to a configured value
         if (getInitParameter(S_PARAM_TOKEN_INTERNAL_LIFETIME) != null) {
             sts.setEnableLifetime(true);
             int ttl = Integer.parseInt(getInitParameter(S_PARAM_TOKEN_INTERNAL_LIFETIME));
             sts.setTtl(ttl);
         }
-        
-        return sts.requestSecurityToken(appliesTo);
     }
 
     private String requestSecurityTokenForRP(SecurityToken onbehalfof,
