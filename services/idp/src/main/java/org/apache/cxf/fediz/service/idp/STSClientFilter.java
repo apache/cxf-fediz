@@ -67,6 +67,8 @@ public class STSClientFilter extends AbstractAuthFilter {
     private static final String PARAM_RSTR_CONTENT_TYPE = "sts.rstr.content-type";
 
     private static final String PARAM_STS_ONBEHALFOF_TOKEN_NAME = "sts.onbehalfof.token.name";
+    
+    private static final String PARAM_STS_USE_WFRESH_FOR_TTL = "sts.use.wfresh.for.ttl";
 
     private static final Logger LOG = LoggerFactory.getLogger(STSClientFilter.class);
     
@@ -92,6 +94,7 @@ public class STSClientFilter extends AbstractAuthFilter {
     protected String appliesTo; // $wtrealm
     protected String contentType;  //token, rstr
     protected boolean isPortSet;
+    protected boolean useWfreshForTTL;
 
     protected Bus bus;
 
@@ -186,7 +189,21 @@ public class STSClientFilter extends AbstractAuthFilter {
                                        "Parameter '" + PARAM_RSTR_CONTENT_TYPE + "' not configured");
         }
         
-        
+        try {
+            String wfreshParam = filterConfig.getInitParameter(PARAM_STS_USE_WFRESH_FOR_TTL);
+            if (wfreshParam != null) {
+                useWfreshForTTL = Boolean.valueOf(wfreshParam).booleanValue();
+            } else if (contentType.equalsIgnoreCase("TOKEN")) {
+                useWfreshForTTL = true;
+            } else {
+                useWfreshForTTL = false;
+            }
+        } catch (Exception ex) {
+            LOG.error("Failed to parse parameter '" + PARAM_STS_USE_WFRESH_FOR_TTL + "': " + ex.toString());
+            throw new ServletException(
+                                       "Failed to parse parameter '" + PARAM_STS_USE_WFRESH_FOR_TTL + "'");
+        }
+
 
     }
 
@@ -256,6 +273,10 @@ public class STSClientFilter extends AbstractAuthFilter {
                 sts.setTtl(ttl);
             }
             */
+            
+            if (useWfreshForTTL) {
+                configureTTL(sts, context);
+            }
 
             if (appliesTo.startsWith("$")) {
                 resolvedAppliesTo = (String)context.get(appliesTo.substring(1));
@@ -344,6 +365,21 @@ public class STSClientFilter extends AbstractAuthFilter {
             throw new ProcessingException("Requesting security token for '" + resolvedAppliesTo + "' failed");
         }
 
+    }
+    
+    private void configureTTL(IdpSTSClient sts, AuthContext context) {
+        String wfresh = (String)context.get(FederationFilter.PARAM_WFRESH);
+        if (wfresh != null) {
+            try {
+                int ttl = Integer.parseInt(wfresh);
+                if (ttl > 0) {
+                    sts.setTtl(ttl * 60);                    
+                    sts.setEnableLifetime(true);
+                }
+            } catch (NumberFormatException ex) {
+                LOG.error("Invalid wfresh value '" + wfresh + "': "  + ex.getMessage());
+            }
+        }
     }
 
     private Element createClaimsElement(List<String> realmClaims)
