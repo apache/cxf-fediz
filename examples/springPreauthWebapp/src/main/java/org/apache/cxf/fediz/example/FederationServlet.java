@@ -44,6 +44,7 @@ import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.FederationPrincipal;
 import org.apache.cxf.fediz.cxf.web.SecurityTokenThreadLocal;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 
@@ -93,7 +94,12 @@ public class FederationServlet extends HttpServlet {
         }
 
         // Access Spring security context
-        SecurityContextHolder.getContext().getAuthentication();
+        Authentication obj = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("getCredentials: " + obj.getCredentials().toString());
+        System.out.println("getDetails: " + obj.getDetails().toString());
+        System.out.println("getName: " + obj.getName().toString());
+        System.out.println("getAuthorities: " + obj.getAuthorities().toString());
+        System.out.println("getPrincipal: " + obj.getPrincipal().toString());
 
         Element el = SecurityTokenThreadLocal.getToken();
         if (el != null) {

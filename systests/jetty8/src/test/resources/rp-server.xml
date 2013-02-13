@@ -47,7 +47,7 @@
 		    <Item>
 		      <New class="org.eclipse.jetty.webapp.WebAppContext">
 	            <Set name="contextPath">/fedizspringhelloworld</Set>
-	            <Set name="war">./target/systests-springWebapp.war</Set>
+	            <Set name="war">./target/systests-springPreauthWebapp.war</Set>
 	            <Set name="throwUnavailableOnStartupException">true</Set>
 	             
 	            <Get name="securityHandler">

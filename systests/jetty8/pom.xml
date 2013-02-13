@@ -160,7 +160,7 @@
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz.systests</groupId>
-                                    <artifactId>systests-springWebapp</artifactId>
+                                    <artifactId>systests-springPreauthWebapp</artifactId>
                                     <version>${project.version}</version>
                                     <type>war</type>
                                     <overWrite>true</overWrite>

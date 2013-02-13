@@ -32,7 +32,7 @@
    <modules>
       <module>tests</module>
       <module>simpleWebapp</module>
-      <module>springWebapp</module>
+      <module>springPreauthWebapp</module>
       <module>jetty8</module>
       <module>tomcat7</module>
    </modules>

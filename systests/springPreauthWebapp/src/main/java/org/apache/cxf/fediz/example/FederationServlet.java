@@ -34,6 +34,7 @@ import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.FederationPrincipal;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.Assert;
 
@@ -81,6 +82,13 @@ public class FederationServlet extends HttpServlet {
         // Access Spring security context
         Assert.notNull(SecurityContextHolder.getContext().getAuthentication(),
                        "SecurityContextHolder Authentication not null");
+        
+        Authentication obj = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("getCredentials: " + obj.getCredentials().toString());
+        System.out.println("getDetails: " + obj.getDetails().toString());
+        System.out.println("getName: " + obj.getName().toString());
+        System.out.println("getAuthorities: " + obj.getAuthorities().toString());
+        System.out.println("getPrincipal: " + obj.getPrincipal().toString());
         
     }
 
