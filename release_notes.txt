@@ -1,4 +1,4 @@
-Apache CXF Fediz 1.0.2 Release Notes
+Apache CXF Fediz 1.0.3 Release Notes
 
 1. Overview
 
@@ -54,6 +54,28 @@ N.A.
 
 8. Specific issues, features, and improvements fixed in this version
 
+Release Notes - CXF-Fediz - Version 1.0.3
+
+Bug
+
+    [FEDIZ-40] - Can CXF Fediz IDP & RP work with SAML1.1 ?
+    [FEDIZ-45] - Do not convert a SAML Attribute with an empty AttributeValue into a Role
+    [FEDIZ-49] - Support using wfresh parameter in the IdP for TTL
+
+Improvement
+
+    [FEDIZ-14] - Make the TokenReplayCache implementation configurable in the Fediz configuration
+    [FEDIZ-31] - Fix example package structure
+    [FEDIZ-44] - Rename IDP + STS wars to use hypens (fediz-idp + fediz-idp-sts) and update documentation
+    [FEDIZ-48] - Support wfresh properly in the IdP
+
+Task
+
+    [FEDIZ-42] - Upgrade to use CXF 2.6.6
+
+Wish
+
+    [FEDIZ-35] - Allow to use a custom CXF bus for IdpSTSClient
 
 Release Notes - CXF-Fediz - Version 1.0.2
 
