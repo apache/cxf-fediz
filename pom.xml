@@ -21,7 +21,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.apache.cxf.fediz</groupId>
     <artifactId>fediz</artifactId>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.0.3</version>
     <name>Apache Fediz</name>
     <packaging>pom</packaging>
 
@@ -80,9 +80,9 @@
     </properties>
 
     <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/cxf/fediz/trunk</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/cxf/fediz/trunk</developerConnection>
-        <url>http://svn.apache.org/repos/asf/cxf/fediz/trunk</url>
+        <connection>scm:svn:http://svn.apache.org/repos/asf/cxf/fediz/tags/fediz-1.0.3</connection>
+        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/cxf/fediz/tags/fediz-1.0.3</developerConnection>
+        <url>http://svn.apache.org/repos/asf/cxf/fediz/tags/fediz-1.0.3</url>
     </scm>
 
     <issueManagement>
