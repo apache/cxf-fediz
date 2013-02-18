@@ -3,21 +3,22 @@
                       http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
 	version="3.0" metadata-complete="true">
 
-	<description>WS Federation WS-Client Web Application Example</description>
-	<display-name>WS Federation WS-Client Web Application Example</display-name>
+	<description>
+    WS Federation Tomcat Example
+    </description>
+	<display-name>WS Federation Tomcat Example</display-name>
 
-    <context-param>
-        <param-name>contextConfigLocation</param-name>
-        <param-value>WEB-INF/applicationContext.xml</param-value>
-    </context-param>
-    <listener>
-        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-    </listener>
-  
-    <!-- Required: Cache the security token in Thread Local Storage -->
+  <context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>WEB-INF/applicationContext.xml</param-value>
+  </context-param>
+  <listener>
+    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+  </listener>
+
 	<filter>
 		<filter-name>FederationFilter</filter-name>
-		<filter-class>org.apache.cxf.fediz.cxf.web.FederationFilter</filter-class>
+		<filter-class>org.apache.cxf.fediz.example.FederationFilter</filter-class>
 		<!--
 		<init-param>
 			<param-name>security.token.attribute</param-name>
@@ -44,14 +45,8 @@
 
 	<security-role>
 		<role-name>Manager</role-name>
-	</security-role>
-	<security-role>
 		<role-name>User</role-name>
-	</security-role>
-	<security-role>
 		<role-name>Admin</role-name>
-	</security-role>
-	<security-role>
 		<role-name>Authenticated</role-name>
 	</security-role>
 

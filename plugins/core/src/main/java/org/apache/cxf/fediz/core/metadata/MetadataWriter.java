@@ -78,23 +78,16 @@ import static org.apache.cxf.fediz.core.FederationConstants.WS_FEDERATION_NS;
 public class MetadataWriter {
     
     private static final Logger LOG = LoggerFactory.getLogger(MetadataWriter.class);
-    
-    private static final XMLOutputFactory XML_OUTPUT_FACTORY = XMLOutputFactory.newInstance();
-    private static final XMLSignatureFactory XML_SIGNATURE_FACTORY = XMLSignatureFactory.getInstance("DOM");
-    private static final DocumentBuilderFactory DOC_BUILDER_FACTORY = DocumentBuilderFactory.newInstance();
-    private static final TransformerFactory TRANSFORMER_FACTORY = TransformerFactory.newInstance();
-    
-    static {
-        DOC_BUILDER_FACTORY.setNamespaceAware(true);
-    }
 
     //CHECKSTYLE:OFF
     public Document getMetaData(FederationContext config) throws ProcessingException {
 
         try {
+            XMLOutputFactory factory = XMLOutputFactory.newInstance();
+
             ByteArrayOutputStream bout = new ByteArrayOutputStream(4096);
             Writer streamWriter = new OutputStreamWriter(bout);
-            XMLStreamWriter writer = XML_OUTPUT_FACTORY.createXMLStreamWriter(streamWriter);
+            XMLStreamWriter writer = factory.createXMLStreamWriter(streamWriter);
 
             Protocol protocol = config.getProtocol();
 
@@ -247,16 +240,20 @@ public class MetadataWriter {
         String keyAlias = keyManager.getKeyAlias();
         String keypass  = keyManager.getKeyPassword();  
         
+        // Create a DOM XMLSignatureFactory that will be used to
+        // generate the enveloped signature.
+        XMLSignatureFactory fac = XMLSignatureFactory.getInstance("DOM");
+
         // Create a Reference to the enveloped document (in this case,
         // you are signing the whole document, so a URI of "" signifies
         // that, and also specify the SHA1 digest algorithm and
         // the ENVELOPED Transform.
-        Reference ref = XML_SIGNATURE_FACTORY.newReference("#" + referenceID, XML_SIGNATURE_FACTORY.newDigestMethod(DigestMethod.SHA1, null), Collections
-            .singletonList(XML_SIGNATURE_FACTORY.newTransform(Transform.ENVELOPED, (TransformParameterSpec)null)), null, null);
+        Reference ref = fac.newReference("#" + referenceID, fac.newDigestMethod(DigestMethod.SHA1, null), Collections
+            .singletonList(fac.newTransform(Transform.ENVELOPED, (TransformParameterSpec)null)), null, null);
 
         // Create the SignedInfo.
-        SignedInfo si = XML_SIGNATURE_FACTORY.newSignedInfo(XML_SIGNATURE_FACTORY.newCanonicalizationMethod(CanonicalizationMethod.INCLUSIVE,
-                                                                        (C14NMethodParameterSpec)null), XML_SIGNATURE_FACTORY
+        SignedInfo si = fac.newSignedInfo(fac.newCanonicalizationMethod(CanonicalizationMethod.INCLUSIVE,
+                                                                        (C14NMethodParameterSpec)null), fac
             .newSignatureMethod(SignatureMethod.RSA_SHA1, null), Collections.singletonList(ref));
 
         // step 2
@@ -281,7 +278,7 @@ public class MetadataWriter {
         X509Certificate cert = issuerCerts[0];
         
         // Create the KeyInfo containing the X509Data.
-        KeyInfoFactory kif = XML_SIGNATURE_FACTORY.getKeyInfoFactory();
+        KeyInfoFactory kif = fac.getKeyInfoFactory();
         List<Object> x509Content = new ArrayList<Object>();
         x509Content.add(cert.getSubjectX500Principal().getName());
         x509Content.add(cert);
@@ -290,7 +287,9 @@ public class MetadataWriter {
 
         // step3
         // Instantiate the document to be signed.
-        Document doc = DOC_BUILDER_FACTORY.newDocumentBuilder().parse(metaInfo);
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
+        Document doc = dbf.newDocumentBuilder().parse(metaInfo);
 
         // Create a DOMSignContext and specify the RSA PrivateKey and
         // location of the resulting XMLSignature's parent element.
@@ -300,7 +299,7 @@ public class MetadataWriter {
         dsc.setNextSibling(doc.getDocumentElement().getFirstChild());
 
         // Create the XMLSignature, but don't sign it yet.
-        XMLSignature signature = XML_SIGNATURE_FACTORY.newXMLSignature(si, ki);
+        XMLSignature signature = fac.newXMLSignature(si, ki);
 
         // Marshal, generate, and sign the enveloped signature.
         signature.sign(dsc);
@@ -309,7 +308,8 @@ public class MetadataWriter {
         // Output the resulting document.
 
         ByteArrayOutputStream os = new ByteArrayOutputStream(8192);
-        Transformer trans = TRANSFORMER_FACTORY.newTransformer();
+        TransformerFactory tf = TransformerFactory.newInstance();
+        Transformer trans = tf.newTransformer();
         trans.transform(new DOMSource(doc), new StreamResult(os));
         os.flush();
         return os;

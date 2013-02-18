@@ -42,7 +42,6 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.FederationPrincipal;
-import org.apache.cxf.fediz.cxf.web.SecurityTokenThreadLocal;
 import org.apache.hello_world_soap_http.Greeter;
 
 

@@ -21,7 +21,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.apache.cxf.fediz</groupId>
     <artifactId>fediz</artifactId>
-    <version>1.1.0-SNAPSHOT</version>
+    <version>1.0.3</version>
     <name>Apache Fediz</name>
     <packaging>pom</packaging>
 
@@ -33,16 +33,11 @@
 
     <properties>
         <commons.lang.version>3.0.1</commons.lang.version>
-        <commons.logging.version>1.1.1</commons.logging.version>
-        <cxf.version>2.7.3</cxf.version>
-        <cxf.build-utils.version>2.5.0</cxf.build-utils.version>
+        <cxf.version>2.6.6</cxf.version>
+        <cxf.build-utils.version>2.4.1</cxf.build-utils.version>
         <ehcache.version>2.5.1</ehcache.version>
-        <httpclient.version>4.2.2</httpclient.version>
-        <jericho.version>3.2</jericho.version>
-        <jetty.version>8.1.8.v20121106</jetty.version>
-        <!--<jetty.version>7.6.8.v20121106</jetty.version>-->
+        <jetty.version>8.1.3.v20120416</jetty.version>
         <junit.version>4.8.2</junit.version>
-        <log4j.version>1.2.15</log4j.version>
         <servlet.version>2.5</servlet.version>
         <slf4j.version>1.6.5</slf4j.version>
         <spring.version>3.0.7.RELEASE</spring.version>
@@ -85,9 +80,9 @@
     </properties>
 
     <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/cxf/fediz/trunk</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/cxf/fediz/trunk</developerConnection>
-        <url>http://svn.apache.org/repos/asf/cxf/fediz/trunk</url>
+        <connection>scm:svn:http://svn.apache.org/repos/asf/cxf/fediz/tags/fediz-1.0.3</connection>
+        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/cxf/fediz/tags/fediz-1.0.3</developerConnection>
+        <url>http://svn.apache.org/repos/asf/cxf/fediz/tags/fediz-1.0.3</url>
     </scm>
 
     <issueManagement>
@@ -213,9 +208,8 @@
     </organization>
 
     <modules>
-        <module>services</module>
         <module>plugins</module>
-        <module>systests</module>
+        <module>services</module>
         <module>examples</module>
         <module>apache-fediz</module>
     </modules>
@@ -609,11 +603,6 @@
                     </dependencies>
                 </plugin>
 -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-war-plugin</artifactId>
-                    <version>2.3</version>
-               </plugin>
             </plugins>
         </pluginManagement>
     </build>

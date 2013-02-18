@@ -16,7 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.cxf.fediz.service.idp;
+
+package org.apache.cxf.fediz.example;
 
 import java.io.IOException;
 
@@ -27,55 +28,53 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-//import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.w3c.dom.Element;
 
+/**
+ * Add security token to thread local
+ */
+public class FederationFilter implements Filter {
 
-public class LogoutFilter implements Filter {
-    
-    public static final String IDP_USER = "idp-user";
+    private static final String DEFAULT_SECURITY_TOKEN_ATTR = "org.apache.fediz.SECURITY_TOKEN";
+    private static final String SECURITY_TOKEN_ATTR_CONFIG = "security.token.attribute";
 
-    public static final String LOGOUT_URI = "logout.uri";
-
-    private static final Logger LOG = LoggerFactory.getLogger(LogoutFilter.class);
-    
-    private String logoutUri = "logout";
+    private String securityTokenAttr = DEFAULT_SECURITY_TOKEN_ATTR;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        if (filterConfig.getInitParameter(LOGOUT_URI) != null) {
-            logoutUri = filterConfig.getInitParameter(LOGOUT_URI);
+        String attrName = filterConfig.getInitParameter(SECURITY_TOKEN_ATTR_CONFIG);
+        if (attrName != null) {
+            securityTokenAttr = attrName;
         }
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-        throws IOException, ServletException {
-        
+    public void doFilter(ServletRequest request, ServletResponse response,
+                         FilterChain chain) throws IOException, ServletException {
+
         if (request instanceof HttpServletRequest) {
             HttpServletRequest hrequest = (HttpServletRequest)request;
-            if (hrequest.getParameter(this.logoutUri) != null) {
-                HttpSession session = hrequest.getSession(false);
-                if (session == null) {
-                    LOG.info("Logout ignored. No session available.");
-                    return;
+            Element el = (Element)hrequest.getSession().getAttribute(securityTokenAttr);
+            if (el != null) {
+                try {
+                    SecurityTokenThreadLocal.setToken(el);
+                    chain.doFilter(request, response);
+                } finally {
+                    SecurityTokenThreadLocal.setToken(null);
                 }
-                
-                LOG.info("Logout session for '" + session.getAttribute(IDP_USER) + "'");
-                session.invalidate();
-                return;
+            } else {
+                chain.doFilter(request, response);
             }
+
+        } else {
+            chain.doFilter(request, response);
         }
-        
-        chain.doFilter(request, response);
-        
     }
 
     @Override
     public void destroy() {
+        // TODO Auto-generated method stub
 
     }
 
