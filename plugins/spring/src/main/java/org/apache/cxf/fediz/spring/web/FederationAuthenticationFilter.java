@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.cxf.fediz.spring.web.authentication;
+package org.apache.cxf.fediz.spring.web;
 
 import java.io.IOException;
 

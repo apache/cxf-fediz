@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.cxf.fediz.spring.web.authentication;
+package org.apache.cxf.fediz.spring.authentication;
 
 import org.apache.cxf.fediz.core.FederationResponse;
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;

@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.cxf.fediz.spring;
+package org.apache.cxf.fediz.spring.preauth;
 
 import javax.servlet.http.HttpServletRequest;
 

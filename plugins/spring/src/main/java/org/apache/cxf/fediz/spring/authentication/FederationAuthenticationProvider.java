@@ -17,12 +17,13 @@
  * under the License.
  */
 
-package org.apache.cxf.fediz.spring.web.authentication;
+package org.apache.cxf.fediz.spring.authentication;
 
 import org.apache.cxf.fediz.core.FederationProcessor;
 import org.apache.cxf.fediz.core.FederationProcessorImpl;
 import org.apache.cxf.fediz.core.FederationRequest;
 import org.apache.cxf.fediz.core.FederationResponse;
+import org.apache.cxf.fediz.spring.FederationConfig;
 import org.apache.cxf.fediz.spring.SpringFedizMessageSource;
 
 import org.slf4j.Logger;

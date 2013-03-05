@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.cxf.fediz.spring.web.authentication;
+package org.apache.cxf.fediz.spring.web;
 
 import java.io.IOException;
 
@@ -29,6 +29,7 @@ import org.apache.cxf.fediz.core.FederationProcessor;
 import org.apache.cxf.fediz.core.FederationProcessorImpl;
 import org.apache.cxf.fediz.core.config.FederationContext;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
+import org.apache.cxf.fediz.spring.FederationConfig;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
