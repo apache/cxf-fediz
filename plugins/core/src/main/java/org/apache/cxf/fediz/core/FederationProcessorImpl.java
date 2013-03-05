@@ -20,6 +20,7 @@
 package org.apache.cxf.fediz.core;
 
 import java.io.ByteArrayInputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.DateFormat;
@@ -330,30 +331,33 @@ public class FederationProcessorImpl implements FederationProcessor {
                 }
             }
             LOG.info("Freshness: " + freshness);
+            
              
             StringBuilder sb = new StringBuilder();
             sb.append(FederationConstants.PARAM_ACTION).append('=').append(FederationConstants.ACTION_SIGNIN);
+            
+            String reply = ((FederationProtocol)config.getProtocol()).getReply();
+            if (reply == null || reply.length() == 0) {
+                reply = request.getRequestURL().toString();
+            } else {
+                try {
+                    new URL(reply);
+                } catch (MalformedURLException ex) {
+                    if (reply.startsWith("/")) {
+                        reply = extractFullContextPath(request).concat(reply.substring(1));
+                    } else {
+                        reply = extractFullContextPath(request).concat(reply);
+                    }
+                }
+            }
+            
+            LOG.debug("wreply=" + reply);
             sb.append('&').append(FederationConstants.PARAM_REPLY).append('=');
-            sb.append(URLEncoder.encode(request.getRequestURL().toString(), "UTF-8"));
+            sb.append(URLEncoder.encode(reply, "UTF-8"));
 
             String realm = ((FederationProtocol)config.getProtocol()).getRealm();
             if (realm == null) {
-                String contextPath = request.getContextPath();
-                String requestUrl = request.getRequestURL().toString();
-                String requestPath = new URL(requestUrl).getPath();
-                // Cut request path of request url and add context path if not ROOT
-                if (requestPath != null && requestPath.length() > 0) {
-                    int lastIndex = requestUrl.lastIndexOf(requestPath);
-                    realm = requestUrl.substring(0, lastIndex);
-                } else {
-                    realm = requestUrl;
-                }
-                if (contextPath != null && contextPath.length() > 0) {
-                    // contextPath contains starting slash
-                    realm = realm + contextPath + "/";
-                } else {
-                    realm = realm + "/";
-                }
+                realm = extractFullContextPath(request);
             }
             LOG.debug("wtrealm=" + realm);
 
@@ -391,6 +395,27 @@ public class FederationProcessorImpl implements FederationProcessor {
             throw new ProcessingException("Failed to create SignInRequest");
         }        
         return redirectURL;
+    }
+    
+    private String extractFullContextPath(HttpServletRequest request) throws MalformedURLException {
+        String result = null;
+        String contextPath = request.getContextPath();
+        String requestUrl = request.getRequestURL().toString();
+        String requestPath = new URL(requestUrl).getPath();
+        // Cut request path of request url and add context path if not ROOT
+        if (requestPath != null && requestPath.length() > 0) {
+            int lastIndex = requestUrl.lastIndexOf(requestPath);
+            result = requestUrl.substring(0, lastIndex);
+        } else {
+            result = requestUrl;
+        }
+        if (contextPath != null && contextPath.length() > 0) {
+            // contextPath contains starting slash
+            result = result + contextPath + "/";
+        } else {
+            result = result + "/";
+        }
+        return result;
     }
 
 
