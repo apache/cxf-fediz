@@ -6,28 +6,39 @@ web application.
 
 Running this sample consists of four steps:
 
-- Configure the Tomcat-IDP and Tomcat-RP instances
+- Configure the Tomcat-IDP and Tomcat or Jetty-RP instances
 - Building the demo using Maven
-- Deploying the demo to the Tomcat-RP instance
+- Deploying the demo to the RP instance
 - Testing the demo
 
 Please review the README in the samples main directory before continuing.
 
-Configure the Tomcat-IDP and Tomcat-RP instances
-------------------------------------------------
-First, make sure the separate Tomcat instance hosting the Fediz IDP and IDP
+Configure the Tomcat-IDP
+------------------------
+Make sure the separate Tomcat instance hosting the Fediz IDP and IDP
 STS has been configured and is running as described here:  
 http://cxf.apache.org/fediz-idp.html.  Confirm the STS is active by
 checking that the WSDL is viewable from the browser using the URL given
 on that page--don't proceed further unless it is.
 
-Next, the Tomcat installation holding the relying parties (the demo Web application
+
+a) Configure the Tomcat-RP instance
+-----------------------------------
+Tomcat installation holding the relying parties (the demo Web application
 for this sample) must be configured properly before applications can be
 deployed to it.  See this wiki page for instructions:
 http://cxf.apache.org/fediz-tomcat.html -- the "Installation" and "HTTPS
 Configuration" sections are the only parts that need configuration for this
 sample. 
 
+b) Configure the Jetty-RP instance
+----------------------------------
+Jetty installation holding the relying parties (the demo Web application
+for this sample) must be configured properly before applications can be
+deployed to it.  See this wiki page for instructions:
+http://cxf.apache.org/fediz-jetty.html -- the "Installation" and "HTTPS
+Configuration" sections are the only parts that need configuration for this
+sample. 
 
 Demo Web Application
 ---------------------
@@ -52,8 +63,8 @@ command prompt, enter:
   mvn clean install   (builds the demo and creates a WAR file for Servlet deployment)
 
 
-Deploying the demo to Tomcat
-----------------------------
+a) Deploying the demo to Tomcat
+-------------------------------
 First copy this sample's Fediz Configuration file (src/main/config/fediz_config.xml)
 into the Tomcat-RP's conf folder.  This configuration references the 
 Java keystore 'tomcat-rp.jks' available in Fediz' examples/samplekeys folder 
@@ -62,6 +73,18 @@ instance as stated in the prerequisites.
 
 Then, either manually copy this sample's generated WAR file to the Tomcat-RP's 
 webapps folder, or use the Tomcat Maven Plugin as described in the README file 
+in the example folder root.
+
+b) Deploying the demo to Jetty
+------------------------------
+First copy this sample's Fediz Configuration file (src/main/config/fediz_config.xml)
+into the Jetty-RP's etc folder.  This configuration references the 
+Java keystore 'tomcat-rp.jks' available in Fediz' examples/samplekeys folder 
+but should already be in the Jetty RP's root folder when you configured this
+instance as stated in the prerequisites.
+
+Then, either manually copy this sample's generated WAR file to the Jetty-RP's 
+webapps folder, or use the Jetty Maven Plugin as described in the README file 
 in the example folder root.
 
 
