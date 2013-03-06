@@ -32,10 +32,10 @@
             class="org.springframework.security.web.authentication.preauth.PreAuthenticatedGrantedAuthoritiesUserDetailsService"/>
     -->
     <bean id="preAuthenticatedUserDetailsService"
-            class="org.apache.cxf.fediz.spring.PreAuthenticatedGrantedAuthoritiesUserDetailsFederationService"/>    
+            class="org.apache.cxf.fediz.spring.preauth.PreAuthenticatedGrantedAuthoritiesUserDetailsFederationService"/>    
     
     <!--<bean id="j2eePreAuthFilter" class="org.springframework.security.web.authentication.preauth.j2ee.J2eePreAuthenticatedProcessingFilter">-->
-    <bean id="j2eePreAuthFilter" class="org.apache.cxf.fediz.spring.FederationPreAuthenticatedProcessingFilter">
+    <bean id="j2eePreAuthFilter" class="org.apache.cxf.fediz.spring.preauth.FederationPreAuthenticatedProcessingFilter">
         <property name="authenticationManager" ref="authenticationManager"/>
         <property name="authenticationDetailsSource">
             <bean class="org.springframework.security.web.authentication.preauth.j2ee.J2eeBasedPreAuthenticatedWebAuthenticationDetailsSource">
