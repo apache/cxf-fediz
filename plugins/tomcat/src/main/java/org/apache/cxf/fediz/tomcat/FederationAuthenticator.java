@@ -377,7 +377,7 @@ public class FederationAuthenticator extends FormAuthenticator {
                 }
 
                 principal = new FederationPrincipalImpl(wfRes.getUsername(), roles,
-                        wfRes.getClaims());
+                        wfRes.getClaims(), wfRes.getToken());
             }
         } else {
             LOG.error("Not supported action found in parameter wa: " + wa);

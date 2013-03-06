@@ -12,11 +12,22 @@
     <filter-name>springSecurityFilterChain</filter-name>
     <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
   </filter>
+  
+    <!-- Optional: Cache the security token in Thread Local Storage -->
+	<filter>
+		<filter-name>FederationFilter</filter-name>
+		<filter-class>org.apache.cxf.fediz.cxf.web.FederationFilter</filter-class>
+	</filter>
 
   <filter-mapping>
     <filter-name>springSecurityFilterChain</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
+  
+	<filter-mapping>
+		<filter-name>FederationFilter</filter-name>
+		<url-pattern>/secure/*</url-pattern>
+	</filter-mapping>
 
     <!--
       - Location of the XML file that defines the root application context

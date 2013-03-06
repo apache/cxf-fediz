@@ -51,6 +51,11 @@
             <artifactId>commons-lang3</artifactId>
             <version>${commons.lang.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.cxf.fediz</groupId>
+            <artifactId>fediz-cxf</artifactId>
+            <version>${project.version}</version>          
+        </dependency>        
     </dependencies>
     <build>
         <!-- Name of the generated WAR file -->

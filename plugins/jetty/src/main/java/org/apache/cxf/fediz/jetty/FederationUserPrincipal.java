@@ -19,6 +19,8 @@
 
 package org.apache.cxf.fediz.jetty;
 
+import org.w3c.dom.Element;
+
 import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.FederationPrincipal;
 import org.apache.cxf.fediz.core.FederationResponse;
@@ -49,6 +51,11 @@ public class FederationUserPrincipal implements FederationPrincipal {
     //[TODO] maybe find better approach, custom UserIdentity
     FederationResponse getFederationResponse() {
         return response;
+    }
+
+    @Override
+    public Element getLoginToken() {
+        return response.getToken();
     }
     
 

@@ -10,17 +10,11 @@
 	<filter>
 		<filter-name>FederationFilter</filter-name>
 		<filter-class>org.apache.cxf.fediz.cxf.web.FederationFilter</filter-class>
-		<!--
-		<init-param>
-			<param-name>security.token.attribute</param-name>
-			<param-value>org.apache.fediz.SECURITY_TOKEN</param-value>
-		</init-param>
-		-->
 	</filter>
 
 	<filter-mapping>
 		<filter-name>FederationFilter</filter-name>
-		<url-pattern>/*</url-pattern>
+		<url-pattern>/secure/*</url-pattern>
 	</filter-mapping>
 
 	<servlet>

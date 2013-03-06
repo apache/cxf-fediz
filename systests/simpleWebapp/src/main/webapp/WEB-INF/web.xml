@@ -6,6 +6,17 @@
 	<description>WS Federation Systests Example</description>
 	<display-name>WS Federation Systests Example</display-name>
 
+    <!-- Optional: Cache the security token in Thread Local Storage -->
+	<filter>
+		<filter-name>FederationFilter</filter-name>
+		<filter-class>org.apache.cxf.fediz.cxf.web.FederationFilter</filter-class>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>FederationFilter</filter-name>
+		<url-pattern>/secure/*</url-pattern>
+	</filter-mapping>
+
 	<servlet>
 		<servlet-name>FederationServlet</servlet-name>
 		<servlet-class>org.apache.cxf.fediz.example.FederationServlet</servlet-class>

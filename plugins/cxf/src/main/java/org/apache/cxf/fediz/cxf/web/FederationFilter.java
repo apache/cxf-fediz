@@ -20,6 +20,7 @@
 package org.apache.cxf.fediz.cxf.web;
 
 import java.io.IOException;
+import java.security.Principal;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -31,22 +32,17 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.w3c.dom.Element;
 
+import org.apache.cxf.fediz.core.FederationPrincipal;
+
+
+
 /**
  * Add security token to thread local
  */
 public class FederationFilter implements Filter {
 
-    private static final String DEFAULT_SECURITY_TOKEN_ATTR = "org.apache.fediz.SECURITY_TOKEN";
-    private static final String SECURITY_TOKEN_ATTR_CONFIG = "security.token.attribute";
-
-    private String securityTokenAttr = DEFAULT_SECURITY_TOKEN_ATTR;
-
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        String attrName = filterConfig.getInitParameter(SECURITY_TOKEN_ATTR_CONFIG);
-        if (attrName != null) {
-            securityTokenAttr = attrName;
-        }
     }
 
     @Override
@@ -55,7 +51,9 @@ public class FederationFilter implements Filter {
 
         if (request instanceof HttpServletRequest) {
             HttpServletRequest hrequest = (HttpServletRequest)request;
-            Element el = (Element)hrequest.getSession().getAttribute(securityTokenAttr);
+            Principal p = hrequest.getUserPrincipal();
+            FederationPrincipal fedPrinc = (FederationPrincipal)p;
+            Element el = (Element)fedPrinc.getLoginToken();
             if (el != null) {
                 try {
                     SecurityTokenThreadLocal.setToken(el);

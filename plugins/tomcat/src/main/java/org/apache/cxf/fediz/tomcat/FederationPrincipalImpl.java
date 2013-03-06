@@ -21,6 +21,8 @@ package org.apache.cxf.fediz.tomcat;
 
 import java.util.List;
 
+import org.w3c.dom.Element;
+
 import org.apache.catalina.realm.GenericPrincipal;
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimCollection;
@@ -29,15 +31,22 @@ import org.apache.cxf.fediz.core.FederationPrincipal;
 public class FederationPrincipalImpl extends GenericPrincipal implements FederationPrincipal {
 
     protected ClaimCollection claims;
+    protected Element loginToken;
 
     public FederationPrincipalImpl(String username, List<String> roles,
-            List<Claim> claims) {
+            List<Claim> claims, Element loginToken) {
         super(username, null, roles);
         this.claims = new ClaimCollection(claims);
+        this.loginToken = loginToken;
     }
 
     public ClaimCollection getClaims() {
         return this.claims;
+    }
+
+    @Override
+    public Element getLoginToken() {
+        return loginToken;
     }
 
 }
