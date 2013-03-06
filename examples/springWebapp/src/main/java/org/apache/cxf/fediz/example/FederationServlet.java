@@ -62,7 +62,7 @@ public class FederationServlet extends HttpServlet {
         PrintWriter out = response.getWriter();
 
         out.println("<html>");
-        out.println("<head><title>WS Federation Tomcat Examples</title></head>");
+        out.println("<head><title>WS Federation Spring Security Example</title></head>");
         out.println("<body>");
         out.println("<h1>Hello World</h1>");
         out.println("Hello world<br>");
