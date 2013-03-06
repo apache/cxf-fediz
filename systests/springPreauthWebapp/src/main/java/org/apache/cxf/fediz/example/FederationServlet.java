@@ -30,9 +30,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.w3c.dom.Element;
+
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.FederationPrincipal;
+import org.apache.cxf.fediz.cxf.web.SecurityTokenThreadLocal;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -74,6 +77,16 @@ public class FederationServlet extends HttpServlet {
             ClaimCollection claims = fp.getClaims();
             for (Claim c : claims) {
                 out.println("<p>" + c.getClaimType().toString() + "=" + c.getValue() + "</p>");
+            }
+            
+            Element el = fp.getLoginToken();
+            if (el != null) {
+                out.println("loginToken=FOUND{FederationPrincipal}<p>");
+            }
+            
+            el = SecurityTokenThreadLocal.getToken();
+            if (el != null) {
+                out.println("loginToken=FOUND{SecurityTokenThreadLocal}<p>");
             }
         }
         

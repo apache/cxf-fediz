@@ -29,9 +29,6 @@ import org.springframework.security.web.authentication.preauth.AbstractPreAuthen
  * J2EE container-based authentication mechanism. It will use the J2EE user
  * principal name as the pre-authenticated principal and the WS-Federation signin request
  * as the credentials.
- *
- * @author Ruud Senden
- * @since 2.0
  */
 public class FederationPreAuthenticatedProcessingFilter extends AbstractPreAuthenticatedProcessingFilter {
 

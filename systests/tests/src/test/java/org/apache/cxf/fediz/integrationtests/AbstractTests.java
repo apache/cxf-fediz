@@ -79,6 +79,12 @@ public abstract class AbstractTests {
         claim = ClaimTypes.EMAILADDRESS.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@mycompany.org'",
                           response.indexOf(claim + "=alice@mycompany.org") > 0);
+        
+        Assert.assertTrue("Login token missing in SecurityTokenThreadLocal",
+                          response.indexOf("loginToken=FOUND{SecurityTokenThreadLocal}") > 0);
+        
+        Assert.assertTrue("Login token missing in SecurityTokenThreadLocal",
+                          response.indexOf("loginToken=FOUND{FederationPrincipal}") > 0);
 
     }
 
@@ -103,6 +109,12 @@ public abstract class AbstractTests {
         claim = ClaimTypes.EMAILADDRESS.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'bobwindsor@idp.org'",
                           response.indexOf(claim + "=bobwindsor@idp.org") > 0);
+        
+        Assert.assertTrue("Login token missing in SecurityTokenThreadLocal",
+                          response.indexOf("loginToken=FOUND{SecurityTokenThreadLocal}") > 0);
+        
+        Assert.assertTrue("Login token missing in SecurityTokenThreadLocal",
+                          response.indexOf("loginToken=FOUND{FederationPrincipal}") > 0);
     }
 
     @org.junit.Test
@@ -126,6 +138,12 @@ public abstract class AbstractTests {
         claim = ClaimTypes.EMAILADDRESS.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'tcooper@hereiam.org'",
                           response.indexOf(claim + "=tcooper@hereiam.org") > 0);
+        
+        Assert.assertTrue("Login token missing in SecurityTokenThreadLocal",
+                          response.indexOf("loginToken=FOUND{SecurityTokenThreadLocal}") > 0);
+        
+        Assert.assertTrue("Login token missing in SecurityTokenThreadLocal",
+                          response.indexOf("loginToken=FOUND{FederationPrincipal}") > 0);
     }
 
     @org.junit.Test
