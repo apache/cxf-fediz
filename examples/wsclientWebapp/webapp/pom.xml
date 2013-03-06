@@ -57,12 +57,7 @@
             <groupId>org.apache.cxf.fediz</groupId>
             <artifactId>fediz-core</artifactId>
             <version>${project.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.cxf.fediz</groupId>
