@@ -25,8 +25,10 @@ import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.htmlparser.jericho.Element;
 import net.htmlparser.jericho.FormField;
 import net.htmlparser.jericho.FormFields;
+import net.htmlparser.jericho.HTMLElementName;
 import net.htmlparser.jericho.Source;
 import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.http.Consts;
@@ -210,7 +212,7 @@ public abstract class AbstractTests {
 
             HttpResponse response = httpclient.execute(httpget);
             HttpEntity entity = response.getEntity();
-
+            
             System.out.println(response.getStatusLine());
             if (entity != null) {
                 System.out.println("Response content length: " + entity.getContentLength());
@@ -231,16 +233,25 @@ public abstract class AbstractTests {
             //            change the conditions under which the request was issued.
 
             httpclient.setRedirectStrategy(new LaxRedirectStrategy());
-            HttpPost httppost = new HttpPost(url);
+            
 
             Source source = new Source(EntityUtils.toString(entity));
             List <NameValuePair> nvps = new ArrayList <NameValuePair>();
             FormFields formFields = source.getFormFields();
+            System.out.println(formFields.getDebugInfo());
+            System.out.println(source.getFormControls().toString());
+            
+            List<Element> forms = source.getAllElements(HTMLElementName.FORM);
+            Assert.assertEquals("Only one form expected but got " + forms.size(), 1, forms.size());
+            String postUrl = forms.get(0).getAttributeValue("action");
+            
             Assert.assertNotNull("Form field 'wa' not found", formFields.get("wa"));
             Assert.assertNotNull("Form field 'wresult' not found", formFields.get("wresult"));
             for (FormField formField : formFields) {
                 nvps.add(new BasicNameValuePair(formField.getName(), formField.getValues().get(0)));
             }
+            
+            HttpPost httppost = new HttpPost(postUrl);
             httppost.setEntity(new UrlEncodedFormEntity(nvps, Consts.UTF_8));
 
             response = httpclient.execute(httppost);

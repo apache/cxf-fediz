@@ -33,8 +33,10 @@
       <module>tests</module>
       <module>simpleWebapp</module>
       <module>springPreauthWebapp</module>
+      <module>springWebapp</module>
       <module>jetty8</module>
       <module>tomcat7</module>
+      <module>spring</module>
    </modules>
 
 </project>
