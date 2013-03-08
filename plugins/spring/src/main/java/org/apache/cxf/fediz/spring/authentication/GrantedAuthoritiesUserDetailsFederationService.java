@@ -34,16 +34,32 @@ import org.springframework.security.core.userdetails.UserDetails;
 public class GrantedAuthoritiesUserDetailsFederationService
         extends AbstractFederationUserDetailsService {
 
+    private boolean convertToUpperCase = true;
+    
     @Override
     protected UserDetails loadUserDetails(FederationResponse response) {
         
         final List<GrantedAuthority> grantedAuthorities = new ArrayList<GrantedAuthority>();
         
-        for (final String role : response.getRoles()) {
-            grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
+        if (response.getRoles() != null) {
+            for (final String role : response.getRoles()) {
+                
+                grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_"
+                                        + (this.convertToUpperCase ? role.toUpperCase() : role)));
+            }
         }
         return new FederationUser(response.getUsername(), "N/A",
                         grantedAuthorities, new ClaimCollection(response.getClaims()));
         
+    }
+    
+    
+    /**
+     * Converts the role value to uppercase value.
+     *
+     * @param convertToUpperCase true if it should convert, false otherwise.
+     */
+    public void setConvertToUpperCase(final boolean convertToUpperCase) {
+        this.convertToUpperCase = convertToUpperCase;
     }
 }
