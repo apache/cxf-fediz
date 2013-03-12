@@ -34,6 +34,7 @@
         <module>simpleWebapp</module>
         <module>wsclientWebapp</module>
         <module>springWebapp</module>
+        <module>spring2Webapp</module>
         <module>springPreauthWebapp</module>
     </modules>
 </project>
