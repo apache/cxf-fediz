@@ -1,0 +1,76 @@
+<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+                      http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+	version="3.0" metadata-complete="true">
+
+    <description>WS Federation Spring Example</description>
+    <display-name>WS Federation Spring Example</display-name>
+	
+    <filter>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+    </filter>
+  
+    <!-- Optional: Cache the security token in Thread Local Storage -->
+    <filter>
+        <filter-name>FederationFilter</filter-name>
+        <filter-class>org.apache.cxf.fediz.cxf.web.FederationFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+<!--  
+    <filter-mapping>
+        <filter-name>FederationFilter</filter-name>
+        <url-pattern>/secure/*</url-pattern>
+    </filter-mapping>
+-->
+
+    <!--
+      - Location of the XML file that defines the root application context
+      - Applied by ContextLoaderListener.
+      -->
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>
+            /WEB-INF/applicationContext-security.xml
+        </param-value>
+    </context-param>
+
+    <!--
+      - Loads the root application context of this web app at startup.
+      - The application context is then available via
+      - WebApplicationContextUtils.getWebApplicationContext(servletContext).
+    -->
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+     
+    <servlet>
+        <servlet-name>FederationServlet</servlet-name>
+        <servlet-class>org.apache.cxf.fediz.example.FederationServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>FederationServlet</servlet-name>
+        <url-pattern>/secure/fedservlet</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>FederationServlet</servlet-name>
+        <url-pattern>/secure/admin/fedservlet</url-pattern>
+    </servlet-mapping>
+	
+    <servlet-mapping>
+        <servlet-name>FederationServlet</servlet-name>
+        <url-pattern>/secure/user/fedservlet</url-pattern>
+    </servlet-mapping>
+	
+    <servlet-mapping>
+        <servlet-name>FederationServlet</servlet-name>
+        <url-pattern>/secure/manager/fedservlet</url-pattern>
+    </servlet-mapping>
+
+</web-app>

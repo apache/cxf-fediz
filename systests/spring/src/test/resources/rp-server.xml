@@ -35,7 +35,14 @@
                 <Set name="war">./target/systests-springWebapp.war</Set>
                 <Set name="throwUnavailableOnStartupException">true</Set>
               </New>
-            </Item>		    
+            </Item>
+            <Item>
+              <New class="org.eclipse.jetty.webapp.WebAppContext">
+                <Set name="contextPath">/fedizhelloworld_spring2</Set>
+                <Set name="war">./target/systests-spring2Webapp.war</Set>
+                <Set name="throwUnavailableOnStartupException">true</Set>
+              </New>
+            </Item>            	    
           </Array>
         </Set>
       </New>

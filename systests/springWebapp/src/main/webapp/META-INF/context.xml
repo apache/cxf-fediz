@@ -1,3 +1,0 @@
-<Context>
-        <Valve className="org.apache.cxf.fediz.tomcat.FederationAuthenticator" configFile="conf/fediz_config.xml" />        
-</Context>
