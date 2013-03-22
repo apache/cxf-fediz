@@ -44,7 +44,7 @@
         <junit.version>4.8.2</junit.version>
         <log4j.version>1.2.15</log4j.version>
         <servlet.version>2.5</servlet.version>
-        <slf4j.version>1.6.5</slf4j.version>
+        <slf4j.version>1.7.2</slf4j.version>
         <spring.version>3.0.7.RELEASE</spring.version>
         <tomcat.version>7.0.27</tomcat.version>
         <wss4j.version>1.6.9</wss4j.version>
