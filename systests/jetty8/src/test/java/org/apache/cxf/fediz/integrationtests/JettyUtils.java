@@ -48,6 +48,7 @@ public final class JettyUtils {
         if (idpServer != null && !idpServer.isStarted()) {
             try {
                 idpServer.start();
+                
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -57,7 +58,8 @@ public final class JettyUtils {
     public static void stopIdpServer() {
         if (idpServer != null && idpServer.isStarted()) {
             try {
-                idpServer.stop();
+                idpServer.setGracefulShutdown(2000);
+                idpServer.setStopAtShutdown(true);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -90,7 +92,8 @@ public final class JettyUtils {
     public static void stopRpServer() {
         if (rpServer != null && rpServer.isStarted()) {
             try {
-                rpServer.stop();
+                rpServer.setGracefulShutdown(2000);
+                rpServer.setStopAtShutdown(true);
             } catch (Exception e) {
                 e.printStackTrace();
             }

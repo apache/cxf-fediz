@@ -622,7 +622,7 @@
         <profile>
             <id>setup.eclipse</id>
             <properties>
-                <eclipse.workspace.dir>${basedir}/../workspace</eclipse.workspace.dir>
+                <eclipse.workspace.dir>${basedir}/../workspace/fediz-wf</eclipse.workspace.dir>
             </properties>
             <build>
                 <defaultGoal>process-test-sources</defaultGoal>

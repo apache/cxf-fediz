@@ -19,7 +19,6 @@
 
 package org.apache.cxf.fediz.integrationtests;
 
-
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -33,12 +32,11 @@ public class JettyTest extends AbstractTests {
     @BeforeClass
     public static void init() {
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
-
         System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
-
         System.setProperty("org.apache.commons.logging.simplelog.log.httpclient.wire", "debug");
-
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.commons.httpclient", "debug");
+        System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.webflow", "debug");
+        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf.fediz", "debug"); 
 
         idpHttpsPort = System.getProperty("idp.https.port");
         Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
@@ -71,6 +69,4 @@ public class JettyTest extends AbstractTests {
     public String getServletContextName() {
         return "fedizhelloworld";
     }
-    
-    
 }

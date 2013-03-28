@@ -3,280 +3,31 @@
                       http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
 	version="3.0" metadata-complete="true">
 
-	<description>
-    WS Federation Tomcat Example
-    </description>
-	<display-name>WS Federation Tomcat Example</display-name>
-
-	<filter>
-		<filter-name>FederationFilter</filter-name>
-		<filter-class>org.apache.cxf.fediz.service.idp.FederationFilter</filter-class>
-		<!-- 
-		<init-param>
-			<param-name>pre-state</param-name>
-			<param-value>NOT_AUTHENTICATED</param-value>
-		</init-param>
-		-->
-		<!--
-		<init-param>
-			<param-name>next-state</param-name>
-			<param-value>AUTHENTICATION_REQUIRED</param-value>
-		</init-param>
-		-->
-		<init-param>
-			<param-name>session.token</param-name>
-			<param-value>IDP_TOKEN</param-value>
-		</init-param>		
-		
-	</filter>
-
-	<filter>
-		<filter-name>AuthenticationFilter</filter-name>
-		<filter-class>org.apache.cxf.fediz.service.idp.AuthenticationFilter</filter-class>
-		<init-param>
-			<param-name>pre-state</param-name>
-			<param-value>AUTHENTICATION_REQUIRED</param-value>
-		</init-param>
-	</filter>	
-	
-	<filter>
-		<filter-name>BasicAuthenticationFilter</filter-name>
-		<filter-class>org.apache.cxf.fediz.service.idp.BasicAuthenticationFilter</filter-class>
-		<init-param>
-			<param-name>pre-state</param-name>
-			<param-value>USERNAME_PASSWORD_REQUIRED</param-value>
-		</init-param>
-		<init-param>
-			<param-name>next-state</param-name>
-			<param-value>SECURITY_TOKEN_REQUIRED</param-value>
-		</init-param>		
-	</filter>
-	
-	<filter>
-		<filter-name>FormAuthenticationFilter</filter-name>
-		<filter-class>org.apache.cxf.fediz.service.idp.HttpFormAuthenticationFilter</filter-class>
-		<init-param>
-			<param-name>pre-state</param-name>
-			<param-value>USERNAME_PASSWORD_REQUIRED</param-value>
-		</init-param>
-		<init-param>
-			<param-name>next-state</param-name>
-			<param-value>SECURITY_TOKEN_REQUIRED</param-value>
-		</init-param>		
-	</filter>
-	
-	<filter>
-		<filter-name>STSClientFilterRequestor</filter-name>
-		<filter-class>org.apache.cxf.fediz.service.idp.STSClientFilter</filter-class>
-		<init-param>
-			<param-name>pre-state</param-name>
-			<param-value>SECURITY_TOKEN_REQUIRED</param-value>
-		</init-param>
-		<init-param>
-			<param-name>next-state</param-name>
-			<param-value>SECURITY_TOKEN_REQUIRED</param-value>
-		</init-param>			
-		<init-param>
-			<param-name>sts.wsdl.url</param-name>
-			<param-value>https://localhost:0/fediz-idp-sts/STSService?wsdl</param-value>
-		</init-param>
-		<init-param>
-			<param-name>sts.wsdl.service</param-name>
-			<param-value>SecurityTokenService</param-value>
-		</init-param>
-		<init-param>
-			<param-name>sts.wsdl.endpoint</param-name>
-			<param-value>TransportUT_Port</param-value>
-		</init-param>
-		<init-param>
-			<param-name>sts.auth-type</param-name>
-			<param-value>USERNAME_PASSWORD</param-value>
-		</init-param>		
-		<init-param>
-			<param-name>sts.applies-to</param-name>
-			<param-value>urn:fediz:idp</param-value>
-		</init-param>
-		<init-param>
-			<param-name>token.store.name</param-name>
-			<param-value>IDP_TOKEN</param-value>
-		</init-param>
-		<!--
-		<init-param>
-			<param-name>token.store.session</param-name>
-			<param-value>true</param-value>
-		</init-param>
-		-->
-		<init-param>
-			<param-name>sts.rstr.content-type</param-name>
-			<param-value>TOKEN</param-value>
-		</init-param>	
-		<init-param>
-			<param-name>sts.use.wfresh.for.ttl</param-name>
-			<param-value>true</param-value>
-		</init-param>	
-	</filter>
-	
-	<filter>
-		<filter-name>STSClientFilterRP</filter-name>
-		<filter-class>org.apache.cxf.fediz.service.idp.STSClientFilter</filter-class>
-		<init-param>
-			<param-name>pre-state</param-name>
-			<param-value>SECURITY_TOKEN_REQUIRED</param-value>
-		</init-param>
-		<init-param>
-			<param-name>next-state</param-name>
-			<param-value>AUTHENTICATED</param-value>
-		</init-param>			
-		<init-param>
-			<param-name>sts.wsdl.url</param-name>
-			<param-value>https://localhost:0/fediz-idp-sts/STSServiceTransport?wsdl</param-value>
-		</init-param>
-		<init-param>
-			<param-name>sts.wsdl.service</param-name>
-			<param-value>SecurityTokenService</param-value>
-		</init-param>
-		<init-param>
-			<param-name>sts.wsdl.endpoint</param-name>
-			<param-value>Transport_Port</param-value>
-		</init-param>
-		<init-param>
-			<param-name>sts.auth-type</param-name>
-			<param-value>NONE</param-value>
-		</init-param>
-		<init-param>
-			<param-name>sts.applies-to</param-name>
-			<param-value>$wtrealm</param-value>
-		</init-param>
-		<init-param>
-			<param-name>sts.onbehalfof.token.name</param-name>
-			<param-value>IDP_TOKEN</param-value>
-		</init-param>		
-		<init-param>
-			<param-name>token.store.name</param-name>
-			<param-value>RP_TOKEN</param-value>
-		</init-param>
-		<init-param>
-			<param-name>sts.rstr.content-type</param-name>
-			<param-value>RSTR</param-value>
-		</init-param>		
-		<init-param>
-			<param-name>sts.claims.required</param-name>
-			<param-value>true</param-value>
-		</init-param>
-	</filter>	
-
-	<filter>
-		<filter-name>FederationPostFilter</filter-name>
-		<filter-class>org.apache.cxf.fediz.service.idp.FederationPostFilter</filter-class>
-		<init-param>
-			<param-name>pre-state</param-name>
-			<param-value>AUTHENTICATED</param-value>
-		</init-param>
-		<init-param>
-			<param-name>next-state</param-name>
-			<param-value>AUTHENTICATED</param-value>
-		</init-param>		
-		<init-param>
-			<param-name>token.store.name</param-name>
-			<param-value>RP_TOKEN</param-value>		
-		</init-param>
-	</filter>
-
-	<filter>
-		<filter-name>LogoutFilter</filter-name>
-		<filter-class>org.apache.cxf.fediz.service.idp.LogoutFilter</filter-class>
-		<init-param>
-			<param-name>pre-state</param-name>
-			<param-value>AUTHENTICATED</param-value>
-		</init-param>
-		<init-param>
-			<param-name>logout.uri</param-name>
-			<param-value>logout</param-value>
-		</init-param>
-	</filter>
-	
-	<filter>
-		<filter-name>SessionCacheFilter</filter-name>
-		<filter-class>org.apache.cxf.fediz.service.idp.SessionCacheFilter</filter-class>
-		<init-param>
-			<param-name>pre-state</param-name>
-			<param-value>AUTHENTICATED</param-value>
-		</init-param>
-		<init-param>
-			<param-name>next-state</param-name>
-			<param-value>AUTHENTICATED</param-value>
-		</init-param>		
-		<init-param>
-			<param-name>item1</param-name>
-			<param-value>IDP_PRINCIPAL</param-value>		
-		</init-param>
-		<init-param>
-			<param-name>item2</param-name>
-			<param-value>IDP_TOKEN</param-value>		
-		</init-param>		
-	</filter>	
-
-
-
-	<filter-mapping>
-		<filter-name>FederationFilter</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
-	
-	<filter-mapping>
-		<filter-name>AuthenticationFilter</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
-     
-	<filter-mapping>
-		<filter-name>BasicAuthenticationFilter</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
-	
-	<!-- FORM based authentication -->
-	<!--
-	<filter-mapping>
-		<filter-name>FormAuthenticationFilter</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
-	-->
-	
-	<filter-mapping>
-		<filter-name>STSClientFilterRequestor</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
-	
-	<filter-mapping>
-		<filter-name>STSClientFilterRequestor</filter-name>
-                
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
-	
-	<filter-mapping>
-		<filter-name>STSClientFilterRP</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
-
-	<filter-mapping>
-		<filter-name>FederationPostFilter</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
-
-	<filter-mapping>
-		<filter-name>LogoutFilter</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>	
-	
-	<filter-mapping>
-		<filter-name>SessionCacheFilter</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
-	
+	<description>Fediz IDP</description>
+	<display-name>Fediz IDP</display-name>
 
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
-		<param-value>WEB-INF/applicationContext.xml</param-value>
+		<param-value>/WEB-INF/applicationContext.xml</param-value>
 	</context-param>
+
+	<servlet>
+		<servlet-name>idp</servlet-name>
+		<servlet-class>
+			org.springframework.web.servlet.DispatcherServlet
+		</servlet-class>
+		<init-param>
+			<param-name>publishContext</param-name>
+			<param-value>false</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>idp</servlet-name>
+		<url-pattern>/federation</url-pattern>
+	</servlet-mapping>
+
 	<listener>
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
 	</listener>

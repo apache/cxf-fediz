@@ -3,6 +3,13 @@
  
 <Configure id="IdpServer" class="org.eclipse.jetty.server.Server">
  
+
+    <Call class="java.lang.System" name="setProperty">
+        <Arg>org.apache.jasper.compiler.disablejsr199</Arg>
+        <Arg>true</Arg>
+    </Call>
+
+
 	<Call class="org.eclipse.jetty.util.log.Log" name="getRootLogger">
 	  <Call name="setDebugEnabled">
 	    <Arg type="boolean">true</Arg>
@@ -32,14 +39,14 @@
 		    <Item>
 		      <New class="org.eclipse.jetty.webapp.WebAppContext">
 	            <Set name="contextPath">/fediz-idp</Set>
-	            <Set name="war">./target/fediz-idp.war</Set>
+	            <Set name="war">./target/idp/fediz-idp.war</Set>
 	            <Set name="throwUnavailableOnStartupException">true</Set>
 	          </New>
 	        </Item>
 	        <Item>
 		      <New class="org.eclipse.jetty.webapp.WebAppContext">
 	            <Set name="contextPath">/fediz-idp-sts</Set>
-	            <Set name="war">./target/fediz-idp-sts.war</Set>
+	            <Set name="war">./target/idp/fediz-idp-sts.war</Set>
 	            <Set name="throwUnavailableOnStartupException">true</Set>
 	          </New>	          
 		    </Item>

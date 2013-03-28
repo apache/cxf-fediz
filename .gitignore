@@ -8,6 +8,8 @@
 .project
 .ruleset
 .settings/
+.svn/
 target/
 velocity.log
+.externalToolBuilders/
 

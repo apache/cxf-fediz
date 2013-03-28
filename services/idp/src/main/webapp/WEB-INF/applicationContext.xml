@@ -33,7 +33,7 @@
         </sec:trustManagers>
       </http:tlsClientParameters>
    </http:conduit>
-    
+   
    <import resource="RPClaims.xml" />
 
 </beans>

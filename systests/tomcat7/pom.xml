@@ -77,6 +77,18 @@
          <type>test-jar</type>
          <scope>test</scope>
       </dependency>
+      <dependency>
+         <groupId>org.slf4j</groupId>
+         <artifactId>slf4j-api</artifactId>
+         <version>${slf4j.version}</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.slf4j</groupId>
+         <artifactId>slf4j-jdk14</artifactId>
+         <version>${slf4j.version}</version>
+         <scope>test</scope>
+      </dependency> 
    </dependencies>
    <build>
       <testResources>
@@ -84,10 +96,6 @@
             <directory>src/test/resources</directory>
             <filtering>true</filtering>
             <includes>
-               <!--
-                    <include>**/idp-server.xml</include>
-                    <include>**/rp-server.xml</include>
--->
                <include>**/fediz_config.xml</include>
             </includes>
          </testResource>
@@ -95,10 +103,6 @@
             <directory>src/test/resources</directory>
             <filtering>false</filtering>
             <excludes>
-               <!--
-                    <exclude>**/idp-server.xml</exclude>
-                    <exclude>**/rp-server.xml</exclude>
--->
                <exclude>**/fediz_config.xml</exclude>
             </excludes>
          </testResource>
@@ -163,7 +167,6 @@
                         </artifactItem>
                      </artifactItems>
                      <outputAbsoluteArtifactFilename>true</outputAbsoluteArtifactFilename>
-                     <outputDirectory>target/webapps</outputDirectory>
                      <overWriteSnapshots>true</overWriteSnapshots>
                      <overWriteIfNewer>true</overWriteIfNewer>
                      <stripVersion>true</stripVersion>
