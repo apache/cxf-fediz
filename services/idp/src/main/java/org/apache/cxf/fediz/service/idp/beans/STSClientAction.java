@@ -83,7 +83,7 @@ public class STSClientAction {
     private boolean claimsRequired = true;
     
     private boolean isPortSet;
-    
+
 
     public String getWsdlLocation() {
         return wsdlLocation;
@@ -185,6 +185,7 @@ public class STSClientAction {
         LOG.info("Token [IDP_TOKEN] produced succesfully.");
         return idpToken;
     }
+
 
     private void processWsdlLocation(RequestContext context) {
         if (!isPortSet) {
