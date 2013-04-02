@@ -75,12 +75,15 @@ public class STSClientAction {
     protected String wsdlEndpoint;
 
     protected String appliesTo;
-
-    protected String tokenType;
-
-    protected boolean claimsRequired = true;
     
-    protected boolean isPortSet;
+    protected String tokenType;
+    
+    protected boolean useWfreshForTTL = true;
+
+    private boolean claimsRequired = true;
+    
+    private boolean isPortSet;
+    
 
     public String getWsdlLocation() {
         return wsdlLocation;
@@ -131,6 +134,14 @@ public class STSClientAction {
         this.claimsRequired = claimsRequired;
     }
 
+    public boolean isUseWfreshForTTL() {
+        return useWfreshForTTL;
+    }
+
+    public void setUseWfreshForTTL(boolean useWfreshForTTL) {
+        this.useWfreshForTTL = useWfreshForTTL;
+    }
+
     /**
      * @param credentials
      *            : username and password provided by user
@@ -147,18 +158,7 @@ public class STSClientAction {
         paramTokenType(sts);
         sts.setKeyType(HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER);
 
-        if (!isPortSet) {
-            try {
-                URL url = new URL(this.wsdlLocation);
-                URL updatedUrl = new URL(url.getProtocol(), url.getHost(),
-                                         WebUtils.getHttpServletRequest(context).getLocalPort(), url.getFile());
-                
-                setSTSWsdlUrl(updatedUrl.toString());
-                LOG.info("STS WSDL URL updated to " + updatedUrl.toString());
-            } catch (MalformedURLException e) {
-                LOG.error("Invalid Url '" + this.wsdlLocation + "': "  + e.getMessage());
-            }
-        }
+        processWsdlLocation(context);
         sts.setWsdlLocation(this.wsdlLocation);
         sts.setServiceQName(new QName(
                 HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512,
@@ -167,7 +167,11 @@ public class STSClientAction {
                 HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512,
                 this.wsdlEndpoint));
 
-        if (this.claimsRequired) {
+        if (isUseWfreshForTTL()) {
+            configureTTL(sts, context);
+        }
+
+        if (isClaimsRequired()) {
             addClaims(this.appliesTo, bus, sts);
         }
 
@@ -182,6 +186,36 @@ public class STSClientAction {
         return idpToken;
     }
 
+    private void processWsdlLocation(RequestContext context) {
+        if (!isPortSet) {
+            try {
+                URL url = new URL(this.wsdlLocation);
+                URL updatedUrl = new URL(url.getProtocol(), url.getHost(),
+                                         WebUtils.getHttpServletRequest(context).getLocalPort(), url.getFile());
+                
+                setSTSWsdlUrl(updatedUrl.toString());
+                LOG.info("STS WSDL URL updated to " + updatedUrl.toString());
+            } catch (MalformedURLException e) {
+                LOG.error("Invalid Url '" + this.wsdlLocation + "': "  + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Usage of 'wfresh' parameter, picked up from the webflow context, 
+     * like time-to-live of security token to be issued..
+     */
+    private void configureTTL(IdpSTSClient sts, RequestContext requestContext) {
+        String wfresh = (String)WebUtils.getAttributeFromExternalContext(requestContext, "wfresh");
+        if (wfresh != null) {
+            int ttl = Integer.parseInt(wfresh);
+            if (ttl > 0) {
+                sts.setTtl(ttl * 60);                    
+                sts.setEnableLifetime(true);
+            }
+        }
+    }
+
     /**
      * @param credentials
      *            {@link SecurityToken}
@@ -190,7 +224,7 @@ public class STSClientAction {
      * @return a serialized RP security token
      * @throws Exception
      */
-    public String submit(SecurityToken credentials, String wtrealm)
+    public String submit(SecurityToken credentials, String wtrealm, RequestContext context)
         throws Exception {
 
         Bus bus = BusFactory.getDefaultBus();
@@ -200,6 +234,7 @@ public class STSClientAction {
         paramTokenType(sts);
         sts.setKeyType(HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER);
 
+        processWsdlLocation(context);
         sts.setWsdlLocation(wsdlLocation);
         sts.setServiceQName(new QName(
                 HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512,

@@ -14,41 +14,61 @@
             <set name="externalContext.sessionMap['wtrealm']" value="requestParameters.wtrealm" />
             <set name="externalContext.sessionMap['wreply']" value="requestParameters.wreply" />
             <set name="externalContext.sessionMap['wctx']" value="requestParameters.wctx" />
+            <set name="externalContext.sessionMap['wfresh']" value="requestParameters.wfresh" />
+            <set name="externalContext.sessionMap['wauth']" value="requestParameters.wauth" />
         </on-entry>
         <if test="requestParameters.wa == null" then="viewBadRequest" />
         <if test="requestParameters.wa != 'wsignin1.0' and requestParameters.wa != 'wsignout1.0' and requestParameters.wa != 'wsignoutcleanup1.0'" then="viewBadRequest" />
         <if test="requestParameters.wa == 'wsignout1.0' or requestParameters.wa == 'wsignoutcleanup1.0'" then="invalidateSessionAction" />
         <if test="requestParameters.wtrealm == null or requestParameters.wtrealm.length() == 0" then="viewBadRequest" />
 
+<!--    check if IDP token exists in session -->
         <if test="externalContext.sessionMap['IDP_TOKEN'] == null" then="authenticationRequired" />
+<!--    check if IDP token is expired -->
         <if test="externalContext.sessionMap['IDP_TOKEN'].isExpired() == true" then="authenticationRequired" />
-        <if test="requestParameters.wfresh != null and requestParameters.wfresh.equals('0')" then="authenticationRequired" else="rpTokenAction" />
+<!--    check if IDP token is still valid but relying party requested new authentication -->
+        <if test="requestParameters.wfresh != null and requestParameters.wfresh.equals('0')" then="authenticationRequired" />
+<!--    check if IDP token is still valid but relying party requested new authentication via wfresh -->
+        <if test="requestParameters.wfresh != null" then="wfreshParserAction" else="rpTokenAction" />
     </decision-state>
     
+    <!-- parse wfresh parameter, provided by resource RP, overriding ttl from 'IDP_TOKEN' -->
+    <action-state id="wfreshParserAction">
+        <evaluate expression="wfreshParser.authenticationRequired(requestParameters.wfresh, externalContext.sessionMap['IDP_TOKEN'])" />
+        <transition on="true" to="authenticationRequired"/>
+        <transition on="false" to="rpTokenAction"/>
+<!--         <transition on-exception="java.lang.Throwable" to="scInternalServerError" /> -->
+<!--     wfresh invalid, ignore exception, force authentication -->
+        <transition on-exception="java.lang.Throwable" to="authenticationRequired" />
+    </action-state>
+
     <!-- select authentication support type -->
     <decision-state id="authenticationRequired">
         <on-entry>
+<!--        remove IDP token from session (if present) -->
             <set name="externalContext.sessionMap['IDP_TOKEN']" value="null" />
         </on-entry>
-        <if test="flowScope['idp.authSupportType'] == 'FORM'" then="formAuthenticationView" />
+<!-- don't remove line commented below, stands for future use ... -->
+<!--         <if test="flowScope['idp.authSupportType'] == 'FORM'" then="formAuthenticationView" /> -->
         <if test="flowScope['idp.authSupportType'] == 'BASIC'" then="basicAuthenticationCheck" else="viewBadRequest" />
     </decision-state>
     
     <!-- display authentication form 'signinform.jsp' (username/password credentials) -->
-    <view-state id="formAuthenticationView" view="signinform" model="usernamePasswordCredentials">
-        <var name="usernamePasswordCredentials"
-            class="org.apache.cxf.fediz.service.idp.UsernamePasswordCredentials" />
-        <binder>
-            <binding property="username" />
-            <binding property="password" />
-        </binder>
-        <on-entry>
-            <evaluate expression="externalContext.nativeResponse.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private')" />
-        </on-entry>
-        <transition on="authenticate" bind="true" validate="true" to="idpUsernamePasswordTokenAction">
-            <set name="flowScope.usernamePasswordCredentials" value="usernamePasswordCredentials" />
-        </transition>
-    </view-state>
+<!-- don't remove view-state commented below, stands for future use ... -->
+<!--     <view-state id="formAuthenticationView" view="signinform" model="usernamePasswordCredentials"> -->
+<!--         <var name="usernamePasswordCredentials" -->
+<!--             class="org.apache.cxf.fediz.service.idp.UsernamePasswordCredentials" /> -->
+<!--         <binder> -->
+<!--             <binding property="username" /> -->
+<!--             <binding property="password" /> -->
+<!--         </binder> -->
+<!--         <on-entry> -->
+<!--             <evaluate expression="externalContext.nativeResponse.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private')" /> -->
+<!--         </on-entry> -->
+<!--         <transition on="authenticate" bind="true" validate="true" to="idpUsernamePasswordTokenAction"> -->
+<!--             <set name="flowScope.usernamePasswordCredentials" value="usernamePasswordCredentials" /> -->
+<!--         </transition> -->
+<!--     </view-state> -->
 
     <!-- check basic authentication state -->
     <decision-state id="basicAuthenticationCheck">
@@ -78,7 +98,7 @@
     <!-- Receiving username/password as credentials, produce IDP security token (as SecurityToken type) and store it in session -->
     <!-- catch SoapFault in case of wrong credentials to redirect the flow -->
     <action-state id="idpUsernamePasswordTokenAction">
-        <evaluate expression="stsClientForIdpAction.submit(flowScope.usernamePasswordCredentials,flowRequestContext)"
+        <evaluate expression="stsClientForIdpAction.submit(flowScope.usernamePasswordCredentials, flowRequestContext)"
                     result="flowScope.idpToken" 
                     result-type="org.apache.cxf.ws.security.tokenstore.SecurityToken" />
         <transition on="success" to="rpTokenAction">
@@ -91,13 +111,14 @@
 
     <!-- when authentication failed, depending on the authentication support type set -->
     <decision-state id="authenticationFailedSwitch">
-        <if test="flowScope['idp.authSupportType'] == 'FORM'" then="formAuthenticationView" />
+<!-- don't remove line commented below, stands for future use ... -->
+<!--         <if test="flowScope['idp.authSupportType'] == 'FORM'" then="formAuthenticationView" /> -->
         <if test="flowScope['idp.authSupportType'] == 'BASIC'" then="basicAuthenticationRequested" />
     </decision-state>
     
     <!-- produce RP security token (as String type) -->
     <action-state id="rpTokenAction">
-        <evaluate expression="stsClientForRpAction.submit(externalContext.sessionMap['IDP_TOKEN'], externalContext.sessionMap['wtrealm'])" 
+        <evaluate expression="stsClientForRpAction.submit(externalContext.sessionMap['IDP_TOKEN'], externalContext.sessionMap['wtrealm'], flowRequestContext)" 
                     result="flowScope.rpToken" 
                     result-type="java.lang.String" />
         <transition to="formResponseView" />

@@ -7,7 +7,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
        http://www.springframework.org/schema/webflow-config http://www.springframework.org/schema/webflow-config/spring-webflow-config-2.0.xsd">
        
-  <bean class="org.springframework.webflow.mvc.servlet.FlowHandlerMapping" 
+    <bean class="org.springframework.webflow.mvc.servlet.FlowHandlerMapping" 
   		p:flowRegistry-ref="flowRegistry"
         p:order="2">
 <!--         <property name="interceptors"> -->
@@ -51,11 +51,12 @@
         <property name="wsdlEndpoint" value="TransportUT_Port"/>
         <property name="appliesTo" value="urn:fediz:idp"/>
         <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0"/>
+        <property name="useWfreshForTTL" value="true"/>
         <property name="claimsRequired" value="true"/>
     </bean>
 
 	<bean id="stsClientForRpAction" class="org.apache.cxf.fediz.service.idp.beans.STSClientAction">
-		<property name="wsdlLocation" value="https://localhost:9443/fediz-idp-sts/STSServiceTransport?wsdl"/>
+        <property name="wsdlLocation" value="https://localhost:0/fediz-idp-sts/STSServiceTransport?wsdl"/>
 		<property name="wsdlEndpoint" value="Transport_Port"/>
 		<property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0"/>
 		<property name="claimsRequired" value="true"/>
@@ -63,10 +64,11 @@
 
 	<bean id="logoutAction" class="org.apache.cxf.fediz.service.idp.beans.LogoutAction" />
 	
-	<bean id="decodeAuthorizationHeaderAction" class="org.apache.cxf.fediz.service.idp.beans.DecodeAuthorizationHeaderAction" />
-	
+    <bean id="decodeAuthorizationHeaderAction" class="org.apache.cxf.fediz.service.idp.beans.DecodeAuthorizationHeaderAction" />
+    
+    <bean id="wfreshParser" class="org.apache.cxf.fediz.service.idp.beans.WfreshParser" />
+    
 	<bean id="initialFlowSetupAction" class="org.apache.cxf.fediz.service.idp.beans.InitialFlowSetupAction" >
-<!--         <property name="authSupportType" value="FORM" /> -->
         <property name="authSupportType" value="BASIC" />
         <property name="idpName" value="LocalIDP" />
 	</bean>
