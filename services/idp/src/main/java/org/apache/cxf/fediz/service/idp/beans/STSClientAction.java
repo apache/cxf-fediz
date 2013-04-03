@@ -38,6 +38,7 @@ import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.staxutils.W3CDOMStreamWriter;
 import org.apache.cxf.ws.security.SecurityConstants;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
+import org.apache.cxf.ws.security.trust.STSClient;
 import org.apache.cxf.ws.security.trust.STSUtils;
 import org.apache.ws.security.WSConstants;
 import org.slf4j.Logger;
@@ -79,6 +80,8 @@ public class STSClientAction {
     protected String tokenType;
     
     protected boolean useWfreshForTTL = true;
+    
+    protected Bus bus;
 
     private boolean claimsRequired = true;
     
@@ -151,9 +154,10 @@ public class STSClientAction {
     public SecurityToken submit(UsernamePasswordCredentials credentials, RequestContext context)
         throws Exception {
 
-        Bus bus = BusFactory.getDefaultBus();
+        Bus cxfBus = getBus();
 
-        IdpSTSClient sts = new IdpSTSClient(bus);
+        //IdpSTSClient sts = new IdpSTSClient(bus);
+        STSClient sts = new STSClient(cxfBus);
         sts.setAddressingNamespace(HTTP_WWW_W3_ORG_2005_08_ADDRESSING);
         paramTokenType(sts);
         sts.setKeyType(HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER);
@@ -172,7 +176,7 @@ public class STSClientAction {
         }
 
         if (isClaimsRequired()) {
-            addClaims(this.appliesTo, bus, sts);
+            addClaims(this.appliesTo, cxfBus, sts);
         }
 
         sts.getProperties().put(SecurityConstants.USERNAME,
@@ -186,6 +190,55 @@ public class STSClientAction {
         return idpToken;
     }
 
+
+
+
+    /**
+     * @param credentials
+     *            {@link SecurityToken}
+     * @param wtrealm
+     *            the relying party security domain
+     * @return a serialized RP security token
+     * @throws Exception
+     */
+    public String submit(SecurityToken credentials, String wtrealm, RequestContext context)
+        throws Exception {
+
+        Bus cxfBus = getBus();
+
+        IdpSTSClient sts = new IdpSTSClient(cxfBus);
+        sts.setAddressingNamespace(HTTP_WWW_W3_ORG_2005_08_ADDRESSING);
+        paramTokenType(sts);
+        sts.setKeyType(HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER);
+
+        processWsdlLocation(context);
+        sts.setWsdlLocation(wsdlLocation);
+        sts.setServiceQName(new QName(
+                HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512,
+                SECURITY_TOKEN_SERVICE));
+        sts.setEndpointQName(new QName(
+                HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512, wsdlEndpoint));
+
+        if (this.claimsRequired) {
+            addClaims(wtrealm, cxfBus, sts);
+        }
+
+        sts.setOnBehalfOf(credentials.getToken());
+
+        String rpToken = sts.requestSecurityTokenResponse(wtrealm);
+
+        LOG.info("Token [RP_TOKEN] produced succesfully.");
+        return StringEscapeUtils.escapeXml(rpToken);
+    }
+    
+    public void setBus(Bus bus) {
+        this.bus = bus;
+    }
+
+    public Bus getBus() {
+        // do not store a referance to the default bus
+        return (bus != null) ? bus : BusFactory.getDefaultBus();
+    }
 
     private void processWsdlLocation(RequestContext context) {
         if (!isPortSet) {
@@ -206,7 +259,7 @@ public class STSClientAction {
      * Usage of 'wfresh' parameter, picked up from the webflow context, 
      * like time-to-live of security token to be issued..
      */
-    private void configureTTL(IdpSTSClient sts, RequestContext requestContext) {
+    private void configureTTL(STSClient sts, RequestContext requestContext) {
         String wfresh = (String)WebUtils.getAttributeFromExternalContext(requestContext, "wfresh");
         if (wfresh != null) {
             int ttl = Integer.parseInt(wfresh);
@@ -216,49 +269,11 @@ public class STSClientAction {
             }
         }
     }
-
-    /**
-     * @param credentials
-     *            {@link SecurityToken}
-     * @param wtrealm
-     *            the relying party security domain
-     * @return a serialized RP security token
-     * @throws Exception
-     */
-    public String submit(SecurityToken credentials, String wtrealm, RequestContext context)
-        throws Exception {
-
-        Bus bus = BusFactory.getDefaultBus();
-
-        IdpSTSClient sts = new IdpSTSClient(bus);
-        sts.setAddressingNamespace(HTTP_WWW_W3_ORG_2005_08_ADDRESSING);
-        paramTokenType(sts);
-        sts.setKeyType(HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER);
-
-        processWsdlLocation(context);
-        sts.setWsdlLocation(wsdlLocation);
-        sts.setServiceQName(new QName(
-                HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512,
-                SECURITY_TOKEN_SERVICE));
-        sts.setEndpointQName(new QName(
-                HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512, wsdlEndpoint));
-
-        if (this.claimsRequired) {
-            addClaims(wtrealm, bus, sts);
-        }
-
-        sts.setOnBehalfOf(credentials.getToken());
-
-        String rpToken = sts.requestSecurityTokenResponse(wtrealm);
-
-        LOG.info("Token [RP_TOKEN] produced succesfully.");
-        return StringEscapeUtils.escapeXml(rpToken);
-    }
-
-    private void addClaims(String wtrealm, Bus bus, IdpSTSClient sts)
+    
+    private void addClaims(String wtrealm, Bus cxfBus, STSClient sts)
         throws ParserConfigurationException, XMLStreamException {
         List<String> realmClaims = null;
-        ApplicationContext ctx = (ApplicationContext) bus
+        ApplicationContext ctx = (ApplicationContext) cxfBus
                 .getExtension(ApplicationContext.class);
 
         @SuppressWarnings("unchecked")
@@ -278,7 +293,7 @@ public class STSClientAction {
         }
     }
 
-    private void paramTokenType(IdpSTSClient sts) {
+    private void paramTokenType(STSClient sts) {
         if (tokenType == null) {
             sts.setTokenType(WSConstants.WSS_SAML2_TOKEN_TYPE);
         } else {
