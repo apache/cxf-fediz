@@ -19,9 +19,12 @@
 package org.apache.cxf.fediz.service.idp.beans;
 
 import java.util.Date;
+
+import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.webflow.execution.RequestContext;
 
 /**
  * This class is responsible to parse 'wfresh' parameter 
@@ -33,10 +36,11 @@ public class WfreshParser {
     private static final Logger LOG = LoggerFactory
             .getLogger(WfreshParser.class);
 
-    public boolean authenticationRequired(SecurityToken idpToken, String wfresh)
+    public boolean authenticationRequired(String wfresh, RequestContext context)
         throws Exception {
         long ttl = Long.parseLong(wfresh);
         if (ttl > 0) {
+            SecurityToken idpToken = (SecurityToken) WebUtils.getAttributeFromExternalContext(context, "IDP_TOKEN");
             Date createdDate = idpToken.getCreated();
             Date expiryDate = new Date();
             expiryDate.setTime(createdDate.getTime() + (ttl * 60L * 1000L));

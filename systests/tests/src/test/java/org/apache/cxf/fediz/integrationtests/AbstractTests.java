@@ -138,14 +138,15 @@ public abstract class AbstractTests {
         sendHttpGet(url, user, password, 200, 403);        
     }
 
-    @org.junit.Ignore
+//    @org.junit.Ignore
     @org.junit.Test
     public void testUserAliceWrongPassword() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         String user = "alice";
         String password = "alice";
-        //[TODO] Fix IDP return code from 500 to 401
-        sendHttpGet(url, user, password, 500, 0);        
+//      sendHttpGet(url, user, password, 500, 0);        
+        //[FIXED] Fix IDP return code from 500 to 401
+        sendHttpGet(url, user, password, 401, 0);        
     }
 
     @org.junit.Test

@@ -97,13 +97,13 @@ public final class WebUtils {
 
     public static Object getAttributeFromRequestScope(
             final RequestContext context, final String attributeKey) {
-        return context.getRequestScope().getString(attributeKey);
+        return context.getRequestScope().get(attributeKey);
     }
 
     public static Object getAttributeFromExternalContext(
             final RequestContext context, final String attributeKey) {
         return context.getExternalContext().getSessionMap()
-                .getString(attributeKey);
+                .get(attributeKey);
     }
 
     /**
@@ -159,9 +159,9 @@ public final class WebUtils {
         context.getFlowScope().put(attributeKey, attributeValue);
     }
 
-    public static String getAttributeFromFlowScope(
+    public static Object getAttributeFromFlowScope(
             final RequestContext context, final String attributeKey) {
-        return context.getFlowScope().getString(attributeKey);
+        return context.getFlowScope().get(attributeKey);
     }
 
     public static Object removeAttributeFromFlowScope(

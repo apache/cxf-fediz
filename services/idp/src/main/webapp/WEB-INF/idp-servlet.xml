@@ -46,15 +46,6 @@
 		<property name="suffix" value=".jsp"/>
 	</bean>
 
-    <bean id="stsClientForIdpAction" class="org.apache.cxf.fediz.service.idp.beans.STSClientAction">
-        <property name="wsdlLocation" value="https://localhost:0/fediz-idp-sts/STSService?wsdl"/>
-        <property name="wsdlEndpoint" value="TransportUT_Port"/>
-        <property name="appliesTo" value="urn:fediz:idp"/>
-        <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0"/>
-        <property name="useWfreshForTTL" value="true"/>
-        <property name="claimsRequired" value="true"/>
-    </bean>
-
 	<bean id="stsClientForRpAction" class="org.apache.cxf.fediz.service.idp.beans.STSClientAction">
         <property name="wsdlLocation" value="https://localhost:0/fediz-idp-sts/STSServiceTransport?wsdl"/>
 		<property name="wsdlEndpoint" value="Transport_Port"/>
@@ -64,13 +55,9 @@
 
 	<bean id="logoutAction" class="org.apache.cxf.fediz.service.idp.beans.LogoutAction" />
 	
-    <bean id="decodeAuthorizationHeaderAction" class="org.apache.cxf.fediz.service.idp.beans.DecodeAuthorizationHeaderAction" />
-    
     <bean id="wfreshParser" class="org.apache.cxf.fediz.service.idp.beans.WfreshParser" />
     
 	<bean id="initialFlowSetupAction" class="org.apache.cxf.fediz.service.idp.beans.InitialFlowSetupAction" >
-        <property name="authSupportType" value="BASIC" />
-        <property name="idpName" value="LocalIDP" />
 	</bean>
 	
 </beans>

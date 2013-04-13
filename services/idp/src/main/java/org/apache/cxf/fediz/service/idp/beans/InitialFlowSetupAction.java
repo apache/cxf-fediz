@@ -18,74 +18,34 @@
  */
 package org.apache.cxf.fediz.service.idp.beans;
 
+//import java.security.Principal;
+
+import org.apache.cxf.fediz.service.idp.STSUserDetails;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
+import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.Assert;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
- * @author fr17993 This class is responsible to initialize web flow.
+ * @author Th. Beucher This class is responsible to initialize web flow.
  */
 
 public class InitialFlowSetupAction {
 
-    private static final String AUTH_SUPPORT_TYPE = "idp.authSupportType";
-
-    private static final String IDP_NAME = "idpName";
-
     private static final Logger LOG = LoggerFactory
             .getLogger(InitialFlowSetupAction.class);
 
-    private String idpName = "IDP";
-
-    private String authSupportType;
-
-    public String getIdpName() {
-        return idpName;
-    }
-
-    public void setIdpName(String idpName) {
-        this.idpName = idpName;
-    }
-
-    public String getAuthSupportType() {
-        return authSupportType;
-    }
-
-    public void setAuthSupportType(String authSupportType) {
-        this.authSupportType = authSupportType;
-    }
-
-    private static enum SupportType {
-        FORM, BASIC;
-    }
-
-    /**
-     * @throws IllegalArgumentException
-     */
     public void submit(RequestContext context) {
-        if (System.getProperty(AUTH_SUPPORT_TYPE) != null) {
-            authSupportType = System.getProperty(AUTH_SUPPORT_TYPE);
-            LOG.info("Bean property [authSupportType] has been overriden from system properties");
-        }
-        if (SupportType.valueOf(authSupportType) != null) {
-            WebUtils.putAttributeInFlowScope(context, AUTH_SUPPORT_TYPE,
-                    authSupportType);
-            LOG.info(AUTH_SUPPORT_TYPE + "=" + authSupportType
-                    + " has been stored in flow scope");
-        } else {
-            throw new IllegalArgumentException(AUTH_SUPPORT_TYPE + "="
-                    + authSupportType + " not supported");
-        }
-        putAttributeInFlowScope(context, IDP_NAME, idpName);
-    }
-
-    private void putAttributeInFlowScope(RequestContext context, String key, String value) {
-        if (value != null) {
-            WebUtils.putAttributeInFlowScope(context, key, value);
-            LOG.info(key + "=" + value + " has been stored in flow scope");
-        } else {
-            throw new IllegalArgumentException("Bean property [" + key + "] should be configured");
-        }
+        
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Assert.isInstanceOf(STSUserDetails.class, auth.getDetails());
+        final STSUserDetails stsUserDetails = (STSUserDetails) auth.getDetails();
+        SecurityToken securityToken = stsUserDetails.getSecurityToken();
+        WebUtils.putAttributeInExternalContext(context, "IDP_TOKEN", securityToken);
+        LOG.info("Token [IDP_TOKEN] succesfully set in session.");
     }
 }
