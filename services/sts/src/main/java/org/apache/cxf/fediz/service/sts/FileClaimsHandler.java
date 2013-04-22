@@ -85,7 +85,7 @@ public class FileClaimsHandler implements ClaimsHandler {
                     claim.setClaimType(requestClaim.getClaimType());
                     claim.setIssuer("Test Issuer");
                     claim.setOriginalIssuer("Original Issuer");
-                    claim.setValue(claimValue);
+                    claim.addValue(claimValue);
                     claimCollection.add(claim);
                 }   
             }
