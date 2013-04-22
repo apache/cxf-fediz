@@ -63,7 +63,7 @@ public class FileClaimsHandler implements ClaimsHandler {
     public ClaimCollection retrieveClaimValues(RequestClaimCollection claims,
             ClaimsParameters parameters) {
 
-        if (getUserClaims() == null) {
+        if (getUserClaims() == null || parameters.getPrincipal() == null) {
             return new ClaimCollection();
         }
 
