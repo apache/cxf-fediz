@@ -20,16 +20,19 @@
 package org.apache.cxf.fediz.core;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.w3c.dom.Document;
@@ -37,6 +40,7 @@ import org.w3c.dom.Element;
 
 import org.apache.cxf.fediz.core.config.FederationContext;
 import org.apache.cxf.fediz.core.config.FederationProtocol;
+import org.apache.cxf.fediz.core.config.KeyManager;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.core.metadata.MetadataWriter;
@@ -46,11 +50,20 @@ import org.apache.cxf.fediz.core.spi.IDPCallback;
 import org.apache.cxf.fediz.core.spi.WAuthCallback;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.ws.security.WSConstants;
+import org.apache.ws.security.WSDataRef;
+import org.apache.ws.security.WSDocInfo;
+import org.apache.ws.security.WSPasswordCallback;
+import org.apache.ws.security.WSSConfig;
+import org.apache.ws.security.WSSecurityEngine;
+import org.apache.ws.security.WSSecurityEngineResult;
+import org.apache.ws.security.WSSecurityException;
+import org.apache.ws.security.handler.RequestData;
+import org.apache.ws.security.processor.EncryptedDataProcessor;
+import org.apache.ws.security.processor.Processor;
 import org.apache.ws.security.util.XmlSchemaDateFormat;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 public class FederationProcessorImpl implements FederationProcessor {
 
@@ -160,7 +173,16 @@ public class FederationProcessorImpl implements FederationProcessor {
                 throw new ProcessingException(TYPE.TOKEN_INVALID);
             }
         }
-
+        
+        // Check to see if RST is encrypted
+        if ("EncryptedData".equals(rst.getLocalName())
+            && WSConstants.ENC_NS.equals(rst.getNamespaceURI())) {
+            Element decryptedRST = decryptEncryptedRST(rst, config);
+            if (decryptedRST != null) {
+                rst = decryptedRST;
+            }
+        }
+        
         TokenValidatorResponse validatorResponse = null;
         List<TokenValidator> validators = ((FederationProtocol)config.getProtocol()).getTokenValidators();
         for (TokenValidator validator : validators) {
@@ -222,6 +244,56 @@ public class FederationProcessorImpl implements FederationProcessor {
                             validatorResponse.getUniqueTokenId());
 
         return fedResponse;
+    }
+    
+    private Element decryptEncryptedRST(
+        Element encryptedRST,
+        FederationContext config
+    ) throws ProcessingException {
+
+        KeyManager decryptionKeyManager = config.getDecryptionKey();
+        if (decryptionKeyManager == null || decryptionKeyManager.getCrypto() == null) {
+            LOG.debug(
+                "We must have a decryption Crypto instance configured to decrypt encrypted tokens"
+            );
+            throw new ProcessingException(TYPE.BAD_REQUEST);
+        }
+        String keyPassword = decryptionKeyManager.getKeyPassword();
+        if (keyPassword == null) {
+            LOG.debug(
+                "We must have a decryption key password to decrypt encrypted tokens"
+            );
+            throw new ProcessingException(TYPE.BAD_REQUEST);
+        }
+        
+        EncryptedDataProcessor proc = new EncryptedDataProcessor();
+        WSDocInfo docInfo = new WSDocInfo(encryptedRST.getOwnerDocument());
+        RequestData data = new RequestData();
+        
+        // Disable WSS4J processing of the (decrypted) SAML Token
+        WSSConfig wssConfig = WSSConfig.getNewInstance();
+        wssConfig.setProcessor(WSSecurityEngine.SAML_TOKEN, new NOOpProcessor());
+        wssConfig.setProcessor(WSSecurityEngine.SAML2_TOKEN, new NOOpProcessor());
+        data.setWssConfig(wssConfig);
+        
+        data.setDecCrypto(decryptionKeyManager.getCrypto());
+        data.setCallbackHandler(new DecryptionCallbackHandler(keyPassword));
+        try {
+            List<WSSecurityEngineResult> result =
+                proc.handleToken(encryptedRST, data, docInfo);
+            if (result.size() > 0) {
+                @SuppressWarnings("unchecked")
+                List<WSDataRef> dataRefs = 
+                    (List<WSDataRef>)result.get(result.size() - 1).get(WSSecurityEngineResult.TAG_DATA_REF_URIS);
+                if (dataRefs != null && dataRefs.size() > 0) {
+                    return dataRefs.get(0).getProtectedElement();
+                }
+            }
+        } catch (WSSecurityException e) {
+            LOG.debug(e.getMessage(), e);
+            throw new ProcessingException(TYPE.TOKEN_INVALID);
+        }
+        return null;
     }
 
     private LifeTime processLifeTime(Element lifetimeElem) throws ProcessingException {
@@ -417,6 +489,37 @@ public class FederationProcessorImpl implements FederationProcessor {
         }
         return result;
     }
+    
+    private static class DecryptionCallbackHandler implements CallbackHandler {
+        
+        private final String password;
+        
+        public DecryptionCallbackHandler(String password) {
+            this.password = password;
+        }
 
+        @Override
+        public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+            for (int i = 0; i < callbacks.length; i++) {
+                if (callbacks[i] instanceof WSPasswordCallback) {
+                    WSPasswordCallback pc = (WSPasswordCallback) callbacks[i];
+                    pc.setPassword(password);
+                } else {
+                    throw new UnsupportedCallbackException(callbacks[i], "Unrecognized Callback");
+                }
+            }
+        }
+        
+    }
+
+    private static class NOOpProcessor implements Processor {
+
+        @Override
+        public List<WSSecurityEngineResult> handleToken(Element arg0, RequestData arg1, WSDocInfo arg2)
+            throws WSSecurityException {
+            return new ArrayList<WSSecurityEngineResult>();
+        }
+        
+    }
 
 }

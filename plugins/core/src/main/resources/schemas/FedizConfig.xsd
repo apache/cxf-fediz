@@ -20,6 +20,7 @@
 				<xs:element ref="tokenReplayCache" />
 				<xs:element ref="serviceCertificate" />
 				<xs:element ref="signingKey" />
+				<xs:element ref="tokenDecryptionKey" />
 				<xs:element ref="trustedIssuers" />
 				<xs:element ref="protocol" />
 			</xs:sequence>
@@ -77,6 +78,8 @@
 	<xs:element name="serviceCertificate" type="KeyManagersType" />
 	
 	<xs:element name="signingKey" type="KeyManagersType" />
+	
+	<xs:element name="tokenDecryptionKey" type="KeyManagersType" />
 
 	<xs:element name="protocol" type="protocolType" />
 

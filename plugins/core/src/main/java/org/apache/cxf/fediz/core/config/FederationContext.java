@@ -62,6 +62,7 @@ public class FederationContext implements Closeable {
     private FederationProtocol protocol;
     private List<TrustManager> certificateStores;
     private KeyManager keyManager;
+    private KeyManager decryptionKeyManager;
     
 
     public FederationContext(ContextConfig config) {
@@ -159,6 +160,26 @@ public class FederationContext implements Closeable {
         }
         
         return keyManager; 
+        
+    }
+    
+    public KeyManager getDecryptionKey() {
+        if (decryptionKeyManager != null) {
+            return decryptionKeyManager;
+        }
+        decryptionKeyManager = new KeyManager(config.getTokenDecryptionKey());
+        Properties decProperties = createCryptoProperties(config.getTokenDecryptionKey());
+        Crypto crypto;
+        try {
+            crypto = CryptoFactory.getInstance(decProperties);
+            decryptionKeyManager.setCrypto(crypto);
+        } catch (WSSecurityException e) {
+            decryptionKeyManager = null;
+            LOG.error("Failed to load keystore '" + decryptionKeyManager.getName() + "'", e);
+            throw new IllegalConfigurationException("Failed to load keystore '" + decryptionKeyManager.getName() + "'");
+        }
+        
+        return decryptionKeyManager; 
         
     }
 

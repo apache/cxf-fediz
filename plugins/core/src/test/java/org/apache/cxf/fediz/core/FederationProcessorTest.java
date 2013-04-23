@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 
 import javax.security.auth.callback.CallbackHandler;
@@ -42,10 +43,13 @@ import org.apache.cxf.fediz.core.config.FederationContext;
 import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
+import org.apache.ws.security.WSConstants;
+import org.apache.ws.security.WSEncryptionPart;
 import org.apache.ws.security.WSPasswordCallback;
 import org.apache.ws.security.WSSecurityException;
 import org.apache.ws.security.components.crypto.Crypto;
 import org.apache.ws.security.components.crypto.CryptoFactory;
+import org.apache.ws.security.message.WSSecEncrypt;
 import org.apache.ws.security.saml.ext.AssertionWrapper;
 import org.apache.ws.security.saml.ext.SAMLParms;
 import org.apache.ws.security.saml.ext.bean.ConditionsBean;
@@ -56,7 +60,6 @@ import org.joda.time.DateTime;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.opensaml.common.SAMLVersion;
-
 
 import static org.junit.Assert.fail;
 
@@ -947,6 +950,88 @@ public class FederationProcessorTest {
         Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
     }
     
+    /**
+     * Validate an encrypted SAML 2 token which includes the role attribute with 2 values
+     * Roles are encoded as a multi-value saml attribute
+     */
+    @org.junit.Test
+    public void validateEncryptedSAML2Token() throws Exception {
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        ConditionsBean cp = new ConditionsBean();
+        cp.setAudienceURI(TEST_AUDIENCE);
+        callbackHandler.setConditions(cp);
+        
+        SAMLParms samlParms = new SAMLParms();
+        samlParms.setCallbackHandler(callbackHandler);
+        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        
+        String rstr = encryptAndSignToken(assertion);
+        
+        FederationRequest wfReq = new FederationRequest();
+        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
+        wfReq.setWresult(rstr);
+        
+        configurator = null;
+        FederationContext config = 
+            getFederationConfigurator().getFederationContext("ROOT_DECRYPTION");
+        
+        FederationProcessor wfProc = new FederationProcessorImpl();
+        FederationResponse wfRes = wfProc.processRequest(wfReq, config);
+        
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
+                            .size());
+        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+        assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
+    }
+    
+    private String encryptAndSignToken(
+        AssertionWrapper assertion
+    ) throws Exception {
+        
+        WSPasswordCallback[] cb = {
+            new WSPasswordCallback("mystskey", WSPasswordCallback.SIGNATURE)
+        };
+        cbPasswordHandler.handle(cb);
+        String password = cb[0].getPassword();
+
+        assertion.signAssertion("mystskey", password, crypto, false);
+        
+        Document doc = STSUtil.toSOAPPart(STSUtil.SAMPLE_RSTR_COLL_MSG);
+        Element token = assertion.toDOM(doc);
+
+        Element e = FederationProcessorTest.findElement(doc, "RequestedSecurityToken",
+                                                        FederationConstants.WS_TRUST_13_NS);
+        if (e == null) {
+            e = FederationProcessorTest.findElement(doc, "RequestedSecurityToken",
+                                                    FederationConstants.WS_TRUST_2005_02_NS);
+        }
+        e.appendChild(token);
+        
+        WSSecEncrypt builder = new WSSecEncrypt();
+        builder.setUserInfo("mystskey");
+        
+        builder.setKeyIdentifierType(WSConstants.ISSUER_SERIAL);
+        builder.setSymmetricEncAlgorithm(WSConstants.AES_128);
+        builder.setKeyEncAlgo(WSConstants.KEYTRANSPORT_RSA15);
+        builder.setEmbedEncryptedKey(true);
+        
+        WSEncryptionPart encryptionPart = new WSEncryptionPart(assertion.getId(), "Element");
+        encryptionPart.setElement(token);
+        
+        Crypto encrCrypto = CryptoFactory.getInstance("signature.properties");
+        builder.prepare(token.getOwnerDocument(), encrCrypto);
+        builder.encryptForRef(null, Collections.singletonList(encryptionPart));
+        
+        // return doc.getDocumentElement();
+        return DOM2Writer.nodeToString(doc);
+    }
     
     private String createSamlToken(AssertionWrapper assertion, String alias, boolean sign)
         throws IOException, UnsupportedCallbackException, WSSecurityException, Exception {
