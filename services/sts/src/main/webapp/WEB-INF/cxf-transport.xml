@@ -23,7 +23,13 @@
 			<cxf:logging />
 		</cxf:features>
 	</cxf:bus>
-
+	
+	<!--
+		Per default the resource <file.xml> is imported.
+		If built with Maven Profile 'ldap', the resource <ldap.xml> is imported
+	-->
+	<import resource="${adapter.resource}.xml" />
+	
 	<bean id="transportSTSProviderBean"
 		class="org.apache.cxf.ws.security.sts.provider.SecurityTokenServiceProvider">
 		<property name="issueOperation" ref="transportIssueDelegate" />
@@ -79,29 +85,13 @@
 	<bean id="claimsAttributeProvider"
 		class="org.apache.cxf.sts.claims.ClaimsAttributeStatementProvider" />
 
-	<import resource="userClaims.xml" />
-
 	<bean id="claimsManager" class="org.apache.cxf.sts.claims.ClaimsManager">
 		<property name="claimHandlers" ref="claimHandlerList" />
 	</bean>
 
 	<util:list id="claimHandlerList">
-		<ref bean="fileClaimsHandler" />
+		<ref bean="claimsHandler" />
 	</util:list>
-
-	<bean id="fileClaimsHandler" class="org.apache.cxf.fediz.service.sts.FileClaimsHandler">
-
-		<property name="userClaims" ref="userClaims" />
-		<property name="supportedClaims" ref="supportedClaims" />
-	</bean>
-
-	<import resource="passwords.xml" />
-
-	<bean id="upCallBackHandler"
-		class="org.apache.cxf.fediz.service.sts.UsernamePasswordCallbackHandler">
-		<property name="passwords" ref="passwords" />
-	</bean>
-
 
 	<bean id="transportService" class="org.apache.cxf.sts.service.StaticService">
 		<property name="endpoints" ref="transportEndpoints" />
@@ -121,15 +111,6 @@
 		<property name="issuer" value="DoubleItSTSIssuer" />
 		<property name="encryptionUsername" value="myservicekey" />
 	</bean>
-    
-	<jaxws:endpoint id="transportSTS1" implementor="#transportSTSProviderBean"
-		address="/STSService" wsdlLocation="/WEB-INF/wsdl/ws-trust-1.4-service.wsdl"
-		xmlns:ns1="http://docs.oasis-open.org/ws-sx/ws-trust/200512/"
-		serviceName="ns1:SecurityTokenService" endpointName="ns1:TransportUT_Port">
-		<jaxws:properties>
-			<entry key="ws-security.callback-handler" value-ref="upCallBackHandler" />
-		</jaxws:properties>
-	</jaxws:endpoint>
 	
 	<jaxws:endpoint id="transportSTS2" implementor="#transportSTSProviderBean"
 		address="/STSServiceTransport" wsdlLocation="/WEB-INF/wsdl/ws-trust-1.4-service.wsdl"

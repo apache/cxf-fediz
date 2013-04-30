@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:jaxws="http://cxf.apache.org/jaxws"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util-2.0.xsd
+        http://cxf.apache.org/jaxws                                     
+        http://cxf.apache.org/schemas/jaxws.xsd">
+
+
+	<bean id="contextSource" class="org.springframework.ldap.core.support.LdapContextSource">
+		<property name="url" value="ldap://localhost:389/" />
+		<property name="userDn" value="uid=admin,ou=system" />
+		<property name="password" value="secret" />
+	</bean>
+
+	<bean id="ldapTemplate" class="org.springframework.ldap.core.LdapTemplate">
+		<constructor-arg ref="contextSource" />
+	</bean>
+
+	<util:map id="claimsToLdapAttributeMapping">
+		<entry key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"
+			value="givenName" />
+		<entry key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname"
+			value="sn" />
+		<entry key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
+			value="mail" />
+		<entry key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/country"
+			value="c" />
+		<entry key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/postalcode"
+			value="postalCode" />
+		<entry key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/streetaddress"
+			value="postalAddress" />						
+		<entry key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/locality"
+			value="town" />
+		<entry key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/stateorprovince"
+			value="st" />
+		<entry key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/gender"
+			value="gender" />
+		<entry key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/dateofbirth"
+			value="dateofbirth" />												
+	    <entry key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role"
+	        value="member" />
+	</util:map>
+
+    <bean id="claimsHandler" class="org.apache.cxf.sts.claims.LdapClaimsHandler">
+		<property name="ldapTemplate" ref="ldapTemplate" />
+		<property name="claimsLdapAttributeMapping" ref="claimsToLdapAttributeMapping" />
+		<property name="userBaseDN" value="ou=users,dc=fediz,dc=org" />
+	</bean>
+	
+	<jaxws:endpoint id="transportSTS1" implementor="#transportSTSProviderBean"
+		address="/STSService" wsdlLocation="/WEB-INF/wsdl/ws-trust-1.4-service.wsdl"
+		xmlns:ns1="http://docs.oasis-open.org/ws-sx/ws-trust/200512/"
+		serviceName="ns1:SecurityTokenService" endpointName="ns1:TransportUT_Port">
+		<jaxws:properties>
+			<entry key="ws-security.ut.validator">
+				<bean class="org.apache.ws.security.validate.JAASUsernameTokenValidator">
+					<property name="contextName" value="LDAP" />
+				</bean>
+			</entry>
+		</jaxws:properties>
+	</jaxws:endpoint>
+	
+</beans>
