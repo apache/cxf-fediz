@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.security.Principal;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -327,6 +328,10 @@ public class FederationAuthenticator extends FormAuthenticator {
                 FederationRequest wfReq = new FederationRequest();
                 wfReq.setWa(wa);
                 wfReq.setWresult(wresult);
+                
+                X509Certificate certs[] = 
+                    (X509Certificate[])request.getAttribute("javax.servlet.request.X509Certificate");
+                wfReq.setCerts(certs);
 
                 String contextName = request.getServletContext().getContextPath();
                 if (contextName == null || contextName.isEmpty()) {

@@ -36,7 +36,10 @@ public class CustomValidator implements TokenValidator {
     }
 
     @Override
-    public TokenValidatorResponse validateAndProcessToken(Element token, FederationContext config) {
+    public TokenValidatorResponse validateAndProcessToken(
+        TokenValidatorRequest request, 
+        FederationContext config
+    ) {
         return new TokenValidatorResponse(null,
                                           FederationProcessorTest.TEST_USER,
                                           FederationProcessorTest.TEST_RSTR_ISSUER,

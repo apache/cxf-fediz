@@ -21,39 +21,26 @@ package org.apache.cxf.fediz.core;
 
 import java.security.cert.Certificate;
 
-public class FederationRequest {
+import org.w3c.dom.Element;
 
-    private String wa;
-    private String wresult;
-    private String wct;
-    private Certificate[] certs;
+public class TokenValidatorRequest {
 
+    private final Element token;
+    private final Certificate[] certs;
 
-    public String getWct() {
-        return wct;
-    }
-    public void setWct(String wct) {
-        this.wct = wct;
+    public TokenValidatorRequest(Element token, Certificate[] certs) {
+        this.token = token;
+        this.certs = certs;
     }
 
-    public String getWa() {
-        return wa;
+    public Element getToken() {
+        return token;
     }
-    public void setWa(String wa) {
-        this.wa = wa;
-    }
-    public String getWresult() {
-        return wresult;
-    }
-    public void setWresult(String wresult) {
-        this.wresult = wresult;
-    }
+
     public Certificate[] getCerts() {
         return certs;
     }
-    public void setCerts(Certificate[] certs) {
-        this.certs = certs;
-    }
+
 
 
 }

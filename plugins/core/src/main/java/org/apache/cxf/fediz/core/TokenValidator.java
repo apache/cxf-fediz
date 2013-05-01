@@ -43,5 +43,8 @@ public interface TokenValidator {
      * Validate a Token using the given Element and Configuration.
      * @throws ProcessingException 
      */
-    TokenValidatorResponse validateAndProcessToken(Element token, FederationContext config) throws ProcessingException;
+    TokenValidatorResponse validateAndProcessToken(
+        TokenValidatorRequest request, 
+        FederationContext config
+    ) throws ProcessingException;
 }

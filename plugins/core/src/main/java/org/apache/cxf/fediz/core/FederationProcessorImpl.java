@@ -194,7 +194,9 @@ public class FederationProcessorImpl implements FederationProcessor {
             }
             if (canHandle) {
                 try {
-                    validatorResponse = validator.validateAndProcessToken(rst, config);
+                    TokenValidatorRequest validatorRequest = 
+                        new TokenValidatorRequest(rst, request.getCerts());
+                    validatorResponse = validator.validateAndProcessToken(validatorRequest, config);
                 } catch (ProcessingException ex) {
                     throw ex;
                 } catch (Exception ex) {

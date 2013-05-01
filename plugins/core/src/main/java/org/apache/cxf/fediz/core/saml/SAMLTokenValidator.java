@@ -34,6 +34,7 @@ import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.core.TokenValidator;
+import org.apache.cxf.fediz.core.TokenValidatorRequest;
 import org.apache.cxf.fediz.core.TokenValidatorResponse;
 import org.apache.cxf.fediz.core.config.CertificateValidationMethod;
 import org.apache.cxf.fediz.core.config.FederationContext;
@@ -83,9 +84,10 @@ public class SAMLTokenValidator implements TokenValidator {
         return false;
     }
     
-    public TokenValidatorResponse validateAndProcessToken(Element token,
+    public TokenValidatorResponse validateAndProcessToken(TokenValidatorRequest request,
             FederationContext config) throws ProcessingException {
 
+        Element token = request.getToken();
         try {          
             RequestData requestData = new RequestData();
             WSSConfig wssConfig = WSSConfig.getNewInstance();
@@ -164,6 +166,12 @@ public class SAMLTokenValidator implements TokenValidator {
                     LOG.warn("Issuer '" + assertionIssuer + "' not trusted");
                     throw new ProcessingException(TYPE.ISSUER_NOT_TRUSTED);
                 }
+            }
+            
+            // Now check for HolderOfKey requirements
+            if (!SAMLUtil.checkHolderOfKey(assertion, request.getCerts())) {
+                LOG.warn("Assertion fails holder-of-key requirements");
+                throw new ProcessingException(TYPE.ISSUER_NOT_TRUSTED);
             }
 
             String audience = null;

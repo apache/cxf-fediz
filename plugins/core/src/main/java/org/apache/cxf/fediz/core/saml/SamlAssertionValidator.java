@@ -173,9 +173,6 @@ public class SamlAssertionValidator implements Validator {
         credential.setPublicKey(samlKeyInfo.getPublicKey());
         credential.setCertificates(samlKeyInfo.getCerts());
         
-        if (credential == null) {
-            throw new WSSecurityException(WSSecurityException.FAILURE, "noCredential");
-        }
         X509Certificate[] certs = credential.getCertificates();
         PublicKey publicKey = credential.getPublicKey();
         Crypto crypto = getCrypto(data);
@@ -237,27 +234,6 @@ public class SamlAssertionValidator implements Validator {
                 WSSecurityException.FAILED_CHECK, "invalidCert", null, e
             );
         }
-    }
-    
-    /**
-     * Evaluate whether a given certificate should be trusted.
-     * 
-     * Policy used in this implementation:
-     * 1. Search the keystore for the transmitted certificate
-     * 2. Search the keystore for a connection to the transmitted certificate
-     * (that is, search for certificate(s) of the issuer of the transmitted certificate
-     * 3. Verify the trust path for those certificates found because the search for the issuer 
-     * might be fooled by a phony DN (String!)
-     *
-     * @param cert the certificate that should be validated against the keystore
-     * @param crypto A crypto instance to use for trust validation
-     * @return true if the certificate is trusted, false if not
-     * @throws WSSecurityException
-     */
-    @Deprecated
-    protected boolean verifyTrustInCert(X509Certificate cert, Crypto crypto) 
-        throws WSSecurityException {
-        return verifyTrustInCert(cert, crypto, false);
     }
     
     /**
@@ -405,22 +381,6 @@ public class SamlAssertionValidator implements Validator {
             );
         }
         return false;
-    }
-    
-    /**
-     * Evaluate whether the given certificate chain should be trusted.
-     * 
-     * @param certificates the certificate chain that should be validated against the keystore
-     * @param crypto  A Crypto instance to use for trust validation
-     * @return true if the certificate chain is trusted, false if not
-     * @throws WSSecurityException
-     */
-    @Deprecated
-    protected boolean verifyTrustInCerts(
-        X509Certificate[] certificates, 
-        Crypto crypto
-    ) throws WSSecurityException {
-        return verifyTrustInCerts(certificates, crypto, false);
     }
     
     /**
