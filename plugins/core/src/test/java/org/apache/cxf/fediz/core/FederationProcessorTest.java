@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URL;
+import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.List;
 
@@ -49,6 +50,7 @@ import org.apache.ws.security.WSPasswordCallback;
 import org.apache.ws.security.WSSecurityException;
 import org.apache.ws.security.components.crypto.Crypto;
 import org.apache.ws.security.components.crypto.CryptoFactory;
+import org.apache.ws.security.components.crypto.CryptoType;
 import org.apache.ws.security.message.WSSecEncrypt;
 import org.apache.ws.security.saml.ext.AssertionWrapper;
 import org.apache.ws.security.saml.ext.SAMLParms;
@@ -989,6 +991,72 @@ public class FederationProcessorTest {
                             .size());
         Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
         assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
+    }
+    
+    /**
+     * Validate a HolderOfKey SAML 2 token
+     */
+    @org.junit.Test
+    public void validateHOKSAML2Token() throws Exception {
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.AUTHN);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_HOLDER_KEY);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        ConditionsBean cp = new ConditionsBean();
+        cp.setAudienceURI(TEST_AUDIENCE);
+        callbackHandler.setConditions(cp);
+        
+        Crypto clientCrypto = CryptoFactory.getInstance("client-crypto.properties");
+        CryptoType cryptoType = new CryptoType(CryptoType.TYPE.ALIAS);
+        cryptoType.setAlias("myclientkey");
+        X509Certificate[] certs = clientCrypto.getX509Certificates(cryptoType);
+        callbackHandler.setCerts(certs);
+        
+        SAMLParms samlParms = new SAMLParms();
+        samlParms.setCallbackHandler(callbackHandler);
+        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        
+        WSPasswordCallback[] cb = {
+            new WSPasswordCallback("mystskey", WSPasswordCallback.SIGNATURE)
+        };
+        cbPasswordHandler.handle(cb);
+        String password = cb[0].getPassword();
+
+        assertion.signAssertion("mystskey", password, crypto, false);
+
+        Document doc = STSUtil.toSOAPPart(STSUtil.SAMPLE_RSTR_COLL_MSG);
+        Element token = assertion.toDOM(doc);
+
+        Element e = FederationProcessorTest.findElement(doc, "RequestedSecurityToken",
+                                                        FederationConstants.WS_TRUST_13_NS);
+        if (e == null) {
+            e = FederationProcessorTest.findElement(doc, "RequestedSecurityToken",
+                                                    FederationConstants.WS_TRUST_2005_02_NS);
+        }
+        e.appendChild(token);
+                               
+        String rstr = DOM2Writer.nodeToString(doc);
+        
+        FederationRequest wfReq = new FederationRequest();
+        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
+        wfReq.setWresult(rstr);
+        
+        configurator = null;
+        FederationContext config = 
+            getFederationConfigurator().getFederationContext("ROOT_DECRYPTION");
+        
+        FederationProcessor wfProc = new FederationProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            fail("Failure expected on missing client certs");
+        } catch (ProcessingException ex) {
+            // expected
+        }
+        
+        // Now set client certs
+        wfReq.setCerts(certs);      
+        wfProc.processRequest(wfReq, config);
     }
     
     private String encryptAndSignToken(

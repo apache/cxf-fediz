@@ -102,8 +102,11 @@ public class SAMLTokenValidator implements TokenValidator {
                 throw new ProcessingException(TYPE.TOKEN_NO_SIGNATURE);
             }
             // Verify the signature
-            assertion.verifySignature(requestData,
-                    new WSDocInfo(token.getOwnerDocument()));
+            WSDocInfo docInfo = new WSDocInfo(token.getOwnerDocument());
+            assertion.verifySignature(requestData, docInfo);
+            
+            // Parse the HOK subject if it exists
+            assertion.parseHOKSubject(requestData, docInfo);
 
             // Now verify trust on the signature
             Credential trustCredential = new Credential();
@@ -185,32 +188,7 @@ public class SAMLTokenValidator implements TokenValidator {
                 audience = getAudienceRestriction(assertion.getSaml1());
             }
 
-            List<String> roles = null;
-            FederationProtocol fp = (FederationProtocol)config.getProtocol();
-            if (fp.getRoleURI() != null) {
-                URI roleURI = URI.create(fp.getRoleURI());
-                String delim = fp.getRoleDelimiter();
-                for (Claim c : claims) {
-                    if (roleURI.equals(c.getClaimType())) {
-                        Object oValue = c.getValue();
-                        if ((oValue instanceof String) && !"".equals((String)oValue)) {
-                            if (delim == null) {
-                                roles = Collections.singletonList((String)oValue);
-                            } else {
-                                roles = parseRoles((String)oValue, delim);
-                            }
-                        } else if ((oValue instanceof List<?>) && !((List<?>)oValue).isEmpty()) {
-                            List<String> values = (List<String>)oValue;
-                            roles = Collections.unmodifiableList(values);
-                        } else if (!((oValue instanceof String) || (oValue instanceof List<?>))) {
-                            LOG.error("Unsupported value type of Claim value");
-                            throw new IllegalStateException("Unsupported value type of Claim value");
-                        }
-                        claims.remove(c);
-                        break;
-                    }
-                }
-            }
+            List<String> roles = parseRoles(config, claims);
             
             SAMLTokenPrincipal p = new SAMLTokenPrincipal(assertion);
 
@@ -225,6 +203,37 @@ public class SAMLTokenValidator implements TokenValidator {
             LOG.error("Security token validation failed", ex);
             throw new ProcessingException(TYPE.TOKEN_INVALID);
         }
+    }
+    
+    protected List<String> parseRoles(FederationContext config, List<Claim> claims) {
+        List<String> roles = null;
+        FederationProtocol fp = (FederationProtocol)config.getProtocol();
+        if (fp.getRoleURI() != null) {
+            URI roleURI = URI.create(fp.getRoleURI());
+            String delim = fp.getRoleDelimiter();
+            for (Claim c : claims) {
+                if (roleURI.equals(c.getClaimType())) {
+                    Object oValue = c.getValue();
+                    if ((oValue instanceof String) && !"".equals((String)oValue)) {
+                        if (delim == null) {
+                            roles = Collections.singletonList((String)oValue);
+                        } else {
+                            roles = parseRoles((String)oValue, delim);
+                        }
+                    } else if ((oValue instanceof List<?>) && !((List<?>)oValue).isEmpty()) {
+                        List<String> values = (List<String>)oValue;
+                        roles = Collections.unmodifiableList(values);
+                    } else if (!((oValue instanceof String) || (oValue instanceof List<?>))) {
+                        LOG.error("Unsupported value type of Claim value");
+                        throw new IllegalStateException("Unsupported value type of Claim value");
+                    }
+                    claims.remove(c);
+                    break;
+                }
+            }
+        }
+        
+        return roles;
     }
 
     protected List<Claim> parseClaimsInAssertion(

@@ -39,6 +39,7 @@ public class KeystoreCallbackHandler implements CallbackHandler {
     
     public KeystoreCallbackHandler() {
         users.put("mystskey", "stskpass");
+        users.put("myclientkey", "ckpass");
         users.put("realma", "realma");
         users.put("realmb", "realmb");
     }

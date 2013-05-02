@@ -42,8 +42,7 @@ public final class SAMLUtil  {
      * credential of the SAML Assertion must match a client certificate credential when 
      * 2-way TLS is used.
      * @param assertionWrapper the SAML Assertion wrapper object
-     * @tlsCerts The client certificates
-     * @param signedResults a list of all of the signed results
+     * @param tlsCerts The client certificates
      */
     public static boolean checkHolderOfKey(
         AssertionWrapper assertionWrapper,
@@ -68,7 +67,7 @@ public final class SAMLUtil  {
      * Compare the credentials of the assertion to the credentials used in 2-way TLS.
      * Return true on a match
      * @param subjectKeyInfo the SAMLKeyInfo object
-     * @param signedResults a list of all of the signed results
+     * @param tlsCerts The client certificates
      * @return true if the credentials of the assertion were used to verify a signature
      */
     private static boolean compareCredentials(
