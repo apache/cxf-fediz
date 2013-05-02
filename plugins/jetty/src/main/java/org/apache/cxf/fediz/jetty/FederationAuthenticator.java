@@ -21,6 +21,7 @@ package org.apache.cxf.fediz.jetty;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.cert.X509Certificate;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -164,6 +165,10 @@ public class FederationAuthenticator extends LoginAuthenticator {
                         FederationRequest wfReq = new FederationRequest();
                         wfReq.setWa(wa);
                         wfReq.setWresult(wresult);
+                        
+                        X509Certificate certs[] = 
+                            (X509Certificate[])request.getAttribute("javax.servlet.request.X509Certificate");
+                        wfReq.setCerts(certs);
 
                         //Not supported in jetty 7.6
                         //String contextName = request.getServletContext().getContextPath();

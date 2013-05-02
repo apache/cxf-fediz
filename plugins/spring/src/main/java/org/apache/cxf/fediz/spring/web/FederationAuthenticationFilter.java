@@ -20,6 +20,7 @@
 package org.apache.cxf.fediz.spring.web;
 
 import java.io.IOException;
+import java.security.cert.X509Certificate;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -49,6 +50,10 @@ public class FederationAuthenticationFilter extends AbstractAuthenticationProces
         FederationRequest wfReq = new FederationRequest();
         wfReq.setWa(wa);
         wfReq.setWresult(wresult);
+        
+        X509Certificate certs[] = 
+            (X509Certificate[])request.getAttribute("javax.servlet.request.X509Certificate");
+        wfReq.setCerts(certs);
         
         final UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(null, wfReq);
 
