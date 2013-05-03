@@ -99,7 +99,6 @@
 
 	<util:list id="transportEndpoints">
 		<value>.*</value>
-		<value>https://localhost:(\d)*/doubleit/services/doubleittransport.*</value>
 	</util:list>
 
 	<bean id="transportSTSProperties" class="org.apache.cxf.sts.StaticSTSProperties">
