@@ -20,9 +20,11 @@ package org.apache.cxf.fediz.service.idp.beans;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
@@ -61,6 +63,9 @@ public class STSClientAction {
 
     private static final String HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER = 
             "http://docs.oasis-open.org/ws-sx/ws-trust/200512/Bearer";
+    
+    private static final String HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_PUBLICKEY = 
+            "http://docs.oasis-open.org/ws-sx/ws-trust/200512/PublicKey";
 
     private static final String HTTP_WWW_W3_ORG_2005_08_ADDRESSING = "http://www.w3.org/2005/08/addressing";
 
@@ -87,7 +92,8 @@ public class STSClientAction {
     private boolean claimsRequired = true;
     
     private boolean isPortSet;
-
+    
+    private String keyType = HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER;
 
     public String getWsdlLocation() {
         return wsdlLocation;
@@ -162,7 +168,22 @@ public class STSClientAction {
         IdpSTSClient sts = new IdpSTSClient(cxfBus);
         sts.setAddressingNamespace(HTTP_WWW_W3_ORG_2005_08_ADDRESSING);
         paramTokenType(sts);
-        sts.setKeyType(HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER);
+        sts.setKeyType(keyType);
+        if (HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_PUBLICKEY.equals(keyType)) {
+            HttpServletRequest servletRequest = WebUtils.getHttpServletRequest(context);
+            if (servletRequest != null) {
+                X509Certificate certs[] = 
+                    (X509Certificate[])servletRequest.getAttribute("javax.servlet.request.X509Certificate");
+                if (certs != null && certs.length > 0) {
+                    sts.setUseCertificateForConfirmationKeyInfo(true);
+                    // TODO uncomment once we pick up CXF 2.7.5.
+                    // sts.setUseKeyCertificate(certs[0]);
+                } else {
+                    LOG.info("Can't send a PublicKey KeyType as no client certs are available");
+                    sts.setKeyType(HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER);
+                }
+            }
+        }
 
         processWsdlLocation(context);
         sts.setWsdlLocation(wsdlLocation);
@@ -287,6 +308,14 @@ public class STSClientAction {
     private synchronized void setSTSWsdlUrl(String wsdlUrl) {
         this.wsdlLocation = wsdlUrl;
         this.isPortSet = true;
+    }
+
+    public String getKeyType() {
+        return keyType;
+    }
+
+    public void setKeyType(String keyType) {
+        this.keyType = keyType;
     }
 
 }
