@@ -10,6 +10,9 @@
         http://cxf.apache.org/jaxws                                     
         http://cxf.apache.org/schemas/jaxws.xsd">
 
+    <util:list id="claimHandlerList">
+		<ref bean="userClaimsHandler" />
+	</util:list>
 
 	<bean id="contextSource" class="org.springframework.ldap.core.support.LdapContextSource">
 		<property name="url" value="ldap://localhost:389/" />
@@ -46,7 +49,7 @@
 	        value="member" />
 	</util:map>
 
-    <bean id="claimsHandler" class="org.apache.cxf.sts.claims.LdapClaimsHandler">
+    <bean id="userClaimsHandler" class="org.apache.cxf.sts.claims.LdapClaimsHandler">
 		<property name="ldapTemplate" ref="ldapTemplate" />
 		<property name="claimsLdapAttributeMapping" ref="claimsToLdapAttributeMapping" />
 		<property name="userBaseDN" value="ou=users,dc=fediz,dc=org" />

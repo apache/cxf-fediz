@@ -14,6 +14,10 @@
     <import resource="userClaims.xml" />
     <import resource="passwords.xml" />
     
+    <util:list id="claimHandlerList">
+		<ref bean="claimsHandler" />
+	</util:list>
+    
 	<bean id="claimsHandler" class="org.apache.cxf.fediz.service.sts.FileClaimsHandler">
 		<property name="userClaims" ref="userClaims" />
 		<property name="supportedClaims" ref="supportedClaims" />

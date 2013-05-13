@@ -89,10 +89,6 @@
 		<property name="claimHandlers" ref="claimHandlerList" />
 	</bean>
 
-	<util:list id="claimHandlerList">
-		<ref bean="claimsHandler" />
-	</util:list>
-
 	<bean id="transportService" class="org.apache.cxf.sts.service.StaticService">
 		<property name="endpoints" ref="transportEndpoints" />
 	</bean>
@@ -107,7 +103,7 @@
 		<property name="callbackHandlerClass"
 			value="org.apache.cxf.fediz.service.sts.PasswordCallbackHandler" />
 		<property name="encryptionPropertiesFile" value="stsKeystore.properties" />
-		<property name="issuer" value="DoubleItSTSIssuer" />
+		<property name="issuer" value="Fediz STS" />
 		<property name="encryptionUsername" value="myservicekey" />
 	</bean>
 	
