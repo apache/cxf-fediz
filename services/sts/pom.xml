@@ -1,107 +1,87 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  Licensed to the Apache Software Foundation (ASF) under one
-  or more contributor license agreements. See the NOTICE file
-  distributed with this work for additional information
-  regarding copyright ownership. The ASF licenses this file
-  to you under the Apache License, Version 2.0 (the
-  "License"); you may not use this file except in compliance
-  with the License. You may obtain a copy of the License at
- 
-  http://www.apache.org/licenses/LICENSE-2.0
- 
-  Unless required by applicable law or agreed to in writing,
-  software distributed under the License is distributed on an
-  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-  KIND, either express or implied. See the License for the
-  specific language governing permissions and limitations
-  under the License.
--->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.apache.cxf.fediz</groupId>
-        <artifactId>fediz</artifactId>
-        <version>1.1.0-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
-    </parent>
-    <artifactId>fediz-idp-sts</artifactId>
-    <name>Apache Fediz STS</name>
-    <packaging>war</packaging>
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <adapter.resource>file</adapter.resource>
-    </properties>
-    <dependencies>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-transports-http</artifactId>
-            <version>${cxf.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-frontend-jaxws</artifactId>
-            <version>${cxf.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-ws-policy</artifactId>
-            <version>${cxf.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.cxf.services.sts</groupId>
-            <artifactId>cxf-services-sts-core</artifactId>
-            <version>${cxf.version}</version>
-            <!--
-            <exclusions>
-                                <exclusion>
-                                        <artifactId>slf4j-jdk14</artifactId>
-                                        <groupId>org.slf4j</groupId>
-                                </exclusion>
-                                <exclusion>
-                                        <artifactId>slf4j-api</artifactId>
-                                        <groupId>org.slf4j</groupId>
-                                </exclusion>
-                        </exclusions>
-                        -->
-        </dependency>        
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jdk14</artifactId>
-            <version>${slf4j.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-  		<dependency>
-			<groupId>org.springframework.ldap</groupId>
-			<artifactId>spring-ldap-core</artifactId>
-			<version>1.3.1.RELEASE</version>
-			<scope>compile</scope>
-		</dependency>        
-<!--
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor 
+	license agreements. See the NOTICE file distributed with this work for additional 
+	information regarding copyright ownership. The ASF licenses this file to 
+	you under the Apache License, Version 2.0 (the "License"); you may not use 
+	this file except in compliance with the License. You may obtain a copy of 
+	the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required 
+	by applicable law or agreed to in writing, software distributed under the 
+	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS 
+	OF ANY KIND, either express or implied. See the License for the specific 
+	language governing permissions and limitations under the License. -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.apache.cxf.fediz</groupId>
+		<artifactId>fediz</artifactId>
+		<version>1.1.0-SNAPSHOT</version>
+		<relativePath>../../pom.xml</relativePath>
+	</parent>
+	<artifactId>fediz-idp-sts</artifactId>
+	<name>Apache Fediz STS</name>
+	<packaging>war</packaging>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<adapter.resource>file</adapter.resource>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-transports-http</artifactId>
+			<version>${cxf.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-frontend-jaxws</artifactId>
+			<version>${cxf.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-ws-policy</artifactId>
+			<version>${cxf.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.cxf.services.sts</groupId>
+			<artifactId>cxf-services-sts-core</artifactId>
+			<version>${cxf.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>${slf4j.version}</version>
-			<scope>provided</scope>
+			<scope>compile</scope>
 		</dependency>
--->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>${slf4j.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.ldap</groupId>
+			<artifactId>spring-ldap-core</artifactId>
+			<version>1.3.1.RELEASE</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
 
-   </dependencies>
+	</dependencies>
 
-    <build>
-        <plugins>
-        	<plugin>
+	<build>
+		<plugins>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
 				<version>2.1.1</version>
@@ -124,43 +104,50 @@
 					</webResources>
 				</configuration>
 			</plugin>
-            <!--
-            <plugin>
-                <groupId>org.apache.tomcat.maven</groupId>
-                <artifactId>tomcat-maven-plugin</artifactId>
-                <version>2.0-SNAPSHOT</version>
-                <configuration>
-                     <server>myTomcat</server>
-                     <url>http://localhost:8080/manager/text</url>
-                     <warFile>${project.build.finalName}.war</warFile>
-                </configuration>
-            </plugin>
-            -->
-            <plugin>
-                <!--for mvn tomcat:deploy/:undeploy/:redeploy -->
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>tomcat-maven-plugin</artifactId>
-                <version>1.1</version>
-                <configuration>
-                    <server>myTomcat</server>
-                    <url>http://localhost:9080/manager/text</url>
-                    <path>/${project.build.finalName}</path>
-                </configuration>
-            </plugin>
-        </plugins>
-        <!-- Name of the generated WAR file -->
-        <finalName>fediz-idp-sts</finalName>
-    </build>
-    
-    <profiles>
-    	<profile>
-    		<id>ldap</id>
-    		<properties>
-    		<adapter.resource>ldap</adapter.resource>
-    		</properties>
-    		<dependencyManagement>
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.14</version>
+				<executions>
+					<execution>
+						<id>default-test</id>
+						<phase>test</phase>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<excludes>
+								<exclude>**/realms/**/IT*Test.java</exclude>
+							</excludes>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<!--for mvn tomcat:deploy/:undeploy/:redeploy -->
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>tomcat-maven-plugin</artifactId>
+				<version>1.1</version>
+				<configuration>
+					<server>myTomcat</server>
+					<url>http://localhost:9080/manager/text</url>
+					<path>/${project.build.finalName}</path>
+				</configuration>
+			</plugin>
+		</plugins>
+
+		<!-- Name of the generated WAR file -->
+		<finalName>fediz-idp-sts</finalName>
+	</build>
+
+	<profiles>
+		<profile>
+			<id>ldap</id>
+			<properties>
+				<adapter.resource>ldap</adapter.resource>
+			</properties>
+			<dependencyManagement>
 				<dependencies>
-		    		<!-- spring-ldap-core uses 3.0.5 -->
+					<!-- spring-ldap-core uses 3.0.5 -->
 					<dependency>
 						<groupId>org.springframework</groupId>
 						<artifactId>spring-tx</artifactId>
@@ -168,14 +155,214 @@
 					</dependency>
 				</dependencies>
 			</dependencyManagement>
-    		<dependencies>
-    			<dependency>
+			<dependencies>
+				<dependency>
 					<groupId>org.springframework.ldap</groupId>
 					<artifactId>spring-ldap-core</artifactId>
 					<version>1.3.1.RELEASE</version>
 				</dependency>
-    		</dependencies>
-    	</profile>
-    
-    </profiles>
+			</dependencies>
+		</profile>
+
+		<profile>
+			<id>realms</id>
+			<properties>
+
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-resources-plugin</artifactId>
+						<configuration>
+							<overwrite>true</overwrite>
+						</configuration>
+					</plugin>
+
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-war-plugin</artifactId>
+						<version>2.1.1</version>
+						<configuration>
+							<webResources>
+								<resource>
+									<directory>src/realms/webapp</directory>
+									<filtering>true</filtering>
+									<includes>
+										<include>**/cxf-transport.xml</include>
+									</includes>
+								</resource>
+								<resource>
+									<directory>src/realms/webapp</directory>
+									<filtering>false</filtering>
+									<excludes>
+										<exclude>**/cxf-transport.xml</exclude>
+									</excludes>
+								</resource>
+							</webResources>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>keytool-maven-plugin</artifactId>
+						<version>1.2</version>
+						<executions>
+							<execution>
+								<phase>generate-resources</phase>
+								<id>clean</id>
+								<goals>
+									<goal>clean</goal>
+								</goals>
+							</execution>
+							<execution>
+								<phase>generate-resources</phase>
+								<id>generateKeyPair</id>
+								<goals>
+									<goal>generateKeyPair</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<keystore>${project.build.directory}/test-classes/jetty-ssl.keystore</keystore>
+							<dname>cn=localhost</dname>
+							<keypass>jettypw</keypass>
+							<storepass>jettypw</storepass>
+							<alias>jetty</alias>
+							<keyalg>RSA</keyalg>
+						</configuration>
+					</plugin>
+
+					<!-- logback property ignored if set in jetty maven plugin -->
+					<!-- http://docs.codehaus.org/display/JETTY/Maven+Jetty+Plugin#MavenJettyPlugin-Logging -->
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>properties-maven-plugin</artifactId>
+						<version>1.0-alpha-2</version>
+						<executions>
+							<execution>
+								<goals>
+									<goal>set-system-properties</goal>
+								</goals>
+								<configuration>
+									<properties>
+										<property>
+											<name>logback.configurationFile</name>
+											<value>${project.baseUri}/src/test/resources/logback.xml</value>
+										</property>
+									</properties>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>build-helper-maven-plugin</artifactId>
+						<version>1.7</version>
+						<executions>
+							<execution>
+								<id>reserve-network-port</id>
+								<goals>
+									<goal>reserve-network-port</goal>
+								</goals>
+								<phase>initialize</phase>
+								<configuration>
+									<portNames>
+										<portName>sts.https.port</portName>
+										<portName>jetty.port</portName>
+									</portNames>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.mortbay.jetty</groupId>
+						<artifactId>jetty-maven-plugin</artifactId>
+						<version>7.6.8.v20121106</version>
+						<inherited>true</inherited>
+						<configuration>
+							<webApp>
+								<contextPath>/fediz-idp-sts</contextPath>
+							</webApp>
+
+							<scanIntervalSeconds>0</scanIntervalSeconds>
+							<connectors>
+								<connector
+									implementation="org.eclipse.jetty.server.ssl.SslSelectChannelConnector">
+									<port>${sts.https.port}</port>
+									<maxIdleTime>60000</maxIdleTime>
+									<keystore>${project.build.directory}/test-classes/jetty-ssl.keystore</keystore>
+									<password>jettypw</password>
+									<keyPassword>jettypw</keyPassword>
+									<wantClientAuth>true</wantClientAuth>
+								</connector>
+							</connectors>
+							<stopPort>${jetty.port}</stopPort>
+							<stopKey>STOP</stopKey>
+							<systemProperties>
+							</systemProperties>
+						</configuration>
+						<executions>
+							<execution>
+								<id>start-jetty</id>
+								<phase>pre-integration-test</phase>
+								<inherited>true</inherited>
+								<goals>
+									<goal>deploy-war</goal>
+								</goals>
+								<configuration>
+									<daemon>true</daemon>
+								</configuration>
+							</execution>
+							<execution>
+								<id>stop-jetty</id>
+								<phase>post-integration-test</phase>
+								<inherited>true</inherited>
+								<goals>
+									<goal>stop</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<artifactId>maven-failsafe-plugin</artifactId>
+						<version>2.12.2</version>
+						<inherited>true</inherited>
+						<executions>
+							<execution>
+								<id>integration-test</id>
+								<phase>integration-test</phase>
+								<goals>
+									<goal>integration-test</goal>
+								</goals>
+								<configuration>
+									<skip>false</skip>
+									<systemPropertyVariables>
+										<sts.https.port>${sts.https.port}</sts.https.port>
+									</systemPropertyVariables>
+
+									<includes>
+										<include>**/IT*.java</include>
+									</includes>
+
+								</configuration>
+							</execution>
+							<execution>
+								<id>verify</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>verify</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+				<resources>
+					<resource>
+						<directory>src/realms/resources</directory>
+					</resource>
+				</resources>
+			</build>
+		</profile>
+
+	</profiles>
 </project>
