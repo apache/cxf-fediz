@@ -12,6 +12,7 @@
 
     <util:list id="claimHandlerList">
 		<ref bean="userClaimsHandler" />
+		<ref bean="groupClaimsHandler" />
 	</util:list>
 
 	<bean id="contextSource" class="org.springframework.ldap.core.support.LdapContextSource">
@@ -53,6 +54,20 @@
 		<property name="ldapTemplate" ref="ldapTemplate" />
 		<property name="claimsLdapAttributeMapping" ref="claimsToLdapAttributeMapping" />
 		<property name="userBaseDN" value="ou=users,dc=fediz,dc=org" />
+		<property name="userNameAttribute" value="uid" />
+	</bean>
+	
+	<util:map id="appliesToScopeMapping">
+		<entry key="urn:org:apache:cxf:fediz:fedizhelloworld"
+			value="Example" />
+	</util:map>
+	
+	<bean id="groupClaimsHandler" class="org.apache.cxf.sts.claims.LdapGroupClaimsHandler">
+		<property name="ldapTemplate" ref="ldapTemplate" />
+		<property name="userBaseDN" value="ou=users,dc=fediz,dc=org" />
+		<property name="groupBaseDN" value="ou=groups,dc=fediz,dc=org" />
+		<property name="appliesToScopeMapping" ref="appliesToScopeMapping" />
+		<property name="userNameAttribute" value="uid" />
 	</bean>
 	
 	<jaxws:endpoint id="transportSTS1" implementor="#transportSTSProviderBean"
