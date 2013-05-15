@@ -21,6 +21,8 @@
 	<import resource="classpath:META-INF/cxf/cxf.xml" />
 
     <import resource="security-config.xml" />
+    <import resource="idp-config-realma.xml" />
+    <!--<import resource="idp-config-realmb.xml" />-->
 
 	<cxf:bus>
 		<cxf:features>
