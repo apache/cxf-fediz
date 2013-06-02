@@ -42,6 +42,17 @@ import org.apache.cxf.fediz.core.AbstractSAMLCallbackHandler.MultiValue;
 import org.apache.cxf.fediz.core.config.FederationConfigurator;
 import org.apache.cxf.fediz.core.config.FederationContext;
 import org.apache.cxf.fediz.core.config.FederationProtocol;
+import org.apache.cxf.fediz.core.config.jaxb.ArgumentType;
+import org.apache.cxf.fediz.core.config.jaxb.AudienceUris;
+import org.apache.cxf.fediz.core.config.jaxb.CallbackType;
+import org.apache.cxf.fediz.core.config.jaxb.CertificateStores;
+import org.apache.cxf.fediz.core.config.jaxb.ContextConfig;
+import org.apache.cxf.fediz.core.config.jaxb.FederationProtocolType;
+import org.apache.cxf.fediz.core.config.jaxb.KeyStoreType;
+import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
+import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
+import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuers;
+import org.apache.cxf.fediz.core.config.jaxb.ValidationType;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.ws.security.WSConstants;
@@ -1058,6 +1069,78 @@ public class FederationProcessorTest {
         wfReq.setCerts(certs);      
         wfProc.processRequest(wfReq, config);
     }
+    
+    @org.junit.Test
+    public void validateSAML2TokenWithConfigCreatedWithAPI() throws Exception {
+        
+        ContextConfig config = new ContextConfig();
+        
+        config.setName("whatever");
+
+        // Configure certificate store
+        CertificateStores certStores = new CertificateStores();
+        TrustManagersType tm0 = new TrustManagersType();       
+        KeyStoreType ks0 = new KeyStoreType();
+        ks0.setType("JKS");
+        ks0.setPassword("stsspass");
+        ks0.setFile("stsstore.jks");
+        tm0.setKeyStore(ks0);
+        certStores.getTrustManager().add(tm0);
+        config.setCertificateStores(certStores);
+        
+        // Configure trusted IDP
+        TrustedIssuers trustedIssuers = new TrustedIssuers();
+        TrustedIssuerType ti0 = new TrustedIssuerType();
+        ti0.setCertificateValidation(ValidationType.CHAIN_TRUST);
+        ti0.setName("FedizSTSIssuer");
+        ti0.setSubject(".*CN=www.sts.com.*");
+        trustedIssuers.getIssuer().add(ti0);
+        config.setTrustedIssuers(trustedIssuers);
+
+        FederationProtocolType protocol = new FederationProtocolType();
+        config.setProtocol(protocol);
+
+        AudienceUris audienceUris = new AudienceUris();
+        audienceUris.getAudienceItem().add("https://localhost/fedizhelloworld");
+        config.setAudienceUris(audienceUris);
+
+        protocol.setRoleURI("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role");
+
+        FederationContext fedContext = new FederationContext(config);
+        fedContext.init();
+        
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        ConditionsBean cp = new ConditionsBean();
+        cp.setAudienceURI(TEST_AUDIENCE);
+        callbackHandler.setConditions(cp);
+        
+        SAMLParms samlParms = new SAMLParms();
+        samlParms.setCallbackHandler(callbackHandler);
+        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        String rstr = createSamlToken(assertion, "mystskey", true, STSUtil.SAMPLE_RSTR_MSG);
+        
+        FederationRequest wfReq = new FederationRequest();
+        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
+        wfReq.setWresult(rstr);
+                
+        FederationProcessor wfProc = new FederationProcessorImpl();
+        FederationResponse wfRes = wfProc.processRequest(wfReq, fedContext);
+        
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
+                            .size());
+        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+        
+        fedContext.close();
+
+    }
+    
     
     private String encryptAndSignToken(
         AssertionWrapper assertion
