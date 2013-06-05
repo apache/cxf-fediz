@@ -19,14 +19,17 @@
 
 package org.apache.cxf.fediz.core;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import org.w3c.dom.Element;
 
-public class FederationResponse {
+public class FederationResponse implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+    
     private String audience;
     private String username;
     private List<String> roles;
