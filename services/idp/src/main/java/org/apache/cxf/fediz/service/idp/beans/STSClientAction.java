@@ -93,7 +93,7 @@ public class STSClientAction {
     
     private boolean isPortSet;
     
-    private String keyType = HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER;
+    private String keyType = HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_PUBLICKEY;
 
     public String getWsdlLocation() {
         return wsdlLocation;
@@ -176,8 +176,7 @@ public class STSClientAction {
                     (X509Certificate[])servletRequest.getAttribute("javax.servlet.request.X509Certificate");
                 if (certs != null && certs.length > 0) {
                     sts.setUseCertificateForConfirmationKeyInfo(true);
-                    // TODO uncomment once we pick up CXF 2.7.5.
-                    // sts.setUseKeyCertificate(certs[0]);
+                    sts.setUseKeyCertificate(certs[0]);
                 } else {
                     LOG.info("Can't send a PublicKey KeyType as no client certs are available");
                     sts.setKeyType(HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER);

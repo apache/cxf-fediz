@@ -170,9 +170,9 @@ public abstract class AbstractTests {
                 new UsernamePasswordCredentials(user, password));
 
             KeyStore trustStore  = KeyStore.getInstance(KeyStore.getDefaultType());
-            FileInputStream instream = new FileInputStream(new File("./target/test-classes/server.jks"));
+            FileInputStream instream = new FileInputStream(new File("./target/test-classes/client.jks"));
             try {
-                trustStore.load(instream, "tompass".toCharArray());
+                trustStore.load(instream, "clientpass".toCharArray());
             } finally {
                 try {
                     instream.close();
