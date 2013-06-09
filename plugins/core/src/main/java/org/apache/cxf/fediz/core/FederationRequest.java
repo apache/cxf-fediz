@@ -19,10 +19,13 @@
 
 package org.apache.cxf.fediz.core;
 
+import java.io.Serializable;
 import java.security.cert.Certificate;
 
-public class FederationRequest {
+public class FederationRequest implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+    
     private String wa;
     private String wresult;
     private String wct;
