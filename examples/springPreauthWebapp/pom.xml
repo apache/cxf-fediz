@@ -54,11 +54,6 @@
         </dependency>
         <dependency>
             <groupId>org.apache.cxf.fediz</groupId>
-            <artifactId>fediz-cxf</artifactId>
-            <version>${project.version}</version>          
-        </dependency>
-        <dependency>
-            <groupId>org.apache.cxf.fediz</groupId>
             <artifactId>fediz-spring</artifactId>
             <version>${project.version}</version>
         </dependency>

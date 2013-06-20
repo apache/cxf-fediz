@@ -27,6 +27,8 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.w3c.dom.Element;
+
+import org.apache.cxf.fediz.core.SecurityTokenThreadLocal;
 import org.apache.cxf.ws.security.trust.delegation.DelegationCallback;
 import org.apache.ws.security.util.DOM2Writer;
 

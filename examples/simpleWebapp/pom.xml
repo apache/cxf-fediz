@@ -50,11 +50,6 @@
             <scope>provided</scope>             
         </dependency>
         <dependency>
-            <groupId>org.apache.cxf.fediz</groupId>
-            <artifactId>fediz-cxf</artifactId>
-            <version>${project.version}</version>          
-        </dependency>
-        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>${commons.lang.version}</version>

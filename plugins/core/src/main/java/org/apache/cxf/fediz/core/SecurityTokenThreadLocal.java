@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.cxf.fediz.cxf.web;
+package org.apache.cxf.fediz.core;
 
 import org.w3c.dom.Element;
 

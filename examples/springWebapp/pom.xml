@@ -33,24 +33,11 @@
         <spring.version>3.1.3.RELEASE</spring.version>
     </properties>
     <dependencies>
-<!--
-        <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-            <version>${commons.logging.version}</version>
-            <scope>provided</scope>
-        </dependency>
--->
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
             <version>${servlet.version}</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.cxf.fediz</groupId>
-            <artifactId>fediz-cxf</artifactId>
-            <version>${project.version}</version>          
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

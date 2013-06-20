@@ -39,7 +39,7 @@ import org.w3c.dom.Element;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimCollection;
-import org.apache.cxf.fediz.cxf.web.SecurityTokenThreadLocal;
+import org.apache.cxf.fediz.core.SecurityTokenThreadLocal;
 import org.apache.cxf.fediz.spring.FederationUser;
 import org.apache.cxf.fediz.spring.authentication.FederationAuthenticationToken;
 

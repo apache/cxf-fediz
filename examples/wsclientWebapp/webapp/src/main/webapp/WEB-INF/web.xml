@@ -17,7 +17,7 @@
     <!-- Required: Cache the security token in Thread Local Storage -->
 	<filter>
 		<filter-name>FederationFilter</filter-name>
-		<filter-class>org.apache.cxf.fediz.cxf.web.FederationFilter</filter-class>
+		<filter-class>org.apache.cxf.fediz.core.servlet.FederationFilter</filter-class>
 	</filter>
 
 	<!-- now map this filter to a URL-pattern -->
