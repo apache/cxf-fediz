@@ -43,6 +43,7 @@ public class FederationProtocol extends Protocol {
     private Object issuer;
     private Object homeRealm;
     private Object freshness;
+    private Object signInQuery;
     private List<TokenValidator> validators = new ArrayList<TokenValidator>();
     
     public FederationProtocol(ProtocolType protocolType) {
@@ -262,6 +263,43 @@ public class FederationProtocol extends Protocol {
         } else {
             LOG.error("Unsupported 'Freshness' object");
             throw new IllegalArgumentException("Unsupported 'Freshness' object. Type must be "
+                                               + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
+        }
+    }
+    
+    public Object getSignInQuery() {
+        if (this.signInQuery != null) {
+            return this.signInQuery;
+        }
+        CallbackType cbt = getFederationProtocol().getSignInQuery();
+        if (cbt == null) {
+            return null;
+        }
+        if (cbt.getType() == null || cbt.getType().equals(ArgumentType.STRING)) {
+            this.signInQuery = new String(cbt.getValue());
+        } else if (cbt.getType().equals(ArgumentType.CLASS)) {
+            try {
+                this.signInQuery =
+                    Thread.currentThread().getContextClassLoader().loadClass(cbt.getValue()).newInstance();
+            } catch (Exception e) {
+                LOG.error("Failed to create instance of " + cbt.getValue(), e);
+                throw new IllegalStateException("Failed to create instance of " + cbt.getValue());
+            }            
+        } else {
+            LOG.error("Only String and Class are supported for 'SignInQuery'");
+            throw new IllegalStateException("Only String and Class are supported for 'SignInQuery'");
+        }
+        return this.signInQuery;
+    }
+
+    public void setSignInQuery(Object value) {
+        final boolean isString = value instanceof String;
+        final boolean isCallbackHandler = value instanceof CallbackHandler;
+        if (isString || isCallbackHandler) {
+            this.signInQuery = value;
+        } else {
+            LOG.error("Unsupported 'SignInQuery' object");
+            throw new IllegalArgumentException("Unsupported 'SignInQuery' object. Type must be "
                                                + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
         }
     }

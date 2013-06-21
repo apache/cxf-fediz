@@ -21,6 +21,8 @@ package org.apache.cxf.fediz.core.config;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -28,6 +30,7 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.apache.cxf.fediz.core.spi.HomeRealmCallback;
 import org.apache.cxf.fediz.core.spi.IDPCallback;
+import org.apache.cxf.fediz.core.spi.SignInQueryCallback;
 import org.apache.cxf.fediz.core.spi.WAuthCallback;
 
 public class TestCallbackHandler implements CallbackHandler {
@@ -35,6 +38,7 @@ public class TestCallbackHandler implements CallbackHandler {
     static final String TEST_HOME_REALM = "http://test.com/homerealm";
     static final String TEST_IDP = "http://rp.example.com/";
     static final String TEST_WAUTH = "up";
+    static final String TEST_SIGNIN_QUERY = "pubid=myid";
     
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
         for (int i = 0; i < callbacks.length; i++) {
@@ -47,6 +51,12 @@ public class TestCallbackHandler implements CallbackHandler {
             } else if (callbacks[i] instanceof IDPCallback) {
                 IDPCallback callback = (IDPCallback) callbacks[i];
                 callback.setIssuerUrl(new URL(TEST_IDP));
+            } else if (callbacks[i] instanceof SignInQueryCallback) {
+                SignInQueryCallback callback = (SignInQueryCallback) callbacks[i];
+                Map<String, String> queryParamMap = new HashMap<String, String>();
+                queryParamMap.put("pubid", "myid");
+                queryParamMap.put("testenc", "<=>");
+                callback.setSignInQueryParamMap(queryParamMap);
             } else {
                 throw new UnsupportedCallbackException(callbacks[i], "Unrecognized Callback");
             }

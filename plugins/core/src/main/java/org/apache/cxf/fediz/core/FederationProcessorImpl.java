@@ -21,6 +21,7 @@ package org.apache.cxf.fediz.core;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -29,6 +30,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -47,6 +49,7 @@ import org.apache.cxf.fediz.core.metadata.MetadataWriter;
 import org.apache.cxf.fediz.core.spi.FreshnessCallback;
 import org.apache.cxf.fediz.core.spi.HomeRealmCallback;
 import org.apache.cxf.fediz.core.spi.IDPCallback;
+import org.apache.cxf.fediz.core.spi.SignInQueryCallback;
 import org.apache.cxf.fediz.core.spi.WAuthCallback;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.ws.security.WSConstants;
@@ -349,62 +352,23 @@ public class FederationProcessorImpl implements FederationProcessor {
                 throw new IllegalStateException("Unsupported protocol");
             }
             
-            Object issuerObj = ((FederationProtocol)config.getProtocol()).getIssuer();
-            String issuerURL = null;
-            if (issuerObj instanceof String) {
-                issuerURL = (String)issuerObj;
-            } else if (issuerObj instanceof CallbackHandler) {
-                CallbackHandler issuerCB = (CallbackHandler)issuerObj;
-                IDPCallback callback = new IDPCallback(request);
-                issuerCB.handle(new Callback[] {callback});
-                issuerURL = callback.getIssuerUrl().toString();
-            }
+            String issuerURL = resolveIssuer(request, config);
             LOG.info("Issuer url: " + issuerURL);
             if (issuerURL != null && issuerURL.length() > 0) {
                 redirectURL = issuerURL;
             }
             
-            Object wAuthObj = ((FederationProtocol)config.getProtocol()).getAuthenticationType();
-            String wAuth = null;
-            if (wAuthObj != null) {
-                if (wAuthObj instanceof String) {
-                    wAuth = (String)wAuthObj;
-                } else if (wAuthObj instanceof CallbackHandler) {
-                    CallbackHandler wauthCB = (CallbackHandler)wAuthObj;
-                    WAuthCallback callback = new WAuthCallback(request);
-                    wauthCB.handle(new Callback[] {callback});
-                    wAuth = callback.getWauth();
-                }  
-            }
+            String wAuth = resolveAuthenticationType(request, config);
             LOG.info("WAuth: " + wAuth);
             
-            Object homeRealmObj = ((FederationProtocol)config.getProtocol()).getHomeRealm();
-            String homeRealm = null;
-            if (homeRealmObj != null) {
-                if (homeRealmObj instanceof String) {
-                    homeRealm = (String)homeRealmObj;
-                } else if (homeRealmObj instanceof CallbackHandler) {
-                    CallbackHandler hrCB = (CallbackHandler)homeRealmObj;
-                    HomeRealmCallback callback = new HomeRealmCallback(request);
-                    hrCB.handle(new Callback[] {callback});
-                    homeRealm = callback.getHomeRealm();
-                }
-            }
+            String homeRealm = resolveHomeRealm(request, config);
             LOG.info("HomeRealm: " + homeRealm);
             
-            Object freshnessObj = ((FederationProtocol)config.getProtocol()).getFreshness();
-            String freshness = null;
-            if (freshnessObj != null) {
-                if (freshnessObj instanceof String) {
-                    freshness = (String)freshnessObj;
-                } else if (freshnessObj instanceof CallbackHandler) {
-                    CallbackHandler frCB = (CallbackHandler)freshnessObj;
-                    FreshnessCallback callback = new FreshnessCallback(request);
-                    frCB.handle(new Callback[] {callback});
-                    freshness = callback.getFreshness();
-                }
-            }
+            String freshness = resolveFreshness(request, config);
             LOG.info("Freshness: " + freshness);
+            
+            String signInQuery = resolveSignInQuery(request, config);
+            LOG.info("SignIn Query: " + signInQuery);
             
              
             StringBuilder sb = new StringBuilder();
@@ -463,12 +427,110 @@ public class FederationProcessorImpl implements FederationProcessor {
             sb.append('&').append(FederationConstants.PARAM_CURRENT_TIME).append('=')
             .append(URLEncoder.encode(wct, "UTF-8"));
             
+            // add signin query extensions
+            if (signInQuery != null && signInQuery.length() > 0) {
+                sb.append('&').append(signInQuery);
+            }
+            
             redirectURL = redirectURL + "?" + sb.toString();
         } catch (Exception ex) {
             LOG.error("Failed to create SignInRequest", ex);
             throw new ProcessingException("Failed to create SignInRequest");
         }        
         return redirectURL;
+    }
+
+    private String resolveSignInQuery(HttpServletRequest request, FederationContext config)
+        throws IOException, UnsupportedCallbackException, UnsupportedEncodingException {
+        Object signInQueryObj = ((FederationProtocol)config.getProtocol()).getSignInQuery();
+        String signInQuery = null;
+        if (signInQueryObj != null) {
+            if (signInQueryObj instanceof String) {
+                signInQuery = (String)signInQueryObj;
+            } else if (signInQueryObj instanceof CallbackHandler) {
+                CallbackHandler frCB = (CallbackHandler)signInQueryObj;
+                SignInQueryCallback callback = new SignInQueryCallback(request);
+                frCB.handle(new Callback[] {callback});
+                Map<String, String> signInQueryMap = callback.getSignInQueryParamMap();
+                StringBuilder sbQuery = new StringBuilder();
+                for (String key : signInQueryMap.keySet()) {
+                    if (sbQuery.length() > 0) {
+                        sbQuery.append("&");
+                    }
+                    sbQuery.append(key).append('=').
+                    append(URLEncoder.encode(signInQueryMap.get(key), "UTF-8"));
+                }
+                signInQuery = sbQuery.toString();
+               
+            }
+        }
+        return signInQuery;
+    }
+
+    private String resolveFreshness(HttpServletRequest request, FederationContext config) throws IOException,
+        UnsupportedCallbackException {
+        Object freshnessObj = ((FederationProtocol)config.getProtocol()).getFreshness();
+        String freshness = null;
+        if (freshnessObj != null) {
+            if (freshnessObj instanceof String) {
+                freshness = (String)freshnessObj;
+            } else if (freshnessObj instanceof CallbackHandler) {
+                CallbackHandler frCB = (CallbackHandler)freshnessObj;
+                FreshnessCallback callback = new FreshnessCallback(request);
+                frCB.handle(new Callback[] {callback});
+                freshness = callback.getFreshness();
+            }
+        }
+        return freshness;
+    }
+
+    private String resolveHomeRealm(HttpServletRequest request, FederationContext config) throws IOException,
+        UnsupportedCallbackException {
+        Object homeRealmObj = ((FederationProtocol)config.getProtocol()).getHomeRealm();
+        String homeRealm = null;
+        if (homeRealmObj != null) {
+            if (homeRealmObj instanceof String) {
+                homeRealm = (String)homeRealmObj;
+            } else if (homeRealmObj instanceof CallbackHandler) {
+                CallbackHandler hrCB = (CallbackHandler)homeRealmObj;
+                HomeRealmCallback callback = new HomeRealmCallback(request);
+                hrCB.handle(new Callback[] {callback});
+                homeRealm = callback.getHomeRealm();
+            }
+        }
+        return homeRealm;
+    }
+
+    private String resolveAuthenticationType(HttpServletRequest request, FederationContext config)
+        throws IOException, UnsupportedCallbackException {
+        Object wAuthObj = ((FederationProtocol)config.getProtocol()).getAuthenticationType();
+        String wAuth = null;
+        if (wAuthObj != null) {
+            if (wAuthObj instanceof String) {
+                wAuth = (String)wAuthObj;
+            } else if (wAuthObj instanceof CallbackHandler) {
+                CallbackHandler wauthCB = (CallbackHandler)wAuthObj;
+                WAuthCallback callback = new WAuthCallback(request);
+                wauthCB.handle(new Callback[] {callback});
+                wAuth = callback.getWauth();
+            }  
+        }
+        return wAuth;
+    }
+
+    private String resolveIssuer(HttpServletRequest request, FederationContext config) throws IOException,
+        UnsupportedCallbackException {
+        Object issuerObj = ((FederationProtocol)config.getProtocol()).getIssuer();
+        String issuerURL = null;
+        if (issuerObj instanceof String) {
+            issuerURL = (String)issuerObj;
+        } else if (issuerObj instanceof CallbackHandler) {
+            CallbackHandler issuerCB = (CallbackHandler)issuerObj;
+            IDPCallback callback = new IDPCallback(request);
+            issuerCB.handle(new Callback[] {callback});
+            issuerURL = callback.getIssuerUrl().toString();
+        }
+        return issuerURL;
     }
     
     private String extractFullContextPath(HttpServletRequest request) throws MalformedURLException {

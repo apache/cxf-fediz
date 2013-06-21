@@ -96,6 +96,7 @@
 					<xs:element ref="freshness" />
 					<xs:element ref="reply" />
 					<xs:element ref="request" />
+					<xs:element ref="signInQuery" />
 					<xs:element ref="claimTypesRequested" />
 					<xs:element ref="tokenValidators" />
 					<xs:element ref="applicationServiceURL" />
@@ -126,6 +127,7 @@
 	<xs:element name="homeRealm" type="CallbackType" />
 	<xs:element name="authenticationType" type="CallbackType" />
 	<xs:element name="freshness" type="CallbackType" />
+	<xs:element name="signInQuery" type="CallbackType" />
 
 	<xs:simpleType name="argumentType">
 		<xs:restriction base="xs:string">

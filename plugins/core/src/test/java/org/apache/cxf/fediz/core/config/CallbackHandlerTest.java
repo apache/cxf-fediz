@@ -22,6 +22,7 @@ package org.apache.cxf.fediz.core.config;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigInteger;
+import java.util.Map;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -47,6 +48,7 @@ import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuers;
 import org.apache.cxf.fediz.core.config.jaxb.ValidationType;
 import org.apache.cxf.fediz.core.spi.HomeRealmCallback;
 import org.apache.cxf.fediz.core.spi.IDPCallback;
+import org.apache.cxf.fediz.core.spi.SignInQueryCallback;
 import org.apache.cxf.fediz.core.spi.WAuthCallback;
 import org.junit.AfterClass;
 
@@ -67,6 +69,7 @@ public class CallbackHandlerTest {
     private static final String ROLE_URI = "http://someserver:8080/path/roles.uri";
     private static final String CLAIM_TYPE = "a particular claim type";
     private static final String SUBJECT_VALUE = ".*CN=www.sts1.com.*";
+    private static final String TEST_SIGNIN_QUERY = "pubid=myid";
     
     
     @AfterClass
@@ -151,6 +154,11 @@ public class CallbackHandlerTest {
         authType.setValue(TestCallbackHandler.TEST_WAUTH);
         protocol.setAuthenticationType(authType);
         
+        CallbackType signInQueryType = new CallbackType();
+        signInQueryType.setType(ArgumentType.STRING);
+        signInQueryType.setValue(TEST_SIGNIN_QUERY);
+        protocol.setSignInQuery(signInQueryType);
+        
         return config;
     }
     
@@ -173,6 +181,11 @@ public class CallbackHandlerTest {
         authType.setType(ArgumentType.CLASS);
         authType.setValue(CALLBACKHANDLER_CLASS);
         protocol.setAuthenticationType(authType);
+        
+        CallbackType signInQueryType = new CallbackType();
+        signInQueryType.setType(ArgumentType.CLASS);
+        signInQueryType.setValue(CALLBACKHANDLER_CLASS);
+        protocol.setSignInQuery(signInQueryType);
         
         return config;
     }
@@ -216,6 +229,17 @@ public class CallbackHandlerTest {
         hrCB.handle(new Callback[] {callbackHR});
         String hr = callbackHR.getHomeRealm();
         Assert.assertEquals(TestCallbackHandler.TEST_HOME_REALM, hr);
+        
+        Object signInQueryObj = fp.getSignInQuery();
+        Assert.assertTrue(signInQueryObj instanceof CallbackHandler);
+        CallbackHandler siqCB = (CallbackHandler)signInQueryObj;
+        SignInQueryCallback callbackSIQ = new SignInQueryCallback(null);
+        siqCB.handle(new Callback[] {callbackSIQ});
+        Map<String, String> signinQueryMap = callbackSIQ.getSignInQueryParamMap();
+        Assert.assertEquals(2, signinQueryMap.size());
+        Assert.assertEquals("myid", signinQueryMap.get("pubid"));
+        Assert.assertEquals("<=>", signinQueryMap.get("testenc"));
+        
     }
     
     @org.junit.Test
@@ -248,6 +272,11 @@ public class CallbackHandlerTest {
         Assert.assertTrue(homeRealmObj instanceof String);
         String hr = (String)homeRealmObj;
         Assert.assertEquals(TestCallbackHandler.TEST_HOME_REALM, hr);
+        
+        Object signInQueryObj = fp.getSignInQuery();
+        Assert.assertTrue(signInQueryObj instanceof String);
+        String signInQuery = (String)signInQueryObj;
+        Assert.assertEquals(TestCallbackHandler.TEST_SIGNIN_QUERY, signInQuery);
     }
     
 }
