@@ -1,0 +1,81 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.apache.cxf.fediz</groupId>
+        <artifactId>plugin</artifactId>
+        <version>1.1.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>fediz-websphere</artifactId>
+    <name>Apache Fediz Plugin Websphere 7/8</name>
+    <packaging>jar</packaging>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+	
+	<dependencies>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.5</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.cxf.fediz</groupId>
+			<artifactId>fediz-core</artifactId>
+			<version>1.1.0-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+<!-- 
+		<dependency>
+			<groupId>com.ibm.ws</groupId>
+			<artifactId>runtime</artifactId>
+			<version>8</version>
+			<type>jar</type>
+			<scope>provided</scope>
+		</dependency>
+ -->
+		<dependency>
+			<groupId>com.ibm.ws</groupId>
+			<artifactId>runtime</artifactId>
+			<version>7</version>
+			<scope>compile</scope>
+		</dependency>
+
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>com.sun.tools.xjc.maven2</groupId>
+				<artifactId>maven-jaxb-plugin</artifactId>
+                                <version>1.1.1</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<schemaDirectory>${basedir}/src/main/resources</schemaDirectory>
+					<generatePackage>org.apache.cxf.fediz.was.mapping.config</generatePackage>
+					<includeSchemas>
+						<includeSchema>**/MappingSchema.xsd</includeSchema>
+					</includeSchemas>
+					<excludeSchemas>
+						<excludeSchema>test*.xsd</excludeSchema>
+					</excludeSchemas>
+					<includeBindings>
+						<includeBinding>*.xjb</includeBinding>
+					</includeBindings>
+					<strict>true</strict>
+					<verbose>true</verbose>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

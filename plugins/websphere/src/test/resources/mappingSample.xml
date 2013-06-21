@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mapping>
+	<samlToJ2EE>
+		<claim>gold</claim>
+		<groups>
+			<j2eeGroup>goldUsers</j2eeGroup>
+		</groups>
+	</samlToJ2EE>
+	<samlToJ2EE>
+		<claim>silver</claim>
+		<groups>
+			<j2eeGroup>silverUsers</j2eeGroup>
+		</groups>
+	</samlToJ2EE>
+	<samlToJ2EE>
+		<claim>bronze</claim>
+		<groups>
+			<j2eeGroup>bronzeUsers</j2eeGroup>
+		</groups>
+	</samlToJ2EE>
+	<samlToJ2EE>
+		<claim>vip</claim>
+		<groups>
+			<j2eeGroup>goldUsers</j2eeGroup>
+			<j2eeGroup>silverUsers</j2eeGroup>
+		</groups>
+	</samlToJ2EE>
+</mapping>
