@@ -19,10 +19,15 @@
 
 package org.apache.cxf.fediz.core.config;
 
+import java.io.BufferedInputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -41,8 +46,10 @@ import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuers;
 import org.apache.cxf.fediz.core.exception.IllegalConfigurationException;
 
 import org.apache.ws.security.WSSecurityException;
+import org.apache.ws.security.components.crypto.CertificateStore;
 import org.apache.ws.security.components.crypto.Crypto;
 import org.apache.ws.security.components.crypto.CryptoFactory;
+import org.apache.ws.security.components.crypto.Merlin;
 import org.apache.ws.security.util.Loader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,10 +105,17 @@ public class FederationContext implements Closeable {
         List<TrustManagersType> trustManagers = certStores.getTrustManager();
         for (TrustManagersType manager:trustManagers) {
             TrustManager tm = new TrustManager(manager);
-            Properties sigProperties = createCryptoProperties(manager);
-            Crypto crypto;
+            
+            Crypto crypto = null;
             try {
-                crypto = CryptoFactory.getInstance(sigProperties);
+                if (manager.getKeyStore().getType().equalsIgnoreCase("PEM")) {
+                    X509Certificate[] certificates = new X509Certificate[1];
+                    certificates[0] = readX509Certificate(tm.getName());
+                    crypto = new CertificateStore(certificates);
+                } else {
+                    Properties sigProperties = createCryptoProperties(manager);
+                    crypto = CryptoFactory.getInstance(sigProperties);
+                }
                 tm.setCrypto(crypto);
                 certificateStores.add(tm);
             } catch (WSSecurityException e) {
@@ -260,10 +274,10 @@ public class FederationContext implements Closeable {
         }
         
         if (trustStoreFile == null || trustStoreFile.isEmpty()) {
-            throw new NullPointerException("truststoreFile not configured");
+            throw new IllegalConfigurationException("truststoreFile not configured");
         }
         if (trustStorePw == null || trustStorePw.isEmpty()) {
-            throw new NullPointerException("trustStorePw not configured");
+            throw new IllegalConfigurationException("trustStorePw not configured");
         }
         Properties p = new Properties();
         p.put("org.apache.ws.security.crypto.provider",
@@ -293,10 +307,10 @@ public class FederationContext implements Closeable {
         }
         
         if (keyStoreFile == null || keyStoreFile.isEmpty()) {
-            throw new NullPointerException("truststoreFile not configured");
+            throw new IllegalConfigurationException("truststoreFile not configured");
         }
         if (keyStorePw == null || keyStorePw.isEmpty()) {
-            throw new NullPointerException("trustStorePw not configured");
+            throw new IllegalConfigurationException("trustStorePw not configured");
         }
         if (ks.getType() != null) {
             keyType = ks.getType();
@@ -311,6 +325,47 @@ public class FederationContext implements Closeable {
         p.put("org.apache.ws.security.crypto.merlin.keystore.file",
               keyStoreFile);
         return p;
+    }
+    
+    private X509Certificate readX509Certificate(String filename) {
+        Certificate cert = null;
+        BufferedInputStream bis = null;
+        try {
+            
+            InputStream is = Merlin.loadInputStream(Thread.currentThread().getContextClassLoader(), filename);
+            
+            //FileInputStream fis = new FileInputStream(filename);
+            bis = new BufferedInputStream(is);
+
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+
+            if (bis.available() > 0) {
+                cert = cf.generateCertificate(bis);
+                if (!(cert instanceof X509Certificate)) {
+                    LOG.error("Certificate " + filename + " is not of type X509Certificate");
+                    throw new IllegalConfigurationException("Certificate "
+                                                            + filename + " is not of type X509Certificate");
+                }
+                if (bis.available() > 0) {
+                    LOG.warn("There are more certificates configured in " + filename + ". Only first is parsed");
+                }
+                return (X509Certificate)cert;    
+            } else  {
+                LOG.error("No bytes can be read in certificate file " + filename);
+                throw new IllegalConfigurationException("No bytes can be read in certificate file " + filename);
+            }
+        } catch (IllegalConfigurationException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            LOG.error("Failed to read certificate file " + filename, ex);
+            throw new IllegalConfigurationException("Failed to read certificate file " + filename, ex);
+        } finally {
+            try {
+                bis.close();
+            } catch (IOException ex) {
+                LOG.error("Failed to close certificate file " + filename, ex);
+            }
+        }
     }
     
     
