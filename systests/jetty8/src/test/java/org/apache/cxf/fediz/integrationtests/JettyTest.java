@@ -37,7 +37,9 @@ public class JettyTest extends AbstractTests {
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.commons.httpclient", "debug");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.webflow", "debug");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.security.web", "debug");
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf.fediz", "debug"); 
+        System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.security", "debug");
+        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf.fediz", "debug");
+        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf", "debug"); 
 
         idpHttpsPort = System.getProperty("idp.https.port");
         Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
@@ -70,4 +72,5 @@ public class JettyTest extends AbstractTests {
     public String getServletContextName() {
         return "fedizhelloworld";
     }
+    
 }

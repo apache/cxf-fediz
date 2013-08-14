@@ -20,10 +20,12 @@ package org.apache.cxf.fediz.service.idp.beans;
 
 import java.util.Date;
 
+//import org.apache.cxf.fediz.service.idp.model.IDPConfig;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+//import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
@@ -33,24 +35,70 @@ import org.springframework.webflow.execution.RequestContext;
 
 public class WfreshParser {
 
+//    private static final String IDP_CONFIG = "idpConfig";
     private static final Logger LOG = LoggerFactory
             .getLogger(WfreshParser.class);
 
-    public boolean authenticationRequired(String wfresh, RequestContext context)
+    public boolean authenticationRequired(String wfresh, String whr, RequestContext context)
         throws Exception {
-        long ttl = Long.parseLong(wfresh);
+        
+        SecurityToken idpToken = 
+            (SecurityToken) WebUtils.getAttributeFromExternalContext(context, whr);
+//        if ("1".equals(wfresh)) {
+        if (idpToken.isExpired()) {
+            LOG.info("[IDP_TOKEN=" + idpToken.getId() + "] is expired.");
+//            forceFurtherAuthentication(context, whr, idpToken);
+            return true;
+        }
+
+        if (wfresh == null || wfresh.trim().isEmpty()) {
+            return false;
+        }
+
+        long ttl;
+        try {
+            ttl = Long.parseLong(wfresh.trim());
+        } catch (Exception e) {
+            LOG.info("wfresh value '" + wfresh + "' is invalid.");
+            return false;
+        }
         if (ttl > 0) {
-            SecurityToken idpToken = (SecurityToken) WebUtils.getAttributeFromExternalContext(context, "IDP_TOKEN");
+
             Date createdDate = idpToken.getCreated();
-            Date expiryDate = new Date();
-            expiryDate.setTime(createdDate.getTime() + (ttl * 60L * 1000L));
-            if (expiryDate.before(new Date())) {
-                LOG.info("IDP token is valid but relying party requested new authentication via wfresh: " + wfresh);
-                return true;
+            if (createdDate != null) {
+                Date expiryDate = new Date();
+                expiryDate.setTime(createdDate.getTime() + (ttl * 60L * 1000L));
+                if (expiryDate.before(new Date())) {
+                    LOG.info("[IDP_TOKEN="
+                            + idpToken.getId()
+                            + "] is valid but relying party requested new authentication caused by wfresh="
+                            + wfresh + " outdated.");
+//                    forceFurtherAuthentication(context, whr, idpToken);
+                    return true;
+                }
+            } else {
+                LOG.info("token creation date not set. Unable to check wfresh is outdated.");
             }
         } else {
-            LOG.info("wfresh value of " + wfresh + " is invalid");
+            LOG.info("ttl value '" + ttl + "' is negative.");
         }
         return false;
     }
+
+//    private void forceFurtherAuthentication(RequestContext context, String whr, SecurityToken idpToken) {
+//        if (isThisRealm(context, whr)) {
+//            SecurityContextHolder.clearContext();
+//            LOG.info("Security context has been cleared");
+//            WebUtils.removeAttributeFromExternalContext(context, whr);
+//            LOG.info("[IDP_TOKEN=" + idpToken.getId() + "] has been uncached.");
+//        }
+//    }
+//
+//    private boolean isThisRealm(RequestContext context, String whr) {
+//        IDPConfig idpConfig = (IDPConfig)WebUtils.getAttributeFromFlowScope(context, IDP_CONFIG);
+//        if (idpConfig.getRealm().equals(whr)) {
+//            return true;
+//        }
+//        return false;
+//    }
 }

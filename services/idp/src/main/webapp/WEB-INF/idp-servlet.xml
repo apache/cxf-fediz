@@ -2,11 +2,17 @@
 
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:util="http://www.springframework.org/schema/util" 
        xmlns:webflow="http://www.springframework.org/schema/webflow-config"
-       xmlns:p="http://www.springframework.org/schema/p"       
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:context="http://www.springframework.org/schema/context"   
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
        http://www.springframework.org/schema/webflow-config http://www.springframework.org/schema/webflow-config/spring-webflow-config-2.0.xsd">
-       
+    
+    <context:property-placeholder location="classpath:realm.properties"/>
+      
     <bean class="org.springframework.webflow.mvc.servlet.FlowHandlerMapping" 
   		p:flowRegistry-ref="flowRegistry"
         p:order="2">
@@ -22,10 +28,33 @@
         <webflow:flow-execution-attributes>
             <webflow:always-redirect-on-pause value="false" />
         </webflow:flow-execution-attributes>
+
+	    <webflow:flow-execution-listeners>
+	        <webflow:listener ref="securityFlowExecutionListener" />
+	    </webflow:flow-execution-listeners>
+
     </webflow:flow-executor>
 
+    <bean id="securityFlowExecutionListener"
+      class="org.springframework.webflow.security.SecurityFlowExecutionListener">
+      <property name="accessDecisionManager" ref="accessDecisionManager" />
+    </bean>
+
+   <bean id="accessDecisionManager" class="org.springframework.security.access.vote.AffirmativeBased">
+        <property name="decisionVoters">
+            <list>
+                <bean class="org.springframework.security.access.vote.RoleVoter">
+                    <property name="rolePrefix" value="ROLE_"/>
+                </bean>
+                <bean class="org.springframework.security.access.vote.AuthenticatedVoter"/>
+            </list>
+        </property>
+    </bean>
+
     <webflow:flow-registry id="flowRegistry" flow-builder-services="builder">
-        <webflow:flow-location path="/WEB-INF/federation-webflow.xml" id="federation" />
+        <webflow:flow-location path="/WEB-INF/federation-validate-request.xml" id="federation" />
+        <webflow:flow-location path="/WEB-INF/federation-signin-request.xml" id="signinRequest" />
+        <webflow:flow-location path="/WEB-INF/federation-signin-response.xml" id="signinResponse" />
     </webflow:flow-registry>
 
   <webflow:flow-builder-services id="builder" view-factory-creator="viewFactoryCreator"
@@ -47,17 +76,24 @@
 	</bean>
 
 	<bean id="stsClientForRpAction" class="org.apache.cxf.fediz.service.idp.beans.STSClientAction">
-        <property name="wsdlLocation" value="https://localhost:0/fediz-idp-sts/STSServiceTransport?wsdl"/>
+        <!--<property name="wsdlLocation" value="https://localhost:0/fediz-idp-sts/STSServiceTransport?wsdl"/>-->
+        <property name="wsdlLocation" value="https://localhost:0/fediz-idp-sts/${realm.STS_URI}/STSServiceTransport?wsdl"/>
 		<property name="wsdlEndpoint" value="Transport_Port"/>
 		<property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0"/>
-		<property name="claimsRequired" value="true"/>
 	</bean>
 
+	<bean id="signInParamCacheAction" class="org.apache.cxf.fediz.service.idp.beans.SigninParametersCacheAction" />
+	
 	<bean id="logoutAction" class="org.apache.cxf.fediz.service.idp.beans.LogoutAction" />
 	
     <bean id="wfreshParser" class="org.apache.cxf.fediz.service.idp.beans.WfreshParser" />
     
-	<bean id="initialFlowSetupAction" class="org.apache.cxf.fediz.service.idp.beans.InitialFlowSetupAction" >
-	</bean>
-	
+    <bean id="cacheTokenForWauthAction" class="org.apache.cxf.fediz.service.idp.beans.CacheTokenForWauthAction" />
+    
+    <bean id="processHRDSExpressionAction" class="org.apache.cxf.fediz.service.idp.beans.ProcessHRDSExpressionAction" />
+    
+    <bean id="validateTokenAction" class="org.apache.cxf.fediz.service.idp.beans.ValidateTokenAction" />
+
+    <bean id="homeRealmReminder" class="org.apache.cxf.fediz.service.idp.beans.HomeRealmReminder" />
+
 </beans>

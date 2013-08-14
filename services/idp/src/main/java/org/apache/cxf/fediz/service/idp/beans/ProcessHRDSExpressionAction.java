@@ -18,28 +18,32 @@
  */
 package org.apache.cxf.fediz.service.idp.beans;
 
-import javax.servlet.http.HttpSession;
-
+import org.apache.cxf.fediz.service.idp.model.IDPConfig;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
- * @author fr17993 This class is responsible to invalidate IDP session.
+ * @author Th. Beucher 
+ * This class is responsible to process Home Realm Discovery Service Expression.
  */
 
+public class ProcessHRDSExpressionAction {
 
-public class LogoutAction {
+    private static final String IDP_CONFIG = "idpConfig";
+    private static final Logger LOG = LoggerFactory
+            .getLogger(ProcessHRDSExpressionAction.class);
 
-    private static final Logger LOG = LoggerFactory.getLogger(LogoutAction.class);
-
-    public void submit(RequestContext requestContext) {
-        SecurityContextHolder.clearContext();
-        LOG.info("Security context has been cleared.");
-        HttpSession session = WebUtils.getHttpSession(requestContext);
-        session.invalidate();
-        LOG.info("Session " + session.getId() + " has been invalidated.");
+    public String submit(RequestContext context) {
+        IDPConfig idpConfig = (IDPConfig)WebUtils.getAttributeFromFlowScope(context, IDP_CONFIG);
+        String hrds = idpConfig.getHrds();
+        //TODO
+        if (hrds == null) {
+            LOG.info("HRDS is null (Mock).");
+            return "";
+        }
+        LOG.info("HRDS is not null (Mock).");
+        return "some-whr-value";
     }
 }

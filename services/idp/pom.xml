@@ -35,6 +35,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring.security.version>3.1.3.RELEASE</spring.security.version>
+        <!--<spring.version>3.1.4.RELEASE</spring.version>-->
     </properties>
     <dependencies>
         <dependency>
@@ -106,6 +107,22 @@
         </dependency>
     </dependencies>
     <build>
+    	<resources>
+    		<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>**/realm.properties</include>
+				</includes>
+			</resource>
+    		<resource>
+				<directory>src/main/resources</directory>
+				<filtering>false</filtering>
+				<excludes>
+					<exclude>**/realm.properties</exclude>
+				</excludes>
+			</resource>			
+    	</resources>
         <plugins>
             <plugin>
                 <!--for mvn tomcat:deploy/:undeploy/:redeploy -->
@@ -118,8 +135,58 @@
                     <path>/${project.build.finalName}</path>
                 </configuration>
             </plugin>
+            <plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<configuration>
+					<webResources>
+						<resource>
+							<directory>src/main/webapp</directory>
+							<filtering>true</filtering>
+							<includes>
+								<include>**/applicationContext.xml</include>
+							</includes>
+						</resource>
+						<resource>
+							<directory>src/main/webapp</directory>
+							<filtering>false</filtering>
+							<excludes>
+								<exclude>**/applicationContext.xml</exclude>
+							</excludes>
+						</resource>
+					</webResources>
+				</configuration>
+			</plugin>
+            
         </plugins>
         <!-- Name of the generated WAR file -->
         <finalName>fediz-idp</finalName>
     </build>
+    
+    <profiles>
+		<profile>
+			<id>realm-a</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+			</properties>
+			<build>
+				<filters>
+					<filter>src/main/filters/realm-a/env.properties</filter>
+				</filters>
+			</build>
+		</profile>
+		<profile>
+			<id>realm-b</id>			
+			<properties>
+			</properties>
+			<build>
+				<filters>
+					<filter>src/main/filters/realm-b/env.properties</filter>
+				</filters>
+				<finalName>fediz-idp-remote</finalName>
+			</build>
+		</profile>
+	</profiles>
 </project>

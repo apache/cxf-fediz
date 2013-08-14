@@ -16,6 +16,8 @@
 		<trustedIssuers>
 			<issuer subject=".*CN=www.sts.com.*" certificateValidation="ChainTrust"
 				name="DoubleItSTSIssuer" />
+			<issuer subject=".*CN=REALMA.*" certificateValidation="ChainTrust"
+			    name="REALM A"/>					
 		</trustedIssuers>
 		<maximumClockSkew>1000</maximumClockSkew>
 		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -25,6 +27,7 @@
 			<roleDelimiter>,</roleDelimiter>
 			<roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
 			<freshness>10</freshness>
+			<homeRealm type="String">urn:org:apache:cxf:fediz:idp:realm-A</homeRealm>
 			<claimTypesRequested>
 				<claimType type="a particular claim type" optional="true" />
 			</claimTypesRequested>

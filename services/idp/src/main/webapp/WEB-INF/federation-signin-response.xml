@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow xmlns="http://www.springframework.org/schema/webflow"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/webflow
+                          http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd">
+
+    <input name="idpConfig" />
+<!--     <input name="wreply" /> not needed cached in session under key = value of key 'wctx' -->
+<!--     <input name="wtrealm" /> not needed cached in session under key = value of key 'wctx' -->
+    <input name="wctx" />
+    <input name="wauth" />
+<!--     <input name="whr" /> not needed cached in session under key = value of key 'wctx' -->
+    <input name="wresult" />
+
+    <on-start>
+	<!--  restore 'wreply','wtrealm','whr' for current 'wctx' -->
+        <evaluate expression="signInParamCacheAction.restore(flowRequestContext)" />
+    </on-start>
+
+    <!--  validate token issued by requestor IDP ('wresult') given its 'whr' -->
+    <action-state id="validateToken">
+        <evaluate expression="validateTokenAction.submit(flowRequestContext)" 
+                        result="flowScope.rpIdpToken" 
+                        result-type="org.apache.cxf.ws.security.tokenstore.SecurityToken" /> 
+        <transition to="requestRpToken">
+            <!-- cache validated token under key = requestor home realm -->
+            <set name="externalContext.sessionMap[flowScope.whr]" value="flowScope.rpIdpToken" />
+        </transition>
+        <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
+        <transition on-exception="java.lang.Throwable" to="scInternalServerError" />
+    </action-state>
+
+    <end-state id="requestRpToken">
+        <output name="whr" value="flowScope.whr" />
+        <output name="wctx" value="flowScope.wctx" />
+        <output name="wreply" value="flowScope.wreply" />
+        <output name="wtrealm" value="flowScope.wtrealm" />
+    </end-state>
+
+    <!-- abnormal exit point : Http 400 Bad Request -->
+    <end-state id="viewBadRequest" />
+
+    <!-- abnormal exit point : Http 500 Internal Server Error -->
+    <end-state id="scInternalServerError" />
+   
+</flow>

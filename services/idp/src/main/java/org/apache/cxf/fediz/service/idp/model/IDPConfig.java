@@ -18,6 +18,7 @@
  */
 package org.apache.cxf.fediz.service.idp.model;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +29,7 @@ import java.util.Map;
 
 //@Entity
 //@Table(name = "IDP")
-public class IDPConfig {
+public class IDPConfig implements Serializable {
         
     //@Id
     //private Long id;

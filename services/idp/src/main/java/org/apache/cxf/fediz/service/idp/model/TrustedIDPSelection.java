@@ -19,25 +19,18 @@
 package org.apache.cxf.fediz.service.idp.model;
 
 import java.io.Serializable;
-import java.net.URI;
 
-public class RequestClaim implements Serializable {
+public class TrustedIDPSelection implements Serializable {
+
+    private static final long serialVersionUID = 1L;
     
-    private URI claimType;
-    
-    private boolean optional;
-    
-    
-    public void setClaimType(URI claimType) {
-        this.claimType = claimType;
+    private String whr;
+
+    public String getWhr() {
+        return whr;
     }
-    public URI getClaimType() {
-        return claimType;
-    }
-    public void setOptional(boolean optional) {
-        this.optional = optional;
-    }
-    public boolean isOptional() {
-        return optional;
+
+    public void setWhr(String whr) {
+        this.whr = whr;
     }
 }

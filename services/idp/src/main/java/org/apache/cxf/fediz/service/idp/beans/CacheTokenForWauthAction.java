@@ -18,9 +18,8 @@
  */
 package org.apache.cxf.fediz.service.idp.beans;
 
-//import java.security.Principal;
-
 import org.apache.cxf.fediz.service.idp.STSUserDetails;
+import org.apache.cxf.fediz.service.idp.model.IDPConfig;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.slf4j.Logger;
@@ -31,21 +30,28 @@ import org.springframework.util.Assert;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
- * @author Th. Beucher This class is responsible to initialize web flow.
+ * @author 
+ * Th. Beucher This class is responsible to cache IDP token.
  */
 
-public class InitialFlowSetupAction {
+public class CacheTokenForWauthAction {
 
-    private static final Logger LOG = LoggerFactory
-            .getLogger(InitialFlowSetupAction.class);
+    private static final String IDP_CONFIG = "idpConfig";
+    private static final Logger LOG = LoggerFactory.getLogger(CacheTokenForWauthAction.class);
+
 
     public void submit(RequestContext context) {
-        
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Assert.isInstanceOf(STSUserDetails.class, auth.getDetails());
         final STSUserDetails stsUserDetails = (STSUserDetails) auth.getDetails();
         SecurityToken securityToken = stsUserDetails.getSecurityToken();
-        WebUtils.putAttributeInExternalContext(context, "IDP_TOKEN", securityToken);
-        LOG.info("Token [IDP_TOKEN] succesfully set in session.");
+
+        IDPConfig idpConfig = (IDPConfig)WebUtils.getAttributeFromFlowScope(context, IDP_CONFIG);
+
+        WebUtils.putAttributeInExternalContext(context, idpConfig.getRealm(), securityToken);
+        LOG.info("Token [IDP_TOKEN=" + securityToken.getId()
+                + "] for realm ["
+                + idpConfig.getRealm() + "] successfully cached.");
     }
 }

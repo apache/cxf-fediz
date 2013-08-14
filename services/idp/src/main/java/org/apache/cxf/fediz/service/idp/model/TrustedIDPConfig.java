@@ -18,6 +18,8 @@
  */
 package org.apache.cxf.fediz.service.idp.model;
 
+import java.io.Serializable;
+
 
 //import javax.persistence.Column;
 //import javax.persistence.Entity;
@@ -26,7 +28,7 @@ package org.apache.cxf.fediz.service.idp.model;
 
 //@Entity
 //@Table(name = "TRUSTEDIDP")
-public class TrustedIDPConfig {
+public class TrustedIDPConfig implements Serializable {
 
         
     //@Id

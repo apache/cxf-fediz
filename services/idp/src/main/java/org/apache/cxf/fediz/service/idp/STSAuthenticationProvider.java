@@ -109,11 +109,13 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
         try {
 
 //Line below may be uncommented for debugging    
-//          setTimeout(sts.getClient(), 3600000L);
+//            setTimeout(sts.getClient(), 3600000L);
 
             SecurityToken token = sts.requestSecurityToken(this.appliesTo);
             
             List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
+            //authorities.add(new SimpleGrantedAuthority("ROLE_AUTHENTICATED"));
+            //Not needed because AuthenticatedVoter has been added for SecurityFlowExecutionListener
             if (roleURI != null) {
                 AssertionWrapper assertion = new AssertionWrapper(token.getToken());
                 List<Claim> claims = parseClaimsInAssertion(assertion.getSaml2());
@@ -144,6 +146,9 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
                                                         token);
             upat.setDetails(details);
             
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("[IDP_TOKEN=" + token.getId() + "] provided for user '" + authentication.getName() + "'");
+            }
             return upat;
         } catch (Exception ex) {
             LOG.info("Failed to authenticate user '" + authentication.getName() + "'", ex);
@@ -309,12 +314,12 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
     }
 
 //May be uncommented for debugging    
-//  private void setTimeout(Client client, Long timeout) {
-//      HTTPConduit conduit = (HTTPConduit) client.getConduit();
-//      HTTPClientPolicy httpClientPolicy = new HTTPClientPolicy();
-//      httpClientPolicy.setConnectionTimeout(timeout);
-//      httpClientPolicy.setReceiveTimeout(timeout);
-//      conduit.setClient(httpClientPolicy);
-//  }
+//    private void setTimeout(Client client, Long timeout) {
+//        HTTPConduit conduit = (HTTPConduit) client.getConduit();
+//        HTTPClientPolicy httpClientPolicy = new HTTPClientPolicy();
+//        httpClientPolicy.setConnectionTimeout(timeout);
+//        httpClientPolicy.setReceiveTimeout(timeout);
+//        conduit.setClient(httpClientPolicy);
+//    }
     
 }

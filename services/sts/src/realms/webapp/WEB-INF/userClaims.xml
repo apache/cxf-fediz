@@ -36,7 +36,7 @@
 		<entry key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
 			value="bobwindsor@realma.org" />
 		<entry key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role"
-			value="user,manager,admin" />
+			value="User,Manager,Admin" />
 	</util:map>
 	
 	<util:map id="REALMA_tedClaims">

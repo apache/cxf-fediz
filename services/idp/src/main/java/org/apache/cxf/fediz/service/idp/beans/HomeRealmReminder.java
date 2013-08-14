@@ -18,28 +18,34 @@
  */
 package org.apache.cxf.fediz.service.idp.beans;
 
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.Cookie;
 
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.security.core.context.SecurityContextHolder;
+//import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
- * @author fr17993 This class is responsible to invalidate IDP session.
+ * @author fr17993 
  */
 
+public class HomeRealmReminder {
 
-public class LogoutAction {
+    public static final String FEDIZ_HOME_REALM = "FEDIZ_HOME_REALM";
 
-    private static final Logger LOG = LoggerFactory.getLogger(LogoutAction.class);
 
-    public void submit(RequestContext requestContext) {
-        SecurityContextHolder.clearContext();
-        LOG.info("Security context has been cleared.");
-        HttpSession session = WebUtils.getHttpSession(requestContext);
-        session.invalidate();
-        LOG.info("Session " + session.getId() + " has been invalidated.");
+//    public boolean alreadyAuthenticated() {
+//        return SecurityContextHolder.getContext().getAuthentication().isAuthenticated();
+//    }
+
+    public Cookie readCookie(RequestContext requestContext) {
+        return WebUtils.readCookie(requestContext, FEDIZ_HOME_REALM);
+    }
+
+    public void addCookie(RequestContext requestContext, String cookieValue) {
+        WebUtils.addCookie(requestContext, FEDIZ_HOME_REALM, cookieValue);
+    }
+
+    public void removeCookie(RequestContext requestContext) {
+        WebUtils.removeCookie(requestContext, FEDIZ_HOME_REALM);
     }
 }

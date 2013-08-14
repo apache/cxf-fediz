@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow xmlns="http://www.springframework.org/schema/webflow"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/webflow
+                          http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd">
+
+    <var name="idpConfig" class="org.apache.cxf.fediz.service.idp.model.IDPConfig"/>
+
+    <!-- protocol check -->
+    <decision-state id="WSFederationRequestCheck">
+        <on-entry>
+            <set name="flowScope.wtrealm" value="requestParameters.wtrealm" />
+            <set name="flowScope.wreply" value="requestParameters.wreply" />
+            <set name="flowScope.wctx" value="requestParameters.wctx" />
+            <set name="flowScope.wfresh" value="requestParameters.wfresh" />
+            <set name="flowScope.whr" value="requestParameters.whr" />
+            <set name="flowScope.wresult" value="requestParameters.wresult" />
+            <evaluate expression="requestScope.getString('wauth','default')" result="flowScope.wauth" /> 
+	        <set name="flowScope.idpConfig" value="config.getIdpConfigs().get(0)" />
+        </on-entry>
+        <if test="requestParameters.wa == null" then="viewBadRequest" />
+        <if test="requestParameters.wa != 'wsignin1.0' and requestParameters.wa != 'wsignout1.0' and requestParameters.wa != 'wsignoutcleanup1.0'" then="viewBadRequest" />
+        <if test="requestParameters.wa == 'wsignout1.0' or requestParameters.wa == 'wsignoutcleanup1.0'" then="invalidateSessionAction" />
+        <if test="requestParameters.wtrealm == null or requestParameters.wtrealm.length() == 0" then="viewBadRequest" else="selectSigninProcess"/>
+    </decision-state>
+
+    <decision-state id="selectSigninProcess">
+        <if test="requestParameters.wresult == null or requestParameters.wresult.isEmpty()" then="signinRequest" else="signinResponse" />
+    </decision-state>
+
+    <subflow-state id="signinRequest" subflow="signinRequest">
+        <input name="idpConfig" value="flowScope.idpConfig" />
+        <input name="wtrealm" value="flowScope.wtrealm" />
+        <input name="wreply" value="flowScope.wreply" />
+        <input name="wctx" value="flowScope.wctx" />
+        <input name="wfresh" value="flowScope.wfresh" />
+        <input name="wauth" value="flowScope.wauth" />
+        <input name="whr" value="flowScope.whr" />
+
+        <output name="whr" />
+        <output name="wctx" />  
+
+        <transition on="requestRpToken" to="requestRpToken">
+        	<set name="flowScope.whr" value="currentEvent.attributes.whr" />
+        	<set name="flowScope.wctx" value="currentEvent.attributes.wctx" />
+        </transition>
+        <transition on="viewBadRequest" to="viewBadRequest"/>
+        <transition on="scInternalServerError" to="scInternalServerError"/>
+        <transition on="redirectToTrustedIDP" to="redirectToTrustedIDP">
+        	<set name="flowScope.whr" value="currentEvent.attributes.whr" />
+        	<set name="flowScope.wctx" value="currentEvent.attributes.wctx" />
+        </transition>
+        <transition on="redirectToLocalIDP" to="redirectToLocalIDP">
+        	<set name="flowScope.wctx" value="currentEvent.attributes.wctx" />
+        </transition>
+    </subflow-state>
+        
+    <subflow-state id="signinResponse" subflow="signinResponse">
+        <input name="idpConfig" value="flowScope.idpConfig" />
+        <!--  <input name="wtrealm" value="flowScope.wtrealm"  /> not needed cached in session under key = value of key 'wctx' -->
+        <!--  <input name="wreply" value="flowScope.wreply"  /> not needed cached in session under key = value of key 'wctx' -->
+        <input name="wfresh" value="flowScope.wfresh" />
+        <input name="wctx" value="flowScope.wctx" />
+        <input name="wauth" value="flowScope.wauth" />
+        <!--  <input name="whr" value="flowScope.whr"  /> not needed cached in session under key = value of key 'wctx' -->
+        <input name="wresult" value="flowScope.wresult" />
+
+        <output name="wtrealm" /> 
+        <output name="wreply" /> 
+        <output name="wctx" /> 
+        <output name="whr" /> 
+
+        <transition on="requestRpToken" to="requestRpToken">
+        	<set name="flowScope.whr" value="currentEvent.attributes.whr" />
+        	<set name="flowScope.wctx" value="currentEvent.attributes.wctx" />
+        	<set name="flowScope.wtrealm" value="currentEvent.attributes.wtrealm" />
+        	<set name="flowScope.wreply" value="currentEvent.attributes.wreply" />
+        </transition>
+        <transition on="viewBadRequest" to="viewBadRequest"/>
+        <transition on="scInternalServerError" to="scInternalServerError"/>
+    </subflow-state>
+
+    <!-- produce RP security token (as String type) -->
+    <action-state id="requestRpToken">
+		<evaluate expression="stsClientForRpAction.submit(flowRequestContext)"
+                    result="flowScope.rpToken" 
+                    result-type="java.lang.String" />
+        <transition to="formResponseView" />
+        <transition on-exception="java.lang.Throwable" to="scInternalServerError" />
+    </action-state>
+
+    <!-- normal exit point for login -->
+    <!-- browser redirection (self-submitted form 'signinresponseform.jsp') -->
+    <end-state id="formResponseView" view="signinresponseform">
+        <on-entry>
+            <evaluate expression="flowScope.wreply" result="requestScope.fedAction" />
+            <evaluate expression="flowScope.wtrealm" result="requestScope.fedWTrealm" />
+            <evaluate expression="flowScope.wctx" result="requestScope.fedWCtx" />
+            <evaluate expression="flowScope.rpToken" result="requestScope.fedWResult" />
+        </on-entry>
+    </end-state>
+
+    <!-- abnormal exit point : Http 400 Bad Request -->
+    <end-state id="viewBadRequest" view="genericerror">
+        <on-entry>
+            <evaluate expression="externalContext.nativeResponse.setStatus(400,flowRequestContext.currentTransition.toString())" />
+            <set name="requestScope.reason" value="flowRequestContext.currentTransition" />
+        </on-entry>
+    </end-state>
+
+    <!-- abnormal exit point : Http 500 Internal Server Error -->
+    <end-state id="scInternalServerError" view="genericerror">
+        <on-entry>
+            <evaluate expression="externalContext.nativeResponse.setStatus(500,'IDP is unavailable, please contact the administrator')" />
+            <set name="requestScope.reason" value="'IDP is unavailable, please contact the administrator'" />
+        </on-entry>
+    </end-state>
+
+    <!-- normal exit point for logout -->
+    <end-state id="invalidateSessionAction" view="signoutresponse">
+    	<on-entry>
+	        <evaluate expression="homeRealmReminder.removeCookie(flowRequestContext)" />
+	        <evaluate expression="logoutAction.submit(flowRequestContext)" />
+    	</on-entry>
+    </end-state> 
+    
+    <!-- redirect to remote idp -->
+    <end-state id="redirectToTrustedIDP" view="externalRedirect:${flowScope.remoteIdpUrl}">
+        <on-entry>
+            <set name="flowScope.remoteIdpUrl" value="flowScope.idpConfig.trustedIDPs.get(flowScope.whr).url
+                +'?wa=wsignin1.0'
+                +'&amp;wtrealm='+flowScope.idpConfig.realm
+                +'&amp;wreply='+flowScope.idpConfig.idpUrl
+                +(flowScope.wfresh != null ? '&amp;wfresh='+flowScope.wfresh : '')
+                +(flowScope.wctx != null ? '&amp;wctx='+flowScope.wctx : '')">
+            </set>
+        </on-entry>
+    </end-state>
+
+    <end-state id="redirectToLocalIDP" view="externalRedirect:${flowScope.localIdpUrl}">
+        <on-entry>
+            <set name="flowScope.localIdpUrl" value="flowScope.idpConfig.idpUrl
+                +'?wa=wsignin1.0'
+                +'&amp;wreply='+flowScope.wreply
+                +'&amp;wtrealm='+flowScope.wtrealm
+                +(flowScope.wctx != null ? '&amp;wctx='+flowScope.wctx : '')
+                +(flowScope.wfresh != null ? '&amp;wfresh='+flowScope.wfresh : '')">
+            </set>
+        </on-entry>
+    </end-state>
+
+    
+</flow>

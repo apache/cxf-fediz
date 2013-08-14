@@ -223,8 +223,8 @@ public class TomcatTest extends AbstractTests {
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
                           response.indexOf(claim + "=Smith") > 0);
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@mycompany.org'",
-                          response.indexOf(claim + "=alice@mycompany.org") > 0);
+        Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
+                          response.indexOf(claim + "=alice@realma.org") > 0);
 
     }
     

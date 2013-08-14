@@ -4,11 +4,14 @@
 	xmlns:test="http://apache.org/hello_world_soap_http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:util="http://www.springframework.org/schema/util" xmlns:http="http://cxf.apache.org/transports/http/configuration"
 	xmlns:sec="http://cxf.apache.org/configuration/security"
+	xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="
         http://cxf.apache.org/core
         http://cxf.apache.org/schemas/core.xsd
         http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd
         http://cxf.apache.org/jaxws                                     
         http://cxf.apache.org/schemas/jaxws.xsd
         http://www.springframework.org/schema/util
@@ -18,6 +21,7 @@
         http://cxf.apache.org/configuration/security
         http://cxf.apache.org/schemas/configuration/security.xsd">
 
+	<context:property-placeholder location="classpath:realm.properties"/>
 
     <bean id="config" class="org.apache.cxf.fediz.service.idp.service.ConfigServiceSpring">
     	<property name="idpConfigs">
@@ -40,7 +44,7 @@
         <property name="useCurrentIDP" value="true" />
         <!--<property name="certificate" value="" />-->   <!--  STS will sign it -->
         <property name="stsUrl" value="https://localhost:0/fediz-idp-sts/REALMA" />
-        <property name="idpUrl" value="https://localhost:9443/fediz-idp/federation" />
+        <property name="idpUrl" value="https://localhost:${realmA.port}/fediz-idp/federation" />
         <property name="supportedProtocols">
         	<util:list>
         		<value>http://docs.oasis-open.org/wsfed/federation/200706</value>
@@ -50,7 +54,13 @@
         <property name="services">
         	<util:map>
 				<entry key="urn:org:apache:cxf:fediz:fedizhelloworld" value-ref="srv-fedizhelloworld" />
+				<!-- <entry key="https://localhost:8443/fedizhelloworld/" value-ref="srv-fedizhelloworld" />--> <!-- temp -->
         	</util:map>
+        </property>
+        <property name="authenticationURIs">
+         	<util:map>
+				<entry key="default" value="/login/default" />
+        	</util:map>       
         </property>
         <property name="trustedIDPs">
         	<util:map>
@@ -65,8 +75,8 @@
     <bean id="trusted-idp-realmB" class="org.apache.cxf.fediz.service.idp.model.TrustedIDPConfig">
         <property name="realm" value="urn:org:apache:cxf:fediz:idp:realm-B" />
         <property name="cacheTokens" value="true" />
-        <property name="url" value="https://localhost:7443/fediz-idp/federation/REALMB" />
-        <property name="certificate" value="..." /> <!-- STS should now -->
+        <property name="url" value="https://localhost:${realmB.port}/fediz-idp-remote/federation" />
+        <property name="certificate" value="realmb.cert" />
         <property name="trustType" value="PEER_TRUST" />  <!-- Required for Fediz Core, Process SignInResponse -->
         <property name="protocol" value="http://docs.oasis-open.org/wsfed/federation/200706" />
         <property name="federationType" value="FederateIdentity" /> <!-- Required for STS Relationship -->
@@ -83,7 +93,7 @@
         <property name="serviceDescription" value="Web Application to illustrate WS-Federation" />
         <property name="role" value="ApplicationServiceType" />
         <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0" />
-        <property name="lifeTime" value="1800" />
+        <property name="lifeTime" value="3600" />
         <!-- <property name="encryptionCertificate" value="" /> -->
         <property name="requestedClaims">
         	<util:list>
@@ -101,7 +111,7 @@
         		</bean>
         		<bean class="org.apache.cxf.fediz.service.idp.model.RequestClaim">
         			<property name="claimType" value="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role" />
-        			<property name="optional" value="false" />
+        			<property name="optional" value="true" />
         		</bean>        		        		        		
         	</util:list>
         </property>

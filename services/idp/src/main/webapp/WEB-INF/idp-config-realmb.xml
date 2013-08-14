@@ -4,11 +4,14 @@
 	xmlns:test="http://apache.org/hello_world_soap_http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:util="http://www.springframework.org/schema/util" xmlns:http="http://cxf.apache.org/transports/http/configuration"
 	xmlns:sec="http://cxf.apache.org/configuration/security"
+	xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="
         http://cxf.apache.org/core
         http://cxf.apache.org/schemas/core.xsd
         http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd
         http://cxf.apache.org/jaxws                                     
         http://cxf.apache.org/schemas/jaxws.xsd
         http://www.springframework.org/schema/util
@@ -18,6 +21,7 @@
         http://cxf.apache.org/configuration/security
         http://cxf.apache.org/schemas/configuration/security.xsd">
 
+	<context:property-placeholder location="classpath:realm.properties"/>
     
     <bean id="config" class="org.apache.cxf.fediz.service.idp.service.ConfigServiceSpring">
     	<property name="idpConfigs">
@@ -39,8 +43,8 @@
         <property name="provideIDPList" value="false" />
         <property name="useCurrentIDP" value="true" />
         <!--<property name="certificate" value="" />-->   <!--  STS will sign it -->
-        <property name="stsUrl" value="https://localhost:0/fediz-idp-sts/REALMB" />
-        <property name="idpUrl" value="https://localhost:7443/fediz-idp/federation" />
+        <property name="stsUrl" value="https://localhost:0/fediz-idp-sts-remote/REALMB" />
+        <property name="idpUrl" value="https://localhost:${realmB.port}/fediz-idp-remote/federation" />
         <property name="supportedProtocols">
         	<util:list>
         		<value>http://docs.oasis-open.org/wsfed/federation/200706</value>
@@ -49,7 +53,8 @@
         </property>
         <property name="services">
         	<util:map>
-				<entry key="urn:org:apache:cxf:fediz:idp:realm-B" value-ref="idp-realmA" />
+<!-- 				<entry key="urn:org:apache:cxf:fediz:idp:realm-B" value-ref="idp-realmA" /> -->
+				<entry key="urn:org:apache:cxf:fediz:idp:realm-A" value-ref="idp-realmA" />
         	</util:map>
         </property>
         <property name="authenticationURIs">

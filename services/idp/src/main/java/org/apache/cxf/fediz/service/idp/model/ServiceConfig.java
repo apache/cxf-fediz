@@ -18,6 +18,7 @@
  */
 package org.apache.cxf.fediz.service.idp.model;
 
+import java.io.Serializable;
 import java.util.List;
 
 //import javax.persistence.Column;
@@ -27,7 +28,7 @@ import java.util.List;
 
 //@Entity
 //@Table(name = "SERVICE")
-public class ServiceConfig {
+public class ServiceConfig implements Serializable {
 
         
     //@Id

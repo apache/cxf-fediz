@@ -18,6 +18,7 @@
  */
 package org.apache.cxf.fediz.service.idp.util;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -155,7 +156,7 @@ public final class WebUtils {
     }
 
     public static void putAttributeInFlowScope(final RequestContext context,
-            final String attributeKey, final String attributeValue) {
+            final String attributeKey, final Object attributeValue) {
         context.getFlowScope().put(attributeKey, attributeValue);
     }
 
@@ -172,6 +173,39 @@ public final class WebUtils {
     public static String getParamFromRequestParameters(
             final RequestContext context, final String attributeKey) {
         return context.getRequestParameters().get(attributeKey);
+    }
+
+    public static Cookie readCookie(
+            final RequestContext context, final String cookieName) {
+        HttpServletRequest httpServletRequest = getHttpServletRequest(context);
+        Cookie[] cookies = httpServletRequest.getCookies();
+        if (cookies != null) {
+            for (int i = 0; i < cookies.length; i++) {
+                if (cookies[i].getName().equals(cookieName)) {
+                    return cookies[i];
+                }
+            }
+        }
+        return null;
+    }
+
+    public static void addCookie(
+            final RequestContext context, final String cookieName, final String cookieValue) {
+        HttpServletResponse httpServletResponse = getHttpServletResponse(context);
+        Cookie cookie = new Cookie(cookieName, cookieValue);
+        cookie.setSecure(true);
+        cookie.setMaxAge(-1);
+        httpServletResponse.addCookie(cookie);
+    }
+
+    public static void removeCookie(
+            final RequestContext context, final String cookieName) {
+        HttpServletResponse httpServletResponse = getHttpServletResponse(context);
+        Cookie cookie = readCookie(context, cookieName);
+        if (cookie != null) {
+            cookie.setMaxAge(0);
+            httpServletResponse.addCookie(cookie);
+        }
     }
 
 }

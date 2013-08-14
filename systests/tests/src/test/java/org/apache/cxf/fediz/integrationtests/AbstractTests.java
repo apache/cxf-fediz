@@ -79,8 +79,8 @@ public abstract class AbstractTests {
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
                           response.indexOf(claim + "=Smith") > 0);
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@mycompany.org'",
-                          response.indexOf(claim + "=alice@mycompany.org") > 0);
+        Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
+                          response.indexOf(claim + "=alice@realma.org") > 0);
 
     }
 
@@ -103,8 +103,8 @@ public abstract class AbstractTests {
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'Windsor'",
                           response.indexOf(claim + "=Windsor") > 0);
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'bobwindsor@idp.org'",
-                          response.indexOf(claim + "=bobwindsor@idp.org") > 0);
+        Assert.assertTrue("User " + user + " claim " + claim + " is not 'bobwindsor@realma.org'",
+                          response.indexOf(claim + "=bobwindsor@realma.org") > 0);
     }
 
     @org.junit.Test
@@ -126,8 +126,8 @@ public abstract class AbstractTests {
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'Cooper'",
                           response.indexOf(claim + "=Cooper") > 0);
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'tcooper@hereiam.org'",
-                          response.indexOf(claim + "=tcooper@hereiam.org") > 0);
+        Assert.assertTrue("User " + user + " claim " + claim + " is not 'tcooper@realma.org'",
+                          response.indexOf(claim + "=tcooper@realma.org") > 0);
     }
 
     @org.junit.Test

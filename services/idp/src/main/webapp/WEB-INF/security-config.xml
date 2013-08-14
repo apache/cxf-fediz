@@ -8,8 +8,10 @@
            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
            http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.1.xsd">
 
+	<context:property-placeholder location="classpath:realm.properties"/>
+	
     <context:component-scan base-package="org.apache.cxf.fediz.service.idp"/>
-
+    
     <!-- DIABLE in production as it might log confidential information about the user -->
     <security:debug />
 
@@ -21,7 +23,10 @@
 			default-target-url="/spring/main" authentication-failure-url="/spring/login?login_error=1" />
 		<security:logout logout-url="/spring/logout" logout-success-url="/spring/logoutSuccess" />
 		 -->
-		<security:intercept-url pattern="/federation" access="isAuthenticated()"/>
+		<!--
+ 		<security:intercept-url pattern="/federation" access="isAuthenticated()"/>
+		-->
+                <!-- MUST be http-basic thus systests run fine -->
 		<security:http-basic />
 		<!--<security:form-login />-->
 	</security:http>
@@ -33,7 +38,7 @@
 	<bean id="stsPortFilter" class="org.apache.cxf.fediz.service.idp.STSPortFilter" />
 	
 	<bean id="stsAuthProvider" class="org.apache.cxf.fediz.service.idp.STSAuthenticationProvider">
-        <property name="wsdlLocation" value="https://localhost:0/fediz-idp-sts/STSService?wsdl"/>
+        <property name="wsdlLocation" value="https://localhost:0/fediz-idp-sts/${realm.STS_URI}/STSServiceTransportUT?wsdl"/>
         <property name="wsdlEndpoint" value="TransportUT_Port"/>
         <property name="wsdlService" value="SecurityTokenService"/>
         <property name="appliesTo" value="urn:fediz:idp"/>

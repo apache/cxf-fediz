@@ -166,6 +166,9 @@
 
 		<profile>
 			<id>realms</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
 			<properties>
 
 			</properties>

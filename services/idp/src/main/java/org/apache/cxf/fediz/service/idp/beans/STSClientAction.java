@@ -18,25 +18,33 @@
  */
 package org.apache.cxf.fediz.service.idp.beans;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.cert.X509Certificate;
 import java.util.List;
-import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
+import org.apache.cxf.fediz.core.FederationConstants;
+import org.apache.cxf.fediz.core.exception.ProcessingException;
+import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 //import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.fediz.service.idp.IdpSTSClient;
+import org.apache.cxf.fediz.service.idp.model.IDPConfig;
+import org.apache.cxf.fediz.service.idp.model.RequestClaim;
+import org.apache.cxf.fediz.service.idp.model.ServiceConfig;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
+import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.staxutils.W3CDOMStreamWriter;
 //import org.apache.cxf.transport.http.HTTPConduit;
 //import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
@@ -44,9 +52,9 @@ import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.cxf.ws.security.trust.STSClient;
 import org.apache.cxf.ws.security.trust.STSUtils;
 import org.apache.ws.security.WSConstants;
+import org.apache.ws.security.saml.ext.AssertionWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
@@ -56,17 +64,19 @@ This class is responsible to ask for Security Tokens to STS.
 
 public class STSClientAction {
 
-    private static final String REALM_TO_CLAIMS_MAP = "realm2ClaimsMap";
+    //private static final String REALM_TO_CLAIMS_MAP = "realm2ClaimsMap";
+
+    private static final String IDP_CONFIG = "idpConfig";
 
     private static final String HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_05_IDENTITY = 
             "http://schemas.xmlsoap.org/ws/2005/05/identity";
 
     private static final String HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER = 
             "http://docs.oasis-open.org/ws-sx/ws-trust/200512/Bearer";
-    
+/*    
     private static final String HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_PUBLICKEY = 
             "http://docs.oasis-open.org/ws-sx/ws-trust/200512/PublicKey";
-
+*/
     private static final String HTTP_WWW_W3_ORG_2005_08_ADDRESSING = "http://www.w3.org/2005/08/addressing";
 
     private static final String HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512 = 
@@ -81,19 +91,19 @@ public class STSClientAction {
 
     protected String wsdlEndpoint;
 
-    protected String appliesTo;
+    //protected String appliesTo;
     
-    protected String tokenType;
+    protected String tokenType = WSConstants.WSS_SAML2_TOKEN_TYPE;
     
-    protected boolean useWfreshForTTL = true;
+    //protected boolean useWfreshForTTL = true;
+    
+    protected int ttl = 1800;
     
     protected Bus bus;
-
-    private boolean claimsRequired = true;
     
     private boolean isPortSet;
     
-    private String keyType = HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_PUBLICKEY;
+    //private String keyType = HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_PUBLICKEY;
 
     public String getWsdlLocation() {
         return wsdlLocation;
@@ -119,13 +129,14 @@ public class STSClientAction {
     public void setWsdlEndpoint(String wsdlEndpoint) {
         this.wsdlEndpoint = wsdlEndpoint;
     }
-
-    public String getAppliesTo() {
-        return appliesTo;
+    
+    public void setBus(Bus bus) {
+        this.bus = bus;
     }
 
-    public void setAppliesTo(String appliesTo) {
-        this.appliesTo = appliesTo;
+    public Bus getBus() {
+        // do not store a referance to the default bus
+        return (bus != null) ? bus : BusFactory.getDefaultBus();
     }
 
     public String getTokenType() {
@@ -136,6 +147,22 @@ public class STSClientAction {
         this.tokenType = tokenType;
     }
 
+    public int getTtl() {
+        return ttl;
+    }
+
+    public void setTtl(int ttl) {
+        this.ttl = ttl;
+    }
+    
+    /* 
+    public String getAppliesTo() {
+        return appliesTo;
+    }
+
+    public void setAppliesTo(String appliesTo) {
+        this.appliesTo = appliesTo;
+    }
     public boolean isClaimsRequired() {
         return claimsRequired;
     }
@@ -151,24 +178,47 @@ public class STSClientAction {
     public void setUseWfreshForTTL(boolean useWfreshForTTL) {
         this.useWfreshForTTL = useWfreshForTTL;
     }
-
+*/
+    
     /**
      * @param context
      *            the webflow request context
-     * @param wtrealm
-     *            the relying party security domain
      * @return a serialized RP security token
      * @throws Exception
      */
-    public String submit(String wtrealm, RequestContext context)
+    public String submit(RequestContext context)
         throws Exception {
+        
+        String wtrealm = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_TREALM);
+
+        SecurityToken idpToken = getSecurityToken(context);
+
+        IDPConfig idpConfig = (IDPConfig) WebUtils.getAttributeFromFlowScope(context, IDP_CONFIG);
 
         Bus cxfBus = getBus();
 
         IdpSTSClient sts = new IdpSTSClient(cxfBus);
         sts.setAddressingNamespace(HTTP_WWW_W3_ORG_2005_08_ADDRESSING);
-        paramTokenType(sts);
-        sts.setKeyType(keyType);
+        
+        ServiceConfig serviceConfig = idpConfig.getServices().get(wtrealm);
+        if (serviceConfig == null) {
+            LOG.warn("No service config found for " + wtrealm);
+            throw new ProcessingException(TYPE.BAD_REQUEST);
+        }
+        
+        if (serviceConfig.getTokenType() != null && serviceConfig.getTokenType().length() > 0) {
+            sts.setTokenType(serviceConfig.getTokenType());
+        } else {
+            sts.setTokenType(getTokenType());
+        }
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("TokenType " + sts.getTokenType() + " set for " + wtrealm);
+        }
+        
+        sts.setKeyType(HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER);
+        
+        //[TODO] What is the purpose of the keytype?
+        /*
         if (HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_PUBLICKEY.equals(keyType)) {
             HttpServletRequest servletRequest = WebUtils.getHttpServletRequest(context);
             if (servletRequest != null) {
@@ -183,6 +233,7 @@ public class STSClientAction {
                 }
             }
         }
+        */
 
         processWsdlLocation(context);
         sts.setWsdlLocation(wsdlLocation);
@@ -192,27 +243,87 @@ public class STSClientAction {
         sts.setEndpointQName(new QName(
                 HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512, wsdlEndpoint));
 
-        if (this.claimsRequired) {
-            addClaims(wtrealm, cxfBus, sts);
+        if (serviceConfig.getRequestedClaims() != null && serviceConfig.getRequestedClaims().size() > 0) {
+            addClaims(sts, serviceConfig.getRequestedClaims());
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Requested claims set for " + wtrealm);
+            }
         }
-
-        SecurityToken idpToken = (SecurityToken) WebUtils.getAttributeFromExternalContext(context, "IDP_TOKEN");
+        
+        sts.setEnableLifetime(true);
+        if (serviceConfig.getLifeTime() != null && serviceConfig.getLifeTime().length() > 0) {
+            try {
+                int lifetime = Integer.parseInt(serviceConfig.getLifeTime());
+                sts.setTtl(lifetime);
+                sts.setEnableLifetime(lifetime > 0);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Lifetime set to " + serviceConfig.getLifeTime() + " seconds for " + wtrealm);
+                }
+            } catch (NumberFormatException ex) {
+                LOG.warn("Invalid lifetime configured for service provider " + wtrealm);
+                sts.setTtl(this.ttl);
+                sts.setEnableLifetime(this.ttl > 0);
+            }
+        } else {
+            sts.setTtl(this.ttl);
+            sts.setEnableLifetime(this.ttl > 0);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Lifetime set to " + this.ttl + " seconds for " + wtrealm);
+            }
+        }
+        
+        
         sts.setOnBehalfOf(idpToken.getToken());
-
+        if (!(serviceConfig.getProtocol() == null
+            || FederationConstants.WS_FEDERATION_NS.equals(serviceConfig.getProtocol()))) {
+            LOG.error("Protocol " + serviceConfig.getProtocol() + " not supported for " + wtrealm);
+            throw new ProcessingException(TYPE.BAD_REQUEST);
+        }
+        
         String rpToken = sts.requestSecurityTokenResponse(wtrealm);
+        
+        InputStream is = new ByteArrayInputStream(rpToken.getBytes());
+        Document doc = DOMUtils.readXml(is);
+        NodeList nd = doc.getElementsByTagName("saml2:Assertion");
+        if (nd.getLength() == 0) {
+            nd = doc.getElementsByTagName("saml1:Assertion");
+        }
+        Element e = (Element) nd.item(0);
+        AssertionWrapper aw = new AssertionWrapper(e);
+        String id = aw.getId();
 
-        LOG.info("Token [RP_TOKEN] produced succesfully.");
+        LOG.info("[RP_TOKEN=" + id + "] successfully created for realm ["
+                + wtrealm + "] on behalf of [IDP_TOKEN=" + idpToken.getId()
+                + "]");
         return StringEscapeUtils.escapeXml(rpToken);
     }
-    
-    public void setBus(Bus bus) {
-        this.bus = bus;
-    }
 
-    public Bus getBus() {
-        // do not store a referance to the default bus
-        return (bus != null) ? bus : BusFactory.getDefaultBus();
+    private SecurityToken getSecurityToken(RequestContext context) throws ProcessingException {
+//      String whr = (String) WebUtils.
+//      getAttributeFromExternalContext(context, FederationConstants.PARAM_HOME_REALM);
+        String whr = (String) WebUtils.
+            getAttributeFromFlowScope(context, FederationConstants.PARAM_HOME_REALM);
+        SecurityToken idpToken = null;
+        if (whr != null) {
+            idpToken = (SecurityToken) WebUtils.getAttributeFromExternalContext(context, whr);
+            if (idpToken != null) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("[IDP_TOKEN="
+                            + idpToken.getId()
+                            + "] successfully retrieved from cache for home realm ["
+                            + whr + "]");
+                }
+            } else {
+                LOG.error("IDP_TOKEN not found");
+                throw new ProcessingException(TYPE.BAD_REQUEST);
+            }
+        } else {
+            LOG.error("Home realm not found");
+            throw new ProcessingException(TYPE.BAD_REQUEST);
+        }
+        return idpToken;
     }
+    
 
     private void processWsdlLocation(RequestContext context) {
         if (!isPortSet) {
@@ -244,38 +355,16 @@ public class STSClientAction {
 //        }
 //    }
     
-    private void addClaims(String wtrealm, Bus cxfBus, STSClient sts)
+    private void addClaims(STSClient sts, List<RequestClaim> requestClaimList)
         throws ParserConfigurationException, XMLStreamException {
-        List<String> realmClaims = null;
-        ApplicationContext ctx = (ApplicationContext) cxfBus
-                .getExtension(ApplicationContext.class);
-
-        @SuppressWarnings("unchecked")
-        Map<String, List<String>> realmClaimsMap = (Map<String, List<String>>) ctx
-                .getBean(REALM_TO_CLAIMS_MAP);
-        realmClaims = realmClaimsMap.get(wtrealm);
-        if (realmClaims != null && realmClaims.size() > 0
-                && LOG.isDebugEnabled()) {
-            LOG.debug("claims for realm " + wtrealm);
-            for (String item : realmClaims) {
-                LOG.debug("  " + item);
-            }
-        }
-        Element claims = createClaimsElement(realmClaims);
+        
+        Element claims = createClaimsElement(requestClaimList);
         if (claims != null) {
             sts.setClaims(claims);
         }
     }
 
-    private void paramTokenType(STSClient sts) {
-        if (tokenType == null) {
-            sts.setTokenType(WSConstants.WSS_SAML2_TOKEN_TYPE);
-        } else {
-            sts.setTokenType(tokenType);
-        }
-    }
-
-    private Element createClaimsElement(List<String> realmClaims)
+    private Element createClaimsElement(List<RequestClaim> realmClaims)
         throws ParserConfigurationException, XMLStreamException {
         if (realmClaims == null || realmClaims.size() == 0) {
             return null;
@@ -290,11 +379,14 @@ public class STSClientAction {
                 HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_05_IDENTITY);
 
         if (realmClaims != null && realmClaims.size() > 0) {
-            for (String item : realmClaims) {
-                LOG.debug("claim: " + item);
+            for (RequestClaim item : realmClaims) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("  " + item.getClaimType().toString());
+                }
                 writer.writeStartElement("ic", "ClaimType",
                         HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_05_IDENTITY);
-                writer.writeAttribute("Uri", item);
+                writer.writeAttribute("Uri", item.getClaimType().toString());
+                writer.writeAttribute("Optional", Boolean.toString(item.isOptional())); 
                 writer.writeEndElement();
             }
         }
@@ -309,6 +401,9 @@ public class STSClientAction {
         this.isPortSet = true;
     }
 
+
+
+    /*
     public String getKeyType() {
         return keyType;
     }
@@ -316,5 +411,6 @@ public class STSClientAction {
     public void setKeyType(String keyType) {
         this.keyType = keyType;
     }
+    */
 
 }
