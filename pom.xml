@@ -34,7 +34,7 @@
     <properties>
         <commons.lang.version>3.0.1</commons.lang.version>
         <commons.logging.version>1.1.1</commons.logging.version>
-        <cxf.version>2.7.5</cxf.version>
+        <cxf.version>2.7.6</cxf.version>
         <cxf.build-utils.version>2.5.0</cxf.build-utils.version>
         <ehcache.version>2.5.1</ehcache.version>
         <httpclient.version>4.2.2</httpclient.version>
@@ -47,7 +47,7 @@
         <slf4j.version>1.7.5</slf4j.version>
         <spring.version>3.0.7.RELEASE</spring.version>
         <tomcat.version>7.0.27</tomcat.version>
-        <wss4j.version>1.6.10</wss4j.version>
+        <wss4j.version>1.6.11</wss4j.version>
 
         <tomcat.url>http://localhost:8080/manager/text</tomcat.url>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
