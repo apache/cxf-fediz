@@ -55,6 +55,21 @@
             <artifactId>fediz-tomcat</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.cxf.fediz</groupId>
+            <artifactId>fediz-jetty</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.cxf.fediz</groupId>
+            <artifactId>fediz-spring</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.cxf.fediz</groupId>
+            <artifactId>fediz-spring2</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
