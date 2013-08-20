@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.security.auth.callback.CallbackHandler;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.crypto.dsig.DigestMethod;
 import javax.xml.crypto.dsig.Reference;
@@ -145,7 +146,16 @@ public class MetadataWriter {
 
             if (protocol instanceof FederationProtocol) {
                 FederationProtocol fedprotocol = (FederationProtocol)protocol;
-                String realm = fedprotocol.getRealm();
+                
+                Object realmObj = fedprotocol.getRealm();
+                String realm = null;
+                if (realmObj instanceof String) {
+                    realm = (String)realmObj;
+                } else if (realmObj instanceof CallbackHandler) {
+                    //TODO
+                    //If realm is resolved at runtime, metadata not updated
+                }
+                
                 if (!(realm == null || "".equals(realm))) {
                     writer.writeCharacters(realm);
                 }
@@ -154,8 +164,6 @@ public class MetadataWriter {
             writer.writeEndElement(); // Address
             writer.writeEndElement(); // EndpointReference
             writer.writeEndElement(); // TargetScope
-
-            // TODO loop over Context config and populate claims from there instead the dummy code below
 
             if (protocol instanceof FederationProtocol) {
                 FederationProtocol fedprotocol = (FederationProtocol)protocol;

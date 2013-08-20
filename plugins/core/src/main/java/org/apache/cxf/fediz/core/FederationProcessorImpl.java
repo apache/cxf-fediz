@@ -49,6 +49,7 @@ import org.apache.cxf.fediz.core.metadata.MetadataWriter;
 import org.apache.cxf.fediz.core.spi.FreshnessCallback;
 import org.apache.cxf.fediz.core.spi.HomeRealmCallback;
 import org.apache.cxf.fediz.core.spi.IDPCallback;
+import org.apache.cxf.fediz.core.spi.RealmCallback;
 import org.apache.cxf.fediz.core.spi.SignInQueryCallback;
 import org.apache.cxf.fediz.core.spi.WAuthCallback;
 import org.apache.cxf.fediz.core.util.DOMUtils;
@@ -393,12 +394,10 @@ public class FederationProcessorImpl implements FederationProcessor {
             sb.append('&').append(FederationConstants.PARAM_REPLY).append('=');
             sb.append(URLEncoder.encode(reply, "UTF-8"));
 
-            String realm = ((FederationProtocol)config.getProtocol()).getRealm();
-            if (realm == null) {
-                realm = extractFullContextPath(request);
-            }
+            String realm = resolveWTRealm(request, config);
             LOG.debug("wtrealm=" + realm);
 
+            //add wtrealm parameter
             sb.append('&').append(FederationConstants.PARAM_TREALM).append('=')
                 .append(URLEncoder.encode(realm, "UTF-8"));
             
@@ -532,7 +531,27 @@ public class FederationProcessorImpl implements FederationProcessor {
         }
         return issuerURL;
     }
-    
+
+    private String resolveWTRealm(HttpServletRequest request, FederationContext config) throws IOException,
+        UnsupportedCallbackException {
+        Object wtRealmObj = ((FederationProtocol)config.getProtocol()).getRealm();
+        String wtRealm = null;
+        if (wtRealmObj != null) {
+            if (wtRealmObj instanceof String) {
+                wtRealm = (String)wtRealmObj;
+            } else if (wtRealmObj instanceof CallbackHandler) {
+                CallbackHandler hrCB = (CallbackHandler)wtRealmObj;
+                RealmCallback callback = new RealmCallback(request);
+                hrCB.handle(new Callback[] {callback});
+                wtRealm = callback.getRealm();
+            }
+        } else {
+            wtRealm = extractFullContextPath(request); //default value
+        }
+        return wtRealm;
+    }
+
+
     private String extractFullContextPath(HttpServletRequest request) throws MalformedURLException {
         String result = null;
         String contextPath = request.getContextPath();

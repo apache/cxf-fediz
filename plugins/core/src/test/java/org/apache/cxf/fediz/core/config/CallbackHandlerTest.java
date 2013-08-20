@@ -48,6 +48,7 @@ import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuers;
 import org.apache.cxf.fediz.core.config.jaxb.ValidationType;
 import org.apache.cxf.fediz.core.spi.HomeRealmCallback;
 import org.apache.cxf.fediz.core.spi.IDPCallback;
+import org.apache.cxf.fediz.core.spi.RealmCallback;
 import org.apache.cxf.fediz.core.spi.SignInQueryCallback;
 import org.apache.cxf.fediz.core.spi.WAuthCallback;
 import org.junit.AfterClass;
@@ -126,7 +127,10 @@ public class CallbackHandlerTest {
         freshness.setValue(FRESHNESS_VALUE);
         protocol.setFreshness(freshness);
         
-        protocol.setRealm(TARGET_REALM);
+        CallbackType realm = new CallbackType();
+        realm.setValue(TARGET_REALM);
+        protocol.setRealm(freshness);
+        
         protocol.setReply(REPLY);
         protocol.setRequest("REQUEST");
         protocol.setVersion(PROTOCOL_VERSION);
@@ -187,6 +191,11 @@ public class CallbackHandlerTest {
         signInQueryType.setValue(CALLBACKHANDLER_CLASS);
         protocol.setSignInQuery(signInQueryType);
         
+        CallbackType realmType = new CallbackType();
+        realmType.setType(ArgumentType.CLASS);
+        realmType.setValue(CALLBACKHANDLER_CLASS);
+        protocol.setRealm(realmType);
+        
         return config;
     }
     
@@ -229,6 +238,14 @@ public class CallbackHandlerTest {
         hrCB.handle(new Callback[] {callbackHR});
         String hr = callbackHR.getHomeRealm();
         Assert.assertEquals(TestCallbackHandler.TEST_HOME_REALM, hr);
+        
+        Object wtRealmObj = fp.getRealm();
+        Assert.assertTrue(wtRealmObj instanceof CallbackHandler);
+        CallbackHandler wtrCB = (CallbackHandler)wtRealmObj;
+        RealmCallback callbackWTR = new RealmCallback(null);
+        wtrCB.handle(new Callback[]{callbackWTR});
+        String wtr = callbackWTR.getRealm();
+        Assert.assertEquals(TestCallbackHandler.TEST_WTREALM, wtr);
         
         Object signInQueryObj = fp.getSignInQuery();
         Assert.assertTrue(signInQueryObj instanceof CallbackHandler);

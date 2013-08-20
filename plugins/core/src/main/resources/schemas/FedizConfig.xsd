@@ -108,7 +108,7 @@
 
 	<xs:element name="roleDelimiter" type="xs:string" />
 	<xs:element name="roleURI" type="xs:string" />
-	<xs:element name="realm" type="xs:string" />
+	<xs:element name="realm" type="CallbackType" />
 	<xs:element name="applicationServiceURL" type="xs:string" />
 	
 	

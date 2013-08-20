@@ -190,9 +190,12 @@ public class FedizConfigurationTest {
         CallbackType homeRealm = new CallbackType();
         homeRealm.setType(ArgumentType.CLASS);
         homeRealm.setValue(HOME_REALM_CLASS);
-
         protocol.setHomeRealm(homeRealm);
-        protocol.setRealm(TARGET_REALM);
+
+        CallbackType realm = new CallbackType();
+        realm.setValue(TARGET_REALM);
+        protocol.setRealm(realm);
+        
         protocol.setReply(REPLY);
         protocol.setRequest("REQUEST");
         protocol.setVersion(PROTOCOL_VERSION);

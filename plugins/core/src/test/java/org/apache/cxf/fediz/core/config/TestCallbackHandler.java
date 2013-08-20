@@ -30,12 +30,14 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.apache.cxf.fediz.core.spi.HomeRealmCallback;
 import org.apache.cxf.fediz.core.spi.IDPCallback;
+import org.apache.cxf.fediz.core.spi.RealmCallback;
 import org.apache.cxf.fediz.core.spi.SignInQueryCallback;
 import org.apache.cxf.fediz.core.spi.WAuthCallback;
 
 public class TestCallbackHandler implements CallbackHandler {
 
     static final String TEST_HOME_REALM = "http://test.com/homerealm";
+    static final String TEST_WTREALM = "http://test.com/wtrealm";
     static final String TEST_IDP = "http://rp.example.com/";
     static final String TEST_WAUTH = "up";
     static final String TEST_SIGNIN_QUERY = "pubid=myid";
@@ -45,6 +47,9 @@ public class TestCallbackHandler implements CallbackHandler {
             if (callbacks[i] instanceof HomeRealmCallback) {
                 HomeRealmCallback callback = (HomeRealmCallback) callbacks[i];
                 callback.setHomeRealm(TEST_HOME_REALM);
+            } else if (callbacks[i] instanceof RealmCallback) {
+                RealmCallback callback = (RealmCallback)callbacks[i];
+                callback.setRealm(TEST_WTREALM);
             } else if (callbacks[i] instanceof WAuthCallback) {
                 WAuthCallback callback = (WAuthCallback) callbacks[i];
                 callback.setWauth(TEST_WAUTH);

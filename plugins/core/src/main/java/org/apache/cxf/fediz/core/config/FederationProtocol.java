@@ -44,6 +44,7 @@ public class FederationProtocol extends Protocol {
     private Object homeRealm;
     private Object freshness;
     private Object signInQuery;
+    private Object realm;
     private List<TokenValidator> validators = new ArrayList<TokenValidator>();
     
     public FederationProtocol(ProtocolType protocolType) {
@@ -86,12 +87,41 @@ public class FederationProtocol extends Protocol {
         return getFederationProtocol().hashCode();
     }
 
-    public String getRealm() {
-        return getFederationProtocol().getRealm();
+    public Object getRealm() {
+        if (this.realm != null) {
+            return this.realm;
+        }
+        CallbackType cbt = getFederationProtocol().getRealm();
+        if (cbt == null) {
+            return null;
+        }
+        if (cbt.getType() == null || cbt.getType().equals(ArgumentType.STRING)) {
+            this.realm = new String(cbt.getValue());
+        } else if (cbt.getType().equals(ArgumentType.CLASS)) {
+            try {
+                this.realm =
+                    Thread.currentThread().getContextClassLoader().loadClass(cbt.getValue()).newInstance();
+            } catch (Exception e) {
+                LOG.error("Failed to create instance of " + cbt.getValue(), e);
+                throw new IllegalStateException("Failed to create instance of " + cbt.getValue());
+            }            
+        } else {
+            LOG.error("Only String and Class are supported for 'Realm'");
+            throw new IllegalStateException("Only String and Class are supported for 'Realm'");
+        }
+        return this.realm;
     }
 
-    public void setRealm(String value) {
-        getFederationProtocol().setRealm(value);
+    public void setRealm(Object value) {
+        final boolean isString = value instanceof String;
+        final boolean isCallbackHandler = value instanceof CallbackHandler;
+        if (isString || isCallbackHandler) {
+            this.realm = value;
+        } else {
+            LOG.error("Unsupported 'Realm' object");
+            throw new IllegalArgumentException("Unsupported 'Realm' object. Type must be "
+                                               + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
+        }
     }
 
     public boolean equals(Object obj) {
