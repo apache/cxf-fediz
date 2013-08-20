@@ -30,6 +30,8 @@
 	-->
 	<import resource="${adapter.resource}.xml" />
 	
+	<bean id="loggerListener" class="org.apache.cxf.sts.event.LoggerListener" />
+	
 	<bean id="transportSTSProviderBean"
 		class="org.apache.cxf.ws.security.sts.provider.SecurityTokenServiceProvider">
 		<property name="issueOperation" ref="transportIssueDelegate" />
@@ -42,11 +44,13 @@
 		<property name="services" ref="transportService" />
 		<property name="stsProperties" ref="transportSTSProperties" />
 		<property name="claimsManager" ref="claimsManager" />
+		<property name="eventListener" ref="loggerListener" />
 	</bean>
 
 	<bean id="transportValidateDelegate" class="org.apache.cxf.sts.operation.TokenValidateOperation">
 		<property name="tokenValidators" ref="transportTokenValidators" />
 		<property name="stsProperties" ref="transportSTSProperties" />
+		<property name="eventListener" ref="loggerListener" />
 	</bean>
 
 	<util:list id="transportTokenProviders">
