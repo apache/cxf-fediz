@@ -24,8 +24,7 @@ import java.net.URI;
 import java.security.Principal;
 
 /**
- * 
- * @author Oliver Wulff
+ *
  */
 public class Claim implements Serializable {
 

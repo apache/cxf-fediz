@@ -38,7 +38,6 @@ import org.apache.cxf.BusFactory;
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
-//import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.fediz.service.idp.IdpSTSClient;
 import org.apache.cxf.fediz.service.idp.model.IDPConfig;
 import org.apache.cxf.fediz.service.idp.model.RequestClaim;
@@ -46,8 +45,6 @@ import org.apache.cxf.fediz.service.idp.model.ServiceConfig;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.staxutils.W3CDOMStreamWriter;
-//import org.apache.cxf.transport.http.HTTPConduit;
-//import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.cxf.ws.security.trust.STSClient;
 import org.apache.cxf.ws.security.trust.STSUtils;
@@ -58,13 +55,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
- * @author Th. Beucher 
-This class is responsible to ask for Security Tokens to STS.
+ * This class is responsible to ask for Security Tokens to STS.
  */
 
 public class STSClientAction {
-
-    //private static final String REALM_TO_CLAIMS_MAP = "realm2ClaimsMap";
 
     private static final String IDP_CONFIG = "idpConfig";
 
@@ -90,12 +84,8 @@ public class STSClientAction {
     protected String wsdlLocation;
 
     protected String wsdlEndpoint;
-
-    //protected String appliesTo;
-    
+  
     protected String tokenType = WSConstants.WSS_SAML2_TOKEN_TYPE;
-    
-    //protected boolean useWfreshForTTL = true;
     
     protected int ttl = 1800;
     
@@ -154,31 +144,6 @@ public class STSClientAction {
     public void setTtl(int ttl) {
         this.ttl = ttl;
     }
-    
-    /* 
-    public String getAppliesTo() {
-        return appliesTo;
-    }
-
-    public void setAppliesTo(String appliesTo) {
-        this.appliesTo = appliesTo;
-    }
-    public boolean isClaimsRequired() {
-        return claimsRequired;
-    }
-
-    public void setClaimsRequired(boolean claimsRequired) {
-        this.claimsRequired = claimsRequired;
-    }
-
-    public boolean isUseWfreshForTTL() {
-        return useWfreshForTTL;
-    }
-
-    public void setUseWfreshForTTL(boolean useWfreshForTTL) {
-        this.useWfreshForTTL = useWfreshForTTL;
-    }
-*/
     
     /**
      * @param context
@@ -400,17 +365,5 @@ public class STSClientAction {
         this.wsdlLocation = wsdlUrl;
         this.isPortSet = true;
     }
-
-
-
-    /*
-    public String getKeyType() {
-        return keyType;
-    }
-
-    public void setKeyType(String keyType) {
-        this.keyType = keyType;
-    }
-    */
 
 }

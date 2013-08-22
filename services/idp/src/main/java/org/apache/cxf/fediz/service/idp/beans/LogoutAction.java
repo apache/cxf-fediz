@@ -27,7 +27,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
- * @author fr17993 This class is responsible to invalidate IDP session.
+ * This class is responsible to invalidate IDP session.
  */
 
 

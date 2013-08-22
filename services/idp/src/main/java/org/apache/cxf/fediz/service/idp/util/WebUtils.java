@@ -28,7 +28,6 @@ import org.springframework.webflow.context.servlet.ServletExternalContext;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
- * @author fr17993 
  * Utility class to bind with webflow artifacts
  */
 public final class WebUtils {

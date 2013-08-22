@@ -28,9 +28,6 @@ import java.util.List;
 
 /**
  * This class holds a immutable collection of Claims.
- * 
- * @author Oliver Wulff
- * @author Juerg Portmann
  */
 public class ClaimCollection extends ArrayList<Claim> {
 

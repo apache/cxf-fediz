@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
- * @author Th. Beucher 
  * This class is responsible to process Home Realm Discovery Service Expression.
  */
 

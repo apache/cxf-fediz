@@ -23,8 +23,6 @@ import java.net.URI;
 
 /**
  * This holds a collection of Claims.
- * 
- * @author Oliver Wulff
  */
 //CHECKSTYLE:OFF
 public interface ClaimTypes {

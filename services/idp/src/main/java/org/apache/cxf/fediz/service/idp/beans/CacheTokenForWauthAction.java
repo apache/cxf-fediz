@@ -30,8 +30,7 @@ import org.springframework.util.Assert;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
- * @author 
- * Th. Beucher This class is responsible to cache IDP token.
+ * This class is responsible to cache IDP token.
  */
 
 public class CacheTokenForWauthAction {

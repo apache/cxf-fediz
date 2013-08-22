@@ -21,13 +21,10 @@ package org.apache.cxf.fediz.service.idp.beans;
 import javax.servlet.http.Cookie;
 
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
-//import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
- * @author fr17993 
  */
-
 public class HomeRealmReminder {
 
     public static final String FEDIZ_HOME_REALM = "FEDIZ_HOME_REALM";

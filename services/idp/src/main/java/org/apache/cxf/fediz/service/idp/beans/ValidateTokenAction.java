@@ -49,8 +49,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
- * @author Th. Beucher This class is responsible to validate token returned by
- *         requestor IDP.
+ * This class is responsible to validate token returned by
+ * requestor IDP.
  */
 
 public class ValidateTokenAction {
