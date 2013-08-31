@@ -34,9 +34,26 @@
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 	
+	<servlet>
+		<servlet-name>metadata</servlet-name>
+		<servlet-class>
+			org.apache.cxf.fediz.service.idp.MetadataServlet
+		</servlet-class>
+		<init-param>
+			<param-name>realm</param-name>
+			<param-value>${realm-uri}</param-value>
+		</init-param>
+	</servlet>	
+	
+	
 	<servlet-mapping>
 		<servlet-name>idp</servlet-name>
 		<url-pattern>/federation</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+		<servlet-name>metadata</servlet-name>
+		<url-pattern>/FederationMetadata/2007-06/FederationMetadata.xml</url-pattern>
 	</servlet-mapping>
 
 	<listener>

@@ -27,6 +27,7 @@
  		<security:intercept-url pattern="/federation" access="isAuthenticated()"/>
 		-->
                 <!-- MUST be http-basic thus systests run fine -->
+       <security:intercept-url pattern="/FederationMetadata/2007-06/FederationMetadata.xml" access="isAnonymous()" />
 		<security:http-basic />
 		<!--<security:form-login />-->
 	</security:http>

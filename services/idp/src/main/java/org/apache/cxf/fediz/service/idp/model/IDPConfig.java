@@ -60,6 +60,9 @@ public class IDPConfig implements Serializable {
     //md:KeyDescriptor, use="signing"
     private String certificate;
     
+    //Password to read the private key to sign metadata document
+    private String certificatePassword;
+    
     //fed:SecurityTokenSerivceEndpoint
     private String stsUrl;
     
@@ -146,6 +149,14 @@ public class IDPConfig implements Serializable {
 
     public void setCertificate(String certificate) {
         this.certificate = certificate;
+    }
+    
+    public String getCertificatePassword() {
+        return certificatePassword;
+    }
+
+    public void setCertificatePassword(String password) {
+        this.certificatePassword = password;
     }
 
     public String getStsUrl() {

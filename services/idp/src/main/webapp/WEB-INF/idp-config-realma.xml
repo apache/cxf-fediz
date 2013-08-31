@@ -42,7 +42,8 @@
         <!--<property name="hrds" value="" />--> <!-- TBD, not defined, provide list if enabled -->
         <property name="provideIDPList" value="true" />
         <property name="useCurrentIDP" value="true" />
-        <!--<property name="certificate" value="" />-->   <!--  STS will sign it -->
+        <property name="certificate" value="stsKeystoreA.properties" />
+        <property name="certificatePassword" value="realma" />
         <property name="stsUrl" value="https://localhost:0/fediz-idp-sts/REALMA" />
         <property name="idpUrl" value="https://localhost:${realmA.port}/fediz-idp/federation" />
         <property name="supportedProtocols">
