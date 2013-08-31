@@ -1,8 +1,13 @@
 Simple Spring Web Application Demo
 ==================================
 
-This demo shows how to build and deploy an SSO protected using Apache CXF Fediz
-for a spring security based web application.
+This demo shows how to build and deploy an SSO protected web application
+using Apache CXF Fediz. The web application uses spring security 2 for
+authentication and authorization natively which provides a richer security
+API and configuration than the Java Servlet API.
+
+If you still want to enforce security on the container level but want to use
+spring security's features the demo 'springPreAuthWebapp' illustrates that.
 
 Running this sample consists of four steps:
 
@@ -21,10 +26,10 @@ http://cxf.apache.org/fediz-idp.html.  Confirm the STS is active by
 checking that the WSDL is viewable from the browser using the URL given
 on that page--don't proceed further unless it is.
 
-The benefit of using Spring Security which is packaged with the demo application
+The benefit of using Spring Security 2 which is packaged with the demo application
 there are no plugin deployments required for the RP Servlet Container. 
 See this wiki page for instructions:
-http://cxf.apache.org/fediz-spring.html -- the "HTTPS Configuration" sections
+http://cxf.apache.org/fediz-spring-2.html -- the "HTTPS Configuration" sections
 are the only parts that need configuration for this sample. 
 
 
@@ -32,7 +37,7 @@ Demo Web Application
 --------------------
 The main code lives in the class FederationServlet. This Servlet is protected
 and can be accessed only if the browser user is authenticated. The purpose of
-the FederationServlet is to illustrate the usage of the Spring Security API and
+the FederationServlet is to illustrate the usage of the Spring Security 2 API and
 Configuration to get the authenticated user and to check the roles he has. Further, 
 the FederationServlet shows how to access claims data (user data) which were 
 stored in the SAML token by using the Fediz interface FederationPrincipal.

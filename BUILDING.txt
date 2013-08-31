@@ -38,15 +38,35 @@ Source Directory structure
 
  + plugins               contains the sources of the Federation plugin
       + core             the core module contains the majority of functionality which is Servlet container agnostic
-      + tomcat           the Tomcat module is the bridge of the core to the Tomcat specific security engine
+      + tomcat           the Tomcat module is the bridge of the core to the
+                           Tomcat specific security engine (container managed)
+      + jetty            the Jetty module is the bridge of the core to the
+                           Jetty specific security engine (container managed)
+      + spring           the Spring module is the brige of the core to the
+                           Spring Security 3 specific security engine (application managed)
+      + spring2          the Spring2 module is the bridge of the core to the
+                           Spring Security 2 specific security engine (application managed)
+      + websphere        the IBM Websphere module is the bridge of the core to the
+                           IBM Websphere specific security engine (container managed)
 
  + services              contains the sources of the Identity Provider
       + sts              the STS module contains the configured CXF STS which supports the Federation use cases
       + idp              the IDP module is the bridge of the STS to a WS-Trust/SOAP unaware browser
 
  + examples
-      + simpleWebapp     this example shows how to protect a simple web application using the Fediz plugin
-      + wsclientWebapp   this example shows how a protected web application calls a web service protected by the STS
-           + webapp      contains the web application
-           + webservice  contains the web services implementation
+      + simpleWebapp          this example shows how to protect a simple web application using
+                                the Fediz plugin which is configured on the container level
+      + springPreAuthWebapp   this example shows how to protect a simple web application using
+                                the Fediz plugin which is configured at the container level
+                                and creates the spring security context to use spring security features
+                                for authorization like annotations, spring security configuration, etc.
+      + springWebapp          this example shows how to protect a simple web application using
+                                the Fediz plugin which is configured within the application in
+                                the Spring Security 3 configuration
+      + spring2Webapp         this example shows how to protect a simple web application using
+                                the Fediz plugin which is configured within the application in
+                                the Spring Security 2 configuration
+      + wsclientWebapp        this example shows how a protected web application calls a web service protected by the STS
+           + webapp           contains the web application
+           + webservice       contains the web services implementation
 

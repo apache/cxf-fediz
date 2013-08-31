@@ -19,10 +19,7 @@ each sample, follow the READMEs located in each sample's folder.
 examples.  Either the WAR can be manually copied to your servlet
 container's war deployment directory (webapps by default with Tomcat)
 or the Tomcat Maven Plugin (http://tomcat.apache.org/maven-plugin.html) 
-can be used to auto-install the WAR onto Tomcat.  Note if you're using
-this plugin with Tomcat 6 instead of Tomcat 7, change the 
-tomcat-maven-plugin URLs in the service/pom.xml files to 
-"http://localhost:{port}/manager" (instead of ".../manager/text").
+can be used to auto-install the WAR onto Tomcat.
 
 To be able to run the Maven "mvn" command from any folder, be
 sure to add the MAVEN_HOME/bin directory to your system PATH

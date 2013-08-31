@@ -1,8 +1,13 @@
 Simple Spring Web Application Demo
 ==================================
 
-This demo shows how to build and deploy an SSO protected using Apache CXF Fediz
-for a spring security based web application.
+This demo shows how to build and deploy an SSO protected web application
+using Apache CXF Fediz. The web application uses spring security for
+authentication and authorization natively which provides a richer security
+API and configuration than the Java Servlet API.
+
+If you still want to enforce security on the container level but want to use
+spring security's features the demo 'springPreAuthWebapp' illustrates that.
 
 Running this sample consists of four steps:
 
