@@ -1,7 +1,11 @@
 Web Service Client Web Application Demo
 =======================================
 
-This demo builds on the simpleWebapp sample to show a Relying Party (RP) web application using an IDP-provided SAML token to access a third-party web service.  Here the IDP authenticates the browser user that the web application requested the token on behalf of, and uses its STS to issue the token which fulfills the web service's security requirements.  From the SAML token the Web Service is informed which browser user triggered the Web Service call.
+This demo builds on the simpleWebapp sample to show a Relying Party (RP) web application
+using an IDP-provided SAML token to access a third-party web service.
+Here the IDP authenticates the browser user that the web application requested the token on behalf of,
+and uses its STS to issue the token which fulfills the web service's security requirements.
+From the SAML token the Web Service is informed which browser user triggered the Web Service call.
 
 Running this sample consists of four steps:
 

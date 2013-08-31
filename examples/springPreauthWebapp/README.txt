@@ -6,6 +6,10 @@ web application where WS-Federation based login is managed by the container but
 Fediz initializes the Spring Security Context which provides a richer security
 API and configuration than the Java Servlet API.
 
+This example still requires the fediz plugin be configured on the container level
+whereas the demo 'springWebapp' can be deployed into any application server as
+fediz is integrated into spring security natively.
+
 The Spring Security reference documentation provides more background information
 about Pre-Authentication support in Spring Security:
 http://static.springsource.org/spring-security/site/docs/3.2.x/reference/springsecurity-single.html#preauth
