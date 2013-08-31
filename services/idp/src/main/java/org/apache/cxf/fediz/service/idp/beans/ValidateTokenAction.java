@@ -116,7 +116,7 @@ public class ValidateTokenAction {
         idpToken.setToken(e);
         LOG.info("[IDP_TOKEN=" + id + "] for user '" + wfResp.getUsername()
                 + "' created from [RP_TOKEN=" + wfResp.getUniqueTokenId()
-                + "issued by home realm [" + whr + "/"
+                + "] issued by home realm [" + whr + "/"
                 + wfResp.getIssuer() + "].");
         if (LOG.isDebugEnabled()) {
             LOG.debug("Created date=" + wfResp.getTokenCreated());

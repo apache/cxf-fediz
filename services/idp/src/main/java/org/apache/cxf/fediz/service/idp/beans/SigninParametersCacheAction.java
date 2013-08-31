@@ -54,7 +54,7 @@ public class SigninParametersCacheAction {
             LOG.debug("SignIn parameters cached: " + signinParams.toString() + ".");
         }
         WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_CONTEXT, uuidKey);
-        LOG.info("SignIn parameters cached and wctx set to: " + uuidKey + ".");
+        LOG.info("SignIn parameters cached and " + FederationConstants.PARAM_CONTEXT + " set to [" + uuidKey + "].");
     }
     
     public void restore(RequestContext context) {
@@ -80,6 +80,7 @@ public class SigninParametersCacheAction {
         if (LOG.isDebugEnabled()) {
             LOG.debug("SignIn parameters restored: " + signinParams.toString() + ".");
         }
-        LOG.info("SignIn parameters restored.");
+        WebUtils.removeAttributeFromFlowScope(context, FederationConstants.PARAM_CONTEXT);
+        LOG.info("SignIn parameters restored and " + FederationConstants.PARAM_CONTEXT + "[" + uuidKey + "] cleared.");
     }
 }
