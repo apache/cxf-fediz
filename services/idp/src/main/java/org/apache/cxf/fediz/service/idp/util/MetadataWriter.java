@@ -228,6 +228,8 @@ public class MetadataWriter {
             signatureMethod = SignatureMethod.DSA_SHA1;
         } else if ("SHA1withRSA".equals(cert.getSigAlgName())) {
             signatureMethod = SignatureMethod.RSA_SHA1;
+        } else if ("SHA256withRSA".equals(cert.getSigAlgName())) {
+            signatureMethod = SignatureMethod.RSA_SHA1;
         } else {
             LOG.error("Unsupported signature method: " + cert.getSigAlgName());
             throw new RuntimeException("Unsupported signature method: " + cert.getSigAlgName());
