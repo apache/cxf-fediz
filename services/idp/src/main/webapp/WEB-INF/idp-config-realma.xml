@@ -55,7 +55,6 @@
         <property name="services">
         	<util:map>
 				<entry key="urn:org:apache:cxf:fediz:fedizhelloworld" value-ref="srv-fedizhelloworld" />
-				<!-- <entry key="https://localhost:8443/fedizhelloworld/" value-ref="srv-fedizhelloworld" />--> <!-- temp -->
         	</util:map>
         </property>
         <property name="authenticationURIs">
