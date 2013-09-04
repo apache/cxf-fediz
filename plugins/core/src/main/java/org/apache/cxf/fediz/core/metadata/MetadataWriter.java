@@ -94,12 +94,12 @@ public class MetadataWriter {
 
         try {
             ByteArrayOutputStream bout = new ByteArrayOutputStream(4096);
-            Writer streamWriter = new OutputStreamWriter(bout);
+            Writer streamWriter = new OutputStreamWriter(bout, "UTF-8");
             XMLStreamWriter writer = XML_OUTPUT_FACTORY.createXMLStreamWriter(streamWriter);
 
             Protocol protocol = config.getProtocol();
 
-            writer.writeStartDocument();
+            writer.writeStartDocument("UTF-8", "1.0");
 
             String referenceID = "_" + UUIDGenerator.getUUID();
             writer.writeStartElement("", "EntityDescriptor", SAML2_METADATA_NS);
