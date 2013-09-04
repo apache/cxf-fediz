@@ -10,7 +10,7 @@
 </head>
 <body>
 	<h1>Trusted IDP List</h1>
-	<i>What are you from ? Please, select one Identity Provider in list which is able to recognize you. </i>
+	<i>Where are you from? Please, select one Identity Provider in the list which is able to authenticate you. </i>
 	<form:form method="POST" id="idplist" name="idplist">
 		<br />
         <% IDPConfig idpConfig = (IDPConfig)request.getAttribute("idpConfig");
