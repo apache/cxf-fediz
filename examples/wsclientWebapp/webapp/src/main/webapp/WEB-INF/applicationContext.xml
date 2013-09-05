@@ -37,7 +37,7 @@
 			<entry key="ws-security.sts.client">
 				<bean class="org.apache.cxf.ws.security.trust.STSClient">
 					<constructor-arg ref="cxf" />
-					<property name="wsdlLocation" value="https://localhost:9443/fediz-idp-sts/STSServiceTransport?wsdl" />
+					<property name="wsdlLocation" value="https://localhost:9443/fediz-idp-sts/REALMA/STSServiceTransport?wsdl" />
 					<property name="serviceName"
 						value="{http://docs.oasis-open.org/ws-sx/ws-trust/200512/}SecurityTokenService" />
 					<property name="endpointName"
