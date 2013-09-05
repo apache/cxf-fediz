@@ -99,7 +99,7 @@ public class MetadataWriter {
 
             Protocol protocol = config.getProtocol();
 
-            writer.writeStartDocument("UTF-8", "1.0");
+            writer.writeStartDocument();
 
             String referenceID = "_" + UUIDGenerator.getUUID();
             writer.writeStartElement("", "EntityDescriptor", SAML2_METADATA_NS);
