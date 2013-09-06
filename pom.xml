@@ -45,7 +45,8 @@
         <log4j.version>1.2.15</log4j.version>
         <servlet.version>2.5</servlet.version>
         <slf4j.version>1.7.5</slf4j.version>
-        <spring.version>3.0.7.RELEASE</spring.version>
+        <spring.version>3.1.4.RELEASE</spring.version>
+        <spring.security.version>3.1.4.RELEASE</spring.security.version>
         <tomcat.version>7.0.42</tomcat.version>
         <wss4j.version>1.6.11</wss4j.version>
 
