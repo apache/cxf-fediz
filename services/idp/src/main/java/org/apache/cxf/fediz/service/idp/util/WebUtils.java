@@ -83,16 +83,11 @@ public final class WebUtils {
     public static void putAttribute(final RequestContext context,
             final String attributeKey, final Object attributeValue,
             boolean storeInSession) {
-        // Object oldValue = null;
         if (storeInSession) {
-            // oldValue = getAttributeFromExternalContext(context,
-            // attributeKey);
             putAttributeInExternalContext(context, attributeKey, attributeValue);
         } else {
-            // oldValue = getAttributeFromRequestScope(context, attributeKey);
             putAttributeInRequestScope(context, attributeKey, attributeValue);
         }
-        // return oldValue;
     }
 
     public static Object getAttributeFromRequestScope(

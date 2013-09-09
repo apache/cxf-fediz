@@ -1,39 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements. See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership. The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License. You may obtain a copy of the License at
+ 
+  http://www.apache.org/licenses/LICENSE-2.0
+ 
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied. See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:cxf="http://cxf.apache.org/core" xmlns:jaxws="http://cxf.apache.org/jaxws"
-	xmlns:test="http://apache.org/hello_world_soap_http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:util="http://www.springframework.org/schema/util" xmlns:http="http://cxf.apache.org/transports/http/configuration"
-	xmlns:sec="http://cxf.apache.org/configuration/security"
-	xmlns:context="http://www.springframework.org/schema/context"
-	xsi:schemaLocation="
-        http://cxf.apache.org/core
-        http://cxf.apache.org/schemas/core.xsd
-        http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
-        http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context-3.0.xsd
-        http://cxf.apache.org/jaxws                                     
-        http://cxf.apache.org/schemas/jaxws.xsd
-        http://www.springframework.org/schema/util
-        http://www.springframework.org/schema/util/spring-util-2.0.xsd
-        http://cxf.apache.org/transports/http/configuration
-        http://cxf.apache.org/schemas/configuration/http-conf.xsd
-        http://cxf.apache.org/configuration/security
-        http://cxf.apache.org/schemas/configuration/security.xsd">
+    xmlns:cxf="http://cxf.apache.org/core" xmlns:jaxws="http://cxf.apache.org/jaxws"
+    xmlns:test="http://apache.org/hello_world_soap_http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:util="http://www.springframework.org/schema/util" xmlns:http="http://cxf.apache.org/transports/http/configuration"
+    xmlns:sec="http://cxf.apache.org/configuration/security"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="
+    http://cxf.apache.org/core
+    http://cxf.apache.org/schemas/core.xsd
+    http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-3.0.xsd
+    http://cxf.apache.org/jaxws                                     
+    http://cxf.apache.org/schemas/jaxws.xsd
+    http://www.springframework.org/schema/util
+    http://www.springframework.org/schema/util/spring-util-2.0.xsd
+    http://cxf.apache.org/transports/http/configuration
+    http://cxf.apache.org/schemas/configuration/http-conf.xsd
+    http://cxf.apache.org/configuration/security
+    http://cxf.apache.org/schemas/configuration/security.xsd">
 
-	<context:property-placeholder location="classpath:realm.properties"/>
+    <context:property-placeholder location="classpath:realm.properties"/>
 
     <bean id="config" class="org.apache.cxf.fediz.service.idp.service.ConfigServiceSpring">
-    	<property name="idpConfigs">
-    		<util:list>
-    			<ref bean="idp-realmA" />
-    		</util:list>
-    	</property>
-    	<property name="serviceConfigs">
-    		<util:list>
-    			<ref bean="srv-fedizhelloworld" />
-    		</util:list>
-    	</property>     	
+        <property name="idpConfigs">
+            <util:list>
+                <ref bean="idp-realmA" />
+            </util:list>
+        </property>
+        <property name="serviceConfigs">
+            <util:list>
+                <ref bean="srv-fedizhelloworld" />
+            </util:list>
+        </property>     	
     </bean>        
 	
     <bean id="idp-realmA" class="org.apache.cxf.fediz.service.idp.model.IDPConfig">
@@ -47,30 +65,29 @@
         <property name="stsUrl" value="https://localhost:0/fediz-idp-sts/REALMA" />
         <property name="idpUrl" value="https://localhost:${realmA.port}/fediz-idp/federation" />
         <property name="supportedProtocols">
-        	<util:list>
-        		<value>http://docs.oasis-open.org/wsfed/federation/200706</value>
-        		<value>http://docs.oasis-open.org/ws-sx/ws-trust/200512</value>
-        	</util:list>
+            <util:list>
+                <value>http://docs.oasis-open.org/wsfed/federation/200706</value>
+                <value>http://docs.oasis-open.org/ws-sx/ws-trust/200512</value>
+            </util:list>
         </property>
         <property name="services">
-        	<util:map>
-				<entry key="urn:org:apache:cxf:fediz:fedizhelloworld" value-ref="srv-fedizhelloworld" />
-        	</util:map>
+            <util:map>
+	        <entry key="urn:org:apache:cxf:fediz:fedizhelloworld" value-ref="srv-fedizhelloworld" />
+            </util:map>
         </property>
         <property name="authenticationURIs">
-         	<util:map>
-				<entry key="default" value="/login/default" />
-        	</util:map>       
+            <util:map>
+	        <entry key="default" value="/login/default" />
+            </util:map>       
         </property>
         <property name="trustedIDPs">
-        	<util:map>
-				<entry key="urn:org:apache:cxf:fediz:idp:realm-B" value-ref="trusted-idp-realmB" />
-        	</util:map>
+            <util:map>
+                <entry key="urn:org:apache:cxf:fediz:idp:realm-B" value-ref="trusted-idp-realmB" />
+            </util:map>
         </property>
         <property name="serviceDisplayName" value="REALM A" />
         <property name="serviceDescription" value="IDP of Realm A" />
     </bean>
-
 
     <bean id="trusted-idp-realmB" class="org.apache.cxf.fediz.service.idp.model.TrustedIDPConfig">
         <property name="realm" value="urn:org:apache:cxf:fediz:idp:realm-B" />
@@ -82,9 +99,7 @@
         <property name="federationType" value="FederateIdentity" /> <!-- Required for STS Relationship -->
         <property name="name" value="REALM B" />
         <property name="description" value="IDP of Realm B" />
-        <!--<property name="logo" value="true" />--> 
     </bean>
-    
     
     <bean id="srv-fedizhelloworld" class="org.apache.cxf.fediz.service.idp.model.ServiceConfig">
         <property name="realm" value="urn:org:apache:cxf:fediz:fedizhelloworld" />
@@ -96,48 +111,26 @@
         <property name="lifeTime" value="3600" />
         <!-- <property name="encryptionCertificate" value="" /> -->
         <property name="requestedClaims">
-        	<util:list>
-        		<bean class="org.apache.cxf.fediz.service.idp.model.RequestClaim">
-        			<property name="claimType" value="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname" />
-        			<property name="optional" value="false" />
-        		</bean>
-        		<bean class="org.apache.cxf.fediz.service.idp.model.RequestClaim">
-        			<property name="claimType" value="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname" />
-        			<property name="optional" value="false" />
-        		</bean>
-        		<bean class="org.apache.cxf.fediz.service.idp.model.RequestClaim">
-        			<property name="claimType" value="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress" />
-        			<property name="optional" value="false" />
-        		</bean>
-        		<bean class="org.apache.cxf.fediz.service.idp.model.RequestClaim">
-        			<property name="claimType" value="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role" />
-        			<property name="optional" value="true" />
-        		</bean>        		        		        		
-        	</util:list>
+            <util:list>
+                <bean class="org.apache.cxf.fediz.service.idp.model.RequestClaim">
+                    <property name="claimType" value="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname" />
+                    <property name="optional" value="false" />
+                </bean>
+                <bean class="org.apache.cxf.fediz.service.idp.model.RequestClaim">
+                    <property name="claimType" value="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname" />
+                    <property name="optional" value="false" />
+                </bean>
+                <bean class="org.apache.cxf.fediz.service.idp.model.RequestClaim">
+                    <property name="claimType" value="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress" />
+                    <property name="optional" value="false" />
+                </bean>
+                <bean class="org.apache.cxf.fediz.service.idp.model.RequestClaim">
+                    <property name="claimType" value="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role" />
+                    <property name="optional" value="true" />
+                </bean>        		        		        		
+            </util:list>
         </property>
     </bean>
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 </beans>
 

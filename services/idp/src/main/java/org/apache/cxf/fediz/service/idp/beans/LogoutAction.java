@@ -27,9 +27,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
- * This class is responsible to invalidate IDP session.
+ * This class is responsible to clear security context and invalidate IDP session.
  */
-
 
 public class LogoutAction {
 

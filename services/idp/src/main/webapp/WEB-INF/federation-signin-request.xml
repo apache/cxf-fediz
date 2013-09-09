@@ -13,8 +13,6 @@
     <input name="whr" />
 
     <decision-state id="checkHRDSEnabled">
-<!--         <if test="idpConfig.getHrds() != null" then="checkWhrInSigninRequest" else="checkWauthTypeSupported" /> -->
-<!--         <if test="true" then="checkWhrInSigninRequest" else="checkWauthTypeSupported" /> -->
         <if test="true" then="checkWhrInSigninRequest" else="checkDefaultToThisIDP" />
     </decision-state>
     
@@ -66,23 +64,17 @@
 
 <!--     Home Realm is known then we can store it in cookie -->
     <decision-state id="checkIsThisIDP">
-<!--     	<on-entry> -->
-<!--             <evaluate expression="homeRealmReminder.addCookie(flowRequestContext, flowScope.whr)" /> -->
-<!--         </on-entry> -->
         <if test="flowScope.idpConfig.realm.equals(flowScope.whr)" then="checkWauthTypeSupported" else="checkIdpTokenWhrWauth" />
     </decision-state>
     
 <!-- ============================================================================================================= -->
 
     <!--  Is 'wresult/RP-IDP token' already received and validated (then stored in session) from requestor IDP ? -->
-    <!-- question : is freshness to be checked ? -->
     <decision-state id="checkIdpTokenWhrWauth">
-<!--         <if test="externalContext.sessionMap[flowScope.whr] != null" then="requestRpToken" else="redirectToTrustedIDP" /> -->
         <if test="externalContext.sessionMap[flowScope.whr] != null" then="wfreshParserRemoteAction" else="redirectToTrustedIDP" />
     </decision-state>
     
     <action-state id="wfreshParserRemoteAction">
-<!--         <evaluate expression="wfreshParser.authenticationRequired(flowScope.wfresh, flowRequestContext)" /> -->
         <evaluate expression="wfreshParser.authenticationRequired(flowScope.wfresh, flowScope.whr, flowRequestContext)" />
         <transition on="yes" to="redirectToTrustedIDP"/>
         <transition on="no" to="requestRpToken"/>
@@ -105,7 +97,6 @@
     
     <!-- parse wfresh parameter, provided by resource RP, overriding ttl from 'IDP_TOKEN' -->
     <action-state id="wfreshParserAction">
-<!--         <evaluate expression="wfreshParser.authenticationRequired(flowScope.wfresh, flowRequestContext)" /> -->
         <evaluate expression="wfreshParser.authenticationRequired(flowScope.wfresh, flowScope.whr, flowRequestContext)" />
         <transition on="yes" to="redirectToLocalIDP"/>
         <transition on="no" to="requestRpToken"/>
@@ -144,6 +135,5 @@
         <output name="whr" value="flowScope.whr" />
         <output name="wctx" value="flowScope.wctx" />
     </end-state>
-
 
 </flow>

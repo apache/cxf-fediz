@@ -264,8 +264,6 @@ public class STSClientAction {
     }
 
     private SecurityToken getSecurityToken(RequestContext context) throws ProcessingException {
-//      String whr = (String) WebUtils.
-//      getAttributeFromExternalContext(context, FederationConstants.PARAM_HOME_REALM);
         String whr = (String) WebUtils.
             getAttributeFromFlowScope(context, FederationConstants.PARAM_HOME_REALM);
         SecurityToken idpToken = null;
@@ -305,21 +303,6 @@ public class STSClientAction {
         }
     }
 
-    /**
-     * Usage of 'wfresh' parameter, picked up from the webflow context, 
-     * like time-to-live of security token to be issued..
-     */
-//    private void configureTTL(STSClient sts, RequestContext requestContext) {
-//        String wfresh = (String)WebUtils.getAttributeFromExternalContext(requestContext, "wfresh");
-//        if (wfresh != null) {
-//            int ttl = Integer.parseInt(wfresh);
-//            if (ttl > 0) {
-//                sts.setTtl(ttl * 60);                    
-//                sts.setEnableLifetime(true);
-//            }
-//        }
-//    }
-    
     private void addClaims(STSClient sts, List<RequestClaim> requestClaimList)
         throws ParserConfigurationException, XMLStreamException {
         

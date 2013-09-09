@@ -29,11 +29,6 @@ public class HomeRealmReminder {
 
     public static final String FEDIZ_HOME_REALM = "FEDIZ_HOME_REALM";
 
-
-//    public boolean alreadyAuthenticated() {
-//        return SecurityContextHolder.getContext().getAuthentication().isAuthenticated();
-//    }
-
     public Cookie readCookie(RequestContext requestContext) {
         return WebUtils.readCookie(requestContext, FEDIZ_HOME_REALM);
     }

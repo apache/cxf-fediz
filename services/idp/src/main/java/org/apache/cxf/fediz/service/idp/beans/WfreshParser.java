@@ -32,7 +32,6 @@ import org.springframework.webflow.execution.RequestContext;
 
 public class WfreshParser {
 
-//    private static final String IDP_CONFIG = "idpConfig";
     private static final Logger LOG = LoggerFactory
             .getLogger(WfreshParser.class);
 
@@ -41,10 +40,8 @@ public class WfreshParser {
         
         SecurityToken idpToken = 
             (SecurityToken) WebUtils.getAttributeFromExternalContext(context, whr);
-//        if ("1".equals(wfresh)) {
         if (idpToken.isExpired()) {
             LOG.info("[IDP_TOKEN=" + idpToken.getId() + "] is expired.");
-//            forceFurtherAuthentication(context, whr, idpToken);
             return true;
         }
 
@@ -70,7 +67,6 @@ public class WfreshParser {
                             + idpToken.getId()
                             + "] is valid but relying party requested new authentication caused by wfresh="
                             + wfresh + " outdated.");
-//                    forceFurtherAuthentication(context, whr, idpToken);
                     return true;
                 }
             } else {
@@ -82,20 +78,4 @@ public class WfreshParser {
         return false;
     }
 
-//    private void forceFurtherAuthentication(RequestContext context, String whr, SecurityToken idpToken) {
-//        if (isThisRealm(context, whr)) {
-//            SecurityContextHolder.clearContext();
-//            LOG.info("Security context has been cleared");
-//            WebUtils.removeAttributeFromExternalContext(context, whr);
-//            LOG.info("[IDP_TOKEN=" + idpToken.getId() + "] has been uncached.");
-//        }
-//    }
-//
-//    private boolean isThisRealm(RequestContext context, String whr) {
-//        IDPConfig idpConfig = (IDPConfig)WebUtils.getAttributeFromFlowScope(context, IDP_CONFIG);
-//        if (idpConfig.getRealm().equals(whr)) {
-//            return true;
-//        }
-//        return false;
-//    }
 }
