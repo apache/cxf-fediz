@@ -29,6 +29,9 @@
 			<cxf:logging />
 		</cxf:features>
 	</cxf:bus>
+	
+	<bean id="samlDelegationHandler" 
+	      class="org.apache.cxf.fediz.service.sts.FedizSAMLDelegationHandler" />
 
 	<bean id="transportSTSProviderBean"
 		class="org.apache.cxf.ws.security.sts.provider.SecurityTokenServiceProvider">
@@ -43,6 +46,7 @@
 		<property name="claimsManager" ref="claimsManager" />
 		<property name="tokenValidators" ref="transportTokenValidators" />
 		<property name="eventListener" ref="loggerListener" />
+		<property name="delegationHandlers" ref="samlDelegationHandler" />
 	</bean>
 
 	<bean id="transportValidateDelegate" class="org.apache.cxf.sts.operation.TokenValidateOperation">
