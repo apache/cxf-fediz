@@ -22,8 +22,10 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.cert.X509Certificate;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
@@ -31,7 +33,6 @@ import javax.xml.stream.XMLStreamException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
@@ -67,10 +68,10 @@ public class STSClientAction {
 
     private static final String HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER = 
             "http://docs.oasis-open.org/ws-sx/ws-trust/200512/Bearer";
-/*    
+    
     private static final String HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_PUBLICKEY = 
             "http://docs.oasis-open.org/ws-sx/ws-trust/200512/PublicKey";
-*/
+
     private static final String HTTP_WWW_W3_ORG_2005_08_ADDRESSING = "http://www.w3.org/2005/08/addressing";
 
     private static final String HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512 = 
@@ -93,7 +94,7 @@ public class STSClientAction {
     
     private boolean isPortSet;
     
-    //private String keyType = HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_PUBLICKEY;
+    private String keyType = HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER;
 
     public String getWsdlLocation() {
         return wsdlLocation;
@@ -180,10 +181,7 @@ public class STSClientAction {
             LOG.debug("TokenType " + sts.getTokenType() + " set for " + wtrealm);
         }
         
-        sts.setKeyType(HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER);
-        
-        //[TODO] What is the purpose of the keytype?
-        /*
+        sts.setKeyType(keyType);
         if (HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_PUBLICKEY.equals(keyType)) {
             HttpServletRequest servletRequest = WebUtils.getHttpServletRequest(context);
             if (servletRequest != null) {
@@ -198,7 +196,6 @@ public class STSClientAction {
                 }
             }
         }
-        */
 
         processWsdlLocation(context);
         sts.setWsdlLocation(wsdlLocation);
@@ -347,6 +344,14 @@ public class STSClientAction {
     private synchronized void setSTSWsdlUrl(String wsdlUrl) {
         this.wsdlLocation = wsdlUrl;
         this.isPortSet = true;
+    }
+
+    public String getKeyType() {
+        return keyType;
+    }
+
+    public void setKeyType(String keyType) {
+        this.keyType = keyType;
     }
 
 }

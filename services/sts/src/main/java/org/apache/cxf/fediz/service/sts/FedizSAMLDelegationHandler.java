@@ -37,12 +37,10 @@ public class FedizSAMLDelegationHandler
     
     @Override
     public boolean canHandleToken(ReceivedToken delegateTarget) {
-        System.out.println("CANHANDLE");
         return super.canHandleToken(delegateTarget);
     }
     @Override
     public TokenDelegationResponse isDelegationAllowed(TokenDelegationParameters tokenParameters) { 
-        System.out.println("HERE!");
         return super.isDelegationAllowed(tokenParameters);
     }
     @Override
