@@ -155,6 +155,7 @@
                         </Export-Package>
                         <Import-Package>
                             !org.apache.cxf.fediz.jetty*,
+                            org.eclipse.jetty.*;version="[7.6,9)",
                             org.apache.cxf.fediz.core.*,
                             *;resolution:=optional
                         </Import-Package>
