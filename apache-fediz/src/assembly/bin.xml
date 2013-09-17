@@ -57,6 +57,18 @@
             </includes>
         </fileSet>
         <fileSet>
+            <directory>../plugins/websphere</directory>
+            <outputDirectory>apache-fediz-${project.version}/plugins/websphere</outputDirectory>
+            <excludes>
+                <exclude>**/build</exclude>
+                <exclude>**/target</exclude>
+                <exclude>**/build/**/*</exclude>
+                <exclude>**/target/**/*</exclude>
+                <exclude>**/interopfest/**</exclude>
+                <exclude>**/.*/**</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
             <directory>../</directory>
             <outputDirectory>apache-fediz-${project.version}</outputDirectory>
             <includes>
