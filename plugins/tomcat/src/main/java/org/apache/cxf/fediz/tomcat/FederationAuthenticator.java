@@ -134,7 +134,7 @@ public class FederationAuthenticator extends FormAuthenticator {
         super.stopInternal();
     }
 
-    private FederationContext getContextConfiguration(String contextName) {
+    protected FederationContext getContextConfiguration(String contextName) {
         if (configurator == null) {
             throw new IllegalStateException("No Fediz configuration available");
         }

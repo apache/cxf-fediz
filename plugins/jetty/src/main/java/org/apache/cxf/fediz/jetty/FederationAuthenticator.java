@@ -93,7 +93,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
     public void setConfiguration(AuthConfiguration configuration) {
         super.setConfiguration(configuration);
         // is called after the bean setting -> do initialization here
-        System.out.println(configuration.getInitParameterNames());
+        LOG.debug(configuration.getInitParameterNames().toString());
         try {
             File f = new File(getConfigFile());
             if (!f.exists()) {

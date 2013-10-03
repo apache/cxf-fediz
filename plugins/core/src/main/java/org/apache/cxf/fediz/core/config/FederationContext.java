@@ -70,6 +70,7 @@ public class FederationContext implements Closeable {
     private List<TrustManager> certificateStores;
     private KeyManager keyManager;
     private KeyManager decryptionKeyManager;
+    private ClassLoader classloader;
     
 
     public FederationContext(ContextConfig config) {
@@ -149,6 +150,7 @@ public class FederationContext implements Closeable {
         ProtocolType type = config.getProtocol();
         if (type instanceof FederationProtocolType) {
             protocol = new FederationProtocol(type);
+            protocol.setClassloader(getClassloader());
         }
         return protocol;
     }
@@ -331,10 +333,12 @@ public class FederationContext implements Closeable {
         Certificate cert = null;
         BufferedInputStream bis = null;
         try {
+            ClassLoader cl = getClassloader();
+            if (cl == null) {
+                cl = Thread.currentThread().getContextClassLoader();
+            }
+            InputStream is = Merlin.loadInputStream(cl, filename);
             
-            InputStream is = Merlin.loadInputStream(Thread.currentThread().getContextClassLoader(), filename);
-            
-            //FileInputStream fis = new FileInputStream(filename);
             bis = new BufferedInputStream(is);
 
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
@@ -366,6 +370,14 @@ public class FederationContext implements Closeable {
                 LOG.error("Failed to close certificate file " + filename, ex);
             }
         }
+    }
+
+    public ClassLoader getClassloader() {
+        return classloader;
+    }
+
+    public void setClassloader(ClassLoader classloader) {
+        this.classloader = classloader;
     }
     
     

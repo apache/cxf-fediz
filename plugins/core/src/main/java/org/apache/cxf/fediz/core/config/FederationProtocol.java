@@ -32,6 +32,7 @@ import org.apache.cxf.fediz.core.config.jaxb.ClaimTypesRequested;
 import org.apache.cxf.fediz.core.config.jaxb.FederationProtocolType;
 import org.apache.cxf.fediz.core.config.jaxb.ProtocolType;
 import org.apache.cxf.fediz.core.saml.SAMLTokenValidator;
+import org.apache.cxf.fediz.core.util.ClassLoaderUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +47,8 @@ public class FederationProtocol extends Protocol {
     private Object signInQuery;
     private Object realm;
     private List<TokenValidator> validators = new ArrayList<TokenValidator>();
+    private ClassLoader classloader;
+    
     
     public FederationProtocol(ProtocolType protocolType) {
         super(protocolType);
@@ -55,7 +58,11 @@ public class FederationProtocol extends Protocol {
             for (String validatorClassname : fp.getTokenValidators().getValidator()) {
                 Object obj = null;
                 try {
-                    obj = Thread.currentThread().getContextClassLoader().loadClass(validatorClassname).newInstance();
+                    if (this.classloader == null) {
+                        obj = ClassLoaderUtils.loadClass(validatorClassname, this.getClass()).newInstance();
+                    } else {
+                        obj = this.classloader.loadClass(validatorClassname).newInstance();
+                    }
                 } catch (Exception ex) {
                     LOG.error("Failed to instantiate TokenValidator implementation class: '"
                               + validatorClassname + "'\n" + ex.getClass().getCanonicalName() + ": " + ex.getMessage());
@@ -99,8 +106,11 @@ public class FederationProtocol extends Protocol {
             this.realm = new String(cbt.getValue());
         } else if (cbt.getType().equals(ArgumentType.CLASS)) {
             try {
-                this.realm =
-                    Thread.currentThread().getContextClassLoader().loadClass(cbt.getValue()).newInstance();
+                if (this.classloader == null) {
+                    this.realm = ClassLoaderUtils.loadClass(cbt.getValue(), this.getClass()).newInstance();
+                } else {
+                    this.realm = this.classloader.loadClass(cbt.getValue()).newInstance();
+                }
             } catch (Exception e) {
                 LOG.error("Failed to create instance of " + cbt.getValue(), e);
                 throw new IllegalStateException("Failed to create instance of " + cbt.getValue());
@@ -164,8 +174,11 @@ public class FederationProtocol extends Protocol {
             this.authenticationType = new String(cbt.getValue());
         } else if (cbt.getType().equals(ArgumentType.CLASS)) {
             try {
-                this.authenticationType = 
-                    Thread.currentThread().getContextClassLoader().loadClass(cbt.getValue()).newInstance();
+                if (this.classloader == null) {
+                    this.authenticationType = ClassLoaderUtils.loadClass(cbt.getValue(), this.getClass()).newInstance();
+                } else {
+                    this.authenticationType = this.classloader.loadClass(cbt.getValue()).newInstance();
+                }
             } catch (Exception e) {
                 LOG.error("Failed to create instance of " + cbt.getValue(), e);
                 throw new IllegalStateException("Failed to create instance of " + cbt.getValue());
@@ -201,8 +214,11 @@ public class FederationProtocol extends Protocol {
             this.homeRealm = new String(cbt.getValue());
         } else if (cbt.getType().equals(ArgumentType.CLASS)) {
             try {
-                this.homeRealm =
-                    Thread.currentThread().getContextClassLoader().loadClass(cbt.getValue()).newInstance();
+                if (this.classloader == null) {
+                    this.homeRealm = ClassLoaderUtils.loadClass(cbt.getValue(), this.getClass()).newInstance();
+                } else {
+                    this.homeRealm = this.classloader.loadClass(cbt.getValue()).newInstance();
+                }
             } catch (Exception e) {
                 LOG.error("Failed to create instance of " + cbt.getValue(), e);
                 throw new IllegalStateException("Failed to create instance of " + cbt.getValue());
@@ -235,8 +251,11 @@ public class FederationProtocol extends Protocol {
             this.issuer = new String(cbt.getValue());
         } else if (cbt.getType().equals(ArgumentType.CLASS)) {
             try {
-                this.issuer = 
-                    Thread.currentThread().getContextClassLoader().loadClass(cbt.getValue()).newInstance();
+                if (this.classloader == null) {
+                    this.issuer = ClassLoaderUtils.loadClass(cbt.getValue(), this.getClass()).newInstance();
+                } else {
+                    this.issuer = this.classloader.loadClass(cbt.getValue()).newInstance();
+                }
             } catch (Exception e) {
                 LOG.error("Failed to create instance of " + cbt.getValue(), e);
                 throw new IllegalStateException("Failed to create instance of " + cbt.getValue());
@@ -272,8 +291,11 @@ public class FederationProtocol extends Protocol {
             this.freshness = new String(cbt.getValue());
         } else if (cbt.getType().equals(ArgumentType.CLASS)) {
             try {
-                this.freshness =
-                    Thread.currentThread().getContextClassLoader().loadClass(cbt.getValue()).newInstance();
+                if (this.classloader == null) {
+                    this.freshness = ClassLoaderUtils.loadClass(cbt.getValue(), this.getClass()).newInstance();
+                } else {
+                    this.freshness = this.classloader.loadClass(cbt.getValue()).newInstance();
+                }
             } catch (Exception e) {
                 LOG.error("Failed to create instance of " + cbt.getValue(), e);
                 throw new IllegalStateException("Failed to create instance of " + cbt.getValue());
@@ -309,8 +331,11 @@ public class FederationProtocol extends Protocol {
             this.signInQuery = new String(cbt.getValue());
         } else if (cbt.getType().equals(ArgumentType.CLASS)) {
             try {
-                this.signInQuery =
-                    Thread.currentThread().getContextClassLoader().loadClass(cbt.getValue()).newInstance();
+                if (this.classloader == null) {
+                    this.signInQuery = ClassLoaderUtils.loadClass(cbt.getValue(), this.getClass()).newInstance();
+                } else {
+                    this.signInQuery = this.classloader.loadClass(cbt.getValue()).newInstance();
+                }
             } catch (Exception e) {
                 LOG.error("Failed to create instance of " + cbt.getValue(), e);
                 throw new IllegalStateException("Failed to create instance of " + cbt.getValue());
@@ -377,6 +402,14 @@ public class FederationProtocol extends Protocol {
 
     public String toString() {
         return getFederationProtocol().toString();
+    }
+    
+    public ClassLoader getClassloader() {
+        return classloader;
+    }
+
+    public void setClassloader(ClassLoader classloader) {
+        this.classloader = classloader;
     }
 
 }
