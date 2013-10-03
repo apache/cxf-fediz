@@ -72,6 +72,7 @@ public class FederationAuthenticator extends FormAuthenticator {
      * Fediz Configuration file
      */
     protected String configFile;
+    protected boolean tokenExpirationValidation = true;
 
     private FederationConfigurator configurator;
 
@@ -93,6 +94,14 @@ public class FederationAuthenticator extends FormAuthenticator {
 
     public void setConfigFile(String configFile) {
         this.configFile = configFile;
+    }
+    
+    public boolean isTokenExpirationValidation() {
+        return tokenExpirationValidation;
+    }
+
+    public void setTokenExpirationValidation(boolean tokenExpirationValidation) {
+        this.tokenExpirationValidation = tokenExpirationValidation;
     }
 
     @Override
@@ -216,6 +225,11 @@ public class FederationAuthenticator extends FormAuthenticator {
                     LOG.debug("Token doesn't expire");
                     return true;
                 }
+                if (!this.tokenExpirationValidation) {
+                    LOG.debug("Token expiration not validated.");
+                    return true;
+                }
+                
                 Date currentTime = new Date();
                 if (currentTime.after(wfRes.getTokenExpires())) {
                     LOG.debug("Token already expired. Clean up and redirect");
