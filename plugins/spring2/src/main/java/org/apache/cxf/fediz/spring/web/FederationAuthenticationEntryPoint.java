@@ -86,15 +86,12 @@ public class FederationAuthenticationEntryPoint implements AuthenticationEntryPo
             FederationProcessor wfProc = new FederationProcessorImpl();
             redirectUrl = wfProc.createSignInRequest(servletRequest, fedContext);
             if (redirectUrl == null) {
-                LOG.warn("Failed to create SignInRequest.");
-                response.sendError(
-                        HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignInRequest.");
+                LOG.warn("Failed to create SignInRequest. Redirect URL null");
+                throw new ServletException("Failed to create SignInRequest. Redirect URL null");
             }
         } catch (ProcessingException ex) {
-            System.err.println("Failed to create SignInRequest: " + ex.getMessage());
-            LOG.warn("Failed to create SignInRequest: " + ex.getMessage());
-            response.sendError(
-                               HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignInRequest.");
+            LOG.warn("Failed to create SignInRequest", ex);
+            throw new ServletException("Failed to create SignInRequest: " + ex.getMessage());
         }
         
         preCommence(servletRequest, response);

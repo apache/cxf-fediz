@@ -31,14 +31,12 @@ import org.springframework.security.AuthenticationException;
 import org.springframework.security.providers.UsernamePasswordAuthenticationToken;
 import org.springframework.security.ui.AbstractProcessingFilter;
 import org.springframework.security.ui.FilterChainOrder;
-//import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 
 
 public class FederationAuthenticationFilter extends AbstractProcessingFilter {
     
     public FederationAuthenticationFilter() {
         super();
-        //setAuthenticationFailureHandler(new SimpleUrlAuthenticationFailureHandler());
     }
 
     /**
