@@ -1,15 +1,17 @@
-Apache CXF Fediz 1.0.3 Release Notes
+Apache CXF Fediz 2.0.0 Release Notes
 
 1. Overview
 
-The 1.0.x versions of Apache CXF Fediz provide the following features:
+The 2.0.x versions of Apache CXF Fediz provide the following features:
 
 * WS-Federation 1.0/1.1/1.2
 * SAML 1.1/2.0 Tokens
 * Custom token support
-* Publish WS-Federation Metadata document
+* Publish WS-Federation Metadata document for RP and IDP
 * Role information encoded as AttributeStatement in SAML 1.1/2.0 tokens
 * Claims information provided by FederationPrincipal interface
+* Fediz IDP supports Resource and Requestor IDP role, Home Realm Discovery Service, ...
+* Support for Jetty, Tomcat, Websphere and Spring Security 2.0/3.1
 
 
 2. Installation Prerequisites 
@@ -18,7 +20,7 @@ Before installing Apache CXF Fediz, make sure the following products,
 with the specified versions, are installed on your system:
 
     * Java 6 or 7 Development Kit
-    * Apache Maven 2.2.1 or 3.x to build the samples
+    * Apache Maven 3.x to build the samples
 
 3. Installation Procedures
 
@@ -53,6 +55,54 @@ N.A.
 
 
 8. Specific issues, features, and improvements fixed in this version
+
+Release Notes - CXF-Fediz - Version 2.0.0
+
+New Feature
+
+    [FEDIZ-2] - Support encrypted tokens in plugin
+    [FEDIZ-3] - Support the role "Resource IDP" in IDP
+    [FEDIZ-4] - Support SAML token with Holder-Of-Key SubjectConfirmationMethod
+    [FEDIZ-5] - Provide adapter for Jetty
+    [FEDIZ-9] - Provide plugin for CXF
+    [FEDIZ-36] - Http Form Based Login
+    [FEDIZ-38] - Integrate Fediz Plugin with Spring Security framework (Pre-Authentication)
+    [FEDIZ-39] - Spring Security Federation Authenticator
+    [FEDIZ-52] - Support wauth parameter in initial request to RP
+    [FEDIZ-53] - Browser can pass the home realm to the Fediz plugin
+    [FEDIZ-58] - Support LDAP groups for Maven profile ldap
+    [FEDIZ-59] - Support audit log in STS
+    [FEDIZ-61] - Support for Websphere WAS 7 / 8
+    [FEDIZ-62] - Customize SignIn Query
+    [FEDIZ-63] - Support PEM format for certificate store
+
+Bug
+
+    [FEDIZ-40] - Can CXF Fediz IDP & RP work with SAML1.1 ?
+    [FEDIZ-45] - Do not convert a SAML Attribute with an empty AttributeValue into a Role
+    [FEDIZ-47] - OnBehalfOf Token does not expire in the IdP
+    [FEDIZ-49] - Support using wfresh parameter in the IdP for TTL
+    [FEDIZ-55] - Claims from LDAP can't be retrieved
+
+Improvement
+
+    [FEDIZ-14] - Make the TokenReplayCache implementation configurable in the Fediz configuration
+    [FEDIZ-31] - Fix example package structure
+    [FEDIZ-37] - Dynamically assign ports for unit testing to avoid port conflict
+    [FEDIZ-41] - Fediz IDP refactored with Spring Web Flow
+    [FEDIZ-43] - No dependency on TCP port of IDP container in fedizidp.war
+    [FEDIZ-44] - Rename IDP + STS wars to use hypens (fediz-idp + fediz-idp-sts) and update documentation
+    [FEDIZ-48] - Support wfresh properly in the IdP
+    [FEDIZ-54] - Provide Maven profile to build STS with LDAP backend
+    [FEDIZ-64] - Add Callback support for the Realm (WTRealm) protocol property
+
+Wish
+
+    [FEDIZ-15] - Support the publish of the WS-Federation Metadata document
+    [FEDIZ-35] - Allow to use a custom CXF bus for IdpSTSClient
+
+
+
 
 Release Notes - CXF-Fediz - Version 1.0.3
 
