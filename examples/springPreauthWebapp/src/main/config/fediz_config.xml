@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<!-- Place in Tomcat conf folder or other location as designated in this sample's webapp/META-INF/context.xml file. 
-     Keystore referenced below must have IDP STS' public cert included in it.  This example re-uses the Tomcat SSL 
-     keystore (tomcat-rp.jks) for this task; alternatively you may wish to use a Fediz-specific keystore instead. 
+<!-- Place in Tomcat conf folder or other location as designated in this sample's file. 
+     Keystore referenced below must have IDP STS' public cert included in it.  This example uses the
+     ststrust Truststore (ststrust.jks) for this task.
+     In Fediz 1.0, one keystore was used for SSL and the STS public certificate.
 -->
 <FedizConfig>
 	<contextConfig name="/fedizhelloworld">
@@ -10,25 +11,22 @@
 		</audienceUris>
 		<certificateStores>
 			<trustManager>
-				<keyStore file="tomcat-rp.jks" password="tompass" type="JKS" />
+				<keyStore file="ststrust.jks" password="storepass" type="JKS" />
 			</trustManager>
 		</certificateStores>
 		<trustedIssuers>
 			<issuer subject=".*CN=www.sts.com.*" certificateValidation="ChainTrust"
 				name="DoubleItSTSIssuer" />
+			<issuer subject=".*CN=REALMA.*" certificateValidation="ChainTrust"
+			    name="REALM A"/>
 		</trustedIssuers>
 		<maximumClockSkew>1000</maximumClockSkew>
 		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 			xsi:type="federationProtocolType" version="1.0.0">
 			<realm>urn:org:apache:cxf:fediz:fedizhelloworld</realm>
-			<issuer>https://localhost:9443/fediz-idp/</issuer>
+			<issuer>https://localhost:9443/fediz-idp/federation</issuer>
 			<roleDelimiter>,</roleDelimiter>
 			<roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
-			<!--<authenticationType type="String">some auth type</authenticationType>-->
-			<!--<homeRealm type="Class">org.apache.fediz.realm.MyHomeRealm</homeRealm>-->
-			<!--<freshness>0</freshness>-->
-			<!--<reply>reply value</reply>-->
-			<!--<request>REQUEST</request>-->
 			<claimTypesRequested>
 				<claimType type="a particular claim type" optional="true" />
 			</claimTypesRequested>

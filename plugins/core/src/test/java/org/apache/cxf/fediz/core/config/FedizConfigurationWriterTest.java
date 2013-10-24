@@ -65,11 +65,11 @@ public class FedizConfigurationWriterTest {
 
     private static final String CONFIG_NAME = "ROOT";
     private static final String CLOCK_SKEW = "1000";
-    private static final String KEYSTORE_FILE = "stsstore.jks";
+    private static final String KEYSTORE_FILE = "ststrust.jks";
 
     private static final String JKS_TYPE = "JKS";
 
-    private static final String KEYSTORE_PASSWORD = "stsspass";
+    private static final String KEYSTORE_PASSWORD = "storepass";
     private static final String KEY_PASSWORD = "stskpass";
     private static final String KEY_ALIAS = "mystskey";
     

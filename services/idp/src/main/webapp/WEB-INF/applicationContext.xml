@@ -55,7 +55,7 @@
     <http:conduit name="*.http-conduit">
         <http:tlsClientParameters disableCNCheck="true">
             <sec:trustManagers>
-                <sec:keyStore type="jks" password="ispass" resource="idpstore.jks"/>
+                <sec:keyStore type="jks" password="ispass" resource="idp-ssl-trust.jks"/>
             </sec:trustManagers>
         </http:tlsClientParameters>
     </http:conduit>

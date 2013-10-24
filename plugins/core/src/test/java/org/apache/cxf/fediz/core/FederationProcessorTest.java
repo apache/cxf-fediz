@@ -1080,8 +1080,8 @@ public class FederationProcessorTest {
         TrustManagersType tm0 = new TrustManagersType();       
         KeyStoreType ks0 = new KeyStoreType();
         ks0.setType("JKS");
-        ks0.setPassword("stsspass");
-        ks0.setFile("stsstore.jks");
+        ks0.setPassword("storepass");
+        ks0.setFile("ststrust.jks");
         tm0.setKeyStore(ks0);
         certStores.getTrustManager().add(tm0);
         config.setCertificateStores(certStores);

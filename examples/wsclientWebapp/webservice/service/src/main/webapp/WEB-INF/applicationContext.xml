@@ -22,7 +22,7 @@
 		xmlns:svc="http://apache.org/hello_world_soap_http" address="/GreeterService">
 
 		<jaxws:properties>
-			<entry key="ws-security.signature.properties" value="webserviceKeystore.properties" />
+			<entry key="ws-security.signature.properties" value="ststrust.properties" />
 		</jaxws:properties>
 
 		<jaxws:features>

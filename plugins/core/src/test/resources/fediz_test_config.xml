@@ -6,7 +6,7 @@
 		</audienceUris>
 		<certificateStores>
 			<trustManager>
-				<keyStore file="stsstore.jks" password="stsspass"
+				<keyStore file="ststrust.jks" password="storepass"
 					type="JKS" />
 			</trustManager>		
 		</certificateStores>
@@ -43,7 +43,7 @@
 					type="JKS" />
 			</trustManager>	
 			<trustManager>
-				<keyStore file="stsstore.jks" password="stsspass"
+				<keyStore file="ststrust.jks" password="storepass"
 					type="JKS" />
 			</trustManager>		
 		</certificateStores>
@@ -80,7 +80,7 @@
 					type="JKS" />
 			</trustManager>	
 			<trustManager>
-				<keyStore file="stsstore.jks" password="stsspass"
+				<keyStore file="ststrust.jks" password="storepass"
 					type="JKS" />
 			</trustManager>		
 		</certificateStores>
@@ -114,7 +114,7 @@
 		</audienceUris>
 		<certificateStores>
 			<trustManager>
-				<keyStore file="stsstore.jks" password="stsspass"
+				<keyStore file="ststrust.jks" password="storepass"
 					type="JKS" />
 			</trustManager>		
 		</certificateStores>
@@ -150,7 +150,7 @@
 		</audienceUris>
 		<certificateStores>
 			<trustManager>
-				<keyStore file="stsstore.jks" password="stsspass"
+				<keyStore file="ststrust.jks" password="storepass"
 					type="JKS" />
 			</trustManager>		
 		</certificateStores>
@@ -181,7 +181,7 @@
 		</audienceUris>
 		<certificateStores>
 			<trustManager>
-				<keyStore file="stsstore.jks" password="stsspass"
+				<keyStore file="ststrust.jks" password="storepass"
 					type="JKS" />
 			</trustManager>		
 		</certificateStores>
@@ -214,7 +214,7 @@
         </audienceUris>
         <certificateStores>
             <trustManager>
-                <keyStore file="stsstore.jks" password="stsspass"
+                <keyStore file="ststrust.jks" password="storepass"
                     type="JKS" />
             </trustManager>     
         </certificateStores>
