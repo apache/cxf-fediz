@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:cxf="http://cxf.apache.org/core" xmlns:jaxws="http://cxf.apache.org/jaxws"
 	xmlns:test="http://apache.org/hello_world_soap_http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -18,35 +17,37 @@
         http://cxf.apache.org/configuration/security
         http://cxf.apache.org/schemas/configuration/security.xsd">
 
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
+	
+	<bean id="loggerListener" class="org.apache.cxf.sts.event.LoggerListener" />
+
+	<!--
+		Per default the resource <file.xml> is imported.
+		If built with Maven Profile 'ldap', the resource <ldap.xml> is imported
+	-->
+	<import resource="${adapter.resource}.xml" />
+
 	<cxf:bus>
 		<cxf:features>
 			<cxf:logging />
 		</cxf:features>
 	</cxf:bus>
 	
-	<!--
-		Per default the resource <file.xml> is imported.
-		If built with Maven Profile 'ldap', the resource <ldap.xml> is imported
-	-->
-	<import resource="${adapter.resource}.xml" />
-	
-	<bean id="loggerListener" class="org.apache.cxf.sts.event.LoggerListener" />
-	
+	<bean id="samlDelegationHandler" 
+	      class="org.apache.cxf.fediz.service.sts.FedizSAMLDelegationHandler" />
+
 	<bean id="transportSTSProviderBean"
 		class="org.apache.cxf.ws.security.sts.provider.SecurityTokenServiceProvider">
 		<property name="issueOperation" ref="transportIssueDelegate" />
 		<property name="validateOperation" ref="transportValidateDelegate" />
 	</bean>
-	
-	<bean id="samlDelegationHandler" 
-	      class="org.apache.cxf.fediz.service.sts.FedizSAMLDelegationHandler" />
 
 	<bean id="transportIssueDelegate" class="org.apache.cxf.sts.operation.TokenIssueOperation">
 		<property name="tokenProviders" ref="transportTokenProviders" />
-		<property name="tokenValidators" ref="transportTokenValidators" />
 		<property name="services" ref="transportService" />
 		<property name="stsProperties" ref="transportSTSProperties" />
 		<property name="claimsManager" ref="claimsManager" />
+		<property name="tokenValidators" ref="transportTokenValidators" />
 		<property name="eventListener" ref="loggerListener" />
 		<property name="delegationHandlers" ref="samlDelegationHandler" />
 	</bean>
@@ -56,7 +57,23 @@
 		<property name="stsProperties" ref="transportSTSProperties" />
 		<property name="eventListener" ref="loggerListener" />
 	</bean>
-
+    
+    <util:list id="relationships">
+		<bean class="org.apache.cxf.sts.token.realm.Relationship">
+			<property name="sourceRealm" value="REALMA" />
+			<property name="targetRealm" value="REALMB"/>
+			<property name="identityMapper" ref="identityMapper" />
+			<property name="type" value="FederatedIdentity" />
+		</bean>
+		<bean class="org.apache.cxf.sts.token.realm.Relationship">
+			<property name="sourceRealm" value="REALMB" />
+			<property name="targetRealm" value="REALMA"/>
+			<property name="identityMapper" ref="identityMapper" />
+			<property name="type" value="FederatedIdentity" />
+		</bean>		
+	</util:list>
+ 
+ 
 	<util:list id="transportTokenProviders">
 		<ref bean="transportSamlTokenProvider" />
 	</util:list>
@@ -65,36 +82,67 @@
 		<ref bean="transportSamlTokenValidator" />
 	</util:list>
 
+
+	<bean id="realmA"
+        class="org.apache.cxf.sts.token.realm.SAMLRealm">
+        <property name="issuer" value="STS Realm A"/>
+        <property name="signaturePropertiesFile" value="stsKeystoreA.properties" />
+        <property name="callbackHandlerClass" value="org.apache.cxf.fediz.service.sts.PasswordCallbackHandler" />
+    </bean>
+    
+    <bean id="realmB"
+        class="org.apache.cxf.sts.token.realm.SAMLRealm">
+        <property name="issuer" value="STS Realm B"/>
+        <property name="signaturePropertiesFile" value="stsKeystoreB.properties" />
+        <property name="callbackHandlerClass" value="org.apache.cxf.fediz.service.sts.PasswordCallbackHandler" />
+    </bean>
+    
+    <util:map id="realms">
+        <entry key="REALMA" value-ref="realmA"/>
+        <entry key="REALMB" value-ref="realmB"/>
+    </util:map>
+
+
 	<bean id="transportSamlTokenProvider" class="org.apache.cxf.sts.token.provider.SAMLTokenProvider">
 		<property name="attributeStatementProviders" ref="attributeStatementProvidersList" />
+		<property name="realmMap" ref="realms" />
 		<property name="conditionsProvider" ref="conditionsProvider" />
 	</bean>
-
+	
 	<bean id="conditionsProvider"
 		class="org.apache.cxf.sts.token.provider.DefaultConditionsProvider">
 		<property name="lifetime" value="1200" />
 		<property name="acceptClientLifetime" value="true" />
 	</bean>
 
-	<bean id="transportSamlTokenValidator" class="org.apache.cxf.sts.token.validator.SAMLTokenValidator" />
-
-
-	<bean id="transportX509TokenValidator" class="org.apache.cxf.sts.token.validator.X509TokenValidator" />
-
-
-	<bean id="transportUsernameTokenValidator"
-		class="org.apache.cxf.sts.token.validator.UsernameTokenValidator" />
-
-
 	<util:list id="attributeStatementProvidersList">
-		<ref bean="claimsAttributeProvider" />
+		<ref bean="claimAttributeProvider" />
 	</util:list>
 
-	<bean id="claimsAttributeProvider"
-		class="org.apache.cxf.sts.claims.ClaimsAttributeStatementProvider" />
+	<bean id="claimAttributeProvider"
+		class="org.apache.cxf.sts.claims.ClaimsAttributeStatementProvider">
+	</bean>
 
 	<bean id="claimsManager" class="org.apache.cxf.sts.claims.ClaimsManager">
 		<property name="claimHandlers" ref="claimHandlerList" />
+	</bean>
+
+
+	
+	<bean id="identityMapper" class="org.apache.cxf.fediz.service.sts.realms.IdentityMapperImpl" />
+	
+	<bean id="samlRealmCodec" class="org.apache.cxf.fediz.service.sts.realms.SamlRealmCodec" />
+	
+	<bean id="customRealmParser" class="org.apache.cxf.fediz.service.sts.realms.UriRealmParser"/>
+	
+
+	
+	<bean id="transportSamlTokenValidator" class="org.apache.cxf.sts.token.validator.SAMLTokenValidator">
+	    <property name="samlRealmCodec" ref="samlRealmCodec" />
+	</bean>
+	
+	<bean id="transportUsernameTokenValidator"
+		class="org.apache.cxf.sts.token.validator.UsernameTokenValidator">
 	</bean>
 
 	<bean id="transportService" class="org.apache.cxf.sts.service.StaticService">
@@ -104,24 +152,39 @@
 	<util:list id="transportEndpoints">
 		<value>.*</value>
 	</util:list>
-
+	  
 	<bean id="transportSTSProperties" class="org.apache.cxf.sts.StaticSTSProperties">
-		<property name="signaturePropertiesFile" value="stsKeystore.properties" />
-		<property name="signatureUsername" value="mystskey" />
 		<property name="callbackHandlerClass"
 			value="org.apache.cxf.fediz.service.sts.PasswordCallbackHandler" />
-		<property name="encryptionPropertiesFile" value="stsKeystore.properties" />
 		<property name="issuer" value="Fediz STS" />
-		<property name="encryptionUsername" value="myservicekey" />
+		<property name="realmParser" ref="customRealmParser"/>
+		<property name="signaturePropertiesFile" value="stsTruststore.properties" />
+		<property name="relationships" ref="relationships" />
 	</bean>
 	
-	<jaxws:endpoint id="transportSTS2" implementor="#transportSTSProviderBean"
-		address="/STSServiceTransport" wsdlLocation="/WEB-INF/wsdl/ws-trust-1.4-service.wsdl"
+	
+	<jaxws:endpoint id="transportSTSRealmA" implementor="#transportSTSProviderBean"
+		address="/REALMA/STSServiceTransport" wsdlLocation="/WEB-INF/wsdl/ws-trust-1.4-service.wsdl"
 		xmlns:ns1="http://docs.oasis-open.org/ws-sx/ws-trust/200512/"
 		serviceName="ns1:SecurityTokenService" endpointName="ns1:Transport_Port">
 		<jaxws:properties>
 		</jaxws:properties>
-	</jaxws:endpoint>	
+	</jaxws:endpoint>
+	
 
+
+	<jaxws:endpoint id="transportSTSRealmB" implementor="#transportSTSProviderBean"
+		address="/REALMB/STSServiceTransport" wsdlLocation="/WEB-INF/wsdl/ws-trust-1.4-service.wsdl"
+		xmlns:ns1="http://docs.oasis-open.org/ws-sx/ws-trust/200512/"
+		serviceName="ns1:SecurityTokenService" endpointName="ns1:Transport_Port">
+		<jaxws:properties>
+		</jaxws:properties>
+	</jaxws:endpoint>
+
+
+
+
+
+ 
 </beans>
 
