@@ -30,6 +30,21 @@
     <packaging>war</packaging>
     <dependencyManagement>
         <dependencies>
+            <dependency>
+        	    <groupId>org.springframework</groupId>
+        	    <artifactId>spring-jdbc</artifactId>
+        	    <version>3.1.4.RELEASE</version>
+            </dependency>
+            <dependency>
+        	    <groupId>org.springframework</groupId>
+        	    <artifactId>spring-tx</artifactId>
+        	    <version>3.1.4.RELEASE</version>
+            </dependency>
+            <dependency>
+        	    <groupId>org.springframework</groupId>
+        	    <artifactId>spring-aop</artifactId>
+        	    <version>3.1.4.RELEASE</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <properties>
@@ -81,7 +96,7 @@
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jdk14</artifactId>
+            <artifactId>slf4j-log4j12</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
         <dependency>
