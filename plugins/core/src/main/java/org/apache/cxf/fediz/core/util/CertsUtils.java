@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.cxf.fediz.service.idp.util;
+package org.apache.cxf.fediz.core.util;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;

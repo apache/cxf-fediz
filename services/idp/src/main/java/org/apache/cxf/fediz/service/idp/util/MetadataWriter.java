@@ -24,37 +24,18 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.security.PrivateKey;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
-import javax.xml.crypto.dsig.CanonicalizationMethod;
-import javax.xml.crypto.dsig.DigestMethod;
-import javax.xml.crypto.dsig.Reference;
-import javax.xml.crypto.dsig.SignatureMethod;
-import javax.xml.crypto.dsig.SignedInfo;
-import javax.xml.crypto.dsig.Transform;
-import javax.xml.crypto.dsig.XMLSignature;
-import javax.xml.crypto.dsig.XMLSignatureFactory;
-import javax.xml.crypto.dsig.dom.DOMSignContext;
-import javax.xml.crypto.dsig.keyinfo.KeyInfo;
-import javax.xml.crypto.dsig.keyinfo.KeyInfoFactory;
-import javax.xml.crypto.dsig.keyinfo.X509Data;
-import javax.xml.crypto.dsig.spec.C14NMethodParameterSpec;
-import javax.xml.crypto.dsig.spec.TransformParameterSpec;
+import java.security.cert.X509Certificate;
+
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
 
+import org.apache.cxf.fediz.core.util.CertsUtils;
 import org.apache.cxf.fediz.core.util.DOMUtils;
+import org.apache.cxf.fediz.core.util.SignatureUtils;
 import org.apache.cxf.fediz.service.idp.model.IDPConfig;
 
 import org.apache.ws.security.components.crypto.Crypto;
@@ -74,9 +55,7 @@ public class MetadataWriter {
     private static final Logger LOG = LoggerFactory.getLogger(MetadataWriter.class);
     
     private static final XMLOutputFactory XML_OUTPUT_FACTORY = XMLOutputFactory.newInstance();
-    private static final XMLSignatureFactory XML_SIGNATURE_FACTORY = XMLSignatureFactory.getInstance("DOM");
     private static final DocumentBuilderFactory DOC_BUILDER_FACTORY = DocumentBuilderFactory.newInstance();
-    private static final TransformerFactory TRANSFORMER_FACTORY = TransformerFactory.newInstance();
     
     static {
         DOC_BUILDER_FACTORY.setNamespaceAware(true);
@@ -194,7 +173,7 @@ public class MetadataWriter {
             
             InputStream is = new ByteArrayInputStream(bout.toByteArray());
             
-            ByteArrayOutputStream result = signMetaInfo(crypto, config.getCertificatePassword(), is, referenceID);
+            ByteArrayOutputStream result = SignatureUtils.signMetaInfo(crypto, null, config.getCertificatePassword(), is, referenceID);
             if (result != null) {
                 is = new ByteArrayInputStream(result.toByteArray());
             } else {
@@ -211,66 +190,5 @@ public class MetadataWriter {
 
     }
 
-    
-    private ByteArrayOutputStream signMetaInfo(Crypto crypto, String keyPassword, InputStream metaInfo, String referenceID) throws Exception {
-        String keyAlias = crypto.getDefaultX509Identifier(); //only one key supported in JKS
-        X509Certificate cert = CertsUtils.getX509Certificate(crypto, keyAlias);
-                
-        // Create a Reference to the enveloped document (in this case,
-        // you are signing the whole document, so a URI of "" signifies
-        // that, and also specify the SHA1 digest algorithm and
-        // the ENVELOPED Transform.
-        Reference ref = XML_SIGNATURE_FACTORY.newReference("#" + referenceID, XML_SIGNATURE_FACTORY.newDigestMethod(DigestMethod.SHA1, null), Collections
-            .singletonList(XML_SIGNATURE_FACTORY.newTransform(Transform.ENVELOPED, (TransformParameterSpec)null)), null, null);
-        
-        String signatureMethod = null;
-        if ("SHA1withDSA".equals(cert.getSigAlgName())) {
-            signatureMethod = SignatureMethod.DSA_SHA1;
-        } else if ("SHA1withRSA".equals(cert.getSigAlgName())) {
-            signatureMethod = SignatureMethod.RSA_SHA1;
-        } else if ("SHA256withRSA".equals(cert.getSigAlgName())) {
-            signatureMethod = SignatureMethod.RSA_SHA1;
-        } else {
-            LOG.error("Unsupported signature method: " + cert.getSigAlgName());
-            throw new RuntimeException("Unsupported signature method: " + cert.getSigAlgName());
-        }
-        // Create the SignedInfo.
-        SignedInfo si = XML_SIGNATURE_FACTORY.newSignedInfo(XML_SIGNATURE_FACTORY.newCanonicalizationMethod(CanonicalizationMethod.INCLUSIVE,
-                                                                        (C14NMethodParameterSpec)null), XML_SIGNATURE_FACTORY
-            .newSignatureMethod(signatureMethod, null), Collections.singletonList(ref));
-        //      .newSignatureMethod(cert.getSigAlgOID(), null), Collections.singletonList(ref));                                                                        
-        
-        PrivateKey keyEntry = crypto.getPrivateKey(keyAlias, keyPassword);
-        
-        // Create the KeyInfo containing the X509Data.
-        KeyInfoFactory kif = XML_SIGNATURE_FACTORY.getKeyInfoFactory();
-        List<Object> x509Content = new ArrayList<Object>();
-        x509Content.add(cert.getSubjectX500Principal().getName());
-        x509Content.add(cert);
-        X509Data xd = kif.newX509Data(x509Content);
-        KeyInfo ki = kif.newKeyInfo(Collections.singletonList(xd));
-
-        // Instantiate the document to be signed.
-        Document doc = DOC_BUILDER_FACTORY.newDocumentBuilder().parse(metaInfo);
-
-        // Create a DOMSignContext and specify the RSA PrivateKey and
-        // location of the resulting XMLSignature's parent element.
-        DOMSignContext dsc = new DOMSignContext(keyEntry, doc.getDocumentElement());
-        dsc.setIdAttributeNS(doc.getDocumentElement(), null, "ID");
-        dsc.setNextSibling(doc.getDocumentElement().getFirstChild());
-
-        // Create the XMLSignature, but don't sign it yet.
-        XMLSignature signature = XML_SIGNATURE_FACTORY.newXMLSignature(si, ki);
-
-        // Marshal, generate, and sign the enveloped signature.
-        signature.sign(dsc);
-
-        // Output the resulting document.
-        ByteArrayOutputStream os = new ByteArrayOutputStream(8192);
-        Transformer trans = TRANSFORMER_FACTORY.newTransformer();
-        trans.transform(new DOMSource(doc), new StreamResult(os));
-        os.flush();
-        return os;
-    }    
  
 }
