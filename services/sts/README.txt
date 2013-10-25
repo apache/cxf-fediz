@@ -8,11 +8,8 @@ Build the STS:
 mvn clean install -Pldap
 
 
-STS with two realms
--------------------
-
-Build the STS:
-mvn clean install -Prealms
+Create Signing certificates
+---------------------------
 
 Proceed with the following steps to update the signing certificates:
 

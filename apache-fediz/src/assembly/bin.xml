@@ -69,6 +69,30 @@
             </excludes>
         </fileSet>
         <fileSet>
+            <directory>../services/idp</directory>
+            <outputDirectory>apache-fediz-${project.version}/idp/src/idp</outputDirectory>
+            <excludes>
+                <exclude>**/build</exclude>
+                <exclude>**/target</exclude>
+                <exclude>**/build/**/*</exclude>
+                <exclude>**/target/**/*</exclude>
+                <exclude>**/interopfest/**</exclude>
+                <exclude>**/.*/**</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>../services/sts</directory>
+            <outputDirectory>apache-fediz-${project.version}/idp/src/sts</outputDirectory>
+            <excludes>
+                <exclude>**/build</exclude>
+                <exclude>**/target</exclude>
+                <exclude>**/build/**/*</exclude>
+                <exclude>**/target/**/*</exclude>
+                <exclude>**/interopfest/**</exclude>
+                <exclude>**/.*/**</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
             <directory>../</directory>
             <outputDirectory>apache-fediz-${project.version}</outputDirectory>
             <includes>
