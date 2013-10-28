@@ -276,9 +276,19 @@ public class SamlAssertionValidator implements Validator {
         //
         boolean isInKeystore = isCertificateInKeyStore(crypto, cert);
         if (!enableRevocation && isInKeystore) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "Certificate " + subjectString + " found in keystore"
+                );
+            }
             return true;
         }
         if (!isInKeystore && signatureTrustType.equals(TRUST_TYPE.PEER_TRUST)) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "Certificate " + subjectString + " not found in keystore"
+                );
+            }
             return false;
         }
 

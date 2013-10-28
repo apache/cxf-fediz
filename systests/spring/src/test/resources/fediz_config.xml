@@ -14,10 +14,7 @@
 			</trustManager>
 		</certificateStores>
 		<trustedIssuers>
-			<issuer subject=".*CN=www.sts.com.*" certificateValidation="ChainTrust"
-				name="DoubleItSTSIssuer" />
-			<issuer subject=".*CN=REALMA.*" certificateValidation="ChainTrust"
-			    name="REALM A"/>				
+			<issuer certificateValidation="PeerTrust" />
 		</trustedIssuers>
 		<maximumClockSkew>1000</maximumClockSkew>
 		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -48,10 +45,7 @@
 			</trustManager>
 		</certificateStores>
 		<trustedIssuers>
-			<issuer subject=".*CN=www.sts.com.*" certificateValidation="ChainTrust"
-				name="DoubleItSTSIssuer" />
-			<issuer subject=".*CN=REALMA.*" certificateValidation="ChainTrust"
-			    name="REALM A"/>				
+			<issuer certificateValidation="PeerTrust" />
 		</trustedIssuers>
 		<maximumClockSkew>1000</maximumClockSkew>
 		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"

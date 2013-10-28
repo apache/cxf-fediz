@@ -11,8 +11,7 @@
 			</trustManager>		
 		</certificateStores>
 		<trustedIssuers>
-			<issuer subject=".*CN=www.sts.com.*" certificateValidation="ChainTrust"
-				name="FedizSTSIssuer" />				
+			<issuer certificateValidation="PeerTrust" />
 		</trustedIssuers>
 
 		<maximumClockSkew>1000</maximumClockSkew>
@@ -48,8 +47,7 @@
 			</trustManager>		
 		</certificateStores>
 		<trustedIssuers>
-			<issuer subject=".*CN=www.sts.com.*" certificateValidation="ChainTrust"
-				name="FedizSTSIssuer" />
+			<issuer certificateValidation="PeerTrust" />
 		</trustedIssuers>
 
 		<maximumClockSkew>1000</maximumClockSkew>
@@ -85,10 +83,7 @@
 			</trustManager>		
 		</certificateStores>
 		<trustedIssuers>
-			<issuer subject=".*CN=REALMA.*" certificateValidation="ChainTrust"
-				name="FedizSTSIssuer2" />
-			<issuer subject=".*CN=www.sts.com.*" certificateValidation="ChainTrust"
-				name="FedizSTSIssuer" />
+			<issuer certificateValidation="PeerTrust" />
 		</trustedIssuers>
 
 		<maximumClockSkew>1000</maximumClockSkew>
@@ -119,8 +114,7 @@
 			</trustManager>		
 		</certificateStores>
 		<trustedIssuers>
-			<issuer subject=".*CN=www.sts.com.*" certificateValidation="ChainTrust"
-				name="FedizSTSIssuer" />				
+			<issuer certificateValidation="PeerTrust" />				
 		</trustedIssuers>
 
 		<maximumClockSkew>1000</maximumClockSkew>
@@ -155,8 +149,7 @@
 			</trustManager>		
 		</certificateStores>
 		<trustedIssuers>
-			<issuer subject=".*CN=www.sts.com.*" certificateValidation="ChainTrust"
-				name="FedizSTSIssuer" />				
+			<issuer certificateValidation="PeerTrust" />				
 		</trustedIssuers>
 
 		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -186,8 +179,7 @@
 			</trustManager>		
 		</certificateStores>
 		<trustedIssuers>
-			<issuer subject=".*CN=www.sts.com.*" certificateValidation="ChainTrust"
-				name="FedizSTSIssuer" />				
+			<issuer certificateValidation="PeerTrust" />
 		</trustedIssuers>
 
 		<maximumClockSkew>1000</maximumClockSkew>
@@ -219,8 +211,7 @@
             </trustManager>     
         </certificateStores>
         <trustedIssuers>
-            <issuer subject=".*CN=www.sts.com.*" certificateValidation="ChainTrust"
-                name="FedizSTSIssuer" />                
+            <issuer certificateValidation="PeerTrust" />
         </trustedIssuers>
         <tokenDecryptionKey keyPassword="stskpass">
              <keyStore file="stsstore.jks" password="stsspass" type="JKS" />

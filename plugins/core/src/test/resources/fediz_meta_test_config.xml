@@ -11,8 +11,7 @@
 			</trustManager>
 		</certificateStores>
 		<trustedIssuers>
-			<issuer subject=".*CN=www.sts.com.*" certificateValidation="ChainTrust"
-				name="DoubleItSTSIssuer" />
+			<issuer certificateValidation="PeerTrust" />
 		</trustedIssuers>
 		<maximumClockSkew>1000</maximumClockSkew>
 		<signingKey keyAlias="mystskey" keyPassword="stskpass">
@@ -48,8 +47,7 @@
 			</trustManager>
 		</certificateStores>
 		<trustedIssuers>
-			<issuer subject=".*CN=www.sts.com.*" certificateValidation="ChainTrust"
-				name="DoubleItSTSIssuer" />
+			<issuer certificateValidation="PeerTrust" />
 		</trustedIssuers>
 		<maximumClockSkew>1000</maximumClockSkew>
 		<signingKey keyPassword="stskpass">
@@ -84,8 +82,7 @@
 			</trustManager>
 		</certificateStores>
 		<trustedIssuers>
-			<issuer subject=".*CN=www.sts.com.*" certificateValidation="ChainTrust"
-				name="DoubleItSTSIssuer" />
+			<issuer certificateValidation="PeerTrust" />
 		</trustedIssuers>
 		<maximumClockSkew>1000</maximumClockSkew>
 		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
