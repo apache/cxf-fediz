@@ -96,6 +96,7 @@ Improvement
     [FEDIZ-54] - Provide Maven profile to build STS with LDAP backend
     [FEDIZ-64] - Add Callback support for the Realm (WTRealm) protocol property
     [FEDIZ-66] - Token expiration validation configurable
+    [FEDIZ-67] - Use same Canonicalization Method for Signatures for Metadata document as for SAML tokens
 
 Wish
 
