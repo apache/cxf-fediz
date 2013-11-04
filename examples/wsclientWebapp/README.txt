@@ -9,41 +9,55 @@ From the SAML token the Web Service is informed which browser user triggered the
 
 Running this sample consists of four steps:
 
-- Configure the Tomcat-IDP and Tomcat-RP instances
-- Configure Tomcat instance used for Web Service Provider (Tomcat-WSP)
+- Configure Servlet Container (ex. Tomcat) instance for the IDP
+- Configure Servlet Container (ex. Tomcat) instance for the RP
+- Configure Servlet Container (ex. Tomcat) instance for Web Service Provider (WSP)
 - Build the project
-- Deploying the demo WARs to Tomcat-RP and Tomcat-WSP
+- Deploying the demo WARs to the RP and WSP Servlet Container isntance
 
 Please review the README in the samples main directory before continuing.
 You may wish to run the simpleWebapp demo first as this is an extended demo.
 
 
-Configure the Tomcat-IDP and Tomcat-RP instances
+Configure the Servlet Container IDP (ex. Tomcat)
 ------------------------------------------------
-First, make sure the separate Tomcat instance hosting the Fediz IDP and IDP
-STS has been configured and is running as described here:  
+Make sure the separate Servlet Container instance hosting the Fediz IDP
+and IDP STS has been configured and is running as described here:  
 http://cxf.apache.org/fediz-idp.html.  Confirm the STS is active by
 checking that the WSDL is viewable from the browser using the URL given
 on that page--don't proceed further unless it is.
 
-Next, the Tomcat installation holding the relying parties (the demo Web application
+
+a) Configure the Tomcat-RP instance
+-----------------------------------
+Tomcat installation holding the relying parties (the demo Web application
 for this sample) must be configured properly before applications can be
 deployed to it.  See this wiki page for instructions:
 http://cxf.apache.org/fediz-tomcat.html -- the "Installation" and "HTTPS
 Configuration" sections are the only parts that need configuration for this
 sample. 
 
-Configure Tomcat instance used for Web Service Provider (Tomcat-WSP)
---------------------------------------------------------------------
+b) Configure the Jetty-RP instance
+----------------------------------
+Jetty installation holding the relying parties (the demo Web application
+for this sample) must be configured properly before applications can be
+deployed to it.  See this wiki page for instructions:
+http://cxf.apache.org/fediz-jetty.html -- the "Installation" and "HTTPS
+Configuration" sections are the only parts that need configuration for this
+sample.
+
+Configure the Servlet Container for WSP (Web Service Provider)
+--------------------------------------------------------------
 To better model a real-world environment the web service provider is hosted
-on a third Tomcat instance separate from the RP and IDP Tomcat instances.
-You can follow the Tomcat configuration instructions given here for the IDP
+on a third Serlvet Container instance separate from the RP and IDP instances.
+You can follow the Tomcat/Jetty configuration instructions given here for the IDP
 Tomcat instance: 
-http://cxf.apache.org/fediz-idp.html#FedizIDP-Tomcatserver.xmlconfiguration 
-but (1) use Tomcat ports different from the IDP and RP instances, this sample
-uses 10080 for HTTP, 10443 for HTTPS, and 10005 as the server communication 
-port, and (2) don't reuse the Tomcat IDP keystore, the examples/samplekeys 
-folder has a third sample (don't use in production!) tomcat-wsp.jks keystore
+http://cxf.apache.org/fediz-idp.html
+but
+1) different HTTPS ports from the IDP and RP instances.
+This sample uses 10080 for HTTP, 10443 for HTTPS, and 10005 as the server communication 
+2) don't reuse the IDP SSL keystore, the examples/samplekeys 
+folder has a third sample (don't use in production!) wsp-ssl-server.jks keystore
 that can be used instead--check the README in the samplekeys folder for 
 more information about the keystores used.
 
@@ -82,14 +96,14 @@ located), the pom.xml file is used to build and run the demo. From a
 command prompt, enter:
 
 mvn clean install   (builds the demo and creates two WAR files for 
-Servlet deployment to the Tomcat-RP and Tomcat-WSP instances)
+Servlet deployment to the Servlet Container RP and WSP instances)
 
 
-Deploying the demo WARs to Tomcat-RP and Tomcat-WSP
-------------------------------------------------------
+Deploying the demo WARs to Servlet Container RP and WSP (ex. Tomcat)
+--------------------------------------------------------------------
 First copy this sample's Fediz Configuration file (src/main/config/fediz_config.xml)
-into the Tomcat-RP's conf folder.  This configuration references the 
-Java keystore 'tomcat-rp.jks' available in Fediz' examples/samplekeys folder 
+into the Tomcat RP's conf folder.  This configuration references the 
+Java keystore 'rp-ssl-server.jks' available in Fediz' examples/samplekeys folder 
 but should already be in the Tomcat RP's root folder when you configured this
 instance as stated in the prerequisites.  (If you did the Fediz simpleWebapp 
 sample first you can keep the fediz_config.xml from that sample, as it's 
