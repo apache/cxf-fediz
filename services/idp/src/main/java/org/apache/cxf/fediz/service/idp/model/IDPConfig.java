@@ -27,8 +27,13 @@ import java.util.Map;
 //import javax.persistence.Id;
 //import javax.persistence.Table;
 
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
 //@Entity
 //@Table(name = "IDP")
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement(name = "IDP", namespace = "http://org.apache.cxf.fediz")
 public class IDPConfig implements Serializable {
         
     //@Id
@@ -183,6 +188,8 @@ public class IDPConfig implements Serializable {
         this.supportedProtocols = supportedProtocols;
     }
 
+    @GET
+    @Path("services")
     public Map<String, ServiceConfig> getServices() {
         return services;
     }
@@ -191,6 +198,8 @@ public class IDPConfig implements Serializable {
         this.services = services;
     }
 
+    @GET
+    @Path("trusted-idp")
     public Map<String, TrustedIDPConfig> getTrustedIDPs() {
         return trustedIDPs;
     }

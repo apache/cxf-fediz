@@ -21,6 +21,8 @@ package org.apache.cxf.fediz.service.idp.model;
 import java.io.Serializable;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 //import javax.persistence.Column;
 //import javax.persistence.Entity;
 //import javax.persistence.Id;
@@ -28,6 +30,7 @@ import java.util.List;
 
 //@Entity
 //@Table(name = "SERVICE")
+@XmlRootElement(name = "Service", namespace = "http://org.apache.cxf.fediz")
 public class ServiceConfig implements Serializable {
 
         

@@ -20,6 +20,8 @@ package org.apache.cxf.fediz.service.idp.model;
 
 import java.io.Serializable;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 
 //import javax.persistence.Column;
 //import javax.persistence.Entity;
@@ -28,6 +30,7 @@ import java.io.Serializable;
 
 //@Entity
 //@Table(name = "TRUSTEDIDP")
+@XmlRootElement(name = "TrustedIDP", namespace = "http://org.apache.cxf.fediz")
 public class TrustedIDPConfig implements Serializable {
 
         

@@ -23,6 +23,7 @@
     xmlns:util="http://www.springframework.org/schema/util" xmlns:http="http://cxf.apache.org/transports/http/configuration"
     xmlns:sec="http://cxf.apache.org/configuration/security"
     xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:jaxrs="http://cxf.apache.org/jaxrs"
     xsi:schemaLocation="
         http://cxf.apache.org/core
         http://cxf.apache.org/schemas/core.xsd
@@ -37,7 +38,9 @@
         http://www.springframework.org/schema/context
         http://www.springframework.org/schema/context/spring-context-3.0.xsd
         http://cxf.apache.org/configuration/security
-        http://cxf.apache.org/schemas/configuration/security.xsd">
+        http://cxf.apache.org/schemas/configuration/security.xsd
+        http://cxf.apache.org/jaxrs
+        http://cxf.apache.org/schemas/jaxrs.xsd">
         
     <context:property-placeholder location="classpath:realm.properties"/>
 
@@ -59,6 +62,18 @@
             </sec:trustManagers>
         </http:tlsClientParameters>
     </http:conduit>
-
+    
+    <jaxrs:server id="idpService" address="/rs">
+        <jaxrs:serviceBeans>
+            <ref bean="idpServiceImpl" />
+        </jaxrs:serviceBeans>
+    </jaxrs:server>
+    
+    
+    <bean id="idpServiceImpl" class="org.apache.cxf.fediz.service.idp.rest.IDPServices">
+    	<property name="configService" ref="config" />
+    </bean>
+    
+    
 </beans>
 
