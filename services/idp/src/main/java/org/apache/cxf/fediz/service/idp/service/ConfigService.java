@@ -22,8 +22,12 @@ import org.apache.cxf.fediz.service.idp.model.IDPConfig;
 import org.apache.cxf.fediz.service.idp.model.ServiceConfig;
 
 public interface ConfigService {
-    
+
     ServiceConfig getServiceConfig(String realm);
-    
+
     IDPConfig getIDPConfig(String realm);
+
+    void setIDPConfig(IDPConfig config);
+
+    IDPConfig removeIDPConfig(String realm);
 }

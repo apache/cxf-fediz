@@ -19,8 +19,10 @@
 
 package org.apache.cxf.fediz.service.idp.rest;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -30,68 +32,74 @@ import javax.ws.rs.core.Response;
 
 import org.apache.cxf.fediz.service.idp.model.IDPConfig;
 import org.apache.cxf.fediz.service.idp.service.ConfigService;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Path("/idp")
-@Produces("text/xml")
+@Produces({ "text/xml", "application/xml", "application/json", "text/html" })
 public class IDPServices {
-    
-    private static final Logger LOG = LoggerFactory.getLogger(IDPServices.class);
+
+    private static final Logger LOG = LoggerFactory
+            .getLogger(IDPServices.class);
 
     private ConfigService configService;
-    
+
     public IDPServices() {
     }
-    
-    
+
     @GET
-    @Path("/{id}/")
-    public IDPConfig getIDP(@PathParam("id") String id) {
-        LOG.info("get IDP config: " + id);
-        
-        return configService.getIDPConfig(id);
+    @Path("/{realm}/")
+    public IDPConfig getIDP(@PathParam("realm") String realm) {
+        LOG.info("get IDP config for realm: " + realm);
+
+        IDPConfig currentConfig = configService.getIDPConfig(realm);
+        if (currentConfig == null) {
+            throw new NotFoundException();
+        }
+        return currentConfig;
     }
 
     @PUT
-    @Path("/idp/")
+    @Path("/")
     public Response updateIDP(IDPConfig idp) {
-        LOG.info("update IDP config: " + idp.getRealm());
-        
-        IDPConfig idpConfig = configService.getIDPConfig(idp.getRealm());
+        LOG.info("update IDP config for realm: " + idp.getRealm());
+
+        IDPConfig currentConfig = getIDP(idp.getRealm());
+
         Response r;
-        if (idpConfig != null) {
-            //configService.put(idp.getRealm(), idp);
+        if (!currentConfig.equals(idp)) {
+            configService.setIDPConfig(idp);
             r = Response.ok().build();
         } else {
             r = Response.notModified().build();
         }
-
         return r;
     }
 
     @POST
     @Path("/")
     public Response addIDP(IDPConfig idp) {
-        LOG.info("add IDP config: " + idp.getRealm());
-        
-        //configService.put(idp.getRealm(), idp);
+        LOG.info("add IDP config for realm: " + idp.getRealm());
 
+        if (configService.getIDPConfig(idp.getRealm()) != null) {
+            LOG.info("IDP config with realm: " + idp.getRealm()
+                    + " already exists");
+            throw new BadRequestException();
+        }
+        configService.setIDPConfig(idp);
         return Response.ok(idp).build();
     }
 
     @DELETE
-    @Path("/{id}/")
-    public Response deleteIDP(@PathParam("id") String id) {
-        LOG.info("delete IDP config: " + id);
-        
-        IDPConfig config = configService.getIDPConfig(id);
-        
+    @Path("/{realm}/")
+    public Response deleteIDP(@PathParam("realm") String realm) {
+        LOG.info("delete IDP config for realm: " + realm);
+
+        IDPConfig config = configService.removeIDPConfig(realm);
+
         Response r;
         if (config != null) {
             r = Response.ok().build();
-            //configService.remove(config);
         } else {
             r = Response.notModified().build();
         }
@@ -99,7 +107,18 @@ public class IDPServices {
         return r;
     }
 
-    
+    @GET
+    @Path("{realm}/services")
+    public IDPServiceConfigs getServices(@PathParam("realm") String realm) {
+        return new IDPServiceConfigs(getIDP(realm).getServices());
+    }
+
+    @GET
+    @Path("{realm}/trusted-idps")
+    public IDPTrustedIdps getTrustedIdps(@PathParam("realm") String realm) {
+        return new IDPTrustedIdps(getIDP(realm).getTrustedIDPs());
+    }
+
     public ConfigService getConfigService() {
         return configService;
     }

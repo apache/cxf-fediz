@@ -22,90 +22,87 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-//import javax.persistence.Column;
-//import javax.persistence.Entity;
-//import javax.persistence.Id;
-//import javax.persistence.Table;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-//@Entity
-//@Table(name = "IDP")
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "IDP", namespace = "http://org.apache.cxf.fediz")
 public class IDPConfig implements Serializable {
-        
-    //@Id
-    //private Long id;
 
-    //@Column(name = "REALM", nullable = false, length = FIELD_LENGTH)
-    //Unique
-    //fed:TargetScope
-    private String realm;  //wtrealm, whr
+    // @Id
+    // private Long id;
 
-    //Unique
-    //https://<host>:<port>/fediz-idp/<IDP uri>/
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -5570301342547139039L;
+
+    // @Column(name = "REALM", nullable = false, length = FIELD_LENGTH)
+    // Unique
+    // fed:TargetScope
+    private String realm; // wtrealm, whr
+
+    // Unique
+    // https://<host>:<port>/fediz-idp/<IDP uri>/
     private String uri;
-    
-    //Home Realm Discovery Service
-    //Spring EL
+
+    // Home Realm Discovery Service
+    // Spring EL
     private String hrds;
-    
-    //@Column(name = "INACTIVE", nullable = true, length = FIELD_LENGTH)
-    //if HRDS can't determine the home realm, should
-    //the list of trusted IDPs be shown to make a choice
+
+    // @Column(name = "INACTIVE", nullable = true, length = FIELD_LENGTH)
+    // if HRDS can't determine the home realm, should
+    // the list of trusted IDPs be shown to make a choice
     private boolean provideIDPList;
-    
-    //If HRDS can't discover a home realm and displaying IDP list is not enabled
-    //it falls back to current IDP if an authentication domain is configured
+
+    // If HRDS can't discover a home realm and displaying IDP list is not
+    // enabled
+    // it falls back to current IDP if an authentication domain is configured
     private boolean useCurrentIDP;
-    
-    //Store certificate in DB or filesystem, provide options?
-    //md:KeyDescriptor, use="signing"
+
+    // Store certificate in DB or filesystem, provide options?
+    // md:KeyDescriptor, use="signing"
     private String certificate;
-    
-    //Password to read the private key to sign metadata document
+
+    // Password to read the private key to sign metadata document
     private String certificatePassword;
-    
-    //fed:SecurityTokenSerivceEndpoint
+
+    // fed:SecurityTokenSerivceEndpoint
     private String stsUrl;
-    
-    //fed:PassiveRequestorEndpoint
-    //published hostname, port must be configured
+
+    // fed:PassiveRequestorEndpoint
+    // published hostname, port must be configured
     private String idpUrl;
-    
-    //RoleDescriptor protocolSupportEnumeration=
+
+    // RoleDescriptor protocolSupportEnumeration=
     // "http://docs.oasis-open.org/wsfed/federation/200706"
     // "http://docs.oasis-open.org/ws-sx/ws-trust/200512"
     // Could be more in the future
     private List<String> supportedProtocols;
-    
-    //list of RPs and RP-IDPs from whom we accept SignInResponse
-    //which includes RP IDPs
-    //key: wtrealm
+
+    // list of RPs and RP-IDPs from whom we accept SignInResponse
+    // which includes RP IDPs
+    // key: wtrealm
     private Map<String, ServiceConfig> services;
-    
-    //list of trusted IDP from whom we accept SignInResponse
-    //key: whr
+
+    // list of trusted IDP from whom we accept SignInResponse
+    // key: whr
     private Map<String, TrustedIDPConfig> trustedIDPs;
-    
-    //which URI to redirect for authentication
-    //fediz-idp/<IDP uri>/login/auth/<auth URI>
-    //wauth to auth URI mapping
+
+    // which URI to redirect for authentication
+    // fediz-idp/<IDP uri>/login/auth/<auth URI>
+    // wauth to auth URI mapping
     private Map<String, String> authenticationURIs;
-    
-    //required to create Federation Metadata document
-    //fed:TokenTypesOffered
+
+    // required to create Federation Metadata document
+    // fed:TokenTypesOffered
     private List<String> tokenTypesOffered;
-    
-    //fed:ClaimTypesOffered
+
+    // fed:ClaimTypesOffered
     private List<String> claimTypesOffered;
-    
-    //ServiceDisplayName
+
+    // ServiceDisplayName
     private String serviceDisplayName;
-    
-    //ServiceDescription
+
+    // ServiceDescription
     private String serviceDescription;
 
     public String getRealm() {
@@ -155,7 +152,7 @@ public class IDPConfig implements Serializable {
     public void setCertificate(String certificate) {
         this.certificate = certificate;
     }
-    
+
     public String getCertificatePassword() {
         return certificatePassword;
     }
@@ -188,8 +185,6 @@ public class IDPConfig implements Serializable {
         this.supportedProtocols = supportedProtocols;
     }
 
-    @GET
-    @Path("services")
     public Map<String, ServiceConfig> getServices() {
         return services;
     }
@@ -198,8 +193,6 @@ public class IDPConfig implements Serializable {
         this.services = services;
     }
 
-    @GET
-    @Path("trusted-idp")
     public Map<String, TrustedIDPConfig> getTrustedIDPs() {
         return trustedIDPs;
     }

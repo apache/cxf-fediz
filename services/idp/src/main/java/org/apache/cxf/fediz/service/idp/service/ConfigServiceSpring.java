@@ -18,52 +18,57 @@
  */
 package org.apache.cxf.fediz.service.idp.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.cxf.fediz.service.idp.model.IDPConfig;
 import org.apache.cxf.fediz.service.idp.model.ServiceConfig;
 
 public class ConfigServiceSpring implements ConfigService {
 
-    private List<ServiceConfig> serviceConfigs;
-    private List<IDPConfig> idpConfigs;
+    private Map<String, ServiceConfig> serviceConfigs = new HashMap<String, ServiceConfig>();
+    private Map<String, IDPConfig> idpConfigs = new HashMap<String, IDPConfig>();
 
-    
-    
     @Override
     public ServiceConfig getServiceConfig(String realm) {
-        for (ServiceConfig cfg : serviceConfigs) {
-            if (realm.equals(cfg.getRealm())) {
-                return cfg;
-            }
-        }
-        return null;
+        return serviceConfigs.get(realm);
     }
 
     @Override
     public IDPConfig getIDPConfig(String realm) {
-        for (IDPConfig cfg : idpConfigs) {
-            if (realm.equals(cfg.getRealm())) {
-                return cfg;
-            }
-        }
-        return null;
-    }
-    
-    public List<ServiceConfig> getServiceConfigs() {
-        return serviceConfigs;
+        return idpConfigs.get(realm);
     }
 
-    public void setServiceConfigs(List<ServiceConfig> serviceConfigs) {
-        this.serviceConfigs = serviceConfigs;
+    public List<ServiceConfig> getServiceConfigs() {
+        return new ArrayList<ServiceConfig>(serviceConfigs.values());
+    }
+
+    public void setServiceConfigs(List<ServiceConfig> serviceList) {
+        for (ServiceConfig s : serviceList) {
+            serviceConfigs.put(s.getRealm(), s);
+        }
     }
 
     public List<IDPConfig> getIdpConfigs() {
-        return idpConfigs;
+        return new ArrayList<IDPConfig>(idpConfigs.values());
     }
 
-    public void setIdpConfigs(List<IDPConfig> idpConfigs) {
-        this.idpConfigs = idpConfigs;
+    public void setIdpConfigs(List<IDPConfig> idpList) {
+        for (IDPConfig i : idpList) {
+            idpConfigs.put(i.getRealm(), i);
+        }
+    }
+
+    @Override
+    public void setIDPConfig(IDPConfig config) {
+        idpConfigs.put(config.getRealm(), config);
+    }
+
+    @Override
+    public IDPConfig removeIDPConfig(String realm) {
+        return idpConfigs.remove(realm);
     }
 
 }
