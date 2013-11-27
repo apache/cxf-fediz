@@ -117,7 +117,9 @@ public class EHCacheTokenReplayCache implements TokenReplayCache<String> {
             }
         }
         
-        cache.put(new Element(id, id, false, parsedTTL, parsedTTL));
+        Element cacheElement = new Element(id, id, false, parsedTTL, parsedTTL);
+        cacheElement.resetAccessStatistics();
+        cache.put(cacheElement);
     }
     
     /**
