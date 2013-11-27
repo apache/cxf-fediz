@@ -203,7 +203,7 @@ public class FedizConfigurationWriterTest {
     }
 
     @org.junit.Test
-    public void testSaveConfig() throws JAXBException, IOException {
+    public void testSaveAndLoadConfig() throws JAXBException, IOException {
         final JAXBContext jaxbContext = JAXBContext
                 .newInstance(FedizConfig.class);
 
@@ -218,12 +218,9 @@ public class FedizConfigurationWriterTest {
         f.createNewFile();
 
         configurator.saveConfiguration(f);
-    }
-
-    @org.junit.Test
-    public void testLoadConfig() throws JAXBException {
-        FederationConfigurator configurator = new FederationConfigurator();
-        File f = new File(CONFIG_FILE);
+        
+        configurator = new FederationConfigurator();
+        f = new File(CONFIG_FILE);
         configurator.loadConfig(f);
     }
 

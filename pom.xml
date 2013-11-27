@@ -41,14 +41,14 @@
         <jericho.version>3.2</jericho.version>
         <jetty.version>8.1.12.v20130726</jetty.version>
         <!--<jetty.version>7.6.8.v20121106</jetty.version>-->
-        <junit.version>4.8.2</junit.version>
-        <log4j.version>1.2.15</log4j.version>
+        <junit.version>4.11</junit.version>
+        <log4j.version>1.2.17</log4j.version>
         <servlet.version>2.5</servlet.version>
         <slf4j.version>1.7.5</slf4j.version>
         <spring.version>3.1.4.RELEASE</spring.version>
         <spring.security.version>3.1.4.RELEASE</spring.security.version>
         <tomcat.version>7.0.42</tomcat.version>
-        <wss4j.version>1.6.12</wss4j.version>
+        <wss4j.version>1.6.13</wss4j.version>
 
         <tomcat.url>http://localhost:8080/manager/text</tomcat.url>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -476,7 +476,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-pmd-plugin</artifactId>
-                    <version>2.7.1</version>
+                    <version>3.0.1</version>
                     <dependencies>
                         <dependency>
                             <groupId>org.apache.cxf.build-utils</groupId>
