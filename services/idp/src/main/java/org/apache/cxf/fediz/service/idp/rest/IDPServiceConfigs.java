@@ -21,10 +21,6 @@ package org.apache.cxf.fediz.service.idp.rest;
 
 import java.util.Map;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.cxf.fediz.service.idp.model.ServiceConfig;
@@ -49,14 +45,18 @@ public class IDPServiceConfigs {
         this.services = services;
     }
 
-    @GET
-    @Path("wtrealm")
-    public ServiceConfig getServiceConfig(@PathParam("wtrealm") String wtrealm) {
-        ServiceConfig config = services.get(wtrealm);
-        if (config == null) {
-            throw new NotFoundException();
-        }
-        return config;
-    }
+//    @GET
+//    @Path("{wtrealm}")
+//    public ServiceConfig getServiceConfig(@PathParam("wtrealm") String wtrealm) {
+//        ServiceConfig config = services.get(wtrealm);
+//        if (config == null) {
+//            throw new NotFoundException();
+//        }
+//        return config;
+//    }
 
+//    @GET
+//    public IDPServiceConfigs getState() {
+//        return this;
+//    }
 }

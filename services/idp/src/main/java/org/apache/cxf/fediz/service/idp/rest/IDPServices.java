@@ -31,6 +31,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
 import org.apache.cxf.fediz.service.idp.model.IDPConfig;
+import org.apache.cxf.fediz.service.idp.model.ServiceConfig;
+import org.apache.cxf.fediz.service.idp.model.TrustedIDPConfig;
 import org.apache.cxf.fediz.service.idp.service.ConfigService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,13 +114,37 @@ public class IDPServices {
     public IDPServiceConfigs getServices(@PathParam("realm") String realm) {
         return new IDPServiceConfigs(getIDP(realm).getServices());
     }
+    
+    @GET
+    @Path("{realm}/services/{wtrealm}")
+    public ServiceConfig getServiceConfig(@PathParam("realm") String realm, 
+                                          @PathParam("wtrealm") String wtrealm) {
+        return getIDP(realm).getServices().get(wtrealm);
+    }
 
+//    @Path("{realm}/services")
+//    public IDPServiceConfigs getServicesSubresource(@PathParam("realm") String realm) {
+//        return new IDPServiceConfigs(getIDP(realm).getServices());
+//    }
+    
     @GET
     @Path("{realm}/trusted-idps")
     public IDPTrustedIdps getTrustedIdps(@PathParam("realm") String realm) {
         return new IDPTrustedIdps(getIDP(realm).getTrustedIDPs());
     }
+    
+    @GET
+    @Path("{realm}/trusted-idps/{whr}")
+    public TrustedIDPConfig getTrustedIdpConfig(@PathParam("realm") String realm,
+                                                @PathParam("whr") String whr) {
+        return getIDP(realm).getTrustedIDPs().get(whr);
+    }
 
+//    @Path("{realm}/trusted-idps")
+//    public IDPTrustedIdps getTrustedIdpsSubresource(@PathParam("realm") String realm) {
+//        return new IDPTrustedIdps(getIDP(realm).getTrustedIDPs());
+//    }
+    
     public ConfigService getConfigService() {
         return configService;
     }

@@ -21,10 +21,6 @@ package org.apache.cxf.fediz.service.idp.rest;
 
 import java.util.Map;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.cxf.fediz.service.idp.model.TrustedIDPConfig;
@@ -49,14 +45,19 @@ public class IDPTrustedIdps {
         this.trustedIDPs = trustedIDPs;
     }
 
-    @GET
-    @Path("wtrealm")
-    public TrustedIDPConfig getTrustedIDPConfig(@PathParam("whr") String whr) {
-        TrustedIDPConfig config = trustedIDPs.get(whr);
-        if (config == null) {
-            throw new NotFoundException();
-        }
-        return config;
-    }
+//    @GET
+//    @Path("{whr}")
+//    public TrustedIDPConfig getTrustedIDPConfig(@PathParam("whr") String whr) {
+//        TrustedIDPConfig config = trustedIDPs.get(whr);
+//        if (config == null) {
+//            throw new NotFoundException();
+//        }
+//        return config;
+//    }
 
+//    @GET
+//    public IDPTrustedIdps getState() {   
+//        return this;
+//    }
+    
 }
