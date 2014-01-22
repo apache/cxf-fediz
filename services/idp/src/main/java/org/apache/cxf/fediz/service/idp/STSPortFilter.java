@@ -50,8 +50,9 @@ public class STSPortFilter extends GenericFilterBean implements ApplicationConte
         Assert.isTrue(applicationContext != null, "Application context must not be null");
         STSAuthenticationProvider authProvider = applicationContext.getBean(STSAuthenticationProvider.class);
         Assert.isTrue(authProvider != null, "STSAuthenticationProvider must be configured");
-                
-        if (!isPortSet) {
+        
+        //Only update the port if HTTPS is used, otherwise ignored (like retrieving the WADL over HTTP)
+        if (!isPortSet && request.isSecure()) {
             try {
                 URL url = new URL(authProvider.getWsdlLocation());
                 URL updatedUrl = new URL(url.getProtocol(), url.getHost(), request.getLocalPort(), url.getFile());

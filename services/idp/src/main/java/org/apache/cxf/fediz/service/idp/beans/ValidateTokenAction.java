@@ -39,8 +39,8 @@ import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuers;
 import org.apache.cxf.fediz.core.config.jaxb.ValidationType;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
-import org.apache.cxf.fediz.service.idp.model.IDPConfig;
-import org.apache.cxf.fediz.service.idp.model.TrustedIDPConfig;
+import org.apache.cxf.fediz.service.idp.domain.Idp;
+import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.ws.security.util.UUIDGenerator;
@@ -61,7 +61,7 @@ public class ValidateTokenAction {
 
     public SecurityToken submit(RequestContext context)
         throws ProcessingException, IOException {
-        IDPConfig idpConfig = (IDPConfig) WebUtils.getAttributeFromFlowScope(
+        Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(
                 context, IDP_CONFIG);
 
         if (idpConfig == null) {
@@ -85,7 +85,7 @@ public class ValidateTokenAction {
                     TYPE.BAD_REQUEST);
         }
 
-        TrustedIDPConfig trustedIDPConfig = idpConfig.getTrustedIDPs().get(whr);
+        TrustedIdp trustedIDPConfig = idpConfig.findTrustedIDP(whr);
 
         if (trustedIDPConfig == null) {
             throw new ProcessingException(
@@ -129,8 +129,8 @@ public class ValidateTokenAction {
         return idpToken;
     }
 
-    private FederationContext getFederationContext(IDPConfig idpConfig,
-            TrustedIDPConfig trustedIdpConfig) throws ProcessingException {
+    private FederationContext getFederationContext(Idp idpConfig,
+            TrustedIdp trustedIdpConfig) throws ProcessingException {
 
         ContextConfig config = new ContextConfig();
 

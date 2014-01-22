@@ -36,7 +36,8 @@ import org.w3c.dom.Document;
 import org.apache.cxf.fediz.core.util.CertsUtils;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.cxf.fediz.core.util.SignatureUtils;
-import org.apache.cxf.fediz.service.idp.model.IDPConfig;
+import org.apache.cxf.fediz.service.idp.domain.Claim;
+import org.apache.cxf.fediz.service.idp.domain.Idp;
 
 import org.apache.ws.security.components.crypto.Crypto;
 import org.apache.ws.security.util.Base64;
@@ -62,7 +63,7 @@ public class MetadataWriter {
     }
 
     //CHECKSTYLE:OFF
-    public Document getMetaData(IDPConfig config) throws RuntimeException {
+    public Document getMetaData(Idp config) throws RuntimeException {
         //Return as text/xml
         try {
             
@@ -145,10 +146,10 @@ public class MetadataWriter {
             // create ClaimsType section
             if (config.getClaimTypesOffered() != null && config.getClaimTypesOffered().size() > 0) {
                 writer.writeStartElement("fed", "ClaimTypesOffered", WS_FEDERATION_NS);
-                for (String claim : config.getClaimTypesOffered()) {
+                for (Claim claim : config.getClaimTypesOffered()) {
     
                     writer.writeStartElement("auth", "ClaimType", WS_FEDERATION_NS);
-                    writer.writeAttribute("Uri", claim);
+                    writer.writeAttribute("Uri", claim.getClaimType().toString());
                     writer.writeAttribute("Optional", "true");
                     writer.writeEndElement(); // ClaimType
     

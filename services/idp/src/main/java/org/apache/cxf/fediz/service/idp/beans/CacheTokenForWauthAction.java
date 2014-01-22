@@ -19,7 +19,7 @@
 package org.apache.cxf.fediz.service.idp.beans;
 
 import org.apache.cxf.fediz.service.idp.STSUserDetails;
-import org.apache.cxf.fediz.service.idp.model.IDPConfig;
+import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.slf4j.Logger;
@@ -46,7 +46,7 @@ public class CacheTokenForWauthAction {
         final STSUserDetails stsUserDetails = (STSUserDetails) auth.getDetails();
         SecurityToken securityToken = stsUserDetails.getSecurityToken();
 
-        IDPConfig idpConfig = (IDPConfig)WebUtils.getAttributeFromFlowScope(context, IDP_CONFIG);
+        Idp idpConfig = (Idp)WebUtils.getAttributeFromFlowScope(context, IDP_CONFIG);
 
         WebUtils.putAttributeInExternalContext(context, idpConfig.getRealm(), securityToken);
         LOG.info("Token [IDP_TOKEN=" + securityToken.getId()

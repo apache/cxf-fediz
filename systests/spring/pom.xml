@@ -74,7 +74,13 @@
             <version>${project.version}</version>
             <type>test-jar</type>            
             <scope>test</scope>
-        </dependency>        
+        </dependency>
+        <dependency>
+            <groupId>hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>1.8.0.7</version>
+            <scope>test</scope>
+        </dependency>                 
     </dependencies>
     <build>
         <testResources>

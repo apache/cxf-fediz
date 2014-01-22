@@ -18,24 +18,17 @@
  */
 package org.apache.cxf.fediz.service.idp.model;
 
-import java.io.Serializable;
 
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlAttribute;
 
+import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 
-//import javax.persistence.Column;
-//import javax.persistence.Entity;
-//import javax.persistence.Id;
-//import javax.persistence.Table;
+//@XmlRootElement(name = "TrustedIDP", namespace = "http://org.apache.cxf.fediz")
+public class TrustedIDPConfig extends TrustedIdp {
 
-//@Entity
-//@Table(name = "TRUSTEDIDP")
-@XmlRootElement(name = "TrustedIDP", namespace = "http://org.apache.cxf.fediz")
-public class TrustedIDPConfig implements Serializable {
+    private static final long serialVersionUID = 7017232258951933643L;
 
-        
-    //@Id
-    //private Long id;
+    private int id;
 
     //@Column(name = "REALM", nullable = true, length = FIELD_LENGTH)
     private String realm;  //wtrealm, whr
@@ -71,6 +64,15 @@ public class TrustedIDPConfig implements Serializable {
     //optional (to provide a list of IDPs)
     private String logo;
 
+    @XmlAttribute
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+    
     public String getRealm() {
         return realm;
     }

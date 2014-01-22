@@ -40,9 +40,9 @@ import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.service.idp.IdpSTSClient;
-import org.apache.cxf.fediz.service.idp.model.IDPConfig;
-import org.apache.cxf.fediz.service.idp.model.RequestClaim;
-import org.apache.cxf.fediz.service.idp.model.ServiceConfig;
+import org.apache.cxf.fediz.service.idp.domain.Application;
+import org.apache.cxf.fediz.service.idp.domain.Idp;
+import org.apache.cxf.fediz.service.idp.domain.RequestClaim;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.staxutils.W3CDOMStreamWriter;
@@ -159,14 +159,14 @@ public class STSClientAction {
 
         SecurityToken idpToken = getSecurityToken(context);
 
-        IDPConfig idpConfig = (IDPConfig) WebUtils.getAttributeFromFlowScope(context, IDP_CONFIG);
+        Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(context, IDP_CONFIG);
 
         Bus cxfBus = getBus();
 
         IdpSTSClient sts = new IdpSTSClient(cxfBus);
         sts.setAddressingNamespace(HTTP_WWW_W3_ORG_2005_08_ADDRESSING);
         
-        ServiceConfig serviceConfig = idpConfig.getServices().get(wtrealm);
+        Application serviceConfig = idpConfig.findApplication(wtrealm);
         if (serviceConfig == null) {
             LOG.warn("No service config found for " + wtrealm);
             throw new ProcessingException(TYPE.BAD_REQUEST);

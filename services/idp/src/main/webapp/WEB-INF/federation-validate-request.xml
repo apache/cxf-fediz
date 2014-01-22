@@ -31,8 +31,8 @@
             <set name="flowScope.wfresh" value="requestParameters.wfresh" />
             <set name="flowScope.whr" value="requestParameters.whr" />
             <set name="flowScope.wresult" value="requestParameters.wresult" />
-            <evaluate expression="requestScope.getString('wauth','default')" result="flowScope.wauth" /> 
-	        <set name="flowScope.idpConfig" value="config.getIdpConfigs().get(0)" />
+            <evaluate expression="requestScope.getString('wauth','default')" result="flowScope.wauth" />
+	        <set name="flowScope.idpConfig" value="config.getIDP(null)" />
         </on-entry>
         <if test="requestParameters.wa == null" then="viewBadRequest" />
         <if test="requestParameters.wa != 'wsignin1.0' and requestParameters.wa != 'wsignout1.0' and requestParameters.wa != 'wsignoutcleanup1.0'" then="viewBadRequest" />

@@ -18,16 +18,15 @@
  */
 package org.apache.cxf.fediz.service.idp.service;
 
-import org.apache.cxf.fediz.service.idp.model.IDPConfig;
-import org.apache.cxf.fediz.service.idp.model.ServiceConfig;
+import org.apache.cxf.fediz.service.idp.domain.Idp;
+
 
 public interface ConfigService {
 
-    ServiceConfig getServiceConfig(String realm);
+    Idp getIDP(String realm);
 
-    IDPConfig getIDPConfig(String realm);
+    void setIDP(Idp config);
 
-    void setIDPConfig(IDPConfig config);
-
-    IDPConfig removeIDPConfig(String realm);
+    void removeIDP(String realm);
+    
 }

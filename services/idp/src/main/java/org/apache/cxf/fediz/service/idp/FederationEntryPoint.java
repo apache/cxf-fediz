@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.cxf.fediz.core.FederationConstants;
-import org.apache.cxf.fediz.service.idp.model.IDPConfig;
+import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.service.ConfigService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +57,7 @@ public class FederationEntryPoint implements AuthenticationEntryPoint,
     private ApplicationContext appContext;
     private ConfigService configService;
     private String realm;
-    private IDPConfig idpConfig;
+    private Idp idpConfig;
 
     public ConfigService getConfigService() {
         return configService;
@@ -79,7 +79,7 @@ public class FederationEntryPoint implements AuthenticationEntryPoint,
         Assert.notNull(this.appContext, "ApplicationContext cannot be null.");
         Assert.notNull(this.configService, "ConfigService cannot be null.");
         Assert.notNull(this.realm, "realm cannot be null.");
-        idpConfig = configService.getIDPConfig(realm);
+        idpConfig = configService.getIDP(realm);
         Assert.notNull(this.idpConfig, "idpConfig cannot be null. Check realm and config service implementation");
     }
 

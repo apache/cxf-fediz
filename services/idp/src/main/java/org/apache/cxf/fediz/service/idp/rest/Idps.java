@@ -19,44 +19,31 @@
 
 package org.apache.cxf.fediz.service.idp.rest;
 
-import java.util.Map;
+import java.util.Collection;
 
+import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.apache.cxf.fediz.service.idp.model.ServiceConfig;
+import org.apache.cxf.fediz.service.idp.domain.Idp;
 
-@XmlRootElement
-public class IDPServiceConfigs {
+@XmlRootElement(name = "idps")
+public class Idps {
 
-    private Map<String, ServiceConfig> services;
+    private Collection<Idp> idps;
 
-    public IDPServiceConfigs() {
+    public Idps() {
     }
 
-    public IDPServiceConfigs(Map<String, ServiceConfig> services) {
-        this.services = services;
+    public Idps(Collection<Idp> idps) {
+        this.idps = idps;
     }
 
-    public Map<String, ServiceConfig> getServices() {
-        return services;
+    @XmlElementRef
+    public Collection<Idp> getIdps() {
+        return idps;
     }
 
-    public void setServices(Map<String, ServiceConfig> services) {
-        this.services = services;
+    public void setIdps(Collection<Idp> idps) {
+        this.idps = idps;
     }
-
-//    @GET
-//    @Path("{wtrealm}")
-//    public ServiceConfig getServiceConfig(@PathParam("wtrealm") String wtrealm) {
-//        ServiceConfig config = services.get(wtrealm);
-//        if (config == null) {
-//            throw new NotFoundException();
-//        }
-//        return config;
-//    }
-
-//    @GET
-//    public IDPServiceConfigs getState() {
-//        return this;
-//    }
 }

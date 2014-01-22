@@ -88,7 +88,13 @@
          <artifactId>slf4j-jdk14</artifactId>
          <version>${slf4j.version}</version>
          <scope>test</scope>
-      </dependency> 
+      </dependency>
+        <dependency>
+            <groupId>hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>1.8.0.7</version>
+            <scope>test</scope>
+        </dependency>      
    </dependencies>
    <build>
       <testResources>
@@ -195,6 +201,7 @@
                      <includes>
                         <include>**/integrationtests/**</include>
                      </includes>
+                     <argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=256m</argLine> 
                   </configuration>
                </execution>
                <execution>

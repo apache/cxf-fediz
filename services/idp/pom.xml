@@ -74,6 +74,28 @@
             <version>${spring.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-orm</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>${spring.version}</version>
+            <scope>test</scope>
+        </dependency>         
+        
+        <dependency>
             <groupId>org.springframework.webflow</groupId>
             <artifactId>spring-webflow</artifactId>
             <version>2.3.1.RELEASE</version>
@@ -123,7 +145,48 @@
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-frontend-jaxrs</artifactId>
             <version>${cxf.version}</version>
-        </dependency> 
+        </dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-rs-extension-providers</artifactId>
+            <version>${cxf.version}</version>
+        </dependency>        
+        <dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-jaxrs</artifactId>
+			<version>1.9.13</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-xc</artifactId>
+			<version>1.9.13</version>
+		</dependency>		
+        <!-- 
+        <dependency>
+            <groupId>org.apache.geronimo.specs</groupId>
+            <artifactId>geronimo-jpa_2.0_spec</artifactId>
+            <version>1.1</version>
+        </dependency>
+        -->
+        
+        <dependency>
+            <groupId>hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>1.8.0.7</version>
+            <scope>test</scope>
+        </dependency>
+         
+            <dependency>
+      <groupId>cglib</groupId>
+      <artifactId>cglib-nodep</artifactId>
+      <version>2.1_3</version>
+    </dependency>
+         
+        <dependency>
+            <groupId>org.apache.openjpa</groupId>
+            <artifactId>openjpa-all</artifactId>
+            <version>2.2.2</version>
+        </dependency>             
     </dependencies>
     <build>
     	<resources>
@@ -145,6 +208,32 @@
 			</resource>			
     	</resources>
         <plugins>
+            <plugin>
+		        <groupId>org.apache.openjpa</groupId>
+		        <artifactId>openjpa-maven-plugin</artifactId>
+		        <version>2.2.2</version>
+		        <inherited>true</inherited>
+		        <configuration>
+		            <persistenceXmlFile>${project.basedir}/src/main/resources/META-INF/spring-persistence.xml</persistenceXmlFile>
+		            <includes>org/apache/cxf/fediz/service/idp/service/jpa/**/*.class</includes>
+		        </configuration>
+		        <executions>
+		            <execution>
+		                <id>enhancer</id>
+		                <phase>process-classes</phase>
+		                <goals>
+		                    <goal>enhance</goal>
+		                </goals>
+		            </execution>
+		        </executions>
+		        <dependencies>
+		            <dependency>
+		                <groupId>xerces</groupId>
+		                <artifactId>xercesImpl</artifactId>
+		                <version>2.11.0</version>
+		            </dependency>
+		        </dependencies>
+		    </plugin>
             <plugin>
                 <!--for mvn tomcat:deploy/:undeploy/:redeploy -->
                 <groupId>org.codehaus.mojo</groupId>

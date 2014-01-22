@@ -19,45 +19,31 @@
 
 package org.apache.cxf.fediz.service.idp.rest;
 
-import java.util.Map;
+import java.util.Collection;
 
+import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.apache.cxf.fediz.service.idp.model.TrustedIDPConfig;
+import org.apache.cxf.fediz.service.idp.domain.Application;
 
-@XmlRootElement
-public class IDPTrustedIdps {
+@XmlRootElement(name = "applications")
+public class Applications {
 
-    private Map<String, TrustedIDPConfig> trustedIDPs;
+    private Collection<Application> applications;
 
-    public IDPTrustedIdps() {
+    public Applications() {
     }
 
-    public IDPTrustedIdps(Map<String, TrustedIDPConfig> trustedIDPs) {
-        this.trustedIDPs = trustedIDPs;
+    public Applications(Collection<Application> applications) {
+        this.applications = applications;
     }
 
-    public Map<String, TrustedIDPConfig> getTrustedIDPs() {
-        return trustedIDPs;
+    @XmlElementRef
+    public Collection<Application> getApplications() {
+        return applications;
     }
 
-    public void setTrustedIDPs(Map<String, TrustedIDPConfig> trustedIDPs) {
-        this.trustedIDPs = trustedIDPs;
+    public void setApplications(Collection<Application> applications) {
+        this.applications = applications;
     }
-
-//    @GET
-//    @Path("{whr}")
-//    public TrustedIDPConfig getTrustedIDPConfig(@PathParam("whr") String whr) {
-//        TrustedIDPConfig config = trustedIDPs.get(whr);
-//        if (config == null) {
-//            throw new NotFoundException();
-//        }
-//        return config;
-//    }
-
-//    @GET
-//    public IDPTrustedIdps getState() {   
-//        return this;
-//    }
-    
 }

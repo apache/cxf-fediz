@@ -18,7 +18,7 @@
  */
 package org.apache.cxf.fediz.service.idp.beans;
 
-import org.apache.cxf.fediz.service.idp.model.IDPConfig;
+import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +35,7 @@ public class ProcessHRDSExpressionAction {
             .getLogger(ProcessHRDSExpressionAction.class);
 
     public String submit(RequestContext context) {
-        IDPConfig idpConfig = (IDPConfig)WebUtils.getAttributeFromFlowScope(context, IDP_CONFIG);
+        Idp idpConfig = (Idp)WebUtils.getAttributeFromFlowScope(context, IDP_CONFIG);
         String hrds = idpConfig.getHrds();
         //TODO
         if (hrds == null) {

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+
+-->
+<entity-mappings  xmlns="http://java.sun.com/xml/ns/persistence/orm"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm 
+                                      http://java.sun.com/xml/ns/persistence/orm_2_0.xsd"
+                  version="2.0">
+
+  <entity class="org.apache.cxf.fediz.service.idp.service.jpa.ClaimEntity">
+    <table>
+      <unique-constraint>
+        <column-name>claimtype</column-name>
+      </unique-constraint>
+    </table>
+    <attributes>
+      <id name="id">
+        <generated-value generator="SEQ_Claim" strategy="TABLE"/>
+        <table-generator name="SEQ_Claim" pk-column-value="SEQ_Claim" initial-value="100"/>
+      </id>
+    </attributes>
+  </entity>
+
+  <entity class="org.apache.cxf.fediz.service.idp.service.jpa.IdpEntity">
+    <table>
+      <unique-constraint>
+        <column-name>realm</column-name>
+      </unique-constraint>
+    </table>
+    <attributes>
+      <id name="id">
+        <generated-value generator="SEQ_IDP" strategy="TABLE"/>
+        <table-generator name="SEQ_IDP" pk-column-value="SEQ_IDP" initial-value="100"/>
+      </id>
+      <many-to-many name="claimTypesOffered">
+	      <join-table name="idp_claims">
+		      <join-column name="idp_id" />
+		      <inverse-join-column name="claim_id"/>
+		      <unique-constraint>
+			      <column-name>idp_id</column-name>
+			      <column-name>claim_id</column-name>
+		      </unique-constraint>
+	      </join-table>
+      </many-to-many>
+      <many-to-many name="trustedIDPs">
+	      <join-table name="idp_trustedidps">
+		      <join-column name="idp_id" />
+		      <inverse-join-column name="trustedidp_id"/>
+		      <unique-constraint>
+			      <column-name>idp_id</column-name>
+			      <column-name>trustedidp_id</column-name>
+		      </unique-constraint>
+	      </join-table>
+      </many-to-many>     
+      <many-to-many name="applications">
+	      <join-table name="idp_applications">
+		      <join-column name="idp_id" />
+		      <inverse-join-column name="application_id"/>
+		      <unique-constraint>
+			      <column-name>idp_id</column-name>
+			      <column-name>application_id</column-name>
+		      </unique-constraint>
+	      </join-table>
+      </many-to-many>
+          
+    </attributes>
+  </entity>
+
+  <entity class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationEntity">
+    <table>
+      <unique-constraint>
+        <column-name>realm</column-name>
+      </unique-constraint>
+    </table>
+    <attributes>
+      <id name="id">
+        <generated-value generator="SEQ_Application" strategy="TABLE"/>
+        <table-generator name="SEQ_Application" pk-column-value="SEQ_Application" initial-value="100"/>
+      </id>
+    </attributes>
+  </entity>
+
+  <entity class="org.apache.cxf.fediz.service.idp.service.jpa.TrustedIdpEntity">
+    <table>
+      <unique-constraint>
+        <column-name>realm</column-name>
+      </unique-constraint>
+    </table>  
+    <attributes>
+      <id name="id">
+        <generated-value generator="SEQ_TrustedIDP" strategy="TABLE"/>
+        <table-generator name="SEQ_TrustedIDP" pk-column-value="SEQ_TrustedIDP" initial-value="100"/>
+      </id>
+    </attributes>
+  </entity>
+  
+  <entity class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationClaimEntity">
+    <table>
+      <unique-constraint>
+        <column-name>claimid</column-name>
+        <column-name>applicationid</column-name>
+      </unique-constraint>
+    </table>
+    <attributes>
+      <id name="id">
+        <generated-value generator="SEQ_ApplicationClaim" strategy="TABLE"/>
+        <table-generator name="SEQ_ApplicationClaim" pk-column-value="SEQ_ApplicationClaim" initial-value="100"/>
+      </id>
+    </attributes>
+  </entity>
+</entity-mappings>

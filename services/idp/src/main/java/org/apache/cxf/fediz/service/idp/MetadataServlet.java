@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.w3c.dom.Document;
 
-import org.apache.cxf.fediz.service.idp.model.IDPConfig;
+import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.service.ConfigService;
 import org.apache.cxf.fediz.service.idp.util.MetadataWriter;
 import org.apache.ws.security.util.DOM2Writer;
@@ -60,7 +60,7 @@ public class MetadataServlet extends HttpServlet {
         PrintWriter out = response.getWriter();
         try {
             ConfigService cs = (ConfigService)getApplicationContext().getBean("config");
-            IDPConfig idpConfig = cs.getIDPConfig(realm);
+            Idp idpConfig = cs.getIDP(realm);
             LOG.debug(idpConfig.toString());
             MetadataWriter mw = new MetadataWriter();
             Document metadata =  mw.getMetaData(idpConfig);

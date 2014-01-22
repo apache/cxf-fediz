@@ -70,11 +70,11 @@ public class TomcatTest extends AbstractTests {
     public static void init() {
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
         System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
-        System.setProperty("org.apache.commons.logging.simplelog.log.httpclient.wire", "debug");
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.commons.httpclient", "debug");
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.webflow", "debug");
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.security.web", "debug");
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf.fediz", "debug");
+        System.setProperty("org.apache.commons.logging.simplelog.log.httpclient.wire", "info");
+        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.commons.httpclient", "info");
+        System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.webflow", "info");
+        System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.security.web", "info");
+        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf.fediz", "info");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf", "info");  
         
         idpHttpsPort = System.getProperty("idp.https.port");

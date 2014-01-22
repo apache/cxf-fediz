@@ -27,7 +27,6 @@
         http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.1.xsd">
 
     <context:property-placeholder location="classpath:realm.properties"/>
-    <context:component-scan base-package="org.apache.cxf.fediz.service.idp"/>
     
     <!-- DIABLE in production as it might log confidential information about the user -->
     <!-- <security:debug /> -->

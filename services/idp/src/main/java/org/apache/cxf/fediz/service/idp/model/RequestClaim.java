@@ -18,26 +18,9 @@
  */
 package org.apache.cxf.fediz.service.idp.model;
 
-import java.io.Serializable;
-import java.net.URI;
-
-public class RequestClaim implements Serializable {
+//@XmlRootElement(name = "Claim", namespace = "http://org.apache.cxf.fediz")
+public class RequestClaim extends org.apache.cxf.fediz.service.idp.domain.RequestClaim {
     
-    private URI claimType;
+    private static final long serialVersionUID = 2635896159019665467L;
     
-    private boolean optional;
-    
-    
-    public void setClaimType(URI claimType) {
-        this.claimType = claimType;
-    }
-    public URI getClaimType() {
-        return claimType;
-    }
-    public void setOptional(boolean optional) {
-        this.optional = optional;
-    }
-    public boolean isOptional() {
-        return optional;
-    }
 }
