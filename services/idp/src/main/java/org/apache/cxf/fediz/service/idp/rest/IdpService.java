@@ -72,9 +72,9 @@ public interface IdpService {
                                  Application application);
     
     @DELETE
-    @Path("{realm}/applications")
+    @Path("{realm}/applications/{realmApplication}")
     Response removeApplicationFromIdp(@Context UriInfo ui, @PathParam("realm") String realm,
-                                      Application application);
+                                      @PathParam("realmApplication") String applicationRealm);
     
     @POST
     @Path("{realm}/trusted-idps")
@@ -82,9 +82,9 @@ public interface IdpService {
                                 TrustedIdp trustedIdp);
     
     @DELETE
-    @Path("{realm}/trusted-idps")
+    @Path("{realm}/trusted-idps/{realmTrustedIdp}")
     Response removeTrustedIdpFromIdp(@Context UriInfo ui, @PathParam("realm") String realm,
-                                     TrustedIdp trustedIdp);
+                                     @PathParam("realmTrustedIdp") String trustedIdpRealm);
     
     @POST
     @Path("{realm}/claims")
@@ -92,8 +92,8 @@ public interface IdpService {
                            Claim claim);
     
     @DELETE
-    @Path("{realm}/claims")
+    @Path("{realm}/claims/{claimType}")
     Response removeClaimFromIdp(@Context UriInfo ui, @PathParam("realm") String realm,
-                                Claim claim);    
+                                @PathParam("claimType") String claimType);    
 
 }

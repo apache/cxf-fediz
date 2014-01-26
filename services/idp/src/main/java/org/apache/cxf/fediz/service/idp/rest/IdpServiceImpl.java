@@ -139,18 +139,18 @@ public class IdpServiceImpl implements IdpService {
     }
     
     @Override
-    public Response removeApplicationFromIdp(UriInfo ui, String realm,  Application application) {
+    public Response removeApplicationFromIdp(UriInfo ui, String realm,  String applicationRealm) {
         Idp idp = idpDAO.getIdp(realm, Arrays.asList("all"));
         
         Application foundItem = null; 
         for (Application item : idp.getApplications()) {
-            if (item.getRealm().equals(application.getRealm())) {
+            if (item.getRealm().equals(applicationRealm)) {
                 foundItem = item;
                 break;
             }
         }
         if (foundItem == null) {
-            LOG.warn("Application '" + application.getRealm() + "' not found");
+            LOG.warn("Application '" + applicationRealm + "' not found");
             throw new WebApplicationException(Status.NOT_FOUND);
         }
         idpDAO.removeApplicationFromIdp(idp, foundItem);
@@ -176,18 +176,18 @@ public class IdpServiceImpl implements IdpService {
     }
     
     @Override
-    public Response removeTrustedIdpFromIdp(UriInfo ui, String realm, TrustedIdp trustedIdp) {
+    public Response removeTrustedIdpFromIdp(UriInfo ui, String realm, String trustedIdpRealm) {
         Idp idp = idpDAO.getIdp(realm, Arrays.asList("all"));
         
         TrustedIdp foundItem = null; 
         for (TrustedIdp item : idp.getTrustedIdps()) {
-            if (item.getRealm().equals(trustedIdp.getRealm())) {
+            if (item.getRealm().equals(trustedIdpRealm)) {
                 foundItem = item;
                 break;
             }
         }
         if (foundItem == null) {
-            LOG.warn("Trusted IDP '" + trustedIdp.getRealm() + "' not found");
+            LOG.warn("Trusted IDP '" + trustedIdpRealm + "' not found");
             throw new WebApplicationException(Status.NOT_FOUND);
         }
         idpDAO.removeTrustedIdpFromIdp(idp, foundItem);
@@ -209,18 +209,18 @@ public class IdpServiceImpl implements IdpService {
     }
     
     @Override
-    public Response removeClaimFromIdp(UriInfo ui, String realm, Claim claim) {
+    public Response removeClaimFromIdp(UriInfo ui, String realm, String claimType) {
         Idp idp = idpDAO.getIdp(realm, Arrays.asList("all"));
         
         Claim foundItem = null; 
         for (Claim item : idp.getClaimTypesOffered()) {
-            if (item.getClaimType().toString().equals(claim.getClaimType().toString())) {
+            if (item.getClaimType().toString().equals(claimType)) {
                 foundItem = item;
                 break;
             }
         }
         if (foundItem == null) {
-            LOG.warn("Claim '" + claim.getClaimType() + "' not found");
+            LOG.warn("Claim '" + claimType + "' not found");
             throw new WebApplicationException(Status.NOT_FOUND);
         }
         idpDAO.removeClaimFromIdp(idp, foundItem);
