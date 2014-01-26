@@ -22,9 +22,6 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.persistence.EntityNotFoundException;
-import javax.persistence.NoResultException;
-
 
 import org.apache.cxf.fediz.service.idp.domain.Application;
 import org.apache.cxf.fediz.service.idp.domain.RequestClaim;
@@ -36,6 +33,8 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
@@ -114,7 +113,7 @@ public class ApplicationDAOJPATest {
     }
     
     
-    @Test(expected = NoResultException.class)
+    @Test(expected = EmptyResultDataAccessException.class)
     public void testTryReadNonexistingApplication() {
         applicationDAO.getApplication("urn:org:apache:cxf:fediz:fedizhelloworld:NOTEXIST", null);
     }
@@ -206,13 +205,13 @@ public class ApplicationDAOJPATest {
     }
     
     
-    @Test(expected = NoResultException.class)
+    @Test(expected = EmptyResultDataAccessException.class)
     public void testTryRemoveUnknownApplication() {
         applicationDAO.deleteApplication("urn:org:apache:cxf:fediz:fedizhelloworld:NOTEXIST");
     }
     
     
-    @Test(expected = NoResultException.class)
+    @Test(expected = EmptyResultDataAccessException.class)
     public void testRemoveExistingApplication() {
         String realm = "urn:org:apache:cxf:fediz:app:testdelete";
         Application application = new Application();
@@ -264,7 +263,7 @@ public class ApplicationDAOJPATest {
         applicationDAO.addClaimToApplication(application, requestClaim);
     }
     
-    @Test(expected = NoResultException.class)
+    @Test(expected = EmptyResultDataAccessException.class)
     public void testTryAddUnknownClaimToApplication() {
         Application application = new Application();
         application.setRealm("urn:org:apache:cxf:fediz:fedizhelloworld");
@@ -309,7 +308,7 @@ public class ApplicationDAOJPATest {
         Assert.isTrue(0 == application.getRequestedClaims().size(), "requestedClaims size doesn't match");
     }
     
-    @Test(expected = EntityNotFoundException.class)
+    @Test(expected = JpaObjectRetrievalFailureException.class)
     public void testTryRemoveNotAssignedClaimFromApplication() {
         Application application = new Application();
         application.setRealm("urn:org:apache:cxf:fediz:fedizhelloworld");
@@ -321,7 +320,7 @@ public class ApplicationDAOJPATest {
         applicationDAO.removeClaimFromApplication(application, requestClaim);
     }
     
-    @Test(expected = EntityNotFoundException.class)
+    @Test(expected = JpaObjectRetrievalFailureException.class)
     public void testTryRemoveUnknownClaimFromApplication() {
         Application application = new Application();
         application.setRealm("urn:org:apache:cxf:fediz:fedizhelloworld");

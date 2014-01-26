@@ -20,8 +20,6 @@ package org.apache.cxf.fediz.service.idp.service.jpa;
 
 import java.util.List;
 
-import javax.persistence.NoResultException;
-
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 import org.apache.cxf.fediz.service.idp.service.TrustedIdpDAO;
 
@@ -31,6 +29,7 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
@@ -79,7 +78,7 @@ public class TrustedIdpDAOJPATest {
     }
     
     
-    @Test(expected = NoResultException.class)
+    @Test(expected = EmptyResultDataAccessException.class)
     public void testTryReadNonexistingTrustedIdp() {
         trustedIdpDAO.getTrustedIDP("urn:org:apache:cxf:fediz:idp:NOTEXIST");
     }
@@ -165,13 +164,13 @@ public class TrustedIdpDAOJPATest {
     }
     
     
-    @Test(expected = NoResultException.class)
+    @Test(expected = EmptyResultDataAccessException.class)
     public void testTryRemoveUnknownTrustedIdp() {
         trustedIdpDAO.deleteTrustedIDP("urn:org:apache:cxf:fediz:trusted-idp:NOTEXIST");
     }
     
     
-    @Test(expected = NoResultException.class)
+    @Test(expected = EmptyResultDataAccessException.class)
     public void testRemoveExistingTrustedIdp() {
         String realm = "urn:org:apache:cxf:fediz:trusted-idp:testdelete";
         TrustedIdp trustedIdp = new TrustedIdp();

@@ -30,12 +30,12 @@ import org.apache.cxf.fediz.service.idp.service.TrustedIdpDAO;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 
 @Transactional
-@Component
+@Repository
 public class TrustedIdpDAOJPAImpl implements TrustedIdpDAO {
     
     private static final Logger LOG = LoggerFactory.getLogger(TrustedIdpDAOJPAImpl.class);

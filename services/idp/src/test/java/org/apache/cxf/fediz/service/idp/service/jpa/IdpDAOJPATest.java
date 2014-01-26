@@ -25,9 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.persistence.EntityNotFoundException;
-import javax.persistence.NoResultException;
-
 import org.apache.cxf.fediz.service.idp.domain.Application;
 import org.apache.cxf.fediz.service.idp.domain.Claim;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
@@ -41,6 +38,8 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
@@ -149,7 +148,7 @@ public class IdpDAOJPATest {
     }
     
     
-    @Test(expected = NoResultException.class)
+    @Test(expected = EmptyResultDataAccessException.class)
     public void testTryReadNonexistingIdp() {
         idpDAO.getIdp("urn:org:apache:cxf:fediz:idp:NOTEXIST", null);
     }
@@ -229,13 +228,13 @@ public class IdpDAOJPATest {
     }
     
     
-    @Test(expected = NoResultException.class)
+    @Test(expected = EmptyResultDataAccessException.class)
     public void testTryRemoveUnknownIdp() {
         idpDAO.deleteIdp("urn:org:apache:cxf:fediz:idp:NOTEXIST");
     }
     
     
-    @Test(expected = NoResultException.class)
+    @Test(expected = EmptyResultDataAccessException.class)
     public void testRemoveExistingIdp() {
         Idp idp = new Idp();
         idp.setRealm("urn:org:apache:cxf:fediz:idp:testdelete");
@@ -314,7 +313,7 @@ public class IdpDAOJPATest {
         
     }
     
-    @Test(expected = NoResultException.class)
+    @Test(expected = EmptyResultDataAccessException.class)
     public void testUpdateUnknownIdp() {
         String realm = "urn:org:apache:cxf:fediz:idp:testupdate2";
         
@@ -376,7 +375,7 @@ public class IdpDAOJPATest {
         idpDAO.addClaimToIdp(idp, claim);
     }
     
-    @Test(expected = NoResultException.class)
+    @Test(expected = EmptyResultDataAccessException.class)
     public void testTryAddUnknownClaimToIdp() {
         Idp idp = new Idp();
         idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
@@ -410,7 +409,7 @@ public class IdpDAOJPATest {
                       "claimTypesOffered size doesn't match [" + idp.getClaimTypesOffered().size() + "]");
     }
     
-    @Test(expected = EntityNotFoundException.class)
+    @Test(expected = JpaObjectRetrievalFailureException.class)
     public void testTryRemoveNotAssignedClaimFromIdp() {
         Idp idp = new Idp();
         idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
@@ -421,7 +420,7 @@ public class IdpDAOJPATest {
         idpDAO.removeClaimFromIdp(idp, claim);
     }
     
-    @Test(expected = NoResultException.class)
+    @Test(expected = EmptyResultDataAccessException.class)
     public void testTryRemoveUnknownClaimFromIdp() {
         Idp idp = new Idp();
         idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
@@ -463,7 +462,7 @@ public class IdpDAOJPATest {
         idpDAO.addApplicationToIdp(idp, app);
     }
     
-    @Test(expected = NoResultException.class)
+    @Test(expected = EmptyResultDataAccessException.class)
     public void testTryAddUnknownApplicationToIdp() {
         Idp idp = new Idp();
         idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
@@ -498,7 +497,7 @@ public class IdpDAOJPATest {
     }
     
     
-    @Test(expected = EntityNotFoundException.class)
+    @Test(expected = JpaObjectRetrievalFailureException.class)
     public void testTryRemoveNotAssignedApplicationFromIdp() {
         Idp idp = new Idp();
         idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
@@ -510,7 +509,7 @@ public class IdpDAOJPATest {
     }
     
     
-    @Test(expected = NoResultException.class)
+    @Test(expected = EmptyResultDataAccessException.class)
     public void testTryRemoveUnknownApplicationFromIdp() {
         Idp idp = new Idp();
         idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");

@@ -21,8 +21,6 @@ package org.apache.cxf.fediz.service.idp.service.jpa;
 import java.net.URI;
 import java.util.List;
 
-import javax.persistence.NoResultException;
-
 import org.apache.cxf.fediz.service.idp.domain.Claim;
 import org.apache.cxf.fediz.service.idp.service.ClaimDAO;
 
@@ -32,6 +30,7 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
@@ -76,7 +75,7 @@ public class ClaimDAOJPATest {
     }
     
     
-    @Test(expected = NoResultException.class)
+    @Test(expected = EmptyResultDataAccessException.class)
     public void testTryReadNonexistingClaim() {
         claimDAO.getClaim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givennamenotexist");
     }
@@ -175,13 +174,13 @@ public class ClaimDAOJPATest {
      */
     
     
-    @Test(expected = NoResultException.class)
+    @Test(expected = EmptyResultDataAccessException.class)
     public void testTryRemoveUnknownClaim() {
         claimDAO.deleteClaim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/town/WRONG");
     }
     
     
-    @Test(expected = NoResultException.class)
+    @Test(expected = EmptyResultDataAccessException.class)
     public void testRemoveExistingClaim() {
         claimDAO.deleteClaim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/email");
         
