@@ -90,6 +90,8 @@
     </property>
   </bean>
 
+  <bean id="exceptionMapper" class="org.apache.cxf.fediz.service.idp.rest.RestServiceExceptionMapper"/>
+  
   <bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider" />
     
     <jaxrs:server id="idpService" address="/rs">
@@ -108,7 +110,7 @@
         <jaxrs:providers>
       		<ref bean="jaxbProvider"/>
       		<ref bean="jsonProvider"/>
-      		<!--<ref bean="exceptionMapper"/>-->
+      		<ref bean="exceptionMapper"/>
     	</jaxrs:providers>
     	<jaxrs:extensionMappings>
       		<entry key="json" value="application/json;charset=UTF-8"/>
