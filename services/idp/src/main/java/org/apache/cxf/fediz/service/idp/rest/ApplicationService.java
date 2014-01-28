@@ -21,6 +21,7 @@ package org.apache.cxf.fediz.service.idp.rest;
 
 import java.util.List;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -40,6 +41,7 @@ import org.apache.cxf.fediz.service.idp.domain.RequestClaim;
 
 
 @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 @Path("applications")
 public interface ApplicationService {
 

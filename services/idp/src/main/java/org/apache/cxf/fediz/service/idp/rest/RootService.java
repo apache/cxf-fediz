@@ -20,6 +20,7 @@
 package org.apache.cxf.fediz.service.idp.rest;
 
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.HEAD;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
@@ -29,6 +30,7 @@ import javax.ws.rs.core.UriInfo;
 
 
 @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 public interface RootService {
 
     @HEAD

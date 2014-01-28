@@ -26,7 +26,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 
-@XmlRootElement(name = "trustedIdps")
+@XmlRootElement(name = "trustedIdps", namespace = "http://org.apache.cxf.fediz/")
 public class TrustedIdps {
 
     private Collection<TrustedIdp> trustedIDPs;

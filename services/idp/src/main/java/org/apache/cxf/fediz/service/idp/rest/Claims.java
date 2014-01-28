@@ -26,7 +26,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.cxf.fediz.service.idp.domain.Claim;
 
-@XmlRootElement(name = "claims")
+@XmlRootElement(name = "claims", namespace = "http://org.apache.cxf.fediz/")
 public class Claims {
 
     private Collection<Claim> claims;

@@ -26,7 +26,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.cxf.fediz.service.idp.domain.Application;
 
-@XmlRootElement(name = "applications")
+@XmlRootElement(name = "applications", namespace = "http://org.apache.cxf.fediz/")
 public class Applications {
 
     private Collection<Application> applications;
