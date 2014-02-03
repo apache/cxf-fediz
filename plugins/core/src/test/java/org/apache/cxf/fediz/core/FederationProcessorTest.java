@@ -34,8 +34,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import junit.framework.Assert;
-
 import org.apache.cxf.fediz.common.STSUtil;
 import org.apache.cxf.fediz.common.SecurityTestUtil;
 import org.apache.cxf.fediz.core.AbstractSAMLCallbackHandler.MultiValue;
@@ -70,6 +68,7 @@ import org.apache.wss4j.dom.WSConstants;
 import org.apache.wss4j.dom.message.WSSecEncrypt;
 import org.joda.time.DateTime;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 
 import static org.junit.Assert.fail;

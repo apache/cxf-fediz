@@ -29,8 +29,6 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
-import junit.framework.Assert;
-
 import org.apache.cxf.fediz.common.SecurityTestUtil;
 import org.apache.cxf.fediz.core.config.jaxb.ArgumentType;
 import org.apache.cxf.fediz.core.config.jaxb.AudienceUris;
@@ -52,6 +50,7 @@ import org.apache.cxf.fediz.core.spi.RealmCallback;
 import org.apache.cxf.fediz.core.spi.SignInQueryCallback;
 import org.apache.cxf.fediz.core.spi.WAuthCallback;
 import org.junit.AfterClass;
+import org.junit.Assert;
 
 public class CallbackHandlerTest {
 

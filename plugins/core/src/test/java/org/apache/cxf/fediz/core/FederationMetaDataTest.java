@@ -26,8 +26,6 @@ import javax.xml.transform.TransformerException;
 
 import org.w3c.dom.Document;
 
-import junit.framework.Assert;
-
 import org.apache.cxf.fediz.common.SecurityTestUtil;
 import org.apache.cxf.fediz.core.config.FederationConfigurator;
 import org.apache.cxf.fediz.core.config.FederationContext;
@@ -35,6 +33,7 @@ import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 
 import org.junit.AfterClass;
+import org.junit.Assert;
 
 import static org.junit.Assert.fail;
 
