@@ -21,12 +21,17 @@ package org.apache.cxf.fediz.service.idp.service.jpa;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+import org.apache.openjpa.persistence.jdbc.Index;
+
 @Entity(name = "Claim")
 public class ClaimEntity {
     
     @Id
     private int id;
+    
+    @Index
     private String claimType;
+    
     private String displayName;
     private String description;
         

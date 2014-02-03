@@ -26,6 +26,8 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
+import org.apache.openjpa.persistence.jdbc.Index;
+
 
 @Entity(name = "Application")
 public class ApplicationEntity {
@@ -33,6 +35,7 @@ public class ApplicationEntity {
     @Id
     private int id;
     
+    @Index
     private String realm;  //wtrealm, whr
 
     //Could be read from Metadata, RoleDescriptor protocolSupportEnumeration=

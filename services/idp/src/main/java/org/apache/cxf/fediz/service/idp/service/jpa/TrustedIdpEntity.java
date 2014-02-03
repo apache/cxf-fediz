@@ -21,6 +21,8 @@ package org.apache.cxf.fediz.service.idp.service.jpa;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+import org.apache.openjpa.persistence.jdbc.Index;
+
 
 @Entity(name = "TrustedIDP")
 public class TrustedIdpEntity {
@@ -29,6 +31,7 @@ public class TrustedIdpEntity {
     private int id;
 
     //@Column(name = "REALM", nullable = true, length = FIELD_LENGTH)
+    @Index
     private String realm;  //wtrealm, whr
 
     // Should tokens be cached from trusted IDPs

@@ -34,6 +34,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.MapKeyColumn;
 
+import org.apache.openjpa.persistence.jdbc.Index;
+
 @Entity(name = "IDP")
 public class IdpEntity {
 
@@ -42,6 +44,7 @@ public class IdpEntity {
 
     // Unique
     // fed:TargetScope
+    @Index
     private String realm; // wtrealm, whr
 
     // Unique
