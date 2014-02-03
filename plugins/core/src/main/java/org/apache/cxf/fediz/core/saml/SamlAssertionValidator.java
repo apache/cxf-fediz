@@ -26,11 +26,13 @@ import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.apache.wss4j.common.cache.ReplayCache;
 import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.OpenSAMLUtil;
@@ -41,8 +43,6 @@ import org.apache.wss4j.dom.validate.Credential;
 import org.apache.wss4j.dom.validate.Validator;
 import org.joda.time.DateTime;
 import org.opensaml.common.SAMLVersion;
-import org.opensaml.xml.validation.ValidationException;
-import org.opensaml.xml.validation.ValidatorSuite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,6 +64,12 @@ public class SamlAssertionValidator implements Validator {
      * Assertion is valid. The default is 60 seconds.
      */
     private int futureTTL = 60;
+    
+    /**
+     * Whether to validate the signature of the Assertion (if it exists) against the 
+     * relevant profile. Default is true.
+     */
+    private boolean validateSignatureAgainstProfile = true;
 
     /**
      * Defines the kind of trust which is required thus assertion signature validation is successful.
@@ -144,6 +150,9 @@ public class SamlAssertionValidator implements Validator {
         // Check conditions
         checkConditions(assertion);
         
+        // Check OneTimeUse Condition
+        checkOneTimeUse(assertion, data);
+        
         // Validate the assertion against schemas/profiles
         validateAssertion(assertion);
 
@@ -179,7 +188,6 @@ public class SamlAssertionValidator implements Validator {
         }
         
         if (certs != null && certs.length > 0) {
-            validateCertificates(certs);
             validateCertificates(certs);
             verifyTrustInCerts(certs, crypto, data, data.isRevocationEnabled());
             if (signatureTrustType.equals(TRUST_TYPE.CHAIN_TRUST_CONSTRAINTS)) {
@@ -240,13 +248,13 @@ public class SamlAssertionValidator implements Validator {
         RequestData data,
         boolean enableRevocation
     ) throws WSSecurityException {
-        String subjectString = certificates[0].getSubjectX500Principal().getName();
         //
         // Use the validation method from the crypto to check whether the subjects' 
         // certificate was really signed by the issuer stated in the certificate
         //
         crypto.verifyTrust(certificates, enableRevocation);
         if (LOG.isDebugEnabled()) {
+            String subjectString = certificates[0].getSubjectX500Principal().getName();
             LOG.debug(
                 "Certificate path has been verified for certificate with subject " + subjectString
             );
@@ -262,70 +270,70 @@ public class SamlAssertionValidator implements Validator {
         crypto.verifyTrust(publicKey);
     }
     
+    
     /**
      * Check the Conditions of the Assertion.
      */
-    protected void checkConditions(SamlAssertionWrapper assertion) throws WSSecurityException {
-        DateTime validFrom = null;
-        DateTime validTill = null;
-        if (assertion.getSamlVersion().equals(SAMLVersion.VERSION_20)
-            && assertion.getSaml2().getConditions() != null) {
-            validFrom = assertion.getSaml2().getConditions().getNotBefore();
-            validTill = assertion.getSaml2().getConditions().getNotOnOrAfter();
-        } else if (assertion.getSamlVersion().equals(SAMLVersion.VERSION_11)
-            && assertion.getSaml1().getConditions() != null) {
-            validFrom = assertion.getSaml1().getConditions().getNotBefore();
-            validTill = assertion.getSaml1().getConditions().getNotOnOrAfter();
-        }
-        
-        if (validFrom != null) {
-            DateTime currentTime = new DateTime();
-            currentTime = currentTime.plusSeconds(futureTTL);
-            if (validFrom.isAfter(currentTime)) {
-                LOG.debug("SAML Token condition (Not Before) not met");
-                throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
+    protected void checkConditions(SamlAssertionWrapper samlAssertion) throws WSSecurityException {
+        samlAssertion.checkConditions(futureTTL);
+    }
+    
+    /**
+     * Check the "OneTimeUse" Condition of the Assertion. If this is set then the Assertion
+     * is cached (if a cache is defined), and must not have been previously cached
+     */
+    protected void checkOneTimeUse(
+        SamlAssertionWrapper samlAssertion, RequestData data
+    ) throws WSSecurityException {
+        if (samlAssertion.getSamlVersion().equals(SAMLVersion.VERSION_20)
+            && samlAssertion.getSaml2().getConditions() != null
+            && samlAssertion.getSaml2().getConditions().getOneTimeUse() != null
+            && data.getSamlOneTimeUseReplayCache() != null) {
+            String identifier = samlAssertion.getId();
+            
+            ReplayCache replayCache = data.getSamlOneTimeUseReplayCache();
+            if (replayCache.contains(identifier)) {
+                throw new WSSecurityException(
+                    WSSecurityException.ErrorCode.INVALID_SECURITY,
+                    "badSamlToken",
+                    "A replay attack has been detected");
             }
-        }
-
-        if (validTill != null && validTill.isBeforeNow()) {
-            LOG.debug("SAML Token condition (Not On Or After) not met");
-            throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
+            
+            DateTime expires = samlAssertion.getSaml2().getConditions().getNotOnOrAfter();
+            if (expires != null) {
+                Date rightNow = new Date();
+                long currentTime = rightNow.getTime();
+                long expiresTime = expires.getMillis();
+                replayCache.add(identifier, 1L + (expiresTime - currentTime) / 1000L);
+            } else {
+                replayCache.add(identifier);
+            }
+            
+            replayCache.add(identifier);
         }
     }
     
     /**
-     * Validate the assertion against schemas/profiles
+     * Validate the samlAssertion against schemas/profiles
      */
-    protected void validateAssertion(SamlAssertionWrapper assertion) throws WSSecurityException {
-        if (assertion.getSaml1() != null) {
-            ValidatorSuite schemaValidators = 
-                org.opensaml.Configuration.getValidatorSuite("saml1-schema-validator");
-            ValidatorSuite specValidators = 
-                org.opensaml.Configuration.getValidatorSuite("saml1-spec-validator");
-            try {
-                schemaValidators.validate(assertion.getSaml1());
-                specValidators.validate(assertion.getSaml1());
-            } catch (ValidationException e) {
-                LOG.debug("Saml Validation error: " + e.getMessage(), e);
-                throw new WSSecurityException(
-                    WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity", null, e
-                );
-            }
-        } else if (assertion.getSaml2() != null) {
-            ValidatorSuite schemaValidators = 
-                org.opensaml.Configuration.getValidatorSuite("saml2-core-schema-validator");
-            ValidatorSuite specValidators = 
-                org.opensaml.Configuration.getValidatorSuite("saml2-core-spec-validator");
-            try {
-                schemaValidators.validate(assertion.getSaml2());
-                specValidators.validate(assertion.getSaml2());
-            } catch (ValidationException e) {
-                LOG.debug("Saml Validation error: " + e.getMessage(), e);
-                throw new WSSecurityException(
-                    WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity", null, e
-                );
-            }
-        }
+    protected void validateAssertion(SamlAssertionWrapper samlAssertion) throws WSSecurityException {
+        samlAssertion.validateAssertion(validateSignatureAgainstProfile);
+    }
+    
+    /**
+     * Whether to validate the signature of the Assertion (if it exists) against the 
+     * relevant profile. Default is true.
+     */
+    public boolean isValidateSignatureAgainstProfile() {
+        return validateSignatureAgainstProfile;
+    }
+
+    /**
+     * Whether to validate the signature of the Assertion (if it exists) against the 
+     * relevant profile. Default is true.
+     */
+    public void setValidateSignatureAgainstProfile(boolean validateSignatureAgainstProfile) {
+        this.validateSignatureAgainstProfile = validateSignatureAgainstProfile;
     }
     
     /**
