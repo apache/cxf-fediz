@@ -139,7 +139,6 @@
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>properties-maven-plugin</artifactId>
-						<version>1.0-alpha-2</version>
 						<executions>
 							<execution>
 								<goals>
@@ -151,6 +150,10 @@
 											<name>logback.configurationFile</name>
 											<value>${project.baseUri}/src/test/resources/logback.xml</value>
 										</property>
+		                                <property>
+		                                    <name>catalina.base</name>
+		                                    <value>target</value>
+		                                </property>										
 									</properties>
 								</configuration>
 							</execution>
@@ -175,7 +178,7 @@
 								</configuration>
 							</execution>
 						</executions>
-					</plugin>
+					</plugin>				
 					<plugin>
 						<groupId>org.mortbay.jetty</groupId>
 						<artifactId>jetty-maven-plugin</artifactId>
@@ -197,6 +200,7 @@
 									<wantClientAuth>true</wantClientAuth>
 								</connector>
 							</connectors>
+							
 							<stopPort>${jetty.port}</stopPort>
 							<stopKey>STOP</stopKey>
 							<systemProperties>

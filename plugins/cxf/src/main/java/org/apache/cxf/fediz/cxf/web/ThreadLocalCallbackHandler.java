@@ -30,7 +30,7 @@ import org.w3c.dom.Element;
 
 import org.apache.cxf.fediz.core.SecurityTokenThreadLocal;
 import org.apache.cxf.ws.security.trust.delegation.DelegationCallback;
-import org.apache.ws.security.util.DOM2Writer;
+import org.apache.wss4j.common.util.DOM2Writer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

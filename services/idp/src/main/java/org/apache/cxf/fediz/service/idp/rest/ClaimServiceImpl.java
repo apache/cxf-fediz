@@ -22,10 +22,9 @@ package org.apache.cxf.fediz.service.idp.rest;
 import java.net.URI;
 import java.util.List;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.ValidationException;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
@@ -87,7 +86,7 @@ public class ClaimServiceImpl implements ClaimService {
     @Override
     public Response updateClaim(UriInfo ui, String claimType, Claim claim) {
         if (!claimType.equals(claim.getClaimType().toString())) {
-            throw new ValidationException(Status.BAD_REQUEST);
+            throw new BadRequestException();
         }
         claimDAO.updateClaim(claimType, claim);
         

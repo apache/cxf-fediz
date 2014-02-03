@@ -53,24 +53,24 @@ import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuers;
 import org.apache.cxf.fediz.core.config.jaxb.ValidationType;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
-import org.apache.ws.security.WSConstants;
-import org.apache.ws.security.WSEncryptionPart;
-import org.apache.ws.security.WSPasswordCallback;
-import org.apache.ws.security.WSSecurityException;
-import org.apache.ws.security.components.crypto.Crypto;
-import org.apache.ws.security.components.crypto.CryptoFactory;
-import org.apache.ws.security.components.crypto.CryptoType;
-import org.apache.ws.security.message.WSSecEncrypt;
-import org.apache.ws.security.saml.ext.AssertionWrapper;
-import org.apache.ws.security.saml.ext.SAMLParms;
-import org.apache.ws.security.saml.ext.bean.ConditionsBean;
-import org.apache.ws.security.saml.ext.builder.SAML1Constants;
-import org.apache.ws.security.saml.ext.builder.SAML2Constants;
-import org.apache.ws.security.util.DOM2Writer;
+import org.apache.wss4j.common.WSEncryptionPart;
+import org.apache.wss4j.common.crypto.Crypto;
+import org.apache.wss4j.common.crypto.CryptoFactory;
+import org.apache.wss4j.common.crypto.CryptoType;
+import org.apache.wss4j.common.ext.WSPasswordCallback;
+import org.apache.wss4j.common.ext.WSSecurityException;
+import org.apache.wss4j.common.saml.SAMLCallback;
+import org.apache.wss4j.common.saml.SAMLUtil;
+import org.apache.wss4j.common.saml.SamlAssertionWrapper;
+import org.apache.wss4j.common.saml.bean.ConditionsBean;
+import org.apache.wss4j.common.saml.builder.SAML1Constants;
+import org.apache.wss4j.common.saml.builder.SAML2Constants;
+import org.apache.wss4j.common.util.DOM2Writer;
+import org.apache.wss4j.dom.WSConstants;
+import org.apache.wss4j.dom.message.WSSecEncrypt;
 import org.joda.time.DateTime;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.opensaml.common.SAMLVersion;
 
 import static org.junit.Assert.fail;
 
@@ -218,9 +218,9 @@ public class FederationProcessorTest {
         cp.setAudienceURI(TEST_AUDIENCE);
         callbackHandler.setConditions(cp);
         
-        SAMLParms samlParms = new SAMLParms();
-        samlParms.setCallbackHandler(callbackHandler);
-        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FederationRequest wfReq = new FederationRequest();
@@ -259,9 +259,9 @@ public class FederationProcessorTest {
         cp.setAudienceURI(TEST_AUDIENCE);
         callbackHandler.setConditions(cp);
         
-        SAMLParms samlParms = new SAMLParms();
-        samlParms.setCallbackHandler(callbackHandler);
-        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true, STSUtil.SAMPLE_RSTR_MSG);
         
         FederationRequest wfReq = new FederationRequest();
@@ -297,9 +297,9 @@ public class FederationProcessorTest {
         cp.setAudienceURI(TEST_AUDIENCE);
         callbackHandler.setConditions(cp);
         
-        SAMLParms samlParms = new SAMLParms();
-        samlParms.setCallbackHandler(callbackHandler);
-        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FederationRequest wfReq = new FederationRequest();
@@ -335,9 +335,9 @@ public class FederationProcessorTest {
         cp.setAudienceURI(TEST_AUDIENCE);
         callbackHandler.setConditions(cp);
         
-        SAMLParms samlParms = new SAMLParms();
-        samlParms.setCallbackHandler(callbackHandler);
-        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FederationRequest wfReq = new FederationRequest();
@@ -373,9 +373,9 @@ public class FederationProcessorTest {
         cp.setAudienceURI(TEST_AUDIENCE);
         callbackHandler.setConditions(cp);
         
-        SAMLParms samlParms = new SAMLParms();
-        samlParms.setCallbackHandler(callbackHandler);
-        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FederationRequest wfReq = new FederationRequest();
@@ -409,10 +409,10 @@ public class FederationProcessorTest {
         ConditionsBean cp = new ConditionsBean();
         cp.setAudienceURI(TEST_AUDIENCE);
         callbackHandler.setConditions(cp);
-        
-        SAMLParms samlParms = new SAMLParms();
-        samlParms.setCallbackHandler(callbackHandler);
-        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FederationRequest wfReq = new FederationRequest();
@@ -447,11 +447,10 @@ public class FederationProcessorTest {
         ConditionsBean cp = new ConditionsBean();
         cp.setAudienceURI(TEST_AUDIENCE);
         callbackHandler.setConditions(cp);
-        
-        SAMLParms samlParms = new SAMLParms();
-        samlParms.setCallbackHandler(callbackHandler);
-        samlParms.setSAMLVersion(SAMLVersion.VERSION_11);
-        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FederationRequest wfReq = new FederationRequest();
@@ -488,11 +487,10 @@ public class FederationProcessorTest {
         ConditionsBean cp = new ConditionsBean();
         cp.setAudienceURI(TEST_AUDIENCE);
         callbackHandler.setConditions(cp);
-        
-        SAMLParms samlParms = new SAMLParms();
-        samlParms.setCallbackHandler(callbackHandler);
-        samlParms.setSAMLVersion(SAMLVersion.VERSION_11);
-        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true, STSUtil.SAMPLE_RSTR_2005_02_MSG);
         FederationRequest wfReq = new FederationRequest();
         wfReq.setWa(FederationConstants.ACTION_SIGNIN);
@@ -528,9 +526,9 @@ public class FederationProcessorTest {
         cp.setAudienceURI(TEST_AUDIENCE);
         callbackHandler.setConditions(cp);
         
-        SAMLParms samlParms = new SAMLParms();
-        samlParms.setCallbackHandler(callbackHandler);
-        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FederationRequest wfReq = new FederationRequest();
@@ -567,9 +565,9 @@ public class FederationProcessorTest {
         cp.setAudienceURI(TEST_AUDIENCE);
         callbackHandler.setConditions(cp);
         
-        SAMLParms samlParms = new SAMLParms();
-        samlParms.setCallbackHandler(callbackHandler);
-        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FederationRequest wfReq = new FederationRequest();
@@ -610,10 +608,10 @@ public class FederationProcessorTest {
         ConditionsBean cp = new ConditionsBean();
         cp.setAudienceURI(TEST_AUDIENCE);
         callbackHandler.setConditions(cp);
-        
-        SAMLParms samlParms = new SAMLParms();
-        samlParms.setCallbackHandler(callbackHandler);
-        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         
         String rstr = createSamlToken(assertion, "mystskey", true);
         FederationRequest wfReq = new FederationRequest();
@@ -652,9 +650,9 @@ public class FederationProcessorTest {
         cp.setAudienceURI(TEST_AUDIENCE);
         callbackHandler.setConditions(cp);
         
-        SAMLParms samlParms = new SAMLParms();
-        samlParms.setCallbackHandler(callbackHandler);
-        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         
         String rstr = createSamlToken(assertion, "mystskey", false);
         FederationRequest wfReq = new FederationRequest();
@@ -691,9 +689,10 @@ public class FederationProcessorTest {
         cp.setAudienceURI(TEST_AUDIENCE);
         callbackHandler.setConditions(cp);
         
-        SAMLParms samlParms = new SAMLParms();
-        samlParms.setCallbackHandler(callbackHandler);
-        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
+        
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FederationRequest wfReq = new FederationRequest();
@@ -736,10 +735,10 @@ public class FederationProcessorTest {
         ConditionsBean cp = new ConditionsBean();
         cp.setAudienceURI(TEST_AUDIENCE);
         callbackHandler.setConditions(cp);
-        
-        SAMLParms samlParms = new SAMLParms();
-        samlParms.setCallbackHandler(callbackHandler);
-        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         
         String rstr = createSamlToken(assertion, "mystskey", true);
         FederationRequest wfReq = new FederationRequest();
@@ -776,9 +775,9 @@ public class FederationProcessorTest {
         cp.setAudienceURI(TEST_AUDIENCE);
         callbackHandler.setConditions(cp);
         
-        SAMLParms samlParms = new SAMLParms();
-        samlParms.setCallbackHandler(callbackHandler);
-        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         
         String rstr = createSamlToken(assertion, "mystskey", true);
         FederationRequest wfReq = new FederationRequest();
@@ -819,9 +818,10 @@ public class FederationProcessorTest {
         cp.setAudienceURI(TEST_AUDIENCE);
         callbackHandler.setConditions(cp);
         
-        SAMLParms samlParms = new SAMLParms();
-        samlParms.setCallbackHandler(callbackHandler);
-        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
+        
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FederationRequest wfReq = new FederationRequest();
@@ -863,9 +863,10 @@ public class FederationProcessorTest {
         cp.setAudienceURI(TEST_AUDIENCE);
         callbackHandler.setConditions(cp);
         
-        SAMLParms samlParms = new SAMLParms();
-        samlParms.setCallbackHandler(callbackHandler);
-        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
+        
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FederationRequest wfReq = new FederationRequest();
@@ -901,9 +902,10 @@ public class FederationProcessorTest {
         cp.setAudienceURI(TEST_AUDIENCE);
         callbackHandler.setConditions(cp);
         
-        SAMLParms samlParms = new SAMLParms();
-        samlParms.setCallbackHandler(callbackHandler);
-        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
+        
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FederationRequest wfReq = new FederationRequest();
@@ -941,9 +943,10 @@ public class FederationProcessorTest {
         cp.setAudienceURI(TEST_AUDIENCE);
         callbackHandler.setConditions(cp);
         
-        SAMLParms samlParms = new SAMLParms();
-        samlParms.setCallbackHandler(callbackHandler);
-        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
+        
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FederationRequest wfReq = new FederationRequest();
@@ -978,10 +981,10 @@ public class FederationProcessorTest {
         ConditionsBean cp = new ConditionsBean();
         cp.setAudienceURI(TEST_AUDIENCE);
         callbackHandler.setConditions(cp);
-        
-        SAMLParms samlParms = new SAMLParms();
-        samlParms.setCallbackHandler(callbackHandler);
-        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         
         String rstr = encryptAndSignToken(assertion);
         
@@ -1024,10 +1027,10 @@ public class FederationProcessorTest {
         cryptoType.setAlias("myclientkey");
         X509Certificate[] certs = clientCrypto.getX509Certificates(cryptoType);
         callbackHandler.setCerts(certs);
-        
-        SAMLParms samlParms = new SAMLParms();
-        samlParms.setCallbackHandler(callbackHandler);
-        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         
         WSPasswordCallback[] cb = {
             new WSPasswordCallback("mystskey", WSPasswordCallback.SIGNATURE)
@@ -1118,10 +1121,11 @@ public class FederationProcessorTest {
         ConditionsBean cp = new ConditionsBean();
         cp.setAudienceURI(TEST_AUDIENCE);
         callbackHandler.setConditions(cp);
+
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         
-        SAMLParms samlParms = new SAMLParms();
-        samlParms.setCallbackHandler(callbackHandler);
-        AssertionWrapper assertion = new AssertionWrapper(samlParms);
         String rstr = createSamlToken(assertion, "mystskey", true, STSUtil.SAMPLE_RSTR_MSG);
         
         FederationRequest wfReq = new FederationRequest();
@@ -1144,7 +1148,7 @@ public class FederationProcessorTest {
     
     
     private String encryptAndSignToken(
-        AssertionWrapper assertion
+        SamlAssertionWrapper assertion
     ) throws Exception {
         
         WSPasswordCallback[] cb = {
@@ -1185,12 +1189,12 @@ public class FederationProcessorTest {
         return DOM2Writer.nodeToString(doc);
     }
     
-    private String createSamlToken(AssertionWrapper assertion, String alias, boolean sign)
+    private String createSamlToken(SamlAssertionWrapper assertion, String alias, boolean sign)
         throws IOException, UnsupportedCallbackException, WSSecurityException, Exception {
         return createSamlToken(assertion, alias, sign, STSUtil.SAMPLE_RSTR_COLL_MSG);
     }
     
-    private String createSamlToken(AssertionWrapper assertion, String alias, boolean sign, String rstr)
+    private String createSamlToken(SamlAssertionWrapper assertion, String alias, boolean sign, String rstr)
         throws IOException, UnsupportedCallbackException, WSSecurityException, Exception {
         WSPasswordCallback[] cb = {
             new WSPasswordCallback(alias, WSPasswordCallback.SIGNATURE)

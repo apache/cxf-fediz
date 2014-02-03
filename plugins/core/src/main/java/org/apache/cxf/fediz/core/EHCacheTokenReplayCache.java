@@ -30,7 +30,7 @@ import net.sf.ehcache.config.CacheConfiguration;
 import net.sf.ehcache.config.Configuration;
 import net.sf.ehcache.config.ConfigurationFactory;
 
-import org.apache.ws.security.util.Loader;
+import org.apache.wss4j.common.util.Loader;
 
 /**
  * An in-memory EHCache implementation of the TokenReplayCache interface. 

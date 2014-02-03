@@ -19,8 +19,6 @@
 
 package org.apache.cxf.fediz.core.metadata;
 
-
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -42,9 +40,7 @@ import org.apache.cxf.fediz.core.config.Protocol;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.cxf.fediz.core.util.SignatureUtils;
-
-import org.apache.ws.security.util.UUIDGenerator;
-
+import org.apache.xml.security.stax.impl.util.IDGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +72,7 @@ public class MetadataWriter {
 
             writer.writeStartDocument();
 
-            String referenceID = "_" + UUIDGenerator.getUUID();
+            String referenceID = IDGenerator.generateID("_");
             writer.writeStartElement("", "EntityDescriptor", SAML2_METADATA_NS);
             writer.writeAttribute("ID", referenceID);
             

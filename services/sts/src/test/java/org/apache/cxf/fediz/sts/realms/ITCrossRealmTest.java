@@ -30,7 +30,7 @@ import org.apache.cxf.bus.spring.SpringBusFactory;
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.fediz.sts.AbstractSTSTest;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
-import org.apache.ws.security.saml.ext.AssertionWrapper;
+import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.opensaml.saml2.core.Attribute;
@@ -94,7 +94,7 @@ public class ITCrossRealmTest extends AbstractSTSTest {
         Assert.assertTrue(SAML2_TOKEN_TYPE.equals(idpToken.getTokenType()));
         Assert.assertTrue(idpToken.getToken() != null);
         
-        AssertionWrapper assertion = new AssertionWrapper(idpToken.getToken());
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(idpToken.getToken());
         validateIssuer(assertion, "STS Realm A");
 
         
@@ -122,7 +122,7 @@ public class ITCrossRealmTest extends AbstractSTSTest {
         Assert.assertTrue(SAML2_TOKEN_TYPE.equals(rpToken.getTokenType()));
         Assert.assertTrue(rpToken.getToken() != null);
         
-        assertion = new AssertionWrapper(rpToken.getToken());
+        assertion = new SamlAssertionWrapper(rpToken.getToken());
         this.validateSubject(testProps, assertion);
         validateIssuer(assertion, "STS Realm B");
 
@@ -177,7 +177,7 @@ public class ITCrossRealmTest extends AbstractSTSTest {
         Assert.assertTrue(SAML2_TOKEN_TYPE.equals(idpToken.getTokenType()));
         Assert.assertTrue(idpToken.getToken() != null);
         
-        AssertionWrapper assertion = new AssertionWrapper(idpToken.getToken());
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(idpToken.getToken());
         validateIssuer(assertion, "STS Realm A");
 
         
@@ -205,7 +205,7 @@ public class ITCrossRealmTest extends AbstractSTSTest {
         Assert.assertTrue(SAML2_TOKEN_TYPE.equals(rpToken.getTokenType()));
         Assert.assertTrue(rpToken.getToken() != null);
         
-        assertion = new AssertionWrapper(rpToken.getToken());
+        assertion = new SamlAssertionWrapper(rpToken.getToken());
         this.validateSubject(testProps, assertion);
         validateIssuer(assertion, "STS Realm B");
         

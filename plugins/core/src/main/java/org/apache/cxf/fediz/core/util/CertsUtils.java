@@ -27,13 +27,11 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Properties;
 
-import org.apache.ws.security.WSSecurityException;
-import org.apache.ws.security.components.crypto.CredentialException;
-import org.apache.ws.security.components.crypto.Crypto;
-import org.apache.ws.security.components.crypto.CryptoFactory;
-import org.apache.ws.security.components.crypto.CryptoType;
-import org.apache.ws.security.components.crypto.Merlin;
-
+import org.apache.wss4j.common.crypto.Crypto;
+import org.apache.wss4j.common.crypto.CryptoFactory;
+import org.apache.wss4j.common.crypto.CryptoType;
+import org.apache.wss4j.common.crypto.Merlin;
+import org.apache.wss4j.common.ext.WSSecurityException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,9 +94,6 @@ public final class CertsUtils {
             LOG.error("Failed to load keystore " + prop.toString(), ex);
             throw new RuntimeException("Failed to load keystore " + prop.toString());
         } catch (IOException ex) {
-            LOG.error("Failed to read signing metadata key", ex);
-            throw new RuntimeException("Failed to read signing metadata key");
-        } catch (CredentialException ex) {
             LOG.error("Failed to read signing metadata key", ex);
             throw new RuntimeException("Failed to read signing metadata key");
         }

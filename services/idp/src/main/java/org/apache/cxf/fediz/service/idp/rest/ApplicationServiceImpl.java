@@ -22,8 +22,8 @@ package org.apache.cxf.fediz.service.idp.rest;
 import java.net.URI;
 import java.util.List;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.ValidationException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -94,7 +94,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     public Response updateApplication(UriInfo ui, String realm, Application application) {
         if (!realm.equals(application.getRealm().toString())) {
-            throw new ValidationException(Status.BAD_REQUEST);
+            throw new BadRequestException();
         }
         if (application.getRequestedClaims() != null && application.getRequestedClaims().size() > 0) {
             LOG.warn("Application resource contains sub resource 'claims'");

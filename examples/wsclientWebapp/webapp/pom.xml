@@ -89,8 +89,20 @@
                     <groupId>org.apache.santuario</groupId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>wss4j</artifactId>
-                    <groupId>org.apache.ws.security</groupId>
+                    <artifactId>wss4j-ws-security-dom</artifactId>
+                    <groupId>org.apache.wss4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>wss4j-policy</artifactId>
+                    <groupId>org.apache.wss4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>wss4j-ws-security-stax</artifactId>
+                    <groupId>org.apache.wss4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>wss4j-ws-security-policy-stax</artifactId>
+                    <groupId>org.apache.wss4j</groupId>
                 </exclusion>
                 <exclusion>
                     <artifactId>ehcache-core</artifactId>

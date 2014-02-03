@@ -39,8 +39,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.ws.security</groupId>
-            <artifactId>wss4j</artifactId>
+            <groupId>org.apache.wss4j</groupId>
+            <artifactId>wss4j-ws-security-dom</artifactId>
             <version>${wss4j.version}</version>
             <scope>compile</scope>
         </dependency>

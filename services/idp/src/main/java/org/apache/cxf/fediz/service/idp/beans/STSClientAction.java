@@ -44,13 +44,13 @@ import org.apache.cxf.fediz.service.idp.domain.Application;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.RequestClaim;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
-import org.apache.cxf.helpers.DOMUtils;
+import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.cxf.staxutils.W3CDOMStreamWriter;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.cxf.ws.security.trust.STSClient;
 import org.apache.cxf.ws.security.trust.STSUtils;
-import org.apache.ws.security.WSConstants;
-import org.apache.ws.security.saml.ext.AssertionWrapper;
+import org.apache.wss4j.common.saml.SamlAssertionWrapper;
+import org.apache.wss4j.dom.WSConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.webflow.execution.RequestContext;
@@ -245,13 +245,13 @@ public class STSClientAction {
         String rpToken = sts.requestSecurityTokenResponse(wtrealm);
         
         InputStream is = new ByteArrayInputStream(rpToken.getBytes());
-        Document doc = DOMUtils.readXml(is);
+        Document doc = StaxUtils.read(is);
         NodeList nd = doc.getElementsByTagName("saml2:Assertion");
         if (nd.getLength() == 0) {
             nd = doc.getElementsByTagName("saml1:Assertion");
         }
         Element e = (Element) nd.item(0);
-        AssertionWrapper aw = new AssertionWrapper(e);
+        SamlAssertionWrapper aw = new SamlAssertionWrapper(e);
         String id = aw.getId();
 
         LOG.info("[RP_TOKEN=" + id + "] successfully created for realm ["

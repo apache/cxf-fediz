@@ -20,7 +20,7 @@
 package org.apache.cxf.fediz.core.config;
 
 import org.apache.cxf.fediz.core.config.jaxb.KeyManagersType;
-import org.apache.ws.security.components.crypto.Crypto;
+import org.apache.wss4j.common.crypto.Crypto;
 
 public class KeyManager {
     

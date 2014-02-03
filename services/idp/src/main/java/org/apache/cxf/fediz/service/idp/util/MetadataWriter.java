@@ -24,7 +24,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-
 import java.security.cert.X509Certificate;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -32,17 +31,14 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.w3c.dom.Document;
-
 import org.apache.cxf.fediz.core.util.CertsUtils;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.cxf.fediz.core.util.SignatureUtils;
 import org.apache.cxf.fediz.service.idp.domain.Claim;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
-
-import org.apache.ws.security.components.crypto.Crypto;
-import org.apache.ws.security.util.Base64;
-import org.apache.ws.security.util.UUIDGenerator;
-
+import org.apache.wss4j.common.crypto.Crypto;
+import org.apache.xml.security.stax.impl.util.IDGenerator;
+import org.apache.xml.security.utils.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,7 +71,7 @@ public class MetadataWriter {
 
             writer.writeStartDocument();
 
-            String referenceID = "_" + UUIDGenerator.getUUID();
+            String referenceID = IDGenerator.generateID("_");
             writer.writeStartElement("", "EntityDescriptor", SAML2_METADATA_NS);
             writer.writeAttribute("ID", referenceID);
                       

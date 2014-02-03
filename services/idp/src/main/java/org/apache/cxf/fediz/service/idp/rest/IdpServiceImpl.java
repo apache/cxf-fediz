@@ -23,8 +23,8 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.ValidationException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -103,7 +103,7 @@ public class IdpServiceImpl implements IdpService {
     @Override
     public Response updateIdp(UriInfo ui, String realm, Idp idp) {
         if (!realm.equals(idp.getRealm().toString())) {
-            throw new ValidationException(Status.BAD_REQUEST);
+            throw new BadRequestException();
         }
         if (idp.getApplications() != null && idp.getApplications().size() > 0) {
             LOG.warn("IDP resource contains sub resource 'applications'");

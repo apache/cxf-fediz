@@ -11,7 +11,7 @@
 
   <wsdl:import namespace="http://docs.oasis-open.org/ws-sx/ws-trust/200512/" location="ws-trust-1.4.wsdl"/>
 
-  <wsdl:binding name="UT_Binding" type="wstrust:STS">
+  <wsdl:binding name="UT_Binding" type="tns:STS">
     <wsp:PolicyReference URI="#UT_policy" />
   	<soap:binding style="document"
   		transport="http://schemas.xmlsoap.org/soap/http" />
@@ -85,7 +85,7 @@
   	</wsdl:operation>
   </wsdl:binding>
   
-  <wsdl:binding name="UTEncrypted_Binding" type="wstrust:STS">
+  <wsdl:binding name="UTEncrypted_Binding" type="tns:STS">
     <wsp:PolicyReference URI="#UTEncrypted_policy" />
   	<soap:binding style="document"
   		transport="http://schemas.xmlsoap.org/soap/http" />
@@ -159,7 +159,7 @@
   	</wsdl:operation>
   </wsdl:binding>
   
-  <wsdl:binding name="X509_Binding" type="wstrust:STS">
+  <wsdl:binding name="X509_Binding" type="tns:STS">
     <wsp:PolicyReference URI="#X509_policy" />
   	<soap:binding style="document"
   		transport="http://schemas.xmlsoap.org/soap/http" />
@@ -233,7 +233,7 @@
   	</wsdl:operation>
   </wsdl:binding>
   
-  <wsdl:binding name="Transport_Binding" type="wstrust:STS">
+  <wsdl:binding name="Transport_Binding" type="tns:STS">
     <wsp:PolicyReference URI="#Transport_policy" />
   	<soap:binding style="document"
   		transport="http://schemas.xmlsoap.org/soap/http" />
@@ -306,7 +306,7 @@
   		</wsdl:output>
   	</wsdl:operation>
   </wsdl:binding>
-  <wsdl:binding name="TransportUT_Binding" type="wstrust:STS">
+  <wsdl:binding name="TransportUT_Binding" type="tns:STS">
     <wsp:PolicyReference URI="#TransportUT_policy" />
   	<soap:binding style="document"
   		transport="http://schemas.xmlsoap.org/soap/http" />
@@ -379,7 +379,7 @@
   		</wsdl:output>
   	</wsdl:operation>
   </wsdl:binding>
-  <wsdl:binding name="TransportKerberos_Binding" type="wstrust:STS">
+  <wsdl:binding name="TransportKerberos_Binding" type="tns:STS">
     <wsp:PolicyReference URI="#TransportKerberos_policy" />
   	<soap:binding style="document"
   		transport="http://schemas.xmlsoap.org/soap/http" />
@@ -452,7 +452,7 @@
   		</wsdl:output>
   	</wsdl:operation>
   </wsdl:binding>
-  <wsdl:binding name="TransportSaml_Binding" type="wstrust:STS">
+  <wsdl:binding name="TransportSaml_Binding" type="tns:STS">
     <wsp:PolicyReference URI="#TransportSaml_policy" />
   	<soap:binding style="document"
   		transport="http://schemas.xmlsoap.org/soap/http" />
@@ -817,7 +817,7 @@
                         <sp:Lax />
                      </wsp:Policy>
                   </sp:Layout>
-                  <!--<sp:IncludeTimestamp />-->
+                  <sp:IncludeTimestamp />
                </wsp:Policy>
             </sp:TransportBinding>
             <sp:SignedSupportingTokens

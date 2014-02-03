@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 
 import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.sts.IdentityMapper;
-import org.apache.ws.security.CustomTokenPrincipal;
+import org.apache.wss4j.common.principal.CustomTokenPrincipal;
 
 /**
  * A test implementation of IdentityMapper.

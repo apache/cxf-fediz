@@ -28,7 +28,6 @@ import java.util.Map;
 import javax.xml.namespace.QName;
 
 import org.w3c.dom.Element;
-
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 //import org.apache.cxf.endpoint.Client;
@@ -38,8 +37,8 @@ import org.apache.cxf.fediz.core.ClaimTypes;
 //import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 import org.apache.cxf.ws.security.SecurityConstants;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
-import org.apache.ws.security.WSConstants;
-import org.apache.ws.security.saml.ext.AssertionWrapper;
+import org.apache.wss4j.common.saml.SamlAssertionWrapper;
+import org.apache.wss4j.dom.WSConstants;
 import org.opensaml.xml.XMLObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,7 +116,7 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
             //authorities.add(new SimpleGrantedAuthority("ROLE_AUTHENTICATED"));
             //Not needed because AuthenticatedVoter has been added for SecurityFlowExecutionListener
             if (roleURI != null) {
-                AssertionWrapper assertion = new AssertionWrapper(token.getToken());
+                SamlAssertionWrapper assertion = new SamlAssertionWrapper(token.getToken());
                 List<Claim> claims = parseClaimsInAssertion(assertion.getSaml2());
                 for (Claim c : claims) {
                     if (roleURI.equals(c.getClaimType())) {

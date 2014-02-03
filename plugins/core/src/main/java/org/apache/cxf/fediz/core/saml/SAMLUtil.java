@@ -24,9 +24,9 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
-import org.apache.ws.security.saml.SAMLKeyInfo;
-import org.apache.ws.security.saml.ext.AssertionWrapper;
-import org.apache.ws.security.saml.ext.OpenSAMLUtil;
+import org.apache.wss4j.common.saml.OpenSAMLUtil;
+import org.apache.wss4j.common.saml.SAMLKeyInfo;
+import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 
 /**
  * Some SAML Utility methods
@@ -45,7 +45,7 @@ public final class SAMLUtil  {
      * @param tlsCerts The client certificates
      */
     public static boolean checkHolderOfKey(
-        AssertionWrapper assertionWrapper,
+        SamlAssertionWrapper assertionWrapper,
         Certificate[] tlsCerts
     ) {
         List<String> confirmationMethods = assertionWrapper.getConfirmationMethods();

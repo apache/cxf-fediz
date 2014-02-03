@@ -20,7 +20,6 @@
 package org.apache.cxf.fediz.core.saml;
 
 
-import java.math.BigInteger;
 import java.security.PublicKey;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
@@ -32,15 +31,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.apache.ws.security.WSSecurityException;
-import org.apache.ws.security.components.crypto.Crypto;
-import org.apache.ws.security.components.crypto.CryptoType;
-import org.apache.ws.security.handler.RequestData;
-import org.apache.ws.security.saml.SAMLKeyInfo;
-import org.apache.ws.security.saml.ext.AssertionWrapper;
-import org.apache.ws.security.saml.ext.OpenSAMLUtil;
-import org.apache.ws.security.validate.Credential;
-import org.apache.ws.security.validate.Validator;
+import org.apache.wss4j.common.crypto.Crypto;
+import org.apache.wss4j.common.ext.WSSecurityException;
+import org.apache.wss4j.common.saml.OpenSAMLUtil;
+import org.apache.wss4j.common.saml.SAMLKeyInfo;
+import org.apache.wss4j.common.saml.SamlAssertionWrapper;
+import org.apache.wss4j.dom.handler.RequestData;
+import org.apache.wss4j.dom.validate.Credential;
+import org.apache.wss4j.dom.validate.Validator;
 import org.joda.time.DateTime;
 import org.opensaml.common.SAMLVersion;
 import org.opensaml.xml.validation.ValidationException;
@@ -120,10 +118,10 @@ public class SamlAssertionValidator implements Validator {
      * @throws WSSecurityException on a failed validation
      */
     public Credential validate(Credential credential, RequestData data) throws WSSecurityException {
-        if (credential == null || credential.getAssertion() == null) {
-            throw new WSSecurityException(WSSecurityException.FAILURE, "noCredential");
+        if (credential == null || credential.getSamlAssertion() == null) {
+            throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "noCredential");
         }
-        AssertionWrapper assertion = credential.getAssertion();
+        SamlAssertionWrapper assertion = credential.getSamlAssertion();
         
         // Check HOK requirements
         String confirmMethod = null;
@@ -134,12 +132,12 @@ public class SamlAssertionValidator implements Validator {
         if (OpenSAMLUtil.isMethodHolderOfKey(confirmMethod)) {
             if (assertion.getSubjectKeyInfo() == null) {
                 LOG.debug("There is no Subject KeyInfo to match the holder-of-key subject conf method");
-                throw new WSSecurityException(WSSecurityException.FAILURE, "noKeyInSAMLToken");
+                throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "noKeyInSAMLToken");
             }
             // The assertion must have been signed for HOK
             if (!assertion.isSigned()) {
                 LOG.debug("A holder-of-key assertion must be signed");
-                throw new WSSecurityException(WSSecurityException.FAILURE, "invalidSAMLsecurity");
+                throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
             }
         }
         
@@ -165,7 +163,7 @@ public class SamlAssertionValidator implements Validator {
      * @throws WSSecurityException
      */
     protected Credential verifySignedAssertion(
-        AssertionWrapper assertion,
+        SamlAssertionWrapper assertion,
         RequestData data
     ) throws WSSecurityException {
         Credential credential = new Credential();
@@ -177,41 +175,32 @@ public class SamlAssertionValidator implements Validator {
         PublicKey publicKey = credential.getPublicKey();
         Crypto crypto = getCrypto(data);
         if (crypto == null) {
-            throw new WSSecurityException(WSSecurityException.FAILURE, "noSigCryptoFile");
+            throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "noSigCryptoFile");
         }
         
         if (certs != null && certs.length > 0) {
             validateCertificates(certs);
-            boolean trust = false;
-            boolean enableRevocation = data.isRevocationEnabled();
-            if (certs.length == 1) {
-                trust = verifyTrustInCert(certs[0], crypto, enableRevocation);
-            } else {
-                trust = verifyTrustInCerts(certs, crypto, enableRevocation);
-            }
-            if (trust) {
-                if (signatureTrustType.equals(TRUST_TYPE.CHAIN_TRUST_CONSTRAINTS)) {
-                    if (matches(certs[0])) {
-                        return credential;
-                    } else {
-                        throw new WSSecurityException(WSSecurityException.FAILED_AUTHENTICATION);
-                    }
-                } else {
+            validateCertificates(certs);
+            verifyTrustInCerts(certs, crypto, data, data.isRevocationEnabled());
+            if (signatureTrustType.equals(TRUST_TYPE.CHAIN_TRUST_CONSTRAINTS)) {
+                if (matches(certs[0])) {
                     return credential;
+                } else {
+                    throw new WSSecurityException(WSSecurityException.ErrorCode.FAILED_AUTHENTICATION);
                 }
-            }
-        }
-        if (publicKey != null) {
-            boolean trust = validatePublicKey(publicKey, crypto);
-            if (trust) {
+            } else {
                 return credential;
             }
         }
-        throw new WSSecurityException(WSSecurityException.FAILED_AUTHENTICATION);
+        if (publicKey != null) {
+            validatePublicKey(publicKey, crypto);
+            return credential;
+        }
+        throw new WSSecurityException(WSSecurityException.ErrorCode.FAILED_AUTHENTICATION);
     }
 
     protected Crypto getCrypto(RequestData data) {
-        return data.getSigCrypto();
+        return data.getSigVerCrypto();
     }
 
 
@@ -227,170 +216,13 @@ public class SamlAssertionValidator implements Validator {
             }
         } catch (CertificateExpiredException e) {
             throw new WSSecurityException(
-                WSSecurityException.FAILED_CHECK, "invalidCert", null, e
+                WSSecurityException.ErrorCode.FAILED_CHECK, "invalidCert", e
             );
         } catch (CertificateNotYetValidException e) {
             throw new WSSecurityException(
-                WSSecurityException.FAILED_CHECK, "invalidCert", null, e
+                WSSecurityException.ErrorCode.FAILED_CHECK, "invalidCert", e
             );
         }
-    }
-    
-    /**
-     * Evaluate whether a given certificate should be trusted.
-     * 
-     * Policy used in this implementation:
-     * 1. Search the keystore for the transmitted certificate
-     * 2. Search the keystore for a connection to the transmitted certificate
-     * (that is, search for certificate(s) of the issuer of the transmitted certificate
-     * 3. Verify the trust path for those certificates found because the search for the issuer 
-     * might be fooled by a phony DN (String!)
-     *
-     * @param cert the certificate that should be validated against the keystore
-     * @param crypto A crypto instance to use for trust validation
-     * @param enableRevocation Whether revocation is enabled or not
-     * @return true if the certificate is trusted, false if not
-     * @throws WSSecurityException
-     */
-    protected boolean verifyTrustInCert(
-        X509Certificate cert, 
-        Crypto crypto,
-        boolean enableRevocation
-    ) throws WSSecurityException {
-        String subjectString = cert.getSubjectX500Principal().getName();
-        String issuerString = cert.getIssuerX500Principal().getName();
-        BigInteger issuerSerial = cert.getSerialNumber();
-
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Transmitted certificate has subject " + subjectString);
-            LOG.debug(
-                "Transmitted certificate has issuer " + issuerString + " (serial " 
-                + issuerSerial + ")"
-            );
-        }
-
-        //
-        // FIRST step - Search the keystore for the transmitted certificate
-        //              If peer trust is enforced then validation fails if
-        //              certificate not found in keystore
-        //
-        boolean isInKeystore = isCertificateInKeyStore(crypto, cert);
-        if (!enableRevocation && isInKeystore) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                    "Certificate " + subjectString + " found in keystore"
-                );
-            }
-            return true;
-        }
-        if (!isInKeystore && signatureTrustType.equals(TRUST_TYPE.PEER_TRUST)) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                    "Certificate " + subjectString + " not found in keystore"
-                );
-            }
-            return false;
-        }
-
-        //
-        // SECOND step - Search for the issuer cert (chain) of the transmitted certificate in the 
-        // keystore or the truststore
-        //
-        CryptoType cryptoType = new CryptoType(CryptoType.TYPE.SUBJECT_DN);
-        cryptoType.setSubjectDN(issuerString);
-        X509Certificate[] foundCerts = crypto.getX509Certificates(cryptoType);
-
-        // If the certs have not been found, the issuer is not in the keystore/truststore
-        // As a direct result, do not trust the transmitted certificate
-        if (foundCerts == null || foundCerts.length < 1) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                    "No certs found in keystore for issuer " + issuerString 
-                    + " of certificate for " + subjectString
-                );
-            }
-            return false;
-        }
-
-        //
-        // THIRD step
-        // Check the certificate trust path for the issuer cert chain
-        //
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(
-                "Preparing to validate certificate path for issuer " + issuerString
-            );
-        }
-        //
-        // Form a certificate chain from the transmitted certificate
-        // and the certificate(s) of the issuer from the keystore/truststore
-        //
-        X509Certificate[] x509certs = new X509Certificate[foundCerts.length + 1];
-        x509certs[0] = cert;
-        for (int j = 0; j < foundCerts.length; j++) {
-            x509certs[j + 1] = (X509Certificate)foundCerts[j];
-        }
-
-        //
-        // Use the validation method from the crypto to check whether the subjects' 
-        // certificate was really signed by the issuer stated in the certificate
-        //
-        if (crypto.verifyTrust(x509certs, enableRevocation)) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                    "Certificate path has been verified for certificate with subject " 
-                     + subjectString
-                );
-            }
-            return true;
-        }
-
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(
-                "Certificate path could not be verified for certificate with subject " 
-                + subjectString
-            );
-        }
-        return false;
-    }
-    
-    /**
-     * Check to see if the certificate argument is in the keystore
-     * @param crypto A Crypto instance to use for trust validation
-     * @param cert The certificate to check
-     * @return true if cert is in the keystore
-     * @throws WSSecurityException
-     */
-    protected boolean isCertificateInKeyStore(
-        Crypto crypto,
-        X509Certificate cert
-    ) throws WSSecurityException {
-        String issuerString = cert.getIssuerX500Principal().getName();
-        BigInteger issuerSerial = cert.getSerialNumber();
-        
-        CryptoType cryptoType = new CryptoType(CryptoType.TYPE.ISSUER_SERIAL);
-        cryptoType.setIssuerSerial(issuerString, issuerSerial);
-        X509Certificate[] foundCerts = crypto.getX509Certificates(cryptoType);
-
-        //
-        // If a certificate has been found, the certificates must be compared
-        // to ensure against phony DNs (compare encoded form including signature)
-        //
-        if (foundCerts != null && foundCerts[0] != null && foundCerts[0].equals(cert)) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                    "Direct trust for certificate with " + cert.getSubjectX500Principal().getName()
-                );
-            }
-            return true;
-        }
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(
-                "No certificate found for subject from issuer with " + issuerString 
-                + " (serial " + issuerSerial + ")"
-            );
-        }
-        return false;
     }
     
     /**
@@ -398,57 +230,42 @@ public class SamlAssertionValidator implements Validator {
      * 
      * @param certificates the certificate chain that should be validated against the keystore
      * @param crypto A Crypto instance
+     * @param data A RequestData instance
      * @param enableRevocation Whether revocation is enabled or not
-     * @return true if the certificate chain is trusted, false if not
-     * @throws WSSecurityException
+     * @throws WSSecurityException if the certificate chain is not trusted
      */
-    protected boolean verifyTrustInCerts(
+    protected void verifyTrustInCerts(
         X509Certificate[] certificates, 
         Crypto crypto,
+        RequestData data,
         boolean enableRevocation
     ) throws WSSecurityException {
-        if (certificates == null || certificates.length < 2) {
-            return false;
-        }
-        
         String subjectString = certificates[0].getSubjectX500Principal().getName();
         //
         // Use the validation method from the crypto to check whether the subjects' 
         // certificate was really signed by the issuer stated in the certificate
         //
-        if (crypto.verifyTrust(certificates, enableRevocation)) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                    "Certificate path has been verified for certificate with subject " 
-                    + subjectString
-                );
-            }
-            return true;
-        }
-        
+        crypto.verifyTrust(certificates, enableRevocation);
         if (LOG.isDebugEnabled()) {
             LOG.debug(
-                "Certificate path could not be verified for certificate with subject " 
-                + subjectString
+                "Certificate path has been verified for certificate with subject " + subjectString
             );
         }
-            
-        return false;
     }
     
     /**
      * Validate a public key
      * @throws WSSecurityException
      */
-    protected boolean validatePublicKey(PublicKey publicKey, Crypto crypto) 
+    protected void validatePublicKey(PublicKey publicKey, Crypto crypto) 
         throws WSSecurityException {
-        return crypto.verifyTrust(publicKey);
+        crypto.verifyTrust(publicKey);
     }
     
     /**
      * Check the Conditions of the Assertion.
      */
-    protected void checkConditions(AssertionWrapper assertion) throws WSSecurityException {
+    protected void checkConditions(SamlAssertionWrapper assertion) throws WSSecurityException {
         DateTime validFrom = null;
         DateTime validTill = null;
         if (assertion.getSamlVersion().equals(SAMLVersion.VERSION_20)
@@ -466,20 +283,20 @@ public class SamlAssertionValidator implements Validator {
             currentTime = currentTime.plusSeconds(futureTTL);
             if (validFrom.isAfter(currentTime)) {
                 LOG.debug("SAML Token condition (Not Before) not met");
-                throw new WSSecurityException(WSSecurityException.FAILURE, "invalidSAMLsecurity");
+                throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
             }
         }
 
         if (validTill != null && validTill.isBeforeNow()) {
             LOG.debug("SAML Token condition (Not On Or After) not met");
-            throw new WSSecurityException(WSSecurityException.FAILURE, "invalidSAMLsecurity");
+            throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
         }
     }
     
     /**
      * Validate the assertion against schemas/profiles
      */
-    protected void validateAssertion(AssertionWrapper assertion) throws WSSecurityException {
+    protected void validateAssertion(SamlAssertionWrapper assertion) throws WSSecurityException {
         if (assertion.getSaml1() != null) {
             ValidatorSuite schemaValidators = 
                 org.opensaml.Configuration.getValidatorSuite("saml1-schema-validator");
@@ -491,7 +308,7 @@ public class SamlAssertionValidator implements Validator {
             } catch (ValidationException e) {
                 LOG.debug("Saml Validation error: " + e.getMessage(), e);
                 throw new WSSecurityException(
-                    WSSecurityException.FAILURE, "invalidSAMLsecurity", null, e
+                    WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity", null, e
                 );
             }
         } else if (assertion.getSaml2() != null) {
@@ -505,7 +322,7 @@ public class SamlAssertionValidator implements Validator {
             } catch (ValidationException e) {
                 LOG.debug("Saml Validation error: " + e.getMessage(), e);
                 throw new WSSecurityException(
-                    WSSecurityException.FAILURE, "invalidSAMLsecurity", null, e
+                    WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity", null, e
                 );
             }
         }

@@ -19,7 +19,13 @@
 
 	<import resource="classpath:META-INF/cxf/cxf.xml" />
 	
-	<bean id="loggerListener" class="org.apache.cxf.sts.event.LoggerListener" />
+	 
+	<bean id="loggerListener" class="org.apache.cxf.sts.event.map.EventMapper">
+	   <constructor-arg>
+	       <bean class="org.apache.cxf.sts.event.map.MapEventLogger" />
+	   </constructor-arg>
+	</bean>
+	
 
 	<!--
 		Per default the resource <file.xml> is imported.

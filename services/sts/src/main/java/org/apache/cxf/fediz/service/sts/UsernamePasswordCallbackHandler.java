@@ -24,7 +24,8 @@ import java.util.Map;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
-import org.apache.ws.security.WSPasswordCallback;
+
+import org.apache.wss4j.common.ext.WSPasswordCallback;
 
 public class UsernamePasswordCallbackHandler implements CallbackHandler {
 

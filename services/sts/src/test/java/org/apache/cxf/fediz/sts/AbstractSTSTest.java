@@ -34,6 +34,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -42,7 +43,7 @@ import org.xml.sax.SAXException;
 
 import org.apache.cxf.Bus;
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
-import org.apache.cxf.helpers.DOMUtils;
+import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.cxf.staxutils.W3CDOMStreamWriter;
 import org.apache.cxf.sts.QNameConstants;
 import org.apache.cxf.transport.http.HTTPConduit;
@@ -53,8 +54,8 @@ import org.apache.cxf.ws.security.sts.provider.model.secext.UsernameTokenType;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.cxf.ws.security.trust.STSClient;
 import org.apache.cxf.ws.security.trust.STSUtils;
-import org.apache.ws.security.WSConstants;
-import org.apache.ws.security.saml.ext.AssertionWrapper;
+import org.apache.wss4j.common.saml.SamlAssertionWrapper;
+import org.apache.wss4j.dom.WSConstants;
 import org.junit.Assert;
 import org.opensaml.saml2.core.Attribute;
 
@@ -80,7 +81,7 @@ public abstract class AbstractSTSTest {
 
 
     protected Element createUserToken(String username, String password)
-        throws JAXBException, SAXException,     IOException, ParserConfigurationException {
+        throws JAXBException, SAXException,     IOException, ParserConfigurationException, XMLStreamException {
 
         JAXBElement<UsernameTokenType> supportingToken = createUsernameToken(username, password);
         final JAXBContext jaxbContext = JAXBContext.newInstance(UsernameTokenType.class);
@@ -88,7 +89,7 @@ public abstract class AbstractSTSTest {
         jaxbContext.createMarshaller().marshal(supportingToken, writer);
         writer.flush();
         InputStream is = new ByteArrayInputStream(writer.toString().getBytes());
-        Document doc = DOMUtils.readXml(is);
+        Document doc = StaxUtils.read(is);
         return doc.getDocumentElement();
     }
 
@@ -289,14 +290,14 @@ public abstract class AbstractSTSTest {
     }
 
     protected void validateSubject(Properties testProps,
-                                   AssertionWrapper assertion) {
+                                   SamlAssertionWrapper assertion) {
         String expectedSamlUser = testProps.getProperty("samluser");
         String samlUser = assertion.getSaml2().getSubject().getNameID().getValue();
         Assert.assertEquals("Expected SAML subject '" + expectedSamlUser + "' [" + samlUser + "]", 
                             expectedSamlUser.toUpperCase(), samlUser.toUpperCase());
     }
 
-    protected void validateIssuer(AssertionWrapper assertion, String realm) {
+    protected void validateIssuer(SamlAssertionWrapper assertion, String realm) {
         String issuer = assertion.getSaml2().getIssuer().getValue();
         Assert.assertTrue("SAML Token issuer should be " + realm + " instead of [" + issuer + "]",
                           issuer.toUpperCase().contains(realm.toUpperCase()));

@@ -24,7 +24,7 @@ import java.util.List;
 import org.apache.cxf.sts.request.ReceivedToken;
 import org.apache.cxf.sts.token.delegation.TokenDelegationParameters;
 import org.apache.cxf.sts.token.delegation.TokenDelegationResponse;
-import org.apache.ws.security.saml.ext.AssertionWrapper;
+import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 
 /**
  * The SAML TokenDelegationHandler implementation. It disallows ActAs or OnBehalfOf for
@@ -44,7 +44,7 @@ public class FedizSAMLDelegationHandler
         return super.isDelegationAllowed(tokenParameters);
     }
     @Override
-    protected List<String> getAudienceRestrictions(AssertionWrapper assertion) {
+    protected List<String> getAudienceRestrictions(SamlAssertionWrapper assertion) {
         return Collections.emptyList();
     }
     

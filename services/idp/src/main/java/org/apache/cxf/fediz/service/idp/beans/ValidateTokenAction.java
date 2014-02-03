@@ -21,7 +21,6 @@ package org.apache.cxf.fediz.service.idp.beans;
 import java.io.IOException;
 
 import org.w3c.dom.Element;
-
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.FederationProcessor;
 import org.apache.cxf.fediz.core.FederationProcessorImpl;
@@ -43,7 +42,7 @@ import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
-import org.apache.ws.security.util.UUIDGenerator;
+import org.apache.xml.security.stax.impl.util.IDGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.webflow.execution.RequestContext;
@@ -109,7 +108,7 @@ public class ValidateTokenAction {
         
         // Create new Security token with new id. 
         // Parameters for freshness computation are copied from original IDP_TOKEN
-        String id = "_" + UUIDGenerator.getUUID();
+        String id = IDGenerator.generateID("_");
         SecurityToken idpToken = new SecurityToken(id,
             wfResp.getTokenCreated(), wfResp.getTokenExpires());
 

@@ -22,7 +22,6 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
-import org.apache.cxf.jaxrs.client.ResponseExceptionMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -31,7 +30,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.security.access.AccessDeniedException;
 
 @Provider
-public class RestServiceExceptionMapper implements ExceptionMapper<Exception>, ResponseExceptionMapper<Exception> {
+public class RestServiceExceptionMapper implements ExceptionMapper<Exception> {
 
     private static final String BASIC_REALM_UNAUTHORIZED = "Basic realm=\"Apache Fediz authentication\"";
 
@@ -64,12 +63,6 @@ public class RestServiceExceptionMapper implements ExceptionMapper<Exception>, R
 
         // Rest is interpreted as InternalServerError
         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-    }
-
-    @Override
-    public Exception fromResponse(final Response r) {
-        throw new UnsupportedOperationException(
-                "Call of fromResponse() method is not expected");
     }
 
 }

@@ -52,7 +52,7 @@ import org.apache.cxf.fediz.core.config.FederationContext;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
-import org.apache.ws.security.util.DOM2Writer;
+import org.apache.wss4j.common.util.DOM2Writer;
 
 
 public class FederationAuthenticator extends FormAuthenticator {

@@ -37,19 +37,19 @@ import org.apache.cxf.fediz.common.STSUtil;
 import org.apache.cxf.fediz.common.SecurityTestUtil;
 import org.apache.cxf.fediz.core.config.FederationConfigurator;
 import org.apache.cxf.fediz.core.config.FederationContext;
-import org.apache.ws.security.WSPasswordCallback;
-import org.apache.ws.security.WSSecurityException;
-import org.apache.ws.security.components.crypto.Crypto;
-import org.apache.ws.security.components.crypto.CryptoFactory;
-import org.apache.ws.security.saml.ext.AssertionWrapper;
-import org.apache.ws.security.saml.ext.SAMLParms;
-import org.apache.ws.security.saml.ext.bean.ConditionsBean;
-import org.apache.ws.security.saml.ext.builder.SAML1Constants;
-import org.apache.ws.security.saml.ext.builder.SAML2Constants;
-import org.apache.ws.security.util.DOM2Writer;
+import org.apache.wss4j.common.crypto.Crypto;
+import org.apache.wss4j.common.crypto.CryptoFactory;
+import org.apache.wss4j.common.ext.WSPasswordCallback;
+import org.apache.wss4j.common.ext.WSSecurityException;
+import org.apache.wss4j.common.saml.SAMLCallback;
+import org.apache.wss4j.common.saml.SAMLUtil;
+import org.apache.wss4j.common.saml.SamlAssertionWrapper;
+import org.apache.wss4j.common.saml.bean.ConditionsBean;
+import org.apache.wss4j.common.saml.builder.SAML1Constants;
+import org.apache.wss4j.common.saml.builder.SAML2Constants;
+import org.apache.wss4j.common.util.DOM2Writer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.opensaml.common.SAMLVersion;
 
 
 // This testcases tests the encoding implemented before CXF-4484
@@ -120,9 +120,10 @@ public class SAMLTokenValidatorOldTest {
         cp.setAudienceURI(TEST_AUDIENCE);
         callbackHandler.setConditions(cp);
         
-        SAMLParms samlParms = new SAMLParms();
-        samlParms.setCallbackHandler(callbackHandler);
-        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
+        
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FederationRequest wfReq = new FederationRequest();
@@ -164,9 +165,10 @@ public class SAMLTokenValidatorOldTest {
         cp.setAudienceURI(TEST_AUDIENCE);
         callbackHandler.setConditions(cp);
         
-        SAMLParms samlParms = new SAMLParms();
-        samlParms.setCallbackHandler(callbackHandler);
-        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
+
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FederationRequest wfReq = new FederationRequest();
@@ -203,10 +205,11 @@ public class SAMLTokenValidatorOldTest {
         ConditionsBean cp = new ConditionsBean();
         cp.setAudienceURI(TEST_AUDIENCE);
         callbackHandler.setConditions(cp);
+
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         
-        SAMLParms samlParms = new SAMLParms();
-        samlParms.setCallbackHandler(callbackHandler);
-        AssertionWrapper assertion = new AssertionWrapper(samlParms);
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FederationRequest wfReq = new FederationRequest();
@@ -244,11 +247,11 @@ public class SAMLTokenValidatorOldTest {
         ConditionsBean cp = new ConditionsBean();
         cp.setAudienceURI(TEST_AUDIENCE);
         callbackHandler.setConditions(cp);
+
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         
-        SAMLParms samlParms = new SAMLParms();
-        samlParms.setCallbackHandler(callbackHandler);
-        samlParms.setSAMLVersion(SAMLVersion.VERSION_11);
-        AssertionWrapper assertion = new AssertionWrapper(samlParms);
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FederationRequest wfReq = new FederationRequest();
@@ -271,12 +274,12 @@ public class SAMLTokenValidatorOldTest {
     }
     
     
-    private String createSamlToken(AssertionWrapper assertion, String alias, boolean sign)
+    private String createSamlToken(SamlAssertionWrapper assertion, String alias, boolean sign)
         throws IOException, UnsupportedCallbackException, WSSecurityException, Exception {
         return createSamlToken(assertion, alias, sign, STSUtil.SAMPLE_RSTR_COLL_MSG);
     }
     
-    private String createSamlToken(AssertionWrapper assertion, String alias, boolean sign, String rstr)
+    private String createSamlToken(SamlAssertionWrapper assertion, String alias, boolean sign, String rstr)
         throws IOException, UnsupportedCallbackException, WSSecurityException, Exception {
         WSPasswordCallback[] cb = {
             new WSPasswordCallback(alias, WSPasswordCallback.SIGNATURE)

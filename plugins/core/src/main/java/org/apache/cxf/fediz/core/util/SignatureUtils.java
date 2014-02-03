@@ -49,8 +49,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
 
-import org.apache.ws.security.components.crypto.Crypto;
-
+import org.apache.wss4j.common.crypto.Crypto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -29,12 +29,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.w3c.dom.Document;
-
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.service.ConfigService;
 import org.apache.cxf.fediz.service.idp.util.MetadataWriter;
-import org.apache.ws.security.util.DOM2Writer;
-
+import org.apache.wss4j.common.util.DOM2Writer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;

@@ -35,21 +35,20 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import org.apache.ws.security.WSConstants;
-import org.apache.ws.security.message.WSSecEncryptedKey;
-import org.apache.ws.security.saml.ext.SAMLCallback;
-import org.apache.ws.security.saml.ext.bean.ActionBean;
-import org.apache.ws.security.saml.ext.bean.AttributeBean;
-import org.apache.ws.security.saml.ext.bean.AttributeStatementBean;
-import org.apache.ws.security.saml.ext.bean.AuthDecisionStatementBean;
-import org.apache.ws.security.saml.ext.bean.AuthenticationStatementBean;
-import org.apache.ws.security.saml.ext.bean.ConditionsBean;
-import org.apache.ws.security.saml.ext.bean.KeyInfoBean;
-import org.apache.ws.security.saml.ext.bean.KeyInfoBean.CERT_IDENTIFIER;
-import org.apache.ws.security.saml.ext.bean.SubjectBean;
-import org.apache.ws.security.saml.ext.bean.SubjectConfirmationDataBean;
-import org.apache.ws.security.saml.ext.bean.SubjectLocalityBean;
-
+import org.apache.wss4j.common.saml.SAMLCallback;
+import org.apache.wss4j.common.saml.bean.ActionBean;
+import org.apache.wss4j.common.saml.bean.AttributeBean;
+import org.apache.wss4j.common.saml.bean.AttributeStatementBean;
+import org.apache.wss4j.common.saml.bean.AuthDecisionStatementBean;
+import org.apache.wss4j.common.saml.bean.AuthenticationStatementBean;
+import org.apache.wss4j.common.saml.bean.ConditionsBean;
+import org.apache.wss4j.common.saml.bean.KeyInfoBean;
+import org.apache.wss4j.common.saml.bean.KeyInfoBean.CERT_IDENTIFIER;
+import org.apache.wss4j.common.saml.bean.SubjectBean;
+import org.apache.wss4j.common.saml.bean.SubjectConfirmationDataBean;
+import org.apache.wss4j.common.saml.bean.SubjectLocalityBean;
+import org.apache.wss4j.dom.WSConstants;
+import org.apache.wss4j.dom.message.WSSecEncryptedKey;
 
 
 /**
@@ -231,7 +230,7 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
                 } else {
                     attributeBean.setQualifiedName("dummy-ns");
                 }
-                attributeBean.setAttributeValues(Collections.singletonList("myvalue"));
+                attributeBean.addAttributeValue("myvalue");
                 attrStateBean.setSamlAttributes(Collections.singletonList(attributeBean));
                 callback.setAttributeStatementData(Collections.singletonList(attrStateBean));
                 return;
@@ -270,14 +269,16 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
                     attributeBean.setNameFormat(this.getAttributeNameFormat());
                 }
                 if (this.multiValueType.equals(MultiValue.MULTI_VALUE)) {
-                    attributeBean.setAttributeValues(roles);
+                    for (String role : roles) {
+                        attributeBean.addAttributeValue(role);
+                    }
                 } else {
                     StringBuffer sb = new StringBuffer();
                     for (String role: roles) {
                         sb.append(role).append(this.roleSeperator);
                     }
                     String value = sb.substring(0, sb.length() - this.roleSeperator.length());
-                    attributeBean.setAttributeValues(Collections.singletonList(value));
+                    attributeBean.addAttributeValue(value);
                 }
                 attributeList.add(attributeBean);
             } else if (this.multiValueType.equals(MultiValue.MULTI_ATTR)) {
@@ -310,7 +311,7 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
                         attributeBean.setQualifiedName(this.roleAttributeName);
                         attributeBean.setNameFormat(this.getAttributeNameFormat());
                     }
-                    attributeBean.setAttributeValues(Collections.singletonList(role));
+                    attributeBean.addAttributeValue(role);
                     attributeList.add(attributeBean);
                 }
             }
@@ -328,7 +329,7 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
                 attributeBean.setQualifiedName(this.countryClaimName);
                 attributeBean.setNameFormat(this.getAttributeNameFormat());
             }
-            attributeBean.setAttributeValues(Collections.singletonList("CH"));
+            attributeBean.addAttributeValue("CH");
             attributeList.add(attributeBean);
             
             //custom claim language
@@ -350,7 +351,7 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
                 attributeBean2.setQualifiedName(this.customClaimName);
                 attributeBean2.setNameFormat(this.getAttributeNameFormat());
             }
-            attributeBean2.setAttributeValues(Collections.singletonList("CH"));
+            attributeBean2.addAttributeValue("CH");
             attributeList.add(attributeBean2);
             
             attrStateBean.setSamlAttributes(attributeList);

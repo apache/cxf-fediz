@@ -44,19 +44,22 @@ import org.apache.cxf.fediz.core.config.TrustedIssuer;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.core.saml.SamlAssertionValidator.TRUST_TYPE;
-
-import org.apache.ws.security.SAMLTokenPrincipal;
-import org.apache.ws.security.WSConstants;
-import org.apache.ws.security.WSDocInfo;
-import org.apache.ws.security.WSSConfig;
-import org.apache.ws.security.WSSecurityException;
-import org.apache.ws.security.handler.RequestData;
-import org.apache.ws.security.saml.SAMLKeyInfo;
-import org.apache.ws.security.saml.ext.AssertionWrapper;
-import org.apache.ws.security.validate.Credential;
+import org.apache.wss4j.common.ext.WSSecurityException;
+import org.apache.wss4j.common.principal.SAMLTokenPrincipal;
+import org.apache.wss4j.common.principal.SAMLTokenPrincipalImpl;
+import org.apache.wss4j.common.saml.SAMLKeyInfo;
+import org.apache.wss4j.common.saml.SamlAssertionWrapper;
+import org.apache.wss4j.dom.WSConstants;
+import org.apache.wss4j.dom.WSDocInfo;
+import org.apache.wss4j.dom.WSSConfig;
+import org.apache.wss4j.dom.handler.RequestData;
+import org.apache.wss4j.dom.saml.WSSSAMLKeyInfoProcessor;
+import org.apache.wss4j.dom.validate.Credential;
 import org.joda.time.DateTime;
 import org.opensaml.common.SAMLVersion;
 import org.opensaml.xml.XMLObject;
+import org.opensaml.xml.signature.KeyInfo;
+import org.opensaml.xml.signature.Signature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,24 +99,33 @@ public class SAMLTokenValidator implements TokenValidator {
             // requestData.setCallbackHandler(new
             // PasswordCallbackHandler(password));
 
-            AssertionWrapper assertion = new AssertionWrapper(token);
+            SamlAssertionWrapper assertion = new SamlAssertionWrapper(token);
             if (!assertion.isSigned()) {
                 LOG.warn("Assertion is not signed");
                 throw new ProcessingException(TYPE.TOKEN_NO_SIGNATURE);
             }
             // Verify the signature
             WSDocInfo docInfo = new WSDocInfo(token.getOwnerDocument());
-            assertion.verifySignature(requestData, docInfo);
+            Signature sig = assertion.getSignature();
+            KeyInfo keyInfo = sig.getKeyInfo();
+            SAMLKeyInfo samlKeyInfo = 
+                org.apache.wss4j.common.saml.SAMLUtil.getCredentialFromKeyInfo(
+                    keyInfo.getDOM(), new WSSSAMLKeyInfoProcessor(requestData, docInfo), 
+                    requestData.getSigVerCrypto()
+                );
+            assertion.verifySignature(samlKeyInfo);
             
-            // Parse the HOK subject if it exists
-            assertion.parseHOKSubject(requestData, docInfo);
+            // Parse the subject if it exists
+            assertion.parseSubject(
+                new WSSSAMLKeyInfoProcessor(requestData, docInfo), requestData.getSigVerCrypto(), 
+                requestData.getCallbackHandler()
+            );
 
             // Now verify trust on the signature
             Credential trustCredential = new Credential();
-            SAMLKeyInfo samlKeyInfo = assertion.getSignatureKeyInfo();
             trustCredential.setPublicKey(samlKeyInfo.getPublicKey());
             trustCredential.setCertificates(samlKeyInfo.getCerts());
-            trustCredential.setAssertion(assertion);
+            trustCredential.setSamlAssertion(assertion);
 
             SamlAssertionValidator trustValidator = new SamlAssertionValidator();
             trustValidator.setFutureTTL(config.getMaximumClockSkew().intValue());
@@ -136,7 +148,7 @@ public class SAMLTokenValidator implements TokenValidator {
                 try {
                     for (TrustManager tm: config.getCertificateStores()) {
                         try {
-                            requestData.setSigCrypto(tm.getCrypto());
+                            requestData.setSigVerCrypto(tm.getCrypto());
                             trustValidator.validate(trustCredential, requestData);
                             trusted = true;
                             break;
@@ -190,7 +202,7 @@ public class SAMLTokenValidator implements TokenValidator {
 
             List<String> roles = parseRoles(config, claims);
             
-            SAMLTokenPrincipal p = new SAMLTokenPrincipal(assertion);
+            SAMLTokenPrincipal p = new SAMLTokenPrincipalImpl(assertion);
 
             TokenValidatorResponse response = new TokenValidatorResponse(
                     assertion.getId(), p.getName(), assertionIssuer, roles,
@@ -431,7 +443,7 @@ public class SAMLTokenValidator implements TokenValidator {
     }
 
     
-    private Date getExpires(AssertionWrapper assertion) {
+    private Date getExpires(SamlAssertionWrapper assertion) {
         DateTime validTill = null;
         if (assertion.getSamlVersion().equals(SAMLVersion.VERSION_20)) {
             validTill = assertion.getSaml2().getConditions().getNotOnOrAfter();
@@ -448,7 +460,7 @@ public class SAMLTokenValidator implements TokenValidator {
     /**
      * Check the Conditions of the Assertion.
      */
-    protected boolean isConditionValid(AssertionWrapper assertion, int maxClockSkew) throws WSSecurityException {
+    protected boolean isConditionValid(SamlAssertionWrapper assertion, int maxClockSkew) throws WSSecurityException {
         DateTime validFrom = null;
         DateTime validTill = null;
         if (assertion.getSamlVersion().equals(SAMLVersion.VERSION_20)
