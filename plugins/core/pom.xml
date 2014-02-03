@@ -128,7 +128,8 @@
                         </Export-Package>
                         <Import-Package>
                               !org.apache.cxf.fediz.*,
-                              org.apache.ws.security.*,
+                              org.apache.wss4j.common.*,
+                              org.apache.wss4j.dom.*,
                               javax.xml.crypto.*,
                               org.apache.xml.security.*,
                               org.bouncycastle.*;resolution:=optional,
