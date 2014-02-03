@@ -20,6 +20,8 @@ package org.apache.cxf.fediz.service.idp.rest;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 import org.slf4j.Logger;
@@ -32,6 +34,10 @@ import org.springframework.security.access.AccessDeniedException;
 @Provider
 public class RestServiceExceptionMapper implements ExceptionMapper<Exception> {
 
+    public static final String APPLICATION_ERROR_CODE = "X-Application-Error-Code";
+    
+    public static final String APPLICATION_ERROR_INFO = "X-Application-Error-Info";
+    
     private static final String BASIC_REALM_UNAUTHORIZED = "Basic realm=\"Apache Fediz authentication\"";
 
     private static final Logger LOG = LoggerFactory.getLogger(RestServiceExceptionMapper.class);
@@ -45,24 +51,27 @@ public class RestServiceExceptionMapper implements ExceptionMapper<Exception> {
                     header(HttpHeaders.WWW_AUTHENTICATE, BASIC_REALM_UNAUTHORIZED).
                     build();
         }
-        // EmptyResultDataAccessException
-        // DataIntegrityViolationException
-        // DataRetrievalFailureException / JpaObjectRetrievalFailureException
-        
         if (ex instanceof DataIntegrityViolationException) {
-            return Response.status(Response.Status.CONFLICT).build();
+            return buildResponse(Response.Status.CONFLICT, ex);
         }
         
         if (ex instanceof EmptyResultDataAccessException) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return buildResponse(Response.Status.NOT_FOUND, ex);
         }
         
         if (ex instanceof DataRetrievalFailureException) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return buildResponse(Response.Status.NOT_FOUND, ex);
         }
 
         // Rest is interpreted as InternalServerError
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        return buildResponse(Response.Status.INTERNAL_SERVER_ERROR, ex);
+    }
+
+    Response buildResponse(final Status status, final Exception ex) {
+        ResponseBuilder responseBuilder = Response.status(status);
+        return responseBuilder.header(APPLICATION_ERROR_CODE, ex.getClass().getName())
+                              .header(APPLICATION_ERROR_INFO, ex.getMessage())
+                              .status(status).build();
     }
 
 }
