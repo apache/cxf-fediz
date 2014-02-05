@@ -115,7 +115,7 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>${slf4j.version}</version>
-		</dependency>
+		</dependency>		
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-ws-security</artifactId>
@@ -179,6 +179,16 @@
 			<artifactId>openjpa-all</artifactId>
 			<version>2.2.2</version>
 		</dependency>
+		
+        
+        <dependency>
+			  <groupId>org.apache.cxf</groupId>
+			  <artifactId>cxf-rt-rs-client</artifactId>
+			  <version>${cxf.version}</version>
+			  <scope>test</scope>
+			</dependency>
+			
+
 	</dependencies>
 	<build>
 		<resources>
@@ -261,11 +271,30 @@
 					</webResources>
 				</configuration>
 			</plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>reserve-network-port</id>
+                        <goals>
+                            <goal>reserve-network-port</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                        <configuration>
+                            <portNames>
+                                <portName>idp.https.port</portName>
+                            </portNames>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>			
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>properties-maven-plugin</artifactId>
 				<executions>
 					<execution>
+					    <id>set-tomcat-properties</id>
 						<goals>
 							<goal>set-system-properties</goal>
 						</goals>
@@ -277,7 +306,7 @@
 								</property>
 							</properties>
 						</configuration>
-					</execution>
+					</execution>					
 				</executions>
 			</plugin>
 			<plugin>
@@ -285,6 +314,12 @@
 				<artifactId>jetty-maven-plugin</artifactId>
 				<version>${jetty.version}</version>
 				<configuration>
+				    <!-- 
+				    <webAppSourceDirectory>${basedir}/target/fediz-idp/</webAppSourceDirectory>
+				    <classesDirectory>${basedir}/target/fediz-idp/WEB-INF/classes</classesDirectory>
+				     -->
+				    <stopPort>8005</stopPort>
+                    <stopKey>STOP</stopKey>
 					<connectors>
 						<connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
 							<port>${idp.http.port}</port>
@@ -294,23 +329,43 @@
 							implementation="org.eclipse.jetty.server.ssl.SslSelectChannelConnector">
 							<port>${idp.https.port}</port>
 							<maxIdleTime>30000</maxIdleTime>
-							<keystore>../../examples/samplekeys/idp-ssl-server.jks</keystore>
+							<keystore>${basedir}/../../examples/samplekeys/idp-ssl-server.jks</keystore>
 							<keyPassword>tompass</keyPassword>
 							<password>tompass</password>
 						</connector>
 					</connectors>
 					<contextHandlers>
 						<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
-							<war>target/fediz-idp.war</war>
+							<war>${basedir}/target/fediz-idp.war</war>
 							<contextPath>/fediz-idp</contextPath>
 						</contextHandler>
                         <contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
-                            <war>target/fediz-idp-sts.war</war>
+                            <war>${basedir}/target/fediz-idp-sts.war</war>
                             <contextPath>/fediz-idp-sts</contextPath>
                             <throwUnavailableOnStartupException>false</throwUnavailableOnStartupException>
                         </contextHandler>						
 					</contextHandlers>
 				</configuration>
+				<executions>
+					<execution>
+					  <id>start-jetty</id>
+					  <phase>pre-integration-test</phase>
+					  <goals>
+					    <goal>run-war</goal>
+					  </goals>
+					  <configuration>
+					    <scanIntervalSeconds>0</scanIntervalSeconds>
+					    <daemon>true</daemon>
+					  </configuration>
+					</execution>
+					<execution>
+					  <id>stop-jetty</id>
+					  <phase>post-integration-test</phase>
+					  <goals>
+					    <goal>stop</goal>
+					  </goals>
+					</execution>
+		        </executions>
 				<dependencies>
 					<dependency>
 						<groupId>hsqldb</groupId>
@@ -319,6 +374,46 @@
 					</dependency>
 				</dependencies>
 			</plugin>
+			<plugin>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <inherited>true</inherited>
+                <executions>
+                    <execution>
+                        <id>integration-test</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
+                        <configuration>
+                            <skip>false</skip>
+                            <systemPropertyVariables>
+                                <idp.https.port>${idp.https.port}</idp.https.port>
+                            </systemPropertyVariables>
+                            <includes>
+                                <include>**/integrationtests/**</include>
+                            </includes>
+                            <argLine>-XX:MaxPermSize=512M</argLine>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>verify</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <inherited>true</inherited>
+                <configuration>
+                    <excludes>
+                        <exclude>**/integrationtests/**</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>            
 		</plugins>
 		<!-- Name of the generated WAR file -->
 		<finalName>fediz-idp</finalName>
