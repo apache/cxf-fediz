@@ -32,8 +32,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.cxf.fediz.core.EHCacheTokenReplayCache;
-import org.apache.cxf.fediz.core.TokenReplayCache;
 import org.apache.cxf.fediz.core.config.jaxb.CertificateStores;
 import org.apache.cxf.fediz.core.config.jaxb.ContextConfig;
 import org.apache.cxf.fediz.core.config.jaxb.FederationProtocolType;
@@ -44,6 +42,8 @@ import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuers;
 import org.apache.cxf.fediz.core.exception.IllegalConfigurationException;
+import org.apache.wss4j.common.cache.ReplayCache;
+import org.apache.wss4j.common.cache.ReplayCacheFactory;
 import org.apache.wss4j.common.crypto.CertificateStore;
 import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.crypto.CryptoFactory;
@@ -64,7 +64,7 @@ public class FederationContext implements Closeable {
     private boolean detectExpiredTokens = true;
     private boolean detectReplayedTokens = true;
     private String relativePath;
-    private TokenReplayCache<String> replayCache;
+    private ReplayCache replayCache;
     private FederationProtocol protocol;
     private List<TrustManager> certificateStores;
     private KeyManager keyManager;
@@ -198,25 +198,25 @@ public class FederationContext implements Closeable {
         
     }
 
-    @SuppressWarnings("unchecked")
-    public TokenReplayCache<String> getTokenReplayCache() {
+    public ReplayCache getTokenReplayCache() {
         if (replayCache != null) {
             return replayCache;
         }
         String replayCacheString = config.getTokenReplayCache();
         String cacheKey = CACHE_KEY_PREFIX + "-" + config.getName();
+        ReplayCacheFactory replayCacheFactory = ReplayCacheFactory.newInstance();
         if (replayCacheString == null || "".equals(replayCacheString)) {
-            replayCache = new EHCacheTokenReplayCache(cacheKey);
+            replayCache = replayCacheFactory.newReplayCache(cacheKey, "fediz-ehcache.xml");
         } else {
             try {
                 Class<?> replayCacheClass = Loader.loadClass(replayCacheString);
-                replayCache = (TokenReplayCache<String>) replayCacheClass.newInstance();
+                replayCache = (ReplayCache) replayCacheClass.newInstance();
             } catch (ClassNotFoundException e) {
-                replayCache = new EHCacheTokenReplayCache(cacheKey);
+                replayCache = replayCacheFactory.newReplayCache(cacheKey, "fediz-ehcache.xml");
             } catch (InstantiationException e) {
-                replayCache = new EHCacheTokenReplayCache(cacheKey);
+                replayCache = replayCacheFactory.newReplayCache(cacheKey, "fediz-ehcache.xml");
             } catch (IllegalAccessException e) {
-                replayCache = new EHCacheTokenReplayCache(cacheKey);
+                replayCache = replayCacheFactory.newReplayCache(cacheKey, "fediz-ehcache.xml");
             }
         }
         return replayCache;

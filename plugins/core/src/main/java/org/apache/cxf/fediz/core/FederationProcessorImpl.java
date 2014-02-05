@@ -220,7 +220,7 @@ public class FederationProcessorImpl implements FederationProcessor {
                 && config.isDetectReplayedTokens()) {
             // Check whether token has already been processed once, prevent
             // replay attack
-            if (config.getTokenReplayCache().getId(validatorResponse.getUniqueTokenId()) == null) {
+            if (!config.getTokenReplayCache().contains(validatorResponse.getUniqueTokenId())) {
                 // not cached
                 Date expires = null;
                 if (lifeTime != null && lifeTime.getExpires() != null) {
@@ -231,9 +231,9 @@ public class FederationProcessorImpl implements FederationProcessor {
                 if (expires != null) {
                     Date currentTime = new Date();
                     long ttl = expires.getTime() - currentTime.getTime();
-                    config.getTokenReplayCache().putId(validatorResponse.getUniqueTokenId(), ttl / 1000L);
+                    config.getTokenReplayCache().add(validatorResponse.getUniqueTokenId(), ttl / 1000L);
                 } else {
-                    config.getTokenReplayCache().putId(validatorResponse.getUniqueTokenId());
+                    config.getTokenReplayCache().add(validatorResponse.getUniqueTokenId());
                 }
             } else {
                 LOG.error("Replay attack with token id: " + validatorResponse.getUniqueTokenId());

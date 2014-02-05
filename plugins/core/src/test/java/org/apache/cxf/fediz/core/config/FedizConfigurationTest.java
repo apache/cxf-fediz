@@ -29,9 +29,6 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
 import org.apache.cxf.fediz.common.SecurityTestUtil;
-import org.apache.cxf.fediz.core.EHCacheTokenReplayCache;
-import org.apache.cxf.fediz.core.InMemoryTokenReplayCache;
-import org.apache.cxf.fediz.core.TokenReplayCache;
 import org.apache.cxf.fediz.core.config.jaxb.ArgumentType;
 import org.apache.cxf.fediz.core.config.jaxb.AudienceUris;
 import org.apache.cxf.fediz.core.config.jaxb.CallbackType;
@@ -46,6 +43,9 @@ import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuers;
 import org.apache.cxf.fediz.core.config.jaxb.ValidationType;
+import org.apache.wss4j.common.cache.EHCacheReplayCache;
+import org.apache.wss4j.common.cache.MemoryReplayCache;
+import org.apache.wss4j.common.cache.ReplayCache;
 import org.junit.AfterClass;
 import org.junit.Assert;
 
@@ -275,27 +275,27 @@ public class FedizConfigurationTest {
         FedizConfig config = createConfiguration();
         
         // Test the default TokenReplayCache
-        TokenReplayCache<String> defaultReplayCache = parseConfigAndReturnTokenReplayCache(config);
+        ReplayCache defaultReplayCache = parseConfigAndReturnTokenReplayCache(config);
         Assert.assertNotNull(defaultReplayCache);
-        Assert.assertTrue(defaultReplayCache instanceof EHCacheTokenReplayCache);
+        Assert.assertTrue(defaultReplayCache instanceof EHCacheReplayCache);
         
         // Now test setting another TokenReplayCache
         ContextConfig contextConfig = config.getContextConfig().get(0);
-        contextConfig.setTokenReplayCache("org.apache.cxf.fediz.core.InMemoryTokenReplayCache");
+        contextConfig.setTokenReplayCache("org.apache.wss4j.common.cache.MemoryReplayCache");
         
-        TokenReplayCache<String> newReplayCache = parseConfigAndReturnTokenReplayCache(config);
+        ReplayCache newReplayCache = parseConfigAndReturnTokenReplayCache(config);
         Assert.assertNotNull(newReplayCache);
-        Assert.assertTrue(newReplayCache instanceof InMemoryTokenReplayCache);
+        Assert.assertTrue(newReplayCache instanceof MemoryReplayCache);
         
         // Now test setting another TokenReplayCache
-        contextConfig.setTokenReplayCache("org.apache.cxf.fediz.core.EHCacheTokenReplayCache");
+        contextConfig.setTokenReplayCache("org.apache.wss4j.common.cache.EHCacheReplayCache");
         
         newReplayCache = parseConfigAndReturnTokenReplayCache(config);
         Assert.assertNotNull(newReplayCache);
-        Assert.assertTrue(newReplayCache instanceof EHCacheTokenReplayCache);
+        Assert.assertTrue(newReplayCache instanceof EHCacheReplayCache);
     }
     
-    private TokenReplayCache<String> parseConfigAndReturnTokenReplayCache(FedizConfig config) 
+    private ReplayCache parseConfigAndReturnTokenReplayCache(FedizConfig config) 
         throws JAXBException {
         final JAXBContext jaxbContext = JAXBContext.newInstance(FedizConfig.class);
         
