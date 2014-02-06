@@ -32,105 +32,67 @@
     http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd"
        default-autowire="byName">
 
-	<!-- 
-	<jdbc:initialize-database data-source="dataSource" enabled="${jpa.defaultData}" >
-	    <jdbc:script location="classpath:default.sql"/>
-	</jdbc:initialize-database>
-	-->
-	<context:component-scan base-package="org.apache.cxf.fediz.service.idp.service"/>
-	<context:component-scan base-package="org.apache.cxf.fediz.service.idp.rest"/>
+    <context:component-scan base-package="org.apache.cxf.fediz.service.idp.service" />
+    <context:component-scan base-package="org.apache.cxf.fediz.service.idp.rest" />
 
     <bean id="entityManagerFactory"
-          class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
-        <property name="persistenceXmlLocation" value="classpath*:META-INF/spring-persistence.xml"/>
-        <property name="persistenceUnitName" value="fedizPersistenceUnit"/>
-        <property name="dataSource" ref="dataSource"/>
+        class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="persistenceXmlLocation"
+            value="classpath*:META-INF/spring-persistence.xml" />
+        <property name="persistenceUnitName" value="fedizPersistenceUnit" />
+        <property name="dataSource" ref="dataSource" />
         <property name="jpaVendorAdapter">
-            <bean class="org.springframework.orm.jpa.vendor.OpenJpaVendorAdapter">
-                <property name="showSql" value="false"/>
-                <property name="generateDdl" value="true"/>
-                <property name="databasePlatform" value="org.apache.openjpa.jdbc.sql.${jpa.platform}"/>
+            <bean
+                class="org.springframework.orm.jpa.vendor.OpenJpaVendorAdapter">
+                <property name="showSql" value="false" />
+                <property name="generateDdl" value="true" />
+                <property name="databasePlatform" value="org.apache.openjpa.jdbc.sql.${jpa.platform}" />
             </bean>
         </property>
     </bean>
-    
-    <!-- 
-    <bean id="entityManagerFactory"
-        class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
-    <property name="persistenceXmlLocation" value="classpath*:META-INF/spring-persistence.xml"/>
-    <property name="persistenceUnitName" value="syncopePersistenceUnit"/>
-    <property name="dataSource" ref="dataSource"/>
-    <property name="jpaVendorAdapter">
-      <bean class="org.springframework.orm.jpa.vendor.OpenJpaVendorAdapter">
-        <property name="showSql" value="false"/>
-        <property name="generateDdl" value="true"/>
-        <property name="databasePlatform" value="${jpa.dialect}"/>
-      </bean>
-    </property>
-    <property name="jpaPropertyMap">
-      <map>
--->      
-        <!--<entry key="openjpa.Log" value="SQL=TRACE"/>
-        <entry key="openjpa.ConnectionFactoryProperties" 
-               value="PrintParameters=true, PrettyPrint=true, PrettyPrintLineLength=80"/>-->
-                <!-- 
-        <entry key="openjpa.NontransactionalWrite" value="false"/>
-        <entry key="openjpa.AutoDetach" value="close, commit, nontx-read, rollback"/>
 
-        <entry key="openjpa.jdbc.SchemaFactory" value="native(ForeignKeys=true)"/>
-        <entry key="openjpa.jdbc.MappingDefaults" value="ForeignKeyDeleteAction=restrict, JoinForeignKeyDeleteAction=restrict"/>
-                
-        <entry key="openjpa.DataCache" value="true"/>
-        <entry key="openjpa.QueryCache" value="true"/>
-        <entry key="openjpa.RemoteCommitProvider" value="sjvm"/>
-      </map>
-    </property>
-  </bean>
-     -->
-
-  <bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
-    <property name="jndiName" value="java:comp/env/jdbc/fedizDataSource"/>
-    <property name="defaultObject" ref="localDataSource"/>
-  </bean>
-
-    <bean id="localDataSource"
-          class="org.apache.commons.dbcp.BasicDataSource"
-          destroy-method="close">
-        <property name="driverClassName" value="${jpa.driverClassName}"/>
-        <property name="url" value="${jpa.url}"/>
-        <property name="username" value="${jpa.username}"/>
-        <property name="password" value="${jpa.password}"/>
+    <bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+        <property name="jndiName" value="java:comp/env/jdbc/fedizDataSource" />
+        <property name="defaultObject" ref="localDataSource" />
     </bean>
-         
-  <bean id="entityManager" class="org.springframework.orm.jpa.support.SharedEntityManagerBean">
-    <property name="entityManagerFactory" ref="entityManagerFactory"/>
-  </bean>
 
-  <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
-    <property name="entityManagerFactory" ref="entityManagerFactory"/>
-  </bean>          
-
-    <!-- Support annotation Transactional
-         http://docs.spring.io/spring/docs/3.1.4.RELEASE/spring-framework-reference/htmlsingle/#tx-decl-explained
-     -->
-    <tx:annotation-driven/>
-
-    <!-- Support annotation PersistenceContext
-         http://docs.spring.io/spring/docs/3.1.4.RELEASE/spring-framework-reference/htmlsingle/#orm-jpa-straight
-    -->
-    <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"/>
-    
-    <!-- Requires updates to unit testing as no JPA exceptions are returned  -->
-    <bean class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor" />
-
-    <bean id="config" class="org.apache.cxf.fediz.service.idp.service.jpa.ConfigServiceJPA" >
-    	<property name="idpService" ref="idpServiceImpl" />
+    <bean id="localDataSource" class="org.apache.commons.dbcp.BasicDataSource"
+        destroy-method="close">
+        <property name="driverClassName" value="${jpa.driverClassName}" />
+        <property name="url" value="${jpa.url}" />
+        <property name="username" value="${jpa.username}" />
+        <property name="password" value="${jpa.password}" />
     </bean>
-     
-    <bean id="dbLoader" class="org.apache.cxf.fediz.service.idp.service.jpa.DBLoaderImpl" />
-    
-    
-    <bean id="dbListener" class="org.apache.cxf.fediz.service.idp.service.jpa.DBInitApplicationListener" />
-    	
+
+    <bean id="entityManager"
+        class="org.springframework.orm.jpa.support.SharedEntityManagerBean">
+        <property name="entityManagerFactory" ref="entityManagerFactory" />
+    </bean>
+
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactory" />
+    </bean>
+
+    <!-- Support annotation Transactional http://docs.spring.io/spring/docs/3.1.4.RELEASE/spring-framework-reference/htmlsingle/#tx-decl-explained -->
+    <tx:annotation-driven />
+
+    <!-- Support annotation PersistenceContext http://docs.spring.io/spring/docs/3.1.4.RELEASE/spring-framework-reference/htmlsingle/#orm-jpa-straight -->
+    <bean
+        class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor" />
+
+    <!-- Requires updates to unit testing as no JPA exceptions are returned -->
+    <bean
+        class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor" />
+
+    <bean id="config"
+        class="org.apache.cxf.fediz.service.idp.service.jpa.ConfigServiceJPA">
+        <property name="idpService" ref="idpServiceImpl" />
+    </bean>
+
+    <bean id="dbLoader"
+        class="org.apache.cxf.fediz.service.idp.service.jpa.DBLoaderImpl" />
+
+    <bean id="dbListener"
+        class="org.apache.cxf.fediz.service.idp.service.jpa.DBInitApplicationListener" />
 
 </beans>

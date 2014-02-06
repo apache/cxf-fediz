@@ -1,86 +1,117 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements. See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership. The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License. You may obtain a copy of the License at
+ 
+  http://www.apache.org/licenses/LICENSE-2.0
+ 
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied. See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
-	xmlns:jaxws="http://cxf.apache.org/jaxws"
-	xsi:schemaLocation="
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:jaxws="http://cxf.apache.org/jaxws"
+    xsi:schemaLocation="
         http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
         http://www.springframework.org/schema/util
         http://www.springframework.org/schema/util/spring-util-2.0.xsd
-        http://cxf.apache.org/jaxws                                     
+        http://cxf.apache.org/jaxws
         http://cxf.apache.org/schemas/jaxws.xsd">
 
     <util:list id="claimHandlerList">
-		<ref bean="userClaimsHandler" />
-		<ref bean="groupClaimsHandler" />
-	</util:list>
+        <ref bean="userClaimsHandler" />
+        <ref bean="groupClaimsHandler" />
+    </util:list>
 
-	<bean id="contextSource" class="org.springframework.ldap.core.support.LdapContextSource">
-		<property name="url" value="ldap://localhost:389/" />
-		<property name="userDn" value="uid=admin,ou=system" />
-		<property name="password" value="secret" />
-	</bean>
+    <bean id="contextSource"
+        class="org.springframework.ldap.core.support.LdapContextSource">
+        <property name="url" value="ldap://localhost:389/" />
+        <property name="userDn" value="uid=admin,ou=system" />
+        <property name="password" value="secret" />
+    </bean>
 
-	<bean id="ldapTemplate" class="org.springframework.ldap.core.LdapTemplate">
-		<constructor-arg ref="contextSource" />
-	</bean>
+    <bean id="ldapTemplate" class="org.springframework.ldap.core.LdapTemplate">
+        <constructor-arg ref="contextSource" />
+    </bean>
 
-	<util:map id="claimsToLdapAttributeMapping">
-		<entry key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"
-			value="givenName" />
-		<entry key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname"
-			value="sn" />
-		<entry key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
-			value="mail" />
-		<entry key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/country"
-			value="c" />
-		<entry key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/postalcode"
-			value="postalCode" />
-		<entry key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/streetaddress"
-			value="postalAddress" />						
-		<entry key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/locality"
-			value="town" />
-		<entry key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/stateorprovince"
-			value="st" />
-		<entry key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/gender"
-			value="gender" />
-		<entry key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/dateofbirth"
-			value="dateofbirth" />												
-	    <entry key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role"
-	        value="member" />
-	</util:map>
+    <util:map id="claimsToLdapAttributeMapping">
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"
+            value="givenName" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname"
+            value="sn" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
+            value="mail" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/country"
+            value="c" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/postalcode"
+            value="postalCode" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/streetaddress"
+            value="postalAddress" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/locality"
+            value="town" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/stateorprovince"
+            value="st" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/gender"
+            value="gender" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/dateofbirth"
+            value="dateofbirth" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role"
+            value="member" />
+    </util:map>
 
     <bean id="userClaimsHandler" class="org.apache.cxf.sts.claims.LdapClaimsHandler">
-		<property name="ldapTemplate" ref="ldapTemplate" />
-		<property name="claimsLdapAttributeMapping" ref="claimsToLdapAttributeMapping" />
-		<property name="userBaseDN" value="ou=users,dc=fediz,dc=org" />
-		<property name="userNameAttribute" value="uid" />
-	</bean>
-	
-	<util:map id="appliesToScopeMapping">
-		<entry key="urn:org:apache:cxf:fediz:fedizhelloworld"
-			value="Example" />
-	</util:map>
-	
-	<bean id="groupClaimsHandler" class="org.apache.cxf.sts.claims.LdapGroupClaimsHandler">
-		<property name="ldapTemplate" ref="ldapTemplate" />
-		<property name="userBaseDN" value="ou=users,dc=fediz,dc=org" />
-		<property name="groupBaseDN" value="ou=groups,dc=fediz,dc=org" />
-		<property name="appliesToScopeMapping" ref="appliesToScopeMapping" />
-		<property name="userNameAttribute" value="uid" />
-	</bean>
-	
-	<jaxws:endpoint id="transportSTS1" implementor="#transportSTSProviderBean"
-		address="/STSService" wsdlLocation="/WEB-INF/wsdl/ws-trust-1.4-service.wsdl"
-		xmlns:ns1="http://docs.oasis-open.org/ws-sx/ws-trust/200512/"
-		serviceName="ns1:SecurityTokenService" endpointName="ns1:TransportUT_Port">
-		<jaxws:properties>
-			<entry key="ws-security.ut.validator">
-				<bean class="org.apache.ws.security.validate.JAASUsernameTokenValidator">
-					<property name="contextName" value="LDAP" />
-				</bean>
-			</entry>
-		</jaxws:properties>
-	</jaxws:endpoint>
+        <property name="ldapTemplate" ref="ldapTemplate" />
+        <property name="claimsLdapAttributeMapping" ref="claimsToLdapAttributeMapping" />
+        <property name="userBaseDN" value="ou=users,dc=fediz,dc=org" />
+        <property name="userNameAttribute" value="uid" />
+    </bean>
+
+    <util:map id="appliesToScopeMapping">
+        <entry key="urn:org:apache:cxf:fediz:fedizhelloworld"
+            value="Example" />
+    </util:map>
+
+    <bean id="groupClaimsHandler" class="org.apache.cxf.sts.claims.LdapGroupClaimsHandler">
+        <property name="ldapTemplate" ref="ldapTemplate" />
+        <property name="userBaseDN" value="ou=users,dc=fediz,dc=org" />
+        <property name="groupBaseDN" value="ou=groups,dc=fediz,dc=org" />
+        <property name="appliesToScopeMapping" ref="appliesToScopeMapping" />
+        <property name="userNameAttribute" value="uid" />
+    </bean>
+
+    <jaxws:endpoint id="transportSTS1" implementor="#transportSTSProviderBean"
+        address="/STSService" wsdlLocation="/WEB-INF/wsdl/ws-trust-1.4-service.wsdl"
+        xmlns:ns1="http://docs.oasis-open.org/ws-sx/ws-trust/200512/"
+        serviceName="ns1:SecurityTokenService" endpointName="ns1:TransportUT_Port">
+        <jaxws:properties>
+            <entry key="ws-security.ut.validator">
+                <bean class="org.apache.ws.security.validate.JAASUsernameTokenValidator">
+                    <property name="contextName" value="LDAP" />
+                </bean>
+            </entry>
+        </jaxws:properties>
+    </jaxws:endpoint>
 	
 </beans>

@@ -19,8 +19,9 @@
 -->
 <flow xmlns="http://www.springframework.org/schema/webflow"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.springframework.org/schema/webflow
-                          http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd">
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/webflow
+        http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd">
 
     <input name="idpConfig" />
     <input name="wctx" />
@@ -28,20 +29,22 @@
     <input name="wresult" />
 
     <on-start>
-	<!-- restore 'wreply','wtrealm','whr' for current 'wctx' -->
+        <!-- restore 'wreply','wtrealm','whr' for current 'wctx' -->
         <evaluate expression="signInParamCacheAction.restore(flowRequestContext)" />
     </on-start>
 
     <!-- validate token issued by requestor IDP ('wresult') given its 'whr' -->
     <action-state id="validateToken">
-        <evaluate expression="validateTokenAction.submit(flowRequestContext)" 
-                        result="flowScope.rpIdpToken" 
-                        result-type="org.apache.cxf.ws.security.tokenstore.SecurityToken" /> 
+        <evaluate expression="validateTokenAction.submit(flowRequestContext)"
+            result="flowScope.rpIdpToken" result-type="org.apache.cxf.ws.security.tokenstore.SecurityToken" />
         <transition to="requestRpToken">
             <!-- cache validated token under key = requestor home realm -->
-            <set name="externalContext.sessionMap[flowScope.whr]" value="flowScope.rpIdpToken" />
+            <set name="externalContext.sessionMap[flowScope.whr]"
+                value="flowScope.rpIdpToken" />
         </transition>
-        <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
+        <transition
+            on-exception="org.apache.cxf.fediz.core.exception.ProcessingException"
+            to="viewBadRequest" />
         <transition on-exception="java.lang.Throwable" to="scInternalServerError" />
     </action-state>
 
@@ -57,5 +60,5 @@
 
     <!-- abnormal exit point : Http 500 Internal Server Error -->
     <end-state id="scInternalServerError" />
-   
+
 </flow>

@@ -18,9 +18,11 @@
   under the License.
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:cxf="http://cxf.apache.org/core" xmlns:jaxws="http://cxf.apache.org/jaxws"
+    xmlns:cxf="http://cxf.apache.org/core"
+    xmlns:jaxws="http://cxf.apache.org/jaxws"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:util="http://www.springframework.org/schema/util" xmlns:http="http://cxf.apache.org/transports/http/configuration"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:http="http://cxf.apache.org/transports/http/configuration"
     xmlns:sec="http://cxf.apache.org/configuration/security"
     xmlns:context="http://www.springframework.org/schema/context"
     xmlns:jaxrs="http://cxf.apache.org/jaxrs"
@@ -29,7 +31,7 @@
         http://cxf.apache.org/schemas/core.xsd
         http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
-        http://cxf.apache.org/jaxws                                     
+        http://cxf.apache.org/jaxws
         http://cxf.apache.org/schemas/jaxws.xsd
         http://www.springframework.org/schema/util
         http://www.springframework.org/schema/util/spring-util-2.0.xsd
@@ -41,24 +43,24 @@
         http://cxf.apache.org/schemas/configuration/security.xsd
         http://cxf.apache.org/jaxrs
         http://cxf.apache.org/schemas/jaxrs.xsd">
-        
+
     <!-- Use http://www.baeldung.com/2012/02/06/properties-with-spring/ instead -->
-      <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-    <property name="locations">
-      <list>
-        <value>classpath:persistence.properties</value>
-      </list>
-    </property>
-    <property name="ignoreResourceNotFound" value="true"/>
-    <property name="ignoreUnresolvablePlaceholders" value="true"/>
-  </bean>
+    <bean
+        class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:persistence.properties</value>
+            </list>
+        </property>
+        <property name="ignoreResourceNotFound" value="true" />
+        <property name="ignoreUnresolvablePlaceholders" value="true" />
+    </bean>
 
     <import resource="classpath:META-INF/cxf/cxf.xml" />
 
     <import resource="security-config.xml" />
     <import resource="${idp-config}" />
     <import resource="classpath:persistenceContext.xml" />
-    
 
     <cxf:bus>
         <cxf:features>
@@ -67,33 +69,36 @@
     </cxf:bus>
 
     <http:conduit name="*.http-conduit">
-        <http:tlsClientParameters disableCNCheck="true">
+        <http:tlsClientParameters
+            disableCNCheck="true">
             <sec:trustManagers>
-                <sec:keyStore type="jks" password="ispass" resource="idp-ssl-trust.jks"/>
+                <sec:keyStore type="jks" password="ispass" resource="idp-ssl-trust.jks" />
             </sec:trustManagers>
         </http:tlsClientParameters>
     </http:conduit>
-    
-    
-      <bean id="jaxbProvider" class="org.apache.cxf.jaxrs.provider.JAXBElementProvider">
-    <property name="depthProperties">
-      <bean id="depthProperties" class="org.apache.cxf.staxutils.DocumentDepthProperties">
-        <property name="innerElementCountThreshold" value="500"/>
-      </bean>
-    </property>
-    <property name="marshallerProperties">
-      <map>
-        <entry key="jaxb.formatted.output">
-          <value type="java.lang.Boolean">true</value>
-        </entry>
-      </map>
-    </property>
-  </bean>
 
-  <bean id="exceptionMapper" class="org.apache.cxf.fediz.service.idp.rest.RestServiceExceptionMapper"/>
-  
-  <bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider" />
-    
+
+    <bean id="jaxbProvider" class="org.apache.cxf.jaxrs.provider.JAXBElementProvider">
+        <property name="depthProperties">
+            <bean id="depthProperties"
+                class="org.apache.cxf.staxutils.DocumentDepthProperties">
+                <property name="innerElementCountThreshold" value="500" />
+            </bean>
+        </property>
+        <property name="marshallerProperties">
+            <map>
+                <entry key="jaxb.formatted.output">
+                    <value type="java.lang.Boolean">true</value>
+                </entry>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="exceptionMapper"
+        class="org.apache.cxf.fediz.service.idp.rest.RestServiceExceptionMapper" />
+
+    <bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider" />
+
     <jaxrs:server id="idpService" address="/rs">
         <jaxrs:serviceBeans>
             <ref bean="idpServiceImpl" />
@@ -102,31 +107,30 @@
             <ref bean="trustedIdpServiceImpl" />
             <ref bean="rootServiceImpl" />
         </jaxrs:serviceBeans>
-        <!-- 
-        <jaxrs:resourceComparator>
-            <bean id="myServiceComparator" class="org.apache.cxf.fediz.service.idp.rest.QueryResourceInfoComparator"/>
-        </jaxrs:resourceComparator>
-        -->    
         <jaxrs:providers>
-      		<ref bean="jaxbProvider"/>
-      		<ref bean="jsonProvider"/>
-      		<ref bean="exceptionMapper"/>
-    	</jaxrs:providers>
-    	<jaxrs:extensionMappings>
-      		<entry key="json" value="application/json;charset=UTF-8"/>
-      		<entry key="xml" value="application/xml;charset=UTF-8"/>
-    	</jaxrs:extensionMappings>
+            <ref bean="jaxbProvider" />
+            <ref bean="jsonProvider" />
+            <ref bean="exceptionMapper" />
+        </jaxrs:providers>
+        <jaxrs:extensionMappings>
+            <entry key="json" value="application/json;charset=UTF-8" />
+            <entry key="xml" value="application/xml;charset=UTF-8" />
+        </jaxrs:extensionMappings>
     </jaxrs:server>
-    
-    <bean id="rootServiceImpl" class="org.apache.cxf.fediz.service.idp.rest.RootServiceImpl" />
-    
+
+    <bean id="rootServiceImpl"
+        class="org.apache.cxf.fediz.service.idp.rest.RootServiceImpl" />
+
     <bean id="idpServiceImpl" class="org.apache.cxf.fediz.service.idp.rest.IdpServiceImpl" />
-    
-    <bean id="claimServiceImpl" class="org.apache.cxf.fediz.service.idp.rest.ClaimServiceImpl" />
-    
-    <bean id="applicationServiceImpl" class="org.apache.cxf.fediz.service.idp.rest.ApplicationServiceImpl" />
-    
-    <bean id="trustedIdpServiceImpl" class="org.apache.cxf.fediz.service.idp.rest.TrustedIdpServiceImpl" />
+
+    <bean id="claimServiceImpl"
+        class="org.apache.cxf.fediz.service.idp.rest.ClaimServiceImpl" />
+
+    <bean id="applicationServiceImpl"
+        class="org.apache.cxf.fediz.service.idp.rest.ApplicationServiceImpl" />
+
+    <bean id="trustedIdpServiceImpl"
+        class="org.apache.cxf.fediz.service.idp.rest.TrustedIdpServiceImpl" />
     
 </beans>
 

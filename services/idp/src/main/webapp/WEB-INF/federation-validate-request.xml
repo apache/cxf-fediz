@@ -31,17 +31,26 @@
             <set name="flowScope.wfresh" value="requestParameters.wfresh" />
             <set name="flowScope.whr" value="requestParameters.whr" />
             <set name="flowScope.wresult" value="requestParameters.wresult" />
-            <evaluate expression="requestScope.getString('wauth','default')" result="flowScope.wauth" />
-	        <set name="flowScope.idpConfig" value="config.getIDP(null)" />
+            <evaluate expression="requestScope.getString('wauth','default')"
+                result="flowScope.wauth" />
+            <set name="flowScope.idpConfig" value="config.getIDP(null)" />
         </on-entry>
         <if test="requestParameters.wa == null" then="viewBadRequest" />
-        <if test="requestParameters.wa != 'wsignin1.0' and requestParameters.wa != 'wsignout1.0' and requestParameters.wa != 'wsignoutcleanup1.0'" then="viewBadRequest" />
-        <if test="requestParameters.wa == 'wsignout1.0' or requestParameters.wa == 'wsignoutcleanup1.0'" then="invalidateSessionAction" />
-        <if test="requestParameters.wtrealm == null or requestParameters.wtrealm.length() == 0" then="viewBadRequest" else="selectSigninProcess"/>
+        <if
+            test="requestParameters.wa != 'wsignin1.0' and requestParameters.wa != 'wsignout1.0' and requestParameters.wa != 'wsignoutcleanup1.0'"
+            then="viewBadRequest" />
+        <if
+            test="requestParameters.wa == 'wsignout1.0' or requestParameters.wa == 'wsignoutcleanup1.0'"
+            then="invalidateSessionAction" />
+        <if
+            test="requestParameters.wtrealm == null or requestParameters.wtrealm.length() == 0"
+            then="viewBadRequest" else="selectSigninProcess" />
     </decision-state>
 
     <decision-state id="selectSigninProcess">
-        <if test="requestParameters.wresult == null or requestParameters.wresult.isEmpty()" then="signinRequest" else="signinResponse" />
+        <if
+            test="requestParameters.wresult == null or requestParameters.wresult.isEmpty()"
+            then="signinRequest" else="signinResponse" />
     </decision-state>
 
     <subflow-state id="signinRequest" subflow="signinRequest">
@@ -54,23 +63,23 @@
         <input name="whr" value="flowScope.whr" />
 
         <output name="whr" />
-        <output name="wctx" />  
+        <output name="wctx" />
 
         <transition on="requestRpToken" to="requestRpToken">
-        	<set name="flowScope.whr" value="currentEvent.attributes.whr" />
-        	<set name="flowScope.wctx" value="currentEvent.attributes.wctx" />
+            <set name="flowScope.whr" value="currentEvent.attributes.whr" />
+            <set name="flowScope.wctx" value="currentEvent.attributes.wctx" />
         </transition>
-        <transition on="viewBadRequest" to="viewBadRequest"/>
-        <transition on="scInternalServerError" to="scInternalServerError"/>
+        <transition on="viewBadRequest" to="viewBadRequest" />
+        <transition on="scInternalServerError" to="scInternalServerError" />
         <transition on="redirectToTrustedIDP" to="redirectToTrustedIDP">
-        	<set name="flowScope.whr" value="currentEvent.attributes.whr" />
-        	<set name="flowScope.wctx" value="currentEvent.attributes.wctx" />
+            <set name="flowScope.whr" value="currentEvent.attributes.whr" />
+            <set name="flowScope.wctx" value="currentEvent.attributes.wctx" />
         </transition>
         <transition on="redirectToLocalIDP" to="redirectToLocalIDP">
-        	<set name="flowScope.wctx" value="currentEvent.attributes.wctx" />
+            <set name="flowScope.wctx" value="currentEvent.attributes.wctx" />
         </transition>
     </subflow-state>
-        
+
     <subflow-state id="signinResponse" subflow="signinResponse">
         <input name="idpConfig" value="flowScope.idpConfig" />
         <input name="wfresh" value="flowScope.wfresh" />
@@ -78,26 +87,25 @@
         <input name="wauth" value="flowScope.wauth" />
         <input name="wresult" value="flowScope.wresult" />
 
-        <output name="wtrealm" /> 
-        <output name="wreply" /> 
-        <output name="wctx" /> 
-        <output name="whr" /> 
+        <output name="wtrealm" />
+        <output name="wreply" />
+        <output name="wctx" />
+        <output name="whr" />
 
         <transition on="requestRpToken" to="requestRpToken">
-        	<set name="flowScope.whr" value="currentEvent.attributes.whr" />
-        	<set name="flowScope.wctx" value="currentEvent.attributes.wctx" />
-        	<set name="flowScope.wtrealm" value="currentEvent.attributes.wtrealm" />
-        	<set name="flowScope.wreply" value="currentEvent.attributes.wreply" />
+            <set name="flowScope.whr" value="currentEvent.attributes.whr" />
+            <set name="flowScope.wctx" value="currentEvent.attributes.wctx" />
+            <set name="flowScope.wtrealm" value="currentEvent.attributes.wtrealm" />
+            <set name="flowScope.wreply" value="currentEvent.attributes.wreply" />
         </transition>
-        <transition on="viewBadRequest" to="viewBadRequest"/>
-        <transition on="scInternalServerError" to="scInternalServerError"/>
+        <transition on="viewBadRequest" to="viewBadRequest" />
+        <transition on="scInternalServerError" to="scInternalServerError" />
     </subflow-state>
 
     <!-- produce RP security token (as String type) -->
     <action-state id="requestRpToken">
-		<evaluate expression="stsClientForRpAction.submit(flowRequestContext)"
-                    result="flowScope.rpToken" 
-                    result-type="java.lang.String" />
+        <evaluate expression="stsClientForRpAction.submit(flowRequestContext)"
+            result="flowScope.rpToken" result-type="java.lang.String" />
         <transition to="formResponseView" />
         <transition on-exception="java.lang.Throwable" to="scInternalServerError" />
     </action-state>
@@ -116,7 +124,8 @@
     <!-- abnormal exit point : Http 400 Bad Request -->
     <end-state id="viewBadRequest" view="genericerror">
         <on-entry>
-            <evaluate expression="externalContext.nativeResponse.setStatus(400,flowRequestContext.currentTransition.toString())" />
+            <evaluate
+                expression="externalContext.nativeResponse.setStatus(400,flowRequestContext.currentTransition.toString())" />
             <set name="requestScope.reason" value="flowRequestContext.currentTransition" />
         </on-entry>
     </end-state>
@@ -124,23 +133,27 @@
     <!-- abnormal exit point : Http 500 Internal Server Error -->
     <end-state id="scInternalServerError" view="genericerror">
         <on-entry>
-            <evaluate expression="externalContext.nativeResponse.setStatus(500,'IDP is unavailable, please contact the administrator')" />
-            <set name="requestScope.reason" value="'IDP is unavailable, please contact the administrator'" />
+            <evaluate
+                expression="externalContext.nativeResponse.setStatus(500,'IDP is unavailable, please contact the administrator')" />
+            <set name="requestScope.reason"
+                value="'IDP is unavailable, please contact the administrator'" />
         </on-entry>
     </end-state>
 
     <!-- normal exit point for logout -->
     <end-state id="invalidateSessionAction" view="signoutresponse">
-    	<on-entry>
-	        <evaluate expression="homeRealmReminder.removeCookie(flowRequestContext)" />
-	        <evaluate expression="logoutAction.submit(flowRequestContext)" />
-    	</on-entry>
-    </end-state> 
-    
+        <on-entry>
+            <evaluate
+                expression="homeRealmReminder.removeCookie(flowRequestContext)" />
+            <evaluate expression="logoutAction.submit(flowRequestContext)" />
+        </on-entry>
+    </end-state>
+
     <!-- redirect to remote idp -->
     <end-state id="redirectToTrustedIDP" view="externalRedirect:${flowScope.remoteIdpUrl}">
         <on-entry>
-            <set name="flowScope.remoteIdpUrl" value="flowScope.idpConfig.trustedIDPs.get(flowScope.whr).url
+            <set name="flowScope.remoteIdpUrl"
+                value="flowScope.idpConfig.trustedIDPs.get(flowScope.whr).url
                 +'?wa=wsignin1.0'
                 +'&amp;wtrealm='+flowScope.idpConfig.realm
                 +'&amp;wreply='+flowScope.idpConfig.idpUrl
@@ -152,7 +165,8 @@
 
     <end-state id="redirectToLocalIDP" view="externalRedirect:${flowScope.localIdpUrl}">
         <on-entry>
-            <set name="flowScope.localIdpUrl" value="flowScope.idpConfig.idpUrl
+            <set name="flowScope.localIdpUrl"
+                value="flowScope.idpConfig.idpUrl
                 +'?wa=wsignin1.0'
                 +'&amp;wreply='+flowScope.wreply
                 +'&amp;wtrealm='+flowScope.wtrealm
@@ -161,5 +175,5 @@
             </set>
         </on-entry>
     </end-state>
-    
+
 </flow>
