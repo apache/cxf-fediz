@@ -20,13 +20,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.apache.cxf.fediz</groupId>
-		<artifactId>systests</artifactId>
-		<version>1.2.0-SNAPSHOT</version>
-		<relativePath>../pom.xml</relativePath>
-	</parent>
-
+    <parent>
+        <groupId>org.apache.cxf.fediz</groupId>
+        <artifactId>systests</artifactId>
+        <version>1.2.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
     <groupId>org.apache.cxf.fediz.systests</groupId>
     <artifactId>systests-springPreauthWebapp</artifactId>
     <name>Apache Fediz Systests SpringWebapp (Pre-Authentication)</name>
@@ -37,12 +36,12 @@
     </properties>
 
     <dependencies>
-       <dependency>
+        <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
             <version>1.1.1</version>
             <scope>provided</scope>
-        </dependency>    
+        </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
@@ -55,12 +54,12 @@
             <artifactId>fediz-core</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>org.apache.cxf.fediz</groupId>
             <artifactId>fediz-spring</artifactId>
             <version>${project.version}</version>
-        </dependency>      
+        </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
@@ -79,7 +78,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.6.1</version>		
+            <version>1.6.1</version>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>
@@ -103,7 +102,7 @@
                     <artifactId>jmxri</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>					
+        </dependency>
     </dependencies>
 
     <build>

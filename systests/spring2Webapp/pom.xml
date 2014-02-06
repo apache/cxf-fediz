@@ -18,15 +18,13 @@
   under the License.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
     <modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.apache.cxf.fediz</groupId>
-		<artifactId>systests</artifactId>
-		<version>1.2.0-SNAPSHOT</version>
-		<relativePath>../pom.xml</relativePath>
-	</parent>
-
+    <parent>
+        <groupId>org.apache.cxf.fediz</groupId>
+        <artifactId>systests</artifactId>
+        <version>1.2.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
     <groupId>org.apache.cxf.fediz.systests</groupId>
     <artifactId>systests-spring2Webapp</artifactId>
     <name>Apache Fediz Systests Spring2 Webapp</name>
@@ -62,7 +60,6 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
     <dependencies>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -79,7 +76,7 @@
             <groupId>org.apache.cxf.fediz</groupId>
             <artifactId>fediz-spring2</artifactId>
             <version>${project.version}</version>
-        </dependency>  
+        </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
@@ -89,7 +86,7 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
             <version>${spring.version}</version>
-        </dependency>   
+        </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
@@ -117,9 +114,8 @@
                     <artifactId>jmxri</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>				
+        </dependency>
     </dependencies>
-
     <build>
         <plugins>
             <plugin><!--for mvn tomcat:deploy/:undeploy/:redeploy -->

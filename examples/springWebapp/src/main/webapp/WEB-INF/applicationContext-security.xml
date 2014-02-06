@@ -6,24 +6,31 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:context="http://www.springframework.org/schema/context"
     xmlns:util="http://www.springframework.org/schema/util"
-    xsi:schemaLocation="http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.1.xsd
-http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
-http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/security
+        http://www.springframework.org/schema/security/spring-security-3.1.xsd
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util-3.0.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-    <!-- DIABLE in production as it might log confidential information about the user -->
+    <!-- DIABLE in production as it might log confidential information about 
+        the user -->
     <sec:debug />
 
-    <sec:http entry-point-ref="federationEntryPoint" use-expressions="true">
-        <sec:intercept-url pattern="/" access="permitAll"/>
-        <sec:intercept-url pattern="/fediz" access="permitAll"/>
-        <sec:intercept-url pattern="/index.html" access="permitAll"/>
-        <sec:intercept-url pattern="/secure/fedservlet" access="isAuthenticated()"/>
-        <sec:intercept-url pattern="/secure/manager/**" access="hasRole('ROLE_MANAGER')"/>
-        <sec:intercept-url pattern="/secure/admin/**" access="hasRole('ROLE_ADMIN')"/>
-        <sec:intercept-url pattern="/secure/user/**" access="hasAnyRole('ROLE_USER','ROLE_ADMIN','ROLE_MANAGER')"/>
+    <sec:http entry-point-ref="federationEntryPoint"
+        use-expressions="true">
+        <sec:intercept-url pattern="/" access="permitAll" />
+        <sec:intercept-url pattern="/fediz" access="permitAll" />
+        <sec:intercept-url pattern="/index.html" access="permitAll" />
+        <sec:intercept-url pattern="/secure/fedservlet" access="isAuthenticated()" />
+        <sec:intercept-url pattern="/secure/manager/**" access="hasRole('ROLE_MANAGER')" />
+        <sec:intercept-url pattern="/secure/admin/**" access="hasRole('ROLE_ADMIN')" />
+        <sec:intercept-url pattern="/secure/user/**" access="hasAnyRole('ROLE_USER','ROLE_ADMIN','ROLE_MANAGER')" />
         <sec:custom-filter ref="federationFilter" after="BASIC_AUTH_FILTER" />
-        <sec:session-management session-authentication-strategy-ref="sas"/>
+        <sec:session-management session-authentication-strategy-ref="sas" />
     </sec:http>
 
 
@@ -31,41 +38,33 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
         <sec:authentication-provider ref="federationAuthProvider" />
     </sec:authentication-manager>
 
-    <bean id="fedizConfig" class="org.apache.cxf.fediz.spring.FederationConfigImpl" init-method="init"
-        p:configFile="WEB-INF/fediz_config.xml" />
+    <bean id="fedizConfig" class="org.apache.cxf.fediz.spring.FederationConfigImpl"
+        init-method="init" p:configFile="WEB-INF/fediz_config.xml" />
 
     <bean id="federationEntryPoint"
         class="org.apache.cxf.fediz.spring.web.FederationAuthenticationEntryPoint"
         p:federationConfig-ref="fedizConfig" />
 
-<!-- Works without org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy as well -->
-<!-- 
-    <bean id="federationFilter"
-        class="org.apache.cxf.fediz.spring.web.FederationAuthenticationFilter"
-        p:authenticationManager-ref="authManager" p:sessionAuthenticationStrategy-ref="sas">
-
-        <property name="authenticationFailureHandler">
-            <bean class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler" />
-        </property>
-    </bean>
- -->
- 
     <bean id="federationFilter"
         class="org.apache.cxf.fediz.spring.web.FederationAuthenticationFilter"
         p:authenticationManager-ref="authManager">
 
         <property name="authenticationFailureHandler">
-            <bean class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler" />
-        </property>
-    </bean>
-    
-    <bean id="federationAuthProvider" class="org.apache.cxf.fediz.spring.authentication.FederationAuthenticationProvider"
-        p:federationConfig-ref="fedizConfig">
-        <property name="authenticationUserDetailsService">
-            <bean class="org.apache.cxf.fediz.spring.authentication.GrantedAuthoritiesUserDetailsFederationService"/>
+            <bean
+                class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler" />
         </property>
     </bean>
 
-    <bean id="sas" class="org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy" />
+    <bean id="federationAuthProvider"
+        class="org.apache.cxf.fediz.spring.authentication.FederationAuthenticationProvider"
+        p:federationConfig-ref="fedizConfig">
+        <property name="authenticationUserDetailsService">
+            <bean
+                class="org.apache.cxf.fediz.spring.authentication.GrantedAuthoritiesUserDetailsFederationService" />
+        </property>
+    </bean>
+
+    <bean id="sas"
+        class="org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy" />
 </beans>
 

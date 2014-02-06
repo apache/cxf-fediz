@@ -1,105 +1,104 @@
 <web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
-                      http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
-	version="3.0" metadata-complete="true">
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+    version="3.0" metadata-complete="true">
 
-	<description>WS Federation Simple Web Application Example</description>
-	<display-name>WS Federation Simple Web Application Example</display-name>
+    <description>WS Federation Simple Web Application Example</description>
+    <display-name>WS Federation Simple Web Application Example</display-name>
 
     <!-- Optional: Cache the security token in Thread Local Storage -->
-	<filter>
-		<filter-name>FederationFilter</filter-name>
-		<filter-class>org.apache.cxf.fediz.core.servlet.FederationFilter</filter-class>
-	</filter>
+    <filter>
+        <filter-name>FederationFilter</filter-name>
+        <filter-class>org.apache.cxf.fediz.core.servlet.FederationFilter</filter-class>
+    </filter>
 
-	<filter-mapping>
-		<filter-name>FederationFilter</filter-name>
-		<url-pattern>/secure/*</url-pattern>
-	</filter-mapping>
+    <filter-mapping>
+        <filter-name>FederationFilter</filter-name>
+        <url-pattern>/secure/*</url-pattern>
+    </filter-mapping>
 
-	<servlet>
-		<servlet-name>FederationServlet</servlet-name>
-		<servlet-class>org.apache.cxf.fediz.example.FederationServlet</servlet-class>
-	</servlet>
+    <servlet>
+        <servlet-name>FederationServlet</servlet-name>
+        <servlet-class>org.apache.cxf.fediz.example.FederationServlet</servlet-class>
+    </servlet>
 
-	<servlet-mapping>
-		<servlet-name>FederationServlet</servlet-name>
-		<url-pattern>/secure/fedservlet</url-pattern>
-	</servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>FederationServlet</servlet-name>
+        <url-pattern>/secure/fedservlet</url-pattern>
+    </servlet-mapping>
 
-	<servlet-mapping>
-		<servlet-name>FederationServlet</servlet-name>
-		<url-pattern>/secure/admin/fedservlet</url-pattern>
-	</servlet-mapping>
-	
-	<servlet-mapping>
-		<servlet-name>FederationServlet</servlet-name>
-		<url-pattern>/secure/user/fedservlet</url-pattern>
-	</servlet-mapping>
-	
-	<servlet-mapping>
-		<servlet-name>FederationServlet</servlet-name>
-		<url-pattern>/secure/manager/fedservlet</url-pattern>
-	</servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>FederationServlet</servlet-name>
+        <url-pattern>/secure/admin/fedservlet</url-pattern>
+    </servlet-mapping>
 
-	<security-role>
-		<role-name>Manager</role-name>
-	</security-role>
-	<security-role>
-		<role-name>User</role-name>
-	</security-role>
-	<security-role>
-		<role-name>Admin</role-name>
-	</security-role>
-	<security-role>
-		<role-name>Authenticated</role-name>
-	</security-role>				
+    <servlet-mapping>
+        <servlet-name>FederationServlet</servlet-name>
+        <url-pattern>/secure/user/fedservlet</url-pattern>
+    </servlet-mapping>
 
-	<security-constraint>
-		<web-resource-collection>
-			<web-resource-name>Protected Area</web-resource-name>
-			<url-pattern>/secure/*</url-pattern>
-		</web-resource-collection>
-		<auth-constraint>
-			<role-name>*</role-name>
-		</auth-constraint>
-	</security-constraint>
-	
-	<security-constraint>
-		<web-resource-collection>
-			<web-resource-name>Protected Admin Area</web-resource-name>
-			<url-pattern>/secure/admin/*</url-pattern>
-		</web-resource-collection>
-		<auth-constraint>
-			<role-name>Admin</role-name>
-		</auth-constraint>
-	</security-constraint>
+    <servlet-mapping>
+        <servlet-name>FederationServlet</servlet-name>
+        <url-pattern>/secure/manager/fedservlet</url-pattern>
+    </servlet-mapping>
 
-	<security-constraint>
-		<web-resource-collection>
-			<web-resource-name>Protected Manager Area</web-resource-name>
-			<url-pattern>/secure/manager/*</url-pattern>
-		</web-resource-collection>
-		<auth-constraint>
-			<role-name>Manager</role-name>
-		</auth-constraint>
-	</security-constraint>
-	
-	<security-constraint>
-		<web-resource-collection>
-			<web-resource-name>Protected User Area</web-resource-name>
-			<url-pattern>/secure/user/*</url-pattern>
-		</web-resource-collection>
-		<auth-constraint>
-			<role-name>User</role-name>
-			<role-name>Admin</role-name>
-			<role-name>Manager</role-name>
-		</auth-constraint>
-	</security-constraint>	
+    <security-role>
+        <role-name>Manager</role-name>
+    </security-role>
+    <security-role>
+        <role-name>User</role-name>
+    </security-role>
+    <security-role>
+        <role-name>Admin</role-name>
+    </security-role>
+    <security-role>
+        <role-name>Authenticated</role-name>
+    </security-role>
 
-	<login-config>
-		<auth-method>WSFED</auth-method>
-		<realm-name>WSFED</realm-name>
-	</login-config>
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Protected Area</web-resource-name>
+            <url-pattern>/secure/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>*</role-name>
+        </auth-constraint>
+    </security-constraint>
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Protected Admin Area</web-resource-name>
+            <url-pattern>/secure/admin/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>Admin</role-name>
+        </auth-constraint>
+    </security-constraint>
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Protected Manager Area</web-resource-name>
+            <url-pattern>/secure/manager/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>Manager</role-name>
+        </auth-constraint>
+    </security-constraint>
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Protected User Area</web-resource-name>
+            <url-pattern>/secure/user/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>User</role-name>
+            <role-name>Admin</role-name>
+            <role-name>Manager</role-name>
+        </auth-constraint>
+    </security-constraint>
+
+    <login-config>
+        <auth-method>WSFED</auth-method>
+        <realm-name>WSFED</realm-name>
+    </login-config>
 
 </web-app>

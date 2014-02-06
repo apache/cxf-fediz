@@ -110,6 +110,15 @@ public class RestITTest {
                             4, idp.getClaimTypesOffered().size());
         
     }
+    
+    @Test
+    public void testReadExistingIdpEmbeddedTrustedIdps() {
+        String address = "https://localhost:" + idpHttpsPort + "/fediz-idp/services/rs";
+        Client client = ClientBuilder.newClient();
+        Idp idp = client.target(address).path("idps/").path("urn:org:apache:cxf:fediz:idp:realm-A")
+            .request("application/xml").get(Idp.class);
+        Assert.assertEquals("", "urn:org:apache:cxf:fediz:idp:realm-A", idp.getRealm());
+    }
 
     
     

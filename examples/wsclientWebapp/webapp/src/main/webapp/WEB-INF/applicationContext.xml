@@ -1,86 +1,99 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jaxws="http://cxf.apache.org/jaxws"
-	xmlns:cxf="http://cxf.apache.org/core" xmlns:context="http://www.springframework.org/schema/context"
-	xmlns:http="http://cxf.apache.org/transports/http/configuration"
-	xmlns:sec="http://cxf.apache.org/configuration/security"
-	xsi:schemaLocation="
-        http://cxf.apache.org/core                   	http://cxf.apache.org/schemas/core.xsd
-        http://cxf.apache.org/jaxws                  	http://cxf.apache.org/schemas/jaxws.xsd
-        http://www.springframework.org/schema/beans    	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-        http://www.springframework.org/schema/context  	http://www.springframework.org/schema/context/spring-context-3.0.xsd
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jaxws="http://cxf.apache.org/jaxws"
+       xmlns:cxf="http://cxf.apache.org/core" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:http="http://cxf.apache.org/transports/http/configuration"
+       xmlns:sec="http://cxf.apache.org/configuration/security"
+       xsi:schemaLocation="
+        http://cxf.apache.org/core
+        http://cxf.apache.org/schemas/core.xsd
+        http://cxf.apache.org/jaxws
+        http://cxf.apache.org/schemas/jaxws.xsd
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd
         http://cxf.apache.org/transports/http/configuration
         http://cxf.apache.org/schemas/configuration/http-conf.xsd
         http://cxf.apache.org/configuration/security
         http://cxf.apache.org/schemas/configuration/security.xsd">
 
-	<import resource="classpath:META-INF/cxf/cxf.xml" />
+    <import resource="classpath:META-INF/cxf/cxf.xml" />
 
-	<context:component-scan base-package="org.apache.cxf.fediz.example" />
-	<context:annotation-config />
+    <context:component-scan base-package="org.apache.cxf.fediz.example" />
+    <context:annotation-config />
 
-	<cxf:bus>
-		<cxf:features>
-			<cxf:logging />
-		</cxf:features>
-	</cxf:bus>
+    <cxf:bus>
+        <cxf:features>
+            <cxf:logging />
+        </cxf:features>
+    </cxf:bus>
 
-	<bean id="delegationCallbackHandler"
-		class="org.apache.cxf.fediz.cxf.web.ThreadLocalCallbackHandler" />
+    <bean id="delegationCallbackHandler"
+        class="org.apache.cxf.fediz.cxf.web.ThreadLocalCallbackHandler" />
 
-	<jaxws:client id="HelloServiceClient" serviceName="svc:GreeterService"
-		xmlns:svc="http://apache.org/hello_world_soap_http"
-		serviceClass="org.apache.hello_world_soap_http.Greeter"
-		address="https://localhost:10443/fedizservice/GreeterService"
-		wsdlLocation="WEB-INF/wsdl/hello_world.wsdl">
-		<jaxws:properties>
-			<entry key="ws-security.sts.client">
-				<bean class="org.apache.cxf.ws.security.trust.STSClient">
-					<constructor-arg ref="cxf" />
-					<property name="wsdlLocation" value="https://localhost:9443/fediz-idp-sts/REALMA/STSServiceTransport?wsdl" />
-					<property name="serviceName"
-						value="{http://docs.oasis-open.org/ws-sx/ws-trust/200512/}SecurityTokenService" />
-					<property name="endpointName"
-						value="{http://docs.oasis-open.org/ws-sx/ws-trust/200512/}Transport_Port" />
-					<property name="onBehalfOf" ref="delegationCallbackHandler" />
-					<property name="enableAppliesTo" value="true" />
-					<property name="properties">
-						<map>
+    <jaxws:client id="HelloServiceClient" serviceName="svc:GreeterService"
+        xmlns:svc="http://apache.org/hello_world_soap_http"
+        serviceClass="org.apache.hello_world_soap_http.Greeter"
+        address="https://localhost:10443/fedizservice/GreeterService"
+        wsdlLocation="WEB-INF/wsdl/hello_world.wsdl">
+        <jaxws:properties>
+            <entry key="ws-security.sts.client">
+                <bean class="org.apache.cxf.ws.security.trust.STSClient">
+                    <constructor-arg ref="cxf" />
+                    <property name="wsdlLocation"
+                        value="https://localhost:9443/fediz-idp-sts/REALMA/STSServiceTransport?wsdl" />
+                    <property name="serviceName"
+                        value="{http://docs.oasis-open.org/ws-sx/ws-trust/200512/}SecurityTokenService" />
+                    <property name="endpointName"
+                        value="{http://docs.oasis-open.org/ws-sx/ws-trust/200512/}Transport_Port" />
+                    <property name="onBehalfOf" ref="delegationCallbackHandler" />
+                    <property name="enableAppliesTo" value="true" />
+                    <property name="properties">
+                        <map>
 
-						</map>
-					</property>
-				</bean>
-			</entry>
-			<entry key="ws-security.cache.issued.token.in.endpoint" value="false" />
-		</jaxws:properties>
-	</jaxws:client>
+                        </map>
+                    </property>
+                </bean>
+            </entry>
+            <entry key="ws-security.cache.issued.token.in.endpoint"
+                value="false" />
+        </jaxws:properties>
+    </jaxws:client>
 
 
-	<!-- TLS settings for TransportBinding test-case -->
-	<http:conduit name="{http://docs.oasis-open.org/ws-sx/ws-trust/200512/}Transport_Port.http-conduit">
-		<http:tlsClientParameters disableCNCheck="true">
-			<sec:trustManagers>
-				<sec:keyStore type="jks" password="waspass" resource="webappKeystore.jks" />
-			</sec:trustManagers>
-		</http:tlsClientParameters>
-	</http:conduit>
+    <!-- TLS settings for TransportBinding test-case -->
+    <http:conduit
+        name="{http://docs.oasis-open.org/ws-sx/ws-trust/200512/}Transport_Port.http-conduit">
+        <http:tlsClientParameters
+            disableCNCheck="true">
+            <sec:trustManagers>
+                <sec:keyStore type="jks" password="waspass"
+                    resource="webappKeystore.jks" />
+            </sec:trustManagers>
+        </http:tlsClientParameters>
+    </http:conduit>
 
-        <!--  STS WSDL download -->
-	<http:conduit name="https://localhost:9443/.*">
-		<http:tlsClientParameters disableCNCheck="true">
-			<sec:trustManagers>
-				<sec:keyStore type="jks" password="waspass" resource="webappKeystore.jks" />
-			</sec:trustManagers>
-		</http:tlsClientParameters>
-	</http:conduit>
+    <!-- STS WSDL download -->
+    <http:conduit name="https://localhost:9443/.*">
+        <http:tlsClientParameters
+            disableCNCheck="true">
+            <sec:trustManagers>
+                <sec:keyStore type="jks" password="waspass"
+                    resource="webappKeystore.jks" />
+            </sec:trustManagers>
+        </http:tlsClientParameters>
+    </http:conduit>
 
-	<http:conduit
-		name="{http://apache.org/hello_world_soap_http}GreeterSoapPort.http-conduit">
-		<http:tlsClientParameters disableCNCheck="true">
-			<sec:trustManagers>
-				<sec:keyStore type="jks" password="waspass" resource="webappKeystore.jks" />
-			</sec:trustManagers>
-		</http:tlsClientParameters>
-	</http:conduit>
+    <http:conduit
+        name="{http://apache.org/hello_world_soap_http}GreeterSoapPort.http-conduit">
+        <http:tlsClientParameters
+            disableCNCheck="true">
+            <sec:trustManagers>
+                <sec:keyStore type="jks" password="waspass"
+                    resource="webappKeystore.jks" />
+            </sec:trustManagers>
+        </http:tlsClientParameters>
+    </http:conduit>
 
 </beans>
