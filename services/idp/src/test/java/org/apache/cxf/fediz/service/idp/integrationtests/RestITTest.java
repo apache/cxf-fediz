@@ -18,14 +18,21 @@
  */
 package org.apache.cxf.fediz.service.idp.integrationtests;
 
+import java.net.URI;
 import java.net.URL;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.cxf.Bus;
 import org.apache.cxf.bus.spring.SpringBusFactory;
+import org.apache.cxf.fediz.service.idp.domain.Application;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
+import org.apache.cxf.fediz.service.idp.domain.RequestClaim;
 import org.apache.cxf.fediz.service.idp.rest.Idps;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -108,9 +115,8 @@ public class RestITTest {
                             1, idp.getTrustedIdps().size());
         Assert.assertEquals("Number of claims doesn't match",
                             4, idp.getClaimTypesOffered().size());
-        
     }
-    
+
     @Test
     public void testReadExistingIdpEmbeddedTrustedIdps() {
         String address = "https://localhost:" + idpHttpsPort + "/fediz-idp/services/rs";
@@ -119,7 +125,42 @@ public class RestITTest {
             .request("application/xml").get(Idp.class);
         Assert.assertEquals("", "urn:org:apache:cxf:fediz:idp:realm-A", idp.getRealm());
     }
+    
+    @Test
+    public void testAddClaimToApplication() {
+        
+        String address = "https://localhost:" + idpHttpsPort + "/fediz-idp/services/rs";
+        Client client = ClientBuilder.newClient();
+        
+        String realm = "urn:org:apache:cxf:fediz:fedizhelloworld:testaddclaim";
+        Application application = new Application();
+        application.setRealm(realm);
+        application.setEncryptionCertificate("");
+        application.setLifeTime("3600");
+        application.setProtocol("http://docs.oasis-open.org/wsfed/federation/200706");
+        application.setRole("ApplicationServiceType");
+        application.setServiceDescription("Fedizhelloworld description");
+        application.setServiceDisplayName("Fedizhelloworld");
+        application.setTokenType("http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0");
+        
+        Response response = client.target(address).path("applications/")
+            .request("application/xml").post(Entity.entity(application, MediaType.APPLICATION_XML));
+        Assert.assertEquals(Status.CREATED.getStatusCode(), response.getStatus());
+        
+        //Testcase
+        RequestClaim requestClaim = new RequestClaim();
+        requestClaim.setOptional(false);
+        requestClaim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"));
+        
+        response = client.target(address).path("applications").path(realm).path("claims")
+            .request("application/xml").post(Entity.entity(requestClaim, MediaType.APPLICATION_XML));
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
+        
+        application = client.target(address).path("applications").path(realm).queryParam("expand", "claims")
+            .request("application/xml").get(Application.class);
+        Assert.assertEquals("Claims size should be 1 instead of " + application.getRequestedClaims().size(),
+                            1, application.getRequestedClaims().size());
+    }
 
-    
-    
+
 }

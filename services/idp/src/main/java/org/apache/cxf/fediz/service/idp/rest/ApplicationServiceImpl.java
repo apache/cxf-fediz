@@ -123,7 +123,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         Claim foundClaim = claimDAO.getClaim(claim.getClaimType().toString());
         RequestClaim rc = new RequestClaim(foundClaim);
         application.getRequestedClaims().add(rc);
-        applicationDAO.updateApplication(realm, application);
+        applicationDAO.addClaimToApplication(application, claim);
         
         return Response.noContent().build();
     }
@@ -144,7 +144,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new WebApplicationException(Status.NOT_FOUND);
         }
         application.getRequestedClaims().remove(foundItem);
-        applicationDAO.updateApplication(realm, application);
+        applicationDAO.removeClaimFromApplication(application, foundItem);
         
         return Response.noContent().build();
     }
