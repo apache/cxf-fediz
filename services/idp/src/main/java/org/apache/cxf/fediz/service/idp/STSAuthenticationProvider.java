@@ -78,6 +78,8 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
     //Required to get IDP roles to use the IDP application, used in future release
     protected String roleURI;
     
+    protected Map<String, Object> properties = new HashMap<String, Object>();
+    
     
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -101,6 +103,7 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
                                        wsdlEndpoint));
         sts.getProperties().put(SecurityConstants.USERNAME, authentication.getName());
         sts.getProperties().put(SecurityConstants.PASSWORD, (String)authentication.getCredentials());
+        sts.getProperties().putAll(properties);
            
         if (lifetime != null) {
             sts.setEnableLifetime(true);
@@ -311,6 +314,14 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
 
     public void setRoleURI(String roleURI) {
         this.roleURI = roleURI;
+    }
+    
+    public void setProperties(Map<String, Object> p) {
+        properties.putAll(p);
+    }
+
+    public Map<String, Object> getProperties() {
+        return properties;
     }
 
 //May be uncommented for debugging    
