@@ -89,7 +89,10 @@ public class ApplicationDAOJPATest {
                       "ServiceDisplayName doesn't match");
         Assert.isTrue("http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0"
                       .equals(application.getTokenType()),
-                      "TokenType doesn't match");         
+                      "TokenType doesn't match");
+        Assert.isTrue("http://www.w3.org/ns/ws-policy"
+                      .equals(application.getPolicyNamespace()),
+                      "Policy Namespace doesn't match");
         Assert.isTrue(4 == application.getRequestedClaims().size(),
                       "Number of claims doesn't match [" + application.getRequestedClaims().size() + "]");
     }
@@ -144,7 +147,10 @@ public class ApplicationDAOJPATest {
                       "ServiceDisplayName doesn't match");
         Assert.isTrue("http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV1.1"
                       .equals(application.getTokenType()),
-                      "TokenType doesn't match");         
+                      "TokenType doesn't match");
+        Assert.isTrue("http://www.w3.org/ns/ws-policy"
+                      .equals(application.getPolicyNamespace()),
+                      "Policy Namespace doesn't match");
         Assert.isTrue(0 == application.getRequestedClaims().size(),
                       "Number of claims doesn't match");
     }
@@ -167,6 +173,7 @@ public class ApplicationDAOJPATest {
         application.setServiceDescription("UFedizhelloworld2 description");
         application.setServiceDisplayName("UFedizhelloworld2");
         application.setTokenType("Uhttp://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV1.1");
+        application.setPolicyNamespace("Uhttp://www.w3.org/ns/ws-policy");
         
         Assert.isTrue("U".equals(application.getEncryptionCertificate()),
                       "EncryptionCertificate doesn't match");
@@ -184,7 +191,10 @@ public class ApplicationDAOJPATest {
                       "ServiceDisplayName doesn't match");
         Assert.isTrue("Uhttp://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV1.1"
                       .equals(application.getTokenType()),
-                      "TokenType doesn't match");         
+                      "TokenType doesn't match");
+        Assert.isTrue("Uhttp://www.w3.org/ns/ws-policy"
+                      .equals(application.getPolicyNamespace()),
+                      "Policy Namespace doesn't match");
         Assert.isTrue(0 == application.getRequestedClaims().size(),
                       "Number of claims doesn't match");
     }
@@ -342,6 +352,7 @@ public class ApplicationDAOJPATest {
         application.setServiceDescription("Fedizhelloworld2 description");
         application.setServiceDisplayName("Fedizhelloworld2");
         application.setTokenType("http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV1.1");
+        application.setPolicyNamespace("http://www.w3.org/ns/ws-policy");
         return application;
     }
 

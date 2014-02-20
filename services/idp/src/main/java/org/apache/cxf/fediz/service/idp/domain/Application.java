@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlRootElement(name = "application", namespace = "http://org.apache.cxf.fediz/")
 @XmlType(propOrder = {"realm", "role", "serviceDisplayName", "serviceDescription", "protocol",
-                      "tokenType", "lifeTime", "encryptionCertificate", "requestedClaims", "id" })
+                      "tokenType", "lifeTime", "encryptionCertificate", "requestedClaims", "policyNamespace", "id" })
 public class Application implements Serializable {
         
     private static final long serialVersionUID = 5644327504861846964L;
@@ -75,6 +75,9 @@ public class Application implements Serializable {
     
     // Not in Metadata, configured in IDP or passed in wreq parameter
     protected String lifeTime;
+    
+    // WS-Policy Namespace for AppliesTo element
+    protected String policyNamespace;
     
     private URI href;
     
@@ -170,6 +173,13 @@ public class Application implements Serializable {
     public void setLifeTime(String lifeTime) {
         this.lifeTime = lifeTime;
     }
-        
+
+    public String getPolicyNamespace() {
+        return policyNamespace;
+    }
+
+    public void setPolicyNamespace(String policyNamespace) {
+        this.policyNamespace = policyNamespace;
+    }
 
 }

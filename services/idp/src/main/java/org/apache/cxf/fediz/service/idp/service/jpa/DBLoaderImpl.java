@@ -89,6 +89,7 @@ public class DBLoaderImpl implements DBLoader {
             entity.setServiceDescription("Fedizhelloworld description");
             entity.setServiceDisplayName("Fedizhelloworld");
             entity.setTokenType("http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0");
+            entity.setPolicyNamespace("http://www.w3.org/ns/ws-policy");
             // must be persistet here already as the ApplicationClaimEntity requires the Application Id
             em.persist(entity);
             ApplicationClaimEntity ace1 = new ApplicationClaimEntity(entity, claimEntity1);
@@ -151,43 +152,6 @@ public class DBLoaderImpl implements DBLoader {
             idpEntity.setTokenTypesOffered(tokenTypes);
             idpEntity.setUseCurrentIDP(true);
             em.persist(idpEntity);
-            
-            /*
-            ClaimEntity claimEntity5 = new ClaimEntity();
-            claimEntity5.setClaimType("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/city");
-            claimEntity5.setDisplayName("city");
-            claimEntity5.setDescription("Description for city");
-            em.persist(claimEntity5);
-                        
-            ApplicationEntity entity2 = new ApplicationEntity();
-            entity2.setEncryptionCertificate("my encryption cert2");
-            entity2.setLifeTime("22my lifetime");
-            entity2.setProtocol("22protocol");
-            entity2.setRealm("myrealm2");
-            entity2.setRole("myrole");
-            entity2.setServiceDescription("service description2");
-            entity2.setServiceDisplayName("service displayname2");
-            entity2.setTokenType("my tokentype");
-            // must be persistet here already as the ApplicationClaimEntity requires the Application Id
-            em.persist(entity2);
-            ApplicationClaimEntity ace5 = new ApplicationClaimEntity(entity2, claimEntity5);
-            ace5.setOptional(false);
-            em.persist(ace5);
-            entity2.getRequestedClaims().add(ace5);
-            em.persist(entity2);
-            
-            TrustedIdpEntity entity4 = new TrustedIdpEntity();
-            entity4.setCacheTokens(true);
-            entity4.setCertificate("trusted cert");
-            entity4.setDescription("Realm B description");
-            entity4.setFederationType("FederateIdentity");
-            entity4.setName("Realm B");
-            entity4.setProtocol("http://docs.oasis-open.org/wsfed/federation/200706");
-            entity4.setRealm("trustedidp2realm");
-            entity4.setTrustType("PEER_TRUST");
-            entity4.setUrl("https://localhost:${realmB.port}/fediz-idp-remote/federation");
-            em.persist(entity4);
-            */
             
             em.flush();
         } catch (Exception ex) {

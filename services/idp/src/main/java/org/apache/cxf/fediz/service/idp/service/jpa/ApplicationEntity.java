@@ -68,8 +68,11 @@ public class ApplicationEntity {
     
     // Not in Metadata, configured in IDP or passed in wreq parameter
     private String lifeTime;
+    
+    // WS-Policy Namespace in SignIn Response
+    private String policyNamespace;
 
-   
+    
     public int getId() {
         return id;
     }
@@ -148,6 +151,14 @@ public class ApplicationEntity {
 
     public void setLifeTime(String lifeTime) {
         this.lifeTime = lifeTime;
+    }
+    
+    public String getPolicyNamespace() {
+        return policyNamespace;
+    }
+
+    public void setPolicyNamespace(String policyNamespace) {
+        this.policyNamespace = policyNamespace;
     }
 
 }
