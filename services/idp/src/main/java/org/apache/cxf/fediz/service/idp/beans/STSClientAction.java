@@ -177,6 +177,11 @@ public class STSClientAction {
         } else {
             sts.setTokenType(getTokenType());
         }
+        
+        if (serviceConfig.getPolicyNamespace() != null && serviceConfig.getPolicyNamespace().length() > 0) {
+            sts.setWspNamespace(serviceConfig.getPolicyNamespace());
+        }
+        
         if (LOG.isDebugEnabled()) {
             LOG.debug("TokenType " + sts.getTokenType() + " set for " + wtrealm);
         }

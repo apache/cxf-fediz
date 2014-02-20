@@ -74,6 +74,9 @@ public class ServiceConfig implements Serializable {
     // Not in Metadata, configured in IDP or passed in wreq parameter
     private String lifeTime;
 
+    // WS-Policy Namespace for AppliesTo element
+    private String policyNamespace;
+
     public String getRealm() {
         return realm;
     }
@@ -146,5 +149,11 @@ public class ServiceConfig implements Serializable {
         this.lifeTime = lifeTime;
     }
         
+    public String getPolicyNamespace() {
+        return policyNamespace;
+    }
 
+    public void setPolicyNamespace(String policyNamespace) {
+        this.policyNamespace = policyNamespace;
+    }
 }
