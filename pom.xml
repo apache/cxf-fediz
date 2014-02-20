@@ -36,7 +36,7 @@
         <commons.logging.version>1.1.1</commons.logging.version>
         <cxf.version>3.0.0-SNAPSHOT</cxf.version>
         <cxf.build-utils.version>2.6.0</cxf.build-utils.version>
-        <ehcache.version>2.5.1</ehcache.version>
+        <ehcache.version>2.8.1</ehcache.version>
         <httpclient.version>4.2.2</httpclient.version>
         <jericho.version>3.2</jericho.version>
         <jetty.version>8.1.12.v20130726</jetty.version>
