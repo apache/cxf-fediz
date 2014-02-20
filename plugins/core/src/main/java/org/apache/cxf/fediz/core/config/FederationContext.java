@@ -255,7 +255,7 @@ public class FederationContext implements Closeable {
     @Override
     public void close() throws IOException {
         if (replayCache != null) {
-            // TODO Uncomment when we pick up WSS4J SNAPSHOT again replayCache.close();
+            replayCache.close();
         }
     }
     
