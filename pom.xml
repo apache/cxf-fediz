@@ -34,8 +34,8 @@
     <properties>
         <commons.lang.version>3.0.1</commons.lang.version>
         <commons.logging.version>1.1.1</commons.logging.version>
-        <cxf.version>2.7.7</cxf.version>
-        <cxf.build-utils.version>2.5.0</cxf.build-utils.version>
+        <cxf.version>2.7.10</cxf.version>
+        <cxf.build-utils.version>2.6.0</cxf.build-utils.version>
         <ehcache.version>2.5.1</ehcache.version>
         <httpclient.version>4.2.2</httpclient.version>
         <jericho.version>3.2</jericho.version>
@@ -539,6 +539,7 @@
                         <parallel>${fediz.surefire.parallel.mode}</parallel>
                         <systemPropertyVariables>
                             <java.io.tmpdir>${basedir}/target</java.io.tmpdir>
+                            <catalina.base>${basedir}/target</catalina.base>
                             <cxf.useRandomFirstPort>true</cxf.useRandomFirstPort>
                             <org.apache.ws.commons.schema.protectReadOnlyCollections>${fediz.protect-xmlschema-collections}</org.apache.ws.commons.schema.protectReadOnlyCollections>
                             <cxf.validateServiceSchemas>${fediz.validateServices}</cxf.validateServiceSchemas>

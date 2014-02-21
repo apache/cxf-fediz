@@ -151,6 +151,10 @@
 											<name>logback.configurationFile</name>
 											<value>${project.baseUri}/src/test/resources/logback.xml</value>
 										</property>
+<property>
+        <name>catalina.base</name>
+        <value>target</value>
+</property>		
 									</properties>
 								</configuration>
 							</execution>
