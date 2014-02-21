@@ -55,9 +55,13 @@ public class STSPortFilter extends GenericFilterBean implements ApplicationConte
         if (!isPortSet && request.isSecure()) {
             try {
                 URL url = new URL(authProvider.getWsdlLocation());
-                URL updatedUrl = new URL(url.getProtocol(), url.getHost(), request.getLocalPort(), url.getFile());
-                setSTSWsdlUrl(authProvider, updatedUrl.toString());
-                LOG.info("STSAuthenticationProvider.wsdlLocation set to " + updatedUrl.toString());
+                if (url.getPort() == 0) {
+                    URL updatedUrl = new URL(url.getProtocol(), url.getHost(), request.getLocalPort(), url.getFile());
+                    setSTSWsdlUrl(authProvider, updatedUrl.toString());
+                    LOG.info("STSAuthenticationProvider.wsdlLocation set to " + updatedUrl.toString());
+                } else {
+                    setSTSWsdlUrl(authProvider, url.toString());
+                }
             } catch (MalformedURLException e) {
                 LOG.error("Invalid Url '" + authProvider.getWsdlLocation() + "': "  + e.getMessage());
             }

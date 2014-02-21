@@ -57,16 +57,23 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
     private static final String HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512 = 
         "http://docs.oasis-open.org/ws-sx/ws-trust/200512/";
     
+    private static final String HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_02_TRUST =
+        "http://schemas.xmlsoap.org/ws/2005/02/trust";
+    
     private static final Logger LOG = LoggerFactory
             .getLogger(STSAuthenticationProvider.class);
 
     protected String wsdlLocation;
+    
+    protected String namespace = HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512;
     
     protected String wsdlService;
 
     protected String wsdlEndpoint;
 
     protected String appliesTo;
+    
+    protected boolean use200502Namespace;
     
     protected String tokenType;
     
@@ -94,16 +101,16 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
         }
         sts.setKeyType(HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER);
         sts.setWsdlLocation(wsdlLocation);
-        sts.setServiceQName(new QName(
-                                      HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512,
-                                      wsdlService));
-        sts.setEndpointQName(new QName(
-                                       HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512,
-                                       wsdlEndpoint));
+        sts.setServiceQName(new QName(namespace, wsdlService));
+        sts.setEndpointQName(new QName(namespace, wsdlEndpoint));
+        
         sts.getProperties().put(SecurityConstants.USERNAME, authentication.getName());
         sts.getProperties().put(SecurityConstants.PASSWORD, (String)authentication.getCredentials());
         sts.getProperties().putAll(properties);
-           
+        if (use200502Namespace) {
+            sts.setNamespace(HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_02_TRUST);
+        }
+        
         if (lifetime != null) {
             sts.setEnableLifetime(true);
             sts.setTtl(lifetime.intValue());
@@ -186,6 +193,14 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
 
     public void setWsdlEndpoint(String wsdlEndpoint) {
         this.wsdlEndpoint = wsdlEndpoint;
+    }
+    
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
     }
 
     public String getAppliesTo() {
@@ -321,6 +336,14 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
 
     public Map<String, Object> getProperties() {
         return properties;
+    }
+
+    public boolean isUse200502Namespace() {
+        return use200502Namespace;
+    }
+
+    public void setUse200502Namespace(boolean use200502Namespace) {
+        this.use200502Namespace = use200502Namespace;
     }
 
 //May be uncommented for debugging    

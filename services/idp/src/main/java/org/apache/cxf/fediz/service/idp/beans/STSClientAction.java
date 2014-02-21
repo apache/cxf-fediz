@@ -76,17 +76,26 @@ public class STSClientAction {
 
     private static final String HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512 = 
             "http://docs.oasis-open.org/ws-sx/ws-trust/200512/";
+    
+    private static final String HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_02_TRUST =
+        "http://schemas.xmlsoap.org/ws/2005/02/trust";
 
     private static final String SECURITY_TOKEN_SERVICE = "SecurityTokenService";
 
     private static final Logger LOG = LoggerFactory
             .getLogger(STSClientAction.class);
+    
+    protected String namespace = HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512;
 
     protected String wsdlLocation;
 
     protected String wsdlEndpoint;
+    
+    protected String wsdlService = SECURITY_TOKEN_SERVICE;
   
     protected String tokenType = WSConstants.WSS_SAML2_TOKEN_TYPE;
+    
+    protected boolean use200502Namespace;
     
     protected int ttl = 1800;
     
@@ -119,6 +128,22 @@ public class STSClientAction {
 
     public void setWsdlEndpoint(String wsdlEndpoint) {
         this.wsdlEndpoint = wsdlEndpoint;
+    }
+    
+    public String getWsdlService() {
+        return wsdlService;
+    }
+
+    public void setWsdlService(String wsdlService) {
+        this.wsdlService = wsdlService;
+    }
+    
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
     }
     
     public void setBus(Bus bus) {
@@ -204,11 +229,11 @@ public class STSClientAction {
 
         processWsdlLocation(context);
         sts.setWsdlLocation(wsdlLocation);
-        sts.setServiceQName(new QName(
-                HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512,
-                SECURITY_TOKEN_SERVICE));
-        sts.setEndpointQName(new QName(
-                HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512, wsdlEndpoint));
+        sts.setServiceQName(new QName(namespace, wsdlService));
+        sts.setEndpointQName(new QName(namespace, wsdlEndpoint));
+        if (use200502Namespace) {
+            sts.setNamespace(HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_02_TRUST);
+        }
 
         if (serviceConfig.getRequestedClaims() != null && serviceConfig.getRequestedClaims().size() > 0) {
             addClaims(sts, serviceConfig.getRequestedClaims());
@@ -357,6 +382,14 @@ public class STSClientAction {
 
     public void setKeyType(String keyType) {
         this.keyType = keyType;
+    }
+
+    public boolean isUse200502Namespace() {
+        return use200502Namespace;
+    }
+
+    public void setUse200502Namespace(boolean use200502Namespace) {
+        this.use200502Namespace = use200502Namespace;
     }
 
 }
