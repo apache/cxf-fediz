@@ -32,18 +32,28 @@ public class TrustManager {
         super();
         this.trustManagerType = trustManagerType;
     }
+    
+    public TrustManager(Crypto crypto) {
+        super();
+        this.crypto = crypto;
+    }
 
     public String getName() {
         if (name != null) {
             return name;
         }
-        if (trustManagerType.getKeyStore().getFile() != null) {
-            name = trustManagerType.getKeyStore().getFile();
-        } else if (trustManagerType.getKeyStore().getUrl() != null) {
-            name = trustManagerType.getKeyStore().getUrl();
-        } else if (trustManagerType.getKeyStore().getResource() != null) {
-            name = trustManagerType.getKeyStore().getResource();
+        if (trustManagerType == null) {
+            name = "N.A.";
+        } else {
+            if (trustManagerType.getKeyStore().getFile() != null) {
+                name = trustManagerType.getKeyStore().getFile();
+            } else if (trustManagerType.getKeyStore().getUrl() != null) {
+                name = trustManagerType.getKeyStore().getUrl();
+            } else if (trustManagerType.getKeyStore().getResource() != null) {
+                name = trustManagerType.getKeyStore().getResource();
+            }
         }
+        
         return name;
     }
 
@@ -56,15 +66,27 @@ public class TrustManager {
     }
     
     public int hashCode() {
-        return trustManagerType.hashCode();
+        if (trustManagerType == null) {
+            return super.hashCode();
+        } else {
+            return trustManagerType.hashCode();
+        }
     }
     
     public boolean equals(Object obj) {
-        return trustManagerType.equals(obj);
+        if (trustManagerType == null) {
+            return super.equals(obj);
+        } else {
+            return trustManagerType.equals(obj);
+        }
     }
 
     public String toString() {
-        return trustManagerType.toString();
+        if (trustManagerType == null) {
+            return super.toString();
+        } else {
+            return trustManagerType.toString();
+        }
     }
     
 

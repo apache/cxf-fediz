@@ -18,7 +18,12 @@
  */
 package org.apache.cxf.fediz.service.idp.beans;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.Collections;
 
 import org.w3c.dom.Element;
 import org.apache.cxf.fediz.core.FederationConstants;
@@ -27,6 +32,7 @@ import org.apache.cxf.fediz.core.FederationProcessorImpl;
 import org.apache.cxf.fediz.core.FederationRequest;
 import org.apache.cxf.fediz.core.FederationResponse;
 import org.apache.cxf.fediz.core.config.FederationContext;
+import org.apache.cxf.fediz.core.config.TrustManager;
 import org.apache.cxf.fediz.core.config.jaxb.AudienceUris;
 import org.apache.cxf.fediz.core.config.jaxb.CertificateStores;
 import org.apache.cxf.fediz.core.config.jaxb.ContextConfig;
@@ -42,7 +48,10 @@ import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
+import org.apache.wss4j.common.crypto.CertificateStore;
+import org.apache.xml.security.exceptions.Base64DecodingException;
 import org.apache.xml.security.stax.impl.util.IDGenerator;
+import org.apache.xml.security.utils.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.webflow.execution.RequestContext;
@@ -136,17 +145,21 @@ public class ValidateTokenAction {
         config.setName("whatever");
 
         // Configure certificate store
-        CertificateStores certStores = new CertificateStores();
-        TrustManagersType tm0 = new TrustManagersType();
-        KeyStoreType ks0 = new KeyStoreType();
-        ks0.setType("PEM");
-        // ks0.setType("JKS");
-        // ks0.setPassword("changeit");
-        ks0.setFile(trustedIdpConfig.getCertificate());
-        tm0.setKeyStore(ks0);
-        certStores.getTrustManager().add(tm0);
-        config.setCertificateStores(certStores);
-
+        String certificate = trustedIdpConfig.getCertificate();
+        boolean isCertificateLocation = !certificate.startsWith("-----BEGIN CERTIFICATE");
+        if (isCertificateLocation) {
+            CertificateStores certStores = new CertificateStores();
+            TrustManagersType tm0 = new TrustManagersType();
+            KeyStoreType ks0 = new KeyStoreType();
+            ks0.setType("PEM");
+            // ks0.setType("JKS");
+            // ks0.setPassword("changeit");
+            ks0.setFile(trustedIdpConfig.getCertificate());
+            tm0.setKeyStore(ks0);
+            certStores.getTrustManager().add(tm0);
+            config.setCertificateStores(certStores);
+        }
+        
         // Configure trusted IDP
         TrustedIssuers trustedIssuers = new TrustedIssuers();
         TrustedIssuerType ti0 = new TrustedIssuerType();
@@ -164,8 +177,35 @@ public class ValidateTokenAction {
         config.setAudienceUris(audienceUris);
 
         FederationContext fedContext = new FederationContext(config);
+        if (!isCertificateLocation) {
+            CertificateStore cs = null;
+            
+            X509Certificate cert;
+            try {
+                cert = parseCertificate(trustedIdpConfig.getCertificate());
+            } catch (Exception ex) {
+                LOG.error("Failed to parse trusted certificate", ex);
+                throw new ProcessingException("Failed to parse trusted certificate");
+            }
+            cs = new CertificateStore(Collections.singletonList(cert).toArray(new X509Certificate[0]));
+            
+            TrustManager tm = new TrustManager(cs);
+            fedContext.getCertificateStores().add(tm);
+        }
+        
         fedContext.init();
         return fedContext;
+    }
+    
+    private X509Certificate parseCertificate(String certificate)
+        throws CertificateException, Base64DecodingException {
+        
+        //before decoding we need to get rod off the prefix and suffix
+        byte [] decoded = Base64.decode(certificate.replaceAll("-----BEGIN CERTIFICATE-----", "").
+                                        replaceAll("-----END CERTIFICATE-----", ""));
+
+        return (X509Certificate)CertificateFactory.getInstance("X.509").
+            generateCertificate(new ByteArrayInputStream(decoded));
     }
 
 }
