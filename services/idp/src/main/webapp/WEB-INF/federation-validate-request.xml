@@ -153,14 +153,14 @@
     <end-state id="redirectToTrustedIDP" view="externalRedirect:${flowScope.remoteIdpUrl}">
         <on-entry>
             <set name="flowScope.remoteIdpUrl"
-                value="flowScope.idpConfig.trustedIDPs.get(flowScope.whr).url
+                value="flowScope.idpConfig.findTrustedIdp(flowScope.whr).url
                 +'?wa=wsignin1.0'
                 +'&amp;wtrealm='+flowScope.idpConfig.realm
                 +'&amp;wreply='+flowScope.idpConfig.idpUrl
                 +(flowScope.wfresh != null ? '&amp;wfresh='+flowScope.wfresh : '')
                 +(flowScope.wctx != null ? '&amp;wctx='+flowScope.wctx : '')">
             </set>
-        </on-entry>
+        </on-entry> 
     </end-state>
 
     <end-state id="redirectToLocalIDP" view="externalRedirect:${flowScope.localIdpUrl}">
