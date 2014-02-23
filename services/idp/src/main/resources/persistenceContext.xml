@@ -90,7 +90,9 @@
     </bean>
 
     <bean id="dbLoader"
-        class="org.apache.cxf.fediz.service.idp.service.jpa.DBLoaderImpl" />
+        class="org.apache.cxf.fediz.service.idp.service.jpa.DBLoaderSpring">
+        <property name="resource" value="entities-realma.xml" />
+    </bean>
 
     <bean id="dbListener"
         class="org.apache.cxf.fediz.service.idp.service.jpa.DBInitApplicationListener" />
