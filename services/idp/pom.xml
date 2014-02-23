@@ -50,8 +50,7 @@
     </dependencyManagement>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <idp.https.port>9443</idp.https.port>
-        <idp.http.port>9080</idp.http.port>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
     <dependencies>
         <dependency>
@@ -79,7 +78,6 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-tx</artifactId>
-            <version>${spring.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -198,6 +196,7 @@
                 <filtering>true</filtering>
                 <includes>
                     <include>**/realm.properties</include>
+                    <include>**/persistence.properties</include>
                     <include>**/web.xml</include>
                 </includes>
             </resource>
@@ -206,6 +205,7 @@
                 <filtering>false</filtering>
                 <excludes>
                     <exclude>**/realm.properties</exclude>
+                    <exclude>**/persistence.properties</exclude>
                     <exclude>**/web.xml</exclude>
                 </excludes>
             </resource>
@@ -285,6 +285,8 @@
                         <configuration>
                             <portNames>
                                 <portName>idp.https.port</portName>
+                                <portName>idp.http.port</portName>
+                                <portName>idp.stop.port</portName>
                             </portNames>
                         </configuration>
                     </execution>
@@ -315,7 +317,7 @@
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>${jetty.version}</version>
                 <configuration>
-                    <stopPort>8005</stopPort>
+                    <stopPort>${idp.stop.port}</stopPort>
                     <stopKey>STOP</stopKey>
                     <connectors>
                         <connector
@@ -335,14 +337,14 @@
                     <contextHandlers>
                         <contextHandler
                             implementation="org.eclipse.jetty.webapp.WebAppContext">
-                            <war>${basedir}/target/fediz-idp.war</war>
-                            <contextPath>/fediz-idp</contextPath>
-                        </contextHandler>
-                        <contextHandler
-                            implementation="org.eclipse.jetty.webapp.WebAppContext">
                             <war>${basedir}/target/fediz-idp-sts.war</war>
                             <contextPath>/fediz-idp-sts</contextPath>
                             <throwUnavailableOnStartupException>false</throwUnavailableOnStartupException>
+                        </contextHandler>
+                        <contextHandler
+                            implementation="org.eclipse.jetty.webapp.WebAppContext">
+                            <war>${basedir}/target/fediz-idp.war</war>
+                            <contextPath>/fediz-idp</contextPath>
                         </contextHandler>
                     </contextHandlers>
                 </configuration>
@@ -421,40 +423,89 @@
 
     <profiles>
         <profile>
-            <id>realm-a</id>
+            <id>default</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
+                <jpa.url>jdbc:hsqldb:target/db/realma/myDB;shutdown=true</jpa.url>
             </properties>
             <build>
                 <filters>
                     <filter>src/main/filters/realm-a/env.properties</filter>
                 </filters>
+            </build>
+        </profile>
+        <profile>
+            <id>realm-a</id>
+            <properties>
+                <jpa.url>jdbc:hsqldb:target/db/realma/myDB;shutdown=true</jpa.url>
+                <idp.https.port>9443</idp.https.port>
+                <idp.http.port>9080</idp.http.port>
+            </properties>
+            <build>
+                <filters>
+                    <filter>src/main/filters/realm-a/env.properties</filter>
+                </filters>
+                <plugins>
+                    <plugin>
+                        <groupId>org.mortbay.jetty</groupId>
+                        <artifactId>jetty-maven-plugin</artifactId>
+                        <configuration>
+                            <contextHandlers>
+                                <contextHandler
+                                    implementation="org.eclipse.jetty.webapp.WebAppContext">
+                                    <war>${basedir}/target/fediz-idp.war</war>
+                                    <contextPath>/fediz-idp</contextPath>
+                                </contextHandler>
+                            </contextHandlers>
+                         </configuration>
+                     </plugin>
+                 </plugins>
             </build>
         </profile>
         <profile>
             <id>realm-b</id>
             <properties>
+                <jpa.url>jdbc:hsqldb:target/db/realmb/myDB;shutdown=true</jpa.url>
+                <idp.https.port>12443</idp.https.port>
+                <idp.http.port>12080</idp.http.port>
             </properties>
             <build>
                 <filters>
                     <filter>src/main/filters/realm-b/env.properties</filter>
                 </filters>
+                <plugins>
+                    <plugin>
+                        <groupId>org.mortbay.jetty</groupId>
+                        <artifactId>jetty-maven-plugin</artifactId>
+                        <configuration>
+                            <contextHandlers>
+                                <contextHandler
+                                    implementation="org.eclipse.jetty.webapp.WebAppContext">
+                                    <war>${basedir}/target/fediz-idp-remote.war</war>
+                                    <contextPath>/fediz-idp-remote</contextPath>
+                                </contextHandler>
+                            </contextHandlers>
+                         </configuration>
+                     </plugin>
+                 </plugins>
                 <finalName>fediz-idp-remote</finalName>
             </build>
         </profile>
         <profile>
+            <id>standalone</id>
+            <properties>
+                <maven.test.skip>true</maven.test.skip>
+            </properties>
+            <build>
+                <defaultGoal>jetty:run-war</defaultGoal>
+            </build>
+        </profile>
+
+        <profile>
             <id>sts</id>
             <build>
-                <!-- If you choose this profile -Psts then the profile 'realm-a' 
-                    is not active -->
-                <!-- activeByDefault means the profile is active if no other 
-                    profile has been chosen -->
-                <!-- Therefore, filter definition copied from profile 'realm-a' -->
-                <filters>
-                    <filter>src/main/filters/realm-a/env.properties</filter>
-                </filters>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -485,7 +536,20 @@
                             </execution>
                         </executions>
                     </plugin>
-                </plugins>
+                    <plugin>
+                        <groupId>org.mortbay.jetty</groupId>
+                        <artifactId>jetty-maven-plugin</artifactId>
+                        <configuration>
+                            <contextHandlers combine.children="append">
+                                <contextHandler
+                                    implementation="org.eclipse.jetty.webapp.WebAppContext">
+                                    <war>${basedir}/target/fediz-idp-sts.war</war>
+                                    <contextPath>/fediz-idp-sts</contextPath>
+                                </contextHandler>
+                            </contextHandlers>
+                         </configuration>
+                     </plugin>
+                 </plugins>
             </build>
         </profile>
     </profiles>
