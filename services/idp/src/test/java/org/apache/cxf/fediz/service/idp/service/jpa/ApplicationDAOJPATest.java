@@ -73,8 +73,6 @@ public class ApplicationDAOJPATest {
         Application application = applicationDAO.getApplication("urn:org:apache:cxf:fediz:fedizhelloworld",
                                                                 Arrays.asList("all"));
         
-        Assert.isTrue("".equals(application.getEncryptionCertificate()),
-                      "EncryptionCertificate doesn't match");
         Assert.isTrue("3600".equals(application.getLifeTime()),
                       "LifeTime doesn't match");
         Assert.isTrue("http://docs.oasis-open.org/wsfed/federation/200706".equals(application.getProtocol()),
@@ -83,16 +81,13 @@ public class ApplicationDAOJPATest {
                       "Realm doesn't match");
         Assert.isTrue("ApplicationServiceType".equals(application.getRole()),
                       "Role doesn't match");
-        Assert.isTrue("Fedizhelloworld description".equals(application.getServiceDescription()),
+        Assert.isTrue("Web Application to illustrate WS-Federation".equals(application.getServiceDescription()),
                       "ServiceDescription doesn't match");
         Assert.isTrue("Fedizhelloworld".equals(application.getServiceDisplayName()),
                       "ServiceDisplayName doesn't match");
         Assert.isTrue("http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0"
                       .equals(application.getTokenType()),
                       "TokenType doesn't match");
-        Assert.isTrue("http://www.w3.org/ns/ws-policy"
-                      .equals(application.getPolicyNamespace()),
-                      "Policy Namespace doesn't match");
         Assert.isTrue(4 == application.getRequestedClaims().size(),
                       "Number of claims doesn't match [" + application.getRequestedClaims().size() + "]");
     }

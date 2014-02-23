@@ -86,9 +86,9 @@ public class IdpDAOJPATest {
                       "StsUrl doesn't match");
         Assert.isTrue("realma".equals(idp.getUri()),
                       "Uri doesn't match");
-        Assert.isTrue(idp.isProvideIDPList(),
+        Assert.isTrue(idp.isProvideIdpList(),
                       "ProvideIDPList doesn't match");
-        Assert.isTrue(idp.isUseCurrentIDP(),
+        Assert.isTrue(idp.isUseCurrentIdp(),
                       "UseCurrentIDP doesn't match");
         Assert.isTrue(1 == idp.getAuthenticationURIs().size(),
                       "Number of AuthenticationURIs doesn't match");
@@ -163,7 +163,7 @@ public class IdpDAOJPATest {
         idp.setServiceDisplayName("NEW REALM");
         idp.setServiceDescription("IDP of New Realm");
         idp.setUri("realmn");
-        idp.setProvideIDPList(true);
+        idp.setProvideIdpList(true);
         Map<String, String> authUris = new HashMap<String, String>();
         authUris.put("default", "/login/default");
         idp.setAuthenticationURIs(authUris);
@@ -175,7 +175,7 @@ public class IdpDAOJPATest {
         tokenTypes.add(WSConstants.SAML2_NS);
         tokenTypes.add(WSConstants.SAML_NS);
         idp.setTokenTypesOffered(tokenTypes);
-        idp.setUseCurrentIDP(true);
+        idp.setUseCurrentIdp(true);
         
         idpDAO.addIdp(idp);
         
@@ -197,9 +197,9 @@ public class IdpDAOJPATest {
                       "StsUrl doesn't match");
         Assert.isTrue("realmn".equals(idp.getUri()),
                       "Uri doesn't match");
-        Assert.isTrue(idp.isProvideIDPList(),
+        Assert.isTrue(idp.isProvideIdpList(),
                       "ProvideIDPList doesn't match");
-        Assert.isTrue(idp.isUseCurrentIDP(),
+        Assert.isTrue(idp.isUseCurrentIdp(),
                       "UseCurrentIDP doesn't match");
         Assert.isTrue(1 == idp.getAuthenticationURIs().size(),
                       "Number of AuthenticationURIs doesn't match");
@@ -261,7 +261,7 @@ public class IdpDAOJPATest {
         idp.setServiceDisplayName("UNEW REALM");
         idp.setServiceDescription("UIDP of New Realm");
         idp.setUri("Urealmn");
-        idp.setProvideIDPList(true);
+        idp.setProvideIdpList(true);
         Map<String, String> authUris = new HashMap<String, String>();
         authUris.put("default", "/login/default");
         idp.setAuthenticationURIs(authUris);
@@ -271,7 +271,7 @@ public class IdpDAOJPATest {
         List<String> tokenTypes = new ArrayList<String>();
         tokenTypes.add(WSConstants.SAML2_NS);
         idp.setTokenTypesOffered(tokenTypes);
-        idp.setUseCurrentIDP(false);
+        idp.setUseCurrentIdp(false);
         idpDAO.updateIdp(realm, idp);
         
         idp = idpDAO.getIdp(realm, null);
@@ -292,9 +292,9 @@ public class IdpDAOJPATest {
                       "StsUrl doesn't match");
         Assert.isTrue("Urealmn".equals(idp.getUri()),
                       "Uri doesn't match");
-        Assert.isTrue(idp.isProvideIDPList(),
+        Assert.isTrue(idp.isProvideIdpList(),
                       "ProvideIDPList doesn't match");
-        Assert.isTrue(!idp.isUseCurrentIDP(),
+        Assert.isTrue(!idp.isUseCurrentIdp(),
                       "UseCurrentIDP doesn't match");
         Assert.isTrue(1 == idp.getAuthenticationURIs().size(),
                       "Number of AuthenticationURIs doesn't match");
@@ -329,7 +329,7 @@ public class IdpDAOJPATest {
         idp.setServiceDisplayName("UNEW REALM");
         idp.setServiceDescription("UIDP of New Realm");
         idp.setUri("Urealmn");
-        idp.setProvideIDPList(true);
+        idp.setProvideIdpList(true);
         Map<String, String> authUris = new HashMap<String, String>();
         authUris.put("default", "/login/default");
         idp.setAuthenticationURIs(authUris);
@@ -339,7 +339,7 @@ public class IdpDAOJPATest {
         List<String> tokenTypes = new ArrayList<String>();
         tokenTypes.add(WSConstants.SAML2_NS);
         idp.setTokenTypesOffered(tokenTypes);
-        idp.setUseCurrentIDP(false);
+        idp.setUseCurrentIdp(false);
         idpDAO.updateIdp("urn:UNKNOWN", idp);
     }
     
@@ -623,7 +623,7 @@ public class IdpDAOJPATest {
         idp.setServiceDisplayName("NEW REALM");
         idp.setServiceDescription("IDP of New Realm");
         idp.setUri("realma");
-        idp.setProvideIDPList(true);
+        idp.setProvideIdpList(true);
         Map<String, String> authUris = new HashMap<String, String>();
         authUris.put("default", "/login/default");
         idp.setAuthenticationURIs(authUris);
@@ -635,7 +635,7 @@ public class IdpDAOJPATest {
         tokenTypes.add(WSConstants.SAML2_NS);
         tokenTypes.add(WSConstants.SAML_NS);
         idp.setTokenTypesOffered(tokenTypes);
-        idp.setUseCurrentIDP(true);
+        idp.setUseCurrentIdp(true);
         return idp;
     }
     /*

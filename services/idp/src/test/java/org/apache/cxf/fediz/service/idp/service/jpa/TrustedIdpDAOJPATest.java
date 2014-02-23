@@ -72,7 +72,7 @@ public class TrustedIdpDAOJPATest {
                       "Realm doesn't match");          
         Assert.isTrue("PEER_TRUST".equals(trustedIdp.getTrustType()),
                       "TrustType doesn't match");
-        Assert.isTrue("https://localhost:${realmB.port}/fediz-idp-remote/federation".equals(trustedIdp.getUrl()),
+        Assert.isTrue("https://localhost:12443/fediz-idp-remote/federation".equals(trustedIdp.getUrl()),
                       "Url doesn't match"); 
         Assert.isTrue(trustedIdp.isCacheTokens(), "CacheTokens doesn't match"); 
     }

@@ -84,7 +84,7 @@ public class ValidateTokenAction {
                     TYPE.BAD_REQUEST);
         }
 
-        TrustedIdp trustedIDPConfig = idpConfig.findTrustedIDP(whr);
+        TrustedIdp trustedIDPConfig = idpConfig.findTrustedIdp(whr);
 
         if (trustedIDPConfig == null) {
             throw new ProcessingException(

@@ -61,7 +61,7 @@
                     </unique-constraint>
                 </join-table>
             </many-to-many>
-            <many-to-many name="trustedIDPs">
+            <many-to-many name="trustedIdps">
                 <join-table name="idp_trustedidps">
                     <join-column name="idp_id" />
                     <inverse-join-column name="trustedidp_id" />

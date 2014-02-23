@@ -32,7 +32,7 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlRootElement(name = "idp", namespace = "http://org.apache.cxf.fediz/")
 @XmlType(propOrder = {"realm", "uri", "serviceDisplayName", "serviceDescription", "idpUrl", "stsUrl",
-                     "certificate", "certificatePassword", "provideIDPList", "useCurrentIDP", "hrds",
+                     "certificate", "certificatePassword", "provideIdpList", "useCurrentIdp", "hrds",
                      "supportedProtocols", "tokenTypesOffered", "claimTypesOffered", "authenticationURIs",
                      "applications", "trustedIdps", "id" })
 public class Idp implements Serializable {
@@ -57,12 +57,12 @@ public class Idp implements Serializable {
     // @Column(name = "INACTIVE", nullable = true, length = FIELD_LENGTH)
     // if HRDS can't determine the home realm, should
     // the list of trusted IDPs be shown to make a choice
-    protected boolean provideIDPList;
+    protected boolean provideIdpList;
 
     // If HRDS can't discover a home realm and displaying IDP list is not
     // enabled
     // it falls back to current IDP if an authentication domain is configured
-    protected boolean useCurrentIDP;
+    protected boolean useCurrentIdp;
 
     // Store certificate in DB or filesystem, provide options?
     // md:KeyDescriptor, use="signing"
@@ -144,20 +144,20 @@ public class Idp implements Serializable {
         this.hrds = hrds;
     }
 
-    public boolean isProvideIDPList() {
-        return provideIDPList;
+    public boolean isProvideIdpList() {
+        return provideIdpList;
     }
 
-    public void setProvideIDPList(boolean provideIDPList) {
-        this.provideIDPList = provideIDPList;
+    public void setProvideIdpList(boolean provideIdpList) {
+        this.provideIdpList = provideIdpList;
     }
 
-    public boolean isUseCurrentIDP() {
-        return useCurrentIDP;
+    public boolean isUseCurrentIdp() {
+        return useCurrentIdp;
     }
 
-    public void setUseCurrentIDP(boolean useCurrentIDP) {
-        this.useCurrentIDP = useCurrentIDP;
+    public void setUseCurrentIdp(boolean useCurrentIdp) {
+        this.useCurrentIdp = useCurrentIdp;
     }
 
     public String getCertificate() {
@@ -220,7 +220,7 @@ public class Idp implements Serializable {
         this.applications = applications;
     }
 
-    public TrustedIdp findTrustedIDP(String realmTrustedIdp) {
+    public TrustedIdp findTrustedIdp(String realmTrustedIdp) {
         for (TrustedIdp item : trustedIdpList) {
             if (realmTrustedIdp.equals(item.getRealm())) {
                 return item;

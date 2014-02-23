@@ -57,12 +57,12 @@ public class IdpEntity {
 
     // if HRDS can't determine the home realm, should
     // the list of trusted IDPs be shown to make a choice
-    private boolean provideIDPList;
+    private boolean provideIdpList;
 
     // If HRDS can't discover a home realm and displaying IDP list is not
     // enabled
     // it falls back to current IDP if an authentication domain is configured
-    private boolean useCurrentIDP;
+    private boolean useCurrentIdp;
 
     // Store certificate in DB or filesystem, provide options?
     // md:KeyDescriptor, use="signing"
@@ -97,7 +97,7 @@ public class IdpEntity {
     // list of trusted IDP from whom we accept SignInResponse
     // key: whr
     @ManyToMany(cascade = CascadeType.ALL)
-    private List<TrustedIdpEntity> trustedIDPs = new ArrayList<TrustedIdpEntity>();
+    private List<TrustedIdpEntity> trustedIdps = new ArrayList<TrustedIdpEntity>();
 
     // which URI to redirect for authentication
     // fediz-idp/<IDP uri>/login/auth/<auth URI>
@@ -160,20 +160,20 @@ public class IdpEntity {
         this.hrds = hrds;
     }
 
-    public boolean isProvideIDPList() {
-        return provideIDPList;
+    public boolean isProvideIdpList() {
+        return provideIdpList;
     }
 
-    public void setProvideIDPList(boolean provideIDPList) {
-        this.provideIDPList = provideIDPList;
+    public void setProvideIdpList(boolean provideIdpList) {
+        this.provideIdpList = provideIdpList;
     }
 
-    public boolean isUseCurrentIDP() {
-        return useCurrentIDP;
+    public boolean isUseCurrentIdp() {
+        return useCurrentIdp;
     }
 
-    public void setUseCurrentIDP(boolean useCurrentIDP) {
-        this.useCurrentIDP = useCurrentIDP;
+    public void setUseCurrentIdp(boolean useCurrentIdp) {
+        this.useCurrentIdp = useCurrentIdp;
     }
 
     public String getCertificate() {
@@ -224,12 +224,12 @@ public class IdpEntity {
         this.applications = applications;
     }
 
-    public List<TrustedIdpEntity> getTrustedIDPs() {
-        return trustedIDPs;
+    public List<TrustedIdpEntity> getTrustedIdps() {
+        return trustedIdps;
     }
 
-    public void setTrustedIDPs(List<TrustedIdpEntity> trustedIDPs) {
-        this.trustedIDPs = trustedIDPs;
+    public void setTrustedIdps(List<TrustedIdpEntity> trustedIdps) {
+        this.trustedIdps = trustedIdps;
     }
 
     public Map<String, String> getAuthenticationURIs() {

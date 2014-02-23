@@ -62,8 +62,8 @@
         <property name="realm" value="urn:org:apache:cxf:fediz:idp:realm-A" />
         <property name="uri" value="realma" />
         <!--<property name="hrds" value="" /> --> <!-- TBD, not defined, provide list if enabled -->
-        <property name="provideIDPList" value="true" />
-        <property name="useCurrentIDP" value="true" />
+        <property name="provideIdpList" value="true" />
+        <property name="useCurrentIdp" value="true" />
         <!-- <property name="certificate" value="realma.cert" /> -->   <!-- STS will sign token, IDP signs Metadata -->
         <property name="certificate" value="stsKeystoreA.properties" />
         <property name="certificatePassword" value="realma" />

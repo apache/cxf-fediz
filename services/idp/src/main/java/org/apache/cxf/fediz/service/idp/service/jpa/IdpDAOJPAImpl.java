@@ -201,7 +201,7 @@ public class IdpDAOJPAImpl implements IdpDAO {
             trustedIdpEntity = TrustedIdpDAOJPAImpl.getTrustedIdpEntity(trustedIdp.getRealm(), em);
         }
         
-        idpEntity.getTrustedIDPs().add(trustedIdpEntity);
+        idpEntity.getTrustedIdps().add(trustedIdpEntity);
         
         if (LOG.isDebugEnabled()) {
             LOG.debug("Trusted IDP '" + trustedIdp.getRealm() + "' added to IDP '" + idp.getRealm() + "'");
@@ -224,7 +224,7 @@ public class IdpDAOJPAImpl implements IdpDAO {
             trustedIdpEntity = TrustedIdpDAOJPAImpl.getTrustedIdpEntity(trustedIdp.getRealm(), em);
         }
         
-        idpEntity.getTrustedIDPs().remove(trustedIdpEntity);
+        idpEntity.getTrustedIdps().remove(trustedIdpEntity);
         
         if (LOG.isDebugEnabled()) {
             LOG.debug("Trusted IDP '" + trustedIdp.getRealm() + "' removed from IDP '" + idp.getRealm() + "'");
@@ -307,10 +307,10 @@ public class IdpDAOJPAImpl implements IdpDAO {
         entity.setServiceDisplayName(idp.getServiceDisplayName());
         entity.setHrds(idp.getHrds());
         entity.setIdpUrl(idp.getIdpUrl());
-        entity.setProvideIDPList(idp.isProvideIDPList());
+        entity.setProvideIdpList(idp.isProvideIdpList());
         entity.setStsUrl(idp.getStsUrl());
         entity.setUri(idp.getUri());
-        entity.setUseCurrentIDP(idp.isUseCurrentIDP());
+        entity.setUseCurrentIdp(idp.isUseCurrentIdp());
         
         entity.getAuthenticationURIs().clear();
         for (Map.Entry<String, String> item : idp.getAuthenticationURIs().entrySet()) {
@@ -339,10 +339,10 @@ public class IdpDAOJPAImpl implements IdpDAO {
         idp.setServiceDisplayName(entity.getServiceDisplayName());
         idp.setHrds(entity.getHrds());
         idp.setIdpUrl(entity.getIdpUrl());
-        idp.setProvideIDPList(entity.isProvideIDPList());
+        idp.setProvideIdpList(entity.isProvideIdpList());
         idp.setStsUrl(entity.getStsUrl());
         idp.setUri(entity.getUri());
-        idp.setUseCurrentIDP(entity.isUseCurrentIDP());
+        idp.setUseCurrentIdp(entity.isUseCurrentIdp());
         
         
         if (expandList != null && (expandList.contains("all") || expandList.contains("applications"))) {
@@ -353,7 +353,7 @@ public class IdpDAOJPAImpl implements IdpDAO {
         }
         
         if (expandList != null && (expandList.contains("all") || expandList.contains("trusted-idps"))) {
-            for (TrustedIdpEntity item : entity.getTrustedIDPs()) {
+            for (TrustedIdpEntity item : entity.getTrustedIdps()) {
                 TrustedIdp trustedIdp = TrustedIdpDAOJPAImpl.entity2domain(item);
                 idp.getTrustedIdps().add(trustedIdp);
             }

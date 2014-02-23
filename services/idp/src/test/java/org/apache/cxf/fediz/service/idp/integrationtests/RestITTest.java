@@ -101,8 +101,8 @@ public class RestITTest {
                             "https://localhost:9443/fediz-idp-sts/REALMA", idp.getStsUrl());
         Assert.assertEquals("Uri doesn't match",
                             "realma", idp.getUri());
-        Assert.assertTrue("ProvideIDPList doesn't match", idp.isProvideIDPList());
-        Assert.assertTrue("UseCurrentIDP doesn't match", idp.isUseCurrentIDP());
+        Assert.assertTrue("ProvideIDPList doesn't match", idp.isProvideIdpList());
+        Assert.assertTrue("UseCurrentIDP doesn't match", idp.isUseCurrentIdp());
         Assert.assertEquals("Number of AuthenticationURIs doesn't match",
                             1, idp.getAuthenticationURIs().size());
         Assert.assertEquals("Number of SupportedProtocols doesn't match",

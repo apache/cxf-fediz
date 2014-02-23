@@ -86,10 +86,9 @@ public class DBLoaderImpl implements DBLoader {
             entity.setProtocol("http://docs.oasis-open.org/wsfed/federation/200706");
             entity.setRealm("urn:org:apache:cxf:fediz:fedizhelloworld");
             entity.setRole("ApplicationServiceType");
-            entity.setServiceDescription("Fedizhelloworld description");
+            entity.setServiceDescription("Web Application to illustrate WS-Federation");
             entity.setServiceDisplayName("Fedizhelloworld");
             entity.setTokenType("http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0");
-            entity.setPolicyNamespace("http://www.w3.org/ns/ws-policy");
             // must be persistet here already as the ApplicationClaimEntity requires the Application Id
             em.persist(entity);
             ApplicationClaimEntity ace1 = new ApplicationClaimEntity(entity, claimEntity1);
@@ -120,12 +119,12 @@ public class DBLoaderImpl implements DBLoader {
             entity3.setProtocol("http://docs.oasis-open.org/wsfed/federation/200706");
             entity3.setRealm("urn:org:apache:cxf:fediz:idp:realm-B");
             entity3.setTrustType("PEER_TRUST");
-            entity3.setUrl("https://localhost:${realmB.port}/fediz-idp-remote/federation");
+            entity3.setUrl("https://localhost:12443/fediz-idp-remote/federation");
             em.persist(entity3);
             
             IdpEntity idpEntity = new IdpEntity();
             idpEntity.getApplications().add(entity);
-            idpEntity.getTrustedIDPs().add(entity3);
+            idpEntity.getTrustedIdps().add(entity3);
             idpEntity.setCertificate("stsKeystoreA.properties");
             idpEntity.setCertificatePassword("realma");
             idpEntity.setIdpUrl("https://localhost:9443/fediz-idp/federation");
@@ -134,7 +133,7 @@ public class DBLoaderImpl implements DBLoader {
             idpEntity.setServiceDisplayName("REALM A");
             idpEntity.setServiceDescription("IDP of Realm A");
             idpEntity.setUri("realma");
-            idpEntity.setProvideIDPList(true);
+            idpEntity.setProvideIdpList(true);
             Map<String, String> authUris = new HashMap<String, String>();
             authUris.put("default", "/login/default");
             idpEntity.setAuthenticationURIs(authUris);
@@ -150,7 +149,7 @@ public class DBLoaderImpl implements DBLoader {
             tokenTypes.add(WSConstants.SAML2_NS);
             tokenTypes.add(WSConstants.SAML_NS);
             idpEntity.setTokenTypesOffered(tokenTypes);
-            idpEntity.setUseCurrentIDP(true);
+            idpEntity.setUseCurrentIdp(true);
             em.persist(idpEntity);
             
             em.flush();
