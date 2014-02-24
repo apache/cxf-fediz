@@ -58,7 +58,7 @@ public class TrustedIdpDAOJPATest {
     @Test
     public void testReadExistingTrustedIdp() {
         TrustedIdp trustedIdp = trustedIdpDAO.getTrustedIDP("urn:org:apache:cxf:fediz:idp:realm-B");
-        Assert.isTrue("trusted cert".equals(trustedIdp.getCertificate()),
+        Assert.isTrue("realmb.cert".equals(trustedIdp.getCertificate()),
                       "Certificate name doesn't match");
         Assert.isTrue("Realm B description".equals(trustedIdp.getDescription()),
                       "Description name doesn't match");
@@ -92,7 +92,7 @@ public class TrustedIdpDAOJPATest {
         
         trustedIdp = trustedIdpDAO.getTrustedIDP(realm);
         
-        Assert.isTrue("trusted cert".equals(trustedIdp.getCertificate()),
+        Assert.isTrue("realmb.cert".equals(trustedIdp.getCertificate()),
                       "Certificate name doesn't match");
         Assert.isTrue("Realm B description".equals(trustedIdp.getDescription()),
                       "Description name doesn't match");
@@ -188,7 +188,7 @@ public class TrustedIdpDAOJPATest {
         TrustedIdp trustedIdp = new TrustedIdp();
         trustedIdp.setRealm(realm);
         trustedIdp.setCacheTokens(false);
-        trustedIdp.setCertificate("trusted cert");
+        trustedIdp.setCertificate("realmb.cert");
         trustedIdp.setDescription("Realm B description");
         trustedIdp.setFederationType("FederateIdentity");
         trustedIdp.setName("Realm B");

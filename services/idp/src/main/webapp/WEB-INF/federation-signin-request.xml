@@ -68,12 +68,12 @@
         <if
             test="flowScope.idpConfig.trustedIdps == null or idpConfig.trustedIdps.isEmpty()"
             then="checkDefaultToThisIDP" />
-        <if test="flowScope.idpConfig.isProvideIDPList() == false"
+        <if test="flowScope.idpConfig.isProvideIdpList() == false"
             then="checkDefaultToThisIDP" else="showIDPList" />
     </decision-state>
 
     <decision-state id="checkDefaultToThisIDP">
-        <if test="flowScope.idpConfig.isUseCurrentIDP()" then="checkWauthTypeSupported"
+        <if test="flowScope.idpConfig.isUseCurrentIdp()" then="checkWauthTypeSupported"
             else="viewBadRequest" />
     </decision-state>
 

@@ -39,6 +39,7 @@
         <property name="locations">
             <list>
                 <value>classpath:persistence.properties</value>
+                <value>classpath:realm.properties</value>
             </list>
         </property>
         <property name="ignoreResourceNotFound" value="true" />

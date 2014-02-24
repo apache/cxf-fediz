@@ -31,7 +31,7 @@
     http://www.springframework.org/schema/jdbc
     http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd"
        default-autowire="byName">
-
+    
     <context:component-scan base-package="org.apache.cxf.fediz.service.idp.service" />
     <context:component-scan base-package="org.apache.cxf.fediz.service.idp.rest" />
 
@@ -91,7 +91,7 @@
 
     <bean id="dbLoader"
         class="org.apache.cxf.fediz.service.idp.service.jpa.DBLoaderSpring">
-        <property name="resource" value="entities-realma.xml" />
+        <property name="resource" value="${db-load-config}" />
     </bean>
 
     <bean id="dbListener"
