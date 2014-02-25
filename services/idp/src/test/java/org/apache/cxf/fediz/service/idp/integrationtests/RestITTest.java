@@ -18,6 +18,7 @@
  */
 package org.apache.cxf.fediz.service.idp.integrationtests;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
 
@@ -34,6 +35,7 @@ import org.apache.cxf.fediz.service.idp.domain.Application;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.RequestClaim;
 import org.apache.cxf.fediz.service.idp.rest.Idps;
+import org.apache.xml.security.utils.Base64;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -77,11 +79,12 @@ public class RestITTest {
     }
     
     @Test
-    public void testGetAllIdps() {
+    public void testGetAllIdps() throws UnsupportedEncodingException {
         String address = "https://localhost:" + idpHttpsPort + "/fediz-idp/services/rs";
         Client client = ClientBuilder.newClient();
         Idps idps = client.target(address).path("idps")
-            .request("application/xml").get(Idps.class);
+            .request("application/xml").header("Authorization", getBasicAuthentication("admin", "password"))
+            .get(Idps.class);
         Assert.assertEquals(1L, idps.getIdps().size());
         
         Idp idp = idps.getIdps().iterator().next();
@@ -118,16 +121,17 @@ public class RestITTest {
     }
 
     @Test
-    public void testReadExistingIdpEmbeddedTrustedIdps() {
+    public void testReadExistingIdpEmbeddedTrustedIdps() throws UnsupportedEncodingException {
         String address = "https://localhost:" + idpHttpsPort + "/fediz-idp/services/rs";
         Client client = ClientBuilder.newClient();
         Idp idp = client.target(address).path("idps/").path("urn:org:apache:cxf:fediz:idp:realm-A")
-            .request("application/xml").get(Idp.class);
+            .request("application/xml").header("Authorization", getBasicAuthentication("admin", "password"))
+            .get(Idp.class);
         Assert.assertEquals("", "urn:org:apache:cxf:fediz:idp:realm-A", idp.getRealm());
     }
     
     @Test
-    public void testAddClaimToApplication() {
+    public void testAddClaimToApplication() throws UnsupportedEncodingException {
         
         String address = "https://localhost:" + idpHttpsPort + "/fediz-idp/services/rs";
         Client client = ClientBuilder.newClient();
@@ -144,7 +148,8 @@ public class RestITTest {
         application.setTokenType("http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0");
         
         Response response = client.target(address).path("applications/")
-            .request("application/xml").post(Entity.entity(application, MediaType.APPLICATION_XML));
+            .request("application/xml").header("Authorization", getBasicAuthentication("admin", "password"))
+            .post(Entity.entity(application, MediaType.APPLICATION_XML));
         Assert.assertEquals(Status.CREATED.getStatusCode(), response.getStatus());
         
         //Testcase
@@ -153,13 +158,21 @@ public class RestITTest {
         requestClaim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"));
         
         response = client.target(address).path("applications").path(realm).path("claims")
-            .request("application/xml").post(Entity.entity(requestClaim, MediaType.APPLICATION_XML));
+            .request("application/xml").header("Authorization", getBasicAuthentication("admin", "password"))
+            .post(Entity.entity(requestClaim, MediaType.APPLICATION_XML));
         Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         
         application = client.target(address).path("applications").path(realm).queryParam("expand", "claims")
-            .request("application/xml").get(Application.class);
+            .request("application/xml").header("Authorization", getBasicAuthentication("admin", "password"))
+            .get(Application.class);
         Assert.assertEquals("Claims size should be 1 instead of " + application.getRequestedClaims().size(),
                             1, application.getRequestedClaims().size());
+    }
+    
+    private String getBasicAuthentication(String username, String password) throws UnsupportedEncodingException {
+        String token = username + ":" + password;
+        System.out.println("Basic " + Base64.encode(token.getBytes()));
+        return "Basic " + Base64.encode(token.getBytes());
     }
 
 
