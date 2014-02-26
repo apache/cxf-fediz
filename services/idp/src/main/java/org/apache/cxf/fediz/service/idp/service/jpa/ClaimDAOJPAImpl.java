@@ -20,9 +20,8 @@ package org.apache.cxf.fediz.service.idp.service.jpa;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.List;            
+import java.util.List;
 
-import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -72,20 +71,14 @@ public class ClaimDAOJPAImpl implements ClaimDAO {
     
     @Override
     public Claim addClaim(Claim claim) {
-        try {
-            ClaimEntity entity = new ClaimEntity();
-            domain2entity(claim, entity);
-            em.persist(entity);
-            
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Claim '" + claim.getClaimType() + "' added");
-            }
-            return entity2domain(entity);
-        } catch (EntityExistsException ex) {
-            LOG.warn("Claim with type '" + claim.getClaimType() + "' already exists");
-            //[TODO] Introduce exception layer (to decouple from spring/jpa config)
-            throw new RuntimeException("Claim with type '" + claim.getClaimType() + "' already exists");
+        ClaimEntity entity = new ClaimEntity();
+        domain2entity(claim, entity);
+        em.persist(entity);
+        
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Claim '" + claim.getClaimType() + "' added");
         }
+        return entity2domain(entity);
     }
 
     @Override

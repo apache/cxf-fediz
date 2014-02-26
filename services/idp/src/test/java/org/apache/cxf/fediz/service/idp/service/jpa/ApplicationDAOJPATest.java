@@ -44,14 +44,8 @@ import org.springframework.util.Assert;
 @ContextConfiguration(locations = { "classpath:testContext.xml" })
 public class ApplicationDAOJPATest {
 
-    //@Autowired
-    //private IdpDAO idpDAO;
-    
     @Autowired
     private ApplicationDAO applicationDAO;
-    
-    //@Autowired
-    //private TrustedIdpDAO trustedIdpDAO;
     
     
     @BeforeClass

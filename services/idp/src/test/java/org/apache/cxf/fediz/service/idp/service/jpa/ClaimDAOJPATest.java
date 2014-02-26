@@ -40,12 +40,6 @@ import org.springframework.util.Assert;
 @ContextConfiguration(locations = { "classpath:testContext.xml" })
 public class ClaimDAOJPATest {
 
-    //@Autowired
-    //private IdpDAO idpDAO;
-    
-    //@Autowired
-    //private TrustedIdpDAO trustedIdpDAO;
-    
     @Autowired
     private ClaimDAO claimDAO;
     
@@ -102,76 +96,6 @@ public class ClaimDAOJPATest {
         claim5.setDescription("Description for firstname");
         claimDAO.addClaim(claim5);
     }
-    
-    //[TODO] UpdateClaim
-    /*
-    @Test
-    public void testUpdateIdp() {
-        String realm = "urn:org:apache:cxf:fediz:idp:testupdate";
-        //Prepare
-        Idp idp = createIdp(realm);
-        idpDAO.addIdp(idp);
-        
-        //Testcase
-        idp = new Idp();
-        idp.setRealm(realm);
-        idp.setCertificate("UstsKeystoreA.properties");
-        idp.setCertificatePassword("Urealma");
-        idp.setIdpUrl("Uhttps://localhost:9443/fediz-idp/federation");
-        idp.setStsUrl("Uhttps://localhost:9443/fediz-idp-sts/REALMA");
-        idp.setServiceDisplayName("UNEW REALM");
-        idp.setServiceDescription("UIDP of New Realm");
-        idp.setUri("Urealmn");
-        idp.setProvideIDPList(true);
-        Map<String, String> authUris = new HashMap<String, String>();
-        authUris.put("default", "/login/default");
-        idp.setAuthenticationURIs(authUris);
-        List<String> protocols = new ArrayList<String>();
-        protocols.add("http://docs.oasis-open.org/wsfed/federation/200706");
-        idp.setSupportedProtocols(protocols);
-        List<String> tokenTypes = new ArrayList<String>();
-        tokenTypes.add(WSConstants.SAML2_NS);
-        idp.setTokenTypesOffered(tokenTypes);
-        idp.setUseCurrentIDP(false);
-        idpDAO.updateIdp(realm, idp);
-        
-        idp = idpDAO.getIdp(realm, null);
-        
-        Assert.isTrue("UstsKeystoreA.properties".equals(idp.getCertificate()),
-                      "Certificate doesn't match");
-        Assert.isTrue("Urealma".equals(idp.getCertificatePassword()),
-                      "Certificate password doesn't match");
-        Assert.isTrue(realm.equals(idp.getRealm()),
-                      "Realm doesn't match");
-        Assert.isTrue("UIDP of New Realm".equals(idp.getServiceDescription()),
-                      "ServiceDescription doesn't match");
-        Assert.isTrue("UNEW REALM".equals(idp.getServiceDisplayName()),
-                      "ServiceDisplayName doesn't match");        
-        Assert.isTrue("Uhttps://localhost:9443/fediz-idp/federation".equals(idp.getIdpUrl()),
-                      "IdpUrl doesn't match");
-        Assert.isTrue("Uhttps://localhost:9443/fediz-idp-sts/REALMA".equals(idp.getStsUrl()),
-                      "StsUrl doesn't match");
-        Assert.isTrue("Urealmn".equals(idp.getUri()),
-                      "Uri doesn't match");
-        Assert.isTrue(idp.isProvideIDPList(),
-                      "ProvideIDPList doesn't match");
-        Assert.isTrue(!idp.isUseCurrentIDP(),
-                      "UseCurrentIDP doesn't match");
-        Assert.isTrue(1 == idp.getAuthenticationURIs().size(),
-                      "Number of AuthenticationURIs doesn't match");
-        Assert.isTrue(1 == idp.getSupportedProtocols().size(),
-                      "Number of SupportedProtocols doesn't match");
-        Assert.isTrue(1 == idp.getTokenTypesOffered().size(),
-                      "Number of TokenTypesOffered doesn't match");
-        Assert.isTrue(0 == idp.getApplications().size(),
-                      "Number of applications doesn't match");
-        Assert.isTrue(0 == idp.getTrustedIdps().size(),
-                      "Number of trusted IDPs doesn't match");
-        Assert.isTrue(0 == idp.getClaimTypesOffered().size(),
-                      "Number of claims doesn't match");
-        
-    }
-     */
     
     
     @Test(expected = EmptyResultDataAccessException.class)

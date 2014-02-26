@@ -171,7 +171,6 @@ public class RestITTest {
     
     private String getBasicAuthentication(String username, String password) throws UnsupportedEncodingException {
         String token = username + ":" + password;
-        System.out.println("Basic " + Base64.encode(token.getBytes()));
         return "Basic " + Base64.encode(token.getBytes());
     }
 
