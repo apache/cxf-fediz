@@ -156,6 +156,44 @@
         <property name="description"
             value="Description for email" />
     </bean>
+    
+    
+    <bean id="entitlement_claim_list"
+        class="org.apache.cxf.fediz.service.idp.service.jpa.EntitlementEntity">
+        <property name="name"
+            value="CLAIM_LIST" />
+        <property name="description"
+            value="Description for CLAIM_LIST" />
+    </bean>
+    <bean id="entitlement_claim_create"
+        class="org.apache.cxf.fediz.service.idp.service.jpa.EntitlementEntity">
+        <property name="name"
+            value="CLAIM_CREATE" />
+        <property name="description"
+            value="Description for CLAIM_CREATE" />
+    </bean>
+    <bean id="entitlement_claim_read"
+        class="org.apache.cxf.fediz.service.idp.service.jpa.EntitlementEntity">
+        <property name="name"
+            value="CLAIM_READ" />
+        <property name="description"
+            value="Description for CLAIM_READ" />
+    </bean>
+    <bean id="entitlement_claim_update"
+        class="org.apache.cxf.fediz.service.idp.service.jpa.EntitlementEntity">
+        <property name="name"
+            value="CLAIM_UPDATE" />
+        <property name="description"
+            value="Description for CLAIM_UPDATE" />
+    </bean>
+    <bean id="entitlement_claim_delete"
+        class="org.apache.cxf.fediz.service.idp.service.jpa.EntitlementEntity">
+        <property name="name"
+            value="CLAIM_DELETE" />
+        <property name="description"
+            value="Description for CLAIM_DELETE" />
+    </bean>
+
 
 </beans>
 

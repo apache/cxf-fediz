@@ -137,4 +137,20 @@
             </id>
         </attributes>
     </entity>
+    
+    <entity class="org.apache.cxf.fediz.service.idp.service.jpa.EntitlementEntity">
+        <table>
+            <unique-constraint>
+                <column-name>name</column-name>
+            </unique-constraint>
+        </table>
+        <attributes>
+            <id name="id">
+                <generated-value generator="SEQ_Entitlement"
+                    strategy="TABLE" />
+                <table-generator name="SEQ_Entitlement"
+                    pk-column-value="SEQ_Entitlement" initial-value="100" />
+            </id>
+        </attributes>
+    </entity>
 </entity-mappings>

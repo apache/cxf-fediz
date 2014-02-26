@@ -71,6 +71,12 @@ public class DBLoaderSpring implements DBLoader {
             ctx.refresh();
             ctx.start();
             
+            Collection<EntitlementEntity> entitlements = ctx.
+                getBeansOfType(EntitlementEntity.class, true, true).values();
+            for (EntitlementEntity e : entitlements) {
+                em.persist(e);
+            }
+            LOG.info(entitlements.size() + " EntitlementEntity added");
             
             LOG.info("" + ctx.getBeanDefinitionCount());
             LOG.info(ctx.getBeanDefinitionNames().toString());
