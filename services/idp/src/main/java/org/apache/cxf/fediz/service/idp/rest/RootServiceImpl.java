@@ -37,6 +37,8 @@ public class RootServiceImpl implements RootService {
         URI idpUrl = absolute.clone().path("idps").build();
         URI applicationUrl = absolute.clone().path("applications").build();
         URI trustedIdpUrl = absolute.clone().path("trusted-idps").build();
+        URI rolesUrl = absolute.clone().path("roles").build();
+        URI entitlementsUrl = absolute.clone().path("entitlements").build();
         javax.ws.rs.core.Link claims = javax.ws.rs.core.Link.fromUri(claimUrl).rel("claims")
             .type("application/xml").build();
         javax.ws.rs.core.Link idps = javax.ws.rs.core.Link.fromUri(idpUrl).rel("idps")
@@ -45,8 +47,13 @@ public class RootServiceImpl implements RootService {
             .type("application/xml").build();
         javax.ws.rs.core.Link trustedIdps = javax.ws.rs.core.Link.fromUri(trustedIdpUrl).rel("trusted-idps")
             .type("application/xml").build();
+        javax.ws.rs.core.Link roles = javax.ws.rs.core.Link.fromUri(rolesUrl).rel("roles")
+            .type("application/xml").build();
+        javax.ws.rs.core.Link entitlements = javax.ws.rs.core.Link.fromUri(entitlementsUrl).rel("entitlements")
+            .type("application/xml").build();
 
-        Response.ResponseBuilder builder = Response.ok().links(claims, idps, applications, trustedIdps);
+        Response.ResponseBuilder builder = Response.ok().links(
+            claims, idps, applications, trustedIdps, roles, entitlements);
         return builder.build();
     }
 

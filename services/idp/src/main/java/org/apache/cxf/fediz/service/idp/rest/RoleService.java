@@ -36,53 +36,53 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import org.apache.cxf.fediz.service.idp.domain.Application;
-import org.apache.cxf.fediz.service.idp.domain.RequestClaim;
+import org.apache.cxf.fediz.service.idp.domain.Entitlement;
+import org.apache.cxf.fediz.service.idp.domain.Role;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 
 
 @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 @Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-@Path("applications")
-public interface ApplicationService {
+@Path("roles")
+public interface RoleService {
 
     @GET
-    @PreAuthorize("hasRole('APPLICATION_LIST')")
-    Applications getApplications(@QueryParam("start") int start,
+    @PreAuthorize("hasRole('ROLE_LIST')")
+    Roles getRoles(@QueryParam("start") int start,
                                  @QueryParam("size") @DefaultValue("2") int size,
                                  @QueryParam("expand") @DefaultValue("all")  List<String> expand,
                                  @Context UriInfo uriInfo);
 
     @GET
-    @Path("{realm}")
-    @PreAuthorize("hasRole('APPLICATION_LIST')")
-    Application getApplication(@PathParam("realm") String realm,
+    @Path("{name}")
+    @PreAuthorize("hasRole('ROLE_CREATE')")
+    Role getRole(@PathParam("name") String realm,
                                @QueryParam("expand") @DefaultValue("all")  List<String> expand);
 
     @POST
-    @PreAuthorize("hasRole('APPLICATION_CREATE')")
-    Response addApplication(@Context UriInfo ui, Application service);
+    @PreAuthorize("hasRole('ROLE_CREATE')")
+    Response addRole(@Context UriInfo ui, Role role);
     
     @PUT
-    @Path("{realm}")
-    @PreAuthorize("hasRole('APPLICATION_UPDATE')")
-    Response updateApplication(@Context UriInfo ui, @PathParam("realm") String realm, Application application);
+    @Path("{name}")
+    @PreAuthorize("hasRole('ROLE_UPDATE')")
+    Response updateRole(@Context UriInfo ui, @PathParam("name") String name, Role role);
     
     @DELETE
-    @Path("{realm}")
-    @PreAuthorize("hasRole('APPLICATION_DELETE')")
-    Response deleteApplication(@PathParam("realm") String realm);
+    @Path("{name}")
+    @PreAuthorize("hasRole('ROLE_DELETE')")
+    Response deleteRole(@PathParam("name") String name);
     
     @POST
-    @Path("{realm}/claims")
-    @PreAuthorize("hasRole('APPLICATION_UPDATE')")
-    Response addClaimToApplication(@Context UriInfo ui, @PathParam("realm") String realm, RequestClaim claim);
+    @Path("{name}/entitlements")
+    @PreAuthorize("hasRole('ROLE_UPDATE')")
+    Response addEntitlementToRole(@Context UriInfo ui, @PathParam("name") String name, Entitlement entitlement);
     
     @DELETE
-    @Path("{realm}/claims/{claimType}")
-    @PreAuthorize("hasRole('APPLICATION_UPDATE')")
-    Response removeClaimFromApplication(@Context UriInfo ui, @PathParam("realm") String realm,
-                                        @PathParam("claimType") String claimType);
+    @Path("{name}/entitlements/{entitlementName}")
+    @PreAuthorize("hasRole('ROLE_UPDATE')")
+    Response removeEntitlementFromRole(@Context UriInfo ui, @PathParam("name") String name,
+                                        @PathParam("entitlementName") String entitlementName);
 
 }

@@ -36,6 +36,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 @Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
@@ -43,23 +44,28 @@ import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 public interface TrustedIdpService {
 
     @GET
+    @PreAuthorize("hasRole('TRUSTEDIDP_LIST')")
     TrustedIdps getTrustedIDPs(@QueryParam("start") int start,
                                @QueryParam("size") @DefaultValue("2") int size,
                                @Context UriInfo uriInfo);
 
     @GET
     @Path("{realm}")
+    @PreAuthorize("hasRole('TRUSTEDIDP_READ')")
     TrustedIdp getTrustedIDP(@PathParam("realm") String realm);
 
     @POST
+    @PreAuthorize("hasRole('TRUSTEDIDP_CREATE')")
     Response addTrustedIDP(@Context UriInfo ui, TrustedIdp trustedIdp);
     
     @PUT
     @Path("{realm}")
+    @PreAuthorize("hasRole('TRUSTEDIDP_UPDATE')")
     Response updateTrustedIDP(@Context UriInfo ui, @PathParam("realm") String realm, TrustedIdp trustedIdp);
     
     @DELETE
     @Path("{realm}")
+    @PreAuthorize("hasRole('TRUSTEDIDP_DELETE')")
     Response deleteTrustedIDP(@PathParam("realm") String realm);
 
 }

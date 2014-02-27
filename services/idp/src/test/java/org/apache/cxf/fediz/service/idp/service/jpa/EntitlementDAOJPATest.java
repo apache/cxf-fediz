@@ -52,7 +52,7 @@ public class EntitlementDAOJPATest {
     @Test
     public void testReadAllEntitlements() {
         List<Entitlement> entitlements = entitlementDAO.getEntitlements(0, 999);
-        Assert.isTrue(5 == entitlements.size(), "Size doesn't match");
+        Assert.isTrue(30 == entitlements.size(), "Size doesn't match");
     }
     
     @Test
@@ -79,7 +79,7 @@ public class EntitlementDAOJPATest {
         entitlementDAO.addEntitlement(entitlement5);
         
         List<Entitlement> entitlements = entitlementDAO.getEntitlements(0, 999);
-        Assert.isTrue(6 == entitlements.size(), "Size doesn't match. Entitlement not added");
+        Assert.isTrue(31 == entitlements.size(), "Size doesn't match. Entitlement not added");
     }
     
     

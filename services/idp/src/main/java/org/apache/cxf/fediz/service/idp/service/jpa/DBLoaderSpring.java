@@ -78,8 +78,13 @@ public class DBLoaderSpring implements DBLoader {
             }
             LOG.info(entitlements.size() + " EntitlementEntity added");
             
-            LOG.info("" + ctx.getBeanDefinitionCount());
-            LOG.info(ctx.getBeanDefinitionNames().toString());
+            Collection<RoleEntity> roles = ctx.
+                getBeansOfType(RoleEntity.class, true, true).values();
+            for (RoleEntity r : roles) {
+                em.persist(r);
+            }
+            LOG.info(roles.size() + " RoleEntity added");
+            
             Collection<ClaimEntity> claims = ctx.getBeansOfType(ClaimEntity.class, true, true).values();
             for (ClaimEntity c : claims) {
                 em.persist(c);

@@ -19,21 +19,24 @@
 package org.apache.cxf.fediz.service.idp.domain;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlRootElement(name = "entitlement", namespace = "http://org.apache.cxf.fediz/")
-@XmlType(propOrder = {"name", "description", "internal", "id" })
-public class Entitlement implements Serializable {
+@XmlRootElement(name = "role", namespace = "http://org.apache.cxf.fediz/")
+@XmlType(propOrder = {"name", "description", "entitlements", "id" })
+public class Role implements Serializable {
     
     private static final long serialVersionUID = 2635896159019665467L;
     
     protected String name;
     protected String description;
     protected int id;
-    protected boolean internal;
+    
+    protected List<Entitlement> entitlements = new ArrayList<Entitlement>();
     
     @XmlAttribute
     public int getId() {
@@ -60,11 +63,12 @@ public class Entitlement implements Serializable {
         this.description = description;
     }
 
-    public boolean isInternal() {
-        return internal;
+    public List<Entitlement> getEntitlements() {
+        return entitlements;
     }
 
-    public void setInternal(boolean internal) {
-        this.internal = internal;
+    public void setEntitlements(List<Entitlement> entitlements) {
+        this.entitlements = entitlements;
     }
+
 }

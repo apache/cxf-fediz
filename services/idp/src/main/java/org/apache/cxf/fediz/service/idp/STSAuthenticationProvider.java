@@ -146,6 +146,8 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
                 }
             }
             
+            //Add IDP_LOGIN role to be able to access resource Idp, TrustedIdp, etc.
+            authorities.add(new SimpleGrantedAuthority("ROLE_IDP_LOGIN"));
             UsernamePasswordAuthenticationToken upat = new UsernamePasswordAuthenticationToken(
                 authentication.getName(), authentication.getCredentials(), authorities);
             

@@ -153,4 +153,31 @@
             </id>
         </attributes>
     </entity>
+    
+    <entity class="org.apache.cxf.fediz.service.idp.service.jpa.RoleEntity">
+        <table>
+            <unique-constraint>
+                <column-name>name</column-name>
+            </unique-constraint>
+        </table>
+        <attributes>
+            <id name="id">
+                <generated-value generator="SEQ_ROLE"
+                    strategy="TABLE" />
+                <table-generator name="SEQ_ROLE"
+                    pk-column-value="SEQ_ROLE" initial-value="100" />
+            </id>
+            <many-to-many name="entitlements">
+                <join-table name="role_entitlements">
+                    <join-column name="role_id" />
+                    <inverse-join-column name="entitlement_id" />
+                    <unique-constraint>
+                        <column-name>role_id</column-name>
+                        <column-name>entitlement_id</column-name>
+                    </unique-constraint>
+                </join-table>
+            </many-to-many>
+        </attributes>
+    </entity>
+    
 </entity-mappings>

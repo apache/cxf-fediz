@@ -34,39 +34,40 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import org.apache.cxf.fediz.service.idp.domain.Claim;
+import org.apache.cxf.fediz.service.idp.domain.Entitlement;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 
 
 @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 @Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-@Path("claims")
-public interface ClaimService {
+@Path("entitlements")
+public interface EntitlementService {
 
     @GET
-    @PreAuthorize("hasRole('CLAIM_LIST')")
-    Response getClaims(@QueryParam("start") int start,
-                       @QueryParam("size") @DefaultValue("2") int size,
-                       @Context UriInfo uriInfo);
-    
+    @PreAuthorize("hasRole('ENTITLEMENT_LIST')")
+    Entitlements getEntitlements(@QueryParam("start") int start,
+                                 @QueryParam("size") @DefaultValue("5") int size,
+                                 @Context UriInfo uriInfo);
+
     @GET
-    @Path("{claimType}")
-    @PreAuthorize("hasRole('CLAIM_READ')")
-    Claim getClaim(@PathParam("claimType") String claimType);
+    @Path("{name}")
+    @PreAuthorize("hasRole('ENTITLEMENT_READ')")
+    Entitlement getEntitlement(@PathParam("name") String name);
 
     @POST
-    @PreAuthorize("hasRole('CLAIM_CREATE')")
-    Response addClaim(@Context UriInfo ui, Claim claim);
+    @PreAuthorize("hasRole('ENTITLEMENT_CREATE')")
+    Response addEntitlement(@Context UriInfo ui, Entitlement entitlement);
     
     @PUT
-    @Path("{claimType}")
-    @PreAuthorize("hasRole('CLAIM_UPDATE')")
-    Response updateClaim(@Context UriInfo ui, @PathParam("claimType") String claimType, Claim claim);
+    @Path("{name}")
+    @PreAuthorize("hasRole('ENTITLEMENT_UPDATE')")
+    Response updateEntitlement(@Context UriInfo ui, @PathParam("name") String name, Entitlement entitlement);
     
     @DELETE
-    @Path("{claimType}")
-    @PreAuthorize("hasRole('CLAIM_DELETE')")
-    Response deleteClaim(@PathParam("claimType") String claimType);
+    @Path("{name}")
+    @PreAuthorize("hasRole('ENTITLEMENT_DELETE')")
+    Response deleteEntitlement(@PathParam("name") String name);
+    
 
 }

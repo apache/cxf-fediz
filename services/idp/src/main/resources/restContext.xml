@@ -61,6 +61,8 @@
             <ref bean="claimServiceImpl" />
             <ref bean="applicationServiceImpl" />
             <ref bean="trustedIdpServiceImpl" />
+            <ref bean="entitlementServiceImpl" />
+            <ref bean="roleServiceImpl" />
             <ref bean="rootServiceImpl" />
         </jaxrs:serviceBeans>
         <jaxrs:providers>
@@ -88,8 +90,20 @@
     <bean id="trustedIdpServiceImpl"
         class="org.apache.cxf.fediz.service.idp.rest.TrustedIdpServiceImpl" />
 
+    <bean id="entitlementServiceImpl"
+        class="org.apache.cxf.fediz.service.idp.rest.EntitlementServiceImpl" />
+
+    <bean id="roleServiceImpl"
+        class="org.apache.cxf.fediz.service.idp.rest.RoleServiceImpl" />
+
+
+    <!-- If enabled, you can't access the Service layer within the Spring Webflow -->
+    <!-- The user has no role during the login phase of WS-Federation -->
+    <security:global-method-security pre-post-annotations="enabled"/>
+
     <security:http pattern="/services/rs/**" auto-config="false" use-expressions="true">
         <security:custom-filter after="CHANNEL_FILTER" ref="stsPortFilter" />
+        <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
         <security:intercept-url pattern="/**" access="isAuthenticated()"/>
         <security:http-basic />
     </security:http>
@@ -111,6 +125,8 @@
         </security:authentication-provider>
         <security:authentication-provider ref="stsAuthProvider" />
     </security:authentication-manager>
+
+    <bean id="entitlementsEnricher" class="org.apache.cxf.fediz.service.idp.service.security.GrantedAuthorityEntitlements" />
 
     <bean id="stsPortFilter" class="org.apache.cxf.fediz.service.idp.STSPortFilter" />
     

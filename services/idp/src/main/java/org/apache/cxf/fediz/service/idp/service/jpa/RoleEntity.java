@@ -16,26 +16,32 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.cxf.fediz.service.idp.domain;
+package org.apache.cxf.fediz.service.idp.service.jpa;
 
-import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 
-@XmlRootElement(name = "entitlement", namespace = "http://org.apache.cxf.fediz/")
-@XmlType(propOrder = {"name", "description", "internal", "id" })
-public class Entitlement implements Serializable {
+import org.apache.openjpa.persistence.jdbc.Index;
+
+@Entity(name = "Role")
+public class RoleEntity {
     
-    private static final long serialVersionUID = 2635896159019665467L;
+    @Id
+    private int id;
     
-    protected String name;
-    protected String description;
-    protected int id;
-    protected boolean internal;
+    @Index
+    private String name;
     
-    @XmlAttribute
+    private String description;
+    
+    @ManyToMany(cascade = CascadeType.ALL)
+    private List<EntitlementEntity> entitlements = new ArrayList<EntitlementEntity>();
+    
     public int getId() {
         return id;
     }
@@ -59,12 +65,13 @@ public class Entitlement implements Serializable {
     public void setDescription(String description) {
         this.description = description;
     }
-
-    public boolean isInternal() {
-        return internal;
+    
+    public List<EntitlementEntity> getEntitlements() {
+        return entitlements;
     }
 
-    public void setInternal(boolean internal) {
-        this.internal = internal;
+    public void setEntitlements(List<EntitlementEntity> entitlements) {
+        this.entitlements = entitlements;
     }
+
 }
