@@ -23,6 +23,8 @@
 				<xs:element ref="tokenDecryptionKey" />
 				<xs:element ref="trustedIssuers" />
 				<xs:element ref="protocol" />
+                <xs:element ref="logoutURL" minOccurs="0"/>
+                <xs:element ref="logoutRedirectTo" minOccurs="0"/>
 			</xs:sequence>
 			<xs:attribute name="name" use="required" type="xs:string" />
 
@@ -82,6 +84,10 @@
 	<xs:element name="tokenDecryptionKey" type="KeyManagersType" />
 
 	<xs:element name="protocol" type="protocolType" />
+
+    <xs:element name="logoutURL" type="xs:string"/>
+
+    <xs:element name="logoutRedirectTo" type="xs:string"/>
 
 	<xs:complexType name="federationProtocolType">
 		<xs:complexContent>

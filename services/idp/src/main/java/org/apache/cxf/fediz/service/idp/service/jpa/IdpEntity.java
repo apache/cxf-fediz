@@ -77,6 +77,8 @@ public class IdpEntity {
     // fedl:PassiveRequestorEndpoint
     // published hostname, port must be configured
     private String idpUrl;
+    
+    private boolean rpSingleSignOutConfirmation;
 
     // RoleDescriptor protocolSupportEnumeration=
     // "http://docs.oasis-open.org/wsfed/federation/200706"
@@ -270,6 +272,14 @@ public class IdpEntity {
 
     public void setServiceDescription(String serviceDescription) {
         this.serviceDescription = serviceDescription;
+    }
+    
+    public boolean isRpSingleSignOutConfirmation() {
+        return rpSingleSignOutConfirmation;
+    }
+
+    public void setRpSingleSignOutConfirmation(boolean rpSingleSignOutConfirmation) {
+        this.rpSingleSignOutConfirmation = rpSingleSignOutConfirmation;
     }
 
 }

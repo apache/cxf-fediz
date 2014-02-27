@@ -84,6 +84,8 @@
         </property>
         <property name="serviceDisplayName" value="REALM A" />
         <property name="serviceDescription" value="IDP of Realm A" />
+        <property name="localSingleSignOutConfirmation" value="true"/>
+        <property name="rpSingleSignOutConfirmation" value="true"/>
     </bean>
 
     <bean id="trusted-idp-realmB"
@@ -99,6 +101,7 @@
         <property name="federationType" value="FederateIdentity" /> <!-- Required for STS Relationship -->
         <property name="name" value="REALM B" />
         <property name="description" value="IDP of Realm B" />
+        <!-- todo true / false prop for propagate sign-out of other realms !?-->
     </bean>
 
     <bean id="srv-fedizhelloworld" class="org.apache.cxf.fediz.service.idp.model.ServiceConfig">

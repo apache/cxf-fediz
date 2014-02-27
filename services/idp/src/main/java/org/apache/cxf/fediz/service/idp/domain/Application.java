@@ -31,7 +31,8 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlRootElement(name = "application", namespace = "http://org.apache.cxf.fediz/")
 @XmlType(propOrder = {"realm", "role", "serviceDisplayName", "serviceDescription", "protocol",
-                      "tokenType", "lifeTime", "encryptionCertificate", "requestedClaims", "policyNamespace", "id" })
+                      "tokenType", "lifeTime", "encryptionCertificate", "requestedClaims",
+                      "policyNamespace", "passiveRequestorEndpoint", "id" })
 public class Application implements Serializable {
         
     private static final long serialVersionUID = 5644327504861846964L;
@@ -80,6 +81,10 @@ public class Application implements Serializable {
     protected String policyNamespace;
     
     private URI href;
+    
+    //Could be read from Metadata, PassiveRequestorEndpoint
+    //fed:ApplicationServiceType, fed:SecurityTokenServiceType
+    private String passiveRequestorEndpoint;
     
     
     @XmlAttribute
@@ -180,6 +185,14 @@ public class Application implements Serializable {
 
     public void setPolicyNamespace(String policyNamespace) {
         this.policyNamespace = policyNamespace;
+    }
+
+    public String getPassiveRequestorEndpoint() {
+        return passiveRequestorEndpoint;
+    }
+
+    public void setPassiveRequestorEndpoint(String passiveRequestorEndpoint) {
+        this.passiveRequestorEndpoint = passiveRequestorEndpoint;
     }
 
 }

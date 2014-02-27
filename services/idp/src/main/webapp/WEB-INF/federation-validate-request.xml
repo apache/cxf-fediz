@@ -41,7 +41,7 @@
             then="viewBadRequest" />
         <if
             test="requestParameters.wa == 'wsignout1.0' or requestParameters.wa == 'wsignoutcleanup1.0'"
-            then="invalidateSessionAction" />
+            then="selectSignOutProcess" />
         <if
             test="requestParameters.wtrealm == null or requestParameters.wtrealm.length() == 0"
             then="viewBadRequest" else="selectSigninProcess" />
@@ -51,6 +51,15 @@
         <if
             test="requestParameters.wresult == null or requestParameters.wresult.isEmpty()"
             then="signinRequest" else="signinResponse" />
+    </decision-state>
+
+    <decision-state id="selectSignOutProcess">
+        <on-entry>
+            <evaluate expression="@org.apache.cxf.fediz.service.idp.util.WebUtils@getHttpHeader(flowRequestContext, 'Referer')" result="flowScope.wreply"/>
+        </on-entry>
+        <if
+            test="flowScope.idpConfig.rpSingleSignOutConfirmation == true"
+            then="viewSignoutConfirmation" else="invalidateSessionAction" />
     </decision-state>
 
     <subflow-state id="signinRequest" subflow="signinRequest">
@@ -104,8 +113,12 @@
 
     <!-- produce RP security token (as String type) -->
     <action-state id="requestRpToken">
-        <evaluate expression="stsClientForRpAction.submit(flowRequestContext)"
-            result="flowScope.rpToken" result-type="java.lang.String" />
+        <on-entry>
+            <evaluate expression="stsClientForRpAction.submit(flowRequestContext)"
+                      result="flowScope.rpToken"/>
+        </on-entry>
+        <evaluate expression="signInParamCacheAction.storeRPUrlInSession(flowRequestContext)"
+                result="flowScope.res"/>
         <transition to="formResponseView" />
         <transition on-exception="java.lang.Throwable" to="scInternalServerError" />
     </action-state>
@@ -137,12 +150,30 @@
                 expression="externalContext.nativeResponse.setStatus(500,'IDP is unavailable, please contact the administrator')" />
             <set name="requestScope.reason"
                 value="'IDP is unavailable, please contact the administrator'" />
+            <set name="requestScope.stateException"
+                value="flowScope.stateException" />
+            <set name="requestScope.rootCauseException"
+                value="flowScope.rootCauseException" />
         </on-entry>
     </end-state>
+    
+    <!-- normal exit point for logout -->
+    <view-state id="viewSignoutConfirmation" view="signoutconfirmationresponse">
+        <transition on="submit" to="invalidateSessionAction"/>
+        <transition on="cancel" to="redirect" />
+    </view-state>
+
+    <view-state id="redirect" view="externalRedirect:${flowScope.wreply}" />
 
     <!-- normal exit point for logout -->
     <end-state id="invalidateSessionAction" view="signoutresponse">
         <on-entry>
+            <!-- store the realmUrlMap in the request map before we invalidate the session below.
+            Its needed in the signoutresponse.jsp page -->
+            <set name="externalContext.requestMap.realmUrlMap" value="externalContext.sessionMap.realmUrlMap"/>
+            <!-- there is no Saml token canceller in cxf STS...
+            <evaluate expression="stsClientForRpAction.cancelTokens(flowRequestContext)" />
+            -->
             <evaluate
                 expression="homeRealmReminder.removeCookie(flowRequestContext)" />
             <evaluate expression="logoutAction.submit(flowRequestContext)" />

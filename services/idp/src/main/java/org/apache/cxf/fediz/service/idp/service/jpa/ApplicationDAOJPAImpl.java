@@ -205,6 +205,7 @@ public class ApplicationDAOJPAImpl implements ApplicationDAO {
         entity.setServiceDisplayName(application.getServiceDisplayName());
         entity.setTokenType(application.getTokenType());
         entity.setPolicyNamespace(application.getPolicyNamespace());
+        entity.setPassiveRequestorEndpoint(application.getPassiveRequestorEndpoint());
     }
     
     public static Application entity2domain(ApplicationEntity entity, List<String> expandList) {
@@ -219,6 +220,7 @@ public class ApplicationDAOJPAImpl implements ApplicationDAO {
         application.setServiceDisplayName(entity.getServiceDisplayName());
         application.setTokenType(entity.getTokenType());
         application.setPolicyNamespace(entity.getPolicyNamespace());
+        application.setPassiveRequestorEndpoint(entity.getPassiveRequestorEndpoint());
         
         if (expandList != null && (expandList.contains("all") || expandList.contains("claims"))) {
             for (ApplicationClaimEntity item : entity.getRequestedClaims()) {

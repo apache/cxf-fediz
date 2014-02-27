@@ -33,8 +33,8 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "idp", namespace = "http://org.apache.cxf.fediz/")
 @XmlType(propOrder = {"realm", "uri", "serviceDisplayName", "serviceDescription", "idpUrl", "stsUrl",
                      "certificate", "certificatePassword", "provideIdpList", "useCurrentIdp", "hrds",
-                     "supportedProtocols", "tokenTypesOffered", "claimTypesOffered", "authenticationURIs",
-                     "applications", "trustedIdps", "id" })
+                     "rpSingleSignOutConfirmation", "supportedProtocols", "tokenTypesOffered", "claimTypesOffered",
+                     "authenticationURIs", "applications", "trustedIdps", "id" })
 public class Idp implements Serializable {
 
     private static final long serialVersionUID = -5570301342547139039L;
@@ -110,6 +110,9 @@ public class Idp implements Serializable {
 
     // ServiceDescription
     protected String serviceDescription;
+    
+    // The user/browser must explicitly confirm to logout from all applications
+    private boolean rpSingleSignOutConfirmation;
     
     @XmlAttribute
     public int getId() {
@@ -276,6 +279,14 @@ public class Idp implements Serializable {
 
     public void setServiceDescription(String serviceDescription) {
         this.serviceDescription = serviceDescription;
+    }
+
+    public boolean isRpSingleSignOutConfirmation() {
+        return rpSingleSignOutConfirmation;
+    }
+
+    public void setRpSingleSignOutConfirmation(boolean rpSingleSignOutConfirmation) {
+        this.rpSingleSignOutConfirmation = rpSingleSignOutConfirmation;
     }
 
 }

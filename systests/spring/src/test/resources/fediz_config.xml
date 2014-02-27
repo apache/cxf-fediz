@@ -34,6 +34,8 @@
 				<claimType type="a particular claim type" optional="true" />
 			</claimTypesRequested>
 		</protocol>
+        <logoutURL>/secure/logout</logoutURL>
+        <logoutRedirectTo>/index.html</logoutRedirectTo>
 	</contextConfig>
 	<contextConfig name="/fedizhelloworld_spring2">
 		<audienceUris>
@@ -65,6 +67,8 @@
 				<claimType type="a particular claim type" optional="true" />
 			</claimTypesRequested>
 		</protocol>
+        <logoutURL>/secure/logout</logoutURL>
+        <logoutRedirectTo>/index.html</logoutRedirectTo>
 	</contextConfig>	
 </FedizConfig>
 

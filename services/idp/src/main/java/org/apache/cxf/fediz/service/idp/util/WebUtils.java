@@ -61,6 +61,10 @@ public final class WebUtils {
                 .getNativeResponse();
     }
 
+    public static String getHttpHeader(RequestContext requestContext, String headerName) {
+        return getHttpServletRequest(requestContext).getHeader(headerName);
+    }
+
     public static void putAttributeInRequestScope(final RequestContext context,
             final String attributeKey, final Object attributeValue) {
         context.getRequestScope().put(attributeKey, attributeValue);

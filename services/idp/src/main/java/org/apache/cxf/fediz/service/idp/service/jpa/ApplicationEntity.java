@@ -71,8 +71,10 @@ public class ApplicationEntity {
     
     // WS-Policy Namespace in SignIn Response
     private String policyNamespace;
-
     
+    private String passiveRequestorEndpoint;
+
+
     public int getId() {
         return id;
     }
@@ -159,6 +161,14 @@ public class ApplicationEntity {
 
     public void setPolicyNamespace(String policyNamespace) {
         this.policyNamespace = policyNamespace;
+    }
+
+    public String getPassiveRequestorEndpoint() {
+        return passiveRequestorEndpoint;
+    }
+
+    public void setPassiveRequestorEndpoint(String passiveRequestorEndpoint) {
+        this.passiveRequestorEndpoint = passiveRequestorEndpoint;
     }
 
 }

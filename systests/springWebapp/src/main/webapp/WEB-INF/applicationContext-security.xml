@@ -23,6 +23,8 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
         <sec:intercept-url pattern="/secure/admin/**" access="hasRole('ROLE_ADMIN')"/>
         <sec:intercept-url pattern="/secure/user/**" access="hasAnyRole('ROLE_USER','ROLE_ADMIN','ROLE_MANAGER')"/>
         <sec:custom-filter ref="federationFilter" after="BASIC_AUTH_FILTER" />
+        <sec:custom-filter ref="logoutFilter" position="LOGOUT_FILTER"/>
+        <sec:custom-filter ref="federationSignOutCleanupFilter" position="PRE_AUTH_FILTER"/>
         <sec:session-management session-authentication-strategy-ref="sas"/>
     </sec:http>
 
@@ -67,5 +69,25 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
     </bean>
 
     <bean id="sas" class="org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy" />
+
+    <bean id="logoutFilter" class="org.apache.cxf.fediz.spring.web.FederationLogoutFilter">
+        <constructor-arg  name="logoutSuccessHandler" ref="federationLogoutSuccessHandler"/>
+        <constructor-arg  name="handlers">
+            <list>
+                <ref bean="securityContextLogoutHandler"/>
+            </list>
+        </constructor-arg>
+        <property name="federationConfig" ref="fedizConfig"/>
+    </bean>
+
+    <bean id="federationLogoutSuccessHandler" class="org.apache.cxf.fediz.spring.web.FederationLogoutSuccessHandler">
+        <property name="federationConfig" ref="fedizConfig"/>
+    </bean>
+
+    <bean id="securityContextLogoutHandler" name="securityContextLogoutHandler"
+          class="org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler">
+    </bean>
+
+    <bean id="federationSignOutCleanupFilter" class="org.apache.cxf.fediz.spring.web.FederationSignOutCleanupFilter"/>
 </beans>
 

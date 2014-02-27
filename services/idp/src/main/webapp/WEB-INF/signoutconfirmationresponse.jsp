@@ -9,10 +9,10 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<title>IDP SignOut Response Page</title>
+<title>IDP SignOut Confirmation Response Page</title>
 </head>
 <body>
-	<h1>CXF Fediz IDP succesfully logout.</h1>
+	<h1>Logout from the following realms?</h1>
 
     <p>
         <%
@@ -20,8 +20,8 @@
 
             @SuppressWarnings("unchecked")
             Map<String, String> rum =
-                    (Map<String, String>) request.getAttribute(SigninParametersCacheAction.REALM_URL_MAP);
-
+                    (Map<String, String>) request.getSession().getAttribute(SigninParametersCacheAction.REALM_URL_MAP);
+            
             Iterator<Map.Entry<String, String>> iterator = rum.entrySet().iterator();
             
             while (iterator.hasNext()) {
@@ -29,13 +29,18 @@
                 String rpUri = next.getValue();
                 if (rpUri != null) {
         %>
-        Logout status of RP <%= rpUri%>:
-        <img src="<%=rpUri + "?" + FederationConstants.PARAM_ACTION + "=" + FederationConstants.ACTION_SIGNOUT_CLEANUP %>"/>
+        Will logout on RP: <%= rpUri%>
         <br/>
         <%
                 }
             }
         %>
+        <form:form method="POST" id="signoutconfirmationresponseform" name="signoutconfirmationresponseform">
+            <input type="hidden" name="wa" value="wsignout1.0" />
+            <input type="hidden" id="execution" name="execution" value="${flowExecutionKey}" />
+            <input type="submit" name="_eventId_submit" value="Logout" />
+            <input type="submit" name="_eventId_cancel" value="Cancel" />
+        </form:form>
     </p>
 </body>
 </html>

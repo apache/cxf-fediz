@@ -21,6 +21,7 @@ package org.apache.cxf.fediz.tomcat;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.security.Principal;
 import java.security.cert.X509Certificate;
@@ -29,7 +30,9 @@ import java.util.Date;
 import java.util.List;
 
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.xml.bind.JAXBException;
 
 import org.w3c.dom.Document;
@@ -186,6 +189,53 @@ public class FederationAuthenticator extends FormAuthenticator {
                 return;
             }            
         }
+
+        //logout
+        String contextName = request.getServletContext().getContextPath();
+        if (contextName == null || contextName.isEmpty()) {
+            contextName = "/";
+        }
+        FederationContext fedConfig = getContextConfiguration(contextName);
+
+        String logoutUrl = fedConfig.getLogoutURL();
+        if (logoutUrl != null && !logoutUrl.isEmpty()) {
+            HttpSession httpSession = request.getSession(false);
+            String uri = request.getRequestURI();
+            if (httpSession != null && uri.equals(contextName + logoutUrl)) {
+                httpSession.invalidate();
+
+                FederationProcessor wfProc = new FederationProcessorImpl();
+                signOutRedirectToIssuer(request, response, wfProc);
+
+                return;
+            }
+        }
+
+        String wa = request.getParameter("wa");
+        if (FederationConstants.ACTION_SIGNOUT_CLEANUP.equals(wa)) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("SignOutCleanup request found");
+                LOG.debug("SignOutCleanup action...");
+            }
+
+            request.getSession().invalidate();
+
+            final ServletOutputStream responseOutputStream = response.getOutputStream();
+            InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("logout.jpg");
+            if (inputStream == null) {
+                LOG.warn("Could not write logout.jpg");
+                return;
+            }
+            int read = 0;
+            byte[] buf = new byte[1024];
+            while ((read = inputStream.read(buf)) != -1) {
+                responseOutputStream.write(buf, 0, read);
+            }
+            inputStream.close();
+            responseOutputStream.flush();
+
+            return;
+        }
         
         super.invoke(request, response);
 
@@ -229,7 +279,7 @@ public class FederationAuthenticator extends FormAuthenticator {
                     LOG.debug("Token expiration not validated.");
                     return true;
                 }
-                
+
                 Date currentTime = new Date();
                 if (currentTime.after(wfRes.getTokenExpires())) {
                     LOG.debug("Token already expired. Clean up and redirect");
@@ -252,7 +302,7 @@ public class FederationAuthenticator extends FormAuthenticator {
                         return false;
                     }
                     FederationProcessor wfProc = new FederationProcessorImpl();
-                    redirectToIssuer(request, response, wfProc);
+                    signInRedirectToIssuer(request, response, wfProc);
 
                     return false;
                 }
@@ -311,7 +361,7 @@ public class FederationAuthenticator extends FormAuthenticator {
                 return false;
             }
             FederationProcessor wfProc = new FederationProcessorImpl();
-            redirectToIssuer(request, response, wfProc);
+            signInRedirectToIssuer(request, response, wfProc);
             return false;
         }
 
@@ -398,7 +448,7 @@ public class FederationAuthenticator extends FormAuthenticator {
                 principal = new FederationPrincipalImpl(wfRes.getUsername(), roles,
                         wfRes.getClaims(), wfRes.getToken());
             }
-        } else {
+        }  else {
             LOG.error("Not supported action found in parameter wa: " + wa);
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return false;
@@ -508,7 +558,7 @@ public class FederationAuthenticator extends FormAuthenticator {
      *             {@link HttpServletResponse#sendError(int, String)} throws an
      *             {@link IOException}
      */
-    protected void redirectToIssuer(Request request, HttpServletResponse response, FederationProcessor processor)
+    protected void signInRedirectToIssuer(Request request, HttpServletResponse response, FederationProcessor processor)
         throws IOException {
 
         String contextName = request.getServletContext().getContextPath();
@@ -534,4 +584,28 @@ public class FederationAuthenticator extends FormAuthenticator {
         
     }
 
+    protected void signOutRedirectToIssuer(Request request, HttpServletResponse response, FederationProcessor processor)
+            throws IOException {
+
+        String contextName = request.getServletContext().getContextPath();
+        if (contextName == null || contextName.isEmpty()) {
+            contextName = "/";
+        }
+        FederationContext fedCtx = this.configurator.getFederationContext(contextName);
+        String redirectURL = null;
+        try {
+            redirectURL = processor.createSignOutRequest(request, fedCtx);
+            if (redirectURL != null) {
+                response.sendRedirect(redirectURL);
+            } else {
+                LOG.warn("Failed to create SignOutRequest.");
+                response.sendError(
+                        HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignOutRequest.");
+            }
+        } catch (ProcessingException ex) {
+            LOG.warn("Failed to create SignOutRequest: " + ex.getMessage());
+            response.sendError(
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignOutRequest.");
+        }
+    }
 }

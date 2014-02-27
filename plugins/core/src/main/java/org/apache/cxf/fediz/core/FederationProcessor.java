@@ -31,6 +31,8 @@ public interface FederationProcessor {
     
     String createSignInRequest(HttpServletRequest request, FederationContext config) throws ProcessingException;
 
+    String createSignOutRequest(HttpServletRequest request, FederationContext config) throws ProcessingException;
+
     Document getMetaData(FederationContext config) throws ProcessingException;
 
 }

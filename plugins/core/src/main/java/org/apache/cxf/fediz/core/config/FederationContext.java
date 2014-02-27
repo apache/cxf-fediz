@@ -153,7 +153,14 @@ public class FederationContext implements Closeable {
         }
         return protocol;
     }
-    
+
+    public String getLogoutURL() {
+        return config.getLogoutURL();
+    }
+
+    public String getLogoutRedirectTo() {
+        return config.getLogoutRedirectTo();
+    }
     
     
     public KeyManager getSigningKey() {

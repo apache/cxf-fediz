@@ -21,8 +21,10 @@ package org.apache.cxf.fediz.jetty;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.cert.X509Certificate;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -131,6 +133,11 @@ public class FederationAuthenticator extends LoginAuthenticator {
     /* ------------------------------------------------------------ */
     public Authentication validateRequest(ServletRequest req, ServletResponse res, boolean mandatory)
         throws ServerAuthException {
+
+        if (!mandatory) {
+            return new DeferredAuthentication(this);
+        }
+
         HttpServletRequest request = (HttpServletRequest)req;
         HttpServletResponse response = (HttpServletResponse)res;
         String uri = request.getRequestURI();
@@ -218,6 +225,27 @@ public class FederationAuthenticator extends LoginAuthenticator {
                         }
 
                     }
+                } else if (FederationConstants.ACTION_SIGNOUT_CLEANUP.equals(wa)) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("SignOutCleanup request found");
+                        LOG.debug("SignOutCleanup action...");
+                    }
+                    session.invalidate();
+
+                    final ServletOutputStream responseOutputStream = response.getOutputStream();
+                    InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("logout.jpg");
+                    if (inputStream == null) {
+                        LOG.warn("Could not write logout.jpg");
+                        return Authentication.SEND_FAILURE;
+                    }
+                    int read = 0;
+                    byte[] buf = new byte[1024];
+                    while ((read = inputStream.read(buf)) != -1) {
+                        responseOutputStream.write(buf, 0, read);
+                    }
+                    inputStream.close();
+                    responseOutputStream.flush();
+                    return Authentication.SEND_SUCCESS;
                 } else {
                     LOG.warn("Not supported action found in parameter wa: " + wa);
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST);
@@ -239,9 +267,27 @@ public class FederationAuthenticator extends LoginAuthenticator {
                 }
                 else
                 {
+                    //logout
+                    String contextName = request.getSession().getServletContext().getContextPath();
+                    if (contextName == null || contextName.isEmpty()) {
+                        contextName = "/";
+                    }
+                    FederationContext fedConfig = getContextConfiguration(contextName);
+
+                    String logoutUrl = fedConfig.getLogoutURL();
+                    if (logoutUrl != null && !logoutUrl.isEmpty() && uri.equals(contextName + logoutUrl)) {
+                        session.invalidate();
+
+                        FederationProcessor wfProc = new FederationProcessorImpl();
+                        signOutRedirectToIssuer(request, response, wfProc);
+
+                        return Authentication.SEND_CONTINUE;
+                    }
+
                     String j_uri = (String)session.getAttribute(J_URI);
                     if (j_uri != null)
                     {
+                        @SuppressWarnings("unchecked")
                         MultiMap<String> j_post = (MultiMap<String>)session.getAttribute(J_POST);
                         if (j_post != null)
                         {
@@ -299,7 +345,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
             }
             
             FederationProcessor wfProc = new FederationProcessorImpl();
-            redirectToIssuer(request, response, wfProc);
+            signInRedirectToIssuer(request, response, wfProc);
 
             return Authentication.SEND_CONTINUE;
 
@@ -320,7 +366,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
     }    
     
     /**
-     * Called to redirect to the IDP/Issuer
+     * Called to redirect sign-in to the IDP/Issuer
      * 
      * @param request
      *            Request we are processing
@@ -333,7 +379,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
      *             {@link HttpServletResponse#sendError(int, String)} throws an
      *             {@link IOException}
      */
-    protected void redirectToIssuer(HttpServletRequest request, HttpServletResponse response, FederationProcessor processor)
+    protected void signInRedirectToIssuer(HttpServletRequest request, HttpServletResponse response, FederationProcessor processor)
         throws IOException {
 
         //Not supported in jetty 7.6
@@ -359,6 +405,33 @@ public class FederationAuthenticator extends LoginAuthenticator {
                                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignInRequest.");
         }
         
+    }
+
+    protected void signOutRedirectToIssuer(HttpServletRequest request, HttpServletResponse response, FederationProcessor processor)
+            throws IOException {
+
+        //Not supported in jetty 7.6
+        //String contextName = request.getServletContext().getContextPath();
+        String contextName = request.getSession().getServletContext().getContextPath();
+        if (contextName == null || contextName.isEmpty()) {
+            contextName = "/";
+        }
+        FederationContext fedCtx = this.configurator.getFederationContext(contextName);
+        String redirectURL = null;
+        try {
+            redirectURL = processor.createSignOutRequest(request, fedCtx);
+            if (redirectURL != null) {
+                response.sendRedirect(redirectURL);
+            } else {
+                LOG.warn("Failed to create SignOutRequest.");
+                response.sendError(
+                        HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignOutRequest.");
+            }
+        } catch (ProcessingException ex) {
+            LOG.warn("Failed to create SignOutRequest: " + ex.getMessage());
+            response.sendError(
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignOutRequest.");
+        }
     }
     
     private FederationContext getContextConfiguration(String contextName) {

@@ -55,7 +55,7 @@ public class FederationServlet extends HttpServlet {
         PrintWriter out = response.getWriter();
 
         out.println("<html>");
-        out.println("<head><title>WS Federation Systests Spring Examples</title></head>");
+        out.println("<head><title>WS Federation Systests Examples</title></head>");
         out.println("<body>");
         out.println("<p>Request url: " + request.getRequestURL().toString() + "</p>");
 

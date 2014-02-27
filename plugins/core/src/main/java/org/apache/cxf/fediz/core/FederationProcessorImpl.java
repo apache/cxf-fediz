@@ -440,6 +440,49 @@ public class FederationProcessorImpl implements FederationProcessor {
         return redirectURL;
     }
 
+    @Override
+    public String createSignOutRequest(HttpServletRequest request, FederationContext config)
+        throws ProcessingException {
+
+        String redirectURL = null;
+        try {
+            if (!(config.getProtocol() instanceof FederationProtocol)) {
+                LOG.error("Unsupported protocol");
+                throw new IllegalStateException("Unsupported protocol");
+            }
+
+            String issuerURL = resolveIssuer(request, config);
+            LOG.info("Issuer url: " + issuerURL);
+            if (issuerURL != null && issuerURL.length() > 0) {
+                redirectURL = issuerURL;
+            }
+
+            StringBuilder sb = new StringBuilder();
+            sb.append(FederationConstants.PARAM_ACTION).append('=').append(FederationConstants.ACTION_SIGNOUT);
+
+            String logoutRedirectTo = config.getLogoutRedirectTo();
+            if (logoutRedirectTo != null && !logoutRedirectTo.isEmpty()) {
+
+                if (logoutRedirectTo.startsWith("/")) {
+                    logoutRedirectTo = extractFullContextPath(request).concat(logoutRedirectTo.substring(1));
+                } else {
+                    logoutRedirectTo = extractFullContextPath(request).concat(logoutRedirectTo);
+                }
+
+                LOG.debug("wreply=" + logoutRedirectTo);
+
+                sb.append('&').append(FederationConstants.PARAM_REPLY).append('=');
+                sb.append(URLEncoder.encode(logoutRedirectTo, "UTF-8"));
+            }
+
+            redirectURL = redirectURL + "?" + sb.toString();
+        } catch (Exception ex) {
+            LOG.error("Failed to create SignInRequest", ex);
+            throw new ProcessingException("Failed to create SignInRequest");
+        }
+        return redirectURL;
+    }
+
     private String resolveSignInQuery(HttpServletRequest request, FederationContext config)
         throws IOException, UnsupportedCallbackException, UnsupportedEncodingException {
         Object signInQueryObj = ((FederationProtocol)config.getProtocol()).getSignInQuery();

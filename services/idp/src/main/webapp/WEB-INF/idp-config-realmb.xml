@@ -78,6 +78,7 @@
         </property>
         <property name="serviceDisplayName" value="REALM B" />
         <property name="serviceDescription" value="IDP of Realm B" />
+        <property name="rpSingleSignOutConfirmation" value="true"/>
     </bean>
 
     <bean id="idp-realmA" class="org.apache.cxf.fediz.service.idp.model.ServiceConfig">

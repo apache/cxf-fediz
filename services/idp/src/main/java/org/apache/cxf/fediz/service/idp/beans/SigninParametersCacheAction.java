@@ -18,17 +18,25 @@
  */
 package org.apache.cxf.fediz.service.idp.beans;
 
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 import org.apache.cxf.fediz.core.FederationConstants;
+import org.apache.cxf.fediz.core.exception.ProcessingException;
+import org.apache.cxf.fediz.service.idp.domain.Application;
+import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.webflow.execution.RequestContext;
 
 public class SigninParametersCacheAction {
+
+    //todo introduce constants class?
+    public static final String IDP_CONFIG = "idpConfig";
+    public static final String REALM_URL_MAP = "realmUrlMap";
 
     private static final Logger LOG = LoggerFactory.getLogger(SigninParametersCacheAction.class);
 
@@ -82,5 +90,58 @@ public class SigninParametersCacheAction {
         }
         WebUtils.removeAttributeFromFlowScope(context, FederationConstants.PARAM_CONTEXT);
         LOG.info("SignIn parameters restored and " + FederationConstants.PARAM_CONTEXT + "[" + uuidKey + "] cleared.");
+    }
+
+    public void storeRPUrlInSession(RequestContext context) throws ProcessingException {
+
+        String whr = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_HOME_REALM);
+        if (whr == null) {
+            return;
+        }
+
+        String wtrealm = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_TREALM);
+        
+        Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(context, IDP_CONFIG);
+        
+        String url = null;
+
+        Application serviceConfig = idpConfig.findApplication(wtrealm);
+        if (serviceConfig != null) {
+            url = serviceConfig.getPassiveRequestorEndpoint();
+        }
+
+        if (url == null) {
+            url = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_REPLY);
+            try {
+                //basic check if the url is correctly formed
+                new URL(url);
+            } catch (Exception e) {
+                url = null;
+            }
+            if (url == null) {
+                url = wtrealm;
+                try {
+                    //basic check if the url is correctly formed
+                    new URL(url);
+                } catch (Exception e) {
+                    throw new ProcessingException(e.getMessage(), e, ProcessingException.TYPE.INVALID_REQUEST);
+                }
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        Map<String, String> rum =
+                (Map<String, String>)WebUtils
+                        .getAttributeFromExternalContext(context, REALM_URL_MAP);
+
+        if (rum == null) {
+            rum = new HashMap<String, String>();
+            WebUtils.putAttributeInExternalContext(context, REALM_URL_MAP, rum);
+        }
+
+        String val = rum.get(wtrealm);
+        if (val == null) {
+            rum.put(wtrealm, url);
+        }
     }
 }
