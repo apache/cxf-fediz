@@ -20,6 +20,8 @@ package org.apache.cxf.fediz.service.idp.service.jpa;
 
 import java.util.List;
 
+import org.apache.cxf.fediz.service.idp.domain.FederationType;
+import org.apache.cxf.fediz.service.idp.domain.TrustType;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 import org.apache.cxf.fediz.service.idp.service.TrustedIdpDAO;
 
@@ -62,7 +64,7 @@ public class TrustedIdpDAOJPATest {
                       "Certificate name doesn't match");
         Assert.isTrue("Realm B description".equals(trustedIdp.getDescription()),
                       "Description name doesn't match");
-        Assert.isTrue("FederateIdentity".equals(trustedIdp.getFederationType()),
+        Assert.isTrue(FederationType.FEDERATE_IDENTITY.equals(trustedIdp.getFederationType()),
                       "FederationType doesn't match");        
         Assert.isTrue("Realm B".equals(trustedIdp.getName()),
                       "Name doesn't match");      
@@ -70,7 +72,7 @@ public class TrustedIdpDAOJPATest {
                       "Protocol doesn't match");          
         Assert.isTrue("urn:org:apache:cxf:fediz:idp:realm-B".equals(trustedIdp.getRealm()),
                       "Realm doesn't match");          
-        Assert.isTrue("PEER_TRUST".equals(trustedIdp.getTrustType()),
+        Assert.isTrue(TrustType.PEER_TRUST.equals(trustedIdp.getTrustType()),
                       "TrustType doesn't match");
         Assert.isTrue("https://localhost:12443/fediz-idp-remote/federation".equals(trustedIdp.getUrl()),
                       "Url doesn't match"); 
@@ -96,7 +98,7 @@ public class TrustedIdpDAOJPATest {
                       "Certificate name doesn't match");
         Assert.isTrue("Realm B description".equals(trustedIdp.getDescription()),
                       "Description name doesn't match");
-        Assert.isTrue("FederateIdentity".equals(trustedIdp.getFederationType()),
+        Assert.isTrue(FederationType.FEDERATE_IDENTITY.equals(trustedIdp.getFederationType()),
                       "FederationType doesn't match");        
         Assert.isTrue("Realm B".equals(trustedIdp.getName()),
                       "Name doesn't match");      
@@ -104,9 +106,9 @@ public class TrustedIdpDAOJPATest {
                       "Protocol doesn't match");          
         Assert.isTrue(realm.equals(trustedIdp.getRealm()),
                       "Realm doesn't match");          
-        Assert.isTrue("PEER_TRUST".equals(trustedIdp.getTrustType()),
+        Assert.isTrue(TrustType.PEER_TRUST.equals(trustedIdp.getTrustType()),
                       "TrustType doesn't match");
-        Assert.isTrue("https://localhost:${realmB.port}/fediz-idp-remote/federation".equals(trustedIdp.getUrl()),
+        Assert.isTrue("https://localhost:12443/fediz-idp-remote/federation".equals(trustedIdp.getUrl()),
                       "Url doesn't match"); 
         Assert.isTrue(!trustedIdp.isCacheTokens(), "CacheTokens doesn't match"); 
     }
@@ -125,11 +127,11 @@ public class TrustedIdpDAOJPATest {
         trustedIdp.setCacheTokens(true);
         trustedIdp.setCertificate("Utrusted cert");
         trustedIdp.setDescription("URealm B description");
-        trustedIdp.setFederationType("UFederateIdentity");
+        trustedIdp.setFederationType(FederationType.FEDERATE_CLAIMS);
         trustedIdp.setName("URealm B");
         trustedIdp.setProtocol("Uhttp://docs.oasis-open.org/wsfed/federation/200706");
-        trustedIdp.setTrustType("UPEER_TRUST");
-        trustedIdp.setUrl("Uhttps://localhost:${realmB.port}/fediz-idp-remote/federation");
+        trustedIdp.setTrustType(TrustType.INDIRECT_TRUST);
+        trustedIdp.setUrl("Uhttps://localhost:12443/fediz-idp-remote/federation");
         
         trustedIdpDAO.updateTrustedIDP(realm, trustedIdp);
         
@@ -139,7 +141,7 @@ public class TrustedIdpDAOJPATest {
                       "Certificate name doesn't match");
         Assert.isTrue("URealm B description".equals(trustedIdp.getDescription()),
                       "Description name doesn't match");
-        Assert.isTrue("UFederateIdentity".equals(trustedIdp.getFederationType()),
+        Assert.isTrue(FederationType.FEDERATE_CLAIMS.equals(trustedIdp.getFederationType()),
                       "FederationType doesn't match");        
         Assert.isTrue("URealm B".equals(trustedIdp.getName()),
                       "Name doesn't match");      
@@ -147,9 +149,9 @@ public class TrustedIdpDAOJPATest {
                       "Protocol doesn't match");          
         Assert.isTrue(realm.equals(trustedIdp.getRealm()),
                       "Realm doesn't match");          
-        Assert.isTrue("UPEER_TRUST".equals(trustedIdp.getTrustType()),
+        Assert.isTrue(TrustType.INDIRECT_TRUST.equals(trustedIdp.getTrustType()),
                       "TrustType doesn't match");
-        Assert.isTrue("Uhttps://localhost:${realmB.port}/fediz-idp-remote/federation".equals(trustedIdp.getUrl()),
+        Assert.isTrue("Uhttps://localhost:12443/fediz-idp-remote/federation".equals(trustedIdp.getUrl()),
                       "Url doesn't match"); 
         Assert.isTrue(trustedIdp.isCacheTokens(), "CacheTokens doesn't match");
         
@@ -190,11 +192,11 @@ public class TrustedIdpDAOJPATest {
         trustedIdp.setCacheTokens(false);
         trustedIdp.setCertificate("realmb.cert");
         trustedIdp.setDescription("Realm B description");
-        trustedIdp.setFederationType("FederateIdentity");
+        trustedIdp.setFederationType(FederationType.FEDERATE_IDENTITY);
         trustedIdp.setName("Realm B");
         trustedIdp.setProtocol("http://docs.oasis-open.org/wsfed/federation/200706");
-        trustedIdp.setTrustType("PEER_TRUST");
-        trustedIdp.setUrl("https://localhost:${realmB.port}/fediz-idp-remote/federation");
+        trustedIdp.setTrustType(TrustType.PEER_TRUST);
+        trustedIdp.setUrl("https://localhost:12443/fediz-idp-remote/federation");
         return trustedIdp;
     }
     

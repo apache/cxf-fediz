@@ -19,6 +19,7 @@
 package org.apache.cxf.fediz.service.idp.domain;
 
 import java.io.Serializable;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -72,11 +73,11 @@ public class Idp implements Serializable {
     protected String certificatePassword;
 
     // fed:SecurityTokenSerivceEndpoint
-    protected String stsUrl;
+    protected URL stsUrl;
 
     // fed:PassiveRequestorEndpoint
     // published hostname, port must be configured
-    protected String idpUrl;
+    protected URL idpUrl;
 
     // RoleDescriptor protocolSupportEnumeration=
     // "http://docs.oasis-open.org/wsfed/federation/200706"
@@ -179,19 +180,19 @@ public class Idp implements Serializable {
         this.certificatePassword = password;
     }
 
-    public String getStsUrl() {
+    public URL getStsUrl() {
         return stsUrl;
     }
 
-    public void setStsUrl(String stsUrl) {
+    public void setStsUrl(URL stsUrl) {
         this.stsUrl = stsUrl;
     }
 
-    public String getIdpUrl() {
+    public URL getIdpUrl() {
         return idpUrl;
     }
 
-    public void setIdpUrl(String idpUrl) {
+    public void setIdpUrl(URL idpUrl) {
         this.idpUrl = idpUrl;
     }
 

@@ -243,9 +243,9 @@ public class STSClientAction {
         }
         
         sts.setEnableLifetime(true);
-        if (serviceConfig.getLifeTime() != null && serviceConfig.getLifeTime().length() > 0) {
+        if (serviceConfig.getLifeTime() > 0) {
             try {
-                int lifetime = Integer.parseInt(serviceConfig.getLifeTime());
+                int lifetime = serviceConfig.getLifeTime();
                 sts.setTtl(lifetime);
                 sts.setEnableLifetime(lifetime > 0);
                 if (LOG.isDebugEnabled()) {

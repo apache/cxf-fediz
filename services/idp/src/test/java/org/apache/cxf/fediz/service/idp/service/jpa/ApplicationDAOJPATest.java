@@ -67,7 +67,7 @@ public class ApplicationDAOJPATest {
         Application application = applicationDAO.getApplication("urn:org:apache:cxf:fediz:fedizhelloworld",
                                                                 Arrays.asList("all"));
         
-        Assert.isTrue("3600".equals(application.getLifeTime()),
+        Assert.isTrue(application.getLifeTime() == 3600,
                       "LifeTime doesn't match");
         Assert.isTrue("http://docs.oasis-open.org/wsfed/federation/200706".equals(application.getProtocol()),
                       "Protocol doesn't match");
@@ -122,7 +122,7 @@ public class ApplicationDAOJPATest {
         
         Assert.isTrue("".equals(application.getEncryptionCertificate()),
                       "EncryptionCertificate doesn't match");
-        Assert.isTrue("3600".equals(application.getLifeTime()),
+        Assert.isTrue(application.getLifeTime() == 3600,
                       "LifeTime doesn't match");
         Assert.isTrue("http://docs.oasis-open.org/wsfed/federation/200706".equals(application.getProtocol()),
                       "Protocol doesn't match");
@@ -156,7 +156,7 @@ public class ApplicationDAOJPATest {
         application = new Application();
         application.setRealm(realm);
         application.setEncryptionCertificate("U");
-        application.setLifeTime("U3600");
+        application.setLifeTime(1800);
         application.setProtocol("Uhttp://docs.oasis-open.org/wsfed/federation/200706");
         application.setRole("UApplicationServiceType");
         application.setServiceDescription("UFedizhelloworld2 description");
@@ -166,7 +166,7 @@ public class ApplicationDAOJPATest {
         
         Assert.isTrue("U".equals(application.getEncryptionCertificate()),
                       "EncryptionCertificate doesn't match");
-        Assert.isTrue("U3600".equals(application.getLifeTime()),
+        Assert.isTrue(application.getLifeTime() == 1800,
                       "LifeTime doesn't match");
         Assert.isTrue("Uhttp://docs.oasis-open.org/wsfed/federation/200706".equals(application.getProtocol()),
                       "Protocol doesn't match");
@@ -193,7 +193,7 @@ public class ApplicationDAOJPATest {
         Application application = new Application();
         application.setRealm("urn:org:apache:cxf:fediz:fedizhelloworld");
         application.setEncryptionCertificate("");
-        application.setLifeTime("3600");
+        application.setLifeTime(3600);
         application.setProtocol("http://docs.oasis-open.org/wsfed/federation/200706");
         application.setRole("ApplicationServiceType");
         application.setServiceDescription("Fedizhelloworld description");
@@ -228,7 +228,7 @@ public class ApplicationDAOJPATest {
         Application application = new Application();
         application.setRealm("urn:org:apache:cxf:fediz:fedizhelloworld:testaddclaim");
         application.setEncryptionCertificate("");
-        application.setLifeTime("3600");
+        application.setLifeTime(3600);
         application.setProtocol("http://docs.oasis-open.org/wsfed/federation/200706");
         application.setRole("ApplicationServiceType");
         application.setServiceDescription("Fedizhelloworld description");
@@ -281,7 +281,7 @@ public class ApplicationDAOJPATest {
         Application application = new Application();
         application.setRealm("urn:org:apache:cxf:fediz:fedizhelloworld:testremoveclaim");
         application.setEncryptionCertificate("");
-        application.setLifeTime("3600");
+        application.setLifeTime(3600);
         application.setProtocol("http://docs.oasis-open.org/wsfed/federation/200706");
         application.setRole("ApplicationServiceType");
         application.setServiceDescription("Fedizhelloworld description");
@@ -335,7 +335,7 @@ public class ApplicationDAOJPATest {
         Application application = new Application();
         application.setRealm(realm);
         application.setEncryptionCertificate("");
-        application.setLifeTime("3600");
+        application.setLifeTime(3600);
         application.setProtocol("http://docs.oasis-open.org/wsfed/federation/200706");
         application.setRole("ApplicationServiceType");
         application.setServiceDescription("Fedizhelloworld2 description");

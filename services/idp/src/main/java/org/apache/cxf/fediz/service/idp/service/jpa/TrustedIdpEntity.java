@@ -19,8 +19,12 @@
 package org.apache.cxf.fediz.service.idp.service.jpa;
 
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Id;
 
+import org.apache.cxf.fediz.service.idp.domain.FederationType;
+import org.apache.cxf.fediz.service.idp.domain.TrustType;
 import org.apache.openjpa.persistence.jdbc.Index;
 
 
@@ -46,7 +50,8 @@ public class TrustedIdpEntity {
     private String certificate;
     
     //Direct trust (signing cert imported), Indirect trust (CA certs imported, subject configured)
-    private String trustType;
+    @Enumerated(EnumType.STRING)
+    private TrustType trustType;
     
     //Could be read from Metadata, RoleDescriptor protocolSupportEnumeration=
     // "http://docs.oasis-open.org/wsfed/federation/200706"
@@ -54,7 +59,8 @@ public class TrustedIdpEntity {
     private String protocol;
     
     //FederateIdentity, FederateClaims
-    private String federationType;
+    @Enumerated(EnumType.STRING)
+    private FederationType federationType;
     
     //optional (to provide a list of IDPs)
     private String name;
@@ -114,11 +120,11 @@ public class TrustedIdpEntity {
         this.protocol = protocol;
     }
 
-    public String getFederationType() {
+    public FederationType getFederationType() {
         return federationType;
     }
 
-    public void setFederationType(String federationType) {
+    public void setFederationType(FederationType federationType) {
         this.federationType = federationType;
     }
 
@@ -146,11 +152,11 @@ public class TrustedIdpEntity {
         this.logo = logo;
     }
 
-    public String getTrustType() {
+    public TrustType getTrustType() {
         return trustType;
     }
 
-    public void setTrustType(String trustType) {
+    public void setTrustType(TrustType trustType) {
         this.trustType = trustType;
     }
 

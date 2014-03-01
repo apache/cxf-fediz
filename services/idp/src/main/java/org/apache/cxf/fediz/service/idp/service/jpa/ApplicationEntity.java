@@ -67,7 +67,7 @@ public class ApplicationEntity {
     private String tokenType;
     
     // Not in Metadata, configured in IDP or passed in wreq parameter
-    private String lifeTime;
+    private int lifeTime;
     
     // WS-Policy Namespace in SignIn Response
     private String policyNamespace;
@@ -147,11 +147,11 @@ public class ApplicationEntity {
         this.tokenType = tokenType;
     }
 
-    public String getLifeTime() {
+    public int getLifeTime() {
         return lifeTime;
     }
 
-    public void setLifeTime(String lifeTime) {
+    public void setLifeTime(int lifeTime) {
         this.lifeTime = lifeTime;
     }
     

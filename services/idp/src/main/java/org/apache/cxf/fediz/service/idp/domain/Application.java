@@ -75,7 +75,7 @@ public class Application implements Serializable {
     protected String tokenType;
     
     // Not in Metadata, configured in IDP or passed in wreq parameter
-    protected String lifeTime;
+    protected int lifeTime;
     
     // WS-Policy Namespace for AppliesTo element
     protected String policyNamespace;
@@ -171,11 +171,11 @@ public class Application implements Serializable {
         this.tokenType = tokenType;
     }
 
-    public String getLifeTime() {
+    public int getLifeTime() {
         return lifeTime;
     }
 
-    public void setLifeTime(String lifeTime) {
+    public void setLifeTime(int lifeTime) {
         this.lifeTime = lifeTime;
     }
 

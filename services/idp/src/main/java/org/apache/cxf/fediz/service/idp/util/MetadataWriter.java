@@ -75,7 +75,7 @@ public class MetadataWriter {
             writer.writeStartElement("", "EntityDescriptor", SAML2_METADATA_NS);
             writer.writeAttribute("ID", referenceID);
                       
-            writer.writeAttribute("entityID", config.getIdpUrl());
+            writer.writeAttribute("entityID", config.getIdpUrl().toString());
 
             writer.writeNamespace("fed", WS_FEDERATION_NS);
             writer.writeNamespace("wsa", WS_ADDRESSING_NS);
@@ -120,7 +120,7 @@ public class MetadataWriter {
             writer.writeStartElement("wsa", "EndpointReference", WS_ADDRESSING_NS);
 
             writer.writeStartElement("wsa", "Address", WS_ADDRESSING_NS);
-            writer.writeCharacters(config.getStsUrl());
+            writer.writeCharacters(config.getStsUrl().toString());
             
             writer.writeEndElement(); // Address
             writer.writeEndElement(); // EndpointReference
@@ -132,7 +132,7 @@ public class MetadataWriter {
             writer.writeStartElement("wsa", "EndpointReference", WS_ADDRESSING_NS);
 
             writer.writeStartElement("wsa", "Address", WS_ADDRESSING_NS);
-            writer.writeCharacters(config.getIdpUrl());
+            writer.writeCharacters(config.getIdpUrl().toString());
             
             writer.writeEndElement(); // Address
             writer.writeEndElement(); // EndpointReference

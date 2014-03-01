@@ -85,7 +85,7 @@
         <property name="certificate" value="realmb.cert" />
         <property name="trustType" value="PEER_TRUST" />
         <property name="protocol" value="http://docs.oasis-open.org/wsfed/federation/200706" />
-        <property name="federationType" value="FederateIdentity" />
+        <property name="federationType" value="FEDERATE_IDENTITY" />
         <property name="name" value="Realm B" />
         <property name="description" value="Realm B description" />
     </bean>

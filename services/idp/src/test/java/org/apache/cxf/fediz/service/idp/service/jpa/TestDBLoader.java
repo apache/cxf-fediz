@@ -21,6 +21,8 @@ package org.apache.cxf.fediz.service.idp.service.jpa;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.apache.cxf.fediz.service.idp.domain.FederationType;
+import org.apache.cxf.fediz.service.idp.domain.TrustType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,7 +57,7 @@ public class TestDBLoader implements DBLoader {
                         
             ApplicationEntity entity2 = new ApplicationEntity();
             entity2.setEncryptionCertificate("my encryption cert2");
-            entity2.setLifeTime("22my lifetime");
+            entity2.setLifeTime(1800);
             entity2.setProtocol("22protocol");
             entity2.setRealm("myrealm2");
             entity2.setRole("myrole");
@@ -74,11 +76,11 @@ public class TestDBLoader implements DBLoader {
             entity4.setCacheTokens(true);
             entity4.setCertificate("trusted cert");
             entity4.setDescription("Realm B description");
-            entity4.setFederationType("FederateIdentity");
+            entity4.setFederationType(FederationType.FEDERATE_IDENTITY);
             entity4.setName("Realm B");
             entity4.setProtocol("http://docs.oasis-open.org/wsfed/federation/200706");
             entity4.setRealm("trustedidp2realm");
-            entity4.setTrustType("PEER_TRUST");
+            entity4.setTrustType(TrustType.PEER_TRUST);
             entity4.setUrl("https://localhost:${realmB.port}/fediz-idp-remote/federation");
             em.persist(entity4);
             

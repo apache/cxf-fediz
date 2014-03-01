@@ -18,6 +18,7 @@
  */
 package org.apache.cxf.fediz.service.idp.service.jpa;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +27,8 @@ import java.util.Map;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.apache.cxf.fediz.service.idp.domain.FederationType;
+import org.apache.cxf.fediz.service.idp.domain.TrustType;
 import org.apache.wss4j.dom.WSConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,7 +85,7 @@ public class DBLoaderImpl implements DBLoader {
             
             ApplicationEntity entity = new ApplicationEntity();
             entity.setEncryptionCertificate("");
-            entity.setLifeTime("3600");
+            entity.setLifeTime(3600);
             entity.setProtocol("http://docs.oasis-open.org/wsfed/federation/200706");
             entity.setRealm("urn:org:apache:cxf:fediz:fedizhelloworld");
             entity.setRole("ApplicationServiceType");
@@ -114,11 +117,11 @@ public class DBLoaderImpl implements DBLoader {
             entity3.setCacheTokens(true);
             entity3.setCertificate("trusted cert");
             entity3.setDescription("Realm B description");
-            entity3.setFederationType("FederateIdentity");
+            entity3.setFederationType(FederationType.FEDERATE_IDENTITY);
             entity3.setName("Realm B");
             entity3.setProtocol("http://docs.oasis-open.org/wsfed/federation/200706");
             entity3.setRealm("urn:org:apache:cxf:fediz:idp:realm-B");
-            entity3.setTrustType("PEER_TRUST");
+            entity3.setTrustType(TrustType.PEER_TRUST);
             entity3.setUrl("https://localhost:12443/fediz-idp-remote/federation");
             em.persist(entity3);
             
@@ -127,9 +130,9 @@ public class DBLoaderImpl implements DBLoader {
             idpEntity.getTrustedIdps().add(entity3);
             idpEntity.setCertificate("stsKeystoreA.properties");
             idpEntity.setCertificatePassword("realma");
-            idpEntity.setIdpUrl("https://localhost:9443/fediz-idp/federation");
+            idpEntity.setIdpUrl(new URL("https://localhost:9443/fediz-idp/federation"));
             idpEntity.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
-            idpEntity.setStsUrl("https://localhost:9443/fediz-idp-sts/REALMA");
+            idpEntity.setStsUrl(new URL("https://localhost:9443/fediz-idp-sts/REALMA"));
             idpEntity.setServiceDisplayName("REALM A");
             idpEntity.setServiceDescription("IDP of Realm A");
             idpEntity.setUri("realma");

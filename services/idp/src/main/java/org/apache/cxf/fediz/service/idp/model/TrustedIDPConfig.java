@@ -21,6 +21,8 @@ package org.apache.cxf.fediz.service.idp.model;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
+import org.apache.cxf.fediz.service.idp.domain.FederationType;
+import org.apache.cxf.fediz.service.idp.domain.TrustType;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 
 //@XmlRootElement(name = "TrustedIDP", namespace = "http://org.apache.cxf.fediz")
@@ -45,7 +47,7 @@ public class TrustedIDPConfig extends TrustedIdp {
     private String certificate;
     
     //Direct trust (signing cert imported), Indirect trust (CA certs imported, subject configured)
-    private String trustType;
+    private TrustType trustType;
     
     //Could be read from Metadata, RoleDescriptor protocolSupportEnumeration=
     // "http://docs.oasis-open.org/wsfed/federation/200706"
@@ -53,7 +55,7 @@ public class TrustedIDPConfig extends TrustedIdp {
     private String protocol;
     
     //FederateIdentity, FederateClaims
-    private String federationType;
+    private FederationType federationType;
     
     //optional (to provide a list of IDPs)
     private String name;
@@ -113,11 +115,11 @@ public class TrustedIDPConfig extends TrustedIdp {
         this.protocol = protocol;
     }
 
-    public String getFederationType() {
+    public FederationType getFederationType() {
         return federationType;
     }
 
-    public void setFederationType(String federationType) {
+    public void setFederationType(FederationType federationType) {
         this.federationType = federationType;
     }
 
@@ -145,11 +147,11 @@ public class TrustedIDPConfig extends TrustedIdp {
         this.logo = logo;
     }
 
-    public String getTrustType() {
+    public TrustType getTrustType() {
         return trustType;
     }
 
-    public void setTrustType(String trustType) {
+    public void setTrustType(TrustType trustType) {
         this.trustType = trustType;
     }
                

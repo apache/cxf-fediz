@@ -18,7 +18,9 @@
  */
 package org.apache.cxf.fediz.service.idp.service.jpa;
 
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -66,7 +68,7 @@ public class IdpDAOJPATest {
     
     
     @Test
-    public void testReadExistingIdpEmbeddedAll() {
+    public void testReadExistingIdpEmbeddedAll() throws MalformedURLException {
         Idp idp = idpDAO.getIdp("urn:org:apache:cxf:fediz:idp:realm-A",
                                                                 Arrays.asList("all"));
         
@@ -80,9 +82,9 @@ public class IdpDAOJPATest {
                       "ServiceDescription doesn't match");
         Assert.isTrue("REALM A".equals(idp.getServiceDisplayName()),
                       "ServiceDisplayName doesn't match");        
-        Assert.isTrue("https://localhost:9443/fediz-idp/federation".equals(idp.getIdpUrl()),
+        Assert.isTrue(new URL("https://localhost:9443/fediz-idp/federation").equals(idp.getIdpUrl()),
                       "IdpUrl doesn't match");
-        Assert.isTrue("https://localhost:9443/fediz-idp-sts/REALMA".equals(idp.getStsUrl()),
+        Assert.isTrue(new URL("https://localhost:9443/fediz-idp-sts/REALMA").equals(idp.getStsUrl()),
                       "StsUrl doesn't match");
         Assert.isTrue("realma".equals(idp.getUri()),
                       "Uri doesn't match");
@@ -153,13 +155,13 @@ public class IdpDAOJPATest {
     
     
     @Test
-    public void testAddNewIdp() {
+    public void testAddNewIdp() throws MalformedURLException {
         Idp idp = new Idp();
         idp.setRealm("urn:org:apache:cxf:fediz:idp:testadd");
         idp.setCertificate("stsKeystoreA.properties");
         idp.setCertificatePassword("realma");
-        idp.setIdpUrl("https://localhost:9443/fediz-idp/federation");
-        idp.setStsUrl("https://localhost:9443/fediz-idp-sts/REALMN");
+        idp.setIdpUrl(new URL("https://localhost:9443/fediz-idp/federation"));
+        idp.setStsUrl(new URL("https://localhost:9443/fediz-idp-sts/REALMN"));
         idp.setServiceDisplayName("NEW REALM");
         idp.setServiceDescription("IDP of New Realm");
         idp.setUri("realmn");
@@ -191,9 +193,9 @@ public class IdpDAOJPATest {
                       "ServiceDescription doesn't match");
         Assert.isTrue("NEW REALM".equals(idp.getServiceDisplayName()),
                       "ServiceDisplayName doesn't match");        
-        Assert.isTrue("https://localhost:9443/fediz-idp/federation".equals(idp.getIdpUrl()),
+        Assert.isTrue(new URL("https://localhost:9443/fediz-idp/federation").equals(idp.getIdpUrl()),
                       "IdpUrl doesn't match");
-        Assert.isTrue("https://localhost:9443/fediz-idp-sts/REALMN".equals(idp.getStsUrl()),
+        Assert.isTrue(new URL("https://localhost:9443/fediz-idp-sts/REALMN").equals(idp.getStsUrl()),
                       "StsUrl doesn't match");
         Assert.isTrue("realmn".equals(idp.getUri()),
                       "Uri doesn't match");
@@ -245,7 +247,7 @@ public class IdpDAOJPATest {
     }
     
     @Test
-    public void testUpdateIdp() {
+    public void testUpdateIdp() throws MalformedURLException {
         String realm = "urn:org:apache:cxf:fediz:idp:testupdate";
         //Prepare
         Idp idp = createIdp(realm);
@@ -256,8 +258,8 @@ public class IdpDAOJPATest {
         idp.setRealm(realm);
         idp.setCertificate("UstsKeystoreA.properties");
         idp.setCertificatePassword("Urealma");
-        idp.setIdpUrl("Uhttps://localhost:9443/fediz-idp/federation");
-        idp.setStsUrl("Uhttps://localhost:9443/fediz-idp-sts/REALMA");
+        idp.setIdpUrl(new URL("https://localhost:9443/fediz-idp/federationUU"));
+        idp.setStsUrl(new URL("https://localhost:9443/fediz-idp-sts/REALMAUU"));
         idp.setServiceDisplayName("UNEW REALM");
         idp.setServiceDescription("UIDP of New Realm");
         idp.setUri("Urealmn");
@@ -286,9 +288,9 @@ public class IdpDAOJPATest {
                       "ServiceDescription doesn't match");
         Assert.isTrue("UNEW REALM".equals(idp.getServiceDisplayName()),
                       "ServiceDisplayName doesn't match");        
-        Assert.isTrue("Uhttps://localhost:9443/fediz-idp/federation".equals(idp.getIdpUrl()),
+        Assert.isTrue(new URL("https://localhost:9443/fediz-idp/federationUU").equals(idp.getIdpUrl()),
                       "IdpUrl doesn't match");
-        Assert.isTrue("Uhttps://localhost:9443/fediz-idp-sts/REALMA".equals(idp.getStsUrl()),
+        Assert.isTrue(new URL("https://localhost:9443/fediz-idp-sts/REALMAUU").equals(idp.getStsUrl()),
                       "StsUrl doesn't match");
         Assert.isTrue("Urealmn".equals(idp.getUri()),
                       "Uri doesn't match");
@@ -312,7 +314,7 @@ public class IdpDAOJPATest {
     }
     
     @Test(expected = EmptyResultDataAccessException.class)
-    public void testUpdateUnknownIdp() {
+    public void testUpdateUnknownIdp() throws MalformedURLException {
         String realm = "urn:org:apache:cxf:fediz:idp:testupdate2";
         
         //Prepare
@@ -324,8 +326,8 @@ public class IdpDAOJPATest {
         idp.setRealm(realm);
         idp.setCertificate("UstsKeystoreA.properties");
         idp.setCertificatePassword("Urealma");
-        idp.setIdpUrl("Uhttps://localhost:9443/fediz-idp/federation");
-        idp.setStsUrl("Uhttps://localhost:9443/fediz-idp-sts/REALMN");
+        idp.setIdpUrl(new URL("https://localhost:9443/fediz-idp/federationUU"));
+        idp.setStsUrl(new URL("https://localhost:9443/fediz-idp-sts/REALMNUU"));
         idp.setServiceDisplayName("UNEW REALM");
         idp.setServiceDescription("UIDP of New Realm");
         idp.setUri("Urealmn");
@@ -344,7 +346,7 @@ public class IdpDAOJPATest {
     }
     
     @Test
-    public void testAddClaimToIdp() {
+    public void testAddClaimToIdp() throws MalformedURLException {
         String realm = "urn:org:apache:cxf:fediz:idp:testaddclaim";
         
         //Prepare
@@ -386,7 +388,7 @@ public class IdpDAOJPATest {
     }
     
     @Test
-    public void testRemoveClaimFromIdp() {
+    public void testRemoveClaimFromIdp() throws MalformedURLException {
         String realm = "urn:org:apache:cxf:fediz:fedizhelloworld:testremoveclaim";
         //Prepare step
         Idp idp = createIdp(realm);
@@ -430,7 +432,7 @@ public class IdpDAOJPATest {
     }
     
     @Test
-    public void testAddApplicationToIdp() {
+    public void testAddApplicationToIdp() throws MalformedURLException {
         String realm = "urn:org:apache:cxf:fediz:app:testaddApplication";
         
         //Prepare
@@ -473,7 +475,7 @@ public class IdpDAOJPATest {
     }
     
     @Test
-    public void testRemoveApplicationFromIdp() {
+    public void testRemoveApplicationFromIdp() throws MalformedURLException {
         String realm = "urn:org:apache:cxf:fediz:fedizhelloworld:testremoveapp";
         //Prepare step
         Idp idp = createIdp(realm);
@@ -524,7 +526,7 @@ public class IdpDAOJPATest {
     
     
     @Test
-    public void testAddTrustedIdpToIdp() {
+    public void testAddTrustedIdpToIdp() throws MalformedURLException {
         String realm = "urn:org:apache:cxf:fediz:trusted-idp:testaddTrustedIdp";
         
         //Prepare
@@ -613,13 +615,13 @@ public class IdpDAOJPATest {
     */
     
     
-    private static Idp createIdp(String realm) {
+    private static Idp createIdp(String realm) throws MalformedURLException {
         Idp idp = new Idp();
         idp.setRealm(realm);
         idp.setCertificate("stsKeystoreA.properties");
         idp.setCertificatePassword("realma");
-        idp.setIdpUrl("https://localhost:9443/fediz-idp/federation");
-        idp.setStsUrl("https://localhost:9443/fediz-idp-sts/REALMA");
+        idp.setIdpUrl(new URL("https://localhost:9443/fediz-idp/federation"));
+        idp.setStsUrl(new URL("https://localhost:9443/fediz-idp-sts/REALMA"));
         idp.setServiceDisplayName("NEW REALM");
         idp.setServiceDescription("IDP of New Realm");
         idp.setUri("realma");

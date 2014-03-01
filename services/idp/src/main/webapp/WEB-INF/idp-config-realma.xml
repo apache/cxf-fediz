@@ -98,7 +98,7 @@
         <property name="trustType" value="PEER_TRUST" />  <!-- Required for Fediz Core, Process SignInResponse -->
         <property name="protocol"
             value="http://docs.oasis-open.org/wsfed/federation/200706" />
-        <property name="federationType" value="FederateIdentity" /> <!-- Required for STS Relationship -->
+        <property name="federationType" value="FEDERATE_IDENTITY" /> <!-- Required for STS Relationship -->
         <property name="name" value="REALM B" />
         <property name="description" value="IDP of Realm B" />
         <!-- todo true / false prop for propagate sign-out of other realms !?-->

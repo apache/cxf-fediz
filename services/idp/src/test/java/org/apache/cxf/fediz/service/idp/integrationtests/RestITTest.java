@@ -19,6 +19,7 @@
 package org.apache.cxf.fediz.service.idp.integrationtests;
 
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 
@@ -79,7 +80,7 @@ public class RestITTest {
     }
     
     @Test
-    public void testGetAllIdps() throws UnsupportedEncodingException {
+    public void testGetAllIdps() throws UnsupportedEncodingException, MalformedURLException {
         String address = "https://localhost:" + idpHttpsPort + "/fediz-idp/services/rs";
         Client client = ClientBuilder.newClient();
         Idps idps = client.target(address).path("idps")
@@ -99,9 +100,9 @@ public class RestITTest {
         Assert.assertEquals("ServiceDisplayName doesn't match",
                             "REALM A", idp.getServiceDisplayName());
         Assert.assertEquals("IdpUrl doesn't match",
-                            "https://localhost:9443/fediz-idp/federation", idp.getIdpUrl());
+                            new URL("https://localhost:9443/fediz-idp/federation"), idp.getIdpUrl());
         Assert.assertEquals("StsUrl doesn't match",
-                            "https://localhost:9443/fediz-idp-sts/REALMA", idp.getStsUrl());
+                            new URL("https://localhost:9443/fediz-idp-sts/REALMA"), idp.getStsUrl());
         Assert.assertEquals("Uri doesn't match",
                             "realma", idp.getUri());
         Assert.assertTrue("ProvideIDPList doesn't match", idp.isProvideIdpList());
@@ -140,7 +141,7 @@ public class RestITTest {
         Application application = new Application();
         application.setRealm(realm);
         application.setEncryptionCertificate("");
-        application.setLifeTime("3600");
+        application.setLifeTime(3600);
         application.setProtocol("http://docs.oasis-open.org/wsfed/federation/200706");
         application.setRole("ApplicationServiceType");
         application.setServiceDescription("Fedizhelloworld description");

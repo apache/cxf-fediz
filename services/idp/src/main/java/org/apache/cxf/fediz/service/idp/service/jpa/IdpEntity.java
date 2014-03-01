@@ -19,6 +19,7 @@
 
 package org.apache.cxf.fediz.service.idp.service.jpa;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -72,11 +73,11 @@ public class IdpEntity {
     private String certificatePassword;
 
     // fed:SecurityTokenSerivceEndpoint
-    private String stsUrl;
+    private URL stsUrl;
 
     // fedl:PassiveRequestorEndpoint
     // published hostname, port must be configured
-    private String idpUrl;
+    private URL idpUrl;
     
     private boolean rpSingleSignOutConfirmation;
 
@@ -194,19 +195,19 @@ public class IdpEntity {
         this.certificatePassword = password;
     }
 
-    public String getStsUrl() {
+    public URL getStsUrl() {
         return stsUrl;
     }
 
-    public void setStsUrl(String stsUrl) {
+    public void setStsUrl(URL stsUrl) {
         this.stsUrl = stsUrl;
     }
 
-    public String getIdpUrl() {
+    public URL getIdpUrl() {
         return idpUrl;
     }
 
-    public void setIdpUrl(String idpUrl) {
+    public void setIdpUrl(URL idpUrl) {
         this.idpUrl = idpUrl;
     }
 
