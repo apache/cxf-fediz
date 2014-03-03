@@ -160,8 +160,7 @@ public class TrustedIdpDAOJPATest {
     
     @Test(expected = DataIntegrityViolationException.class)
     public void testTryAddExistingTrustedIdp() {
-        TrustedIdp trustedIdp = new TrustedIdp();
-        trustedIdp.setRealm("urn:org:apache:cxf:fediz:idp:realm-B");
+        TrustedIdp trustedIdp = createTrustedIdp("urn:org:apache:cxf:fediz:idp:realm-B");
         trustedIdpDAO.addTrustedIDP(trustedIdp);
     }
     
@@ -175,8 +174,7 @@ public class TrustedIdpDAOJPATest {
     @Test(expected = EmptyResultDataAccessException.class)
     public void testRemoveExistingTrustedIdp() {
         String realm = "urn:org:apache:cxf:fediz:trusted-idp:testdelete";
-        TrustedIdp trustedIdp = new TrustedIdp();
-        trustedIdp.setRealm(realm);
+        TrustedIdp trustedIdp = createTrustedIdp(realm);
         
         trustedIdpDAO.addTrustedIDP(trustedIdp);
         

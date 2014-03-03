@@ -220,10 +220,8 @@ public class IdpDAOJPATest {
     
     
     @Test(expected = DataIntegrityViolationException.class)
-    public void testTryAddExistingIdp() {
-        Idp idp = new Idp();
-        idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
-        
+    public void testTryAddExistingIdp() throws MalformedURLException {
+        Idp idp = createIdp("urn:org:apache:cxf:fediz:idp:realm-A");
         idpDAO.addIdp(idp);
     }
     
@@ -235,9 +233,8 @@ public class IdpDAOJPATest {
     
     
     @Test(expected = EmptyResultDataAccessException.class)
-    public void testRemoveExistingIdp() {
-        Idp idp = new Idp();
-        idp.setRealm("urn:org:apache:cxf:fediz:idp:testdelete");
+    public void testRemoveExistingIdp() throws MalformedURLException {
+        Idp idp = createIdp("urn:org:apache:cxf:fediz:idp:testdelete");
         
         idpDAO.addIdp(idp);
         

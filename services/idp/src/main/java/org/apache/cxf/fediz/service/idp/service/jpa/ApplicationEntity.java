@@ -25,6 +25,8 @@ import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 import org.apache.openjpa.persistence.jdbc.Index;
 
@@ -36,11 +38,13 @@ public class ApplicationEntity {
     private int id;
     
     @Index
+    @NotNull
     private String realm;  //wtrealm, whr
 
     //Could be read from Metadata, RoleDescriptor protocolSupportEnumeration=
-    // "http://docs.oasis-open.org/wsfed/federation/200706"
+    // "http://docs.oa14sis-open.org/wsfed/federation/200706"
     // Metadata could provide more than one but one must be chosen
+    @NotNull
     private String protocol;
  
     // Public key only
@@ -53,6 +57,7 @@ public class ApplicationEntity {
     
     //Could be read from Metadata, ServiceDisplayName
     //usage for list of application where user is logged in
+    @NotNull
     private String serviceDisplayName;
     
     //Could be read from Metadata, ServiceDescription
@@ -64,9 +69,11 @@ public class ApplicationEntity {
     private String role;
     
     // Not in Metadata, configured in IDP or passed in wreq parameter
+    @NotNull
     private String tokenType;
     
     // Not in Metadata, configured in IDP or passed in wreq parameter
+    @Min(value = 1)
     private int lifeTime;
     
     // WS-Policy Namespace in SignIn Response

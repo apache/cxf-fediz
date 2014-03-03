@@ -22,6 +22,7 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
 
 import org.apache.cxf.fediz.service.idp.domain.FederationType;
 import org.apache.cxf.fediz.service.idp.domain.TrustType;
@@ -36,6 +37,7 @@ public class TrustedIdpEntity {
 
     //@Column(name = "REALM", nullable = true, length = FIELD_LENGTH)
     @Index
+    @NotNull
     private String realm;  //wtrealm, whr
 
     // Should tokens be cached from trusted IDPs
@@ -43,6 +45,7 @@ public class TrustedIdpEntity {
     private boolean cacheTokens;
     
     //Could be read from Metadata, PassiveRequestorEndpoint
+    @NotNull
     private String url;
     
     //Could be read from Metadata, md:KeyDescriptor, use="signing"
@@ -63,6 +66,7 @@ public class TrustedIdpEntity {
     private FederationType federationType;
     
     //optional (to provide a list of IDPs)
+    @NotNull
     private String name;
     
     //optional (to provide a list of IDPs)

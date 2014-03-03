@@ -96,5 +96,12 @@
 
     <bean id="dbListener"
         class="org.apache.cxf.fediz.service.idp.service.jpa.DBInitApplicationListener" />
+        
+    <bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+    <!-- 
+        <property name="providerClass"
+                  value="org.apache.bval.jsr303.ApacheValidationProvider" />
+                  -->
+    </bean>
 
 </beans>

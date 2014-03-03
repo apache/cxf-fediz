@@ -34,6 +34,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.MapKeyColumn;
+import javax.validation.constraints.NotNull;
 
 import org.apache.openjpa.persistence.jdbc.Index;
 
@@ -46,6 +47,7 @@ public class IdpEntity {
     // Unique
     // fed:TargetScope
     @Index
+    @NotNull
     private String realm; // wtrealm, whr
 
     // Unique
@@ -73,10 +75,12 @@ public class IdpEntity {
     private String certificatePassword;
 
     // fed:SecurityTokenSerivceEndpoint
+    @NotNull
     private URL stsUrl;
 
     // fedl:PassiveRequestorEndpoint
     // published hostname, port must be configured
+    @NotNull
     private URL idpUrl;
     
     private boolean rpSingleSignOutConfirmation;
@@ -125,6 +129,7 @@ public class IdpEntity {
     private List<ClaimEntity> claimTypesOffered = new ArrayList<ClaimEntity>();
 
     // ServiceDisplayName
+    @NotNull
     private String serviceDisplayName;
 
     // ServiceDescription

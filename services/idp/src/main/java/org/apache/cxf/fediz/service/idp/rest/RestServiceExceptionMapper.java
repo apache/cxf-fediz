@@ -18,6 +18,7 @@
  */
 package org.apache.cxf.fediz.service.idp.rest;
 
+import javax.validation.ConstraintViolationException;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -44,12 +45,19 @@ public class RestServiceExceptionMapper implements ExceptionMapper<Exception> {
 
     @Override
     public Response toResponse(final Exception ex) {
-        LOG.error("Exception thrown by REST method: " + ex.getMessage(), ex);
+        LOG.warn("Exception occured processing REST request: " + ex.getMessage(), ex);
 
         if (ex instanceof AccessDeniedException) {
             return Response.status(Response.Status.UNAUTHORIZED).
                     header(HttpHeaders.WWW_AUTHENTICATE, BASIC_REALM_UNAUTHORIZED).
                     build();
+        }
+        if (ex instanceof ConstraintViolationException) {
+            ConstraintViolationException cve = (ConstraintViolationException)ex;
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(ex.getMessage() + "\n" + cve.getConstraintViolations().toString());
+            }
+            return buildResponse(Response.Status.BAD_REQUEST, ex);
         }
         if (ex instanceof DataIntegrityViolationException) {
             return buildResponse(Response.Status.CONFLICT, ex);

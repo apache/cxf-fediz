@@ -20,6 +20,7 @@ package org.apache.cxf.fediz.service.idp.service.jpa;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
 
 import org.apache.openjpa.persistence.jdbc.Index;
 
@@ -30,6 +31,7 @@ public class ClaimEntity {
     private int id;
     
     @Index
+    @NotNull
     private String claimType;
     
     private String displayName;

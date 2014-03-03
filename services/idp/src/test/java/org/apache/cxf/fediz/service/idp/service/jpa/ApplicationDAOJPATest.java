@@ -213,8 +213,8 @@ public class ApplicationDAOJPATest {
     @Test(expected = EmptyResultDataAccessException.class)
     public void testRemoveExistingApplication() {
         String realm = "urn:org:apache:cxf:fediz:app:testdelete";
-        Application application = new Application();
-        application.setRealm(realm);
+        Application application = createApplication(realm);
+        
         applicationDAO.addApplication(application);
         
         applicationDAO.deleteApplication(realm);
