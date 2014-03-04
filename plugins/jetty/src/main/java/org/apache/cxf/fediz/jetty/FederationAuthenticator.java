@@ -21,6 +21,7 @@ package org.apache.cxf.fediz.jetty;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.security.cert.X509Certificate;
 
 import javax.servlet.ServletRequest;
@@ -81,6 +82,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
        
     private String configFile;
     private FederationConfigurator configurator;
+    private String encoding = "UTF-8";
 
     public FederationAuthenticator() {
     }
@@ -128,9 +130,24 @@ public class FederationAuthenticator extends LoginAuthenticator {
         this.configFile = configFile;
     }
     
+    public String getEncoding() {
+        return encoding;
+    }
+
+    public void setEncoding(String encoding) {
+        this.encoding = encoding;
+    }
+    
     /* ------------------------------------------------------------ */
     public Authentication validateRequest(ServletRequest req, ServletResponse res, boolean mandatory)
         throws ServerAuthException {
+
+        try {
+            req.setCharacterEncoding(this.encoding);
+        } catch (UnsupportedEncodingException ex) {
+            LOG.warn("Unsupported encoding '" + this.encoding + "'", ex);
+        }
+        
         HttpServletRequest request = (HttpServletRequest)req;
         HttpServletResponse response = (HttpServletResponse)res;
         String uri = request.getRequestURI();

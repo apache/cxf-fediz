@@ -73,6 +73,7 @@ public class FederationAuthenticator extends FormAuthenticator {
      */
     protected String configFile;
     protected boolean tokenExpirationValidation = true;
+    protected String encoding = "UTF-8";
 
     private FederationConfigurator configurator;
 
@@ -94,6 +95,14 @@ public class FederationAuthenticator extends FormAuthenticator {
 
     public void setConfigFile(String configFile) {
         this.configFile = configFile;
+    }
+    
+    public String getEncoding() {
+        return encoding;
+    }
+
+    public void setEncoding(String encoding) {
+        this.encoding = encoding;
     }
     
     public boolean isTokenExpirationValidation() {
@@ -163,6 +172,8 @@ public class FederationAuthenticator extends FormAuthenticator {
     ServletException {
 
         LOG.debug("WsFedAuthenticator:invoke()");
+        request.setCharacterEncoding(this.encoding);
+        
         if (request.getRequestURL().indexOf(FederationConstants.METADATA_PATH_URI) != -1) {
             if (LOG.isInfoEnabled()) {
                 LOG.info("WS-Federation Metadata document requested");
