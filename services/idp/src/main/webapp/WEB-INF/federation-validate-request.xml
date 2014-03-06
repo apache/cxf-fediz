@@ -80,7 +80,7 @@
         </transition>
         <transition on="viewBadRequest" to="viewBadRequest" />
         <transition on="scInternalServerError" to="scInternalServerError" />
-        <transition on="redirectToTrustedIDP" to="redirectToTrustedIDP">
+        <transition on="redirectToTrustedIDP" to="processTrustedIdpProtocol">
             <set name="flowScope.whr" value="currentEvent.attributes.whr" />
             <set name="flowScope.wctx" value="currentEvent.attributes.wctx" />
         </transition>
@@ -122,6 +122,14 @@
         <transition to="formResponseView" />
         <transition on-exception="java.lang.Throwable" to="scInternalServerError" />
     </action-state>
+    
+    <action-state id="processTrustedIdpProtocol">
+        <evaluate expression="trustedIdpProtocolAction.mapSignInRequest(flowRequestContext)"
+                      result="flowScope.remoteIdpUrl"/>
+        <transition to="redirectToTrustedIDP" />
+        <transition on-exception="java.lang.Throwable" to="scInternalServerError" />
+    </action-state>
+    
 
     <!-- normal exit point for login -->
     <!-- browser redirection (self-submitted form 'signinresponseform.jsp') -->
@@ -182,6 +190,7 @@
 
     <!-- redirect to remote idp -->
     <end-state id="redirectToTrustedIDP" view="externalRedirect:${flowScope.remoteIdpUrl}">
+    <!-- 
         <on-entry>
             <set name="flowScope.remoteIdpUrl"
                 value="flowScope.idpConfig.findTrustedIdp(flowScope.whr).url
@@ -191,7 +200,8 @@
                 +(flowScope.wfresh != null ? '&amp;wfresh='+flowScope.wfresh : '')
                 +(flowScope.wctx != null ? '&amp;wctx='+flowScope.wctx : '')">
             </set>
-        </on-entry> 
+        </on-entry>
+         --> 
     </end-state>
 
     <end-state id="redirectToLocalIDP" view="externalRedirect:${flowScope.localIdpUrl}">

@@ -59,6 +59,7 @@ public class TrustedIdpEntity {
     //Could be read from Metadata, RoleDescriptor protocolSupportEnumeration=
     // "http://docs.oasis-open.org/wsfed/federation/200706"
     // Metadata could provide more than one but one must be chosen
+    @ProtocolSupported
     private String protocol;
     
     //FederateIdentity, FederateClaims

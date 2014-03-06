@@ -16,16 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.cxf.fediz.service.idp.beans;
+
+package org.apache.cxf.fediz.service.idp.protocols;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.w3c.dom.Element;
+
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.FederationProcessor;
 import org.apache.cxf.fediz.core.FederationProcessorImpl;
@@ -43,100 +50,136 @@ import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuers;
 import org.apache.cxf.fediz.core.config.jaxb.ValidationType;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
-import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
+import org.apache.cxf.fediz.service.idp.spi.TrustedIdpProtocolHandler;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.wss4j.common.crypto.CertificateStore;
 import org.apache.xml.security.exceptions.Base64DecodingException;
 import org.apache.xml.security.stax.impl.util.IDGenerator;
 import org.apache.xml.security.utils.Base64;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.springframework.stereotype.Component;
 import org.springframework.webflow.execution.RequestContext;
 
-/**
- * This class is responsible to validate token returned by
- * requestor IDP.
- */
+@Component
+public class TrustedIdpWSFedProtocolHandler implements TrustedIdpProtocolHandler {
+    
+    public static final String PROTOCOL = "http://docs.oasis-open.org/wsfed/federation/200706";
 
-public class ValidateTokenAction {
+    private static final Logger LOG = LoggerFactory.getLogger(TrustedIdpWSFedProtocolHandler.class);
 
-    private static final String IDP_CONFIG = "idpConfig";
-    private static final Logger LOG = LoggerFactory
-            .getLogger(ValidateTokenAction.class);
-
-    public SecurityToken submit(RequestContext context)
-        throws ProcessingException, IOException {
-        Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(
-                context, IDP_CONFIG);
-
-        if (idpConfig == null) {
-            throw new ProcessingException("IDP configuration is null",
-                    TYPE.BAD_REQUEST);
-        }
-
-        String whr = (String) WebUtils.getAttributeFromFlowScope(context,
-                FederationConstants.PARAM_HOME_REALM);
-
-        if (whr == null) {
-            throw new ProcessingException("Home realm is null",
-                    TYPE.BAD_REQUEST);
-        }
-
-        String wresult = (String) WebUtils.getAttributeFromFlowScope(context,
-                FederationConstants.PARAM_RESULT);
-
-        if (wresult == null) {
-            throw new ProcessingException("No security token issued",
-                    TYPE.BAD_REQUEST);
-        }
-
-        TrustedIdp trustedIDPConfig = idpConfig.findTrustedIdp(whr);
-
-        if (trustedIDPConfig == null) {
-            throw new ProcessingException(
-                    "No trusted IDP config found for home realm " + whr,
-                    TYPE.BAD_REQUEST);
-        }
-
-        FederationContext fedContext = getFederationContext(idpConfig,
-                trustedIDPConfig);
-
-        FederationRequest wfReq = new FederationRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(wresult);
-
-        FederationProcessor wfProc = new FederationProcessorImpl();
-        FederationResponse wfResp = wfProc.processRequest(wfReq, fedContext);
-
-        fedContext.close();
-
-        Element e = wfResp.getToken();
-        
-        // Create new Security token with new id. 
-        // Parameters for freshness computation are copied from original IDP_TOKEN
-        String id = IDGenerator.generateID("_");
-        SecurityToken idpToken = new SecurityToken(id,
-            wfResp.getTokenCreated(), wfResp.getTokenExpires());
-
-        idpToken.setToken(e);
-        LOG.info("[IDP_TOKEN=" + id + "] for user '" + wfResp.getUsername()
-                + "' created from [RP_TOKEN=" + wfResp.getUniqueTokenId()
-                + "] issued by home realm [" + whr + "/"
-                + wfResp.getIssuer() + "].");
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Created date=" + wfResp.getTokenCreated());
-            LOG.debug("Expired date=" + wfResp.getTokenExpires());
-        }
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Validated 'wresult' : "
-                    + System.getProperty("line.separator") + wresult);
-        }
-        return idpToken;
+    @Override
+    public boolean canHandleRequest(HttpServletRequest request) {
+        // TODO Auto-generated method stub
+        return false;
     }
 
+    @Override
+    public String getProtocol() {
+        return PROTOCOL;
+    }
+
+    @Override
+    public URL mapSignInRequest(RequestContext context, Idp idp, TrustedIdp trustedIdp) {
+        
+        try {
+            StringBuffer sb = new StringBuffer();
+            sb.append(trustedIdp.getUrl());
+            sb.append("?").append(FederationConstants.PARAM_ACTION).append('=');
+            sb.append(FederationConstants.ACTION_SIGNIN);
+            sb.append("&").append(FederationConstants.PARAM_TREALM).append('=');
+            sb.append(URLEncoder.encode(idp.getRealm(), "UTF-8"));
+            sb.append("&").append(FederationConstants.PARAM_REPLY).append('=');
+            sb.append(URLEncoder.encode(idp.getIdpUrl().toString(), "UTF-8"));
+            
+            String wfresh = context.getFlowScope().getString(FederationConstants.PARAM_FRESHNESS);
+            if (wfresh != null) {
+                sb.append("&").append(FederationConstants.PARAM_FRESHNESS).append('=');
+                sb.append(URLEncoder.encode(wfresh, "UTF-8"));
+            }
+            String wctx = context.getFlowScope().getString(FederationConstants.PARAM_CONTEXT);
+            if (wctx != null) {
+                sb.append("&").append(FederationConstants.PARAM_CONTEXT).append('=');
+                sb.append(wctx);
+            }
+        
+            return new URL(sb.toString());
+        } catch (MalformedURLException ex) {
+            LOG.error("Invalid Redirect URL for Trusted Idp", ex);
+            throw new IllegalStateException("Invalid Redirect URL for Trusted Idp");
+        } catch (UnsupportedEncodingException ex) {
+            LOG.error("Invalid Redirect URL for Trusted Idp", ex);
+            throw new IllegalStateException("Invalid Redirect URL for Trusted Idp");
+        }
+    }
+
+    @Override
+    public SecurityToken mapSignInResponse(RequestContext context, Idp idp, TrustedIdp trustedIdp) {
+
+        try {
+            String whr = (String) WebUtils.getAttributeFromFlowScope(context,
+                                                                     FederationConstants.PARAM_HOME_REALM);
+    
+            if (whr == null) {
+                LOG.warn("Home realm is null");
+                throw new IllegalStateException("Home realm is null");
+            }
+    
+            String wresult = (String) WebUtils.getAttributeFromFlowScope(context,
+                                                                         FederationConstants.PARAM_RESULT);
+    
+            if (wresult == null) {
+                LOG.warn("Parameter wresult not found");
+                throw new IllegalStateException("No security token issued");
+            }
+    
+            FederationContext fedContext = getFederationContext(idp, trustedIdp);
+    
+            FederationRequest wfReq = new FederationRequest();
+            wfReq.setWa(FederationConstants.ACTION_SIGNIN);
+            wfReq.setWresult(wresult);
+    
+            FederationProcessor wfProc = new FederationProcessorImpl();
+            FederationResponse wfResp = wfProc.processRequest(wfReq, fedContext);
+    
+            fedContext.close();
+    
+            Element e = wfResp.getToken();
+    
+            // Create new Security token with new id. 
+            // Parameters for freshness computation are copied from original IDP_TOKEN
+            String id = IDGenerator.generateID("_");
+            SecurityToken idpToken = new SecurityToken(id,
+                                                       wfResp.getTokenCreated(), wfResp.getTokenExpires());
+    
+            idpToken.setToken(e);
+            LOG.info("[IDP_TOKEN=" + id + "] for user '" + wfResp.getUsername()
+                     + "' created from [RP_TOKEN=" + wfResp.getUniqueTokenId()
+                     + "] issued by home realm [" + whr + "/"
+                     + wfResp.getIssuer() + "].");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Created date=" + wfResp.getTokenCreated());
+                LOG.debug("Expired date=" + wfResp.getTokenExpires());
+            }
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Validated 'wresult' : "
+                    + System.getProperty("line.separator") + wresult);
+            }
+            return idpToken;
+        } catch (IllegalStateException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            LOG.warn("Unexpected exception occured", ex);
+            throw new IllegalStateException("Unexpected exception occured: " + ex.getMessage());
+        }
+    }
+    
+    
     private FederationContext getFederationContext(Idp idpConfig,
             TrustedIdp trustedIdpConfig) throws ProcessingException {
 
@@ -207,5 +250,6 @@ public class ValidateTokenAction {
         return (X509Certificate)CertificateFactory.getInstance("X.509").
             generateCertificate(new ByteArrayInputStream(decoded));
     }
+    
 
 }

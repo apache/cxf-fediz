@@ -42,7 +42,6 @@ public class TrustedIdpServiceImpl implements TrustedIdpService {
 
     @Autowired
     private TrustedIdpDAO trustedIdpDAO;
-
     
     
     @Override

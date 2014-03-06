@@ -33,6 +33,8 @@
         http://www.springframework.org/schema/webflow-config/spring-webflow-config-2.0.xsd">
 
     <context:property-placeholder location="classpath:realm.properties" />
+    
+    <context:component-scan base-package="org.apache.cxf.fediz.service.idp.beans" />
 
     <bean class="org.springframework.webflow.mvc.servlet.FlowHandlerMapping"
         p:flowRegistry-ref="flowRegistry" p:order="2">
@@ -125,10 +127,10 @@
     <bean id="processHRDSExpressionAction"
         class="org.apache.cxf.fediz.service.idp.beans.ProcessHRDSExpressionAction" />
 
-    <bean id="validateTokenAction"
-        class="org.apache.cxf.fediz.service.idp.beans.ValidateTokenAction" />
-
     <bean id="homeRealmReminder"
         class="org.apache.cxf.fediz.service.idp.beans.HomeRealmReminder" />
+        
+    <bean id="trustedIdpProtocolAction"
+        class="org.apache.cxf.fediz.service.idp.beans.TrustedIdpProtocolAction" />
 
 </beans>

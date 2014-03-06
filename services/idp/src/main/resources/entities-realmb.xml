@@ -200,7 +200,7 @@
     <bean id="entitlement_trustedidp_create"
         class="org.apache.cxf.fediz.service.idp.service.jpa.EntitlementEntity">
         <property name="name"
-            value="TRUSTEDIDP" />
+            value="TRUSTEDIDP_CREATE" />
         <property name="description"
             value="Description for TRUSTEDIDP_CREATE" />
     </bean>

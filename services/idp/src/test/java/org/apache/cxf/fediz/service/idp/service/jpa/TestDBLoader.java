@@ -58,7 +58,7 @@ public class TestDBLoader implements DBLoader {
             ApplicationEntity entity2 = new ApplicationEntity();
             entity2.setEncryptionCertificate("my encryption cert2");
             entity2.setLifeTime(1800);
-            entity2.setProtocol("22protocol");
+            entity2.setProtocol("http://docs.oasis-open.org/wsfed/federation/200706");
             entity2.setRealm("myrealm2");
             entity2.setRole("myrole");
             entity2.setServiceDescription("service description2");

@@ -215,6 +215,7 @@
             <artifactId>bval-jsr303</artifactId>
             <version>${bval.version}</version>
         </dependency>
+        
     </dependencies>
     <build>
         <resources>

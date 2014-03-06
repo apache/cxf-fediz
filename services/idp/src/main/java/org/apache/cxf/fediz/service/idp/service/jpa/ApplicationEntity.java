@@ -45,6 +45,7 @@ public class ApplicationEntity {
     // "http://docs.oa14sis-open.org/wsfed/federation/200706"
     // Metadata could provide more than one but one must be chosen
     @NotNull
+    @ProtocolSupported
     private String protocol;
  
     // Public key only

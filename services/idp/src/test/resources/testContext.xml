@@ -29,9 +29,10 @@
         http://www.springframework.org/schema/context
         http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-    <import resource="classpath:persistenceContext.xml" />
-
     <context:component-scan base-package="org.apache.cxf.fediz.service.idp.service" />
+    <context:component-scan base-package="org.apache.cxf.fediz.service.idp.protocols" />
+
+    <import resource="classpath:persistenceContext.xml" />
 
     <!-- Use http://www.baeldung.com/2012/02/06/properties-with-spring/ instead -->
     <bean

@@ -129,7 +129,7 @@ public class TrustedIdpDAOJPATest {
         trustedIdp.setDescription("URealm B description");
         trustedIdp.setFederationType(FederationType.FEDERATE_CLAIMS);
         trustedIdp.setName("URealm B");
-        trustedIdp.setProtocol("Uhttp://docs.oasis-open.org/wsfed/federation/200706");
+        trustedIdp.setProtocol("http://docs.oasis-open.org/wsfed/federation/200706");
         trustedIdp.setTrustType(TrustType.INDIRECT_TRUST);
         trustedIdp.setUrl("Uhttps://localhost:12443/fediz-idp-remote/federation");
         
@@ -145,7 +145,7 @@ public class TrustedIdpDAOJPATest {
                       "FederationType doesn't match");        
         Assert.isTrue("URealm B".equals(trustedIdp.getName()),
                       "Name doesn't match");      
-        Assert.isTrue("Uhttp://docs.oasis-open.org/wsfed/federation/200706".equals(trustedIdp.getProtocol()),
+        Assert.isTrue("http://docs.oasis-open.org/wsfed/federation/200706".equals(trustedIdp.getProtocol()),
                       "Protocol doesn't match");          
         Assert.isTrue(realm.equals(trustedIdp.getRealm()),
                       "Realm doesn't match");          

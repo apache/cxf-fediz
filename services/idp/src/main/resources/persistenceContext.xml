@@ -49,6 +49,11 @@
                 <property name="databasePlatform" value="org.apache.openjpa.jdbc.sql.${jpa.platform}" />
             </bean>
         </property>
+        <property name="jpaPropertyMap">
+            <map>
+                <entry key="javax.persistence.validation.factory" value-ref="validator" />
+            </map>
+        </property>
     </bean>
 
     <bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
@@ -97,11 +102,6 @@
     <bean id="dbListener"
         class="org.apache.cxf.fediz.service.idp.service.jpa.DBInitApplicationListener" />
         
-    <bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
-    <!-- 
-        <property name="providerClass"
-                  value="org.apache.bval.jsr303.ApacheValidationProvider" />
-                  -->
-    </bean>
+    <bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean" />
 
 </beans>
