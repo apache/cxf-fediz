@@ -87,9 +87,8 @@
     </properties>
 
     <scm>
-        <connection>scm:svn:http://svn.apache.org/repos/asf/cxf/fediz/trunk</connection>
-        <developerConnection>scm:svn:https://svn.apache.org/repos/asf/cxf/fediz/trunk</developerConnection>
-        <url>http://svn.apache.org/repos/asf/cxf/fediz/trunk</url>
+        <connection>scm:git:http://git-wip-us.apache.org/repos/asf/cxf-fediz.git</connection>
+        <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/cxf-fediz.git</developerConnection>
     </scm>
 
     <issueManagement>
@@ -262,7 +261,6 @@
                     <artifactId>maven-release-plugin</artifactId>
                     <version>2.5</version>
                     <configuration>
-                        <tagBase>https://svn.apache.org/repos/asf/cxf/fediz/tags</tagBase>
                         <useReleaseProfile>false</useReleaseProfile>
                         <preparationGoals>clean install</preparationGoals>
                         <goals>deploy</goals>
