@@ -88,7 +88,7 @@ public class TrustedIdpWSFedProtocolHandler implements TrustedIdpProtocolHandler
     public URL mapSignInRequest(RequestContext context, Idp idp, TrustedIdp trustedIdp) {
         
         try {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append(trustedIdp.getUrl());
             sb.append("?").append(FederationConstants.PARAM_ACTION).append('=');
             sb.append(FederationConstants.ACTION_SIGNIN);
