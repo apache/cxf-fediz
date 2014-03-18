@@ -39,7 +39,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 public class ConfigServiceJPA implements ConfigService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(TrustedIdpDAOJPAImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ConfigServiceJPA.class);
     
     IdpService idpService;
 
@@ -62,7 +62,7 @@ public class ConfigServiceJPA implements ConfigService {
             }
         } finally {
             SecurityContextHolder.getContext().setAuthentication(currentAuthentication);
-            LOG.error("Old Spring security context restored");
+            LOG.info("Old Spring security context restored");
         }
     }
 

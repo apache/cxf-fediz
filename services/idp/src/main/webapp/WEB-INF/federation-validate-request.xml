@@ -73,10 +73,12 @@
 
         <output name="whr" />
         <output name="wctx" />
+        <output name="idpToken" />
 
         <transition on="requestRpToken" to="requestRpToken">
             <set name="flowScope.whr" value="currentEvent.attributes.whr" />
             <set name="flowScope.wctx" value="currentEvent.attributes.wctx" />
+            <set name="flowScope.idpToken" value="currentEvent.attributes.idpToken" />
         </transition>
         <transition on="viewBadRequest" to="viewBadRequest" />
         <transition on="scInternalServerError" to="scInternalServerError" />
@@ -100,12 +102,14 @@
         <output name="wreply" />
         <output name="wctx" />
         <output name="whr" />
+        <output name="idpToken" />
 
         <transition on="requestRpToken" to="requestRpToken">
             <set name="flowScope.whr" value="currentEvent.attributes.whr" />
             <set name="flowScope.wctx" value="currentEvent.attributes.wctx" />
             <set name="flowScope.wtrealm" value="currentEvent.attributes.wtrealm" />
             <set name="flowScope.wreply" value="currentEvent.attributes.wreply" />
+            <set name="flowScope.idpToken" value="currentEvent.attributes.idpToken" />
         </transition>
         <transition on="viewBadRequest" to="viewBadRequest" />
         <transition on="scInternalServerError" to="scInternalServerError" />

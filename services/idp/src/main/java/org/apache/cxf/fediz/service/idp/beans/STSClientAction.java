@@ -293,22 +293,17 @@ public class STSClientAction {
     private SecurityToken getSecurityToken(RequestContext context) throws ProcessingException {
         String whr = (String) WebUtils.
             getAttributeFromFlowScope(context, FederationConstants.PARAM_HOME_REALM);
-        SecurityToken idpToken = null;
-        if (whr != null) {
-            idpToken = (SecurityToken) WebUtils.getAttributeFromExternalContext(context, whr);
-            if (idpToken != null) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("[IDP_TOKEN="
-                            + idpToken.getId()
-                            + "] successfully retrieved from cache for home realm ["
-                            + whr + "]");
-                }
-            } else {
-                LOG.error("IDP_TOKEN not found");
-                throw new ProcessingException(TYPE.BAD_REQUEST);
+
+        SecurityToken idpToken = (SecurityToken) WebUtils.getAttributeFromFlowScope(context, "idpToken");
+        if (idpToken != null) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("[IDP_TOKEN="
+                        + idpToken.getId()
+                        + "] successfully retrieved from cache for home realm ["
+                        + whr + "]");
             }
         } else {
-            LOG.error("Home realm not found");
+            LOG.error("IDP_TOKEN not found");
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
         return idpToken;
