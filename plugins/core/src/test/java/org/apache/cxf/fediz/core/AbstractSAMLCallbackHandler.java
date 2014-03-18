@@ -273,7 +273,7 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
                         attributeBean.addAttributeValue(role);
                     }
                 } else {
-                    StringBuffer sb = new StringBuffer();
+                    StringBuilder sb = new StringBuilder();
                     for (String role: roles) {
                         sb.append(role).append(this.roleSeperator);
                     }

@@ -97,7 +97,7 @@ public class FederationEntryPoint implements AuthenticationEntryPoint,
             response.sendError(
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "wauth value '" + wauth + "' not supported");
         }
-        redirectUrl = new StringBuffer(extractFullContextPath(servletRequest))
+        redirectUrl = new StringBuilder(extractFullContextPath(servletRequest))
             .append(realm).append(loginUri).toString();
         
         preCommence(servletRequest, response);
