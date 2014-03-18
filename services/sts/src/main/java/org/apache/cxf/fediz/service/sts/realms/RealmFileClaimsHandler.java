@@ -25,12 +25,12 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.apache.cxf.common.logging.LogUtils;
-import org.apache.cxf.sts.claims.Claim;
-import org.apache.cxf.sts.claims.ClaimCollection;
+import org.apache.cxf.rt.security.claims.Claim;
+import org.apache.cxf.rt.security.claims.ClaimCollection;
 import org.apache.cxf.sts.claims.ClaimsHandler;
 import org.apache.cxf.sts.claims.ClaimsParameters;
-import org.apache.cxf.sts.claims.RequestClaim;
-import org.apache.cxf.sts.claims.RequestClaimCollection;
+import org.apache.cxf.sts.claims.ProcessedClaim;
+import org.apache.cxf.sts.claims.ProcessedClaimCollection;
 
 /**
  * A custom ClaimsHandler implementation for use in the tests.
@@ -73,36 +73,36 @@ public class RealmFileClaimsHandler implements ClaimsHandler {
     
 
     @Override
-    public ClaimCollection retrieveClaimValues(RequestClaimCollection claims,
+    public ProcessedClaimCollection retrieveClaimValues(ClaimCollection claims,
             ClaimsParameters parameters) {
         
         if (parameters.getRealm() == null || !parameters.getRealm().equalsIgnoreCase(getRealm())) {
             LOG.fine("Realm '" + parameters.getRealm() + "' doesn't match with configured realm '" + getRealm() + "'");
-            return new ClaimCollection();
+            return new ProcessedClaimCollection();
         }
         if (getUserClaims() == null || parameters.getPrincipal() == null) {
-            return new ClaimCollection();
+            return new ProcessedClaimCollection();
         }
 
         if (claims == null || claims.size() == 0) {
             LOG.fine("No claims requested");
-            return new ClaimCollection();
+            return new ProcessedClaimCollection();
         }
 
         Map<String, String> claimMap = getUserClaims().get(parameters.getPrincipal().getName());
         if (claimMap == null || claimMap.size() == 0) {
             LOG.fine("Claims requested for principal '" + parameters.getPrincipal().getName()
                      + "' but not found");
-            return new ClaimCollection();
+            return new ProcessedClaimCollection();
         }
         LOG.fine("Claims found for principal '" + parameters.getPrincipal().getName() + "'");
 
         if (claims != null && claims.size() > 0) {
-            ClaimCollection claimCollection = new ClaimCollection();
-            for (RequestClaim requestClaim : claims) { 
+            ProcessedClaimCollection claimCollection = new ProcessedClaimCollection();
+            for (Claim requestClaim : claims) { 
                 String claimValue = claimMap.get(requestClaim.getClaimType().toString());
                 if (claimValue != null) {
-                    Claim claim = new Claim();
+                    ProcessedClaim claim = new ProcessedClaim();
                     claim.setClaimType(requestClaim.getClaimType());
                     claim.setIssuer("Test Issuer");
                     claim.setOriginalIssuer("Original Issuer");
