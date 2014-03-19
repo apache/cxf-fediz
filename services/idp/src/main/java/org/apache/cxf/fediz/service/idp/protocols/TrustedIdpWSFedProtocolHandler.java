@@ -158,14 +158,10 @@ public class TrustedIdpWSFedProtocolHandler implements TrustedIdpProtocolHandler
                                                        wfResp.getTokenCreated(), wfResp.getTokenExpires());
     
             idpToken.setToken(e);
-            LOG.info("[IDP_TOKEN=" + id + "] for user '" + wfResp.getUsername()
-                     + "' created from [RP_TOKEN=" + wfResp.getUniqueTokenId()
-                     + "] issued by home realm [" + whr + "/"
-                     + wfResp.getIssuer() + "].");
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Created date=" + wfResp.getTokenCreated());
-                LOG.debug("Expired date=" + wfResp.getTokenExpires());
-            }
+            LOG.info("[IDP_TOKEN={}] for user '{}' created from [RP_TOKEN={}] issued by home realm [{}/{}]",
+                     id, wfResp.getUsername(), wfResp.getUniqueTokenId(), whr, wfResp.getIssuer());
+            LOG.debug("Created date={}", wfResp.getTokenCreated());
+            LOG.debug("Expired date={}", wfResp.getTokenExpires());
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Validated 'wresult' : "
                     + System.getProperty("line.separator") + wresult);

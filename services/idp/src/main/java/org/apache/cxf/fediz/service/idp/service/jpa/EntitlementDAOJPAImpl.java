@@ -74,9 +74,7 @@ public class EntitlementDAOJPAImpl implements EntitlementDAO {
         domain2entity(entitlement, entity);
         em.persist(entity);
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Entitlement '" + entitlement.getName() + "' added");
-        }
+        LOG.debug("Entitlement '{}' added", entitlement.getName());
         return entity2domain(entity);
     }
 
@@ -96,9 +94,7 @@ public class EntitlementDAOJPAImpl implements EntitlementDAO {
         
         domain2entity(entitlement, entitlementEntity);
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Entitlement '" + entitlement.getName() + "' added");
-        }
+        LOG.debug("Entitlement '{}' added", entitlement.getName());
         em.persist(entitlementEntity);
     }
 
@@ -112,9 +108,7 @@ public class EntitlementDAOJPAImpl implements EntitlementDAO {
         Object entitlementObj = query.getSingleResult();
         em.remove(entitlementObj);
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Entitlement '" + name + "' deleted");
-        }
+        LOG.debug("Entitlement '{}' deleted", name);
     }
     
     static EntitlementEntity getEntitlementEntity(String name, EntityManager em) {

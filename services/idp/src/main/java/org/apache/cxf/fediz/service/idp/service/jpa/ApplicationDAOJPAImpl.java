@@ -88,9 +88,7 @@ public class ApplicationDAOJPAImpl implements ApplicationDAO {
         domain2entity(application, entity);
         em.persist(entity);
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Application '" + application.getRealm() + "' added");
-        }
+        LOG.debug("Application '{}' added", application.getRealm());
         return entity2domain(entity, Arrays.asList("all"));
     }
 
@@ -107,9 +105,7 @@ public class ApplicationDAOJPAImpl implements ApplicationDAO {
         
         em.persist(applicationEntity);
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Application '" + realm + "' updated");
-        }
+        LOG.debug("Application '{}' updated", realm);
     }
     
 
@@ -123,9 +119,7 @@ public class ApplicationDAOJPAImpl implements ApplicationDAO {
         Object applObj = query.getSingleResult();
         em.remove(applObj);
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Application '" + realm + "' deleted");
-        }
+        LOG.debug("Application '{}' deleted", realm);
         
     }
     

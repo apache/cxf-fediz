@@ -93,9 +93,7 @@ public class IdpDAOJPAImpl implements IdpDAO {
         domain2entity(idp, entity);
         em.persist(entity);
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("IDP '" + idp.getRealm() + "' added");
-        }
+        LOG.debug("IDP '{}' added", idp.getRealm());
         return entity2domain(entity, Arrays.asList("all"));
     }
 
@@ -112,9 +110,7 @@ public class IdpDAOJPAImpl implements IdpDAO {
         
         em.persist(idpEntity);
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("IDP '" + idp.getRealm() + "' updated");
-        }
+        LOG.debug("IDP '{}' updated", idp.getRealm());
     }
 
     @Override
@@ -127,10 +123,7 @@ public class IdpDAOJPAImpl implements IdpDAO {
         Object idpObj = query.getSingleResult();
         em.remove(idpObj);
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("IDP '" + realm + "' deleted");
-        }
-        
+        LOG.debug("IDP '{}' deleted", realm);
     }
     
     @Override
@@ -151,9 +144,7 @@ public class IdpDAOJPAImpl implements IdpDAO {
         
         idpEntity.getApplications().add(applicationEntity);
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Application '" + application.getRealm() + "' added to IDP '" + idp.getRealm() + "'");
-        }
+        LOG.debug("Application '{}' added to IDP '{}'", application.getRealm(), idp.getRealm());
     }
     
     @Override
@@ -180,9 +171,7 @@ public class IdpDAOJPAImpl implements IdpDAO {
             throw new EntityNotFoundException("ApplicationEntity not assigned to IdpEntity");
         }
                 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Application '" + application.getRealm() + "' removed from IDP '" + idp.getRealm() + "'");
-        }
+        LOG.debug("Application '{}' removed from IDP '{}'", application.getRealm(), idp.getRealm());
     }
     
     @Override
@@ -203,9 +192,7 @@ public class IdpDAOJPAImpl implements IdpDAO {
         
         idpEntity.getTrustedIdps().add(trustedIdpEntity);
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Trusted IDP '" + trustedIdp.getRealm() + "' added to IDP '" + idp.getRealm() + "'");
-        }
+        LOG.debug("Trusted IDP '{}' added to IDP '{}'", trustedIdp.getRealm(), idp.getRealm());
     }
     
     @Override
@@ -226,9 +213,7 @@ public class IdpDAOJPAImpl implements IdpDAO {
         
         idpEntity.getTrustedIdps().remove(trustedIdpEntity);
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Trusted IDP '" + trustedIdp.getRealm() + "' removed from IDP '" + idp.getRealm() + "'");
-        }
+        LOG.debug("Trusted IDP '{}' removed from IDP '{}'", trustedIdp.getRealm(), idp.getRealm());
     }
         
     @Override
@@ -249,9 +234,7 @@ public class IdpDAOJPAImpl implements IdpDAO {
         
         idpEntity.getClaimTypesOffered().add(claimEntity);
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Claim '" + claim.getClaimType() + "' added to IDP '" + idp.getRealm() + "'");
-        }
+        LOG.debug("Claim '{}' added to IDP '{}'", claim.getClaimType(), idp.getRealm());
     }
     
     @Override
@@ -280,9 +263,7 @@ public class IdpDAOJPAImpl implements IdpDAO {
             throw new EntityNotFoundException("ClaimEntity not assigned to IdpEntity");
         }
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Claim '" + claim.getClaimType() + "' removed from IDP '" + idp.getRealm() + "'");
-        }
+        LOG.debug("Claim '{}' removed from IDP '{}'", claim.getClaimType(), idp.getRealm());
     }
     
     static IdpEntity getIdpEntity(String realm, EntityManager em) {

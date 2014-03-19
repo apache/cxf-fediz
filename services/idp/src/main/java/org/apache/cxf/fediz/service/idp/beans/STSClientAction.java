@@ -207,9 +207,7 @@ public class STSClientAction {
             sts.setWspNamespace(serviceConfig.getPolicyNamespace());
         }
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("TokenType " + sts.getTokenType() + " set for " + wtrealm);
-        }
+        LOG.debug("TokenType {} set for realm {}", sts.getTokenType(), wtrealm);
         
         sts.setKeyType(keyType);
         if (HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_PUBLICKEY.equals(keyType)) {
@@ -237,9 +235,7 @@ public class STSClientAction {
 
         if (serviceConfig.getRequestedClaims() != null && serviceConfig.getRequestedClaims().size() > 0) {
             addClaims(sts, serviceConfig.getRequestedClaims());
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Requested claims set for " + wtrealm);
-            }
+            LOG.debug("Requested claims set for {}", wtrealm);
         }
         
         sts.setEnableLifetime(true);
@@ -248,9 +244,7 @@ public class STSClientAction {
                 int lifetime = serviceConfig.getLifeTime();
                 sts.setTtl(lifetime);
                 sts.setEnableLifetime(lifetime > 0);
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Lifetime set to " + serviceConfig.getLifeTime() + " seconds for " + wtrealm);
-                }
+                LOG.debug("Lifetime set to {} seconds for realm {}", serviceConfig.getLifeTime(), wtrealm);
             } catch (NumberFormatException ex) {
                 LOG.warn("Invalid lifetime configured for service provider " + wtrealm);
                 sts.setTtl(this.ttl);
@@ -260,7 +254,7 @@ public class STSClientAction {
             sts.setTtl(this.ttl);
             sts.setEnableLifetime(this.ttl > 0);
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Lifetime set to " + this.ttl + " seconds for " + wtrealm);
+                LOG.debug("Lifetime set to {} seconds for realm {}", this.ttl, wtrealm);
             }
         }
         
@@ -268,7 +262,7 @@ public class STSClientAction {
         sts.setOnBehalfOf(idpToken.getToken());
         if (!(serviceConfig.getProtocol() == null
             || FederationConstants.WS_FEDERATION_NS.equals(serviceConfig.getProtocol()))) {
-            LOG.error("Protocol " + serviceConfig.getProtocol() + " not supported for " + wtrealm);
+            LOG.error("Protocol {} not supported for realm {} ", serviceConfig.getProtocol(), wtrealm);
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
         
@@ -284,9 +278,8 @@ public class STSClientAction {
         SamlAssertionWrapper aw = new SamlAssertionWrapper(e);
         String id = aw.getId();
 
-        LOG.info("[RP_TOKEN=" + id + "] successfully created for realm ["
-                + wtrealm + "] on behalf of [IDP_TOKEN=" + idpToken.getId()
-                + "]");
+        LOG.info("[RP_TOKEN={}] successfully created for realm [{}] on behalf of [IDP_TOKEN={}]",
+                 id, wtrealm, idpToken.getId());
         return StringEscapeUtils.escapeXml(rpToken);
     }
 
@@ -296,12 +289,8 @@ public class STSClientAction {
 
         SecurityToken idpToken = (SecurityToken) WebUtils.getAttributeFromFlowScope(context, "idpToken");
         if (idpToken != null) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[IDP_TOKEN="
-                        + idpToken.getId()
-                        + "] successfully retrieved from cache for home realm ["
-                        + whr + "]");
-            }
+            LOG.debug("[IDP_TOKEN={} successfully retrieved from cache for home realm [{}]",
+                          idpToken.getId(), whr);
         } else {
             LOG.error("IDP_TOKEN not found");
             throw new ProcessingException(TYPE.BAD_REQUEST);
@@ -318,9 +307,9 @@ public class STSClientAction {
                                          WebUtils.getHttpServletRequest(context).getLocalPort(), url.getFile());
                 
                 setSTSWsdlUrl(updatedUrl.toString());
-                LOG.info("STS WSDL URL updated to " + updatedUrl.toString());
+                LOG.info("STS WSDL URL updated to {}", updatedUrl.toString());
             } catch (MalformedURLException e) {
-                LOG.error("Invalid Url '" + this.wsdlLocation + "': "  + e.getMessage());
+                LOG.error("Invalid Url '{}': {}", this.wsdlLocation, e.getMessage());
             }
         }
     }
@@ -350,9 +339,7 @@ public class STSClientAction {
 
         if (realmClaims != null && realmClaims.size() > 0) {
             for (RequestClaim item : realmClaims) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("  " + item.getClaimType().toString());
-                }
+                LOG.debug("  {}", item.getClaimType().toString());
                 writer.writeStartElement("ic", "ClaimType",
                         HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_05_IDENTITY);
                 writer.writeAttribute("Uri", item.getClaimType().toString());

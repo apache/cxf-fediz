@@ -86,9 +86,7 @@ public class RoleDAOJPAImpl implements RoleDAO {
         domain2entity(role, entity);
         em.persist(entity);
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Role '" + role.getName() + "' added");
-        }
+        LOG.debug("Role '{}' added", role.getName());
         return entity2domain(entity, Arrays.asList("all"));
     }
 
@@ -105,9 +103,7 @@ public class RoleDAOJPAImpl implements RoleDAO {
         
         em.persist(roleEntity);
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Role '" + role.getName() + "' updated");
-        }
+        LOG.debug("Role '{}' updated", role.getName());
     }
 
     @Override
@@ -120,10 +116,7 @@ public class RoleDAOJPAImpl implements RoleDAO {
         Object roleObj = query.getSingleResult();
         em.remove(roleObj);
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Role '" + name + "' deleted");
-        }
-        
+        LOG.debug("Role '{}' deleted", name);
     }
     
     @Override
@@ -144,9 +137,7 @@ public class RoleDAOJPAImpl implements RoleDAO {
         
         roleEntity.getEntitlements().add(entitlementEntity);
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Entitlement '" + entitlement.getName() + "' added to Role '" + role.getName() + "'");
-        }
+        LOG.debug("Entitlement '{}' added to Role '{}'", entitlement.getName(), role.getName());
     }
     
     @Override
@@ -172,10 +163,8 @@ public class RoleDAOJPAImpl implements RoleDAO {
         if (!roleEntity.getEntitlements().remove(entitlementEntity)) {
             throw new EntityNotFoundException("EntitlementEntity not assigned to RoleEntity");
         }
-                
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Entitlement '" + entitlement.getName() + "' removed from Role '" + role.getName() + "'");
-        }
+        
+        LOG.debug("Entitlement '{}' removed from Role '{}'", entitlement.getName(), role.getName());
     }
     
     static RoleEntity getRoleEntity(String realm, EntityManager em) {

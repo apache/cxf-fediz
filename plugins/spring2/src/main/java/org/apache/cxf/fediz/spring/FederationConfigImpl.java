@@ -89,10 +89,7 @@ public class FederationConfigImpl implements FederationConfig {
     @Override
     public FederationContext getFederationContext() {
         if (contextName != null) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Reading federation configuration for context '"
-                             + contextName + "'");
-            }
+            LOG.debug("Reading federation configuration for context '{}'", contextName);
             return getFederationContext(contextName);
         } else {
             Assert.notNull(contextName, "Property 'contextName' must be configured because ServletContext null");

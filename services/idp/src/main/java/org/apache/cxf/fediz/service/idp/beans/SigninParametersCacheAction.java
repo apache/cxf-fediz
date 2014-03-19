@@ -58,9 +58,7 @@ public class SigninParametersCacheAction {
         }
         WebUtils.putAttributeInExternalContext(context, uuidKey, signinParams);
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("SignIn parameters cached: " + signinParams.toString() + ".");
-        }
+        LOG.debug("SignIn parameters cached: {}", signinParams.toString());
         WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_CONTEXT, uuidKey);
         LOG.info("SignIn parameters cached and " + FederationConstants.PARAM_CONTEXT + " set to [" + uuidKey + "].");
     }
@@ -85,9 +83,7 @@ public class SigninParametersCacheAction {
             WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_HOME_REALM, value);
         }
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("SignIn parameters restored: " + signinParams.toString() + ".");
-        }
+        LOG.debug("SignIn parameters restored: {}", signinParams.toString());
         WebUtils.removeAttributeFromFlowScope(context, FederationConstants.PARAM_CONTEXT);
         LOG.info("SignIn parameters restored and " + FederationConstants.PARAM_CONTEXT + "[" + uuidKey + "] cleared.");
     }

@@ -75,9 +75,7 @@ public class ClaimDAOJPAImpl implements ClaimDAO {
         domain2entity(claim, entity);
         em.persist(entity);
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Claim '" + claim.getClaimType() + "' added");
-        }
+        LOG.debug("Claim '{}' added", claim.getClaimType());
         return entity2domain(entity);
     }
 
@@ -97,9 +95,7 @@ public class ClaimDAOJPAImpl implements ClaimDAO {
         
         domain2entity(claim, claimEntity);
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Claim '" + claim.getClaimType() + "' added");
-        }
+        LOG.debug("Claim '{}' added", claim.getClaimType());
         em.persist(claimEntity);
     }
 
@@ -113,9 +109,7 @@ public class ClaimDAOJPAImpl implements ClaimDAO {
         Object claimObj = query.getSingleResult();
         em.remove(claimObj);
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Claim '" + claimType + "' deleted");
-        }
+        LOG.debug("Claim '{}' deleted", claimType);
     }
     
     static ClaimEntity getClaimEntity(String claimType, EntityManager em) {

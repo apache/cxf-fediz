@@ -102,9 +102,7 @@ public class SecurityContextTTLChecker extends HttpServlet implements Filter {
                 if (el != null) {
                     SecurityTokenThreadLocal.setToken(el);
                 }
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Security token is still valid. Forwarding request");
-                }
+                LOG.debug("Security token is still valid. Forwarding request");
             }
             chain.doFilter(request, response);
         } catch (WSSecurityException e) {

@@ -174,7 +174,6 @@ public class FederationAuthenticator extends LoginAuthenticator {
                 if (wa.equals(FederationConstants.ACTION_SIGNIN)) {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("SignIn request found");
-                        LOG.debug("SignIn action...");
                     }
 
                     if (wresult == null) {

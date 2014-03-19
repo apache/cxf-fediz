@@ -117,9 +117,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
      * @param contextPath
      */
     public static void registerContext(String contextPath) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Registering secured context-path: " + contextPath);
-        }
+        LOG.debug("Registering secured context-path: {}", contextPath);
         authorizedWebApps.add(contextPath);
     }
 
@@ -133,9 +131,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
      */
     public static void deRegisterContext(String contextPath) {
         if (authorizedWebApps.contains(contextPath)) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("De-registering secured context-path " + contextPath);
-            }
+            LOG.debug("De-registering secured context-path {}", contextPath);
             synchronized (authorizedWebApps) {
                 authorizedWebApps.remove(contextPath);
             }
@@ -154,10 +150,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
                 if (roleGroupMapper != null && !roleGroupMapper.isEmpty()) {
                     try {
                         mapper = (RoleToGroupMapper)Class.forName(roleGroupMapper).newInstance();
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("Using the " + roleGroupMapper + " mapper class");
-                        }
-
+                        LOG.debug("Using the {} mapper class", roleGroupMapper);
                         mapper.initialize(props);
                     } catch (Exception e) {
                         throw new TAIConfigurationException(
@@ -167,24 +160,18 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
                     }
                 } else {
                     mapper = new DefaultRoleToGroupMapper();
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Using the DefaultRoleToGroupMapper mapper class");
-                    }
+                    LOG.debug("Using the DefaultRoleToGroupMapper mapper class");
                 }
 
                 String configFileLocation = props.getProperty(Constants.CONFIGURATION_FILE_PARAMETER);
                 if (configFileLocation != null) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Configuration file location set to " + configFileLocation);
-                    }
+                    LOG.debug("Configuration file location set to {}", configFileLocation);
                     File f = new File(configFileLocation);
 
                     configurator = new FederationConfigurator();
                     configurator.loadConfig(f);
 
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Federation config loaded from path : " + configFileLocation);
-                    }
+                    LOG.debug("Federation config loaded from path: {}", configFileLocation);
                 } else {
                     throw new WebTrustAssociationFailedException("Missing required initialization parameter "
                                                                  + Constants.CONFIGURATION_FILE_PARAMETER);
@@ -213,15 +200,13 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
      */
     @Override
     public boolean isTargetInterceptor(HttpServletRequest req) throws WebTrustAssociationException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Request URI: " + req.getRequestURI());
-        }
+        LOG.debug("Request URI: {}", req.getRequestURI());
         FederationContext context = getFederationContext(req);
 
         if (context != null) {
             return true;
         } else {
-            LOG.warn("No Federation Context configured for context-path " + req.getContextPath());
+            LOG.warn("No Federation Context configured for context-path {}", req.getContextPath());
         }
         return false;
     }
@@ -236,13 +221,11 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
     public TAIResult negotiateValidateandEstablishTrust(HttpServletRequest req, HttpServletResponse resp)
         throws WebTrustAssociationFailedException {
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Request URI: " + req.getRequestURI());
-        }
+        LOG.debug("Request URI: {}", req.getRequestURI());
         FederationContext fedCtx = getFederationContext(req);
 
         if (fedCtx == null) {
-            LOG.warn("No Federation Context configured for context-path " + req.getContextPath());
+            LOG.warn("No Federation Context configured for context-path {}", req.getContextPath());
             return TAIResult.create(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
 
@@ -270,28 +253,19 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
     private TAIResult handleSignIn(HttpServletRequest req, HttpServletResponse resp)
         throws ProcessingException, IOException, WebTrustAssociationFailedException, Exception {
         if (req.getMethod().equals(Constants.HTTP_POST_METHOD)) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Sign-In-Response received");
-            }
+            LOG.debug("Sign-In-Response received");
             String wresult = req.getParameter(FederationConstants.PARAM_RESULT);
             String wctx = req.getParameter(FederationConstants.PARAM_CONTEXT);
             if (wresult != null && wctx != null) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Validating RSTR...");
-                }
+                LOG.debug("Validating RSTR...");
                 // process and validate the token
                 FederationResponse federationResponse = processSigninRequest(req, resp);
-                
-                if (LOG.isInfoEnabled()) {
-                    LOG.info("RSTR validated successfully");
-                }
+                LOG.info("RSTR validated successfully");
                 
                 HttpSession session = req.getSession(true);
                 session.setAttribute(Constants.SECURITY_TOKEN_SESSION_ATTRIBUTE_KEY, federationResponse);
 
-                if (LOG.isInfoEnabled()) {
-                    LOG.info("Redirecting request to " + wctx);
-                }
+                LOG.info("Redirecting request to {}", wctx);
                 resp.sendRedirect(wctx);
                 return TAIResult.create(HttpServletResponse.SC_FOUND);
             } else {
@@ -306,30 +280,22 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
         WebTrustAssociationFailedException, Exception {
         HttpSession session = req.getSession(false);
         if (session == null) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("No session found. Sending a token request");
-            }
+            LOG.debug("No session found. Sending a token request");
             redirectToIdp(req, resp);
             return TAIResult.create(HttpServletResponse.SC_FOUND);
         } else {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Session ID is " + session.getId());
-            }
+            LOG.debug("Session ID is {}", session.getId());
             
             FederationResponse federationResponse = (FederationResponse)session
                 .getAttribute(Constants.SECURITY_TOKEN_SESSION_ATTRIBUTE_KEY);
             if (federationResponse != null) {
-                if (LOG.isInfoEnabled()) {
-                    LOG.info("Security Token found in session: " + federationResponse.getUsername());
-                }
+                LOG.info("Security Token found in session: {}", federationResponse.getUsername());
                 
                 TAIResult result = null;
                 // check that the target WebApp is properly configured for Token TTL enforcement
                 if (authorizedWebApps.contains(req.getContextPath())) {
                     
-                    if (LOG.isDebugEnabled()) {
-                        LOG.info("Security Filter properly configured - forwarding subject");
-                    }
+                    LOG.info("Security Filter properly configured - forwarding subject");
                     
                     // proceed creating the JAAS Subject
                     List<String> groupsIds = groupIdsFromTokenRoles(federationResponse);
@@ -338,15 +304,13 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
                     result = TAIResult.create(HttpServletResponse.SC_OK, "ignore", subject);
                 } else {
                     result = TAIResult.create(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                    LOG.warn("No Security Filter configured for " + req.getContextPath());
+                    LOG.warn("No Security Filter configured for {}", req.getContextPath());
                 }
                 // leave the Session untouched
                 session.removeAttribute(Constants.SECURITY_TOKEN_SESSION_ATTRIBUTE_KEY);
                 return result;
             } else {
-                if (LOG.isInfoEnabled()) {
-                    LOG.info("No Subject found in existing session. Redirecting to IDP");
-                }
+                LOG.info("No Subject found in existing session. Redirecting to IDP");
                 redirectToIdp(req, resp);
                 return TAIResult.create(HttpServletResponse.SC_FOUND);
             }
@@ -404,14 +368,10 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
 
         List<String> groupIds = new ArrayList<String>(1);
         if (localGroups != null) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Converting " + localGroups.size() + " group names to uids");
-            }
+            LOG.debug("Converting {} group names to uids", localGroups.size());
             for (String localGroup : localGroups) {
                 String guid = convertGroupNameToUniqueId(reg, localGroup);
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Group '" + localGroup + "' maps to guid: " + guid);
-                }
+                LOG.debug("Group '{}' maps to guid: {}", localGroup, guid);
                 groupIds.add(guid);
             }
         }
@@ -449,9 +409,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
 
         subject.getPublicCredentials().add(map);
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Subject credentials: " + map.toString());
-        }
+        LOG.debug("Subject credentials: {}", map.toString());
         return subject;
     }
 

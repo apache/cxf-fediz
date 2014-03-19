@@ -66,9 +66,7 @@ public class FileBasedRoleToGroupMapper implements RoleToGroupMapper {
             if (groupList != null) {
                 groups.addAll(groupList);
             } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("missing group for role: " + key);
-                }
+                LOG.debug("missing group for role: {}", key);
             }
         }
         return groups;
@@ -142,18 +140,12 @@ public class FileBasedRoleToGroupMapper implements RoleToGroupMapper {
                     }
                 }
                 if (update) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.info("Mapping file has changed. Reloading...");
-                    }
+                    LOG.info("Mapping file has changed. Reloading...");
                     Map<String, List<String>> newMap = loadMappingFile();
 
                     mappings.clear();
                     mappings.putAll(newMap);
-                    if (LOG.isDebugEnabled()) {
-                        LOG.info("Mapping file reloaded.");
-                    }
-                    
-                    
+                    LOG.info("Mapping file reloaded.");
                 }
             } catch (FileNotFoundException e) {
                 LOG.warn("Unable to load mappings due to: " + e.getMessage());
@@ -173,11 +165,7 @@ public class FileBasedRoleToGroupMapper implements RoleToGroupMapper {
         Iterator<SamlToJ2EE> i = localmappings.getSamlToJ2EE().iterator();
         while (i.hasNext()) {
             SamlToJ2EE mapping = i.next();
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(mapping.getClaim() + " mapped to "
-                    + mapping.getGroups().getJ2EeGroup().size() + " entries");
-                
-            }
+            LOG.debug("{} mapped to {} entries", mapping.getClaim(), mapping.getGroups().getJ2EeGroup().size());
             map.put(mapping.getClaim(), mapping.getGroups().getJ2EeGroup());
         }
 

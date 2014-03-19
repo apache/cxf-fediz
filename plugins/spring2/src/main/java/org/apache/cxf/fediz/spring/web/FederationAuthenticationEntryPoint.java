@@ -79,9 +79,7 @@ public class FederationAuthenticationEntryPoint implements AuthenticationEntryPo
 
         String redirectUrl = null;
         FederationContext fedContext = federationConfig.getFederationContext();
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Federation context: " + fedContext);
-        }
+        LOG.debug("Federation context: {}", fedContext);
         try {
             FederationProcessor wfProc = new FederationProcessorImpl();
             redirectUrl = wfProc.createSignInRequest(servletRequest, fedContext);
@@ -125,9 +123,7 @@ public class FederationAuthenticationEntryPoint implements AuthenticationEntryPo
         HttpServletResponse hresponse = (HttpServletResponse)response;
         String redirectUrl = null;
         FederationContext fedContext = federationConfig.getFederationContext();
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Federation context: " + fedContext);
-        }
+        LOG.debug("Federation context: {}", fedContext);
         try {
             FederationProcessor wfProc = new FederationProcessorImpl();
             redirectUrl = wfProc.createSignInRequest(hrequest, fedContext);

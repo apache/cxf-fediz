@@ -54,9 +54,7 @@ public class RestServiceExceptionMapper implements ExceptionMapper<Exception> {
         }
         if (ex instanceof ConstraintViolationException) {
             ConstraintViolationException cve = (ConstraintViolationException)ex;
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(ex.getMessage() + "\n" + cve.getConstraintViolations().toString());
-            }
+            LOG.debug("{}\n{}", ex.getMessage(), cve.getConstraintViolations().toString());
             return buildResponse(Response.Status.BAD_REQUEST, ex);
         }
         if (ex instanceof DataIntegrityViolationException) {

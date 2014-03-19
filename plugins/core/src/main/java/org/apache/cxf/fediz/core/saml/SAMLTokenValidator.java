@@ -153,10 +153,8 @@ public class SAMLTokenValidator implements TokenValidator {
                             trusted = true;
                             break;
                         } catch (Exception ex) {
-                            if (LOG.isDebugEnabled()) {
-                                LOG.debug("Issuer '" + ti.getName() + "' not validated in keystore '"
-                                          + tm.getName() + "'");
-                            }
+                            LOG.debug("Issuer '{}' not validated in keystore '{}'",
+                                      ti.getName(), tm.getName());
                         }
                     }
                     if (trusted) {
@@ -253,26 +251,19 @@ public class SAMLTokenValidator implements TokenValidator {
         List<org.opensaml.saml1.core.AttributeStatement> attributeStatements = assertion
                 .getAttributeStatements();
         if (attributeStatements == null || attributeStatements.isEmpty()) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("No attribute statements found");
-            }
+            LOG.debug("No attribute statements found");
             return Collections.emptyList();
         }
         List<Claim> collection = new ArrayList<Claim>();
         Map<String, Claim> claimsMap = new HashMap<String, Claim>();
 
         for (org.opensaml.saml1.core.AttributeStatement statement : attributeStatements) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("parsing statement: " + statement.getElementQName());
-            }
+            LOG.debug("parsing statement: {}", statement.getElementQName());
 
             List<org.opensaml.saml1.core.Attribute> attributes = statement
                     .getAttributes();
             for (org.opensaml.saml1.core.Attribute attribute : attributes) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("parsing attribute: "
-                            + attribute.getAttributeName());
-                }
+                LOG.debug("parsing attribute: {}", attribute.getAttributeName());
                 Claim c = new Claim();
                 c.setIssuer(assertion.getIssuer());
                 if (attribute.getAttributeNamespace() != null) {
@@ -305,9 +296,7 @@ public class SAMLTokenValidator implements TokenValidator {
                 for (XMLObject attributeValue : attribute.getAttributeValues()) {
                     Element attributeValueElement = attributeValue.getDOM();
                     String value = attributeValueElement.getTextContent();
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug(" [" + value + "]");
-                    }
+                    LOG.debug(" [{}]", value);
                     valueList.add(value);
                 }
                 mergeClaimToMap(claimsMap, c, valueList);
@@ -324,9 +313,7 @@ public class SAMLTokenValidator implements TokenValidator {
         List<org.opensaml.saml2.core.AttributeStatement> attributeStatements = assertion
                 .getAttributeStatements();
         if (attributeStatements == null || attributeStatements.isEmpty()) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("No attribute statements found");
-            }
+            LOG.debug("No attribute statements found");
             return Collections.emptyList();
         }
 
@@ -334,9 +321,7 @@ public class SAMLTokenValidator implements TokenValidator {
         Map<String, Claim> claimsMap = new HashMap<String, Claim>();
 
         for (org.opensaml.saml2.core.AttributeStatement statement : attributeStatements) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("parsing statement: " + statement.getElementQName());
-            }
+            LOG.debug("parsing statement: {}", statement.getElementQName());
             List<org.opensaml.saml2.core.Attribute> attributes = statement
                     .getAttributes();
             for (org.opensaml.saml2.core.Attribute attribute : attributes) {
@@ -361,9 +346,7 @@ public class SAMLTokenValidator implements TokenValidator {
                 for (XMLObject attributeValue : attribute.getAttributeValues()) {
                     Element attributeValueElement = attributeValue.getDOM();
                     String value = attributeValueElement.getTextContent();
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug(" [" + value + "]");
-                    }
+                    LOG.debug(" [{}]", value);
                     valueList.add(value);
                 }
                 mergeClaimToMap(claimsMap, c, valueList);

@@ -157,9 +157,7 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
                                                         token);
             upat.setDetails(details);
             
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[IDP_TOKEN=" + token.getId() + "] provided for user '" + authentication.getName() + "'");
-            }
+            LOG.debug("[IDP_TOKEN={}] provided for user '{}'", token.getId(), authentication.getName());
             return upat;
         } catch (Exception ex) {
             LOG.info("Failed to authenticate user '" + authentication.getName() + "'", ex);
@@ -242,9 +240,7 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
         List<org.opensaml.saml2.core.AttributeStatement> attributeStatements = assertion
         .getAttributeStatements();
         if (attributeStatements == null || attributeStatements.isEmpty()) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("No attribute statements found");
-            }
+            LOG.debug("No attribute statements found");
             return Collections.emptyList();
         }
 
@@ -252,15 +248,11 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
         Map<String, Claim> claimsMap = new HashMap<String, Claim>();
 
         for (org.opensaml.saml2.core.AttributeStatement statement : attributeStatements) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("parsing statement: " + statement.getElementQName());
-            }
+            LOG.debug("parsing statement: {}", statement.getElementQName());
             List<org.opensaml.saml2.core.Attribute> attributes = statement
             .getAttributes();
             for (org.opensaml.saml2.core.Attribute attribute : attributes) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("parsing attribute: " + attribute.getName());
-                }
+                LOG.debug("parsing attribute: {}", attribute.getName());
                 Claim c = new Claim();
                 // Workaround for CXF-4484 
                 // Value of Attribute Name not fully qualified
@@ -279,9 +271,7 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
                 for (XMLObject attributeValue : attribute.getAttributeValues()) {
                     Element attributeValueElement = attributeValue.getDOM();
                     String value = attributeValueElement.getTextContent();
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug(" [" + value + "]");
-                    }
+                    LOG.debug(" [{}]", value);
                     valueList.add(value);
                 }
                 mergeClaimToMap(claimsMap, c, valueList);
