@@ -252,7 +252,7 @@ public class SamlAssertionValidator implements Validator {
         // Use the validation method from the crypto to check whether the subjects' 
         // certificate was really signed by the issuer stated in the certificate
         //
-        crypto.verifyTrust(certificates, enableRevocation);
+        crypto.verifyTrust(certificates, enableRevocation, null);
         if (LOG.isDebugEnabled()) {
             String subjectString = certificates[0].getSubjectX500Principal().getName();
             LOG.debug(

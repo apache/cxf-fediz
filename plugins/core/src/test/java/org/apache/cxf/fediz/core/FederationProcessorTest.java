@@ -60,6 +60,7 @@ import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.SAMLCallback;
 import org.apache.wss4j.common.saml.SAMLUtil;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
+import org.apache.wss4j.common.saml.bean.AudienceRestrictionBean;
 import org.apache.wss4j.common.saml.bean.ConditionsBean;
 import org.apache.wss4j.common.saml.builder.SAML1Constants;
 import org.apache.wss4j.common.saml.builder.SAML2Constants;
@@ -214,7 +215,9 @@ public class FederationProcessorTest {
         callbackHandler.setIssuer(TEST_RSTR_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
         ConditionsBean cp = new ConditionsBean();
-        cp.setAudienceURI(TEST_AUDIENCE);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
         
         SAMLCallback samlCallback = new SAMLCallback();
@@ -255,7 +258,9 @@ public class FederationProcessorTest {
         callbackHandler.setIssuer(TEST_RSTR_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
         ConditionsBean cp = new ConditionsBean();
-        cp.setAudienceURI(TEST_AUDIENCE);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
         
         SAMLCallback samlCallback = new SAMLCallback();
@@ -293,7 +298,9 @@ public class FederationProcessorTest {
         callbackHandler.setSubjectName(TEST_USER);
         callbackHandler.setRoles(null);
         ConditionsBean cp = new ConditionsBean();
-        cp.setAudienceURI(TEST_AUDIENCE);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
         
         SAMLCallback samlCallback = new SAMLCallback();
@@ -331,7 +338,9 @@ public class FederationProcessorTest {
         callbackHandler.setSubjectName(TEST_USER);
         callbackHandler.setRoleAttributeName("http://schemas.mycompany.com/claims/role");
         ConditionsBean cp = new ConditionsBean();
-        cp.setAudienceURI(TEST_AUDIENCE);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
         
         SAMLCallback samlCallback = new SAMLCallback();
@@ -369,7 +378,9 @@ public class FederationProcessorTest {
         callbackHandler.setSubjectName(TEST_USER);
         callbackHandler.setRoleAttributeName("http://schemas.mycompany.com/claims/role");
         ConditionsBean cp = new ConditionsBean();
-        cp.setAudienceURI(TEST_AUDIENCE);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
         
         SAMLCallback samlCallback = new SAMLCallback();
@@ -406,7 +417,9 @@ public class FederationProcessorTest {
         callbackHandler.setIssuer(TEST_RSTR_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
         ConditionsBean cp = new ConditionsBean();
-        cp.setAudienceURI(TEST_AUDIENCE);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
 
         SAMLCallback samlCallback = new SAMLCallback();
@@ -444,7 +457,9 @@ public class FederationProcessorTest {
         callbackHandler.setIssuer(TEST_RSTR_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
         ConditionsBean cp = new ConditionsBean();
-        cp.setAudienceURI(TEST_AUDIENCE);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
 
         SAMLCallback samlCallback = new SAMLCallback();
@@ -484,7 +499,9 @@ public class FederationProcessorTest {
         callbackHandler.setIssuer(TEST_RSTR_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
         ConditionsBean cp = new ConditionsBean();
-        cp.setAudienceURI(TEST_AUDIENCE);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
 
         SAMLCallback samlCallback = new SAMLCallback();
@@ -522,7 +539,9 @@ public class FederationProcessorTest {
         callbackHandler.setSubjectName(TEST_USER);
         callbackHandler.setMultiValueType(MultiValue.MULTI_ATTR);
         ConditionsBean cp = new ConditionsBean();
-        cp.setAudienceURI(TEST_AUDIENCE);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
         
         SAMLCallback samlCallback = new SAMLCallback();
@@ -561,7 +580,9 @@ public class FederationProcessorTest {
         callbackHandler.setSubjectName(TEST_USER);
         callbackHandler.setMultiValueType(MultiValue.ENC_VALUE);
         ConditionsBean cp = new ConditionsBean();
-        cp.setAudienceURI(TEST_AUDIENCE);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
         
         SAMLCallback samlCallback = new SAMLCallback();
@@ -605,7 +626,9 @@ public class FederationProcessorTest {
         callbackHandler.setIssuer(TEST_RSTR_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
         ConditionsBean cp = new ConditionsBean();
-        cp.setAudienceURI(TEST_AUDIENCE);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
 
         SAMLCallback samlCallback = new SAMLCallback();
@@ -646,7 +669,9 @@ public class FederationProcessorTest {
         callbackHandler.setIssuer(TEST_RSTR_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
         ConditionsBean cp = new ConditionsBean();
-        cp.setAudienceURI(TEST_AUDIENCE);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
         
         SAMLCallback samlCallback = new SAMLCallback();
@@ -685,7 +710,9 @@ public class FederationProcessorTest {
         callbackHandler.setIssuer(TEST_RSTR_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
         ConditionsBean cp = new ConditionsBean();
-        cp.setAudienceURI(TEST_AUDIENCE);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
         
         SAMLCallback samlCallback = new SAMLCallback();
@@ -732,7 +759,9 @@ public class FederationProcessorTest {
         callbackHandler.setIssuer(TEST_RSTR_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
         ConditionsBean cp = new ConditionsBean();
-        cp.setAudienceURI(TEST_AUDIENCE);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
 
         SAMLCallback samlCallback = new SAMLCallback();
@@ -771,7 +800,9 @@ public class FederationProcessorTest {
         callbackHandler.setIssuer(TEST_RSTR_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
         ConditionsBean cp = new ConditionsBean();
-        cp.setAudienceURI(TEST_AUDIENCE);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
         
         SAMLCallback samlCallback = new SAMLCallback();
@@ -814,7 +845,9 @@ public class FederationProcessorTest {
         currentTime = new DateTime();
         currentTime = currentTime.minusSeconds(300);
         cp.setNotBefore(currentTime);
-        cp.setAudienceURI(TEST_AUDIENCE);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
         
         SAMLCallback samlCallback = new SAMLCallback();
@@ -859,7 +892,9 @@ public class FederationProcessorTest {
         currentTime = new DateTime();
         currentTime = currentTime.plusSeconds(30);
         cp.setNotBefore(currentTime);
-        cp.setAudienceURI(TEST_AUDIENCE);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
         
         SAMLCallback samlCallback = new SAMLCallback();
@@ -898,7 +933,9 @@ public class FederationProcessorTest {
         callbackHandler.setIssuer(TEST_RSTR_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
         ConditionsBean cp = new ConditionsBean();
-        cp.setAudienceURI(TEST_AUDIENCE);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
         
         SAMLCallback samlCallback = new SAMLCallback();
@@ -939,7 +976,9 @@ public class FederationProcessorTest {
         callbackHandler.setIssuer(TEST_RSTR_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
         ConditionsBean cp = new ConditionsBean();
-        cp.setAudienceURI(TEST_AUDIENCE);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
         
         SAMLCallback samlCallback = new SAMLCallback();
@@ -978,7 +1017,9 @@ public class FederationProcessorTest {
         callbackHandler.setIssuer(TEST_RSTR_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
         ConditionsBean cp = new ConditionsBean();
-        cp.setAudienceURI(TEST_AUDIENCE);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
 
         SAMLCallback samlCallback = new SAMLCallback();
@@ -1018,7 +1059,9 @@ public class FederationProcessorTest {
         callbackHandler.setIssuer(TEST_RSTR_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
         ConditionsBean cp = new ConditionsBean();
-        cp.setAudienceURI(TEST_AUDIENCE);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
         
         Crypto clientCrypto = CryptoFactory.getInstance("client-crypto.properties");
@@ -1118,7 +1161,9 @@ public class FederationProcessorTest {
         callbackHandler.setIssuer(TEST_RSTR_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
         ConditionsBean cp = new ConditionsBean();
-        cp.setAudienceURI(TEST_AUDIENCE);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
 
         SAMLCallback samlCallback = new SAMLCallback();

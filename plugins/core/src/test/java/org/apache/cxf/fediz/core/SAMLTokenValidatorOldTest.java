@@ -22,6 +22,7 @@ package org.apache.cxf.fediz.core;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 
 import javax.security.auth.callback.CallbackHandler;
@@ -41,6 +42,7 @@ import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.SAMLCallback;
 import org.apache.wss4j.common.saml.SAMLUtil;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
+import org.apache.wss4j.common.saml.bean.AudienceRestrictionBean;
 import org.apache.wss4j.common.saml.bean.ConditionsBean;
 import org.apache.wss4j.common.saml.builder.SAML1Constants;
 import org.apache.wss4j.common.saml.builder.SAML2Constants;
@@ -115,7 +117,9 @@ public class SAMLTokenValidatorOldTest {
         callbackHandler.setRoleAttributeName("role");
         
         ConditionsBean cp = new ConditionsBean();
-        cp.setAudienceURI(TEST_AUDIENCE);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
         
         SAMLCallback samlCallback = new SAMLCallback();
@@ -160,7 +164,9 @@ public class SAMLTokenValidatorOldTest {
         callbackHandler.setRoleAttributeName("http://schemas.mycompany.com/claims/role");
         
         ConditionsBean cp = new ConditionsBean();
-        cp.setAudienceURI(TEST_AUDIENCE);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
         
         SAMLCallback samlCallback = new SAMLCallback();
@@ -201,7 +207,9 @@ public class SAMLTokenValidatorOldTest {
         callbackHandler.setAttributeNameFormat(ClaimTypes.URI_BASE.toString());
         callbackHandler.setRoleAttributeName("http://schemas.mycompany.com/claims/role");
         ConditionsBean cp = new ConditionsBean();
-        cp.setAudienceURI(TEST_AUDIENCE);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
 
         SAMLCallback samlCallback = new SAMLCallback();
@@ -243,7 +251,9 @@ public class SAMLTokenValidatorOldTest {
         callbackHandler.setRoleAttributeName("role");
         
         ConditionsBean cp = new ConditionsBean();
-        cp.setAudienceURI(TEST_AUDIENCE);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
 
         SAMLCallback samlCallback = new SAMLCallback();
