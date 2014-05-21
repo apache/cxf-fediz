@@ -56,7 +56,9 @@ public class WfreshParser {
             LOG.info("wfresh value '" + wfresh + "' is invalid.");
             return false;
         }
-        if (ttl > 0) {
+        if (ttl == 0) {
+            return true;
+        } else if (ttl > 0) {
 
             Date createdDate = idpToken.getCreated();
             if (createdDate != null) {
