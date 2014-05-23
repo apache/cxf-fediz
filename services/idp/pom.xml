@@ -26,7 +26,7 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>fediz-idp</artifactId>
-    <name>Apache Fediz IDP (Spring Security &amp; Spring Web Flow)</name>
+    <name>Apache Fediz IDP (Spring Security and Spring Web Flow)</name>
     <packaging>war</packaging>
     <dependencyManagement>
         <dependencies>
