@@ -89,10 +89,22 @@
             <version>${spring.security.version}</version>
         </dependency> 
         <dependency>
-          <groupId>ognl</groupId>
-          <artifactId>ognl</artifactId>
-          <version>3.0.5</version>
-          <scope>runtime</scope>
+            <groupId>ognl</groupId>
+            <artifactId>ognl</artifactId>
+            <version>${ognl.version}</version>
+            <scope>runtime</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>javassist</groupId>
+                    <artifactId>javassist</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>${javassist.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
