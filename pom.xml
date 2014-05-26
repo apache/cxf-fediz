@@ -34,7 +34,7 @@
     <properties>
         <commons.lang.version>3.0.1</commons.lang.version>
         <commons.logging.version>1.1.1</commons.logging.version>
-        <cxf.version>2.7.10</cxf.version>
+        <cxf.version>2.7.11</cxf.version>
         <cxf.build-utils.version>2.6.0</cxf.build-utils.version>
         <ehcache.version>2.5.1</ehcache.version>
         <httpclient.version>4.3.2</httpclient.version>
