@@ -96,14 +96,14 @@
             <directory>src/test/resources</directory>
             <filtering>true</filtering>
             <includes>
-               <include>**/fediz_config.xml</include>
+               <include>**/fediz_config*.xml</include>
             </includes>
          </testResource>
          <testResource>
             <directory>src/test/resources</directory>
             <filtering>false</filtering>
             <excludes>
-               <exclude>**/fediz_config.xml</exclude>
+               <exclude>**/fediz_config*.xml</exclude>
             </excludes>
          </testResource>
       </testResources>
@@ -176,7 +176,6 @@
          </plugin>
          <plugin>
             <artifactId>maven-failsafe-plugin</artifactId>
-            <version>2.12.2</version>
             <inherited>true</inherited>
             <executions>
                <execution>
@@ -195,6 +194,7 @@
                      <includes>
                         <include>**/integrationtests/**</include>
                      </includes>
+                     <argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=256m</argLine>
                   </configuration>
                </execution>
                <execution>
@@ -209,7 +209,6 @@
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
-            <version>2.12</version>
             <inherited>true</inherited>
             <configuration>
                <excludes>

@@ -33,6 +33,7 @@ import org.apache.cxf.fediz.core.spi.IDPCallback;
 import org.apache.cxf.fediz.core.spi.RealmCallback;
 import org.apache.cxf.fediz.core.spi.SignInQueryCallback;
 import org.apache.cxf.fediz.core.spi.WAuthCallback;
+import org.apache.cxf.fediz.core.spi.WReqCallback;
 
 public class TestCallbackHandler implements CallbackHandler {
 
@@ -41,6 +42,10 @@ public class TestCallbackHandler implements CallbackHandler {
     static final String TEST_IDP = "http://rp.example.com/";
     static final String TEST_WAUTH = "up";
     static final String TEST_SIGNIN_QUERY = "pubid=myid";
+    static final String TEST_WREQ = 
+        "<RequestSecurityToken xmlns=\"http://docs.oasis-open.org/ws-sx/ws-trust/200512\">"
+        + "<TokenType>http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV1.1</TokenType>"
+        + "</RequestSecurityToken>";
     
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
         for (int i = 0; i < callbacks.length; i++) {
@@ -53,6 +58,9 @@ public class TestCallbackHandler implements CallbackHandler {
             } else if (callbacks[i] instanceof WAuthCallback) {
                 WAuthCallback callback = (WAuthCallback) callbacks[i];
                 callback.setWauth(TEST_WAUTH);
+            } else if (callbacks[i] instanceof WReqCallback) {
+                WReqCallback callback = (WReqCallback) callbacks[i];
+                callback.setWreq(TEST_WREQ);
             } else if (callbacks[i] instanceof IDPCallback) {
                 IDPCallback callback = (IDPCallback) callbacks[i];
                 callback.setIssuerUrl(new URL(TEST_IDP));

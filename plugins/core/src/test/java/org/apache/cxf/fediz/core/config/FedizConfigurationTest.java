@@ -197,7 +197,6 @@ public class FedizConfigurationTest {
         protocol.setRealm(realm);
         
         protocol.setReply(REPLY);
-        protocol.setRequest("REQUEST");
         protocol.setVersion(PROTOCOL_VERSION);
         
         CallbackType issuer = new CallbackType();

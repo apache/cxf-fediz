@@ -20,6 +20,7 @@ package org.apache.cxf.fediz.service.idp.beans;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.cert.X509Certificate;
@@ -39,12 +40,12 @@ import org.apache.cxf.BusFactory;
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
+import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.cxf.fediz.service.idp.IdpSTSClient;
 import org.apache.cxf.fediz.service.idp.model.IDPConfig;
 import org.apache.cxf.fediz.service.idp.model.RequestClaim;
 import org.apache.cxf.fediz.service.idp.model.ServiceConfig;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
-import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.staxutils.W3CDOMStreamWriter;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.cxf.ws.security.trust.STSClient;
@@ -172,7 +173,29 @@ public class STSClientAction {
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
         
-        if (serviceConfig.getTokenType() != null && serviceConfig.getTokenType().length() > 0) {
+        // Parse wreq parameter - we only support parsing TokenType and KeyType for now
+        String wreq = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_REQUEST);
+        String stsTokenType = null;
+        String stsKeyType = keyType;
+        if (wreq != null) {
+            Element wreqElement = getRSTFromWReq(wreq);
+            if (wreqElement != null) {
+                Element tokenTypeElement = 
+                    DOMUtils.getFirstChildWithName(wreqElement, wreqElement.getNamespaceURI(), "TokenType");
+                if (tokenTypeElement != null) {
+                    stsTokenType = tokenTypeElement.getTextContent();
+                }
+                Element keyTypeElement = 
+                    DOMUtils.getFirstChildWithName(wreqElement, wreqElement.getNamespaceURI(), "KeyType");
+                if (keyTypeElement != null) {
+                    stsKeyType = keyTypeElement.getTextContent();
+                }
+            }
+        }
+        
+        if (stsTokenType != null) {
+            sts.setTokenType(stsTokenType);
+        } else if (serviceConfig.getTokenType() != null && serviceConfig.getTokenType().length() > 0) {
             sts.setTokenType(serviceConfig.getTokenType());
         } else {
             sts.setTokenType(getTokenType());
@@ -186,8 +209,8 @@ public class STSClientAction {
             LOG.debug("TokenType " + sts.getTokenType() + " set for " + wtrealm);
         }
         
-        sts.setKeyType(keyType);
-        if (HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_PUBLICKEY.equals(keyType)) {
+        sts.setKeyType(stsKeyType);
+        if (HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_PUBLICKEY.equals(stsKeyType)) {
             HttpServletRequest servletRequest = WebUtils.getHttpServletRequest(context);
             if (servletRequest != null) {
                 X509Certificate certs[] = 
@@ -263,6 +286,22 @@ public class STSClientAction {
                 + wtrealm + "] on behalf of [IDP_TOKEN=" + idpToken.getId()
                 + "]");
         return StringEscapeUtils.escapeXml(rpToken);
+    }
+
+    private Element getRSTFromWReq(String wreq) throws ProcessingException {
+        try {
+            Document wreqDoc = DOMUtils.readXml(new StringReader(wreq));
+            Element wreqElement = wreqDoc.getDocumentElement();
+            if (wreqElement != null && "RequestSecurityToken".equals(wreqElement.getLocalName())
+                && (STSUtils.WST_NS_05_12.equals(wreqElement.getNamespaceURI())
+                    || STSUtils.WST_NS_05_02.equals(wreqElement.getNamespaceURI()))) {
+                return wreqElement;
+            }
+        } catch (Exception e) {
+            LOG.warn("Error parsing 'wreq' parameter: " + e.getMessage());
+            throw new ProcessingException(TYPE.BAD_REQUEST);
+        }
+        return null;
     }
 
     private SecurityToken getSecurityToken(RequestContext context) throws ProcessingException {

@@ -40,6 +40,7 @@ public class FederationProtocol extends Protocol {
 
     private static final Logger LOG = LoggerFactory.getLogger(FederationProtocol.class);
     
+    private Object request;
     private Object authenticationType;
     private Object issuer;
     private Object homeRealm;
@@ -99,26 +100,7 @@ public class FederationProtocol extends Protocol {
             return this.realm;
         }
         CallbackType cbt = getFederationProtocol().getRealm();
-        if (cbt == null) {
-            return null;
-        }
-        if (cbt.getType() == null || cbt.getType().equals(ArgumentType.STRING)) {
-            this.realm = new String(cbt.getValue());
-        } else if (cbt.getType().equals(ArgumentType.CLASS)) {
-            try {
-                if (this.classloader == null) {
-                    this.realm = ClassLoaderUtils.loadClass(cbt.getValue(), this.getClass()).newInstance();
-                } else {
-                    this.realm = this.classloader.loadClass(cbt.getValue()).newInstance();
-                }
-            } catch (Exception e) {
-                LOG.error("Failed to create instance of " + cbt.getValue(), e);
-                throw new IllegalStateException("Failed to create instance of " + cbt.getValue());
-            }            
-        } else {
-            LOG.error("Only String and Class are supported for 'Realm'");
-            throw new IllegalStateException("Only String and Class are supported for 'Realm'");
-        }
+        this.realm = loadCallbackType(cbt, "Realm");
         return this.realm;
     }
 
@@ -167,26 +149,7 @@ public class FederationProtocol extends Protocol {
             return this.authenticationType;
         }
         CallbackType cbt = getFederationProtocol().getAuthenticationType();
-        if (cbt == null) {
-            return null;
-        }
-        if (cbt.getType() == null || cbt.getType().equals(ArgumentType.STRING)) {
-            this.authenticationType = new String(cbt.getValue());
-        } else if (cbt.getType().equals(ArgumentType.CLASS)) {
-            try {
-                if (this.classloader == null) {
-                    this.authenticationType = ClassLoaderUtils.loadClass(cbt.getValue(), this.getClass()).newInstance();
-                } else {
-                    this.authenticationType = this.classloader.loadClass(cbt.getValue()).newInstance();
-                }
-            } catch (Exception e) {
-                LOG.error("Failed to create instance of " + cbt.getValue(), e);
-                throw new IllegalStateException("Failed to create instance of " + cbt.getValue());
-            }            
-        } else {
-            LOG.error("Only String and Class are supported for 'AuthenticationType'");
-            throw new IllegalStateException("Only String and Class are supported for AuthenticationType");
-        }
+        this.authenticationType = loadCallbackType(cbt, "AuthenticationType");
         return this.authenticationType;
     }
 
@@ -207,26 +170,7 @@ public class FederationProtocol extends Protocol {
             return this.homeRealm;
         }
         CallbackType cbt = getFederationProtocol().getHomeRealm();
-        if (cbt == null) {
-            return null;
-        }
-        if (cbt.getType() == null || cbt.getType().equals(ArgumentType.STRING)) {
-            this.homeRealm = new String(cbt.getValue());
-        } else if (cbt.getType().equals(ArgumentType.CLASS)) {
-            try {
-                if (this.classloader == null) {
-                    this.homeRealm = ClassLoaderUtils.loadClass(cbt.getValue(), this.getClass()).newInstance();
-                } else {
-                    this.homeRealm = this.classloader.loadClass(cbt.getValue()).newInstance();
-                }
-            } catch (Exception e) {
-                LOG.error("Failed to create instance of " + cbt.getValue(), e);
-                throw new IllegalStateException("Failed to create instance of " + cbt.getValue());
-            }            
-        } else {
-            LOG.error("Only String and Class are supported for 'HomeRealm'");
-            throw new IllegalStateException("Only String and Class are supported for 'HomeRealm'");
-        }
+        this.homeRealm = loadCallbackType(cbt, "HomeRealm");
         return this.homeRealm;
     }
 
@@ -247,23 +191,7 @@ public class FederationProtocol extends Protocol {
             return this.issuer;
         }
         CallbackType cbt = getFederationProtocol().getIssuer();
-        if (cbt.getType() == null || cbt.getType().equals(ArgumentType.STRING)) {
-            this.issuer = new String(cbt.getValue());
-        } else if (cbt.getType().equals(ArgumentType.CLASS)) {
-            try {
-                if (this.classloader == null) {
-                    this.issuer = ClassLoaderUtils.loadClass(cbt.getValue(), this.getClass()).newInstance();
-                } else {
-                    this.issuer = this.classloader.loadClass(cbt.getValue()).newInstance();
-                }
-            } catch (Exception e) {
-                LOG.error("Failed to create instance of " + cbt.getValue(), e);
-                throw new IllegalStateException("Failed to create instance of " + cbt.getValue());
-            }
-        } else {
-            LOG.error("Only String and Class are supported for 'Issuer'");
-            throw new IllegalStateException("Only String and Class are supported for 'Issuer'");
-        }
+        this.issuer = loadCallbackType(cbt, "Issuer");
         return this.issuer;
     }
 
@@ -284,26 +212,7 @@ public class FederationProtocol extends Protocol {
             return this.freshness;
         }
         CallbackType cbt = getFederationProtocol().getFreshness();
-        if (cbt == null) {
-            return null;
-        }
-        if (cbt.getType() == null || cbt.getType().equals(ArgumentType.STRING)) {
-            this.freshness = new String(cbt.getValue());
-        } else if (cbt.getType().equals(ArgumentType.CLASS)) {
-            try {
-                if (this.classloader == null) {
-                    this.freshness = ClassLoaderUtils.loadClass(cbt.getValue(), this.getClass()).newInstance();
-                } else {
-                    this.freshness = this.classloader.loadClass(cbt.getValue()).newInstance();
-                }
-            } catch (Exception e) {
-                LOG.error("Failed to create instance of " + cbt.getValue(), e);
-                throw new IllegalStateException("Failed to create instance of " + cbt.getValue());
-            }            
-        } else {
-            LOG.error("Only String and Class are supported for 'Freshness'");
-            throw new IllegalStateException("Only String and Class are supported for 'Freshness'");
-        }
+        this.freshness = loadCallbackType(cbt, "Freshness");
         return this.freshness;
     }
 
@@ -324,26 +233,7 @@ public class FederationProtocol extends Protocol {
             return this.signInQuery;
         }
         CallbackType cbt = getFederationProtocol().getSignInQuery();
-        if (cbt == null) {
-            return null;
-        }
-        if (cbt.getType() == null || cbt.getType().equals(ArgumentType.STRING)) {
-            this.signInQuery = new String(cbt.getValue());
-        } else if (cbt.getType().equals(ArgumentType.CLASS)) {
-            try {
-                if (this.classloader == null) {
-                    this.signInQuery = ClassLoaderUtils.loadClass(cbt.getValue(), this.getClass()).newInstance();
-                } else {
-                    this.signInQuery = this.classloader.loadClass(cbt.getValue()).newInstance();
-                }
-            } catch (Exception e) {
-                LOG.error("Failed to create instance of " + cbt.getValue(), e);
-                throw new IllegalStateException("Failed to create instance of " + cbt.getValue());
-            }            
-        } else {
-            LOG.error("Only String and Class are supported for 'SignInQuery'");
-            throw new IllegalStateException("Only String and Class are supported for 'SignInQuery'");
-        }
+        this.signInQuery = loadCallbackType(cbt, "SignInQuery");
         return this.signInQuery;
     }
 
@@ -358,6 +248,27 @@ public class FederationProtocol extends Protocol {
                                                + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
         }
     }
+    
+    public Object getRequest() {
+        if (this.request != null) {
+            return this.request;
+        }
+        CallbackType cbt = getFederationProtocol().getRequest();
+        this.request = loadCallbackType(cbt, "Request");
+        return this.request;
+    }
+    
+    public void setRequest(Object value) {
+        final boolean isString = value instanceof String;
+        final boolean isCallbackHandler = value instanceof CallbackHandler;
+        if (isString || isCallbackHandler) {
+            this.request = value;
+        } else {
+            LOG.error("Unsupported 'Request' object");
+            throw new IllegalArgumentException("Unsupported 'Request' object. Type must be "
+                                               + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
+        }
+    }
 
     public String getReply() {
         return getFederationProtocol().getReply();
@@ -365,14 +276,6 @@ public class FederationProtocol extends Protocol {
 
     public void setReply(String value) {
         getFederationProtocol().setReply(value);
-    }
-
-    public String getRequest() {
-        return getFederationProtocol().getRequest();
-    }
-
-    public void setRequest(String value) {
-        getFederationProtocol().setRequest(value);
     }
 
     public List<Claim> getClaimTypesRequested() {
@@ -410,6 +313,29 @@ public class FederationProtocol extends Protocol {
 
     public void setClassloader(ClassLoader classloader) {
         this.classloader = classloader;
+    }
+    
+    private Object loadCallbackType(CallbackType cbt, String name) {
+        if (cbt == null) {
+            return null;
+        }
+        if (cbt.getType() == null || cbt.getType().equals(ArgumentType.STRING)) {
+            return new String(cbt.getValue());
+        } else if (cbt.getType().equals(ArgumentType.CLASS)) {
+            try {
+                if (this.classloader == null) {
+                    return ClassLoaderUtils.loadClass(cbt.getValue(), this.getClass()).newInstance();
+                } else {
+                    return this.classloader.loadClass(cbt.getValue()).newInstance();
+                }
+            } catch (Exception e) {
+                LOG.error("Failed to create instance of " + cbt.getValue(), e);
+                throw new IllegalStateException("Failed to create instance of " + cbt.getValue());
+            }            
+        } else {
+            LOG.error("Only String and Class are supported for '" + name + "'");
+            throw new IllegalStateException("Only String and Class are supported for '" + name + "'");
+        }
     }
 
 }
