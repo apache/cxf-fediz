@@ -39,7 +39,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
 import org.apache.cxf.fediz.core.config.FederationContext;
 import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.config.KeyManager;
@@ -52,8 +51,8 @@ import org.apache.cxf.fediz.core.spi.IDPCallback;
 import org.apache.cxf.fediz.core.spi.RealmCallback;
 import org.apache.cxf.fediz.core.spi.SignInQueryCallback;
 import org.apache.cxf.fediz.core.spi.WAuthCallback;
+import org.apache.cxf.fediz.core.spi.WReqCallback;
 import org.apache.cxf.fediz.core.util.DOMUtils;
-
 import org.apache.wss4j.common.ext.WSPasswordCallback;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.dom.WSConstants;
@@ -363,6 +362,9 @@ public class FederationProcessorImpl implements FederationProcessor {
             String wAuth = resolveAuthenticationType(request, config);
             LOG.info("WAuth: " + wAuth);
             
+            String wReq = resolveRequest(request, config);
+            LOG.info("WReq: " + wReq);
+            
             String homeRealm = resolveHomeRealm(request, config);
             LOG.info("HomeRealm: " + homeRealm);
             
@@ -406,6 +408,12 @@ public class FederationProcessorImpl implements FederationProcessor {
             if (wAuth != null && wAuth.length() > 0) {
                 sb.append('&').append(FederationConstants.PARAM_AUTH_TYPE).append('=')
                     .append(URLEncoder.encode(wAuth, "UTF-8"));
+            }
+            
+            // add tokenRequest parameter wreq if set
+            if (wReq != null && wReq.length() > 0) {
+                sb.append('&').append(FederationConstants.PARAM_REQUEST).append('=')
+                    .append(URLEncoder.encode(wReq, "UTF-8"));
             }
             
             // add home realm parameter whr if set
@@ -559,6 +567,23 @@ public class FederationProcessorImpl implements FederationProcessor {
             }  
         }
         return wAuth;
+    }
+    
+    private String resolveRequest(HttpServletRequest request, FederationContext config)
+        throws IOException, UnsupportedCallbackException {
+        Object wReqObj = ((FederationProtocol)config.getProtocol()).getRequest();
+        String wReq = null;
+        if (wReqObj != null) {
+            if (wReqObj instanceof String) {
+                wReq = (String)wReqObj;
+            } else if (wReqObj instanceof CallbackHandler) {
+                CallbackHandler wauthCB = (CallbackHandler)wReqObj;
+                WReqCallback callback = new WReqCallback(request);
+                wauthCB.handle(new Callback[] {callback});
+                wReq = callback.getWreq();
+            }  
+        }
+        return wReq;
     }
 
     private String resolveIssuer(HttpServletRequest request, FederationContext config) throws IOException,

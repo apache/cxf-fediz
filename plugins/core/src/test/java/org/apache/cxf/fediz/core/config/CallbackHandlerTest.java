@@ -49,6 +49,7 @@ import org.apache.cxf.fediz.core.spi.IDPCallback;
 import org.apache.cxf.fediz.core.spi.RealmCallback;
 import org.apache.cxf.fediz.core.spi.SignInQueryCallback;
 import org.apache.cxf.fediz.core.spi.WAuthCallback;
+import org.apache.cxf.fediz.core.spi.WReqCallback;
 import org.junit.AfterClass;
 import org.junit.Assert;
 
@@ -131,7 +132,6 @@ public class CallbackHandlerTest {
         protocol.setRealm(freshness);
         
         protocol.setReply(REPLY);
-        protocol.setRequest("REQUEST");
         protocol.setVersion(PROTOCOL_VERSION);
 
         return rootConfig;
@@ -156,6 +156,11 @@ public class CallbackHandlerTest {
         authType.setType(ArgumentType.STRING);
         authType.setValue(TestCallbackHandler.TEST_WAUTH);
         protocol.setAuthenticationType(authType);
+        
+        CallbackType tokenRequest = new CallbackType();
+        tokenRequest.setType(ArgumentType.STRING);
+        tokenRequest.setValue(TestCallbackHandler.TEST_WREQ);
+        protocol.setRequest(tokenRequest);
         
         CallbackType signInQueryType = new CallbackType();
         signInQueryType.setType(ArgumentType.STRING);
@@ -184,6 +189,11 @@ public class CallbackHandlerTest {
         authType.setType(ArgumentType.CLASS);
         authType.setValue(CALLBACKHANDLER_CLASS);
         protocol.setAuthenticationType(authType);
+        
+        CallbackType tokenRequest = new CallbackType();
+        tokenRequest.setType(ArgumentType.CLASS);
+        tokenRequest.setValue(CALLBACKHANDLER_CLASS);
+        protocol.setRequest(tokenRequest);
         
         CallbackType signInQueryType = new CallbackType();
         signInQueryType.setType(ArgumentType.CLASS);
@@ -229,6 +239,14 @@ public class CallbackHandlerTest {
         wauthCB.handle(new Callback[] {callbackWA});
         String wAuth = callbackWA.getWauth();
         Assert.assertEquals(TestCallbackHandler.TEST_WAUTH, wAuth);
+        
+        Object wReqObj = fp.getRequest();
+        Assert.assertTrue(wReqObj instanceof CallbackHandler);
+        CallbackHandler wreqCB = (CallbackHandler)wReqObj;
+        WReqCallback callbackReq = new WReqCallback(null);
+        wreqCB.handle(new Callback[] {callbackReq});
+        String wReq = callbackReq.getWreq();
+        Assert.assertEquals(TestCallbackHandler.TEST_WREQ, wReq);
         
         Object homeRealmObj = fp.getHomeRealm();
         Assert.assertTrue(homeRealmObj instanceof CallbackHandler);
@@ -283,6 +301,11 @@ public class CallbackHandlerTest {
         Assert.assertTrue(wAuthObj instanceof String);
         String wAuth = (String)wAuthObj;
         Assert.assertEquals(TestCallbackHandler.TEST_WAUTH, wAuth);
+        
+        Object wReqObj = fp.getRequest();
+        Assert.assertTrue(wReqObj instanceof String);
+        String wReq = (String)wReqObj;
+        Assert.assertEquals(TestCallbackHandler.TEST_WREQ, wReq);
         
         Object homeRealmObj = fp.getHomeRealm();
         Assert.assertTrue(homeRealmObj instanceof String);

@@ -132,6 +132,7 @@
 	<xs:element name="issuer" type="CallbackType" />
 	<xs:element name="homeRealm" type="CallbackType" />
 	<xs:element name="authenticationType" type="CallbackType" />
+	<xs:element name="request" type="CallbackType" />
 	<xs:element name="freshness" type="CallbackType" />
 	<xs:element name="signInQuery" type="CallbackType" />
 
@@ -143,8 +144,6 @@
 	</xs:simpleType>
 
 	<xs:element name="reply" type="xs:string" />
-
-	<xs:element name="request" type="xs:string" />
 
 	<xs:element name="claimTypesRequested">
 		<xs:complexType>

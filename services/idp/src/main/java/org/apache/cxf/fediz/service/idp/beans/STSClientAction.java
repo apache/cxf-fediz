@@ -20,6 +20,7 @@ package org.apache.cxf.fediz.service.idp.beans;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.cert.X509Certificate;
@@ -39,6 +40,7 @@ import org.apache.cxf.BusFactory;
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
+import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.cxf.fediz.service.idp.IdpSTSClient;
 import org.apache.cxf.fediz.service.idp.domain.Application;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
@@ -197,7 +199,37 @@ public class STSClientAction {
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
         
-        if (serviceConfig.getTokenType() != null && serviceConfig.getTokenType().length() > 0) {
+        // Parse wreq parameter - we only support parsing TokenType and KeyType for now
+        String wreq = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_REQUEST);
+        String stsTokenType = null;
+        String stsKeyType = keyType;
+        if (wreq != null) {
+            try {
+                Document wreqDoc = DOMUtils.readXml(new StringReader(wreq));
+                Element wreqElement = wreqDoc.getDocumentElement();
+                if (wreqElement != null && "RequestSecurityToken".equals(wreqElement.getLocalName())
+                    && (STSUtils.WST_NS_05_12.equals(wreqElement.getNamespaceURI())
+                        || HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_02_TRUST.equals(wreqElement.getNamespaceURI()))) {
+                    Element tokenTypeElement = 
+                        DOMUtils.getFirstChildWithName(wreqElement, wreqElement.getNamespaceURI(), "TokenType");
+                    if (tokenTypeElement != null) {
+                        stsTokenType = tokenTypeElement.getTextContent();
+                    }
+                    Element keyTypeElement = 
+                        DOMUtils.getFirstChildWithName(wreqElement, wreqElement.getNamespaceURI(), "KeyType");
+                    if (keyTypeElement != null) {
+                        stsKeyType = keyTypeElement.getTextContent();
+                    }
+                }
+            } catch (Exception e) {
+                LOG.warn("Error parsing 'wreq' parameter: " + e.getMessage());
+                throw new ProcessingException(TYPE.BAD_REQUEST);
+            }
+        }
+        
+        if (stsTokenType != null) {
+            sts.setTokenType(stsTokenType);
+        } else if (serviceConfig.getTokenType() != null && serviceConfig.getTokenType().length() > 0) {
             sts.setTokenType(serviceConfig.getTokenType());
         } else {
             sts.setTokenType(getTokenType());
@@ -209,8 +241,8 @@ public class STSClientAction {
         
         LOG.debug("TokenType {} set for realm {}", sts.getTokenType(), wtrealm);
         
-        sts.setKeyType(keyType);
-        if (HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_PUBLICKEY.equals(keyType)) {
+        sts.setKeyType(stsKeyType);
+        if (HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_PUBLICKEY.equals(stsKeyType)) {
             HttpServletRequest servletRequest = WebUtils.getHttpServletRequest(context);
             if (servletRequest != null) {
                 X509Certificate certs[] = 

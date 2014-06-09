@@ -82,6 +82,11 @@ public class FedizConfigurationWriterTest {
 
     private static final String CONFIG_FILE = "./target/fediz_test_config.xml";
     
+    private static final String TEST_WREQ = 
+        "<RequestSecurityToken xmlns=\"http://docs.oasis-open.org/ws-sx/ws-trust/200512\">"
+        + "<t:TokenType>http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV1.1</t:TokenType>"
+        + "</RequestSecurityToken>";
+    
     
     
     @AfterClass
@@ -137,12 +142,17 @@ public class FedizConfigurationWriterTest {
         CallbackType authType = new CallbackType();
         authType.setType(ArgumentType.STRING);
         authType.setValue(AUTH_TYPE_VALUE);
+        
+        CallbackType tokenRequest = new CallbackType();
+        tokenRequest.setType(ArgumentType.STRING);
+        tokenRequest.setValue(TEST_WREQ);
 
         AudienceUris audienceUris = new AudienceUris();
         audienceUris.getAudienceItem().add(AUDIENCE_URI_1);
         config.setAudienceUris(audienceUris);
 
         protocol.setAuthenticationType(authType);
+        protocol.setRequest(tokenRequest);
         protocol.setRoleDelimiter(ROLE_DELIMITER);
         protocol.setRoleURI(ROLE_URI);
 
@@ -172,7 +182,6 @@ public class FedizConfigurationWriterTest {
         protocol.setRealm(realm);
         
         protocol.setReply(REPLY);
-        protocol.setRequest("REQUEST");
         protocol.setVersion(PROTOCOL_VERSION);
         
         CallbackType issuer = new CallbackType();
@@ -263,6 +272,10 @@ public class FedizConfigurationWriterTest {
         Object auth = fedProtocol.getAuthenticationType();
         Assert.assertTrue(auth instanceof String);
         Assert.assertEquals((String)auth, AUTH_TYPE_VALUE);
+        
+        Object wreq = fedProtocol.getRequest();
+        Assert.assertTrue(wreq instanceof String);
+        Assert.assertEquals((String)wreq, TEST_WREQ);
         
         //Assert.assertEquals(ValidationMethod.CHAIN_TRUST, fedContext.getCertificateValidation());
         List<String> audienceUris = fedContext.getAudienceUris();
