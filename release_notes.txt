@@ -54,6 +54,15 @@ N.A.
 
 8. Specific issues, features, and improvements fixed in this version
 
+Release Notes - CXF-Fediz - Version 1.0.4
+
+New Feature
+
+    [FEDIZ-52] - Support wauth parameter in initial request to RP
+    [FEDIZ-53] - Browser can pass the home realm to the Fediz plugin
+
+
+
 Release Notes - CXF-Fediz - Version 1.0.3
 
 Bug
