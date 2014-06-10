@@ -57,6 +57,20 @@ N.A.
 
 8. Specific issues, features, and improvements fixed in this version
 
+Release Notes - CXF-Fediz - Version 1.1.1
+
+Bug
+
+    [FEDIZ-70] - Missing support for Web Services Policy 1.2 (http://schemas.xmlsoap.org/ws/2004/09/policy)
+    [FEDIZ-83] - wfreshparser incorrectly treats a freshness of 0 as negative
+
+Improvement
+
+    [FEDIZ-79] - Encoding of SignInResponse configurable
+    [FEDIZ-84] - Support wreq parameter in SP/IdP
+
+
+
 Release Notes - CXF-Fediz - Version 1.1.0
 
 New Feature
