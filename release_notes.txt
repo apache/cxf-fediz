@@ -1,4 +1,4 @@
-Apache CXF Fediz 1.1.0 Release Notes
+Apache CXF Fediz 1.1.1 Release Notes
 ------------------------------------
 
 1. Overview
