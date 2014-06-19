@@ -21,7 +21,7 @@ package org.apache.cxf.fediz.spring.preauth;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.cxf.fediz.core.FederationPrincipal;
+import org.apache.cxf.fediz.core.FedizPrincipal;
 import org.springframework.security.ui.FilterChainOrder;
 import org.springframework.security.ui.preauth.AbstractPreAuthenticatedProcessingFilter;
 
@@ -54,7 +54,7 @@ public class FederationPreAuthenticatedProcessingFilter extends AbstractPreAuthe
      */
     protected Object getPreAuthenticatedCredentials(HttpServletRequest httpRequest) {
         Object principal = httpRequest.getUserPrincipal() == null ? null : httpRequest.getUserPrincipal();
-        if (principal instanceof FederationPrincipal) {
+        if (principal instanceof FedizPrincipal) {
             Object obj = httpRequest.getSession(false).getAttribute(SECURITY_TOKEN_ATTR);
             if (obj != null)  {
                 return obj;
@@ -63,8 +63,8 @@ public class FederationPreAuthenticatedProcessingFilter extends AbstractPreAuthe
                 throw new IllegalStateException("Session must contain Federation response");
             }
         } else {
-            logger.error("Principal must be instance of FederationPrincipal: " + principal.toString());
-            throw new IllegalStateException("Principal must be instance of FederationPrincipal");
+            logger.error("Principal must be instance of FedizPrincipal: " + principal.toString());
+            throw new IllegalStateException("Principal must be instance of FedizPrincipal");
         }
         //return "N/A";
     }

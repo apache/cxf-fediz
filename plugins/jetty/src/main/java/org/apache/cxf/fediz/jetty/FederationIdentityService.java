@@ -80,7 +80,7 @@ public class FederationIdentityService implements IdentityService {
         
         try {
             FederationUserPrincipal fup = (FederationUserPrincipal)userPrincipal;
-            return new FederationUserIdentity(subject, userPrincipal, roles, fup.getFederationResponse());
+            return new FederationUserIdentity(subject, userPrincipal, roles, fup.getFedizResponse());
         } catch (ClassCastException ex) {
             LOG.warn("Principal must be instance of FederationUserPrincipal");
             throw new IllegalStateException("Principal must be instance of FederationUserPrincipal");

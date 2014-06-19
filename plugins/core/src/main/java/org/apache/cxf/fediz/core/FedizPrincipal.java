@@ -19,44 +19,14 @@
 
 package org.apache.cxf.fediz.core;
 
-import java.io.Serializable;
-import java.security.cert.Certificate;
+import java.security.Principal;
 
-public class FederationRequest implements Serializable {
+import org.w3c.dom.Element;
 
-    private static final long serialVersionUID = 1L;
+public interface FedizPrincipal extends Principal {
+
+    ClaimCollection getClaims();
     
-    private String wa;
-    private String wresult;
-    private String wct;
-    private Certificate[] certs;
-
-
-    public String getWct() {
-        return wct;
-    }
-    public void setWct(String wct) {
-        this.wct = wct;
-    }
-
-    public String getWa() {
-        return wa;
-    }
-    public void setWa(String wa) {
-        this.wa = wa;
-    }
-    public String getWresult() {
-        return wresult;
-    }
-    public void setWresult(String wresult) {
-        this.wresult = wresult;
-    }
-    public Certificate[] getCerts() {
-        return certs;
-    }
-    public void setCerts(Certificate[] certs) {
-        this.certs = certs;
-    }
-
+    Element getLoginToken();
 
 }

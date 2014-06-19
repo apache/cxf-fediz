@@ -27,15 +27,13 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.cxf.fediz.core.FederationProcessor;
-import org.apache.cxf.fediz.core.FederationProcessorImpl;
-import org.apache.cxf.fediz.core.config.FederationContext;
+import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
+import org.apache.cxf.fediz.core.processor.FederationProcessorImpl;
+import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.spring.FederationConfig;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -78,10 +76,10 @@ public class FederationAuthenticationEntryPoint implements AuthenticationEntryPo
             final AuthenticationException authenticationException) throws IOException, ServletException {
 
         String redirectUrl = null;
-        FederationContext fedContext = federationConfig.getFederationContext();
+        FedizContext fedContext = federationConfig.getFedizContext();
         LOG.debug("Federation context: {}", fedContext);
         try {
-            FederationProcessor wfProc = new FederationProcessorImpl();
+            FedizProcessor wfProc = new FederationProcessorImpl();
             redirectUrl = wfProc.createSignInRequest(servletRequest, fedContext);
             if (redirectUrl == null) {
                 LOG.warn("Failed to create SignInRequest. Redirect URL null");
@@ -122,10 +120,10 @@ public class FederationAuthenticationEntryPoint implements AuthenticationEntryPo
         HttpServletRequest hrequest = (HttpServletRequest)request;
         HttpServletResponse hresponse = (HttpServletResponse)response;
         String redirectUrl = null;
-        FederationContext fedContext = federationConfig.getFederationContext();
+        FedizContext fedContext = federationConfig.getFedizContext();
         LOG.debug("Federation context: {}", fedContext);
         try {
-            FederationProcessor wfProc = new FederationProcessorImpl();
+            FedizProcessor wfProc = new FederationProcessorImpl();
             redirectUrl = wfProc.createSignInRequest(hrequest, fedContext);
             if (redirectUrl == null) {
                 LOG.warn("Failed to create SignInRequest.");

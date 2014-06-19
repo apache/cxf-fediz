@@ -22,12 +22,12 @@ package org.apache.cxf.fediz.tomcat;
 import java.util.List;
 
 import org.w3c.dom.Element;
-
 import org.apache.catalina.realm.GenericPrincipal;
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.FederationPrincipal;
 
+@SuppressWarnings("deprecation")
 public class FederationPrincipalImpl extends GenericPrincipal implements FederationPrincipal {
 
     protected ClaimCollection claims;

@@ -19,14 +19,15 @@
 package org.apache.cxf.fediz.spring.web;
 
 import java.io.IOException;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.cxf.fediz.core.FederationProcessor;
-import org.apache.cxf.fediz.core.FederationProcessorImpl;
-import org.apache.cxf.fediz.core.config.FederationContext;
+import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
+import org.apache.cxf.fediz.core.processor.FederationProcessorImpl;
+import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.spring.FederationConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,12 +49,12 @@ public class FederationLogoutSuccessHandler implements LogoutSuccessHandler {
     @Override
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response,
                                 Authentication authentication) throws IOException, ServletException {
-        FederationProcessor processor = new FederationProcessorImpl();
+        FedizProcessor processor = new FederationProcessorImpl();
         String contextName = request.getContextPath();
         if (contextName == null || contextName.isEmpty()) {
             contextName = "/";
         }
-        FederationContext fedCtx = federationConfig.getFederationContext(contextName);
+        FedizContext fedCtx = federationConfig.getFedizContext(contextName);
         String redirectURL;
         try {
             redirectURL = processor.createSignOutRequest(request, fedCtx);

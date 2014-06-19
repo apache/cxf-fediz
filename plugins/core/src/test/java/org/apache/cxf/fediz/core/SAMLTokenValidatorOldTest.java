@@ -33,8 +33,12 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.apache.cxf.fediz.common.STSUtil;
 import org.apache.cxf.fediz.common.SecurityTestUtil;
-import org.apache.cxf.fediz.core.config.FederationConfigurator;
-import org.apache.cxf.fediz.core.config.FederationContext;
+import org.apache.cxf.fediz.core.config.FedizConfigurator;
+import org.apache.cxf.fediz.core.config.FedizContext;
+import org.apache.cxf.fediz.core.processor.FederationProcessorImpl;
+import org.apache.cxf.fediz.core.processor.FedizProcessor;
+import org.apache.cxf.fediz.core.processor.FedizRequest;
+import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.crypto.CryptoFactory;
 import org.apache.wss4j.common.ext.WSPasswordCallback;
@@ -62,7 +66,7 @@ public class SAMLTokenValidatorOldTest {
     
     private static Crypto crypto;
     private static CallbackHandler cbPasswordHandler;
-    private static FederationConfigurator configurator;
+    private static FedizConfigurator configurator;
     
     
     @BeforeClass
@@ -84,12 +88,12 @@ public class SAMLTokenValidatorOldTest {
     }
     
 
-    private static FederationConfigurator getFederationConfigurator() {
+    private static FedizConfigurator getFederationConfigurator() {
         if (configurator != null) {
             return configurator;
         }
         try {
-            configurator = new FederationConfigurator();
+            configurator = new FedizConfigurator();
             final URL resource = Thread.currentThread().getContextClassLoader()
                     .getResource(CONFIG_FILE);
             File f = new File(resource.toURI());
@@ -128,15 +132,15 @@ public class SAMLTokenValidatorOldTest {
         
         String rstr = createSamlToken(assertion, "mystskey", true);
         
-        FederationRequest wfReq = new FederationRequest();
+        FedizRequest wfReq = new FedizRequest();
         wfReq.setWa(FederationConstants.ACTION_SIGNIN);
         wfReq.setWresult(rstr);
         
         configurator = null;
-        FederationContext config = getFederationConfigurator().getFederationContext("ROOT");
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
         
-        FederationProcessor wfProc = new FederationProcessorImpl();
-        FederationResponse wfRes = wfProc.processRequest(wfReq, config);
+        FedizProcessor wfProc = new FederationProcessorImpl();
+        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
         
         Assert.assertEquals("Principal name wrong", TEST_USER,
                             wfRes.getUsername());
@@ -175,15 +179,15 @@ public class SAMLTokenValidatorOldTest {
 
         String rstr = createSamlToken(assertion, "mystskey", true);
         
-        FederationRequest wfReq = new FederationRequest();
+        FedizRequest wfReq = new FedizRequest();
         wfReq.setWa(FederationConstants.ACTION_SIGNIN);
         wfReq.setWresult(rstr);
         
         configurator = null;
-        FederationContext config = getFederationConfigurator().getFederationContext("CUSTOMROLEURI");
+        FedizContext config = getFederationConfigurator().getFedizContext("CUSTOMROLEURI");
         
-        FederationProcessor wfProc = new FederationProcessorImpl();
-        FederationResponse wfRes = wfProc.processRequest(wfReq, config);
+        FedizProcessor wfProc = new FederationProcessorImpl();
+        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
         
         Assert.assertEquals("Principal name wrong", TEST_USER, wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
@@ -218,15 +222,15 @@ public class SAMLTokenValidatorOldTest {
         
         String rstr = createSamlToken(assertion, "mystskey", true);
         
-        FederationRequest wfReq = new FederationRequest();
+        FedizRequest wfReq = new FedizRequest();
         wfReq.setWa(FederationConstants.ACTION_SIGNIN);
         wfReq.setWresult(rstr);
         
         configurator = null;
-        FederationContext config = getFederationConfigurator().getFederationContext("CUSTOMROLEURI");
+        FedizContext config = getFederationConfigurator().getFedizContext("CUSTOMROLEURI");
         
-        FederationProcessor wfProc = new FederationProcessorImpl();
-        FederationResponse wfRes = wfProc.processRequest(wfReq, config);
+        FedizProcessor wfProc = new FederationProcessorImpl();
+        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
         
         Assert.assertEquals("Principal name wrong", TEST_USER, wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
@@ -262,15 +266,15 @@ public class SAMLTokenValidatorOldTest {
         
         String rstr = createSamlToken(assertion, "mystskey", true);
         
-        FederationRequest wfReq = new FederationRequest();
+        FedizRequest wfReq = new FedizRequest();
         wfReq.setWa(FederationConstants.ACTION_SIGNIN);
         wfReq.setWresult(rstr);
         
         configurator = null;
-        FederationContext config = getFederationConfigurator().getFederationContext("ROOT");
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
         
-        FederationProcessor wfProc = new FederationProcessorImpl();
-        FederationResponse wfRes = wfProc.processRequest(wfReq, config);
+        FedizProcessor wfProc = new FederationProcessorImpl();
+        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
         
         Assert.assertEquals("Principal name wrong", TEST_USER,
                             wfRes.getUsername());

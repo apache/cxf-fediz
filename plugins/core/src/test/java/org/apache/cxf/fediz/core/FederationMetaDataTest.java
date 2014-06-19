@@ -25,13 +25,13 @@ import java.net.URL;
 import javax.xml.transform.TransformerException;
 
 import org.w3c.dom.Document;
-
 import org.apache.cxf.fediz.common.SecurityTestUtil;
-import org.apache.cxf.fediz.core.config.FederationConfigurator;
-import org.apache.cxf.fediz.core.config.FederationContext;
+import org.apache.cxf.fediz.core.config.FedizConfigurator;
+import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
+import org.apache.cxf.fediz.core.processor.FederationProcessorImpl;
+import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.core.util.DOMUtils;
-
 import org.junit.AfterClass;
 import org.junit.Assert;
 
@@ -46,14 +46,14 @@ public class FederationMetaDataTest {
     }
     
 
-    private FederationContext loadConfig(String context) {
+    private FedizContext loadConfig(String context) {
         try {
-            FederationConfigurator configurator = new FederationConfigurator();
+            FedizConfigurator configurator = new FedizConfigurator();
             final URL resource = Thread.currentThread().getContextClassLoader()
                     .getResource(CONFIG_FILE);
             File f = new File(resource.toURI());
             configurator.loadConfig(f);
-            return configurator.getFederationContext(context);
+            return configurator.getFedizContext(context);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -64,9 +64,9 @@ public class FederationMetaDataTest {
     @org.junit.Test
     public void validateMetaDataWithAlias() throws ProcessingException {
 
-        FederationContext config = loadConfig("ROOT");
+        FedizContext config = loadConfig("ROOT");
 
-        FederationProcessor wfProc = new FederationProcessorImpl();
+        FedizProcessor wfProc = new FederationProcessorImpl();
         Document doc = wfProc.getMetaData(config);
         Assert.assertNotNull(doc);
         
@@ -82,9 +82,9 @@ public class FederationMetaDataTest {
     public void validateMetaDataNoAlias() throws ProcessingException {
 
         try {
-            FederationContext config = loadConfig("ROOT_NO_KEY");
+            FedizContext config = loadConfig("ROOT_NO_KEY");
 
-            FederationProcessor wfProc = new FederationProcessorImpl();
+            FedizProcessor wfProc = new FederationProcessorImpl();
             Document doc;
            
             doc = wfProc.getMetaData(config);
@@ -99,9 +99,9 @@ public class FederationMetaDataTest {
     @org.junit.Test
     public void validateMetaDataNoSigningKey() throws ProcessingException {
 
-        FederationContext config = loadConfig("ROOT_NO_SIGNINGKEY");
+        FedizContext config = loadConfig("ROOT_NO_SIGNINGKEY");
 
-        FederationProcessor wfProc = new FederationProcessorImpl();
+        FedizProcessor wfProc = new FederationProcessorImpl();
         Document doc = wfProc.getMetaData(config);
         Assert.assertNotNull(doc);
         

@@ -19,14 +19,7 @@
 
 package org.apache.cxf.fediz.core;
 
-import java.security.Principal;
-
-import org.w3c.dom.Element;
-
-public interface FederationPrincipal extends Principal {
-
-    ClaimCollection getClaims();
-    
-    Element getLoginToken();
+@Deprecated
+public interface FederationPrincipal extends FedizPrincipal {
 
 }

@@ -20,7 +20,7 @@
 package org.apache.cxf.fediz.core;
 
 import org.w3c.dom.Element;
-import org.apache.cxf.fediz.core.config.FederationContext;
+import org.apache.cxf.fediz.core.config.FedizContext;
 
 
 public class CustomValidator implements TokenValidator {
@@ -38,7 +38,7 @@ public class CustomValidator implements TokenValidator {
     @Override
     public TokenValidatorResponse validateAndProcessToken(
         TokenValidatorRequest request, 
-        FederationContext config
+        FedizContext config
     ) {
         return new TokenValidatorResponse(null,
                                           FederationProcessorTest.TEST_USER,

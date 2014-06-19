@@ -20,17 +20,17 @@
 package org.apache.cxf.fediz.jetty;
 
 import org.w3c.dom.Element;
-
 import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.FederationPrincipal;
-import org.apache.cxf.fediz.core.FederationResponse;
+import org.apache.cxf.fediz.core.processor.FedizResponse;
 
+@SuppressWarnings("deprecation")
 public class FederationUserPrincipal implements FederationPrincipal {
     private String name;
     private ClaimCollection claims;
-    private FederationResponse response;
+    private FedizResponse response;
 
-    public FederationUserPrincipal(String name, FederationResponse response) {
+    public FederationUserPrincipal(String name, FedizResponse response) {
         this.name = name;
         this.response = response;
         this.claims = new ClaimCollection(response.getClaims());
@@ -49,7 +49,7 @@ public class FederationUserPrincipal implements FederationPrincipal {
     
     // not public available
     //[TODO] maybe find better approach, custom UserIdentity
-    FederationResponse getFederationResponse() {
+    FedizResponse getFedizResponse() {
         return response;
     }
 

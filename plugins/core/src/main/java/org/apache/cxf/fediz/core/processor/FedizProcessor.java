@@ -17,22 +17,22 @@
  * under the License.
  */
 
-package org.apache.cxf.fediz.core;
+package org.apache.cxf.fediz.core.processor;
 
 import javax.servlet.http.HttpServletRequest;
 import org.w3c.dom.Document;
-import org.apache.cxf.fediz.core.config.FederationContext;
+import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 
 
-public interface FederationProcessor {
+public interface FedizProcessor {
 
-    FederationResponse processRequest(FederationRequest request, FederationContext config) throws ProcessingException;
+    FedizResponse processRequest(FedizRequest request, FedizContext config) throws ProcessingException;
     
-    String createSignInRequest(HttpServletRequest request, FederationContext config) throws ProcessingException;
+    String createSignInRequest(HttpServletRequest request, FedizContext config) throws ProcessingException;
 
-    String createSignOutRequest(HttpServletRequest request, FederationContext config) throws ProcessingException;
+    String createSignOutRequest(HttpServletRequest request, FedizContext config) throws ProcessingException;
 
-    Document getMetaData(FederationContext config) throws ProcessingException;
+    Document getMetaData(FedizContext config) throws ProcessingException;
 
 }

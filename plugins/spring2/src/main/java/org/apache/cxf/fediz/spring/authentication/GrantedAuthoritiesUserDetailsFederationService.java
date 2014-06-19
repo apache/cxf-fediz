@@ -21,7 +21,7 @@ package org.apache.cxf.fediz.spring.authentication;
 import java.util.*;
 
 import org.apache.cxf.fediz.core.ClaimCollection;
-import org.apache.cxf.fediz.core.FederationResponse;
+import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.apache.cxf.fediz.spring.FederationUser;
 import org.springframework.security.GrantedAuthority;
 import org.springframework.security.GrantedAuthorityImpl;
@@ -37,7 +37,7 @@ public class GrantedAuthoritiesUserDetailsFederationService
     private boolean convertToUpperCase = true;
     
     @Override
-    protected UserDetails loadUserDetails(FederationResponse response) {
+    protected UserDetails loadUserDetails(FedizResponse response) {
         
         List<GrantedAuthority> grantedAuthorities = new ArrayList<GrantedAuthority>();
         

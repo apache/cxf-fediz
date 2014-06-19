@@ -19,10 +19,21 @@
 
 package org.apache.cxf.fediz.core.config;
 
+import javax.security.auth.callback.CallbackHandler;
+
+import org.apache.cxf.fediz.core.config.jaxb.ArgumentType;
+import org.apache.cxf.fediz.core.config.jaxb.CallbackType;
 import org.apache.cxf.fediz.core.config.jaxb.ProtocolType;
+import org.apache.cxf.fediz.core.util.ClassLoaderUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class Protocol {
+    private static final Logger LOG = LoggerFactory.getLogger(Protocol.class);
+                                                              
     private ProtocolType protocolType;
+    private ClassLoader classloader;
+    private Object issuer;
 
     public Protocol(ProtocolType protocolType) {
         super();
@@ -49,6 +60,72 @@ public abstract class Protocol {
         return protocolType.toString();
     }
     
+    public ClassLoader getClassloader() {
+        return classloader;
+    }
+
+    public void setClassloader(ClassLoader classloader) {
+        this.classloader = classloader;
+    }
     
+    public String getRoleDelimiter() {
+        return getProtocolType().getRoleDelimiter();
+    }
+
+    public void setRoleDelimiter(String value) {
+        getProtocolType().setRoleDelimiter(value);
+    }
+
+    public String getRoleURI() {
+        return getProtocolType().getRoleURI();
+    }
+
+    public void setRoleURI(String value) {
+        getProtocolType().setRoleURI(value);
+    }
+
+    public Object getIssuer() {
+        if (this.issuer != null) {
+            return this.issuer;
+        }
+        CallbackType cbt = getProtocolType().getIssuer();
+        this.issuer = loadCallbackType(cbt, "Issuer");
+        return this.issuer;
+    }
+
+    public void setIssuer(Object value) {
+        final boolean isString = value instanceof String;
+        final boolean isCallbackHandler = value instanceof CallbackHandler;
+        if (isString || isCallbackHandler) {
+            this.issuer = value;
+        } else {
+            LOG.error("Unsupported 'Issuer' object");
+            throw new IllegalArgumentException("Unsupported 'Issuer' object. Type must be "
+                                               + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
+        }
+    }
+    
+    protected Object loadCallbackType(CallbackType cbt, String name) {
+        if (cbt == null) {
+            return null;
+        }
+        if (cbt.getType() == null || cbt.getType().equals(ArgumentType.STRING)) {
+            return new String(cbt.getValue());
+        } else if (cbt.getType().equals(ArgumentType.CLASS)) {
+            try {
+                if (getClassloader() == null) {
+                    return ClassLoaderUtils.loadClass(cbt.getValue(), this.getClass()).newInstance();
+                } else {
+                    return getClassloader().loadClass(cbt.getValue()).newInstance();
+                }
+            } catch (Exception e) {
+                LOG.error("Failed to create instance of " + cbt.getValue(), e);
+                throw new IllegalStateException("Failed to create instance of " + cbt.getValue());
+            }            
+        } else {
+            LOG.error("Only String and Class are supported for '" + name + "'");
+            throw new IllegalStateException("Only String and Class are supported for '" + name + "'");
+        }
+    }
 
 }

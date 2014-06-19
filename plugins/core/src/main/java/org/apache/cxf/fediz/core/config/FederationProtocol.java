@@ -25,7 +25,6 @@ import java.util.List;
 import javax.security.auth.callback.CallbackHandler;
 
 import org.apache.cxf.fediz.core.TokenValidator;
-import org.apache.cxf.fediz.core.config.jaxb.ArgumentType;
 import org.apache.cxf.fediz.core.config.jaxb.CallbackType;
 import org.apache.cxf.fediz.core.config.jaxb.ClaimType;
 import org.apache.cxf.fediz.core.config.jaxb.ClaimTypesRequested;
@@ -42,14 +41,11 @@ public class FederationProtocol extends Protocol {
     
     private Object request;
     private Object authenticationType;
-    private Object issuer;
     private Object homeRealm;
     private Object freshness;
     private Object signInQuery;
     private Object realm;
     private List<TokenValidator> validators = new ArrayList<TokenValidator>();
-    private ClassLoader classloader;
-    
     
     public FederationProtocol(ProtocolType protocolType) {
         super(protocolType);
@@ -59,10 +55,10 @@ public class FederationProtocol extends Protocol {
             for (String validatorClassname : fp.getTokenValidators().getValidator()) {
                 Object obj = null;
                 try {
-                    if (this.classloader == null) {
+                    if (super.getClassloader() == null) {
                         obj = ClassLoaderUtils.loadClass(validatorClassname, this.getClass()).newInstance();
                     } else {
-                        obj = this.classloader.loadClass(validatorClassname).newInstance();
+                        obj = super.getClassloader().loadClass(validatorClassname).newInstance();
                     }
                 } catch (Exception ex) {
                     LOG.error("Failed to instantiate TokenValidator implementation class: '"
@@ -91,10 +87,6 @@ public class FederationProtocol extends Protocol {
         super.setProtocolType(federationProtocol);
     }
 
-    public int hashCode() {
-        return getFederationProtocol().hashCode();
-    }
-
     public Object getRealm() {
         if (this.realm != null) {
             return this.realm;
@@ -116,26 +108,6 @@ public class FederationProtocol extends Protocol {
         }
     }
 
-    public boolean equals(Object obj) {
-        return getFederationProtocol().equals(obj);
-    }
-
-    public String getRoleDelimiter() {
-        return getFederationProtocol().getRoleDelimiter();
-    }
-
-    public void setRoleDelimiter(String value) {
-        getFederationProtocol().setRoleDelimiter(value);
-    }
-
-    public String getRoleURI() {
-        return getFederationProtocol().getRoleURI();
-    }
-
-    public void setRoleURI(String value) {
-        getFederationProtocol().setRoleURI(value);
-    }
-    
     public String getApplicationServiceURL() {
         return getFederationProtocol().getApplicationServiceURL();
     }
@@ -182,27 +154,6 @@ public class FederationProtocol extends Protocol {
         } else {
             LOG.error("Unsupported 'HomeRealm' object");
             throw new IllegalArgumentException("Unsupported 'HomeRealm' object. Type must be "
-                                               + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
-        }
-    }
-    
-    public Object getIssuer() {
-        if (this.issuer != null) {
-            return this.issuer;
-        }
-        CallbackType cbt = getFederationProtocol().getIssuer();
-        this.issuer = loadCallbackType(cbt, "Issuer");
-        return this.issuer;
-    }
-
-    public void setIssuer(Object value) {
-        final boolean isString = value instanceof String;
-        final boolean isCallbackHandler = value instanceof CallbackHandler;
-        if (isString || isCallbackHandler) {
-            this.issuer = value;
-        } else {
-            LOG.error("Unsupported 'Issuer' object");
-            throw new IllegalArgumentException("Unsupported 'Issuer' object. Type must be "
                                                + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
         }
     }
@@ -307,35 +258,4 @@ public class FederationProtocol extends Protocol {
         return getFederationProtocol().toString();
     }
     
-    public ClassLoader getClassloader() {
-        return classloader;
-    }
-
-    public void setClassloader(ClassLoader classloader) {
-        this.classloader = classloader;
-    }
-    
-    private Object loadCallbackType(CallbackType cbt, String name) {
-        if (cbt == null) {
-            return null;
-        }
-        if (cbt.getType() == null || cbt.getType().equals(ArgumentType.STRING)) {
-            return new String(cbt.getValue());
-        } else if (cbt.getType().equals(ArgumentType.CLASS)) {
-            try {
-                if (this.classloader == null) {
-                    return ClassLoaderUtils.loadClass(cbt.getValue(), this.getClass()).newInstance();
-                } else {
-                    return this.classloader.loadClass(cbt.getValue()).newInstance();
-                }
-            } catch (Exception e) {
-                LOG.error("Failed to create instance of " + cbt.getValue(), e);
-                throw new IllegalStateException("Failed to create instance of " + cbt.getValue());
-            }            
-        } else {
-            LOG.error("Only String and Class are supported for '" + name + "'");
-            throw new IllegalStateException("Only String and Class are supported for '" + name + "'");
-        }
-    }
-
 }

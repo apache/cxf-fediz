@@ -19,16 +19,14 @@
 
 package org.apache.cxf.fediz.spring.authentication;
 
-import org.apache.cxf.fediz.core.FederationProcessor;
-import org.apache.cxf.fediz.core.FederationProcessorImpl;
-import org.apache.cxf.fediz.core.FederationRequest;
-import org.apache.cxf.fediz.core.FederationResponse;
+import org.apache.cxf.fediz.core.processor.FederationProcessorImpl;
+import org.apache.cxf.fediz.core.processor.FedizProcessor;
+import org.apache.cxf.fediz.core.processor.FedizRequest;
+import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.apache.cxf.fediz.spring.FederationConfig;
 import org.apache.cxf.fediz.spring.SpringFedizMessageSource;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceAware;
@@ -116,9 +114,9 @@ public class FederationAuthenticationProvider implements AuthenticationProvider,
     private FederationAuthenticationToken authenticateNow(final Authentication authentication)
         throws AuthenticationException {
         try {
-            FederationRequest wfReq = (FederationRequest)authentication.getCredentials();
-            FederationProcessor wfProc = new FederationProcessorImpl();
-            FederationResponse wfRes = wfProc.processRequest(wfReq, federationConfig.getFederationContext());
+            FedizRequest wfReq = (FedizRequest)authentication.getCredentials();
+            FedizProcessor wfProc = new FederationProcessorImpl();
+            FedizResponse wfRes = wfProc.processRequest(wfReq, federationConfig.getFedizContext());
 
             final UserDetails userDetails = loadUserByFederationResponse(wfRes);
             userDetailsChecker.check(userDetails);
@@ -136,7 +134,7 @@ public class FederationAuthenticationProvider implements AuthenticationProvider,
      * @param response The WS Federation response
      * @return the UserDetails.
      */
-    protected UserDetails loadUserByFederationResponse(final FederationResponse response) {
+    protected UserDetails loadUserByFederationResponse(final FedizResponse response) {
         final FederationResponseAuthenticationToken token = new FederationResponseAuthenticationToken(response);
         return this.authenticationUserDetailsService.loadUserDetails(token);
     }

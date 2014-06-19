@@ -32,13 +32,8 @@ import java.util.Collections;
 import javax.servlet.http.HttpServletRequest;
 
 import org.w3c.dom.Element;
-
 import org.apache.cxf.fediz.core.FederationConstants;
-import org.apache.cxf.fediz.core.FederationProcessor;
-import org.apache.cxf.fediz.core.FederationProcessorImpl;
-import org.apache.cxf.fediz.core.FederationRequest;
-import org.apache.cxf.fediz.core.FederationResponse;
-import org.apache.cxf.fediz.core.config.FederationContext;
+import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.config.TrustManager;
 import org.apache.cxf.fediz.core.config.jaxb.AudienceUris;
 import org.apache.cxf.fediz.core.config.jaxb.CertificateStores;
@@ -50,6 +45,10 @@ import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuers;
 import org.apache.cxf.fediz.core.config.jaxb.ValidationType;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
+import org.apache.cxf.fediz.core.processor.FederationProcessorImpl;
+import org.apache.cxf.fediz.core.processor.FedizProcessor;
+import org.apache.cxf.fediz.core.processor.FedizRequest;
+import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 import org.apache.cxf.fediz.service.idp.spi.TrustedIdpProtocolHandler;
@@ -59,10 +58,8 @@ import org.apache.wss4j.common.crypto.CertificateStore;
 import org.apache.xml.security.exceptions.Base64DecodingException;
 import org.apache.xml.security.stax.impl.util.IDGenerator;
 import org.apache.xml.security.utils.Base64;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.stereotype.Component;
 import org.springframework.webflow.execution.RequestContext;
 
@@ -138,14 +135,14 @@ public class TrustedIdpWSFedProtocolHandler implements TrustedIdpProtocolHandler
                 throw new IllegalStateException("No security token issued");
             }
     
-            FederationContext fedContext = getFederationContext(idp, trustedIdp);
+            FedizContext fedContext = getFedizContext(idp, trustedIdp);
     
-            FederationRequest wfReq = new FederationRequest();
+            FedizRequest wfReq = new FedizRequest();
             wfReq.setWa(FederationConstants.ACTION_SIGNIN);
             wfReq.setWresult(wresult);
     
-            FederationProcessor wfProc = new FederationProcessorImpl();
-            FederationResponse wfResp = wfProc.processRequest(wfReq, fedContext);
+            FedizProcessor wfProc = new FederationProcessorImpl();
+            FedizResponse wfResp = wfProc.processRequest(wfReq, fedContext);
     
             fedContext.close();
     
@@ -176,7 +173,7 @@ public class TrustedIdpWSFedProtocolHandler implements TrustedIdpProtocolHandler
     }
     
     
-    private FederationContext getFederationContext(Idp idpConfig,
+    private FedizContext getFedizContext(Idp idpConfig,
             TrustedIdp trustedIdpConfig) throws ProcessingException {
 
         ContextConfig config = new ContextConfig();
@@ -215,7 +212,7 @@ public class TrustedIdpWSFedProtocolHandler implements TrustedIdpProtocolHandler
         audienceUris.getAudienceItem().add(idpConfig.getRealm());
         config.setAudienceUris(audienceUris);
 
-        FederationContext fedContext = new FederationContext(config);
+        FedizContext fedContext = new FedizContext(config);
         if (!isCertificateLocation) {
             CertificateStore cs = null;
             

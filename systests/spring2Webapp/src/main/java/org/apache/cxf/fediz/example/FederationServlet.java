@@ -91,7 +91,7 @@ public class FederationServlet extends HttpServlet {
             
             Element el = fedToken.getLoginToken();
             if (el != null) {
-                out.println("loginToken=FOUND{FederationPrincipal}<p>");
+                out.println("loginToken=FOUND{FedizPrincipal}<p>");
             }
             
             el = SecurityTokenThreadLocal.getToken();

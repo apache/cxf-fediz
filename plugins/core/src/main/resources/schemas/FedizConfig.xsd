@@ -94,9 +94,6 @@
 			<xs:extension base="protocolType">
 				<xs:sequence>
 					<xs:element ref="realm" />
-					<xs:element ref="issuer" />
-					<xs:element ref="roleDelimiter" />
-					<xs:element ref="roleURI" />
 					<xs:element ref="authenticationType" />
 					<xs:element ref="homeRealm" />
 					<xs:element ref="freshness" />
@@ -111,6 +108,17 @@
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
+	
+	<xs:complexType name="samlProtocolType">
+		<xs:complexContent>
+			<xs:extension base="protocolType">
+				<xs:sequence>
+					<xs:element ref="realm" />
+				</xs:sequence>
+				<xs:attribute name="version" use="required" type="xs:string" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
 
 	<xs:element name="roleDelimiter" type="xs:string" />
 	<xs:element name="roleURI" type="xs:string" />
@@ -118,8 +126,13 @@
 	<xs:element name="applicationServiceURL" type="xs:string" />
 	
 	
-
-	<xs:complexType name="protocolType" abstract="true" />
+	<xs:complexType name="protocolType" abstract="true">
+	    <xs:sequence>
+	        <xs:element ref="roleDelimiter" />
+	        <xs:element ref="roleURI" />
+	        <xs:element ref="issuer" />
+		</xs:sequence>
+	</xs:complexType>
  
 	<xs:complexType name="CallbackType">
 		<xs:simpleContent>

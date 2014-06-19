@@ -18,7 +18,7 @@
  */
 package org.apache.cxf.fediz.spring.authentication;
 
-import org.apache.cxf.fediz.core.FederationResponse;
+import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.springframework.security.Authentication;
 import org.springframework.security.userdetails.AuthenticationUserDetailsService;
 import org.springframework.security.userdetails.UserDetails;
@@ -45,11 +45,11 @@ public abstract class AbstractFederationUserDetailsService
 
     /**
      * Protected template method for construct a {@link org.springframework.security.core.userdetails.UserDetails} 
-     * via the supplied FederationResponse
+     * via the supplied FedizResponse
      *
      * @return the newly created UserDetails object.
      */
-    protected abstract UserDetails loadUserDetails(FederationResponse response);
+    protected abstract UserDetails loadUserDetails(FedizResponse response);
 
     
 }

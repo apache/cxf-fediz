@@ -25,12 +25,12 @@ import java.util.List;
 
 import javax.security.auth.Subject;
 
-import org.apache.cxf.fediz.core.FederationProcessor;
-import org.apache.cxf.fediz.core.FederationProcessorImpl;
-import org.apache.cxf.fediz.core.FederationRequest;
-import org.apache.cxf.fediz.core.FederationResponse;
-import org.apache.cxf.fediz.core.config.FederationContext;
+import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
+import org.apache.cxf.fediz.core.processor.FederationProcessorImpl;
+import org.apache.cxf.fediz.core.processor.FedizProcessor;
+import org.apache.cxf.fediz.core.processor.FedizRequest;
+import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.eclipse.jetty.security.IdentityService;
 import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.server.UserIdentity;
@@ -74,18 +74,18 @@ public class FederationLoginService extends AbstractLifeCycle implements LoginSe
     /**
      * username will be null since the credentials will contain all the relevant info
      */
-    public UserIdentity login(String username, Object credentials, FederationContext config) {
+    public UserIdentity login(String username, Object credentials, FedizContext config) {
         
         try {
-            FederationResponse wfRes = null;
-            FederationRequest wfReq = (FederationRequest)credentials;
+            FedizResponse wfRes = null;
+            FedizRequest wfReq = (FedizRequest)credentials;
             
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Process SignIn request");
                 LOG.debug("wresult=\n" + wfReq.getWresult());
             }
             
-            FederationProcessor wfProc = new FederationProcessorImpl();
+            FedizProcessor wfProc = new FederationProcessorImpl();
             try {
                 wfRes = wfProc.processRequest(wfReq, config);
             } catch (ProcessingException ex) {

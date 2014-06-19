@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.w3c.dom.Element;
-
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.ClaimTypes;
@@ -37,8 +36,8 @@ import org.apache.cxf.fediz.core.TokenValidator;
 import org.apache.cxf.fediz.core.TokenValidatorRequest;
 import org.apache.cxf.fediz.core.TokenValidatorResponse;
 import org.apache.cxf.fediz.core.config.CertificateValidationMethod;
-import org.apache.cxf.fediz.core.config.FederationContext;
-import org.apache.cxf.fediz.core.config.FederationProtocol;
+import org.apache.cxf.fediz.core.config.FedizContext;
+import org.apache.cxf.fediz.core.config.Protocol;
 import org.apache.cxf.fediz.core.config.TrustManager;
 import org.apache.cxf.fediz.core.config.TrustedIssuer;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
@@ -88,7 +87,7 @@ public class SAMLTokenValidator implements TokenValidator {
     }
     
     public TokenValidatorResponse validateAndProcessToken(TokenValidatorRequest request,
-            FederationContext config) throws ProcessingException {
+            FedizContext config) throws ProcessingException {
 
         Element token = request.getToken();
         try {          
@@ -215,12 +214,12 @@ public class SAMLTokenValidator implements TokenValidator {
         }
     }
     
-    protected List<String> parseRoles(FederationContext config, List<Claim> claims) {
+    protected List<String> parseRoles(FedizContext config, List<Claim> claims) {
         List<String> roles = null;
-        FederationProtocol fp = (FederationProtocol)config.getProtocol();
-        if (fp.getRoleURI() != null) {
-            URI roleURI = URI.create(fp.getRoleURI());
-            String delim = fp.getRoleDelimiter();
+        Protocol protocol = config.getProtocol();
+        if (protocol.getRoleURI() != null) {
+            URI roleURI = URI.create(protocol.getRoleURI());
+            String delim = protocol.getRoleDelimiter();
             for (Claim c : claims) {
                 if (roleURI.equals(c.getClaimType())) {
                     Object oValue = c.getValue();

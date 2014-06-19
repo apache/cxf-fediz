@@ -48,7 +48,7 @@ public class FederationLogoutFilter extends LogoutFilter {
             if (contextName == null || contextName.isEmpty()) {
                 contextName = "/";
             }
-            this.logoutUrl = federationConfig.getFederationContext(contextName).getLogoutURL();
+            this.logoutUrl = federationConfig.getFedizContext(contextName).getLogoutURL();
         }
         if (this.logoutUrl != null && !this.logoutUrl.isEmpty()) {
             super.setFilterProcessesUrl(this.logoutUrl);

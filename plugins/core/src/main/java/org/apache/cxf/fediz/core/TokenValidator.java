@@ -20,7 +20,7 @@
 package org.apache.cxf.fediz.core;
 
 import org.w3c.dom.Element;
-import org.apache.cxf.fediz.core.config.FederationContext;
+import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 
 public interface TokenValidator {
@@ -45,6 +45,6 @@ public interface TokenValidator {
      */
     TokenValidatorResponse validateAndProcessToken(
         TokenValidatorRequest request, 
-        FederationContext config
+        FedizContext config
     ) throws ProcessingException;
 }

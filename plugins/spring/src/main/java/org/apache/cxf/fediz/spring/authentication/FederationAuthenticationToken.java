@@ -23,10 +23,9 @@ import java.io.Serializable;
 import java.util.Collection;
 
 import org.w3c.dom.Element;
-
 import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.FederationPrincipal;
-import org.apache.cxf.fediz.core.FederationResponse;
+import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.SpringSecurityCoreVersion;
@@ -35,6 +34,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 /**
  * Represents a successful WS-Federation based authentication.
  */
+@SuppressWarnings("deprecation")
 public class FederationAuthenticationToken extends AbstractAuthenticationToken
     implements Serializable, FederationPrincipal {
 
@@ -43,12 +43,12 @@ public class FederationAuthenticationToken extends AbstractAuthenticationToken
     private final Object credentials;
     private final Object principal;
     private final UserDetails userDetails;
-    private final FederationResponse response;
+    private final FedizResponse response;
 
     
     public FederationAuthenticationToken(final Object principal, final Object credentials,
         final Collection<? extends GrantedAuthority> authorities, final UserDetails userDetails,
-        final FederationResponse response) {
+        final FedizResponse response) {
         super(authorities);
 
         if ((principal == null) || "".equals(principal) || (credentials == null)
@@ -71,7 +71,7 @@ public class FederationAuthenticationToken extends AbstractAuthenticationToken
         return this.principal;
     }
 
-    public FederationResponse getResponse() {
+    public FedizResponse getResponse() {
         return this.response;
     }
 

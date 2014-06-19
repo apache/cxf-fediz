@@ -38,6 +38,7 @@ import org.apache.cxf.fediz.core.config.jaxb.FederationProtocolType;
 import org.apache.cxf.fediz.core.config.jaxb.KeyManagersType;
 import org.apache.cxf.fediz.core.config.jaxb.KeyStoreType;
 import org.apache.cxf.fediz.core.config.jaxb.ProtocolType;
+import org.apache.cxf.fediz.core.config.jaxb.SamlProtocolType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuers;
@@ -53,11 +54,11 @@ import org.apache.wss4j.common.util.Loader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FederationContext implements Closeable {
+public class FedizContext implements Closeable {
     
     public static final String CACHE_KEY_PREFIX = "fediz.replay.cache";
 
-    private static final Logger LOG = LoggerFactory.getLogger(FederationContext.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FedizContext.class);
     
     private ContextConfig config;
 
@@ -65,14 +66,14 @@ public class FederationContext implements Closeable {
     private boolean detectReplayedTokens = true;
     private String relativePath;
     private ReplayCache replayCache;
-    private FederationProtocol protocol;
+    private Protocol protocol;
     private List<TrustManager> certificateStores;
     private KeyManager keyManager;
     private KeyManager decryptionKeyManager;
     private ClassLoader classloader;
     
 
-    public FederationContext(ContextConfig config) {
+    public FedizContext(ContextConfig config) {
         this.config = config;
         
     }
@@ -149,6 +150,11 @@ public class FederationContext implements Closeable {
         ProtocolType type = config.getProtocol();
         if (type instanceof FederationProtocolType) {
             protocol = new FederationProtocol(type);
+        } else if (type instanceof SamlProtocolType) {
+            protocol = new SAMLProtocol(type);
+        }
+        
+        if (protocol != null) {
             protocol.setClassloader(getClassloader());
         }
         return protocol;

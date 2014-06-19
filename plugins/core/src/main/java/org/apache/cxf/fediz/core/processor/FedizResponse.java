@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.cxf.fediz.core;
+package org.apache.cxf.fediz.core.processor;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -26,7 +26,9 @@ import java.util.List;
 
 import org.w3c.dom.Element;
 
-public class FederationResponse implements Serializable {
+import org.apache.cxf.fediz.core.Claim;
+
+public class FedizResponse implements Serializable {
 
     private static final long serialVersionUID = 1L;
     
@@ -49,7 +51,7 @@ public class FederationResponse implements Serializable {
     private Date tokenExpires;
 
     //CHECKSTYLE:OFF
-    public FederationResponse(String username, String issuer, List<String> roles, List<Claim> claims, String audience, Date created, Date expires, Element token, String uniqueTokenId) {
+    public FedizResponse(String username, String issuer, List<String> roles, List<Claim> claims, String audience, Date created, Date expires, Element token, String uniqueTokenId) {
         this.username = username;
         this.issuer = issuer;
         this.roles = roles;

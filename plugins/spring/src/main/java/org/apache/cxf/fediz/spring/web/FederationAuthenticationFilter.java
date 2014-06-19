@@ -25,7 +25,7 @@ import java.security.cert.X509Certificate;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.cxf.fediz.core.FederationRequest;
+import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -47,7 +47,7 @@ public class FederationAuthenticationFilter extends AbstractAuthenticationProces
         
         String wa = request.getParameter("wa");
         String wresult = request.getParameter("wresult");
-        FederationRequest wfReq = new FederationRequest();
+        FedizRequest wfReq = new FedizRequest();
         wfReq.setWa(wa);
         wfReq.setWresult(wresult);
         

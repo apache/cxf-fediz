@@ -18,10 +18,8 @@
  */
 package org.apache.cxf.fediz.spring.preauth;
 
-import java.util.*;
-
 import org.apache.cxf.fediz.core.ClaimCollection;
-import org.apache.cxf.fediz.core.FederationPrincipal;
+import org.apache.cxf.fediz.core.FedizPrincipal;
 import org.apache.cxf.fediz.spring.FederationUser;
 import org.springframework.security.Authentication;
 import org.springframework.security.AuthenticationException;
@@ -61,11 +59,11 @@ public class PreAuthenticatedGrantedAuthoritiesUserDetailsFederationService
     public final UserDetails loadUserDetails(PreAuthenticatedAuthenticationToken token) throws AuthenticationException {
         Assert.notNull(token.getDetails());
         Assert.isInstanceOf(GrantedAuthoritiesContainer.class, token.getDetails());
-        Assert.isInstanceOf(FederationPrincipal.class, token.getPrincipal());
+        Assert.isInstanceOf(FedizPrincipal.class, token.getPrincipal());
         GrantedAuthority[] authorities = 
             ((GrantedAuthoritiesContainer) token.getDetails()).getGrantedAuthorities();
         
-        return createuserDetails(token, authorities, ((FederationPrincipal)token.getPrincipal()).getClaims());
+        return createuserDetails(token, authorities, ((FedizPrincipal)token.getPrincipal()).getClaims());
     }
 
     /**
@@ -84,10 +82,10 @@ public class PreAuthenticatedGrantedAuthoritiesUserDetailsFederationService
         Assert.notNull(token.getDetails());
         Assert.isInstanceOf(PreAuthenticatedAuthenticationToken.class, token);
         Assert.isInstanceOf(GrantedAuthoritiesContainer.class, token.getDetails());
-        Assert.isInstanceOf(FederationPrincipal.class, token.getPrincipal());
+        Assert.isInstanceOf(FedizPrincipal.class, token.getPrincipal());
         GrantedAuthority[] authorities = 
             ((GrantedAuthoritiesContainer) token.getDetails()).getGrantedAuthorities();
         
-        return createuserDetails(token, authorities, ((FederationPrincipal)token.getPrincipal()).getClaims());
+        return createuserDetails(token, authorities, ((FedizPrincipal)token.getPrincipal()).getClaims());
     }
 }

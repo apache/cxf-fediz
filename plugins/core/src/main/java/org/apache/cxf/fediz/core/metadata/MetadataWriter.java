@@ -34,8 +34,8 @@ import javax.xml.stream.XMLStreamWriter;
 import org.w3c.dom.Document;
 
 import org.apache.cxf.fediz.core.config.Claim;
-import org.apache.cxf.fediz.core.config.FederationContext;
 import org.apache.cxf.fediz.core.config.FederationProtocol;
+import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.config.Protocol;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.util.DOMUtils;
@@ -61,7 +61,7 @@ public class MetadataWriter {
     }
 
     //CHECKSTYLE:OFF
-    public Document getMetaData(FederationContext config) throws ProcessingException {
+    public Document getMetaData(FedizContext config) throws ProcessingException {
 
         try {
             ByteArrayOutputStream bout = new ByteArrayOutputStream(4096);

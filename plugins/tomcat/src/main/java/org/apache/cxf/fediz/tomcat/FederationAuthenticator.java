@@ -36,7 +36,6 @@ import javax.servlet.http.HttpSession;
 import javax.xml.bind.JAXBException;
 
 import org.w3c.dom.Document;
-
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Session;
 import org.apache.catalina.authenticator.Constants;
@@ -46,13 +45,13 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.cxf.fediz.core.FederationConstants;
-import org.apache.cxf.fediz.core.FederationProcessor;
-import org.apache.cxf.fediz.core.FederationProcessorImpl;
-import org.apache.cxf.fediz.core.FederationRequest;
-import org.apache.cxf.fediz.core.FederationResponse;
-import org.apache.cxf.fediz.core.config.FederationConfigurator;
-import org.apache.cxf.fediz.core.config.FederationContext;
+import org.apache.cxf.fediz.core.config.FedizConfigurator;
+import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
+import org.apache.cxf.fediz.core.processor.FedizProcessor;
+import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
+import org.apache.cxf.fediz.core.processor.FedizRequest;
+import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 import org.apache.wss4j.common.util.DOM2Writer;
@@ -78,7 +77,7 @@ public class FederationAuthenticator extends FormAuthenticator {
     protected boolean tokenExpirationValidation = true;
     protected String encoding = "UTF-8";
 
-    private FederationConfigurator configurator;
+    private FedizConfigurator configurator;
 
     public FederationAuthenticator() {
         LOG.debug("WsFedAuthenticator()");
@@ -127,7 +126,7 @@ public class FederationAuthenticator extends FormAuthenticator {
                     f = new File(catalinaBase.concat(File.separator + getConfigFile()));
                 }
             }
-            configurator = new FederationConfigurator();
+            configurator = new FedizConfigurator();
             configurator.loadConfig(f);
             LOG.debug("Fediz configuration read from " + f.getAbsolutePath());
         } catch (JAXBException e) {
@@ -141,9 +140,9 @@ public class FederationAuthenticator extends FormAuthenticator {
     @Override
     protected synchronized void stopInternal() throws LifecycleException {
         if (configurator != null) {
-            List<FederationContext> fedContextList = configurator.getFederationContextList();
+            List<FedizContext> fedContextList = configurator.getFedizContextList();
             if (fedContextList != null) {
-                for (FederationContext fedContext : fedContextList) {
+                for (FedizContext fedContext : fedContextList) {
                     try {
                         fedContext.close();
                     } catch (IOException ex) {
@@ -155,11 +154,11 @@ public class FederationAuthenticator extends FormAuthenticator {
         super.stopInternal();
     }
 
-    protected FederationContext getContextConfiguration(String contextName) {
+    protected FedizContext getContextConfiguration(String contextName) {
         if (configurator == null) {
             throw new IllegalStateException("No Fediz configuration available");
         }
-        FederationContext config = configurator.getFederationContext(contextName);
+        FedizContext config = configurator.getFedizContext(contextName);
         if (config == null) {
             throw new IllegalStateException("No Fediz configuration for context :" + contextName);
         }
@@ -188,8 +187,9 @@ public class FederationAuthenticator extends FormAuthenticator {
             if (contextName == null || contextName.isEmpty()) {
                 contextName = "/";
             }
-            FederationContext fedConfig = getContextConfiguration(contextName);
-            FederationProcessor wfProc = new FederationProcessorImpl();
+            FedizContext fedConfig = getContextConfiguration(contextName);
+            FedizProcessor wfProc = 
+                FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
             try {
                 Document metadata = wfProc.getMetaData(fedConfig);
                 out.write(DOM2Writer.nodeToString(metadata));
@@ -206,7 +206,7 @@ public class FederationAuthenticator extends FormAuthenticator {
         if (contextName == null || contextName.isEmpty()) {
             contextName = "/";
         }
-        FederationContext fedConfig = getContextConfiguration(contextName);
+        FedizContext fedConfig = getContextConfiguration(contextName);
 
         String logoutUrl = fedConfig.getLogoutURL();
         if (logoutUrl != null && !logoutUrl.isEmpty()) {
@@ -215,7 +215,8 @@ public class FederationAuthenticator extends FormAuthenticator {
             if (httpSession != null && uri.equals(contextName + logoutUrl)) {
                 httpSession.invalidate();
 
-                FederationProcessor wfProc = new FederationProcessorImpl();
+                FedizProcessor wfProc = 
+                    FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
                 signOutRedirectToIssuer(request, response, wfProc);
 
                 return;
@@ -279,7 +280,7 @@ public class FederationAuthenticator extends FormAuthenticator {
             if (session == null) {
                 LOG.debug("Session should not be null after authentication");
             } else {
-                FederationResponse wfRes = (FederationResponse)session.getNote(FEDERATION_NOTE);
+                FedizResponse wfRes = (FedizResponse)session.getNote(FEDERATION_NOTE);
 
                 Date tokenExpires = wfRes.getTokenExpires();
                 if (tokenExpires == null) {
@@ -312,7 +313,14 @@ public class FederationAuthenticator extends FormAuthenticator {
                                 sm.getString("authenticator.requestBodyTooBig"));
                         return false;
                     }
-                    FederationProcessor wfProc = new FederationProcessorImpl();
+                    String contextName = request.getServletContext().getContextPath();
+                    if (contextName == null || contextName.isEmpty()) {
+                        contextName = "/";
+                    }
+                    FedizContext fedConfig = getContextConfiguration(contextName);
+                    
+                    FedizProcessor wfProc = 
+                        FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
                     signInRedirectToIssuer(request, response, wfProc);
 
                     return false;
@@ -371,7 +379,14 @@ public class FederationAuthenticator extends FormAuthenticator {
                         sm.getString("authenticator.requestBodyTooBig"));
                 return false;
             }
-            FederationProcessor wfProc = new FederationProcessorImpl();
+            String contextName = request.getServletContext().getContextPath();
+            if (contextName == null || contextName.isEmpty()) {
+                contextName = "/";
+            }
+            FedizContext fedConfig = getContextConfiguration(contextName);
+            
+            FedizProcessor wfProc = 
+                FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
             signInRedirectToIssuer(request, response, wfProc);
             return false;
         }
@@ -379,7 +394,7 @@ public class FederationAuthenticator extends FormAuthenticator {
         // Check whether it is the signin request, validate the token.
         // If failed, redirect to the error page if they are not correct
         String wresult = request.getParameter("wresult");
-        FederationResponse wfRes = null;
+        FedizResponse wfRes = null;
         if (wa.equals(FederationConstants.ACTION_SIGNIN)) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("SignIn request found");
@@ -400,7 +415,7 @@ public class FederationAuthenticator extends FormAuthenticator {
                     LOG.debug("wresult=\n" + wresult);
                 }
 
-                FederationRequest wfReq = new FederationRequest();
+                FedizRequest wfReq = new FedizRequest();
                 wfReq.setWa(wa);
                 wfReq.setWresult(wresult);
                 
@@ -412,9 +427,10 @@ public class FederationAuthenticator extends FormAuthenticator {
                 if (contextName == null || contextName.isEmpty()) {
                     contextName = "/";
                 }
-                FederationContext fedConfig = getContextConfiguration(contextName);
+                FedizContext fedConfig = getContextConfiguration(contextName);
 
-                FederationProcessor wfProc = new FederationProcessorImpl();
+                FedizProcessor wfProc = 
+                    FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
                 try {
                     wfRes = wfProc.processRequest(wfReq, fedConfig);
                 } catch (ProcessingException ex) {
@@ -569,14 +585,14 @@ public class FederationAuthenticator extends FormAuthenticator {
      *             {@link HttpServletResponse#sendError(int, String)} throws an
      *             {@link IOException}
      */
-    protected void signInRedirectToIssuer(Request request, HttpServletResponse response, FederationProcessor processor)
+    protected void signInRedirectToIssuer(Request request, HttpServletResponse response, FedizProcessor processor)
         throws IOException {
 
         String contextName = request.getServletContext().getContextPath();
         if (contextName == null || contextName.isEmpty()) {
             contextName = "/";
         }
-        FederationContext fedCtx = this.configurator.getFederationContext(contextName);
+        FedizContext fedCtx = this.configurator.getFedizContext(contextName);
         String redirectURL = null;
         try {
             redirectURL = processor.createSignInRequest(request, fedCtx);
@@ -595,14 +611,14 @@ public class FederationAuthenticator extends FormAuthenticator {
         
     }
 
-    protected void signOutRedirectToIssuer(Request request, HttpServletResponse response, FederationProcessor processor)
+    protected void signOutRedirectToIssuer(Request request, HttpServletResponse response, FedizProcessor processor)
             throws IOException {
 
         String contextName = request.getServletContext().getContextPath();
         if (contextName == null || contextName.isEmpty()) {
             contextName = "/";
         }
-        FederationContext fedCtx = this.configurator.getFederationContext(contextName);
+        FedizContext fedCtx = this.configurator.getFedizContext(contextName);
         String redirectURL = null;
         try {
             redirectURL = processor.createSignOutRequest(request, fedCtx);

@@ -17,34 +17,28 @@
  * under the License.
  */
 
-package org.apache.cxf.fediz.spring.authentication;
+package org.apache.cxf.fediz.core.processor;
 
-import org.apache.cxf.fediz.core.processor.FedizResponse;
-import org.springframework.security.providers.AbstractAuthenticationToken;
+import org.apache.cxf.fediz.core.config.FederationProtocol;
+import org.apache.cxf.fediz.core.config.Protocol;
+// import org.apache.cxf.fediz.core.config.SAMLProtocol;
 
-public final class FederationResponseAuthenticationToken extends AbstractAuthenticationToken {
-
-    private static final long serialVersionUID = 1L;
-
-    private final FedizResponse response;
-
-
-    public FederationResponseAuthenticationToken(final FedizResponse response) {
-        super(null);
-
-        this.response = response;
-    }
-
-    public Object getPrincipal() {
-        return this.response.getUsername();
-    }
-
-    public Object getCredentials() {
-        return this.response;
-    }
+/**
+ * A Factory to return FedizProcessor instances depending on the Protocol
+ */
+public final class FedizProcessorFactory {
     
-    public FedizResponse getResponse() {
-        return this.response;
+    private FedizProcessorFactory() {
+        // complete
+    }
+
+    public static FedizProcessor newFedizProcessor(Protocol protocol) {
+        if (protocol instanceof FederationProtocol) {
+            return new FederationProcessorImpl();
+        } /*else if (protocol instanceof SAMLProtocol) {
+            return new SAMLProcessorImpl();
+        }*/
+        return null;
     }
 
 }

@@ -23,12 +23,10 @@ import java.util.List;
 
 import javax.servlet.ServletContext;
 
-import org.apache.cxf.fediz.core.config.FederationConfigurator;
-import org.apache.cxf.fediz.core.config.FederationContext;
-
+import org.apache.cxf.fediz.core.config.FedizConfigurator;
+import org.apache.cxf.fediz.core.config.FedizContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
@@ -42,7 +40,7 @@ public class FederationConfigImpl implements FederationConfig, ServletContextAwa
     private String contextName;
     
     private ServletContext servletContext;
-    private FederationConfigurator configurator = new FederationConfigurator();
+    private FedizConfigurator configurator = new FedizConfigurator();
     
     
     public Resource getConfigFile() {
@@ -72,13 +70,13 @@ public class FederationConfigImpl implements FederationConfig, ServletContextAwa
     }
 
     @Override
-    public List<FederationContext> getFederationContextList() {
-        return configurator.getFederationContextList();
+    public List<FedizContext> getFedizContextList() {
+        return configurator.getFedizContextList();
     }
 
     @Override
-    public FederationContext getFederationContext(String context) {
-        FederationContext ctx = configurator.getFederationContext(context);
+    public FedizContext getFedizContext(String context) {
+        FedizContext ctx = configurator.getFedizContext(context);
         if (ctx == null) {
             LOG.error("Federation context '" + context + "' not found.");
             throw new IllegalStateException("Federation context '" + context + "' not found.");
@@ -87,14 +85,14 @@ public class FederationConfigImpl implements FederationConfig, ServletContextAwa
     }
 
     @Override
-    public FederationContext getFederationContext() {
+    public FedizContext getFedizContext() {
         if (servletContext != null) {
             LOG.debug("Reading federation configuration for context '{}'",
                       servletContext.getContextPath());
-            return getFederationContext(servletContext.getContextPath());
+            return getFedizContext(servletContext.getContextPath());
         } else {
             Assert.notNull(contextName, "Property 'contextName' must be configured because ServletContext null");
-            return getFederationContext(contextName);
+            return getFedizContext(contextName);
         }
     }
 

@@ -17,34 +17,46 @@
  * under the License.
  */
 
-package org.apache.cxf.fediz.spring.authentication;
+package org.apache.cxf.fediz.core.processor;
 
-import org.apache.cxf.fediz.core.processor.FedizResponse;
-import org.springframework.security.providers.AbstractAuthenticationToken;
+import java.io.Serializable;
+import java.security.cert.Certificate;
 
-public final class FederationResponseAuthenticationToken extends AbstractAuthenticationToken {
+public class FedizRequest implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
-    private final FedizResponse response;
-
-
-    public FederationResponseAuthenticationToken(final FedizResponse response) {
-        super(null);
-
-        this.response = response;
-    }
-
-    public Object getPrincipal() {
-        return this.response.getUsername();
-    }
-
-    public Object getCredentials() {
-        return this.response;
-    }
     
-    public FedizResponse getResponse() {
-        return this.response;
+    private String wa;
+    private String wresult;
+    private String wct;
+    private Certificate[] certs;
+
+
+    public String getWct() {
+        return wct;
     }
+    public void setWct(String wct) {
+        this.wct = wct;
+    }
+
+    public String getWa() {
+        return wa;
+    }
+    public void setWa(String wa) {
+        this.wa = wa;
+    }
+    public String getWresult() {
+        return wresult;
+    }
+    public void setWresult(String wresult) {
+        this.wresult = wresult;
+    }
+    public Certificate[] getCerts() {
+        return certs;
+    }
+    public void setCerts(Certificate[] certs) {
+        this.certs = certs;
+    }
+
 
 }

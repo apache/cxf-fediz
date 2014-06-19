@@ -21,7 +21,7 @@ package org.apache.cxf.fediz.spring.authentication;
 
 import java.util.ArrayList;
 
-import org.apache.cxf.fediz.core.FederationResponse;
+import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.SpringSecurityCoreVersion;
@@ -30,10 +30,10 @@ public final class FederationResponseAuthenticationToken extends AbstractAuthent
 
     private static final long serialVersionUID = SpringSecurityCoreVersion.SERIAL_VERSION_UID;
 
-    private final FederationResponse response;
+    private final FedizResponse response;
 
 
-    public FederationResponseAuthenticationToken(final FederationResponse response) {
+    public FederationResponseAuthenticationToken(final FedizResponse response) {
         super(new ArrayList<GrantedAuthority>());
 
         this.response = response;
@@ -47,7 +47,7 @@ public final class FederationResponseAuthenticationToken extends AbstractAuthent
         return this.response;
     }
     
-    public FederationResponse getResponse() {
+    public FedizResponse getResponse() {
         return this.response;
     }
 

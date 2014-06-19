@@ -26,8 +26,7 @@ import java.util.Date;
 import javax.security.auth.Subject;
 
 import org.w3c.dom.Element;
-
-import org.apache.cxf.fediz.core.FederationResponse;
+import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.eclipse.jetty.server.UserIdentity;
 
 public class FederationUserIdentity implements UserIdentity {
@@ -35,10 +34,10 @@ public class FederationUserIdentity implements UserIdentity {
     private Subject subject;
     private Principal principal;
     private String[] roles;
-    private FederationResponse fedResponse;
+    private FedizResponse fedResponse;
 
     public FederationUserIdentity(Subject subject, Principal principal,
-                                  String[] roles, FederationResponse fedResponse) {
+                                  String[] roles, FedizResponse fedResponse) {
         this.subject = subject;
         this.principal = principal;
         this.roles = roles;

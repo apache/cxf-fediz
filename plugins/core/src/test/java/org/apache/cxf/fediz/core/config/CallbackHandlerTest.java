@@ -217,10 +217,10 @@ public class CallbackHandlerTest {
         jaxbContext.createMarshaller().marshal(configOut, writer);
         StringReader reader = new StringReader(writer.toString());
         
-        FederationConfigurator configurator = new FederationConfigurator();
+        FedizConfigurator configurator = new FedizConfigurator();
         configurator.loadConfig(reader);
         
-        FederationContext ctx = configurator.getFederationContext(CONFIG_NAME);
+        FedizContext ctx = configurator.getFedizContext(CONFIG_NAME);
         
         FederationProtocol fp = (FederationProtocol)ctx.getProtocol();
         
@@ -285,10 +285,10 @@ public class CallbackHandlerTest {
         jaxbContext.createMarshaller().marshal(configOut, writer);
         StringReader reader = new StringReader(writer.toString());
         
-        FederationConfigurator configurator = new FederationConfigurator();
+        FedizConfigurator configurator = new FedizConfigurator();
         configurator.loadConfig(reader);
         
-        FederationContext ctx = configurator.getFederationContext(CONFIG_NAME);
+        FedizContext ctx = configurator.getFedizContext(CONFIG_NAME);
         
         FederationProtocol fp = (FederationProtocol)ctx.getProtocol();
         

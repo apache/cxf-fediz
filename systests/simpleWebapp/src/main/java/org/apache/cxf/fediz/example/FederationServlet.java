@@ -34,7 +34,7 @@ import org.w3c.dom.Element;
 
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimCollection;
-import org.apache.cxf.fediz.core.FederationPrincipal;
+import org.apache.cxf.fediz.core.FedizPrincipal;
 import org.apache.cxf.fediz.core.SecurityTokenThreadLocal;
 
 
@@ -68,8 +68,8 @@ public class FederationServlet extends HttpServlet {
             out.println("<p>role:" + item + "=" + ((request.isUserInRole(item)) ? "true" : "false") + "</p>");
         }
 
-        if (p instanceof FederationPrincipal) {
-            FederationPrincipal fp = (FederationPrincipal)p;
+        if (p instanceof FedizPrincipal) {
+            FedizPrincipal fp = (FedizPrincipal)p;
             
             ClaimCollection claims = fp.getClaims();
             for (Claim c: claims) {
@@ -78,7 +78,7 @@ public class FederationServlet extends HttpServlet {
             
             Element el = fp.getLoginToken();
             if (el != null) {
-                out.println("loginToken=FOUND{FederationPrincipal}<p>");
+                out.println("loginToken=FOUND{FedizPrincipal}<p>");
             }
             
             el = SecurityTokenThreadLocal.getToken();

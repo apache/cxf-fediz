@@ -216,7 +216,7 @@ public class FedizConfigurationWriterTest {
         final JAXBContext jaxbContext = JAXBContext
                 .newInstance(FedizConfig.class);
 
-        FederationConfigurator configurator = new FederationConfigurator();
+        FedizConfigurator configurator = new FedizConfigurator();
         FedizConfig configOut = createConfiguration();
         StringWriter writer = new StringWriter();
         jaxbContext.createMarshaller().marshal(configOut, writer);
@@ -228,7 +228,7 @@ public class FedizConfigurationWriterTest {
 
         configurator.saveConfiguration(f);
         
-        configurator = new FederationConfigurator();
+        configurator = new FedizConfigurator();
         f = new File(CONFIG_FILE);
         configurator.loadConfig(f);
     }
@@ -243,7 +243,7 @@ public class FedizConfigurationWriterTest {
          * Test JAXB part
          */
 
-        FederationConfigurator configurator = new FederationConfigurator();
+        FedizConfigurator configurator = new FedizConfigurator();
         FedizConfig configOut = createConfiguration();
         StringWriter writer = new StringWriter();
         jaxbContext.createMarshaller().marshal(configOut, writer);
@@ -263,7 +263,7 @@ public class FedizConfigurationWriterTest {
         /**
          * Check Runtime configuration
          */
-        FederationContext fedContext = configurator.getFederationContext(CONFIG_NAME);
+        FedizContext fedContext = configurator.getFedizContext(CONFIG_NAME);
         Protocol protocol = fedContext.getProtocol();
         Assert.assertTrue(protocol instanceof FederationProtocol);
         FederationProtocol fedProtocol = (FederationProtocol) protocol;

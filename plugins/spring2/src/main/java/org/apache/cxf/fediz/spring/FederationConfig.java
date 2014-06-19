@@ -20,13 +20,14 @@
 package org.apache.cxf.fediz.spring;
 
 import java.util.List;
-import org.apache.cxf.fediz.core.config.FederationContext;
+
+import org.apache.cxf.fediz.core.config.FedizContext;
 
 public interface FederationConfig {
 
-    List<FederationContext> getFederationContextList();
+    List<FedizContext> getFedizContextList();
     
-    FederationContext getFederationContext(String contextName);
+    FedizContext getFedizContext(String contextName);
     
-    FederationContext getFederationContext();
+    FedizContext getFedizContext();
 }

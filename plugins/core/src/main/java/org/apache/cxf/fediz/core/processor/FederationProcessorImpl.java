@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.cxf.fediz.core;
+package org.apache.cxf.fediz.core.processor;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -39,8 +39,12 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.apache.cxf.fediz.core.config.FederationContext;
+import org.apache.cxf.fediz.core.FederationConstants;
+import org.apache.cxf.fediz.core.TokenValidator;
+import org.apache.cxf.fediz.core.TokenValidatorRequest;
+import org.apache.cxf.fediz.core.TokenValidatorResponse;
 import org.apache.cxf.fediz.core.config.FederationProtocol;
+import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.config.KeyManager;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
@@ -69,7 +73,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FederationProcessorImpl implements FederationProcessor {
+public class FederationProcessorImpl implements FedizProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(FederationProcessorImpl.class);
 
@@ -81,15 +85,15 @@ public class FederationProcessorImpl implements FederationProcessor {
     }
 
     @Override
-    public FederationResponse processRequest(FederationRequest request,
-                                             FederationContext config)
+    public FedizResponse processRequest(FedizRequest request,
+                                             FedizContext config)
         throws ProcessingException {
         
         if (!(config.getProtocol() instanceof FederationProtocol)) {
             LOG.error("Unsupported protocol");
             throw new IllegalStateException("Unsupported protocol");
         }
-        FederationResponse response = null;
+        FedizResponse response = null;
         if (FederationConstants.ACTION_SIGNIN.equals(request.getWa())) {
             response = this.processSignInRequest(request, config);
         } else {
@@ -100,12 +104,12 @@ public class FederationProcessorImpl implements FederationProcessor {
     }
     
 
-    public Document getMetaData(FederationContext config) throws ProcessingException {
+    public Document getMetaData(FedizContext config) throws ProcessingException {
         return new MetadataWriter().getMetaData(config);
     }
     
-    protected FederationResponse processSignInRequest(
-            FederationRequest request, FederationContext config)
+    protected FedizResponse processSignInRequest(
+            FedizRequest request, FedizContext config)
         throws ProcessingException {
         
         byte[] wresult = request.getWresult().getBytes();
@@ -241,7 +245,7 @@ public class FederationProcessorImpl implements FederationProcessor {
             }
         }
 
-        FederationResponse fedResponse = new FederationResponse(
+        FedizResponse fedResponse = new FedizResponse(
                 validatorResponse.getUsername(), validatorResponse.getIssuer(),
                 validatorResponse.getRoles(), validatorResponse.getClaims(),
                 validatorResponse.getAudience(),
@@ -254,7 +258,7 @@ public class FederationProcessorImpl implements FederationProcessor {
     
     private Element decryptEncryptedRST(
         Element encryptedRST,
-        FederationContext config
+        FedizContext config
     ) throws ProcessingException {
 
         KeyManager decryptionKeyManager = config.getDecryptionKey();
@@ -343,7 +347,7 @@ public class FederationProcessorImpl implements FederationProcessor {
     }
 
     @Override
-    public String createSignInRequest(HttpServletRequest request, FederationContext config)
+    public String createSignInRequest(HttpServletRequest request, FedizContext config)
         throws ProcessingException {
 
         String redirectURL = null;
@@ -449,7 +453,7 @@ public class FederationProcessorImpl implements FederationProcessor {
     }
 
     @Override
-    public String createSignOutRequest(HttpServletRequest request, FederationContext config)
+    public String createSignOutRequest(HttpServletRequest request, FedizContext config)
         throws ProcessingException {
 
         String redirectURL = null;
@@ -491,7 +495,7 @@ public class FederationProcessorImpl implements FederationProcessor {
         return redirectURL;
     }
 
-    private String resolveSignInQuery(HttpServletRequest request, FederationContext config)
+    private String resolveSignInQuery(HttpServletRequest request, FedizContext config)
         throws IOException, UnsupportedCallbackException, UnsupportedEncodingException {
         Object signInQueryObj = ((FederationProtocol)config.getProtocol()).getSignInQuery();
         String signInQuery = null;
@@ -518,7 +522,7 @@ public class FederationProcessorImpl implements FederationProcessor {
         return signInQuery;
     }
 
-    private String resolveFreshness(HttpServletRequest request, FederationContext config) throws IOException,
+    private String resolveFreshness(HttpServletRequest request, FedizContext config) throws IOException,
         UnsupportedCallbackException {
         Object freshnessObj = ((FederationProtocol)config.getProtocol()).getFreshness();
         String freshness = null;
@@ -535,7 +539,7 @@ public class FederationProcessorImpl implements FederationProcessor {
         return freshness;
     }
 
-    private String resolveHomeRealm(HttpServletRequest request, FederationContext config) throws IOException,
+    private String resolveHomeRealm(HttpServletRequest request, FedizContext config) throws IOException,
         UnsupportedCallbackException {
         Object homeRealmObj = ((FederationProtocol)config.getProtocol()).getHomeRealm();
         String homeRealm = null;
@@ -552,7 +556,7 @@ public class FederationProcessorImpl implements FederationProcessor {
         return homeRealm;
     }
 
-    private String resolveAuthenticationType(HttpServletRequest request, FederationContext config)
+    private String resolveAuthenticationType(HttpServletRequest request, FedizContext config)
         throws IOException, UnsupportedCallbackException {
         Object wAuthObj = ((FederationProtocol)config.getProtocol()).getAuthenticationType();
         String wAuth = null;
@@ -569,7 +573,7 @@ public class FederationProcessorImpl implements FederationProcessor {
         return wAuth;
     }
     
-    private String resolveRequest(HttpServletRequest request, FederationContext config)
+    private String resolveRequest(HttpServletRequest request, FedizContext config)
         throws IOException, UnsupportedCallbackException {
         Object wReqObj = ((FederationProtocol)config.getProtocol()).getRequest();
         String wReq = null;
@@ -586,7 +590,7 @@ public class FederationProcessorImpl implements FederationProcessor {
         return wReq;
     }
 
-    private String resolveIssuer(HttpServletRequest request, FederationContext config) throws IOException,
+    private String resolveIssuer(HttpServletRequest request, FedizContext config) throws IOException,
         UnsupportedCallbackException {
         Object issuerObj = ((FederationProtocol)config.getProtocol()).getIssuer();
         String issuerURL = null;
@@ -601,7 +605,7 @@ public class FederationProcessorImpl implements FederationProcessor {
         return issuerURL;
     }
 
-    private String resolveWTRealm(HttpServletRequest request, FederationContext config) throws IOException,
+    private String resolveWTRealm(HttpServletRequest request, FedizContext config) throws IOException,
         UnsupportedCallbackException {
         Object wtRealmObj = ((FederationProtocol)config.getProtocol()).getRealm();
         String wtRealm = null;

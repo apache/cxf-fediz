@@ -34,13 +34,13 @@ import javax.servlet.http.HttpSession;
 import javax.xml.bind.JAXBException;
 
 import org.apache.cxf.fediz.core.FederationConstants;
-import org.apache.cxf.fediz.core.FederationProcessor;
-import org.apache.cxf.fediz.core.FederationProcessorImpl;
-import org.apache.cxf.fediz.core.FederationRequest;
-import org.apache.cxf.fediz.core.FederationResponse;
-import org.apache.cxf.fediz.core.config.FederationConfigurator;
-import org.apache.cxf.fediz.core.config.FederationContext;
+import org.apache.cxf.fediz.core.config.FedizConfigurator;
+import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
+import org.apache.cxf.fediz.core.processor.FederationProcessorImpl;
+import org.apache.cxf.fediz.core.processor.FedizProcessor;
+import org.apache.cxf.fediz.core.processor.FedizRequest;
+import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.eclipse.jetty.http.HttpMethods;
 import org.eclipse.jetty.http.MimeTypes;
 import org.eclipse.jetty.security.ServerAuthException;
@@ -83,7 +83,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
     private static final String SECURITY_TOKEN_ATTR = "org.apache.fediz.SECURITY_TOKEN";
        
     private String configFile;
-    private FederationConfigurator configurator;
+    private FedizConfigurator configurator;
     private String encoding = "UTF-8";
 
     public FederationAuthenticator() {
@@ -106,7 +106,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
                     f = new File(jettyHome.concat(File.separator + getConfigFile()));
                 }
             }
-            configurator = new FederationConfigurator();
+            configurator = new FedizConfigurator();
             configurator.loadConfig(f);
             LOG.debug("Fediz configuration read from " + f.getAbsolutePath());
         } catch (JAXBException e) {
@@ -170,7 +170,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
             // Handle a request for authentication.
             if (wa != null) {
 
-                FederationResponse wfRes = null;
+                FedizResponse wfRes = null;
                 if (wa.equals(FederationConstants.ACTION_SIGNIN)) {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("SignIn request found");
@@ -184,7 +184,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
                         return Authentication.SEND_FAILURE;
                     } else {
                         
-                        FederationRequest wfReq = new FederationRequest();
+                        FedizRequest wfReq = new FedizRequest();
                         wfReq.setWa(wa);
                         wfReq.setWresult(wresult);
                         
@@ -198,7 +198,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
                         if (contextName == null || contextName.isEmpty()) {
                             contextName = "/";
                         }
-                        FederationContext fedConfig = getContextConfiguration(contextName);
+                        FedizContext fedConfig = getContextConfiguration(contextName);
                         
                         FederationLoginService fedLoginService = (FederationLoginService)this._loginService;
                         UserIdentity user = fedLoginService.login(null, wfReq, fedConfig);
@@ -287,13 +287,13 @@ public class FederationAuthenticator extends LoginAuthenticator {
                     if (contextName == null || contextName.isEmpty()) {
                         contextName = "/";
                     }
-                    FederationContext fedConfig = getContextConfiguration(contextName);
+                    FedizContext fedConfig = getContextConfiguration(contextName);
 
                     String logoutUrl = fedConfig.getLogoutURL();
                     if (logoutUrl != null && !logoutUrl.isEmpty() && uri.equals(contextName + logoutUrl)) {
                         session.invalidate();
 
-                        FederationProcessor wfProc = new FederationProcessorImpl();
+                        FedizProcessor wfProc = new FederationProcessorImpl();
                         signOutRedirectToIssuer(request, response, wfProc);
 
                         return Authentication.SEND_CONTINUE;
@@ -359,7 +359,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
                 }
             }
             
-            FederationProcessor wfProc = new FederationProcessorImpl();
+            FedizProcessor wfProc = new FederationProcessorImpl();
             signInRedirectToIssuer(request, response, wfProc);
 
             return Authentication.SEND_CONTINUE;
@@ -394,7 +394,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
      *             {@link HttpServletResponse#sendError(int, String)} throws an
      *             {@link IOException}
      */
-    protected void signInRedirectToIssuer(HttpServletRequest request, HttpServletResponse response, FederationProcessor processor)
+    protected void signInRedirectToIssuer(HttpServletRequest request, HttpServletResponse response, FedizProcessor processor)
         throws IOException {
 
         //Not supported in jetty 7.6
@@ -403,7 +403,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
         if (contextName == null || contextName.isEmpty()) {
             contextName = "/";
         }
-        FederationContext fedCtx = this.configurator.getFederationContext(contextName);
+        FedizContext fedCtx = this.configurator.getFedizContext(contextName);
         String redirectURL = null;
         try {
             redirectURL = processor.createSignInRequest(request, fedCtx);
@@ -422,7 +422,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
         
     }
 
-    protected void signOutRedirectToIssuer(HttpServletRequest request, HttpServletResponse response, FederationProcessor processor)
+    protected void signOutRedirectToIssuer(HttpServletRequest request, HttpServletResponse response, FedizProcessor processor)
             throws IOException {
 
         //Not supported in jetty 7.6
@@ -431,7 +431,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
         if (contextName == null || contextName.isEmpty()) {
             contextName = "/";
         }
-        FederationContext fedCtx = this.configurator.getFederationContext(contextName);
+        FedizContext fedCtx = this.configurator.getFedizContext(contextName);
         String redirectURL = null;
         try {
             redirectURL = processor.createSignOutRequest(request, fedCtx);
@@ -449,11 +449,11 @@ public class FederationAuthenticator extends LoginAuthenticator {
         }
     }
     
-    private FederationContext getContextConfiguration(String contextName) {
+    private FedizContext getContextConfiguration(String contextName) {
         if (configurator == null) {
             throw new IllegalStateException("No Fediz configuration available");
         }
-        FederationContext config = configurator.getFederationContext(contextName);
+        FedizContext config = configurator.getFedizContext(contextName);
         if (config == null) {
             throw new IllegalStateException("No Fediz configuration for context :" + contextName);
         }

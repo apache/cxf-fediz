@@ -231,7 +231,7 @@ public class FedizConfigurationTest {
         jaxbContext.createMarshaller().marshal(configOut, writer);
         StringReader reader = new StringReader(writer.toString());
         
-        FederationConfigurator configurator = new FederationConfigurator();
+        FedizConfigurator configurator = new FedizConfigurator();
         configurator.loadConfig(reader);
 
         File f = new File(CONFIG_FILE);
@@ -239,7 +239,7 @@ public class FedizConfigurationTest {
 
         configurator.saveConfiguration(f);
         
-        configurator = new FederationConfigurator();
+        configurator = new FedizConfigurator();
         f = new File(CONFIG_FILE);
         configurator.loadConfig(f);
     }
@@ -250,7 +250,7 @@ public class FedizConfigurationTest {
         final JAXBContext jaxbContext = JAXBContext
                 .newInstance(FedizConfig.class);
 
-        FederationConfigurator configurator = new FederationConfigurator();
+        FedizConfigurator configurator = new FedizConfigurator();
         FedizConfig configOut = createConfiguration();
         StringWriter writer = new StringWriter();
         jaxbContext.createMarshaller().marshal(configOut, writer);
@@ -302,10 +302,10 @@ public class FedizConfigurationTest {
         jaxbContext.createMarshaller().marshal(config, writer);
         StringReader reader = new StringReader(writer.toString());
         
-        FederationConfigurator configurator = new FederationConfigurator();
+        FedizConfigurator configurator = new FedizConfigurator();
         configurator.loadConfig(reader);
 
-        FederationContext fedContext = configurator.getFederationContext(CONFIG_NAME);
+        FedizContext fedContext = configurator.getFedizContext(CONFIG_NAME);
         Assert.assertNotNull(fedContext);
         
         return fedContext.getTokenReplayCache();
