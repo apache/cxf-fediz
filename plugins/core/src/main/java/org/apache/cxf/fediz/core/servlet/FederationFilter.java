@@ -31,8 +31,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
 import org.w3c.dom.Element;
-
-import org.apache.cxf.fediz.core.FederationPrincipal;
+import org.apache.cxf.fediz.core.FedizPrincipal;
 import org.apache.cxf.fediz.core.SecurityTokenThreadLocal;
 
 
@@ -53,7 +52,7 @@ public class FederationFilter implements Filter {
         if (request instanceof HttpServletRequest) {
             HttpServletRequest hrequest = (HttpServletRequest)request;
             Principal p = hrequest.getUserPrincipal();
-            FederationPrincipal fedPrinc = (FederationPrincipal)p;
+            FedizPrincipal fedPrinc = (FedizPrincipal)p;
             Element el = (Element)fedPrinc.getLoginToken();
             if (el != null) {
                 try {

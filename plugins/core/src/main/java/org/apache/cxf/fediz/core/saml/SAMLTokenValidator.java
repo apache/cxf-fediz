@@ -230,6 +230,7 @@ public class SAMLTokenValidator implements TokenValidator {
                             roles = parseRoles((String)oValue, delim);
                         }
                     } else if ((oValue instanceof List<?>) && !((List<?>)oValue).isEmpty()) {
+                        @SuppressWarnings("unchecked")
                         List<String> values = (List<String>)oValue;
                         roles = Collections.unmodifiableList(values);
                     } else if (!((oValue instanceof String) || (oValue instanceof List<?>))) {
@@ -370,6 +371,7 @@ public class SAMLTokenValidator implements TokenValidator {
                 t.setValue(values);
             } else if (oValue instanceof List<?>) {
                 //more than one child element AttributeValue
+                @SuppressWarnings("unchecked")
                 List<String> values = (List<String>)oValue;
                 values.addAll(valueList);
                 t.setValue(values);
