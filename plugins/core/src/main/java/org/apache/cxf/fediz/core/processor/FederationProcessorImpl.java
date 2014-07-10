@@ -347,7 +347,7 @@ public class FederationProcessorImpl implements FedizProcessor {
     }
 
     @Override
-    public String createSignInRequest(HttpServletRequest request, FedizContext config)
+    public RedirectionResponse createSignInRequest(HttpServletRequest request, FedizContext config)
         throws ProcessingException {
 
         String redirectURL = null;
@@ -448,12 +448,15 @@ public class FederationProcessorImpl implements FedizProcessor {
         } catch (Exception ex) {
             LOG.error("Failed to create SignInRequest", ex);
             throw new ProcessingException("Failed to create SignInRequest");
-        }        
-        return redirectURL;
+        }
+        
+        RedirectionResponse response = new RedirectionResponse();
+        response.setRedirectionURL(redirectURL);
+        return response;
     }
 
     @Override
-    public String createSignOutRequest(HttpServletRequest request, FedizContext config)
+    public RedirectionResponse createSignOutRequest(HttpServletRequest request, FedizContext config)
         throws ProcessingException {
 
         String redirectURL = null;
@@ -492,7 +495,10 @@ public class FederationProcessorImpl implements FedizProcessor {
             LOG.error("Failed to create SignInRequest", ex);
             throw new ProcessingException("Failed to create SignInRequest");
         }
-        return redirectURL;
+        
+        RedirectionResponse response = new RedirectionResponse();
+        response.setRedirectionURL(redirectURL);
+        return response;
     }
 
     private String resolveSignInQuery(HttpServletRequest request, FedizContext config)

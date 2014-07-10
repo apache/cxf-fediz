@@ -19,6 +19,7 @@
 package org.apache.cxf.fediz.spring.web;
 
 import java.io.IOException;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -28,6 +29,7 @@ import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.processor.FederationProcessorImpl;
 import org.apache.cxf.fediz.core.processor.FedizProcessor;
+import org.apache.cxf.fediz.core.processor.RedirectionResponse;
 import org.apache.cxf.fediz.spring.FederationConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,10 +57,18 @@ public class FederationLogoutSuccessHandler implements LogoutSuccessHandler {
             contextName = "/";
         }
         FedizContext fedCtx = federationConfig.getFedizContext(contextName);
-        String redirectURL;
         try {
-            redirectURL = processor.createSignOutRequest(request, fedCtx);
+            RedirectionResponse redirectionResponse =
+                processor.createSignOutRequest(request, fedCtx);
+            String redirectURL = redirectionResponse.getRedirectionURL();
             if (redirectURL != null) {
+                Map<String, String> headers = redirectionResponse.getHeaders();
+                if (!headers.isEmpty()) {
+                    for (String headerName : headers.keySet()) {
+                        response.addHeader(headerName, headers.get(headerName));
+                    }
+                }
+                
                 response.sendRedirect(redirectURL);
             } else {
                 LOG.warn("Failed to create SignOutRequest.");

@@ -28,6 +28,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -52,6 +53,7 @@ import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
 import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
+import org.apache.cxf.fediz.core.processor.RedirectionResponse;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 import org.apache.wss4j.common.util.DOM2Writer;
@@ -593,10 +595,17 @@ public class FederationAuthenticator extends FormAuthenticator {
             contextName = "/";
         }
         FedizContext fedCtx = this.configurator.getFedizContext(contextName);
-        String redirectURL = null;
         try {
-            redirectURL = processor.createSignInRequest(request, fedCtx);
+            RedirectionResponse redirectionResponse = processor.createSignInRequest(request, fedCtx);
+            String redirectURL = redirectionResponse.getRedirectionURL();
             if (redirectURL != null) {
+                Map<String, String> headers = redirectionResponse.getHeaders();
+                if (!headers.isEmpty()) {
+                    for (String headerName : headers.keySet()) {
+                        response.addHeader(headerName, headers.get(headerName));
+                    }
+                }
+                
                 response.sendRedirect(redirectURL);
             } else {
                 LOG.warn("Failed to create SignInRequest.");
@@ -619,10 +628,17 @@ public class FederationAuthenticator extends FormAuthenticator {
             contextName = "/";
         }
         FedizContext fedCtx = this.configurator.getFedizContext(contextName);
-        String redirectURL = null;
         try {
-            redirectURL = processor.createSignOutRequest(request, fedCtx);
+            RedirectionResponse redirectionResponse = processor.createSignOutRequest(request, fedCtx);
+            String redirectURL = redirectionResponse.getRedirectionURL();
             if (redirectURL != null) {
+                Map<String, String> headers = redirectionResponse.getHeaders();
+                if (!headers.isEmpty()) {
+                    for (String headerName : headers.keySet()) {
+                        response.addHeader(headerName, headers.get(headerName));
+                    }
+                }
+                
                 response.sendRedirect(redirectURL);
             } else {
                 LOG.warn("Failed to create SignOutRequest.");

@@ -20,6 +20,7 @@
 package org.apache.cxf.fediz.core.config;
 
 import org.apache.cxf.fediz.core.config.jaxb.ProtocolType;
+import org.apache.cxf.fediz.core.config.jaxb.SamlProtocolType;
 
 public class SAMLProtocol extends Protocol {
 
@@ -55,6 +56,42 @@ public class SAMLProtocol extends Protocol {
         // canHandleToken or canHandleTokenType method return true
         //SAMLTokenValidator validator = new SAMLTokenValidator();
         //validators.add(validators.size(), validator);
+    }
+    
+    protected SamlProtocolType getSAMLProtocol() {
+        return (SamlProtocolType)super.getProtocolType();
+    }
+
+    protected void setSAMLProtocol(SamlProtocolType samlProtocol) {
+        super.setProtocolType(samlProtocol);
+    }
+
+    public boolean isSignRequest() {
+        return getSAMLProtocol().isSignRequest();
+    }
+
+    public void setSignRequest(boolean signRequest) {
+        getSAMLProtocol().setSignRequest(signRequest);
+    }
+    
+    public String getWebAppDomain() {
+        return getSAMLProtocol().getWebAppDomain();
+    }
+    
+    public void setWebAppDomain(String webAppDomain) {
+        getSAMLProtocol().setWebAppDomain(webAppDomain);
+    }
+
+    public long getStateTimeToLive() {
+        long ttl = getSAMLProtocol().getStateTimeToLive();
+        if (ttl > 0) {
+            return ttl;
+        }
+        return 2L * 60L * 1000L;
+    }
+    
+    public void setStateTimeToLive(long stateTimeToLive) {
+        getSAMLProtocol().setStateTimeToLive(stateTimeToLive);
     }
 
     

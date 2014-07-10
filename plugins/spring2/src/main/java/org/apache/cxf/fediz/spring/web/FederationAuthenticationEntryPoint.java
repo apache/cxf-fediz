@@ -20,6 +20,7 @@
 package org.apache.cxf.fediz.spring.web;
 
 import java.io.IOException;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -31,6 +32,7 @@ import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.processor.FederationProcessorImpl;
 import org.apache.cxf.fediz.core.processor.FedizProcessor;
+import org.apache.cxf.fediz.core.processor.RedirectionResponse;
 import org.apache.cxf.fediz.spring.FederationConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,11 +82,22 @@ public class FederationAuthenticationEntryPoint implements AuthenticationEntryPo
         LOG.debug("Federation context: {}", fedContext);
         try {
             FedizProcessor wfProc = new FederationProcessorImpl();
-            redirectUrl = wfProc.createSignInRequest(servletRequest, fedContext);
+            RedirectionResponse redirectionResponse =
+                wfProc.createSignInRequest(servletRequest, fedContext);
+            redirectUrl = redirectionResponse.getRedirectionURL();
+            
             if (redirectUrl == null) {
                 LOG.warn("Failed to create SignInRequest. Redirect URL null");
                 throw new ServletException("Failed to create SignInRequest. Redirect URL null");
             }
+            
+            Map<String, String> headers = redirectionResponse.getHeaders();
+            if (!headers.isEmpty()) {
+                for (String headerName : headers.keySet()) {
+                    response.addHeader(headerName, headers.get(headerName));
+                }
+            }
+            
         } catch (ProcessingException ex) {
             LOG.warn("Failed to create SignInRequest", ex);
             throw new ServletException("Failed to create SignInRequest: " + ex.getMessage());
@@ -124,12 +137,24 @@ public class FederationAuthenticationEntryPoint implements AuthenticationEntryPo
         LOG.debug("Federation context: {}", fedContext);
         try {
             FedizProcessor wfProc = new FederationProcessorImpl();
-            redirectUrl = wfProc.createSignInRequest(hrequest, fedContext);
+            
+            RedirectionResponse redirectionResponse =
+                wfProc.createSignInRequest(hrequest, fedContext);
+            redirectUrl = redirectionResponse.getRedirectionURL();
+            
             if (redirectUrl == null) {
                 LOG.warn("Failed to create SignInRequest.");
                 hresponse.sendError(
                         HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignInRequest.");
             }
+            
+            Map<String, String> headers = redirectionResponse.getHeaders();
+            if (!headers.isEmpty()) {
+                for (String headerName : headers.keySet()) {
+                    hresponse.addHeader(headerName, headers.get(headerName));
+                }
+            }
+            
         } catch (ProcessingException ex) {
             System.err.println("Failed to create SignInRequest: " + ex.getMessage());
             LOG.warn("Failed to create SignInRequest: " + ex.getMessage());

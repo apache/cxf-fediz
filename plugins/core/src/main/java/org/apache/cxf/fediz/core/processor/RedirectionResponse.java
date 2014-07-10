@@ -19,24 +19,33 @@
 
 package org.apache.cxf.fediz.core.processor;
 
-import javax.servlet.http.HttpServletRequest;
-import org.w3c.dom.Document;
-import org.apache.cxf.fediz.core.config.FedizContext;
-import org.apache.cxf.fediz.core.exception.ProcessingException;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
+/**
+ * Some parameters to redirect to a token issuer (either SignIn or SignOut)
+ */
+public class RedirectionResponse implements Serializable {
 
-public interface FedizProcessor {
-
-    FedizResponse processRequest(FedizRequest request, FedizContext config) throws ProcessingException;
+    private static final long serialVersionUID = 3182350165552249151L;
     
-    RedirectionResponse createSignInRequest(
-        HttpServletRequest request, FedizContext config
-    ) throws ProcessingException;
-
-    RedirectionResponse createSignOutRequest(
-        HttpServletRequest request, FedizContext config
-    ) throws ProcessingException;
-
-    Document getMetaData(FedizContext config) throws ProcessingException;
-
+    private String redirectionURL;
+    private Map<String, String> headers = new HashMap<String, String>();
+    
+    public String getRedirectionURL() {
+        return redirectionURL;
+    }
+    
+    public void setRedirectionURL(String redirectionURL) {
+        this.redirectionURL = redirectionURL;
+    }
+    
+    public Map<String, String> getHeaders() {
+        return headers;
+    }
+    
+    public void addHeader(String headerName, String headerValue) {
+        headers.put(headerName, headerValue);
+    }
 }
