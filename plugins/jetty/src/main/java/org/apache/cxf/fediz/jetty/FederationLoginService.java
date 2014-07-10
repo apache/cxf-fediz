@@ -27,8 +27,8 @@ import javax.security.auth.Subject;
 
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
-import org.apache.cxf.fediz.core.processor.FederationProcessorImpl;
 import org.apache.cxf.fediz.core.processor.FedizProcessor;
+import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
 import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.eclipse.jetty.security.IdentityService;
@@ -85,7 +85,8 @@ public class FederationLoginService extends AbstractLifeCycle implements LoginSe
                 LOG.debug("wresult=\n" + wfReq.getWresult());
             }
             
-            FedizProcessor wfProc = new FederationProcessorImpl();
+            FedizProcessor wfProc = 
+                FedizProcessorFactory.newFedizProcessor(config.getProtocol());
             try {
                 wfRes = wfProc.processRequest(wfReq, config);
             } catch (ProcessingException ex) {

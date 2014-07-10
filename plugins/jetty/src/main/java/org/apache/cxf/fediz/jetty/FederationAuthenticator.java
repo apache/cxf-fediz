@@ -38,8 +38,8 @@ import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
-import org.apache.cxf.fediz.core.processor.FederationProcessorImpl;
 import org.apache.cxf.fediz.core.processor.FedizProcessor;
+import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
 import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.apache.cxf.fediz.core.processor.RedirectionResponse;
@@ -56,7 +56,6 @@ import org.eclipse.jetty.server.Authentication.User;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.UserIdentity;
 import org.eclipse.jetty.util.MultiMap;
-import org.eclipse.jetty.util.StringUtil;
 import org.eclipse.jetty.util.URIUtil;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.log.Logger;
@@ -235,7 +234,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
 
                         // not authenticated
                         if (LOG.isDebugEnabled()) {
-                            LOG.debug("WSFED authentication FAILED for " + StringUtil.printable(user.getUserPrincipal().getName()));
+                            LOG.debug("WSFED authentication FAILED");
                         }
                         if (response != null) {
                             response.sendError(HttpServletResponse.SC_FORBIDDEN);
@@ -295,7 +294,8 @@ public class FederationAuthenticator extends LoginAuthenticator {
                     if (logoutUrl != null && !logoutUrl.isEmpty() && uri.equals(contextName + logoutUrl)) {
                         session.invalidate();
 
-                        FedizProcessor wfProc = new FederationProcessorImpl();
+                        FedizProcessor wfProc = 
+                            FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
                         signOutRedirectToIssuer(request, response, wfProc);
 
                         return Authentication.SEND_CONTINUE;
@@ -361,7 +361,14 @@ public class FederationAuthenticator extends LoginAuthenticator {
                 }
             }
             
-            FedizProcessor wfProc = new FederationProcessorImpl();
+            String contextName = request.getSession().getServletContext().getContextPath();
+            if (contextName == null || contextName.isEmpty()) {
+                contextName = "/";
+            }
+            FedizContext fedConfig = getContextConfiguration(contextName);
+            
+            FedizProcessor wfProc = 
+                FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
             signInRedirectToIssuer(request, response, wfProc);
 
             return Authentication.SEND_CONTINUE;

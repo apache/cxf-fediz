@@ -19,8 +19,9 @@
 
 package org.apache.cxf.fediz.spring.authentication;
 
-import org.apache.cxf.fediz.core.processor.FederationProcessorImpl;
+import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.processor.FedizProcessor;
+import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
 import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.apache.cxf.fediz.spring.FederationConfig;
@@ -114,8 +115,10 @@ public class FederationAuthenticationProvider implements AuthenticationProvider,
         throws AuthenticationException {
         try {
             FedizRequest wfReq = (FedizRequest)authentication.getCredentials();
-            FedizProcessor wfProc = new FederationProcessorImpl();
-            FedizResponse wfRes = wfProc.processRequest(wfReq, federationConfig.getFedizContext());
+            FedizContext context = federationConfig.getFedizContext();
+            FedizProcessor wfProc = 
+                FedizProcessorFactory.newFedizProcessor(context.getProtocol());
+            FedizResponse wfRes = wfProc.processRequest(wfReq, context);
 
             final UserDetails userDetails = loadUserByFederationResponse(wfRes);
             userDetailsChecker.check(userDetails);

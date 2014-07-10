@@ -30,8 +30,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
-import org.apache.cxf.fediz.core.processor.FederationProcessorImpl;
 import org.apache.cxf.fediz.core.processor.FedizProcessor;
+import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
 import org.apache.cxf.fediz.core.processor.RedirectionResponse;
 import org.apache.cxf.fediz.spring.FederationConfig;
 import org.slf4j.Logger;
@@ -81,7 +81,8 @@ public class FederationAuthenticationEntryPoint implements AuthenticationEntryPo
         FedizContext fedContext = federationConfig.getFedizContext();
         LOG.debug("Federation context: {}", fedContext);
         try {
-            FedizProcessor wfProc = new FederationProcessorImpl();
+            FedizProcessor wfProc = 
+                FedizProcessorFactory.newFedizProcessor(fedContext.getProtocol());
             RedirectionResponse redirectionResponse =
                 wfProc.createSignInRequest(servletRequest, fedContext);
             redirectUrl = redirectionResponse.getRedirectionURL();
@@ -136,7 +137,8 @@ public class FederationAuthenticationEntryPoint implements AuthenticationEntryPo
         FedizContext fedContext = federationConfig.getFedizContext();
         LOG.debug("Federation context: {}", fedContext);
         try {
-            FedizProcessor wfProc = new FederationProcessorImpl();
+            FedizProcessor wfProc = 
+                FedizProcessorFactory.newFedizProcessor(fedContext.getProtocol());
             
             RedirectionResponse redirectionResponse =
                 wfProc.createSignInRequest(hrequest, fedContext);

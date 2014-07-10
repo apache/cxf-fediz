@@ -27,8 +27,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
-import org.apache.cxf.fediz.core.processor.FederationProcessorImpl;
 import org.apache.cxf.fediz.core.processor.FedizProcessor;
+import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
 import org.apache.cxf.fediz.core.processor.RedirectionResponse;
 import org.apache.cxf.fediz.spring.FederationConfig;
 import org.slf4j.Logger;
@@ -51,15 +51,16 @@ public class FederationLogoutSuccessHandler implements LogoutSuccessHandler {
     @Override
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response,
                                 Authentication authentication) throws IOException, ServletException {
-        FedizProcessor processor = new FederationProcessorImpl();
         String contextName = request.getContextPath();
         if (contextName == null || contextName.isEmpty()) {
             contextName = "/";
         }
         FedizContext fedCtx = federationConfig.getFedizContext(contextName);
         try {
+            FedizProcessor wfProc = 
+                FedizProcessorFactory.newFedizProcessor(fedCtx.getProtocol());
             RedirectionResponse redirectionResponse =
-                processor.createSignOutRequest(request, fedCtx);
+                wfProc.createSignOutRequest(request, fedCtx);
             String redirectURL = redirectionResponse.getRedirectionURL();
             if (redirectURL != null) {
                 Map<String, String> headers = redirectionResponse.getHeaders();
