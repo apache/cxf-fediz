@@ -21,10 +21,17 @@ package org.apache.cxf.fediz.core.config;
 
 import org.apache.cxf.fediz.core.config.jaxb.ProtocolType;
 import org.apache.cxf.fediz.core.config.jaxb.SamlProtocolType;
+import org.apache.cxf.fediz.core.samlsso.AuthnRequestBuilder;
+import org.apache.cxf.fediz.core.samlsso.DefaultAuthnRequestBuilder;
+import org.apache.wss4j.common.util.Loader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SAMLProtocol extends Protocol {
 
-    // private static final Logger LOG = LoggerFactory.getLogger(SAMLProtocol.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SAMLProtocol.class);
+    
+    private AuthnRequestBuilder authnRequestBuilder;
     
     public SAMLProtocol(ProtocolType protocolType) {
         super(protocolType);
@@ -92,6 +99,36 @@ public class SAMLProtocol extends Protocol {
     
     public void setStateTimeToLive(long stateTimeToLive) {
         getSAMLProtocol().setStateTimeToLive(stateTimeToLive);
+    }
+
+    public AuthnRequestBuilder getAuthnRequestBuilder() {
+        if (authnRequestBuilder != null) {
+            return authnRequestBuilder;
+        }
+        
+        // See if we have a custom AuthnRequestBuilder
+        String authnRequestBuilderStr = getSAMLProtocol().getAuthnRequestBuilder();
+        if (authnRequestBuilderStr != null && !"".equals(authnRequestBuilderStr)) {
+            try {
+                Class<?> authnRequestBuilderClass = Loader.loadClass(authnRequestBuilderStr);
+                authnRequestBuilder = (AuthnRequestBuilder) authnRequestBuilderClass.newInstance();
+            } catch (ClassNotFoundException ex) {
+                LOG.debug(ex.getMessage(), ex);
+            } catch (InstantiationException ex) {
+                LOG.debug(ex.getMessage(), ex);
+            } catch (IllegalAccessException ex) {
+                LOG.debug(ex.getMessage(), ex);
+            }
+        }
+        
+        // Default implementation
+        authnRequestBuilder = new DefaultAuthnRequestBuilder();
+        
+        return authnRequestBuilder;
+    }
+
+    public void setAuthnRequestBuilder(AuthnRequestBuilder authnRequestBuilder) {
+        this.authnRequestBuilder = authnRequestBuilder;
     }
 
     

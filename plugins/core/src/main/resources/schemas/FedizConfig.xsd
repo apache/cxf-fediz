@@ -116,6 +116,7 @@
 					<xs:element ref="signRequest" />
 					<xs:element ref="stateTimeToLive" />
 					<xs:element ref="webAppDomain" />
+					<xs:element ref="authnRequestBuilder"/>
 				</xs:sequence>
 				<xs:attribute name="version" use="required" type="xs:string" />
 			</xs:extension>
@@ -130,6 +131,7 @@
 	<xs:element name="signRequest" type="xs:boolean" />
 	<xs:element name="stateTimeToLive" type="xs:long" default="120000" />
 	<xs:element name="webAppDomain" type="xs:string" />
+	<xs:element name="authnRequestBuilder" type="xs:string" />
 	
 	<xs:complexType name="protocolType" abstract="true">
 	    <xs:sequence>
