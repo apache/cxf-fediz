@@ -138,8 +138,8 @@ public class TrustedIdpWSFedProtocolHandler implements TrustedIdpProtocolHandler
             FedizContext fedContext = getFedizContext(idp, trustedIdp);
     
             FedizRequest wfReq = new FedizRequest();
-            wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-            wfReq.setWresult(wresult);
+            wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+            wfReq.setResponseToken(wresult);
     
             FedizProcessor wfProc = new FederationProcessorImpl();
             FedizResponse wfResp = wfProc.processRequest(wfReq, fedContext);

@@ -134,8 +134,8 @@ public class FederationProcessorTest {
         Document doc = STSUtil.toSOAPPart(STSUtil.SAMPLE_RSTR_COLL_MSG);
         
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(DOM2Writer.nodeToString(doc));
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(DOM2Writer.nodeToString(doc));
         
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -159,8 +159,8 @@ public class FederationProcessorTest {
         Document doc = STSUtil.toSOAPPart(STSUtil.SAMPLE_RSTR_COLL_MSG);
         
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa("gugus");
-        wfReq.setWresult(DOM2Writer.nodeToString(doc));
+        wfReq.setAction("gugus");
+        wfReq.setResponseToken(DOM2Writer.nodeToString(doc));
         
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -182,8 +182,8 @@ public class FederationProcessorTest {
     @org.junit.Test
     public void validateSignInInvalidWResult() throws Exception {
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult("gugus");
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken("gugus");
         
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -229,8 +229,8 @@ public class FederationProcessorTest {
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(rstr);
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
         
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -272,8 +272,8 @@ public class FederationProcessorTest {
         String rstr = createSamlToken(assertion, "mystskey", true, STSUtil.SAMPLE_RSTR_MSG);
         
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(rstr);
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
         
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -312,8 +312,8 @@ public class FederationProcessorTest {
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(rstr);
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
         
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -352,8 +352,8 @@ public class FederationProcessorTest {
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(rstr);
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
         
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("CUSTOMROLEURI");
@@ -392,8 +392,8 @@ public class FederationProcessorTest {
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(rstr);
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
         
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("CUSTOMROLEURI");
@@ -431,8 +431,8 @@ public class FederationProcessorTest {
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(rstr);
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
         
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -471,8 +471,8 @@ public class FederationProcessorTest {
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(rstr);
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
         
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -512,8 +512,8 @@ public class FederationProcessorTest {
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true, STSUtil.SAMPLE_RSTR_2005_02_MSG);
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(rstr);
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
         
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -553,8 +553,8 @@ public class FederationProcessorTest {
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(rstr);
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
         
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -594,8 +594,8 @@ public class FederationProcessorTest {
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(rstr);
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
         
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -640,8 +640,8 @@ public class FederationProcessorTest {
         
         String rstr = createSamlToken(assertion, "mystskey", true);
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(rstr);
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
         
         // Load and update the config to enforce an error
         configurator = null;
@@ -683,8 +683,8 @@ public class FederationProcessorTest {
         
         String rstr = createSamlToken(assertion, "mystskey", false);
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(rstr);
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
         
         // Load and update the config to enforce an error
         configurator = null;
@@ -725,8 +725,8 @@ public class FederationProcessorTest {
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(rstr);
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
         
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -773,8 +773,8 @@ public class FederationProcessorTest {
         
         String rstr = createSamlToken(assertion, "mystskey", true);
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(rstr);
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
         
         // Load and update the config to enforce an error
         configurator = null;
@@ -814,8 +814,8 @@ public class FederationProcessorTest {
         
         String rstr = createSamlToken(assertion, "mystskey", true);
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(rstr);
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
         
         // Load and update the config to enforce an error
         configurator = null;
@@ -860,8 +860,8 @@ public class FederationProcessorTest {
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(rstr);
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
         
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -907,8 +907,8 @@ public class FederationProcessorTest {
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(rstr);
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
         
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -948,8 +948,8 @@ public class FederationProcessorTest {
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(rstr);
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
         
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("CUSTTOK");
@@ -991,8 +991,8 @@ public class FederationProcessorTest {
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(rstr);
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
         
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("NOCLOCKSKEW");
@@ -1032,8 +1032,8 @@ public class FederationProcessorTest {
         String rstr = encryptAndSignToken(assertion);
         
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(rstr);
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
         
         configurator = null;
         FedizContext config = 
@@ -1099,8 +1099,8 @@ public class FederationProcessorTest {
         String rstr = DOM2Writer.nodeToString(doc);
         
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(rstr);
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
         
         configurator = null;
         FedizContext config = 
@@ -1176,8 +1176,8 @@ public class FederationProcessorTest {
         String rstr = createSamlToken(assertion, "mystskey", true, STSUtil.SAMPLE_RSTR_MSG);
         
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(rstr);
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
                 
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, fedContext);

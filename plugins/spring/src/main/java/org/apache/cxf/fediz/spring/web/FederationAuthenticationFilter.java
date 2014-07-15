@@ -22,6 +22,7 @@ package org.apache.cxf.fediz.spring.web;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -46,10 +47,10 @@ public class FederationAuthenticationFilter extends AbstractAuthenticationProces
 
         
         String wa = request.getParameter("wa");
-        String wresult = request.getParameter("wresult");
+        String responseToken = getResponseToken(request);
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(wa);
-        wfReq.setWresult(wresult);
+        wfReq.setAction(wa);
+        wfReq.setResponseToken(responseToken);
         
         X509Certificate certs[] = 
             (X509Certificate[])request.getAttribute("javax.servlet.request.X509Certificate");
@@ -62,6 +63,15 @@ public class FederationAuthenticationFilter extends AbstractAuthenticationProces
         return this.getAuthenticationManager().authenticate(authRequest);
     }
   
+    private String getResponseToken(ServletRequest request) {
+        if (request.getParameter("wresult") != null) {
+            return request.getParameter("wresult");
+        } else if (request.getParameter("SAMLResponse") != null) {
+            return request.getParameter("SAMLResponse");
+        }
+        
+        return null;
+    }
 
     /**
      * 

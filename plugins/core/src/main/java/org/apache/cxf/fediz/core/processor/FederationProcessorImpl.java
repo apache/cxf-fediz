@@ -94,10 +94,10 @@ public class FederationProcessorImpl implements FedizProcessor {
             throw new IllegalStateException("Unsupported protocol");
         }
         FedizResponse response = null;
-        if (FederationConstants.ACTION_SIGNIN.equals(request.getWa())) {
+        if (FederationConstants.ACTION_SIGNIN.equals(request.getAction())) {
             response = this.processSignInRequest(request, config);
         } else {
-            LOG.error("Invalid action '" + request.getWa() + "'");
+            LOG.error("Invalid action '" + request.getAction() + "'");
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
         return response;
@@ -112,7 +112,7 @@ public class FederationProcessorImpl implements FedizProcessor {
             FedizRequest request, FedizContext config)
         throws ProcessingException {
         
-        byte[] wresult = request.getWresult().getBytes();
+        byte[] wresult = request.getResponseToken().getBytes();
 
         Document doc = null;
         Element el = null;

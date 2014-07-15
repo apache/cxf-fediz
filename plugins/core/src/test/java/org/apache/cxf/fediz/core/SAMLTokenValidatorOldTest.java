@@ -133,8 +133,8 @@ public class SAMLTokenValidatorOldTest {
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(rstr);
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
         
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -180,8 +180,8 @@ public class SAMLTokenValidatorOldTest {
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(rstr);
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
         
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("CUSTOMROLEURI");
@@ -223,8 +223,8 @@ public class SAMLTokenValidatorOldTest {
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(rstr);
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
         
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("CUSTOMROLEURI");
@@ -267,8 +267,8 @@ public class SAMLTokenValidatorOldTest {
         String rstr = createSamlToken(assertion, "mystskey", true);
         
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
-        wfReq.setWresult(rstr);
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
         
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");

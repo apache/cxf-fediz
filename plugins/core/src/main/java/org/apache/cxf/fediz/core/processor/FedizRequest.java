@@ -26,36 +26,34 @@ public class FedizRequest implements Serializable {
 
     private static final long serialVersionUID = 1L;
     
-    private String wa;
-    private String wresult;
-    private String wct;
+    private String action;
+    private String responseToken;
+    private String freshness;
     private Certificate[] certs;
 
-
-    public String getWct() {
-        return wct;
-    }
-    public void setWct(String wct) {
-        this.wct = wct;
-    }
-
-    public String getWa() {
-        return wa;
-    }
-    public void setWa(String wa) {
-        this.wa = wa;
-    }
-    public String getWresult() {
-        return wresult;
-    }
-    public void setWresult(String wresult) {
-        this.wresult = wresult;
-    }
     public Certificate[] getCerts() {
         return certs;
     }
     public void setCerts(Certificate[] certs) {
         this.certs = certs;
+    }
+    public String getResponseToken() {
+        return responseToken;
+    }
+    public void setResponseToken(String responseToken) {
+        this.responseToken = responseToken;
+    }
+    public String getAction() {
+        return action;
+    }
+    public void setAction(String action) {
+        this.action = action;
+    }
+    public String getFreshness() {
+        return freshness;
+    }
+    public void setFreshness(String freshness) {
+        this.freshness = freshness;
     }
 
 

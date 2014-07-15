@@ -82,7 +82,7 @@ public class FederationLoginService extends AbstractLifeCycle implements LoginSe
             
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Process SignIn request");
-                LOG.debug("wresult=\n" + wfReq.getWresult());
+                LOG.debug("token=\n" + wfReq.getResponseToken());
             }
             
             FedizProcessor wfProc = 

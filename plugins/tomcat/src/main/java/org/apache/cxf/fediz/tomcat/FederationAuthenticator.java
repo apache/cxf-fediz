@@ -32,6 +32,7 @@ import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.xml.bind.JAXBException;
@@ -46,8 +47,10 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.cxf.fediz.core.FederationConstants;
+import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
+import org.apache.cxf.fediz.core.config.SAMLProtocol;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
@@ -263,6 +266,12 @@ public class FederationAuthenticator extends FormAuthenticator {
         LOG.debug("authenticate invoked");
         // References to objects we will need later
         Session session = null;
+        
+        String contextName = request.getServletContext().getContextPath();
+        if (contextName == null || contextName.isEmpty()) {
+            contextName = "/";
+        }
+        FedizContext fedConfig = getContextConfiguration(contextName);
 
         // Have we already authenticated someone?
         Principal principal = request.getUserPrincipal();
@@ -315,11 +324,6 @@ public class FederationAuthenticator extends FormAuthenticator {
                                 sm.getString("authenticator.requestBodyTooBig"));
                         return false;
                     }
-                    String contextName = request.getServletContext().getContextPath();
-                    if (contextName == null || contextName.isEmpty()) {
-                        contextName = "/";
-                    }
-                    FedizContext fedConfig = getContextConfiguration(contextName);
                     
                     FedizProcessor wfProc = 
                         FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
@@ -366,9 +370,8 @@ public class FederationAuthenticator extends FormAuthenticator {
         // String contextPath = request.getContextPath();
         String requestURI = request.getDecodedRequestURI();
 
-        String wa = request.getParameter("wa");
-        // Unauthenticated -> redirect
-        if (wa == null) {
+        if (isSignInRequired(request, fedConfig)) {
+            // Unauthenticated -> redirect
             session = request.getSessionInternal(true);
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Save request in session '" + session.getIdInternal() + "'");
@@ -381,11 +384,6 @@ public class FederationAuthenticator extends FormAuthenticator {
                         sm.getString("authenticator.requestBodyTooBig"));
                 return false;
             }
-            String contextName = request.getServletContext().getContextPath();
-            if (contextName == null || contextName.isEmpty()) {
-                contextName = "/";
-            }
-            FedizContext fedConfig = getContextConfiguration(contextName);
             
             FedizProcessor wfProc = 
                 FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
@@ -395,17 +393,20 @@ public class FederationAuthenticator extends FormAuthenticator {
 
         // Check whether it is the signin request, validate the token.
         // If failed, redirect to the error page if they are not correct
-        String wresult = request.getParameter("wresult");
         FedizResponse wfRes = null;
-        if (wa.equals(FederationConstants.ACTION_SIGNIN)) {
+        String action = request.getParameter("wa");
+        String responseToken = getResponseToken(request, fedConfig);
+        
+        // Handle a request for authentication.
+        if (isSignInRequest(request, fedConfig)) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("SignIn request found");
                 LOG.debug("SignIn action...");
             }
 
-            if (wresult == null) {
+            if (responseToken == null) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("SignIn request must contain wresult");
+                    LOG.debug("SignIn request must contain a response token from the IdP");
                 }
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 return false;
@@ -414,22 +415,16 @@ public class FederationAuthenticator extends FormAuthenticator {
                 // processSignInRequest
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Process SignIn request");
-                    LOG.debug("wresult=\n" + wresult);
+                    LOG.debug("token=\n" + responseToken);
                 }
 
                 FedizRequest wfReq = new FedizRequest();
-                wfReq.setWa(wa);
-                wfReq.setWresult(wresult);
+                wfReq.setAction(action);
+                wfReq.setResponseToken(responseToken);
                 
                 X509Certificate certs[] = 
                     (X509Certificate[])request.getAttribute("javax.servlet.request.X509Certificate");
                 wfReq.setCerts(certs);
-
-                String contextName = request.getServletContext().getContextPath();
-                if (contextName == null || contextName.isEmpty()) {
-                    contextName = "/";
-                }
-                FedizContext fedConfig = getContextConfiguration(contextName);
 
                 FedizProcessor wfProc = 
                     FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
@@ -477,8 +472,8 @@ public class FederationAuthenticator extends FormAuthenticator {
                 principal = new FederationPrincipalImpl(wfRes.getUsername(), roles,
                         wfRes.getClaims(), wfRes.getToken());
             }
-        }  else {
-            LOG.error("Not supported action found in parameter wa: " + wa);
+        } else if (action != null) {
+            LOG.error("SignIn parameter not supported: " + action);
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return false;
         }
@@ -492,10 +487,6 @@ public class FederationAuthenticator extends FormAuthenticator {
          * (log.isDebugEnabled()) log.debug("Authenticating username '" +
          * username + "'"); principal = realm.authenticate(username, password);
          */
-        if (principal == null) {
-            forwardToErrorPage(request, response, config);
-            return false;
-        }
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("Authentication of '" + principal + "' was successful");
@@ -566,6 +557,40 @@ public class FederationAuthenticator extends FormAuthenticator {
             response.sendRedirect(response.encodeRedirectURL(requestURI));
         }
         return false;
+    }
+    
+    private boolean isSignInRequired(Request request, FedizContext fedConfig) {
+        if (fedConfig.getProtocol() instanceof FederationProtocol
+            && request.getParameter("wa") == null) {
+            return true;
+        } else if (fedConfig.getProtocol() instanceof SAMLProtocol
+            && request.getParameter("RelayState") != null) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    private boolean isSignInRequest(Request request, FedizContext fedConfig) {
+        if (fedConfig.getProtocol() instanceof FederationProtocol
+            && FederationConstants.ACTION_SIGNIN.equals(request.getParameter("wa"))) {
+            return true;
+        } else if (fedConfig.getProtocol() instanceof SAMLProtocol
+            && request.getParameter("RelayState") != null) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    private String getResponseToken(ServletRequest request, FedizContext fedConfig) {
+        if (fedConfig.getProtocol() instanceof FederationProtocol) {
+            return request.getParameter("wresult");
+        } else if (fedConfig.getProtocol() instanceof SAMLProtocol) {
+            return request.getParameter("SAMLResponse");
+        }
+        
+        return null;
     }
 
     @Override

@@ -35,8 +35,10 @@ import javax.servlet.http.HttpSession;
 import javax.xml.bind.JAXBException;
 
 import org.apache.cxf.fediz.core.FederationConstants;
+import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
+import org.apache.cxf.fediz.core.config.SAMLProtocol;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
@@ -163,110 +165,106 @@ public class FederationAuthenticator extends LoginAuthenticator {
         }
 
         HttpSession session = request.getSession(true);
+        
+        String contextName = request.getSession().getServletContext().getContextPath();
+        if (contextName == null || contextName.isEmpty()) {
+            contextName = "/";
+        }
+        FedizContext fedConfig = getContextConfiguration(contextName);
 
         try {
-            String wa = request.getParameter("wa");
-            String wresult = request.getParameter("wresult");
+            String action = request.getParameter("wa");
+            String responseToken = getResponseToken(request, fedConfig);
             
             // Handle a request for authentication.
-            if (wa != null) {
+            if (isSignInRequest(request, fedConfig)) {
 
                 FedizResponse wfRes = null;
-                if (wa.equals(FederationConstants.ACTION_SIGNIN)) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("SignIn request found");
-                    }
-
-                    if (wresult == null) {
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("SignIn request must contain wresult");
-                        }
-                        response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                        return Authentication.SEND_FAILURE;
-                    } else {
-                        
-                        FedizRequest wfReq = new FedizRequest();
-                        wfReq.setWa(wa);
-                        wfReq.setWresult(wresult);
-                        
-                        X509Certificate certs[] = 
-                            (X509Certificate[])request.getAttribute("javax.servlet.request.X509Certificate");
-                        wfReq.setCerts(certs);
-
-                        //Not supported in jetty 7.6
-                        //String contextName = request.getServletContext().getContextPath();
-                        String contextName = request.getSession().getServletContext().getContextPath();
-                        if (contextName == null || contextName.isEmpty()) {
-                            contextName = "/";
-                        }
-                        FedizContext fedConfig = getContextConfiguration(contextName);
-                        
-                        FederationLoginService fedLoginService = (FederationLoginService)this._loginService;
-                        UserIdentity user = fedLoginService.login(null, wfReq, fedConfig);
-                        if (user != null)
-                        {
-                            session=renewSession(request,response);
-                            
-                            FederationUserIdentity  fui = (FederationUserIdentity)user;
-                            session.setAttribute(SECURITY_TOKEN_ATTR, fui.getToken());
-
-                            // Redirect to original request
-                            String nuri;
-                            synchronized(session)
-                            {
-                                nuri = (String) session.getAttribute(J_URI);
-
-                                if (nuri == null || nuri.length() == 0)
-                                {
-                                    nuri = request.getContextPath();
-                                    if (nuri.length() == 0) { 
-                                        nuri = URIUtil.SLASH;
-                                    }
-                                }
-                                Authentication cached=new SessionAuthentication(getAuthMethod(), user, wfRes);
-                                session.setAttribute(SessionAuthentication.__J_AUTHENTICATED, cached);
-                            }
-                            response.setContentLength(0);   
-                            response.sendRedirect(response.encodeRedirectURL(nuri));
-
-                            return new FederationAuthentication(getAuthMethod(), user);
-                        }
-
-                        // not authenticated
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("WSFED authentication FAILED");
-                        }
-                        if (response != null) {
-                            response.sendError(HttpServletResponse.SC_FORBIDDEN);
-                        }
-
-                    }
-                } else if (FederationConstants.ACTION_SIGNOUT_CLEANUP.equals(wa)) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("SignOutCleanup request found");
-                        LOG.debug("SignOutCleanup action...");
-                    }
-                    session.invalidate();
-
-                    final ServletOutputStream responseOutputStream = response.getOutputStream();
-                    InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("logout.jpg");
-                    if (inputStream == null) {
-                        LOG.warn("Could not write logout.jpg");
-                        return Authentication.SEND_FAILURE;
-                    }
-                    int read = 0;
-                    byte[] buf = new byte[1024];
-                    while ((read = inputStream.read(buf)) != -1) {
-                        responseOutputStream.write(buf, 0, read);
-                    }
-                    inputStream.close();
-                    responseOutputStream.flush();
-                    return Authentication.SEND_SUCCESS;
-                } else {
-                    LOG.warn("Not supported action found in parameter wa: " + wa);
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                    return Authentication.UNAUTHENTICATED;
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("SignIn request found");
                 }
+
+                if (responseToken == null) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("SignIn request must contain a response token from the IdP");
+                    }
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    return Authentication.SEND_FAILURE;
+                } else {
+
+                    FedizRequest wfReq = new FedizRequest();
+                    wfReq.setAction(action);
+                    wfReq.setResponseToken(responseToken);
+
+                    X509Certificate certs[] = 
+                        (X509Certificate[])request.getAttribute("javax.servlet.request.X509Certificate");
+                    wfReq.setCerts(certs);
+
+                    FederationLoginService fedLoginService = (FederationLoginService)this._loginService;
+                    UserIdentity user = fedLoginService.login(null, wfReq, fedConfig);
+                    if (user != null)
+                    {
+                        session=renewSession(request,response);
+
+                        FederationUserIdentity  fui = (FederationUserIdentity)user;
+                        session.setAttribute(SECURITY_TOKEN_ATTR, fui.getToken());
+
+                        // Redirect to original request
+                        String nuri;
+                        synchronized(session)
+                        {
+                            nuri = (String) session.getAttribute(J_URI);
+
+                            if (nuri == null || nuri.length() == 0)
+                            {
+                                nuri = request.getContextPath();
+                                if (nuri.length() == 0) { 
+                                    nuri = URIUtil.SLASH;
+                                }
+                            }
+                            Authentication cached=new SessionAuthentication(getAuthMethod(), user, wfRes);
+                            session.setAttribute(SessionAuthentication.__J_AUTHENTICATED, cached);
+                        }
+                        response.setContentLength(0);   
+                        response.sendRedirect(response.encodeRedirectURL(nuri));
+
+                        return new FederationAuthentication(getAuthMethod(), user);
+                    }
+
+                    // not authenticated
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("WSFED authentication FAILED");
+                    }
+                    if (response != null) {
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                    }
+
+                }
+            } else if (FederationConstants.ACTION_SIGNOUT_CLEANUP.equals(action)) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("SignOutCleanup request found");
+                    LOG.debug("SignOutCleanup action...");
+                }
+                session.invalidate();
+
+                final ServletOutputStream responseOutputStream = response.getOutputStream();
+                InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("logout.jpg");
+                if (inputStream == null) {
+                    LOG.warn("Could not write logout.jpg");
+                    return Authentication.SEND_FAILURE;
+                }
+                int read = 0;
+                byte[] buf = new byte[1024];
+                while ((read = inputStream.read(buf)) != -1) {
+                    responseOutputStream.write(buf, 0, read);
+                }
+                inputStream.close();
+                responseOutputStream.flush();
+                return Authentication.SEND_SUCCESS;
+            } else if (action != null) {
+                LOG.warn("Not supported action found in parameter wa: " + action);
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                return Authentication.UNAUTHENTICATED;
             }
 
             // Look for cached authentication
@@ -284,12 +282,6 @@ public class FederationAuthenticator extends LoginAuthenticator {
                 else
                 {
                     //logout
-                    String contextName = request.getSession().getServletContext().getContextPath();
-                    if (contextName == null || contextName.isEmpty()) {
-                        contextName = "/";
-                    }
-                    FedizContext fedConfig = getContextConfiguration(contextName);
-
                     String logoutUrl = fedConfig.getLogoutURL();
                     if (logoutUrl != null && !logoutUrl.isEmpty() && uri.equals(contextName + logoutUrl)) {
                         session.invalidate();
@@ -361,12 +353,6 @@ public class FederationAuthenticator extends LoginAuthenticator {
                 }
             }
             
-            String contextName = request.getSession().getServletContext().getContextPath();
-            if (contextName == null || contextName.isEmpty()) {
-                contextName = "/";
-            }
-            FedizContext fedConfig = getContextConfiguration(contextName);
-            
             FedizProcessor wfProc = 
                 FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
             signInRedirectToIssuer(request, response, wfProc);
@@ -381,7 +367,26 @@ public class FederationAuthenticator extends LoginAuthenticator {
          */
     }
 
+    private boolean isSignInRequest(ServletRequest request, FedizContext fedConfig) {
+        if (fedConfig.getProtocol() instanceof FederationProtocol
+            && FederationConstants.ACTION_SIGNIN.equals(request.getParameter("wa"))) {
+            return true;
+        } else if (fedConfig.getProtocol() instanceof SAMLProtocol
+            && request.getParameter("RelayState") != null) {
+            return true;
+        }
 
+        return false;
+    }
+    
+    private String getResponseToken(ServletRequest request, FedizContext fedConfig) {
+        if (fedConfig.getProtocol() instanceof FederationProtocol) {
+            return request.getParameter("wresult");
+        } else if (fedConfig.getProtocol() instanceof SAMLProtocol) {
+            return request.getParameter("SAMLResponse");
+        }
+        return null;
+    }
 
     /* ------------------------------------------------------------ */
     public boolean secureResponse(ServletRequest req, ServletResponse res, boolean mandatory,
