@@ -564,7 +564,7 @@ public class FederationAuthenticator extends FormAuthenticator {
             && request.getParameter("wa") == null) {
             return true;
         } else if (fedConfig.getProtocol() instanceof SAMLProtocol
-            && request.getParameter("RelayState") != null) {
+            && request.getParameter("RelayState") == null) {
             return true;
         }
         
@@ -642,7 +642,6 @@ public class FederationAuthenticator extends FormAuthenticator {
             response.sendError(
                                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignInRequest.");
         }
-        
     }
 
     protected void signOutRedirectToIssuer(Request request, HttpServletResponse response, FedizProcessor processor)
