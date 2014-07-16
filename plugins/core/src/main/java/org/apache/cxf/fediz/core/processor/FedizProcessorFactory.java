@@ -21,7 +21,7 @@ package org.apache.cxf.fediz.core.processor;
 
 import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.config.Protocol;
-// import org.apache.cxf.fediz.core.config.SAMLProtocol;
+import org.apache.cxf.fediz.core.config.SAMLProtocol;
 
 /**
  * A Factory to return FedizProcessor instances depending on the Protocol
@@ -35,9 +35,9 @@ public final class FedizProcessorFactory {
     public static FedizProcessor newFedizProcessor(Protocol protocol) {
         if (protocol instanceof FederationProtocol) {
             return new FederationProcessorImpl();
-        } /*else if (protocol instanceof SAMLProtocol) {
+        } else if (protocol instanceof SAMLProtocol) {
             return new SAMLProcessorImpl();
-        }*/
+        }
         return null;
     }
 

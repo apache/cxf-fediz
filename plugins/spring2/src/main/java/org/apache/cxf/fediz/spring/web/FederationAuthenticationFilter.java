@@ -64,6 +64,7 @@ public class FederationAuthenticationFilter extends AbstractProcessingFilter {
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(wa);
         wfReq.setResponseToken(responseToken);
+        wfReq.setState(request.getParameter("RelayState"));
         
         X509Certificate certs[] = 
             (X509Certificate[])request.getAttribute("javax.servlet.request.X509Certificate");

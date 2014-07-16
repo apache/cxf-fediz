@@ -29,6 +29,7 @@ public class FedizRequest implements Serializable {
     private String action;
     private String responseToken;
     private String freshness;
+    private String state;
     private Certificate[] certs;
 
     public Certificate[] getCerts() {
@@ -54,6 +55,12 @@ public class FedizRequest implements Serializable {
     }
     public void setFreshness(String freshness) {
         this.freshness = freshness;
+    }
+    public String getState() {
+        return state;
+    }
+    public void setState(String state) {
+        this.state = state;
     }
 
 

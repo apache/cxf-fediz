@@ -421,6 +421,7 @@ public class FederationAuthenticator extends FormAuthenticator {
                 FedizRequest wfReq = new FedizRequest();
                 wfReq.setAction(action);
                 wfReq.setResponseToken(responseToken);
+                wfReq.setState(request.getParameter("RelayState"));
                 
                 X509Certificate certs[] = 
                     (X509Certificate[])request.getAttribute("javax.servlet.request.X509Certificate");
@@ -435,7 +436,6 @@ public class FederationAuthenticator extends FormAuthenticator {
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
                     return false;
                 }
-                
                 
                 // Validate the AudienceRestriction in Security Token (e.g. SAML) 
                 // against the configured list of audienceURIs

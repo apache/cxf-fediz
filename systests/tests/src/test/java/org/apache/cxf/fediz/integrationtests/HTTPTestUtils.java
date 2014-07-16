@@ -172,5 +172,72 @@ public final class HTTPTestUtils {
             }
         }
     }
+    
+    public static String sendHttpGetForSAMLSSO(String url, String user, 
+                                     String password, int idpPort) throws Exception {
+        return sendHttpGetForSAMLSSO(url, user, password, 200, 200, idpPort);
+    }
+    
+    public static String sendHttpGetForSAMLSSO(String url, String user, String password, 
+                                     int returnCodeIDP, int returnCodeRP, int idpPort)
+        throws Exception {
+        
+        CloseableHttpClient httpClient = null;
+        try {
+            CredentialsProvider credsProvider = new BasicCredentialsProvider();
+            credsProvider.setCredentials(
+                new AuthScope("localhost", idpPort), 
+                new UsernamePasswordCredentials(user, password));
+
+            KeyStore trustStore  = KeyStore.getInstance(KeyStore.getDefaultType());
+            FileInputStream instream = new FileInputStream(new File("./target/test-classes/client.jks"));
+            try {
+                trustStore.load(instream, "clientpass".toCharArray());
+            } finally {
+                try {
+                    instream.close();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+
+            SSLContextBuilder sslContextBuilder = new SSLContextBuilder();
+            sslContextBuilder.loadTrustMaterial(trustStore, new TrustSelfSignedStrategy());
+            sslContextBuilder.loadKeyMaterial(trustStore, "clientpass".toCharArray());
+            
+            SSLContext sslContext = sslContextBuilder.build();
+            SSLConnectionSocketFactory sslSocketFactory = 
+                new SSLConnectionSocketFactory(sslContext);
+            
+            HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+            httpClientBuilder.setDefaultCredentialsProvider(credsProvider);
+            httpClientBuilder.setSSLSocketFactory(sslSocketFactory);
+            httpClientBuilder.setRedirectStrategy(new LaxRedirectStrategy());
+            
+            httpClient = httpClientBuilder.build();
+            
+            HttpGet httpget = new HttpGet(url);
+
+            HttpResponse response = httpClient.execute(httpget);
+            HttpEntity entity = response.getEntity();
+
+            System.out.println(response.getStatusLine());
+            if (entity != null) {
+                System.out.println("Response content length: " + entity.getContentLength());
+            }
+            Assert.assertTrue("RP HTTP Response code: " + response.getStatusLine().getStatusCode()
+                              + " [Expected: " + returnCodeRP + "]",
+                              returnCodeRP == response.getStatusLine().getStatusCode());
+
+            return EntityUtils.toString(entity);
+        } finally {
+            // When HttpClient instance is no longer needed,
+            // shut down the connection manager to ensure
+            // immediate deallocation of all system resources
+            if (httpClient != null) {
+                httpClient.close();
+            }
+        }
+    }
 
 }

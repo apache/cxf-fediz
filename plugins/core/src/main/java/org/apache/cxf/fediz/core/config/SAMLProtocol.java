@@ -19,10 +19,18 @@
 
 package org.apache.cxf.fediz.core.config;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.cxf.fediz.core.TokenValidator;
 import org.apache.cxf.fediz.core.config.jaxb.ProtocolType;
 import org.apache.cxf.fediz.core.config.jaxb.SamlProtocolType;
+import org.apache.cxf.fediz.core.saml.SAMLTokenValidator;
 import org.apache.cxf.fediz.core.samlsso.AuthnRequestBuilder;
 import org.apache.cxf.fediz.core.samlsso.DefaultAuthnRequestBuilder;
+import org.apache.cxf.fediz.core.samlsso.EHCacheSPStateManager;
+import org.apache.cxf.fediz.core.samlsso.SPStateManager;
+import org.apache.cxf.fediz.core.util.ClassLoaderUtils;
 import org.apache.wss4j.common.util.Loader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,13 +40,15 @@ public class SAMLProtocol extends Protocol {
     private static final Logger LOG = LoggerFactory.getLogger(SAMLProtocol.class);
     
     private AuthnRequestBuilder authnRequestBuilder;
+    private SPStateManager stateManager;
+    private List<TokenValidator> validators = new ArrayList<TokenValidator>();
     
     public SAMLProtocol(ProtocolType protocolType) {
         super(protocolType);
         
-        /*FederationProtocolType fp = (FederationProtocolType)protocolType;
-        if (fp.getTokenValidators() != null && fp.getTokenValidators().getValidator() != null) {
-            for (String validatorClassname : fp.getTokenValidators().getValidator()) {
+        SamlProtocolType sp = (SamlProtocolType)protocolType;
+        if (sp.getTokenValidators() != null && sp.getTokenValidators().getValidator() != null) {
+            for (String validatorClassname : sp.getTokenValidators().getValidator()) {
                 Object obj = null;
                 try {
                     if (super.getClassloader() == null) {
@@ -56,13 +66,13 @@ public class SAMLProtocol extends Protocol {
                     LOG.error("Invalid TokenValidator implementation class: '" + validatorClassname + "'");
                 }
             }
-        }*/
+        }
         
         // add SAMLTokenValidator as the last one
         // Fediz chooses the first validator in the list if its
         // canHandleToken or canHandleTokenType method return true
-        //SAMLTokenValidator validator = new SAMLTokenValidator();
-        //validators.add(validators.size(), validator);
+        SAMLTokenValidator validator = new SAMLTokenValidator();
+        validators.add(validators.size(), validator);
     }
     
     protected SamlProtocolType getSAMLProtocol() {
@@ -87,6 +97,32 @@ public class SAMLProtocol extends Protocol {
     
     public void setWebAppDomain(String webAppDomain) {
         getSAMLProtocol().setWebAppDomain(webAppDomain);
+    }
+    
+    public SPStateManager getStateManager() {
+        if (stateManager != null) {
+            return stateManager;
+        }
+        String stateManagerStr = getSAMLProtocol().getStateManager();
+        if (stateManagerStr == null || "".equals(stateManagerStr)) {
+            stateManager = new EHCacheSPStateManager("fediz-ehcache.xml");
+        } else {
+            try {
+                Class<?> stateManagerClass = Loader.loadClass(stateManagerStr);
+                stateManager = (SPStateManager) stateManagerClass.newInstance();
+            } catch (ClassNotFoundException e) {
+                stateManager = new EHCacheSPStateManager("fediz-ehcache.xml");
+            } catch (InstantiationException e) {
+                stateManager = new EHCacheSPStateManager("fediz-ehcache.xml");
+            } catch (IllegalAccessException e) {
+                stateManager = new EHCacheSPStateManager("fediz-ehcache.xml");
+            }
+        }
+        return stateManager;
+    }
+    
+    public void setStateManager(SPStateManager stateManager) {
+        this.stateManager = stateManager;
     }
 
     public long getStateTimeToLive() {
@@ -129,6 +165,10 @@ public class SAMLProtocol extends Protocol {
 
     public void setAuthnRequestBuilder(AuthnRequestBuilder authnRequestBuilder) {
         this.authnRequestBuilder = authnRequestBuilder;
+    }
+    
+    public List<TokenValidator> getTokenValidators() {
+        return validators;
     }
 
     
