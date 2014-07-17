@@ -21,7 +21,6 @@ package org.apache.cxf.fediz.core.samlsso;
 
 import java.util.Collections;
 
-import org.apache.wss4j.common.saml.OpenSAMLUtil;
 import org.opensaml.common.SAMLVersion;
 import org.opensaml.saml2.core.AuthnContextClassRef;
 import org.opensaml.saml2.core.AuthnContextComparisonTypeEnumeration;
@@ -47,7 +46,6 @@ public class DefaultAuthnRequestBuilder implements AuthnRequestBuilder {
         String issuerId,
         String assertionConsumerServiceAddress
     ) throws Exception {
-        OpenSAMLUtil.initSamlEngine();
         Issuer issuer =
             SamlpRequestComponentBuilder.createIssuer(issuerId);
         

@@ -70,6 +70,10 @@ import org.slf4j.LoggerFactory;
 public class SAMLProcessorImpl implements FedizProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(SAMLProcessorImpl.class);
+    
+    static {
+        OpenSAMLUtil.initSamlEngine();
+    }
 
     /**
      * Default constructor

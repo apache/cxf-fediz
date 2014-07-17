@@ -26,7 +26,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>org.apache.cxf.fediz.systests</groupId>
-    <artifactId>systests-spring2Webapp</artifactId>
+    <artifactId>fediz-systests-spring2Webapp</artifactId>
     <name>Apache Fediz Systests Spring2 Webapp</name>
     <packaging>war</packaging>
 

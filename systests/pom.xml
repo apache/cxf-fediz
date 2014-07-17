@@ -25,7 +25,7 @@
        <version>1.2.0-SNAPSHOT</version>
    </parent>
    <groupId>org.apache.cxf.fediz</groupId>
-   <artifactId>systests</artifactId>
+   <artifactId>fediz-systests</artifactId>
    <name>Apache Fediz System tests</name>
    <packaging>pom</packaging>
 

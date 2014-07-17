@@ -27,7 +27,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>org.apache.cxf.fediz.systests</groupId>
-    <artifactId>systests-springPreauthWebapp</artifactId>
+    <artifactId>fediz-systests-springPreauthWebapp</artifactId>
     <name>Apache Fediz Systests SpringWebapp (Pre-Authentication)</name>
     <packaging>war</packaging>
 
