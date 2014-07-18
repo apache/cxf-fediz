@@ -19,10 +19,6 @@
 
 package org.apache.cxf.fediz.core.config;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.cxf.fediz.core.TokenValidator;
 import org.apache.cxf.fediz.core.config.jaxb.ProtocolType;
 import org.apache.cxf.fediz.core.config.jaxb.SamlProtocolType;
 import org.apache.cxf.fediz.core.saml.SAMLTokenValidator;
@@ -30,7 +26,6 @@ import org.apache.cxf.fediz.core.samlsso.AuthnRequestBuilder;
 import org.apache.cxf.fediz.core.samlsso.DefaultAuthnRequestBuilder;
 import org.apache.cxf.fediz.core.samlsso.EHCacheSPStateManager;
 import org.apache.cxf.fediz.core.samlsso.SPStateManager;
-import org.apache.cxf.fediz.core.util.ClassLoaderUtils;
 import org.apache.wss4j.common.util.Loader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,38 +36,15 @@ public class SAMLProtocol extends Protocol {
     
     private AuthnRequestBuilder authnRequestBuilder;
     private SPStateManager stateManager;
-    private List<TokenValidator> validators = new ArrayList<TokenValidator>();
     
     public SAMLProtocol(ProtocolType protocolType) {
         super(protocolType);
-        
-        SamlProtocolType sp = (SamlProtocolType)protocolType;
-        if (sp.getTokenValidators() != null && sp.getTokenValidators().getValidator() != null) {
-            for (String validatorClassname : sp.getTokenValidators().getValidator()) {
-                Object obj = null;
-                try {
-                    if (super.getClassloader() == null) {
-                        obj = ClassLoaderUtils.loadClass(validatorClassname, this.getClass()).newInstance();
-                    } else {
-                        obj = super.getClassloader().loadClass(validatorClassname).newInstance();
-                    }
-                } catch (Exception ex) {
-                    LOG.error("Failed to instantiate TokenValidator implementation class: '"
-                              + validatorClassname + "'\n" + ex.getClass().getCanonicalName() + ": " + ex.getMessage());
-                }
-                if (obj instanceof TokenValidator) {
-                    validators.add((TokenValidator)obj);
-                } else if (obj != null) {
-                    LOG.error("Invalid TokenValidator implementation class: '" + validatorClassname + "'");
-                }
-            }
-        }
         
         // add SAMLTokenValidator as the last one
         // Fediz chooses the first validator in the list if its
         // canHandleToken or canHandleTokenType method return true
         SAMLTokenValidator validator = new SAMLTokenValidator();
-        validators.add(validators.size(), validator);
+        getTokenValidators().add(getTokenValidators().size(), validator);
     }
     
     protected SamlProtocolType getSAMLProtocol() {
@@ -167,9 +139,5 @@ public class SAMLProtocol extends Protocol {
         this.authnRequestBuilder = authnRequestBuilder;
     }
     
-    public List<TokenValidator> getTokenValidators() {
-        return validators;
-    }
-
     
 }

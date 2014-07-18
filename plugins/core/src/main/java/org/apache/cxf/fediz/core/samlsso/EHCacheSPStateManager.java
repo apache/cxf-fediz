@@ -41,7 +41,6 @@ public class EHCacheSPStateManager implements SPStateManager {
     public static final String RESPONSE_CACHE_KEY = "cxf.fediz.samlp.response.state.cache";
     
     private Ehcache requestCache;
-    private Ehcache responseCache;
     private CacheManager cacheManager;
     private long ttl = DEFAULT_TTL;
     
@@ -60,11 +59,6 @@ public class EHCacheSPStateManager implements SPStateManager {
 
         Ehcache newCache = new Cache(requestCC);
         requestCache = cacheManager.addCacheIfAbsent(newCache);
-        
-        CacheConfiguration responseCC = EHCacheManagerHolder.getCacheConfiguration(RESPONSE_CACHE_KEY, cacheManager);
-        
-        newCache = new Cache(responseCC);
-        responseCache = cacheManager.addCacheIfAbsent(newCache);
     }
     
     private static URL getConfigFileURL(Object o) {
@@ -100,44 +94,6 @@ public class EHCacheSPStateManager implements SPStateManager {
         return ttl;
     }
     
-    public ResponseState getResponseState(String securityContextKey) {
-        Element element = responseCache.get(securityContextKey);
-        if (element != null) {
-            if (responseCache.isExpired(element)) {
-                responseCache.remove(securityContextKey);
-                return null;
-            }
-            return (ResponseState)element.getObjectValue();
-        }
-        return null;
-    }
-
-    public ResponseState removeResponseState(String securityContextKey) {
-        Element element = responseCache.get(securityContextKey);
-        if (element != null) {
-            responseCache.remove(securityContextKey);
-            return (ResponseState)element.getObjectValue();
-        }
-        return null;
-    }
-
-    public void setResponseState(String securityContextKey, ResponseState state) {
-        if (securityContextKey == null || "".equals(securityContextKey)) {
-            return;
-        }
-        
-        int parsedTTL = (int)ttl;
-        if (ttl != (long)parsedTTL) {
-            // Fall back to 5 minutes if the default TTL is set incorrectly
-            parsedTTL = 60 * 5;
-        }
-        Element element = new Element(securityContextKey, state);
-        element.setTimeToLive(parsedTTL);
-        element.setTimeToIdle(parsedTTL);
-        
-        responseCache.put(element);
-    }
-    
     public void setRequestState(String relayState, RequestState state) {
         if (relayState == null || "".equals(relayState)) {
             return;
@@ -169,7 +125,6 @@ public class EHCacheSPStateManager implements SPStateManager {
             cacheManager.shutdown();
             cacheManager = null;
             requestCache = null;
-            responseCache = null;
         }
     }
 

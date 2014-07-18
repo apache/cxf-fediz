@@ -31,6 +31,7 @@ public class TokenValidatorResponse {
     private String audience;
     private List<Claim> claims;
     private Date expires;
+    private Date created;
 
 
 
@@ -70,6 +71,16 @@ public class TokenValidatorResponse {
 
     public void setExpires(Date expires) {
         this.expires = expires;
+    }
+
+
+    public Date getCreated() {
+        return created;
+    }
+
+
+    public void setCreated(Date created) {
+        this.created = created;
     }
 
 

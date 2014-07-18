@@ -196,6 +196,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
                     wfReq.setAction(action);
                     wfReq.setResponseToken(responseToken);
                     wfReq.setState(request.getParameter("RelayState"));
+                    wfReq.setRequest(request);
 
                     X509Certificate certs[] = 
                         (X509Certificate[])request.getAttribute("javax.servlet.request.X509Certificate");

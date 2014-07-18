@@ -24,14 +24,12 @@ import java.util.List;
 
 import javax.security.auth.callback.CallbackHandler;
 
-import org.apache.cxf.fediz.core.TokenValidator;
 import org.apache.cxf.fediz.core.config.jaxb.CallbackType;
 import org.apache.cxf.fediz.core.config.jaxb.ClaimType;
 import org.apache.cxf.fediz.core.config.jaxb.ClaimTypesRequested;
 import org.apache.cxf.fediz.core.config.jaxb.FederationProtocolType;
 import org.apache.cxf.fediz.core.config.jaxb.ProtocolType;
 import org.apache.cxf.fediz.core.saml.SAMLTokenValidator;
-import org.apache.cxf.fediz.core.util.ClassLoaderUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,39 +42,15 @@ public class FederationProtocol extends Protocol {
     private Object homeRealm;
     private Object freshness;
     private Object signInQuery;
-    private Object realm;
-    private List<TokenValidator> validators = new ArrayList<TokenValidator>();
     
     public FederationProtocol(ProtocolType protocolType) {
         super(protocolType);
-        
-        FederationProtocolType fp = (FederationProtocolType)protocolType;
-        if (fp.getTokenValidators() != null && fp.getTokenValidators().getValidator() != null) {
-            for (String validatorClassname : fp.getTokenValidators().getValidator()) {
-                Object obj = null;
-                try {
-                    if (super.getClassloader() == null) {
-                        obj = ClassLoaderUtils.loadClass(validatorClassname, this.getClass()).newInstance();
-                    } else {
-                        obj = super.getClassloader().loadClass(validatorClassname).newInstance();
-                    }
-                } catch (Exception ex) {
-                    LOG.error("Failed to instantiate TokenValidator implementation class: '"
-                              + validatorClassname + "'\n" + ex.getClass().getCanonicalName() + ": " + ex.getMessage());
-                }
-                if (obj instanceof TokenValidator) {
-                    validators.add((TokenValidator)obj);
-                } else if (obj != null) {
-                    LOG.error("Invalid TokenValidator implementation class: '" + validatorClassname + "'");
-                }
-            }
-        }
         
         // add SAMLTokenValidator as the last one
         // Fediz chooses the first validator in the list if its
         // canHandleToken or canHandleTokenType method return true
         SAMLTokenValidator validator = new SAMLTokenValidator();
-        validators.add(validators.size(), validator);
+        getTokenValidators().add(getTokenValidators().size(), validator);
     }
 
     protected FederationProtocolType getFederationProtocol() {
@@ -87,26 +61,6 @@ public class FederationProtocol extends Protocol {
         super.setProtocolType(federationProtocol);
     }
 
-    public Object getRealm() {
-        if (this.realm != null) {
-            return this.realm;
-        }
-        CallbackType cbt = getFederationProtocol().getRealm();
-        this.realm = loadCallbackType(cbt, "Realm");
-        return this.realm;
-    }
-
-    public void setRealm(Object value) {
-        final boolean isString = value instanceof String;
-        final boolean isCallbackHandler = value instanceof CallbackHandler;
-        if (isString || isCallbackHandler) {
-            this.realm = value;
-        } else {
-            LOG.error("Unsupported 'Realm' object");
-            throw new IllegalArgumentException("Unsupported 'Realm' object. Type must be "
-                                               + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
-        }
-    }
 
     public String getApplicationServiceURL() {
         return getFederationProtocol().getApplicationServiceURL();
@@ -240,10 +194,6 @@ public class FederationProtocol extends Protocol {
 
     public void setClaimTypesRequested(ClaimTypesRequested value) {
         getFederationProtocol().setClaimTypesRequested(value);
-    }
-
-    public List<TokenValidator> getTokenValidators() {
-        return validators;
     }
 
     public String getVersion() {

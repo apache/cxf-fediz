@@ -19,8 +19,12 @@
 
 package org.apache.cxf.fediz.core.config;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.security.auth.callback.CallbackHandler;
 
+import org.apache.cxf.fediz.core.TokenValidator;
 import org.apache.cxf.fediz.core.config.jaxb.ArgumentType;
 import org.apache.cxf.fediz.core.config.jaxb.CallbackType;
 import org.apache.cxf.fediz.core.config.jaxb.ProtocolType;
@@ -34,10 +38,29 @@ public abstract class Protocol {
     private ProtocolType protocolType;
     private ClassLoader classloader;
     private Object issuer;
+    private Object realm;
+    private List<TokenValidator> validators = new ArrayList<TokenValidator>();
 
     public Protocol(ProtocolType protocolType) {
         super();
         this.protocolType = protocolType;
+        
+        if (protocolType.getTokenValidators() != null && protocolType.getTokenValidators().getValidator() != null) {
+            for (String validatorClassname : protocolType.getTokenValidators().getValidator()) {
+                Object obj = null;
+                try {
+                    obj = ClassLoaderUtils.loadClass(validatorClassname, this.getClass()).newInstance();
+                } catch (Exception ex) {
+                    LOG.error("Failed to instantiate TokenValidator implementation class: '"
+                              + validatorClassname + "'\n" + ex.getClass().getCanonicalName() + ": " + ex.getMessage());
+                }
+                if (obj instanceof TokenValidator) {
+                    validators.add((TokenValidator)obj);
+                } else if (obj != null) {
+                    LOG.error("Invalid TokenValidator implementation class: '" + validatorClassname + "'");
+                }
+            }
+        }
     }
 
     protected ProtocolType getProtocolType() {
@@ -103,6 +126,31 @@ public abstract class Protocol {
             throw new IllegalArgumentException("Unsupported 'Issuer' object. Type must be "
                                                + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
         }
+    }
+    
+    public Object getRealm() {
+        if (this.realm != null) {
+            return this.realm;
+        }
+        CallbackType cbt = getProtocolType().getRealm();
+        this.realm = loadCallbackType(cbt, "Realm");
+        return this.realm;
+    }
+
+    public void setRealm(Object value) {
+        final boolean isString = value instanceof String;
+        final boolean isCallbackHandler = value instanceof CallbackHandler;
+        if (isString || isCallbackHandler) {
+            this.realm = value;
+        } else {
+            LOG.error("Unsupported 'Realm' object");
+            throw new IllegalArgumentException("Unsupported 'Realm' object. Type must be "
+                                               + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
+        }
+    }
+    
+    public List<TokenValidator> getTokenValidators() {
+        return validators;
     }
     
     protected Object loadCallbackType(CallbackType cbt, String name) {

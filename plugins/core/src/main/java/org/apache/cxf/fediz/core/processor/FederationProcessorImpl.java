@@ -25,6 +25,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.security.cert.Certificate;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -51,8 +52,6 @@ import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.core.metadata.MetadataWriter;
 import org.apache.cxf.fediz.core.spi.FreshnessCallback;
 import org.apache.cxf.fediz.core.spi.HomeRealmCallback;
-import org.apache.cxf.fediz.core.spi.IDPCallback;
-import org.apache.cxf.fediz.core.spi.RealmCallback;
 import org.apache.cxf.fediz.core.spi.SignInQueryCallback;
 import org.apache.cxf.fediz.core.spi.WAuthCallback;
 import org.apache.cxf.fediz.core.spi.WReqCallback;
@@ -73,7 +72,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FederationProcessorImpl implements FedizProcessor {
+public class FederationProcessorImpl extends AbstractFedizProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(FederationProcessorImpl.class);
 
@@ -191,32 +190,8 @@ public class FederationProcessorImpl implements FedizProcessor {
             }
         }
         
-        TokenValidatorResponse validatorResponse = null;
-        List<TokenValidator> validators = ((FederationProtocol)config.getProtocol()).getTokenValidators();
-        for (TokenValidator validator : validators) {
-            boolean canHandle = false;
-            if (tt != null) {
-                canHandle = validator.canHandleTokenType(tt);
-            } else {
-                canHandle = validator.canHandleToken(rst);
-            }
-            if (canHandle) {
-                try {
-                    TokenValidatorRequest validatorRequest = 
-                        new TokenValidatorRequest(rst, request.getCerts());
-                    validatorResponse = validator.validateAndProcessToken(validatorRequest, config);
-                } catch (ProcessingException ex) {
-                    throw ex;
-                } catch (Exception ex) {
-                    LOG.warn("Failed to validate token", ex);
-                    throw new ProcessingException(TYPE.TOKEN_INVALID);
-                }
-                break;
-            } else {
-                LOG.warn("No security token validator found for '" + tt + "'");
-                throw new ProcessingException(TYPE.BAD_REQUEST);
-            }
-        }
+        TokenValidatorResponse validatorResponse = 
+            validateToken(rst, tt, config, request.getCerts());
 
         // Check whether token already used for signin
         if (validatorResponse.getUniqueTokenId() != null
@@ -245,15 +220,61 @@ public class FederationProcessorImpl implements FedizProcessor {
             }
         }
 
+        Date created = validatorResponse.getCreated();
+        if (lifeTime != null && lifeTime.getCreated() != null) {
+            created = lifeTime.getCreated();
+        }
+        Date expires = validatorResponse.getExpires();
+        if (lifeTime != null && lifeTime.getExpires() != null) {
+            expires = lifeTime.getExpires();
+        }
+        
         FedizResponse fedResponse = new FedizResponse(
                 validatorResponse.getUsername(), validatorResponse.getIssuer(),
                 validatorResponse.getRoles(), validatorResponse.getClaims(),
                 validatorResponse.getAudience(),
-                (lifeTime != null) ? lifeTime.getCreated() : null,
-                        (lifeTime != null) ? lifeTime.getExpires() : null, rst,
-                            validatorResponse.getUniqueTokenId());
+                created,
+                expires, 
+                rst,
+                validatorResponse.getUniqueTokenId());
 
         return fedResponse;
+    }
+    
+    private TokenValidatorResponse validateToken(
+        Element token,
+        String tokenType,
+        FedizContext config,
+        Certificate[] certs
+    ) throws ProcessingException {
+        TokenValidatorResponse validatorResponse = null;
+        List<TokenValidator> validators = ((FederationProtocol)config.getProtocol()).getTokenValidators();
+        for (TokenValidator validator : validators) {
+            boolean canHandle = false;
+            if (tokenType != null) {
+                canHandle = validator.canHandleTokenType(tokenType);
+            } else {
+                canHandle = validator.canHandleToken(token);
+            }
+            if (canHandle) {
+                try {
+                    TokenValidatorRequest validatorRequest = 
+                        new TokenValidatorRequest(token, certs);
+                    validatorResponse = validator.validateAndProcessToken(validatorRequest, config);
+                } catch (ProcessingException ex) {
+                    throw ex;
+                } catch (Exception ex) {
+                    LOG.warn("Failed to validate token", ex);
+                    throw new ProcessingException(TYPE.TOKEN_INVALID);
+                }
+                break;
+            } else {
+                LOG.warn("No security token validator found for '" + tokenType + "'");
+                throw new ProcessingException(TYPE.BAD_REQUEST);
+            }
+        }
+        
+        return validatorResponse;
     }
     
     private Element decryptEncryptedRST(
@@ -596,62 +617,6 @@ public class FederationProcessorImpl implements FedizProcessor {
         return wReq;
     }
 
-    private String resolveIssuer(HttpServletRequest request, FedizContext config) throws IOException,
-        UnsupportedCallbackException {
-        Object issuerObj = ((FederationProtocol)config.getProtocol()).getIssuer();
-        String issuerURL = null;
-        if (issuerObj instanceof String) {
-            issuerURL = (String)issuerObj;
-        } else if (issuerObj instanceof CallbackHandler) {
-            CallbackHandler issuerCB = (CallbackHandler)issuerObj;
-            IDPCallback callback = new IDPCallback(request);
-            issuerCB.handle(new Callback[] {callback});
-            issuerURL = callback.getIssuerUrl().toString();
-        }
-        return issuerURL;
-    }
-
-    private String resolveWTRealm(HttpServletRequest request, FedizContext config) throws IOException,
-        UnsupportedCallbackException {
-        Object wtRealmObj = ((FederationProtocol)config.getProtocol()).getRealm();
-        String wtRealm = null;
-        if (wtRealmObj != null) {
-            if (wtRealmObj instanceof String) {
-                wtRealm = (String)wtRealmObj;
-            } else if (wtRealmObj instanceof CallbackHandler) {
-                CallbackHandler hrCB = (CallbackHandler)wtRealmObj;
-                RealmCallback callback = new RealmCallback(request);
-                hrCB.handle(new Callback[] {callback});
-                wtRealm = callback.getRealm();
-            }
-        } else {
-            wtRealm = extractFullContextPath(request); //default value
-        }
-        return wtRealm;
-    }
-
-
-    private String extractFullContextPath(HttpServletRequest request) throws MalformedURLException {
-        String result = null;
-        String contextPath = request.getContextPath();
-        String requestUrl = request.getRequestURL().toString();
-        String requestPath = new URL(requestUrl).getPath();
-        // Cut request path of request url and add context path if not ROOT
-        if (requestPath != null && requestPath.length() > 0) {
-            int lastIndex = requestUrl.lastIndexOf(requestPath);
-            result = requestUrl.substring(0, lastIndex);
-        } else {
-            result = requestUrl;
-        }
-        if (contextPath != null && contextPath.length() > 0) {
-            // contextPath contains starting slash
-            result = result + contextPath + "/";
-        } else {
-            result = result + "/";
-        }
-        return result;
-    }
-    
     private static class DecryptionCallbackHandler implements CallbackHandler {
         
         private final String password;

@@ -42,7 +42,7 @@ import org.apache.cxf.fediz.core.config.TrustManager;
 import org.apache.cxf.fediz.core.config.TrustedIssuer;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
-import org.apache.cxf.fediz.core.saml.SamlAssertionValidator.TRUST_TYPE;
+import org.apache.cxf.fediz.core.saml.FedizSignatureTrustValidator.TRUST_TYPE;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.principal.SAMLTokenPrincipal;
 import org.apache.wss4j.common.principal.SAMLTokenPrincipalImpl;
@@ -205,6 +205,7 @@ public class SAMLTokenValidator implements TokenValidator {
                     assertion.getId(), p.getName(), assertionIssuer, roles,
                     new ClaimCollection(claims), audience);
             response.setExpires(getExpires(assertion));
+            response.setCreated(getCreated(assertion));
             
             return response;
 
@@ -439,6 +440,20 @@ public class SAMLTokenValidator implements TokenValidator {
             return null;
         }
         return validTill.toDate();
+    }
+    
+    private Date getCreated(SamlAssertionWrapper assertion) {
+        DateTime validFrom = null;
+        if (assertion.getSamlVersion().equals(SAMLVersion.VERSION_20)) {
+            validFrom = assertion.getSaml2().getConditions().getNotBefore();
+        } else {
+            validFrom = assertion.getSaml1().getConditions().getNotBefore();
+        }
+        
+        if (validFrom == null) {
+            return null;
+        }
+        return validFrom.toDate();
     }
     
     /**

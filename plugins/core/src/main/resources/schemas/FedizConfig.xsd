@@ -93,7 +93,6 @@
 		<xs:complexContent>
 			<xs:extension base="protocolType">
 				<xs:sequence>
-					<xs:element ref="realm" />
 					<xs:element ref="authenticationType" />
 					<xs:element ref="homeRealm" />
 					<xs:element ref="freshness" />
@@ -101,7 +100,6 @@
 					<xs:element ref="request" />
 					<xs:element ref="signInQuery" />
 					<xs:element ref="claimTypesRequested" />
-					<xs:element ref="tokenValidators" />
 					<xs:element ref="applicationServiceURL" />
 				</xs:sequence>
 				<xs:attribute name="version" use="required" type="xs:string" />
@@ -118,7 +116,6 @@
 					<xs:element ref="webAppDomain" />
 					<xs:element ref="authnRequestBuilder"/>
 					<xs:element ref="stateManager"/>
-					<xs:element ref="tokenValidators" />
 				</xs:sequence>
 				<xs:attribute name="version" use="required" type="xs:string" />
 			</xs:extension>
@@ -141,6 +138,8 @@
 	        <xs:element ref="roleDelimiter" />
 	        <xs:element ref="roleURI" />
 	        <xs:element ref="issuer" />
+	        <xs:element ref="realm" />
+	        <xs:element ref="tokenValidators" />
 		</xs:sequence>
 	</xs:complexType>
  

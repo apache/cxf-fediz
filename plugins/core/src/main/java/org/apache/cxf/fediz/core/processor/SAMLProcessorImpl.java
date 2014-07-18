@@ -21,8 +21,6 @@ package org.apache.cxf.fediz.core.processor;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -32,14 +30,10 @@ import java.util.TimeZone;
 import java.util.UUID;
 import java.util.zip.DataFormatException;
 
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.TokenValidator;
 import org.apache.cxf.fediz.core.TokenValidatorRequest;
@@ -54,7 +48,8 @@ import org.apache.cxf.fediz.core.samlsso.AuthnRequestBuilder;
 import org.apache.cxf.fediz.core.samlsso.CompressionUtils;
 import org.apache.cxf.fediz.core.samlsso.RequestState;
 import org.apache.cxf.fediz.core.samlsso.SAMLProtocolResponseValidator;
-import org.apache.cxf.fediz.core.spi.IDPCallback;
+import org.apache.cxf.fediz.core.samlsso.SAMLSSOResponseValidator;
+import org.apache.cxf.fediz.core.samlsso.SSOValidatorResponse;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.OpenSAMLUtil;
@@ -67,7 +62,7 @@ import org.opensaml.xml.XMLObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SAMLProcessorImpl implements FedizProcessor {
+public class SAMLProcessorImpl extends AbstractFedizProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(SAMLProcessorImpl.class);
     
@@ -104,7 +99,7 @@ public class SAMLProcessorImpl implements FedizProcessor {
     public Document getMetaData(FedizContext config) throws ProcessingException {
         return new MetadataWriter().getMetaData(config);
     }
-    /*
+    
     private RequestState processRelayState(String relayState, SAMLProtocol samlProtocol) 
         throws ProcessingException {
         if (relayState.getBytes().length < 0 || relayState.getBytes().length > 80) {
@@ -135,12 +130,12 @@ public class SAMLProcessorImpl implements FedizProcessor {
         
         return false;
     }
-    */
+    
     protected FedizResponse processSignInRequest(
             FedizRequest request, FedizContext config)
         throws ProcessingException {
         SAMLProtocol protocol = (SAMLProtocol)config.getProtocol();
-        // TODO RequestState requestState = processRelayState(request.getState(), protocol);
+        RequestState requestState = processRelayState(request.getState(), protocol);
         
         InputStream tokenStream = null;
         try {
@@ -177,7 +172,7 @@ public class SAMLProcessorImpl implements FedizProcessor {
         }
         
         // Validate the Response
-        validateSamlResponseProtocol((org.opensaml.saml2.core.Response)responseObject);
+        validateSamlResponseProtocol((org.opensaml.saml2.core.Response)responseObject, config);
         
         // Validate the internal assertion(s)
         TokenValidatorResponse validatorResponse = null;
@@ -211,17 +206,15 @@ public class SAMLProcessorImpl implements FedizProcessor {
             }
         }
         
-        /* TODO
-        SSOValidatorResponse validatorResponse = 
-            validateSamlSSOResponse(postBinding, samlResponse, requestState);
-            */
+        validateSamlSSOResponse((org.opensaml.saml2.core.Response)responseObject, 
+                                request.getRequest(), requestState, config);
         
         FedizResponse fedResponse = new FedizResponse(
                 validatorResponse.getUsername(), validatorResponse.getIssuer(),
                 validatorResponse.getRoles(), validatorResponse.getClaims(),
                 validatorResponse.getAudience(),
-                null, // TODO
-                null, // TODO
+                validatorResponse.getCreated(),
+                validatorResponse.getExpires(),
                 token,
                 validatorResponse.getUniqueTokenId());
 
@@ -233,11 +226,12 @@ public class SAMLProcessorImpl implements FedizProcessor {
      * @throws ProcessingException 
      */
     protected void validateSamlResponseProtocol(
-        org.opensaml.saml2.core.Response samlResponse
+        org.opensaml.saml2.core.Response samlResponse,
+        FedizContext config
     ) throws ProcessingException {
         try {
             SAMLProtocolResponseValidator protocolValidator = new SAMLProtocolResponseValidator();
-            protocolValidator.validateSamlResponse(samlResponse);
+            protocolValidator.validateSamlResponse(samlResponse, config);
         } catch (WSSecurityException ex) {
             LOG.debug(ex.getMessage(), ex);
             throw new ProcessingException(TYPE.INVALID_REQUEST);
@@ -246,33 +240,33 @@ public class SAMLProcessorImpl implements FedizProcessor {
     
     /**
      * Validate the received SAML Response as per the Web SSO profile
+     * @throws ProcessingException 
+     */
     protected SSOValidatorResponse validateSamlSSOResponse(
-        boolean postBinding,
         org.opensaml.saml2.core.Response samlResponse,
-        RequestState requestState
-    ) {
+        HttpServletRequest request,
+        RequestState requestState,
+        FedizContext config
+    ) throws ProcessingException {
         try {
             SAMLSSOResponseValidator ssoResponseValidator = new SAMLSSOResponseValidator();
-            ssoResponseValidator.setAssertionConsumerURL(
-                messageContext.getUriInfo().getAbsolutePath().toString());
-
-            ssoResponseValidator.setClientAddress(
-                 messageContext.getHttpServletRequest().getRemoteAddr());
+            String requestURL = request.getRequestURL().toString();
+            ssoResponseValidator.setAssertionConsumerURL(requestURL);
+            ssoResponseValidator.setClientAddress(request.getRemoteAddr());
 
             ssoResponseValidator.setIssuerIDP(requestState.getIdpServiceAddress());
             ssoResponseValidator.setRequestId(requestState.getSamlRequestId());
             ssoResponseValidator.setSpIdentifier(requestState.getIssuerId());
-            ssoResponseValidator.setEnforceAssertionsSigned(enforceAssertionsSigned);
-            ssoResponseValidator.setEnforceKnownIssuer(enforceKnownIssuer);
-            ssoResponseValidator.setReplayCache(getReplayCache());
+            ssoResponseValidator.setEnforceAssertionsSigned(true);
+            ssoResponseValidator.setEnforceKnownIssuer(true);
+            ssoResponseValidator.setReplayCache(config.getTokenReplayCache());
 
-            return ssoResponseValidator.validateSamlResponse(samlResponse, postBinding);
+            return ssoResponseValidator.validateSamlResponse(samlResponse, false);
         } catch (WSSecurityException ex) {
-            reportError("INVALID_SAML_RESPONSE");
-            throw ExceptionUtils.toBadRequestException(ex, null);
+            LOG.debug(ex.getMessage(), ex);
+            throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
     }
-    */
 
     @Override
     public RedirectionResponse createSignInRequest(HttpServletRequest request, FedizContext config)
@@ -299,8 +293,9 @@ public class SAMLProcessorImpl implements FedizProcessor {
      
             // Create the AuthnRequest
             String requestURL = request.getRequestURL().toString();
+            String realm = resolveWTRealm(request, config);
             AuthnRequest authnRequest = 
-                authnRequestBuilder.createAuthnRequest(config.getName(), requestURL);
+                authnRequestBuilder.createAuthnRequest(realm, requestURL);
             
             if (((SAMLProtocol)config.getProtocol()).isSignRequest()) {
                 authnRequest.setDestination(redirectURL);
@@ -314,8 +309,8 @@ public class SAMLProcessorImpl implements FedizProcessor {
             RequestState requestState = new RequestState(requestURL,
                                                          redirectURL,
                                                          authnRequest.getID(),
+                                                         realm,
                                                          config.getName(),
-                                                         requestURL,
                                                          webAppDomain,
                                                          System.currentTimeMillis());
             
@@ -446,157 +441,6 @@ public class SAMLProcessorImpl implements FedizProcessor {
         RedirectionResponse response = new RedirectionResponse();
         response.setRedirectionURL(redirectURL);
         return response;
-    }
-/*
-    private String resolveSignInQuery(HttpServletRequest request, FedizContext config)
-        throws IOException, UnsupportedCallbackException, UnsupportedEncodingException {
-        Object signInQueryObj = ((FederationProtocol)config.getProtocol()).getSignInQuery();
-        String signInQuery = null;
-        if (signInQueryObj != null) {
-            if (signInQueryObj instanceof String) {
-                signInQuery = (String)signInQueryObj;
-            } else if (signInQueryObj instanceof CallbackHandler) {
-                CallbackHandler frCB = (CallbackHandler)signInQueryObj;
-                SignInQueryCallback callback = new SignInQueryCallback(request);
-                frCB.handle(new Callback[] {callback});
-                Map<String, String> signInQueryMap = callback.getSignInQueryParamMap();
-                StringBuilder sbQuery = new StringBuilder();
-                for (String key : signInQueryMap.keySet()) {
-                    if (sbQuery.length() > 0) {
-                        sbQuery.append("&");
-                    }
-                    sbQuery.append(key).append('=').
-                    append(URLEncoder.encode(signInQueryMap.get(key), "UTF-8"));
-                }
-                signInQuery = sbQuery.toString();
-               
-            }
-        }
-        return signInQuery;
-    }
-
-    private String resolveFreshness(HttpServletRequest request, FedizContext config) throws IOException,
-        UnsupportedCallbackException {
-        Object freshnessObj = ((FederationProtocol)config.getProtocol()).getFreshness();
-        String freshness = null;
-        if (freshnessObj != null) {
-            if (freshnessObj instanceof String) {
-                freshness = (String)freshnessObj;
-            } else if (freshnessObj instanceof CallbackHandler) {
-                CallbackHandler frCB = (CallbackHandler)freshnessObj;
-                FreshnessCallback callback = new FreshnessCallback(request);
-                frCB.handle(new Callback[] {callback});
-                freshness = callback.getFreshness();
-            }
-        }
-        return freshness;
-    }
-
-    private String resolveHomeRealm(HttpServletRequest request, FedizContext config) throws IOException,
-        UnsupportedCallbackException {
-        Object homeRealmObj = ((FederationProtocol)config.getProtocol()).getHomeRealm();
-        String homeRealm = null;
-        if (homeRealmObj != null) {
-            if (homeRealmObj instanceof String) {
-                homeRealm = (String)homeRealmObj;
-            } else if (homeRealmObj instanceof CallbackHandler) {
-                CallbackHandler hrCB = (CallbackHandler)homeRealmObj;
-                HomeRealmCallback callback = new HomeRealmCallback(request);
-                hrCB.handle(new Callback[] {callback});
-                homeRealm = callback.getHomeRealm();
-            }
-        }
-        return homeRealm;
-    }
-
-    private String resolveAuthenticationType(HttpServletRequest request, FedizContext config)
-        throws IOException, UnsupportedCallbackException {
-        Object wAuthObj = ((FederationProtocol)config.getProtocol()).getAuthenticationType();
-        String wAuth = null;
-        if (wAuthObj != null) {
-            if (wAuthObj instanceof String) {
-                wAuth = (String)wAuthObj;
-            } else if (wAuthObj instanceof CallbackHandler) {
-                CallbackHandler wauthCB = (CallbackHandler)wAuthObj;
-                WAuthCallback callback = new WAuthCallback(request);
-                wauthCB.handle(new Callback[] {callback});
-                wAuth = callback.getWauth();
-            }  
-        }
-        return wAuth;
-    }
-    
-    private String resolveRequest(HttpServletRequest request, FedizContext config)
-        throws IOException, UnsupportedCallbackException {
-        Object wReqObj = ((FederationProtocol)config.getProtocol()).getRequest();
-        String wReq = null;
-        if (wReqObj != null) {
-            if (wReqObj instanceof String) {
-                wReq = (String)wReqObj;
-            } else if (wReqObj instanceof CallbackHandler) {
-                CallbackHandler wauthCB = (CallbackHandler)wReqObj;
-                WReqCallback callback = new WReqCallback(request);
-                wauthCB.handle(new Callback[] {callback});
-                wReq = callback.getWreq();
-            }  
-        }
-        return wReq;
-    }
-*/
-    private String resolveIssuer(HttpServletRequest request, FedizContext config) throws IOException,
-        UnsupportedCallbackException {
-        Object issuerObj = config.getProtocol().getIssuer();
-        String issuerURL = null;
-        if (issuerObj instanceof String) {
-            issuerURL = (String)issuerObj;
-        } else if (issuerObj instanceof CallbackHandler) {
-            CallbackHandler issuerCB = (CallbackHandler)issuerObj;
-            IDPCallback callback = new IDPCallback(request);
-            issuerCB.handle(new Callback[] {callback});
-            issuerURL = callback.getIssuerUrl().toString();
-        }
-        return issuerURL;
-    }
-/*
-    private String resolveWTRealm(HttpServletRequest request, FedizContext config) throws IOException,
-        UnsupportedCallbackException {
-        Object wtRealmObj = ((FederationProtocol)config.getProtocol()).getRealm();
-        String wtRealm = null;
-        if (wtRealmObj != null) {
-            if (wtRealmObj instanceof String) {
-                wtRealm = (String)wtRealmObj;
-            } else if (wtRealmObj instanceof CallbackHandler) {
-                CallbackHandler hrCB = (CallbackHandler)wtRealmObj;
-                RealmCallback callback = new RealmCallback(request);
-                hrCB.handle(new Callback[] {callback});
-                wtRealm = callback.getRealm();
-            }
-        } else {
-            wtRealm = extractFullContextPath(request); //default value
-        }
-        return wtRealm;
-    }
-
-*/
-    private String extractFullContextPath(HttpServletRequest request) throws MalformedURLException {
-        String result = null;
-        String contextPath = request.getContextPath();
-        String requestUrl = request.getRequestURL().toString();
-        String requestPath = new URL(requestUrl).getPath();
-        // Cut request path of request url and add context path if not ROOT
-        if (requestPath != null && requestPath.length() > 0) {
-            int lastIndex = requestUrl.lastIndexOf(requestPath);
-            result = requestUrl.substring(0, lastIndex);
-        } else {
-            result = requestUrl;
-        }
-        if (contextPath != null && contextPath.length() > 0) {
-            // contextPath contains starting slash
-            result = result + contextPath + "/";
-        } else {
-            result = result + "/";
-        }
-        return result;
     }
     
 }

@@ -18,8 +18,16 @@
  */
 package org.apache.cxf.fediz.core.samlsso;
 
-import org.w3c.dom.Document;
+import java.util.Collections;
+import java.util.List;
 
+import org.w3c.dom.Document;
+import org.apache.cxf.fediz.core.config.CertificateValidationMethod;
+import org.apache.cxf.fediz.core.config.FedizContext;
+import org.apache.cxf.fediz.core.config.TrustManager;
+import org.apache.cxf.fediz.core.config.TrustedIssuer;
+import org.apache.cxf.fediz.core.saml.FedizSignatureTrustValidator;
+import org.apache.cxf.fediz.core.saml.FedizSignatureTrustValidator.TRUST_TYPE;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.SAMLKeyInfo;
 import org.apache.wss4j.common.saml.SAMLUtil;
@@ -27,6 +35,7 @@ import org.apache.wss4j.dom.WSDocInfo;
 import org.apache.wss4j.dom.WSSConfig;
 import org.apache.wss4j.dom.handler.RequestData;
 import org.apache.wss4j.dom.saml.WSSSAMLKeyInfoProcessor;
+import org.apache.wss4j.dom.validate.Credential;
 import org.opensaml.security.SAMLSignatureProfileValidator;
 import org.opensaml.xml.security.x509.BasicX509Credential;
 import org.opensaml.xml.signature.KeyInfo;
@@ -58,7 +67,8 @@ public class SAMLProtocolResponseValidator {
      * @throws WSSecurityException
      */
     public void validateSamlResponse(
-        org.opensaml.saml2.core.Response samlResponse
+        org.opensaml.saml2.core.Response samlResponse,
+        FedizContext config
     ) throws WSSecurityException {
         // Check the Status Code
         if (samlResponse.getStatus() == null
@@ -75,7 +85,7 @@ public class SAMLProtocolResponseValidator {
         }
         
         validateResponseAgainstSchemas(samlResponse);
-        validateResponseSignature(samlResponse);
+        validateResponseSignature(samlResponse, config);
     }
     
     /**
@@ -84,7 +94,8 @@ public class SAMLProtocolResponseValidator {
      * @throws WSSecurityException
      */
     public void validateSamlResponse(
-        org.opensaml.saml1.core.Response samlResponse
+        org.opensaml.saml1.core.Response samlResponse,
+        FedizContext config
     ) throws WSSecurityException {
         // Check the Status Code
         if (samlResponse.getStatus() == null
@@ -103,7 +114,7 @@ public class SAMLProtocolResponseValidator {
         }
 
         validateResponseAgainstSchemas(samlResponse);
-        validateResponseSignature(samlResponse);
+        validateResponseSignature(samlResponse, config);
     }
     
     /**
@@ -144,14 +155,15 @@ public class SAMLProtocolResponseValidator {
      * Validate the Response signature (if it exists)
      */
     private void validateResponseSignature(
-        org.opensaml.saml2.core.Response samlResponse
+        org.opensaml.saml2.core.Response samlResponse,
+        FedizContext config
     ) throws WSSecurityException {
         if (!samlResponse.isSigned()) {
             return;
         }
         
         validateResponseSignature(
-            samlResponse.getSignature(), samlResponse.getDOM().getOwnerDocument()
+            samlResponse.getSignature(), samlResponse.getDOM().getOwnerDocument(), config
         );
     }
     
@@ -159,14 +171,15 @@ public class SAMLProtocolResponseValidator {
      * Validate the Response signature (if it exists)
      */
     private void validateResponseSignature(
-        org.opensaml.saml1.core.Response samlResponse
+        org.opensaml.saml1.core.Response samlResponse,
+        FedizContext config
     ) throws WSSecurityException {
         if (!samlResponse.isSigned()) {
             return;
         }
         
         validateResponseSignature(
-            samlResponse.getSignature(), samlResponse.getDOM().getOwnerDocument()
+            samlResponse.getSignature(), samlResponse.getDOM().getOwnerDocument(), config
         );
     }
     
@@ -175,7 +188,8 @@ public class SAMLProtocolResponseValidator {
      */
     private void validateResponseSignature(
         Signature signature, 
-        Document doc
+        Document doc,
+        FedizContext config
     ) throws WSSecurityException {
         RequestData requestData = new RequestData();
         WSSConfig wssConfig = WSSConfig.getNewInstance();
@@ -205,17 +219,52 @@ public class SAMLProtocolResponseValidator {
         validateSignatureAgainstProfiles(signature, samlKeyInfo);
 
         // Now verify trust on the signature
-        /* TODO Credential trustCredential = new Credential();
+        Credential trustCredential = new Credential();
         trustCredential.setPublicKey(samlKeyInfo.getPublicKey());
         trustCredential.setCertificates(samlKeyInfo.getCerts());
 
-        try {
-            signatureValidator.validate(trustCredential, requestData);
-        } catch (WSSecurityException e) {
-            LOG.debug("Error in validating signature on SAML Response: " + e.getMessage(), e);
-            throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
+        FedizSignatureTrustValidator trustValidator = new FedizSignatureTrustValidator();
+        
+        boolean trusted = false;
+        
+        List<TrustedIssuer> trustedIssuers = config.getTrustedIssuers();
+        for (TrustedIssuer ti : trustedIssuers) {
+            List<String> subjectConstraints = Collections.singletonList(ti.getSubject());
+            if (ti.getCertificateValidationMethod().equals(CertificateValidationMethod.CHAIN_TRUST)) {
+                trustValidator.setSubjectConstraints(subjectConstraints);
+                trustValidator.setSignatureTrustType(TRUST_TYPE.CHAIN_TRUST_CONSTRAINTS);
+            } else if (ti.getCertificateValidationMethod().equals(CertificateValidationMethod.PEER_TRUST)) {
+                trustValidator.setSignatureTrustType(TRUST_TYPE.PEER_TRUST);
+            } else {
+                throw new IllegalStateException("Unsupported certificate validation method: " 
+                                                + ti.getCertificateValidationMethod());
+            }
+            try {
+                for (TrustManager tm: config.getCertificateStores()) {
+                    try {
+                        requestData.setSigVerCrypto(tm.getCrypto());
+                        trustValidator.validate(trustCredential, requestData);
+                        trusted = true;
+                        break;
+                    } catch (Exception ex) {
+                        LOG.debug("Issuer '{}' not validated in keystore '{}'",
+                                  ti.getName(), tm.getName());
+                    }
+                }
+                if (trusted) {
+                    break;
+                }
+                
+            } catch (Exception ex) {
+                LOG.info("Error in validating signature on SAML Response: " + ex.getMessage(), ex);
+                throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
+            }
         }
-        */
+        
+        if (!trusted) {
+            LOG.warn("SAML Response is not trusted");
+            throw new WSSecurityException(WSSecurityException.ErrorCode.FAILED_AUTHENTICATION);
+        }
     }
     
     /**

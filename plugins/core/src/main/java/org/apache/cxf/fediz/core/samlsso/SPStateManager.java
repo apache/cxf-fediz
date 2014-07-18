@@ -36,9 +36,5 @@ public interface SPStateManager extends Closeable {
     void setRequestState(String relayState, RequestState state);
     RequestState removeRequestState(String relayState);
     
-    void setResponseState(String contextKey, ResponseState state);
-    ResponseState getResponseState(String contextKey);
-    ResponseState removeResponseState(String contextKey);
-    
     void close() throws IOException;
 }

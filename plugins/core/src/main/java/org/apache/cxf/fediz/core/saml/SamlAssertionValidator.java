@@ -19,19 +19,14 @@
 
 package org.apache.cxf.fediz.core.saml;
 
-
-import java.security.PublicKey;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.apache.cxf.fediz.core.saml.FedizSignatureTrustValidator.TRUST_TYPE;
 import org.apache.wss4j.common.cache.ReplayCache;
 import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.ext.WSSecurityException;
@@ -57,8 +52,6 @@ public class SamlAssertionValidator implements Validator {
     
     private static final Logger LOG = LoggerFactory.getLogger(SamlAssertionValidator.class);
     
-    public enum TRUST_TYPE { CHAIN_TRUST, CHAIN_TRUST_CONSTRAINTS, PEER_TRUST }
-    
     /**
      * The time in seconds in the future within which the NotBefore time of an incoming 
      * Assertion is valid. The default is 60 seconds.
@@ -71,9 +64,6 @@ public class SamlAssertionValidator implements Validator {
      */
     private boolean validateSignatureAgainstProfile = true;
 
-    /**
-     * Defines the kind of trust which is required thus assertion signature validation is successful.
-     */
     private TRUST_TYPE signatureTrustType = TRUST_TYPE.CHAIN_TRUST;
         
     /**
@@ -180,97 +170,17 @@ public class SamlAssertionValidator implements Validator {
         credential.setPublicKey(samlKeyInfo.getPublicKey());
         credential.setCertificates(samlKeyInfo.getCerts());
         
-        X509Certificate[] certs = credential.getCertificates();
-        PublicKey publicKey = credential.getPublicKey();
-        Crypto crypto = getCrypto(data);
-        if (crypto == null) {
-            throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "noSigCryptoFile");
-        }
+        FedizSignatureTrustValidator trustValidator = new FedizSignatureTrustValidator();
+        trustValidator.setSignatureTrustType(signatureTrustType);
+        trustValidator.setSubjectConstraints(subjectDNPatterns);
         
-        if (certs != null && certs.length > 0) {
-            validateCertificates(certs);
-            verifyTrustInCerts(certs, crypto, data, data.isRevocationEnabled());
-            if (signatureTrustType.equals(TRUST_TYPE.CHAIN_TRUST_CONSTRAINTS)) {
-                if (matches(certs[0])) {
-                    return credential;
-                } else {
-                    throw new WSSecurityException(WSSecurityException.ErrorCode.FAILED_AUTHENTICATION);
-                }
-            } else {
-                return credential;
-            }
-        }
-        if (publicKey != null) {
-            validatePublicKey(publicKey, crypto);
-            return credential;
-        }
-        throw new WSSecurityException(WSSecurityException.ErrorCode.FAILED_AUTHENTICATION);
+        return trustValidator.validate(credential, data);
     }
 
     protected Crypto getCrypto(RequestData data) {
         return data.getSigVerCrypto();
     }
 
-
-    /**
-     * Validate the certificates by checking the validity of each cert
-     * @throws WSSecurityException
-     */
-    protected void validateCertificates(X509Certificate[] certificates) 
-        throws WSSecurityException {
-        try {
-            for (int i = 0; i < certificates.length; i++) {
-                certificates[i].checkValidity();
-            }
-        } catch (CertificateExpiredException e) {
-            throw new WSSecurityException(
-                WSSecurityException.ErrorCode.FAILED_CHECK, "invalidCert", e
-            );
-        } catch (CertificateNotYetValidException e) {
-            throw new WSSecurityException(
-                WSSecurityException.ErrorCode.FAILED_CHECK, "invalidCert", e
-            );
-        }
-    }
-    
-    /**
-     * Evaluate whether the given certificate chain should be trusted.
-     * 
-     * @param certificates the certificate chain that should be validated against the keystore
-     * @param crypto A Crypto instance
-     * @param data A RequestData instance
-     * @param enableRevocation Whether revocation is enabled or not
-     * @throws WSSecurityException if the certificate chain is not trusted
-     */
-    protected void verifyTrustInCerts(
-        X509Certificate[] certificates, 
-        Crypto crypto,
-        RequestData data,
-        boolean enableRevocation
-    ) throws WSSecurityException {
-        //
-        // Use the validation method from the crypto to check whether the subjects' 
-        // certificate was really signed by the issuer stated in the certificate
-        //
-        crypto.verifyTrust(certificates, enableRevocation, null);
-        if (LOG.isDebugEnabled()) {
-            String subjectString = certificates[0].getSubjectX500Principal().getName();
-            LOG.debug(
-                "Certificate path has been verified for certificate with subject " + subjectString
-            );
-        }
-    }
-    
-    /**
-     * Validate a public key
-     * @throws WSSecurityException
-     */
-    protected void validatePublicKey(PublicKey publicKey, Crypto crypto) 
-        throws WSSecurityException {
-        crypto.verifyTrust(publicKey);
-    }
-    
-    
     /**
      * Check the Conditions of the Assertion.
      */
@@ -334,34 +244,6 @@ public class SamlAssertionValidator implements Validator {
      */
     public void setValidateSignatureAgainstProfile(boolean validateSignatureAgainstProfile) {
         this.validateSignatureAgainstProfile = validateSignatureAgainstProfile;
-    }
-    
-    /**
-     * @return true if the certificate's SubjectDN matches the constraints
-     *         defined in the subject DNConstraints; false, otherwise. The
-     *         certificate subject DN only has to match ONE of the subject cert
-     *         constraints (not all).
-     */
-    public boolean matches(final java.security.cert.X509Certificate cert) {
-        if (!subjectDNPatterns.isEmpty()) {
-            if (cert == null) {
-                return false;
-            }
-            String subjectName = cert.getSubjectX500Principal().getName();
-            boolean subjectMatch = false;
-            for (Pattern subjectDNPattern : subjectDNPatterns) {
-                final Matcher matcher = subjectDNPattern.matcher(subjectName);
-                if (matcher.matches()) {
-                    subjectMatch = true;
-                    break;
-                }
-            }
-            if (!subjectMatch) {
-                return false;
-            }
-        }
-
-        return true;
     }
     
 }
