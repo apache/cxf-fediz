@@ -22,6 +22,8 @@ package org.apache.cxf.fediz.core.processor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
+import java.security.PrivateKey;
+import java.security.Signature;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -51,9 +53,11 @@ import org.apache.cxf.fediz.core.samlsso.SAMLProtocolResponseValidator;
 import org.apache.cxf.fediz.core.samlsso.SAMLSSOResponseValidator;
 import org.apache.cxf.fediz.core.samlsso.SSOValidatorResponse;
 import org.apache.cxf.fediz.core.util.DOMUtils;
+import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.OpenSAMLUtil;
 import org.apache.wss4j.common.util.DOM2Writer;
+import org.apache.wss4j.dom.WSConstants;
 import org.apache.xml.security.exceptions.Base64DecodingException;
 import org.apache.xml.security.utils.Base64;
 import org.opensaml.common.xml.SAMLConstants;
@@ -325,7 +329,8 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             sb.append("&RelayState").append('=').append(relayState);
             
             if (((SAMLProtocol)config.getProtocol()).isSignRequest()) {
-                // TODO Sign the request
+                String signature = signRequest(config, sb);
+                sb.append("&Signature").append('=').append(signature);
             }
             
             String contextCookie = createCookie("RelayState",
@@ -347,6 +352,60 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             LOG.error("Failed to create SignInRequest", ex);
             throw new ProcessingException("Failed to create SignInRequest");
         }
+    }
+    
+    /**
+     * Sign a request according to the redirect binding spec for Web SSO
+     */
+    private String signRequest(
+        FedizContext config,
+        StringBuilder sb
+    ) throws Exception {
+        Crypto crypto = config.getSigningKey().getCrypto();
+        if (crypto == null) {
+            LOG.debug("No crypto instance of properties file configured for signature");
+            throw new ProcessingException("Failed to Sign Request");
+        }
+        String signatureUser = config.getSigningKey().getKeyAlias();
+        if (signatureUser == null) {
+            LOG.debug("No user configured for signature");
+            throw new ProcessingException("Failed to Sign Request");
+        }
+        String signaturePassword = config.getSigningKey().getKeyPassword();
+        if (signaturePassword == null) {
+            LOG.debug("No signature password available");
+            throw new ProcessingException("Failed to Sign Request");
+        }
+        
+        // Get the private key
+        PrivateKey privateKey = crypto.getPrivateKey(signatureUser, signaturePassword);
+        if (privateKey == null) {
+            LOG.debug("No private key available");
+            throw new ProcessingException("Failed to Sign Request");
+        }
+        
+        String sigAlgo = WSConstants.RSA_SHA1;
+        String jceSigAlgo = "SHA1withRSA";
+        LOG.debug("automatic sig algo detection: " + privateKey.getAlgorithm());
+        if (privateKey.getAlgorithm().equalsIgnoreCase("DSA")) {
+            sigAlgo = WSConstants.DSA;
+            jceSigAlgo = "SHA1withDSA";
+        }
+        LOG.debug("Using Signature algorithm " + sigAlgo);
+        
+        // Sign the request
+        Signature signature = Signature.getInstance(jceSigAlgo);
+        signature.initSign(privateKey);
+       
+        sb.append("&SigAlg").append('=').append(URLEncoder.encode(sigAlgo, "UTF-8"));
+        String requestToSign = sb.toString();
+
+        signature.update(requestToSign.getBytes("UTF-8"));
+        byte[] signBytes = signature.sign();
+        
+        String encodedSignature = Base64.encode(signBytes);
+        
+        return URLEncoder.encode(encodedSignature, "UTF-8");
     }
     
     protected String createCookie(String name, 
