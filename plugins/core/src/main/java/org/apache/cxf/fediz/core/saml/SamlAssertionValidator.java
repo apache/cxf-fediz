@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 import org.apache.cxf.fediz.core.saml.FedizSignatureTrustValidator.TRUST_TYPE;
 import org.apache.wss4j.common.cache.ReplayCache;
@@ -91,17 +90,10 @@ public class SamlAssertionValidator implements Validator {
      * Set a list of Strings corresponding to regular expression constraints on
      * the subject DN of a certificate
      */
-    public void setSubjectConstraints(List<String> constraints) {
+    public void setSubjectConstraints(Collection<Pattern> constraints) {
         if (constraints != null) {
-            subjectDNPatterns = new ArrayList<Pattern>();
-            for (String constraint : constraints) {
-                try {
-                    subjectDNPatterns.add(Pattern.compile(constraint.trim()));
-                } catch (PatternSyntaxException ex) {
-                    // LOG.severe(ex.getMessage());
-                    throw ex;
-                }
-            }
+            subjectDNPatterns.clear();
+            subjectDNPatterns.addAll(constraints);
         }
     }
     

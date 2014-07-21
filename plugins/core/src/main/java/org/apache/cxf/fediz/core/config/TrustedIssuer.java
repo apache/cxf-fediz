@@ -19,11 +19,14 @@
 
 package org.apache.cxf.fediz.core.config;
 
+import java.util.regex.Pattern;
+
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
 import org.apache.cxf.fediz.core.config.jaxb.ValidationType;
 
 public class TrustedIssuer {
     private final TrustedIssuerType trustedIssuerType;
+    private Pattern subject;
 
         
     public TrustedIssuer(TrustedIssuerType trustedIssuerType) {
@@ -39,12 +42,25 @@ public class TrustedIssuer {
         trustedIssuerType.setName(name);
     }
     
+    public Pattern getCompiledSubject() {
+        if (subject != null) {
+            return subject;
+        }
+        
+        if (trustedIssuerType.getSubject() != null) {
+            subject = Pattern.compile(trustedIssuerType.getSubject());
+        }
+        
+        return subject;
+    }
+    
     public String getSubject() {
         return trustedIssuerType.getSubject();
     }
     
     public void setSubject(String subject) {
         trustedIssuerType.setSubject(subject);
+        this.subject = null;
     }
 
     public CertificateValidationMethod getCertificateValidationMethod() {

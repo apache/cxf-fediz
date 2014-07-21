@@ -26,10 +26,8 @@ import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.ext.WSSecurityException;
@@ -74,24 +72,6 @@ public class FedizSignatureTrustValidator implements Validator {
         if (constraints != null) {
             subjectDNPatterns.clear();
             subjectDNPatterns.addAll(constraints);
-        }
-    }
-    
-    /**
-     * Set a list of Strings corresponding to regular expression constraints on
-     * the subject DN of a certificate
-     */
-    public void setSubjectConstraints(List<String> constraints) {
-        if (constraints != null) {
-            subjectDNPatterns = new ArrayList<Pattern>();
-            for (String constraint : constraints) {
-                try {
-                    subjectDNPatterns.add(Pattern.compile(constraint.trim()));
-                } catch (PatternSyntaxException ex) {
-                    // LOG.severe(ex.getMessage());
-                    throw ex;
-                }
-            }
         }
     }
     

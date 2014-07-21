@@ -18,8 +18,9 @@
  */
 package org.apache.cxf.fediz.core.samlsso;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.w3c.dom.Document;
 import org.apache.cxf.fediz.core.config.CertificateValidationMethod;
@@ -229,7 +230,12 @@ public class SAMLProtocolResponseValidator {
         
         List<TrustedIssuer> trustedIssuers = config.getTrustedIssuers();
         for (TrustedIssuer ti : trustedIssuers) {
-            List<String> subjectConstraints = Collections.singletonList(ti.getSubject());
+            Pattern subjectConstraint = ti.getCompiledSubject();
+            List<Pattern> subjectConstraints = new ArrayList<Pattern>(1);
+            if (subjectConstraint != null) {
+                subjectConstraints.add(subjectConstraint);
+            }
+            
             if (ti.getCertificateValidationMethod().equals(CertificateValidationMethod.CHAIN_TRUST)) {
                 trustValidator.setSubjectConstraints(subjectConstraints);
                 trustValidator.setSignatureTrustType(TRUST_TYPE.CHAIN_TRUST_CONSTRAINTS);
