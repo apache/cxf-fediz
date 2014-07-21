@@ -70,7 +70,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.cxf.fediz.systests</groupId>
-            <artifactId>systests-tests</artifactId>
+            <artifactId>fediz-systests-tests</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>            
             <scope>test</scope>
@@ -151,14 +151,14 @@
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz.systests</groupId>
-                                    <artifactId>systests-springWebapp</artifactId>
+                                    <artifactId>fediz-systests-springWebapp</artifactId>
                                     <version>${project.version}</version>
                                     <type>war</type>
                                     <overWrite>true</overWrite>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz.systests</groupId>
-                                    <artifactId>systests-spring2Webapp</artifactId>
+                                    <artifactId>fediz-systests-spring2Webapp</artifactId>
                                     <version>${project.version}</version>
                                     <type>war</type>
                                     <overWrite>true</overWrite>
