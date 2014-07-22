@@ -25,7 +25,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.security.Principal;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -466,8 +466,7 @@ public class FederationAuthenticator extends FormAuthenticator {
 
                 List<String> roles = wfRes.getRoles();
                 if (roles == null || roles.size() == 0) {
-                    roles = new ArrayList<String>();
-                    roles.add(new String("Authenticated"));
+                    roles = Collections.singletonList("Authenticated");
                 }
 
                 principal = new FederationPrincipalImpl(wfRes.getUsername(), roles,

@@ -19,7 +19,7 @@
 
 package org.apache.cxf.fediz.jetty;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -116,8 +116,7 @@ public class FederationLoginService extends AbstractLifeCycle implements LoginSe
 
             List<String> roles = wfRes.getRoles();
             if (roles == null || roles.size() == 0) {
-                roles = new ArrayList<String>();
-                roles.add(new String("Authenticated"));
+                roles = Collections.singletonList("Authenticated");
             }
             
             FederationUserPrincipal user = new FederationUserPrincipal(wfRes.getUsername(), wfRes);
