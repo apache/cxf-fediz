@@ -34,7 +34,7 @@
             <Item>
               <New class="org.eclipse.jetty.webapp.WebAppContext">
                 <Set name="contextPath">/fedizhelloworld</Set>
-                <Set name="war">./target/rp/systests-simpleWebapp.war</Set>
+                <Set name="war">./target/rp/fediz-systests-simpleWebapp.war</Set>
                 <!--Set name="war">./target/jetty/rp/webapps/simpleWebapp</Set>-->
                 <Set name="throwUnavailableOnStartupException">true</Set>
 	             
@@ -50,7 +50,7 @@
             <Item>
               <New class="org.eclipse.jetty.webapp.WebAppContext">
                 <Set name="contextPath">/fedizspringhelloworld</Set>
-                <Set name="war">./target/rp/systests-springPreauthWebapp.war</Set>
+                <Set name="war">./target/rp/fediz-systests-springPreauthWebapp.war</Set>
                 <Set name="throwUnavailableOnStartupException">true</Set>
 	             
                 <Get name="securityHandler">
