@@ -99,7 +99,6 @@
 					<xs:element ref="reply" />
 					<xs:element ref="request" />
 					<xs:element ref="signInQuery" />
-					<xs:element ref="claimTypesRequested" />
 					<xs:element ref="applicationServiceURL" />
 				</xs:sequence>
 				<xs:attribute name="version" use="required" type="xs:string" />
@@ -137,6 +136,7 @@
 	    <xs:sequence>
 	        <xs:element ref="roleDelimiter" />
 	        <xs:element ref="roleURI" />
+	        <xs:element ref="claimTypesRequested" />
 	        <xs:element ref="issuer" />
 	        <xs:element ref="realm" />
 	        <xs:element ref="tokenValidators" />

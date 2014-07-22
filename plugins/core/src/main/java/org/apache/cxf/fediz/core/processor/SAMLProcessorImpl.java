@@ -178,6 +178,10 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
         // Validate the Response
         validateSamlResponseProtocol((org.opensaml.saml2.core.Response)responseObject, config);
         
+        SSOValidatorResponse ssoValidatorResponse = 
+            validateSamlSSOResponse((org.opensaml.saml2.core.Response)responseObject, 
+                                request.getRequest(), requestState, config);
+        
         // Validate the internal assertion(s)
         TokenValidatorResponse validatorResponse = null;
         List<Element> assertions = 
@@ -210,15 +214,19 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             }
         }
         
-        validateSamlSSOResponse((org.opensaml.saml2.core.Response)responseObject, 
-                                request.getRequest(), requestState, config);
+        // Check whether token already used for signin
+        Date expires = validatorResponse.getExpires();
+        if (expires == null) {
+            expires = ssoValidatorResponse.getSessionNotOnOrAfter();
+        }
+        testForReplayAttack(validatorResponse.getUniqueTokenId(), config, expires);
         
         FedizResponse fedResponse = new FedizResponse(
                 validatorResponse.getUsername(), validatorResponse.getIssuer(),
                 validatorResponse.getRoles(), validatorResponse.getClaims(),
                 validatorResponse.getAudience(),
                 validatorResponse.getCreated(),
-                validatorResponse.getExpires(),
+                expires,
                 token,
                 validatorResponse.getUniqueTokenId());
 
@@ -314,7 +322,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
                                                          redirectURL,
                                                          authnRequest.getID(),
                                                          realm,
-                                                         config.getName(),
+                                                         authnRequest.getIssuer().getValue(),
                                                          webAppDomain,
                                                          System.currentTimeMillis());
             

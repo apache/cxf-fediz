@@ -27,6 +27,8 @@ import javax.security.auth.callback.CallbackHandler;
 import org.apache.cxf.fediz.core.TokenValidator;
 import org.apache.cxf.fediz.core.config.jaxb.ArgumentType;
 import org.apache.cxf.fediz.core.config.jaxb.CallbackType;
+import org.apache.cxf.fediz.core.config.jaxb.ClaimType;
+import org.apache.cxf.fediz.core.config.jaxb.ClaimTypesRequested;
 import org.apache.cxf.fediz.core.config.jaxb.ProtocolType;
 import org.apache.cxf.fediz.core.util.ClassLoaderUtils;
 import org.slf4j.Logger;
@@ -176,4 +178,17 @@ public abstract class Protocol {
         }
     }
 
+    public List<Claim> getClaimTypesRequested() {
+        ClaimTypesRequested claimsRequested = getProtocolType().getClaimTypesRequested();
+        List<Claim> claims = new ArrayList<Claim>();
+        for (ClaimType c : claimsRequested.getClaimType()) {
+            claims.add(new Claim(c));
+        }
+        return claims;
+    }
+
+    public void setClaimTypesRequested(ClaimTypesRequested value) {
+        getProtocolType().setClaimTypesRequested(value);
+    }
+    
 }

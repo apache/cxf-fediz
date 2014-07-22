@@ -115,49 +115,43 @@ public class MetadataWriter {
             writer.writeStartElement("wsa", "EndpointReference", WS_ADDRESSING_NS);
             writer.writeStartElement("wsa", "Address", WS_ADDRESSING_NS);
 
-            if (protocol instanceof FederationProtocol) {
-                FederationProtocol fedprotocol = (FederationProtocol)protocol;
-                
-                Object realmObj = fedprotocol.getRealm();
-                String realm = null;
-                if (realmObj instanceof String) {
-                    realm = (String)realmObj;
-                } else if (realmObj instanceof CallbackHandler) {
-                    //TODO
-                    //If realm is resolved at runtime, metadata not updated
-                }
-                
-                if (!(realm == null || "".equals(realm))) {
-                    writer.writeCharacters(realm);
-                }
+            Object realmObj = protocol.getRealm();
+            String realm = null;
+            if (realmObj instanceof String) {
+                realm = (String)realmObj;
+            } else if (realmObj instanceof CallbackHandler) {
+                //TODO
+                //If realm is resolved at runtime, metadata not updated
             }
+
+            if (!(realm == null || "".equals(realm))) {
+                writer.writeCharacters(realm);
+            }
+            
             // writer.writeCharacters("http://host:port/url from config");
             writer.writeEndElement(); // Address
             writer.writeEndElement(); // EndpointReference
             writer.writeEndElement(); // TargetScope
 
-            if (protocol instanceof FederationProtocol) {
-                FederationProtocol fedprotocol = (FederationProtocol)protocol;
-                List<Claim> claims = fedprotocol.getClaimTypesRequested();
-                if (claims != null && claims.size() > 0) {
+            List<Claim> claims = protocol.getClaimTypesRequested();
+            if (claims != null && claims.size() > 0) {
 
-                    // create ClaimsType section
-                    writer.writeStartElement("fed", "ClaimTypesRequested", WS_FEDERATION_NS);
-                    for (Claim claim : claims) {
+                // create ClaimsType section
+                writer.writeStartElement("fed", "ClaimTypesRequested", WS_FEDERATION_NS);
+                for (Claim claim : claims) {
 
-                        writer.writeStartElement("auth", "ClaimType", WS_FEDERATION_NS);
-                        writer.writeAttribute("Uri", claim.getType());
-                        if (claim.isOptional()) {
-                            writer.writeAttribute("Optional", "true");
-                        } else {
-                            writer.writeAttribute("Optional", "false");
-                        }
-
-                        writer.writeEndElement(); // ClaimType
-
+                    writer.writeStartElement("auth", "ClaimType", WS_FEDERATION_NS);
+                    writer.writeAttribute("Uri", claim.getType());
+                    if (claim.isOptional()) {
+                        writer.writeAttribute("Optional", "true");
+                    } else {
+                        writer.writeAttribute("Optional", "false");
                     }
-                    writer.writeEndElement(); // ClaimsTypeRequested
+
+                    writer.writeEndElement(); // ClaimType
+
                 }
+                writer.writeEndElement(); // ClaimsTypeRequested
             }
             // create sign in endpoint section
 
@@ -165,12 +159,9 @@ public class MetadataWriter {
             writer.writeStartElement("wsa", "EndpointReference", WS_ADDRESSING_NS);
             writer.writeStartElement("wsa", "Address", WS_ADDRESSING_NS);
 
-            if (protocol instanceof FederationProtocol) {
-                FederationProtocol fedprotocol = (FederationProtocol)protocol;
-                Object issuer = fedprotocol.getIssuer();
-                if (issuer instanceof String && !"".equals(issuer)) {
-                    writer.writeCharacters((String)issuer);
-                }
+            Object issuer = protocol.getIssuer();
+            if (issuer instanceof String && !"".equals(issuer)) {
+                writer.writeCharacters((String)issuer);
             }
 
             // writer.writeCharacters("http://host:port/url Issuer from config");

@@ -194,39 +194,17 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             validateToken(rst, tt, config, request.getCerts());
 
         // Check whether token already used for signin
-        if (validatorResponse.getUniqueTokenId() != null
-                && config.isDetectReplayedTokens()) {
-            // Check whether token has already been processed once, prevent
-            // replay attack
-            if (!config.getTokenReplayCache().contains(validatorResponse.getUniqueTokenId())) {
-                // not cached
-                Date expires = null;
-                if (lifeTime != null && lifeTime.getExpires() != null) {
-                    expires = lifeTime.getExpires();
-                } else {
-                    expires = validatorResponse.getExpires();
-                }
-                if (expires != null) {
-                    Date currentTime = new Date();
-                    long ttl = expires.getTime() - currentTime.getTime();
-                    config.getTokenReplayCache().add(validatorResponse.getUniqueTokenId(), ttl / 1000L);
-                } else {
-                    config.getTokenReplayCache().add(validatorResponse.getUniqueTokenId());
-                }
-            } else {
-                LOG.error("Replay attack with token id: " + validatorResponse.getUniqueTokenId());
-                throw new ProcessingException("Replay attack with token id: "
-                        + validatorResponse.getUniqueTokenId(), TYPE.TOKEN_REPLAY);
-            }
+        Date expires = null;
+        if (lifeTime != null && lifeTime.getExpires() != null) {
+            expires = lifeTime.getExpires();
+        } else {
+            expires = validatorResponse.getExpires();
         }
+        testForReplayAttack(validatorResponse.getUniqueTokenId(), config, expires);
 
         Date created = validatorResponse.getCreated();
         if (lifeTime != null && lifeTime.getCreated() != null) {
             created = lifeTime.getCreated();
-        }
-        Date expires = validatorResponse.getExpires();
-        if (lifeTime != null && lifeTime.getExpires() != null) {
-            expires = lifeTime.getExpires();
         }
         
         FedizResponse fedResponse = new FedizResponse(

@@ -22,6 +22,7 @@ package org.apache.cxf.fediz.core.processor;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Date;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -29,10 +30,16 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.cxf.fediz.core.config.FedizContext;
+import org.apache.cxf.fediz.core.exception.ProcessingException;
+import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.core.spi.IDPCallback;
 import org.apache.cxf.fediz.core.spi.RealmCallback;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractFedizProcessor implements FedizProcessor {
+    
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractFedizProcessor.class);
 
     protected String resolveIssuer(HttpServletRequest request, FedizContext config) throws IOException,
         UnsupportedCallbackException {
@@ -66,6 +73,29 @@ public abstract class AbstractFedizProcessor implements FedizProcessor {
             wtRealm = extractFullContextPath(request); //default value
         }
         return wtRealm;
+    }
+    
+    protected void testForReplayAttack(String tokenId, FedizContext config, Date expires) 
+        throws ProcessingException {
+        // Check whether token already used for signin
+        if (tokenId != null && config.isDetectReplayedTokens()) {
+            // Check whether token has already been processed once, prevent
+            // replay attack
+            if (!config.getTokenReplayCache().contains(tokenId)) {
+                // not cached
+                if (expires != null) {
+                    Date currentTime = new Date();
+                    long ttl = expires.getTime() - currentTime.getTime();
+                    config.getTokenReplayCache().add(tokenId, ttl / 1000L);
+                } else {
+                    config.getTokenReplayCache().add(tokenId);
+                }
+            } else {
+                LOG.error("Replay attack with token id: " + tokenId);
+                throw new ProcessingException("Replay attack with token id: "
+                        + tokenId, TYPE.TOKEN_REPLAY);
+            }
+        }
     }
 
     protected String extractFullContextPath(HttpServletRequest request) throws MalformedURLException {

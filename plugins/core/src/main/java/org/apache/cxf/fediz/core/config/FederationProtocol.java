@@ -19,14 +19,9 @@
 
 package org.apache.cxf.fediz.core.config;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.security.auth.callback.CallbackHandler;
 
 import org.apache.cxf.fediz.core.config.jaxb.CallbackType;
-import org.apache.cxf.fediz.core.config.jaxb.ClaimType;
-import org.apache.cxf.fediz.core.config.jaxb.ClaimTypesRequested;
 import org.apache.cxf.fediz.core.config.jaxb.FederationProtocolType;
 import org.apache.cxf.fediz.core.config.jaxb.ProtocolType;
 import org.apache.cxf.fediz.core.saml.SAMLTokenValidator;
@@ -181,19 +176,6 @@ public class FederationProtocol extends Protocol {
 
     public void setReply(String value) {
         getFederationProtocol().setReply(value);
-    }
-
-    public List<Claim> getClaimTypesRequested() {
-        ClaimTypesRequested claimsRequested = getFederationProtocol().getClaimTypesRequested();
-        List<Claim> claims = new ArrayList<Claim>();
-        for (ClaimType c:claimsRequested.getClaimType()) {
-            claims.add(new Claim(c));
-        }
-        return claims;
-    }
-
-    public void setClaimTypesRequested(ClaimTypesRequested value) {
-        getFederationProtocol().setClaimTypesRequested(value);
     }
 
     public String getVersion() {
