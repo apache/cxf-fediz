@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.cxf.fediz.core;
+package org.apache.cxf.fediz.core.federation;
 
 import java.io.File;
 import java.net.URL;

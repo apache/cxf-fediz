@@ -73,6 +73,7 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
     protected String confirmationMethod;
     protected X509Certificate[] certs;
     protected Statement statement = Statement.AUTHN;
+    protected boolean alsoAddAuthnStatement;
     protected CERT_IDENTIFIER certIdentifier = CERT_IDENTIFIER.X509_CERT;
     protected byte[] ephemeralKey;
     protected String issuer;
@@ -203,7 +204,7 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
      */
     //CHECKSTYLE:OFF
     protected void createAndSetStatement(SubjectBean subjectBean, SAMLCallback callback) {
-        if (statement == Statement.AUTHN) {
+        if (alsoAddAuthnStatement || statement == Statement.AUTHN) {
             AuthenticationStatementBean authBean = new AuthenticationStatementBean();
             if (subjectBean != null) {
                 authBean.setSubject(subjectBean);
@@ -216,7 +217,9 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
             }
             authBean.setAuthenticationMethod("Password");
             callback.setAuthenticationStatementData(Collections.singletonList(authBean));
-        } else if (statement == Statement.ATTR) {
+        }
+        
+        if (statement == Statement.ATTR) {
             AttributeStatementBean attrStateBean = new AttributeStatementBean();
             if (subjectBean != null) {
                 attrStateBean.setSubject(subjectBean);
@@ -357,7 +360,7 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
             attrStateBean.setSamlAttributes(attributeList);
             callback.setAttributeStatementData(Collections.singletonList(attrStateBean));
                        
-        } else {
+        } else if (statement == Statement.AUTHZ) {
             AuthDecisionStatementBean authzBean = new AuthDecisionStatementBean();
             if (subjectBean != null) {
                 authzBean.setSubject(subjectBean);
@@ -374,7 +377,7 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
     
     protected KeyInfoBean createKeyInfo() throws Exception {
         KeyInfoBean keyInfo = new KeyInfoBean();
-        if (statement == Statement.AUTHN) {
+        if (alsoAddAuthnStatement || statement == Statement.AUTHN) {
             keyInfo.setCertificate(certs[0]);
             keyInfo.setCertIdentifer(certIdentifier);
         } else if (statement == Statement.ATTR) {
@@ -416,5 +419,13 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
     protected String getNameOfClaimType(String claimType) {
         int i = claimType.lastIndexOf("/");
         return claimType.substring(i + 1);
+    }
+    
+    public boolean isAlsoAddAuthnStatement() {
+        return alsoAddAuthnStatement;
+    }
+
+    public void setAlsoAddAuthnStatement(boolean alsoAddAuthnStatement) {
+        this.alsoAddAuthnStatement = alsoAddAuthnStatement;
     }
 }

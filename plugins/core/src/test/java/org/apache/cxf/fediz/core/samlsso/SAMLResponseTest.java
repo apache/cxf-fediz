@@ -17,76 +17,88 @@
  * under the License.
  */
 
-package org.apache.cxf.fediz.core;
+package org.apache.cxf.fediz.core.samlsso;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.URL;
-import java.security.cert.X509Certificate;
+import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.servlet.http.HttpServletRequest;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
 import org.apache.cxf.fediz.common.STSUtil;
 import org.apache.cxf.fediz.common.SecurityTestUtil;
-import org.apache.cxf.fediz.core.AbstractSAMLCallbackHandler.MultiValue;
-import org.apache.cxf.fediz.core.config.FederationProtocol;
+import org.apache.cxf.fediz.core.AbstractSAMLCallbackHandler;
+import org.apache.cxf.fediz.core.Claim;
+import org.apache.cxf.fediz.core.ClaimTypes;
+import org.apache.cxf.fediz.core.FederationConstants;
+import org.apache.cxf.fediz.core.KeystoreCallbackHandler;
+import org.apache.cxf.fediz.core.SAML2CallbackHandler;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
-import org.apache.cxf.fediz.core.config.jaxb.AudienceUris;
-import org.apache.cxf.fediz.core.config.jaxb.CertificateStores;
-import org.apache.cxf.fediz.core.config.jaxb.ContextConfig;
-import org.apache.cxf.fediz.core.config.jaxb.FederationProtocolType;
-import org.apache.cxf.fediz.core.config.jaxb.KeyStoreType;
-import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
-import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
-import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuers;
-import org.apache.cxf.fediz.core.config.jaxb.ValidationType;
+import org.apache.cxf.fediz.core.config.SAMLProtocol;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
-import org.apache.cxf.fediz.core.processor.FederationProcessorImpl;
 import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
-import org.apache.wss4j.common.WSEncryptionPart;
+import org.apache.cxf.fediz.core.processor.SAMLProcessorImpl;
 import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.crypto.CryptoFactory;
-import org.apache.wss4j.common.crypto.CryptoType;
 import org.apache.wss4j.common.ext.WSPasswordCallback;
 import org.apache.wss4j.common.ext.WSSecurityException;
+import org.apache.wss4j.common.saml.OpenSAMLUtil;
 import org.apache.wss4j.common.saml.SAMLCallback;
 import org.apache.wss4j.common.saml.SAMLUtil;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.apache.wss4j.common.saml.bean.AudienceRestrictionBean;
 import org.apache.wss4j.common.saml.bean.ConditionsBean;
-import org.apache.wss4j.common.saml.builder.SAML1Constants;
+import org.apache.wss4j.common.saml.bean.SubjectConfirmationDataBean;
 import org.apache.wss4j.common.saml.builder.SAML2Constants;
 import org.apache.wss4j.common.util.DOM2Writer;
-import org.apache.wss4j.dom.WSConstants;
-import org.apache.wss4j.dom.message.WSSecEncrypt;
+import org.apache.xml.security.utils.Base64;
+import org.easymock.EasyMock;
 import org.joda.time.DateTime;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.opensaml.saml2.core.Response;
+import org.opensaml.saml2.core.Status;
 
 import static org.junit.Assert.fail;
 
-public class FederationProcessorTest {
+/**
+ * Some tests for processing SAMLResponses using the SAMLProcessorImpl
+ */
+public class SAMLResponseTest {
     static final String TEST_USER = "alice";
-    static final String TEST_RSTR_ISSUER = "FedizSTSIssuer";
-    static final String TEST_AUDIENCE = "https://localhost/fedizhelloworld";
+    static final String TEST_REQUEST_URL = "https://localhost/fedizhelloworld/";
+    static final String TEST_REQUEST_URI = "/fedizhelloworld";
+    static final String TEST_IDP_ISSUER = "http://url_to_the_issuer";
+    static final String TEST_CLIENT_ADDRESS = "https://127.0.0.1";
     
-    private static final String CONFIG_FILE = "fediz_test_config.xml";
+    private static final String CONFIG_FILE = "fediz_test_config_saml.xml";
     
     private static Crypto crypto;
     private static CallbackHandler cbPasswordHandler;
     private static FedizConfigurator configurator;
+    private static DocumentBuilderFactory docBuilderFactory;
+    
+    static {
+        docBuilderFactory = DocumentBuilderFactory.newInstance();
+        docBuilderFactory.setNamespaceAware(true);
+    }
     
     
     @BeforeClass
@@ -124,92 +136,183 @@ public class FederationProcessorTest {
             return null;
         }
     }
-
     
     /**
-     * Validate RSTR without RequestedSecurityToken element
+     * Successfully validate a SAMLResponse
      */
     @org.junit.Test
-    public void validateRSTRWithoutToken() throws Exception {
-        Document doc = STSUtil.toSOAPPart(STSUtil.SAMPLE_RSTR_COLL_MSG);
+    public void validateSAMLResponse() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+        
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                                                     TEST_IDP_ISSUER,
+                                                     requestId,
+                                                     TEST_REQUEST_URL,
+                                                     (String)config.getProtocol().getIssuer(),
+                                                     null,
+                                                     System.currentTimeMillis());
+        
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
+        
+        // Create SAML Response
+        String responseStr = createSamlResponseStr(requestId);
+        
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
         
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
-        wfReq.setResponseToken(DOM2Writer.nodeToString(doc));
+        wfReq.setResponseToken(responseStr);
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
         
-        configurator = null;
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
+        
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
+                            .size());
+        Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
+        assertClaims(wfRes.getClaims(), FederationConstants.DEFAULT_ROLE_URI.toString());
+    }
+    
+    /**
+     * Validate SAMLResponse with a Response without an internal token parameter
+     */
+    @org.junit.Test
+    public void validateResponseWithoutToken() throws Exception {
+        // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-
-        FedizProcessor wfProc = new FederationProcessorImpl();
+        
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                                                     TEST_IDP_ISSUER,
+                                                     requestId,
+                                                     TEST_REQUEST_URL,
+                                                     (String)config.getProtocol().getIssuer(),
+                                                     null,
+                                                     System.currentTimeMillis());
+        
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
+        
+        Document doc = STSUtil.toSOAPPart(SAMLSSOTestUtils.SAMPLE_EMPTY_SAML_RESPONSE);
+        
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+        
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(DOM2Writer.nodeToString(doc));
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+        
+        FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
-            fail("Failure expected on missing security token in RSTR");
+            fail("Failure expected on missing security token in response");
         } catch (ProcessingException ex) {
-            if (!TYPE.BAD_REQUEST.equals(ex.getType())) {
+            if (!TYPE.INVALID_REQUEST.equals(ex.getType())) {
+                fail("Expected ProcessingException with BAD_REQUEST type");
+            }
+        }
+    }
+    
+    @org.junit.Test
+    public void testMissingRelayState() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+        
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                                                     TEST_IDP_ISSUER,
+                                                     requestId,
+                                                     TEST_REQUEST_URL,
+                                                     (String)config.getProtocol().getIssuer(),
+                                                     null,
+                                                     System.currentTimeMillis());
+        
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
+        
+        // Create SAML Response
+        String responseStr = createSamlResponseStr(requestId);
+        
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+        
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(responseStr);
+        wfReq.setRequest(req);
+        
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            fail("Failure expected on missing relay state in response");
+        } catch (ProcessingException ex) {
+            if (!TYPE.INVALID_REQUEST.equals(ex.getType())) {
+                fail("Expected ProcessingException with BAD_REQUEST type");
+            }
+        }
+    }
+    
+    @org.junit.Test
+    public void testNonMatchingRelayState() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+        
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                                                     TEST_IDP_ISSUER,
+                                                     requestId,
+                                                     TEST_REQUEST_URL,
+                                                     (String)config.getProtocol().getIssuer(),
+                                                     null,
+                                                     System.currentTimeMillis());
+        
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
+        
+        // Create SAML Response
+        String responseStr = createSamlResponseStr(requestId);
+        
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+        
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(responseStr);
+        wfReq.setState("XYZ=");
+        wfReq.setRequest(req);
+        
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            fail("Failure expected on non matching relay state in response");
+        } catch (ProcessingException ex) {
+            if (!TYPE.INVALID_REQUEST.equals(ex.getType())) {
                 fail("Expected ProcessingException with BAD_REQUEST type");
             }
         }
     }
     
     /**
-     * Validate FederationRequest with unknown action
-     */
-    @org.junit.Test
-    public void validateRequestUnknownAction() throws Exception {
-        Document doc = STSUtil.toSOAPPart(STSUtil.SAMPLE_RSTR_COLL_MSG);
-        
-        FedizRequest wfReq = new FedizRequest();
-        wfReq.setAction("gugus");
-        wfReq.setResponseToken(DOM2Writer.nodeToString(doc));
-        
-        configurator = null;
-        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-
-        FedizProcessor wfProc = new FederationProcessorImpl();
-        try {
-            wfProc.processRequest(wfReq, config);
-            fail("Failure expected due to invalid action");
-        } catch (ProcessingException ex) {
-            if (!TYPE.INVALID_REQUEST.equals(ex.getType())) {
-                fail("Expected ProcessingException with INVALID_REQUEST type");
-            }
-        }
-    }
-    
-    /**
-     *Validate FederationRequest with invalid RSTR/wresult
-     */
-    @org.junit.Test
-    public void validateSignInInvalidWResult() throws Exception {
-        FedizRequest wfReq = new FedizRequest();
-        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
-        wfReq.setResponseToken("gugus");
-        
-        configurator = null;
-        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-
-        FedizProcessor wfProc = new FederationProcessorImpl();
-        try {
-            wfProc.processRequest(wfReq, config);
-            fail("Failure expected due to invalid wresult");
-        } catch (ProcessingException ex) {
-            if (!TYPE.INVALID_REQUEST.equals(ex.getType())) {
-                fail("Expected ProcessingException with INVALID_REQUEST type");
-            }
-        }
-    }
-    
-    @org.junit.Test
-    public void validateTokenAndCreateMetadata() throws Exception {
-        validateSAML2Token();
-        FederationMetaDataTest other = new FederationMetaDataTest();
-        other.validateMetaDataWithAlias();
-    }
-    
-    /**
      * Validate SAML 2 token which includes the role attribute with 2 values
      * Roles are encoded as a multi-value saml attribute
-     */
     @org.junit.Test
     public void validateSAML2Token() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -252,7 +355,6 @@ public class FederationProcessorTest {
      * Validate SAML 2 token which includes the role attribute with 2 values
      * Roles are encoded as a multi-value saml attribute
      * Not RequestedSecurityTokenCollection in this test, default in all others
-     */
     @org.junit.Test
     public void validateSAML2TokenRSTR() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -291,7 +393,6 @@ public class FederationProcessorTest {
     
     /**
      * Validate SAML 2 token which doesn't include the role SAML attribute
-     */
     @org.junit.Test
     public void validateSAML2TokenWithoutRoles() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -331,7 +432,6 @@ public class FederationProcessorTest {
     /**
      * Validate SAML 2 token where role information is provided
      * within another SAML attribute
-     */
     @org.junit.Test
     public void validateSAML2TokenDifferentRoleURI() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -371,7 +471,6 @@ public class FederationProcessorTest {
     /**
      * Validate SAML 2 token where role information is provided
      * within another SAML attribute
-     */
     @org.junit.Test
     public void validateSAML1TokenDifferentRoleURI() throws Exception {
         SAML1CallbackHandler callbackHandler = new SAML1CallbackHandler();
@@ -411,7 +510,6 @@ public class FederationProcessorTest {
     /**
      * Validate SAML 2 token which includes role attribute
      * but RoleURI is not configured
-     */
     @org.junit.Test
     public void validateSAML2TokenRoleURINotConfigured() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -451,7 +549,6 @@ public class FederationProcessorTest {
     /**
      * Validate SAML 1.1 token which includes the role attribute with 2 values
      * Roles are encoded as a multi-value saml attribute
-     */
     @org.junit.Test
     public void validateSAML1Token() throws Exception {
         SAML1CallbackHandler callbackHandler = new SAML1CallbackHandler();
@@ -493,7 +590,6 @@ public class FederationProcessorTest {
      * Validate SAML 1.1 token which includes the role attribute with 2 values
      * Roles are encoded as a multi-value saml attribute
      * Token embedded in RSTR 2005/02 - WS Federation 1.0
-     */
     @org.junit.Test
     public void validateSAML1TokenWSFed10() throws Exception {
         SAML1CallbackHandler callbackHandler = new SAML1CallbackHandler();
@@ -532,7 +628,6 @@ public class FederationProcessorTest {
     /**
      * Validate SAML 2 token which includes the role attribute with 2 values
      * Roles are encoded as a multiple saml attributes with the same name
-     */
     @org.junit.Test
     public void validateSAML2TokenRoleMultiAttributes() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -573,7 +668,6 @@ public class FederationProcessorTest {
     /**
      * Validate SAML 2 token which includes the role attribute with 2 values
      * Roles are encoded as a single saml attribute with encoded value
-     */
     @org.junit.Test
     public void validateSAML2TokenRoleEncodedValue() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -617,53 +711,6 @@ public class FederationProcessorTest {
      * Validate SAML 2 token which includes the role attribute with 2 values
      * The configured subject of the trusted issuer doesn't match with
      * the issuer of the SAML token
-     * 
-     * Ignored because PeerTrust ignores subject attribute
-     */
-    @org.junit.Test
-    @org.junit.Ignore
-    public void validateSAML2TokenUntrustedIssuer() throws Exception {
-        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
-        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
-        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
-        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
-        callbackHandler.setSubjectName(TEST_USER);
-        ConditionsBean cp = new ConditionsBean();
-        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
-        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
-        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
-        callbackHandler.setConditions(cp);
-
-        SAMLCallback samlCallback = new SAMLCallback();
-        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
-        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
-        String rstr = createSamlToken(assertion, "mystskey", true);
-        FedizRequest wfReq = new FedizRequest();
-        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
-        wfReq.setResponseToken(rstr);
-        
-        // Load and update the config to enforce an error
-        configurator = null;
-        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        config.getTrustedIssuers().get(0).setSubject("wrong-issuer-name");        
-        
-        FedizProcessor wfProc = new FederationProcessorImpl();
-        try {
-            wfProc.processRequest(wfReq, config);
-            Assert.fail("Processing must fail because of untrusted issuer configured");
-        } catch (ProcessingException ex) {
-            if (!TYPE.ISSUER_NOT_TRUSTED.equals(ex.getType())) {
-                fail("Expected ProcessingException with ISSUER_NOT_TRUSTED type");
-            }
-        }
-    }
-
-    /**
-     * Validate SAML 2 token which includes the role attribute with 2 values
-     * The configured subject of the trusted issuer doesn't match with
-     * the issuer of the SAML token
-     */
     @org.junit.Test
     public void validateUnsignedSAML2Token() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -704,7 +751,6 @@ public class FederationProcessorTest {
     /**
      * Validate SAML 2 token twice which causes an exception
      * due to replay attack
-     */
     @org.junit.Test
     public void testReplayAttack() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -753,7 +799,6 @@ public class FederationProcessorTest {
      * Validate SAML 2 token which includes the role attribute with 2 values
      * The configured subject of the trusted issuer doesn't match with
      * the issuer of the SAML token
-     */
     @org.junit.Test
     public void validateSAML2TokenSeveralCertStore() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -794,7 +839,6 @@ public class FederationProcessorTest {
      * Validate SAML 2 token which includes the role attribute with 2 values
      * The configured subject of the trusted issuer doesn't match with
      * the issuer of the SAML token
-     */
     @org.junit.Test
     public void validateSAML2TokenSeveralCertStoreTrustedIssuer() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -833,7 +877,6 @@ public class FederationProcessorTest {
     
     /**
      * Validate SAML 2 token which is expired
-     */
     @org.junit.Test
     public void validateSAML2TokenExpired() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -880,7 +923,6 @@ public class FederationProcessorTest {
     /**
      * Validate SAML 2 token which is not yet valid (in 30 seconds)
      * but within the maximum clock skew range (60 seconds)
-     */
     @org.junit.Test
     public void validateSAML2TokenClockSkewRange() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -927,7 +969,6 @@ public class FederationProcessorTest {
     /**
      * "Validate" SAML 2 token with a custom token validator
      * If a validator is configured it precedes the SAMLTokenValidator as part of Fediz
-     */
     @org.junit.Test
     public void validateSAML2TokenCustomValidator() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -970,7 +1011,6 @@ public class FederationProcessorTest {
     /**
      * "Validate" SAML 2 token with a custom token validator
      * If a validator is configured it precedes the SAMLTokenValidator as part of Fediz
-     */
     @org.junit.Test
     public void validateSAML2TokenMaxClockSkewNotDefined() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -1011,7 +1051,6 @@ public class FederationProcessorTest {
     /**
      * Validate an encrypted SAML 2 token which includes the role attribute with 2 values
      * Roles are encoded as a multi-value saml attribute
-     */
     @org.junit.Test
     public void validateEncryptedSAML2Token() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -1053,7 +1092,6 @@ public class FederationProcessorTest {
     
     /**
      * Validate a HolderOfKey SAML 2 token
-     */
     @org.junit.Test
     public void validateHOKSAML2Token() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -1088,10 +1126,10 @@ public class FederationProcessorTest {
         Document doc = STSUtil.toSOAPPart(STSUtil.SAMPLE_RSTR_COLL_MSG);
         Element token = assertion.toDOM(doc);
 
-        Element e = FederationProcessorTest.findElement(doc, "RequestedSecurityToken",
+        Element e = SAMLProcessorTest.findElement(doc, "RequestedSecurityToken",
                                                         FederationConstants.WS_TRUST_13_NS);
         if (e == null) {
-            e = FederationProcessorTest.findElement(doc, "RequestedSecurityToken",
+            e = SAMLProcessorTest.findElement(doc, "RequestedSecurityToken",
                                                     FederationConstants.WS_TRUST_2005_02_NS);
         }
         e.appendChild(token);
@@ -1192,56 +1230,40 @@ public class FederationProcessorTest {
         fedContext.close();
 
     }
+    */
     
-    
-    private String encryptAndSignToken(
-        SamlAssertionWrapper assertion
-    ) throws Exception {
+    private String createSamlResponseStr(String requestId) throws Exception {
+        // Create SAML Assertion
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setAlsoAddAuthnStatement(true);
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_IDP_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
         
-        WSPasswordCallback[] cb = {
-            new WSPasswordCallback("mystskey", WSPasswordCallback.SIGNATURE)
-        };
-        cbPasswordHandler.handle(cb);
-        String password = cb[0].getPassword();
-
-        assertion.signAssertion("mystskey", password, crypto, false);
+        ConditionsBean cp = new ConditionsBean();
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_REQUEST_URL);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
+        callbackHandler.setConditions(cp);
         
-        Document doc = STSUtil.toSOAPPart(STSUtil.SAMPLE_RSTR_COLL_MSG);
-        Element token = assertion.toDOM(doc);
-
-        Element e = FederationProcessorTest.findElement(doc, "RequestedSecurityToken",
-                                                        FederationConstants.WS_TRUST_13_NS);
-        if (e == null) {
-            e = FederationProcessorTest.findElement(doc, "RequestedSecurityToken",
-                                                    FederationConstants.WS_TRUST_2005_02_NS);
-        }
-        e.appendChild(token);
+        // Subject Confirmation Data
+        SubjectConfirmationDataBean subjectConfirmationData = new SubjectConfirmationDataBean();
+        subjectConfirmationData.setAddress(TEST_CLIENT_ADDRESS);
+        subjectConfirmationData.setInResponseTo(requestId);
+        subjectConfirmationData.setNotAfter(new DateTime().plusMinutes(5));
+        subjectConfirmationData.setRecipient(TEST_REQUEST_URL);
+        callbackHandler.setSubjectConfirmationData(subjectConfirmationData);
         
-        WSSecEncrypt builder = new WSSecEncrypt();
-        builder.setUserInfo("mystskey");
-        
-        builder.setKeyIdentifierType(WSConstants.ISSUER_SERIAL);
-        builder.setSymmetricEncAlgorithm(WSConstants.AES_128);
-        builder.setKeyEncAlgo(WSConstants.KEYTRANSPORT_RSA15);
-        builder.setEmbedEncryptedKey(true);
-        
-        WSEncryptionPart encryptionPart = new WSEncryptionPart(assertion.getId(), "Element");
-        encryptionPart.setElement(token);
-        
-        Crypto encrCrypto = CryptoFactory.getInstance("signature.properties");
-        builder.prepare(token.getOwnerDocument(), encrCrypto);
-        builder.encryptForRef(null, Collections.singletonList(encryptionPart));
-        
-        // return doc.getDocumentElement();
-        return DOM2Writer.nodeToString(doc);
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
+        Element response = createSamlResponse(assertion, "mystskey", true, requestId);
+        return encodeResponse(response);
     }
     
-    private String createSamlToken(SamlAssertionWrapper assertion, String alias, boolean sign)
-        throws IOException, UnsupportedCallbackException, WSSecurityException, Exception {
-        return createSamlToken(assertion, alias, sign, STSUtil.SAMPLE_RSTR_COLL_MSG);
-    }
-    
-    private String createSamlToken(SamlAssertionWrapper assertion, String alias, boolean sign, String rstr)
+    private Element createSamlResponse(SamlAssertionWrapper assertion, String alias, 
+                                      boolean sign, String requestID)
         throws IOException, UnsupportedCallbackException, WSSecurityException, Exception {
         WSPasswordCallback[] cb = {
             new WSPasswordCallback(alias, WSPasswordCallback.SIGNATURE)
@@ -1252,17 +1274,25 @@ public class FederationProcessorTest {
         if (sign) {
             assertion.signAssertion(alias, password, crypto, false);
         }
-        Document doc = STSUtil.toSOAPPart(rstr);
-        Element token = assertion.toDOM(doc);
+        
+        DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+        Document doc = docBuilder.newDocument();
 
-        Element e = FederationProcessorTest.findElement(doc, "RequestedSecurityToken",
-                                                        FederationConstants.WS_TRUST_13_NS);
-        if (e == null) {
-            e = FederationProcessorTest.findElement(doc, "RequestedSecurityToken",
-                                                    FederationConstants.WS_TRUST_2005_02_NS);
-        }
-        e.appendChild(token);
-        return DOM2Writer.nodeToString(doc);
+        Status status =
+            SAML2PResponseComponentBuilder.createStatus(
+                "urn:oasis:names:tc:SAML:2.0:status:Success", null
+            );
+        Response response =
+            SAML2PResponseComponentBuilder.createSAMLResponse(requestID, 
+                                                              assertion.getIssuerString(), 
+                                                              status);
+
+        response.getAssertions().add(assertion.getSaml2());
+
+        Element policyElement = OpenSAMLUtil.toDom(response, doc);
+        doc.appendChild(policyElement);
+
+        return policyElement;
     }
     
 
@@ -1336,5 +1366,13 @@ public class FederationProcessorTest {
         }
     }
     
+    private String encodeResponse(Element response) throws IOException {
+        String responseMessage = DOM2Writer.nodeToString(response);
+
+        byte[] deflatedBytes = CompressionUtils.deflate(responseMessage.getBytes("UTF-8"));
+
+        return Base64.encode(deflatedBytes);
+    }
+
 
 }

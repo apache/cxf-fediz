@@ -17,9 +17,12 @@
  * under the License.
  */
 
-package org.apache.cxf.fediz.core;
+package org.apache.cxf.fediz.core.federation;
 
 import org.w3c.dom.Element;
+import org.apache.cxf.fediz.core.TokenValidator;
+import org.apache.cxf.fediz.core.TokenValidatorRequest;
+import org.apache.cxf.fediz.core.TokenValidatorResponse;
 import org.apache.cxf.fediz.core.config.FedizContext;
 
 

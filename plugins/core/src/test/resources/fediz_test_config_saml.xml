@@ -16,16 +16,10 @@
 
 		<maximumClockSkew>1000</maximumClockSkew>
 		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-			xsi:type="federationProtocolType" version="1.2">
-			<realm>target realm</realm>
+			xsi:type="samlProtocolType" version="1.2">
 			<issuer>http://url_to_the_issuer</issuer>
 			<roleDelimiter>;</roleDelimiter>
 			<roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
-			<authenticationType value="some auth type" type="String" />
-			<homeRealm type="Class">org.apache.fediz.realm.MyHomeRealm.class</homeRealm>
-			<freshness>10000</freshness>
-			<reply>reply value</reply>
-			<request>REQUEST</request>
 			<claimTypesRequested>
 				<claimType type="a particular claim type" optional="true" />
 			</claimTypesRequested>
@@ -52,16 +46,10 @@
 
 		<maximumClockSkew>1000</maximumClockSkew>
 		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-			xsi:type="federationProtocolType" version="1.2">
-			<realm>target realm</realm>
+			xsi:type="samlProtocolType" version="1.2">
 			<issuer>http://url_to_the_issuer</issuer>
 			<roleDelimiter>;</roleDelimiter>
 			<roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
-			<authenticationType value="some auth type" type="String" />
-			<homeRealm type="Class">org.apache.fediz.realm.MyHomeRealm.class</homeRealm>
-			<freshness>10000</freshness>
-			<reply>reply value</reply>
-			<request>REQUEST</request>
 			<claimTypesRequested>
 				<claimType type="a particular claim type" optional="true" />
 			</claimTypesRequested>
@@ -88,16 +76,10 @@
 
 		<maximumClockSkew>1000</maximumClockSkew>
 		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-			xsi:type="federationProtocolType" version="1.2">
-			<realm>target realm</realm>
+			xsi:type="samlProtocolType" version="1.2">
 			<issuer>http://url_to_the_issuer</issuer>
 			<roleDelimiter>;</roleDelimiter>
 			<roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
-			<authenticationType value="some auth type" type="String" />
-			<homeRealm type="Class">org.apache.fediz.realm.MyHomeRealm.class</homeRealm>
-			<freshness>10000</freshness>
-			<reply>reply value</reply>
-			<request>REQUEST</request>
 			<claimTypesRequested>
 				<claimType type="a particular claim type" optional="true" />
 			</claimTypesRequested>
@@ -119,21 +101,15 @@
 
 		<maximumClockSkew>1000</maximumClockSkew>
 		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-			xsi:type="federationProtocolType" version="1.2">
-			<realm>target realm</realm>
+			xsi:type="samlProtocolType" version="1.2">
 			<issuer>http://url_to_the_issuer</issuer>
 			<roleDelimiter>;</roleDelimiter>
 			<roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
-			<authenticationType value="some auth type" type="String" />
-			<homeRealm type="Class">org.apache.fediz.realm.MyHomeRealm.class</homeRealm>
-			<freshness>10000</freshness>
-			<reply>reply value</reply>
-			<request>REQUEST</request>
 			<claimTypesRequested>
 				<claimType type="a particular claim type" optional="true" />
 			</claimTypesRequested>
 			<tokenValidators>
-				<validator>org.apache.cxf.fediz.core.federation.CustomValidator</validator>
+				<validator>org.apache.cxf.fediz.core.CustomValidator</validator>
 				<validator>org.apache.cxf.fediz.core.NonexistentCustomValidator</validator>
 			</tokenValidators>
 		</protocol>
@@ -153,16 +129,10 @@
 		</trustedIssuers>
 
 		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-			xsi:type="federationProtocolType" version="1.2">
-			<realm>target realm</realm>
+			xsi:type="samlProtocolType" version="1.2">
 			<issuer>http://url_to_the_issuer</issuer>
 			<roleDelimiter>;</roleDelimiter>
 			<roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
-			<authenticationType value="some auth type" type="String" />
-			<homeRealm type="Class">org.apache.fediz.realm.MyHomeRealm.class</homeRealm>
-			<freshness>10000</freshness>
-			<reply>reply value</reply>
-			<request>REQUEST</request>
 			<claimTypesRequested>
 				<claimType type="a particular claim type" optional="true" />
 			</claimTypesRequested>
@@ -184,54 +154,43 @@
 
 		<maximumClockSkew>1000</maximumClockSkew>
 		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-			xsi:type="federationProtocolType" version="1.2">
-			<realm>target realm</realm>
+			xsi:type="samlProtocolType" version="1.2">
 			<issuer>http://url_to_the_issuer</issuer>
 			<roleDelimiter>;</roleDelimiter>
 			<roleURI>http://schemas.mycompany.com/claims/role</roleURI>
-			<authenticationType value="some auth type" type="String" />
-			<homeRealm type="Class">org.apache.fediz.realm.MyHomeRealm.class</homeRealm>
-			<freshness>10000</freshness>
-			<reply>reply value</reply>
-			<request>REQUEST</request>
 			<claimTypesRequested>
 				<claimType type="a particular claim type" optional="true" />
 			</claimTypesRequested>
 		</protocol>
 	</contextConfig>
 	
-	<contextConfig name="ROOT_DECRYPTION">
-        <audienceUris>
-            <audienceItem>http://host_one:port/url</audienceItem>
-        </audienceUris>
-        <certificateStores>
-            <trustManager>
-                <keyStore file="ststrust.jks" password="storepass"
-                    type="JKS" />
-            </trustManager>     
-        </certificateStores>
-        <trustedIssuers>
-            <issuer certificateValidation="PeerTrust" />
-        </trustedIssuers>
-        <tokenDecryptionKey keyPassword="stskpass">
+	<contextConfig name="SIGNED_ROOT">
+		<audienceUris>
+			<audienceItem>http://host_one:port/url</audienceItem>
+		</audienceUris>
+		<certificateStores>
+			<trustManager>
+				<keyStore file="ststrust.jks" password="storepass"
+					type="JKS" />
+			</trustManager>		
+		</certificateStores>
+		<signingKey keyPassword="stskpass" keyAlias="mystskey">
              <keyStore file="stsstore.jks" password="stsspass" type="JKS" />
-        </tokenDecryptionKey>
+        </signingKey>
+		<trustedIssuers>
+			<issuer certificateValidation="PeerTrust" />
+		</trustedIssuers>
 
-        <maximumClockSkew>1000</maximumClockSkew>
-        <protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:type="federationProtocolType" version="1.2">
-            <realm>target realm</realm>
-            <issuer>http://url_to_the_issuer</issuer>
-            <roleDelimiter>;</roleDelimiter>
-            <roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
-            <authenticationType value="some auth type" type="String" />
-            <homeRealm type="Class">org.apache.fediz.realm.MyHomeRealm.class</homeRealm>
-            <freshness>10000</freshness>
-            <reply>reply value</reply>
-            <request>REQUEST</request>
-            <claimTypesRequested>
-                <claimType type="a particular claim type" optional="true" />
-            </claimTypesRequested>
-        </protocol>
-    </contextConfig>	
+		<maximumClockSkew>1000</maximumClockSkew>
+		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			xsi:type="samlProtocolType" version="1.2">
+			<signRequest>true</signRequest>
+			<issuer>http://url_to_the_issuer</issuer>
+			<roleDelimiter>;</roleDelimiter>
+			<roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
+			<claimTypesRequested>
+				<claimType type="a particular claim type" optional="true" />
+			</claimTypesRequested>
+		</protocol>
+	</contextConfig>	
 </FedizConfig>

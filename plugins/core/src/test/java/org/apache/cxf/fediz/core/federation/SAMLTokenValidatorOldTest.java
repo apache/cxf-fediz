@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.cxf.fediz.core;
+package org.apache.cxf.fediz.core.federation;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +33,13 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.apache.cxf.fediz.common.STSUtil;
 import org.apache.cxf.fediz.common.SecurityTestUtil;
+import org.apache.cxf.fediz.core.AbstractSAMLCallbackHandler;
+import org.apache.cxf.fediz.core.Claim;
+import org.apache.cxf.fediz.core.ClaimTypes;
+import org.apache.cxf.fediz.core.FederationConstants;
+import org.apache.cxf.fediz.core.KeystoreCallbackHandler;
+import org.apache.cxf.fediz.core.SAML1CallbackHandler;
+import org.apache.cxf.fediz.core.SAML2CallbackHandler;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.processor.FederationProcessorImpl;
