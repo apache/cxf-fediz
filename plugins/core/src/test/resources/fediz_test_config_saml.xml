@@ -109,7 +109,7 @@
 				<claimType type="a particular claim type" optional="true" />
 			</claimTypesRequested>
 			<tokenValidators>
-				<validator>org.apache.cxf.fediz.core.CustomValidator</validator>
+				<validator>org.apache.cxf.fediz.core.samlsso.CustomValidator</validator>
 				<validator>org.apache.cxf.fediz.core.NonexistentCustomValidator</validator>
 			</tokenValidators>
 		</protocol>

@@ -47,6 +47,7 @@ import org.apache.cxf.fediz.core.TokenValidator;
 import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
+import org.apache.cxf.fediz.core.config.Protocol;
 import org.apache.cxf.fediz.core.config.jaxb.AudienceUris;
 import org.apache.cxf.fediz.core.config.jaxb.CertificateStores;
 import org.apache.cxf.fediz.core.config.jaxb.ContextConfig;
@@ -380,7 +381,7 @@ public class FederationProcessorTest {
     }
     
     /**
-     * Validate SAML 2 token where role information is provided
+     * Validate SAML 1 token where role information is provided
      * within another SAML attribute
      */
     @org.junit.Test
@@ -447,7 +448,7 @@ public class FederationProcessorTest {
         
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        ((FederationProtocol)config.getProtocol()).setRoleURI(null);
+        config.getProtocol().setRoleURI(null);
         
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
@@ -964,8 +965,8 @@ public class FederationProcessorTest {
         
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("CUSTTOK");
-        FederationProtocol fp = (FederationProtocol)config.getProtocol();
-        List<TokenValidator> validators = fp.getTokenValidators();
+        Protocol protocol = config.getProtocol();
+        List<TokenValidator> validators = protocol.getTokenValidators();
         Assert.assertEquals("Two validators must be found", 2, validators.size());
         Assert.assertEquals("First validator must be custom validator",
                             CustomValidator.class.getName(), validators.get(0).getClass().getName());

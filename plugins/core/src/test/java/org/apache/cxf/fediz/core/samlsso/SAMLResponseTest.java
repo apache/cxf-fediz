@@ -21,6 +21,7 @@ package org.apache.cxf.fediz.core.samlsso;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Collections;
@@ -40,13 +41,17 @@ import org.w3c.dom.Node;
 import org.apache.cxf.fediz.common.STSUtil;
 import org.apache.cxf.fediz.common.SecurityTestUtil;
 import org.apache.cxf.fediz.core.AbstractSAMLCallbackHandler;
+import org.apache.cxf.fediz.core.AbstractSAMLCallbackHandler.MultiValue;
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.KeystoreCallbackHandler;
+import org.apache.cxf.fediz.core.SAML1CallbackHandler;
 import org.apache.cxf.fediz.core.SAML2CallbackHandler;
+import org.apache.cxf.fediz.core.TokenValidator;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
+import org.apache.cxf.fediz.core.config.Protocol;
 import org.apache.cxf.fediz.core.config.SAMLProtocol;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
@@ -311,936 +316,361 @@ public class SAMLResponseTest {
     }
     
     /**
-     * Validate SAML 2 token which includes the role attribute with 2 values
-     * Roles are encoded as a multi-value saml attribute
+     * Validate SAML 1 token (this is not allowed / supported)
+     */
     @org.junit.Test
-    public void validateSAML2Token() throws Exception {
-        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+    public void validateSAML1Token() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("CUSTOMROLEURI");
+
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                                                     TEST_IDP_ISSUER,
+                                                     requestId,
+                                                     TEST_REQUEST_URL,
+                                                     (String)config.getProtocol().getIssuer(),
+                                                     null,
+                                                     System.currentTimeMillis());
+
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
+
+        // Create SAML Response
+        SAML1CallbackHandler callbackHandler = new SAML1CallbackHandler();
+        callbackHandler.setAlsoAddAuthnStatement(true);
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
         callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
-        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setIssuer(TEST_IDP_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
-        ConditionsBean cp = new ConditionsBean();
-        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
-        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
-        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
-        callbackHandler.setConditions(cp);
-        
-        SAMLCallback samlCallback = new SAMLCallback();
-        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
-        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
+        String responseStr = createSamlResponseStr(callbackHandler, requestId);
+
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
-        wfReq.setResponseToken(rstr);
-        
-        configurator = null;
-        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
-        FedizProcessor wfProc = new FederationProcessorImpl();
-        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
-        assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
-        
-    }
-    
-    /**
-     * Validate SAML 2 token which includes the role attribute with 2 values
-     * Roles are encoded as a multi-value saml attribute
-     * Not RequestedSecurityTokenCollection in this test, default in all others
-    @org.junit.Test
-    public void validateSAML2TokenRSTR() throws Exception {
-        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
-        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
-        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
-        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
-        callbackHandler.setSubjectName(TEST_USER);
-        ConditionsBean cp = new ConditionsBean();
-        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
-        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
-        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
-        callbackHandler.setConditions(cp);
-        
-        SAMLCallback samlCallback = new SAMLCallback();
-        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
-        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        String rstr = createSamlToken(assertion, "mystskey", true, STSUtil.SAMPLE_RSTR_MSG);
-        
-        FedizRequest wfReq = new FedizRequest();
-        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
-        wfReq.setResponseToken(rstr);
-        
-        configurator = null;
-        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
-        FedizProcessor wfProc = new FederationProcessorImpl();
-        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+        wfReq.setResponseToken(responseStr);
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            fail("Failure expected on an unsupported token type in response");
+        } catch (ProcessingException ex) {
+            if (!TYPE.INVALID_REQUEST.equals(ex.getType())) {
+                fail("Expected ProcessingException with BAD_REQUEST type");
+            }
+        }
     }
     
     /**
      * Validate SAML 2 token which doesn't include the role SAML attribute
+     */
     @org.junit.Test
     public void validateSAML2TokenWithoutRoles() throws Exception {
-        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
-        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
-        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
-        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
-        callbackHandler.setSubjectName(TEST_USER);
-        callbackHandler.setRoles(null);
-        ConditionsBean cp = new ConditionsBean();
-        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
-        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
-        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
-        callbackHandler.setConditions(cp);
-        
-        SAMLCallback samlCallback = new SAMLCallback();
-        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
-        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        String rstr = createSamlToken(assertion, "mystskey", true);
-        
-        FedizRequest wfReq = new FedizRequest();
-        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
-        wfReq.setResponseToken(rstr);
-        
-        configurator = null;
+        // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
         
-        FedizProcessor wfProc = new FederationProcessorImpl();
-        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("No roles must be found", null, wfRes.getRoles());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
-    }
-    
-    /**
-     * Validate SAML 2 token where role information is provided
-     * within another SAML attribute
-    @org.junit.Test
-    public void validateSAML2TokenDifferentRoleURI() throws Exception {
-        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
-        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
-        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
-        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
-        callbackHandler.setSubjectName(TEST_USER);
-        callbackHandler.setRoleAttributeName("http://schemas.mycompany.com/claims/role");
-        ConditionsBean cp = new ConditionsBean();
-        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
-        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
-        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
-        callbackHandler.setConditions(cp);
-        
-        SAMLCallback samlCallback = new SAMLCallback();
-        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
-        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        String rstr = createSamlToken(assertion, "mystskey", true);
-        
-        FedizRequest wfReq = new FedizRequest();
-        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
-        wfReq.setResponseToken(rstr);
-        
-        configurator = null;
-        FedizContext config = getFederationConfigurator().getFedizContext("CUSTOMROLEURI");
-        
-        FedizProcessor wfProc = new FederationProcessorImpl();
-        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
-        Assert.assertEquals("Principal name wrong", TEST_USER, wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles().size());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
-        assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
-    }
-    
-    /**
-     * Validate SAML 2 token where role information is provided
-     * within another SAML attribute
-    @org.junit.Test
-    public void validateSAML1TokenDifferentRoleURI() throws Exception {
-        SAML1CallbackHandler callbackHandler = new SAML1CallbackHandler();
-        callbackHandler.setStatement(SAML1CallbackHandler.Statement.ATTR);
-        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
-        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
-        callbackHandler.setSubjectName(TEST_USER);
-        callbackHandler.setRoleAttributeName("http://schemas.mycompany.com/claims/role");
-        ConditionsBean cp = new ConditionsBean();
-        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
-        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
-        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
-        callbackHandler.setConditions(cp);
-        
-        SAMLCallback samlCallback = new SAMLCallback();
-        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
-        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        String rstr = createSamlToken(assertion, "mystskey", true);
-        
-        FedizRequest wfReq = new FedizRequest();
-        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
-        wfReq.setResponseToken(rstr);
-        
-        configurator = null;
-        FedizContext config = getFederationConfigurator().getFedizContext("CUSTOMROLEURI");
-        
-        FedizProcessor wfProc = new FederationProcessorImpl();
-        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
-        Assert.assertEquals("Principal name wrong", TEST_USER, wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles().size());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
-        assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
-    }
-    
-    /**
-     * Validate SAML 2 token which includes role attribute
-     * but RoleURI is not configured
-    @org.junit.Test
-    public void validateSAML2TokenRoleURINotConfigured() throws Exception {
-        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
-        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
-        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
-        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
-        callbackHandler.setSubjectName(TEST_USER);
-        ConditionsBean cp = new ConditionsBean();
-        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
-        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
-        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
-        callbackHandler.setConditions(cp);
-
-        SAMLCallback samlCallback = new SAMLCallback();
-        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
-        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        String rstr = createSamlToken(assertion, "mystskey", true);
-        
-        FedizRequest wfReq = new FedizRequest();
-        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
-        wfReq.setResponseToken(rstr);
-        
-        configurator = null;
-        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        ((FederationProtocol)config.getProtocol()).setRoleURI(null);
-        
-        FedizProcessor wfProc = new FederationProcessorImpl();
-        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", null, wfRes.getRoles());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
-    }
-    
-    /**
-     * Validate SAML 1.1 token which includes the role attribute with 2 values
-     * Roles are encoded as a multi-value saml attribute
-    @org.junit.Test
-    public void validateSAML1Token() throws Exception {
-        SAML1CallbackHandler callbackHandler = new SAML1CallbackHandler();
-        callbackHandler.setStatement(SAML1CallbackHandler.Statement.ATTR);
-        callbackHandler.setConfirmationMethod(SAML1Constants.CONF_BEARER);
-        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
-        callbackHandler.setSubjectName(TEST_USER);
-        ConditionsBean cp = new ConditionsBean();
-        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
-        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
-        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
-        callbackHandler.setConditions(cp);
-
-        SAMLCallback samlCallback = new SAMLCallback();
-        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
-        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        String rstr = createSamlToken(assertion, "mystskey", true);
-        
-        FedizRequest wfReq = new FedizRequest();
-        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
-        wfReq.setResponseToken(rstr);
-        
-        configurator = null;
-        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
-        FedizProcessor wfProc = new FederationProcessorImpl();
-        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
-        assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
-    }
-    
-    /**
-     * Validate SAML 1.1 token which includes the role attribute with 2 values
-     * Roles are encoded as a multi-value saml attribute
-     * Token embedded in RSTR 2005/02 - WS Federation 1.0
-    @org.junit.Test
-    public void validateSAML1TokenWSFed10() throws Exception {
-        SAML1CallbackHandler callbackHandler = new SAML1CallbackHandler();
-        callbackHandler.setStatement(SAML1CallbackHandler.Statement.ATTR);
-        callbackHandler.setConfirmationMethod(SAML1Constants.CONF_BEARER);
-        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
-        callbackHandler.setSubjectName(TEST_USER);
-        ConditionsBean cp = new ConditionsBean();
-        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
-        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
-        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
-        callbackHandler.setConditions(cp);
-
-        SAMLCallback samlCallback = new SAMLCallback();
-        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
-        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        String rstr = createSamlToken(assertion, "mystskey", true, STSUtil.SAMPLE_RSTR_2005_02_MSG);
-        FedizRequest wfReq = new FedizRequest();
-        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
-        wfReq.setResponseToken(rstr);
-        
-        configurator = null;
-        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
-        FedizProcessor wfProc = new FederationProcessorImpl();
-        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
-    }
-    
-    /**
-     * Validate SAML 2 token which includes the role attribute with 2 values
-     * Roles are encoded as a multiple saml attributes with the same name
-    @org.junit.Test
-    public void validateSAML2TokenRoleMultiAttributes() throws Exception {
-        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
-        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
-        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
-        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
-        callbackHandler.setSubjectName(TEST_USER);
-        callbackHandler.setMultiValueType(MultiValue.MULTI_ATTR);
-        ConditionsBean cp = new ConditionsBean();
-        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
-        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
-        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
-        callbackHandler.setConditions(cp);
-        
-        SAMLCallback samlCallback = new SAMLCallback();
-        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
-        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        String rstr = createSamlToken(assertion, "mystskey", true);
-        
-        FedizRequest wfReq = new FedizRequest();
-        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
-        wfReq.setResponseToken(rstr);
-        
-        configurator = null;
-        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-
-        FedizProcessor wfProc = new FederationProcessorImpl();
-        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
-        assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
-    }
-
-    /**
-     * Validate SAML 2 token which includes the role attribute with 2 values
-     * Roles are encoded as a single saml attribute with encoded value
-    @org.junit.Test
-    public void validateSAML2TokenRoleEncodedValue() throws Exception {
-        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
-        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
-        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
-        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
-        callbackHandler.setSubjectName(TEST_USER);
-        callbackHandler.setMultiValueType(MultiValue.ENC_VALUE);
-        ConditionsBean cp = new ConditionsBean();
-        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
-        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
-        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
-        callbackHandler.setConditions(cp);
-        
-        SAMLCallback samlCallback = new SAMLCallback();
-        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
-        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        String rstr = createSamlToken(assertion, "mystskey", true);
-        
-        FedizRequest wfReq = new FedizRequest();
-        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
-        wfReq.setResponseToken(rstr);
-        
-        configurator = null;
-        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        FederationProtocol fp = (FederationProtocol)config.getProtocol();
-        fp.setRoleDelimiter(",");
-
-        FedizProcessor wfProc = new FederationProcessorImpl();
-        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
-        assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
-    }
-    
-    /**
-     * Validate SAML 2 token which includes the role attribute with 2 values
-     * The configured subject of the trusted issuer doesn't match with
-     * the issuer of the SAML token
-    @org.junit.Test
-    public void validateUnsignedSAML2Token() throws Exception {
-        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
-        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
-        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
-        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
-        callbackHandler.setSubjectName(TEST_USER);
-        ConditionsBean cp = new ConditionsBean();
-        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
-        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
-        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
-        callbackHandler.setConditions(cp);
-        
-        SAMLCallback samlCallback = new SAMLCallback();
-        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
-        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
-        String rstr = createSamlToken(assertion, "mystskey", false);
-        FedizRequest wfReq = new FedizRequest();
-        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
-        wfReq.setResponseToken(rstr);
-        
-        // Load and update the config to enforce an error
-        configurator = null;
-        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");       
-        
-        FedizProcessor wfProc = new FederationProcessorImpl();
-        try {
-            wfProc.processRequest(wfReq, config);
-            Assert.fail("Processing must fail because of missing signature");
-        } catch (ProcessingException ex) {
-            if (!TYPE.TOKEN_NO_SIGNATURE.equals(ex.getType())) {
-                fail("Expected ProcessingException with TOKEN_NO_SIGNATURE type");
-            }
-        }
-    }
-    
-    /**
-     * Validate SAML 2 token twice which causes an exception
-     * due to replay attack
-    @org.junit.Test
-    public void testReplayAttack() throws Exception {
-        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
-        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
-        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
-        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
-        callbackHandler.setSubjectName(TEST_USER);
-        ConditionsBean cp = new ConditionsBean();
-        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
-        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
-        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
-        callbackHandler.setConditions(cp);
-        
-        SAMLCallback samlCallback = new SAMLCallback();
-        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
-        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
-        String rstr = createSamlToken(assertion, "mystskey", true);
-        
-        FedizRequest wfReq = new FedizRequest();
-        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
-        wfReq.setResponseToken(rstr);
-        
-        configurator = null;
-        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-
-        FedizProcessor wfProc = new FederationProcessorImpl();
-        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        
-        wfProc = new FederationProcessorImpl();
-        try {
-            wfProc.processRequest(wfReq, config);
-            fail("Failure expected on a replay attack");
-        } catch (ProcessingException ex) {
-            if (!TYPE.TOKEN_REPLAY.equals(ex.getType())) {
-                fail("Expected ProcessingException with TOKEN_REPLAY type");
-            }
-        }
-    }
-    
-    
-    /**
-     * Validate SAML 2 token which includes the role attribute with 2 values
-     * The configured subject of the trusted issuer doesn't match with
-     * the issuer of the SAML token
-    @org.junit.Test
-    public void validateSAML2TokenSeveralCertStore() throws Exception {
-        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
-        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
-        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
-        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
-        callbackHandler.setSubjectName(TEST_USER);
-        ConditionsBean cp = new ConditionsBean();
-        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
-        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
-        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
-        callbackHandler.setConditions(cp);
-
-        SAMLCallback samlCallback = new SAMLCallback();
-        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
-        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
-        String rstr = createSamlToken(assertion, "mystskey", true);
-        FedizRequest wfReq = new FedizRequest();
-        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
-        wfReq.setResponseToken(rstr);
-        
-        // Load and update the config to enforce an error
-        configurator = null;
-        FedizContext config = getFederationConfigurator().getFedizContext("ROOT2");
-        
-        FedizProcessor wfProc = new FederationProcessorImpl();
-        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
-    }
-
-    /**
-     * Validate SAML 2 token which includes the role attribute with 2 values
-     * The configured subject of the trusted issuer doesn't match with
-     * the issuer of the SAML token
-    @org.junit.Test
-    public void validateSAML2TokenSeveralCertStoreTrustedIssuer() throws Exception {
-        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
-        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
-        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
-        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
-        callbackHandler.setSubjectName(TEST_USER);
-        ConditionsBean cp = new ConditionsBean();
-        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
-        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
-        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
-        callbackHandler.setConditions(cp);
-        
-        SAMLCallback samlCallback = new SAMLCallback();
-        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
-        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
-        String rstr = createSamlToken(assertion, "mystskey", true);
-        FedizRequest wfReq = new FedizRequest();
-        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
-        wfReq.setResponseToken(rstr);
-        
-        // Load and update the config to enforce an error
-        configurator = null;
-        FedizContext config = getFederationConfigurator().getFedizContext("ROOT3");
-        
-        FedizProcessor wfProc = new FederationProcessorImpl();
-        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
-    }
-    
-    /**
-     * Validate SAML 2 token which is expired
-    @org.junit.Test
-    public void validateSAML2TokenExpired() throws Exception {
-        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
-        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
-        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
-        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
-        callbackHandler.setSubjectName(TEST_USER);
-        ConditionsBean cp = new ConditionsBean();
-        DateTime currentTime = new DateTime();
-        currentTime = currentTime.minusSeconds(60);
-        cp.setNotAfter(currentTime);
-        currentTime = new DateTime();
-        currentTime = currentTime.minusSeconds(300);
-        cp.setNotBefore(currentTime);
-        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
-        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
-        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
-        callbackHandler.setConditions(cp);
-        
-        SAMLCallback samlCallback = new SAMLCallback();
-        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
-        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
-        String rstr = createSamlToken(assertion, "mystskey", true);
-        
-        FedizRequest wfReq = new FedizRequest();
-        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
-        wfReq.setResponseToken(rstr);
-        
-        configurator = null;
-        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-
-        FedizProcessor wfProc = new FederationProcessorImpl();
-        try {
-            wfProc.processRequest(wfReq, config);
-            fail("Failure expected on expired SAML token");
-        } catch (ProcessingException ex) {
-            if (!TYPE.TOKEN_EXPIRED.equals(ex.getType())) {
-                fail("Expected ProcessingException with TOKEN_EXPIRED type");
-            }
-        }
-    }
-    
-    /**
-     * Validate SAML 2 token which is not yet valid (in 30 seconds)
-     * but within the maximum clock skew range (60 seconds)
-    @org.junit.Test
-    public void validateSAML2TokenClockSkewRange() throws Exception {
-        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
-        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
-        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
-        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
-        callbackHandler.setSubjectName(TEST_USER);
-        ConditionsBean cp = new ConditionsBean();
-        DateTime currentTime = new DateTime();
-        currentTime = currentTime.plusSeconds(300);
-        cp.setNotAfter(currentTime);
-        currentTime = new DateTime();
-        currentTime = currentTime.plusSeconds(30);
-        cp.setNotBefore(currentTime);
-        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
-        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
-        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
-        callbackHandler.setConditions(cp);
-        
-        SAMLCallback samlCallback = new SAMLCallback();
-        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
-        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
-        String rstr = createSamlToken(assertion, "mystskey", true);
-        
-        FedizRequest wfReq = new FedizRequest();
-        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
-        wfReq.setResponseToken(rstr);
-        
-        configurator = null;
-        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        config.setMaximumClockSkew(BigInteger.valueOf(60));
-        
-        FedizProcessor wfProc = new FederationProcessorImpl();
-        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
-    }
-
-    /**
-     * "Validate" SAML 2 token with a custom token validator
-     * If a validator is configured it precedes the SAMLTokenValidator as part of Fediz
-    @org.junit.Test
-    public void validateSAML2TokenCustomValidator() throws Exception {
-        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
-        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
-        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
-        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
-        callbackHandler.setSubjectName(TEST_USER);
-        ConditionsBean cp = new ConditionsBean();
-        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
-        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
-        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
-        callbackHandler.setConditions(cp);
-        
-        SAMLCallback samlCallback = new SAMLCallback();
-        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
-        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
-        String rstr = createSamlToken(assertion, "mystskey", true);
-        
-        FedizRequest wfReq = new FedizRequest();
-        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
-        wfReq.setResponseToken(rstr);
-        
-        configurator = null;
-        FedizContext config = getFederationConfigurator().getFedizContext("CUSTTOK");
-        FederationProtocol fp = (FederationProtocol)config.getProtocol();
-        List<TokenValidator> validators = fp.getTokenValidators();
-        Assert.assertEquals("Two validators must be found", 2, validators.size());
-        Assert.assertEquals("First validator must be custom validator",
-                            CustomValidator.class.getName(), validators.get(0).getClass().getName());
-        
-        FedizProcessor wfProc = new FederationProcessorImpl();
-        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-    }
-
-    /**
-     * "Validate" SAML 2 token with a custom token validator
-     * If a validator is configured it precedes the SAMLTokenValidator as part of Fediz
-    @org.junit.Test
-    public void validateSAML2TokenMaxClockSkewNotDefined() throws Exception {
-        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
-        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
-        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
-        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
-        callbackHandler.setSubjectName(TEST_USER);
-        ConditionsBean cp = new ConditionsBean();
-        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
-        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
-        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
-        callbackHandler.setConditions(cp);
-        
-        SAMLCallback samlCallback = new SAMLCallback();
-        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
-        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
-        String rstr = createSamlToken(assertion, "mystskey", true);
-        
-        FedizRequest wfReq = new FedizRequest();
-        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
-        wfReq.setResponseToken(rstr);
-        
-        configurator = null;
-        FedizContext config = getFederationConfigurator().getFedizContext("NOCLOCKSKEW");
-        
-        FedizProcessor wfProc = new FederationProcessorImpl();
-        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
-    }
-    
-    /**
-     * Validate an encrypted SAML 2 token which includes the role attribute with 2 values
-     * Roles are encoded as a multi-value saml attribute
-    @org.junit.Test
-    public void validateEncryptedSAML2Token() throws Exception {
-        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
-        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
-        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
-        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
-        callbackHandler.setSubjectName(TEST_USER);
-        ConditionsBean cp = new ConditionsBean();
-        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
-        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
-        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
-        callbackHandler.setConditions(cp);
-
-        SAMLCallback samlCallback = new SAMLCallback();
-        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
-        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
-        String rstr = encryptAndSignToken(assertion);
-        
-        FedizRequest wfReq = new FedizRequest();
-        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
-        wfReq.setResponseToken(rstr);
-        
-        configurator = null;
-        FedizContext config = 
-            getFederationConfigurator().getFedizContext("ROOT_DECRYPTION");
-        
-        FedizProcessor wfProc = new FederationProcessorImpl();
-        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
-        assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
-    }
-    
-    /**
-     * Validate a HolderOfKey SAML 2 token
-    @org.junit.Test
-    public void validateHOKSAML2Token() throws Exception {
-        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
-        callbackHandler.setStatement(SAML2CallbackHandler.Statement.AUTHN);
-        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_HOLDER_KEY);
-        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
-        callbackHandler.setSubjectName(TEST_USER);
-        ConditionsBean cp = new ConditionsBean();
-        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
-        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
-        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
-        callbackHandler.setConditions(cp);
-        
-        Crypto clientCrypto = CryptoFactory.getInstance("client-crypto.properties");
-        CryptoType cryptoType = new CryptoType(CryptoType.TYPE.ALIAS);
-        cryptoType.setAlias("myclientkey");
-        X509Certificate[] certs = clientCrypto.getX509Certificates(cryptoType);
-        callbackHandler.setCerts(certs);
-
-        SAMLCallback samlCallback = new SAMLCallback();
-        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
-        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
-        WSPasswordCallback[] cb = {
-            new WSPasswordCallback("mystskey", WSPasswordCallback.SIGNATURE)
-        };
-        cbPasswordHandler.handle(cb);
-        String password = cb[0].getPassword();
-
-        assertion.signAssertion("mystskey", password, crypto, false);
-
-        Document doc = STSUtil.toSOAPPart(STSUtil.SAMPLE_RSTR_COLL_MSG);
-        Element token = assertion.toDOM(doc);
-
-        Element e = SAMLProcessorTest.findElement(doc, "RequestedSecurityToken",
-                                                        FederationConstants.WS_TRUST_13_NS);
-        if (e == null) {
-            e = SAMLProcessorTest.findElement(doc, "RequestedSecurityToken",
-                                                    FederationConstants.WS_TRUST_2005_02_NS);
-        }
-        e.appendChild(token);
-                               
-        String rstr = DOM2Writer.nodeToString(doc);
-        
-        FedizRequest wfReq = new FedizRequest();
-        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
-        wfReq.setResponseToken(rstr);
-        
-        configurator = null;
-        FedizContext config = 
-            getFederationConfigurator().getFedizContext("ROOT_DECRYPTION");
-        
-        FedizProcessor wfProc = new FederationProcessorImpl();
-        try {
-            wfProc.processRequest(wfReq, config);
-            fail("Failure expected on missing client certs");
-        } catch (ProcessingException ex) {
-            // expected
-        }
-        
-        // Now set client certs
-        wfReq.setCerts(certs);      
-        wfProc.processRequest(wfReq, config);
-    }
-    
-    @org.junit.Test
-    public void validateSAML2TokenWithConfigCreatedWithAPI() throws Exception {
-        
-        ContextConfig config = new ContextConfig();
-        
-        config.setName("whatever");
-
-        // Configure certificate store
-        CertificateStores certStores = new CertificateStores();
-        TrustManagersType tm0 = new TrustManagersType();       
-        KeyStoreType ks0 = new KeyStoreType();
-        ks0.setType("JKS");
-        ks0.setPassword("storepass");
-        ks0.setFile("ststrust.jks");
-        tm0.setKeyStore(ks0);
-        certStores.getTrustManager().add(tm0);
-        config.setCertificateStores(certStores);
-        
-        // Configure trusted IDP
-        TrustedIssuers trustedIssuers = new TrustedIssuers();
-        TrustedIssuerType ti0 = new TrustedIssuerType();
-        ti0.setCertificateValidation(ValidationType.CHAIN_TRUST);
-        ti0.setName("FedizSTSIssuer");
-        ti0.setSubject(".*CN=www.sts.com.*");
-        trustedIssuers.getIssuer().add(ti0);
-        config.setTrustedIssuers(trustedIssuers);
-
-        FederationProtocolType protocol = new FederationProtocolType();
-        config.setProtocol(protocol);
-
-        AudienceUris audienceUris = new AudienceUris();
-        audienceUris.getAudienceItem().add("https://localhost/fedizhelloworld");
-        config.setAudienceUris(audienceUris);
-
-        protocol.setRoleURI("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role");
-
-        FedizContext fedContext = new FedizContext(config);
-        fedContext.init();
-        
-        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
-        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
-        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
-        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
-        callbackHandler.setSubjectName(TEST_USER);
-        ConditionsBean cp = new ConditionsBean();
-        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
-        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
-        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
-        callbackHandler.setConditions(cp);
-
-        SAMLCallback samlCallback = new SAMLCallback();
-        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
-        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
-        String rstr = createSamlToken(assertion, "mystskey", true, STSUtil.SAMPLE_RSTR_MSG);
-        
-        FedizRequest wfReq = new FedizRequest();
-        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
-        wfReq.setResponseToken(rstr);
-                
-        FedizProcessor wfProc = new FederationProcessorImpl();
-        FedizResponse wfRes = wfProc.processRequest(wfReq, fedContext);
-        
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
-        
-        fedContext.close();
-
-    }
-    */
-    
-    private String createSamlResponseStr(String requestId) throws Exception {
-        // Create SAML Assertion
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                                                     TEST_IDP_ISSUER,
+                                                     requestId,
+                                                     TEST_REQUEST_URL,
+                                                     (String)config.getProtocol().getIssuer(),
+                                                     null,
+                                                     System.currentTimeMillis());
+        
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
+        
+        // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setAlsoAddAuthnStatement(true);
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
         callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
         callbackHandler.setIssuer(TEST_IDP_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
+        callbackHandler.setRoles(null);
         
+        String responseStr = createSamlResponseStr(callbackHandler, requestId);
+        
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+        
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(responseStr);
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+        
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
+        
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("No roles must be found", null, wfRes.getRoles());
+        Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
+    }
+    
+    
+    /**
+     * Validate SAML 2 token where role information is provided
+     * within another SAML attribute
+     */
+    @org.junit.Test
+    public void validateSAML2TokenDifferentRoleURI() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("CUSTOMROLEURI");
+
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                                                     TEST_IDP_ISSUER,
+                                                     requestId,
+                                                     TEST_REQUEST_URL,
+                                                     (String)config.getProtocol().getIssuer(),
+                                                     null,
+                                                     System.currentTimeMillis());
+
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
+
+        // Create SAML Response
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setAlsoAddAuthnStatement(true);
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_IDP_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        callbackHandler.setRoleAttributeName("http://schemas.mycompany.com/claims/role");
+
+        String responseStr = createSamlResponseStr(callbackHandler, requestId);
+
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(responseStr);
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
+
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles().size());
+        Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
+        assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
+    }
+    
+    /**
+     * Validate SAML 2 token which includes role attribute
+     * but RoleURI is not configured
+     */
+    @org.junit.Test
+    public void validateSAML2TokenRoleURINotConfigured() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("CUSTOMROLEURI");
+        config.getProtocol().setRoleURI(null);
+
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                                                     TEST_IDP_ISSUER,
+                                                     requestId,
+                                                     TEST_REQUEST_URL,
+                                                     (String)config.getProtocol().getIssuer(),
+                                                     null,
+                                                     System.currentTimeMillis());
+
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
+
+        // Create SAML Response
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setAlsoAddAuthnStatement(true);
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_IDP_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        callbackHandler.setRoleAttributeName("http://schemas.mycompany.com/claims/role");
+
+        String responseStr = createSamlResponseStr(callbackHandler, requestId);
+
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(responseStr);
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
+
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Two roles must be found", null, wfRes.getRoles());
+        Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
+    }
+    
+    
+    /**
+     * Validate SAML 2 token which includes the role attribute with 2 values
+     * Roles are encoded as a multiple saml attributes with the same name
+     */
+    @org.junit.Test
+    public void validateSAML2TokenRoleMultiAttributes() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                                                     TEST_IDP_ISSUER,
+                                                     requestId,
+                                                     TEST_REQUEST_URL,
+                                                     (String)config.getProtocol().getIssuer(),
+                                                     null,
+                                                     System.currentTimeMillis());
+
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
+
+        // Create SAML Response
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setAlsoAddAuthnStatement(true);
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_IDP_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        callbackHandler.setMultiValueType(MultiValue.MULTI_ATTR);
+
+        String responseStr = createSamlResponseStr(callbackHandler, requestId);
+
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(responseStr);
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
+
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles().size());
+        Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
+        assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
+    }
+
+    /**
+     * Validate SAML 2 token which includes the role attribute with 2 values
+     * Roles are encoded as a single saml attribute with encoded value
+     * 
+     * TODO
+     */
+    @org.junit.Test
+    @org.junit.Ignore
+    public void validateSAML2TokenRoleEncodedValue() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                                                     TEST_IDP_ISSUER,
+                                                     requestId,
+                                                     TEST_REQUEST_URL,
+                                                     (String)config.getProtocol().getIssuer(),
+                                                     null,
+                                                     System.currentTimeMillis());
+
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
+
+        // Create SAML Response
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setAlsoAddAuthnStatement(true);
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_IDP_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        callbackHandler.setMultiValueType(MultiValue.ENC_VALUE);
+
+        String responseStr = createSamlResponseStr(callbackHandler, requestId);
+
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(responseStr);
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
+
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles().size());
+        Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
+        assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
+    }
+    
+    /**
+     * Validate SAML 2 token which includes the role attribute with 2 values
+     * The configured subject of the trusted issuer doesn't match with
+     * the issuer of the SAML token
+     */
+    @org.junit.Test
+    public void validateUnsignedSAML2Token() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                                                     TEST_IDP_ISSUER,
+                                                     requestId,
+                                                     TEST_REQUEST_URL,
+                                                     (String)config.getProtocol().getIssuer(),
+                                                     null,
+                                                     System.currentTimeMillis());
+
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
+
+        // Create SAML Response
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setAlsoAddAuthnStatement(true);
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_IDP_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+
         ConditionsBean cp = new ConditionsBean();
         AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
         audienceRestriction.getAudienceURIs().add(TEST_REQUEST_URL);
@@ -1257,6 +687,489 @@ public class SAMLResponseTest {
         
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
+        Element response = createSamlResponse(assertion, "mystskey", false, requestId);
+        String responseStr = encodeResponse(response);
+
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(responseStr);
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            Assert.fail("Processing must fail because of missing signature");
+        } catch (ProcessingException ex) {
+            if (!TYPE.TOKEN_NO_SIGNATURE.equals(ex.getType())) {
+                fail("Expected ProcessingException with TOKEN_NO_SIGNATURE type");
+            }
+        }
+    }
+    
+    /**
+     * Validate SAML 2 token twice which causes an exception
+     * due to replay attack
+     */
+    @org.junit.Test
+    public void testReplayAttack() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                                                     TEST_IDP_ISSUER,
+                                                     requestId,
+                                                     TEST_REQUEST_URL,
+                                                     (String)config.getProtocol().getIssuer(),
+                                                     null,
+                                                     System.currentTimeMillis());
+
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
+
+        // Create SAML Response
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setAlsoAddAuthnStatement(true);
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_IDP_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        callbackHandler.setMultiValueType(MultiValue.ENC_VALUE);
+
+        String responseStr = createSamlResponseStr(callbackHandler, requestId);
+
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(responseStr);
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
+
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
+        
+        wfProc = new SAMLProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            fail("Failure expected on a replay attack");
+        } catch (ProcessingException ex) {
+            if (!TYPE.INVALID_REQUEST.equals(ex.getType())) {
+                fail("Expected ProcessingException with INVALID_REQUEST type");
+            }
+        }
+    }
+    
+    /**
+     * Validate SAML 2 token which includes the role attribute with 2 values
+     * The configured subject of the trusted issuer doesn't match with
+     * the issuer of the SAML token
+     */
+    @org.junit.Test
+    public void validateSAML2TokenSeveralCertStore() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT2");
+
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                                                     TEST_IDP_ISSUER,
+                                                     requestId,
+                                                     TEST_REQUEST_URL,
+                                                     (String)config.getProtocol().getIssuer(),
+                                                     null,
+                                                     System.currentTimeMillis());
+
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
+
+        // Create SAML Response
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setAlsoAddAuthnStatement(true);
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_IDP_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+
+        String responseStr = createSamlResponseStr(callbackHandler, requestId);
+
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(responseStr);
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
+        
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
+                            .size());
+    }
+
+    /**
+     * Validate SAML 2 token which includes the role attribute with 2 values
+     * The configured subject of the trusted issuer doesn't match with
+     * the issuer of the SAML token
+     */
+    @org.junit.Test
+    public void validateSAML2TokenSeveralCertStoreTrustedIssuer() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT3");
+
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                                                     TEST_IDP_ISSUER,
+                                                     requestId,
+                                                     TEST_REQUEST_URL,
+                                                     (String)config.getProtocol().getIssuer(),
+                                                     null,
+                                                     System.currentTimeMillis());
+
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
+
+        // Create SAML Response
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setAlsoAddAuthnStatement(true);
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_IDP_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+
+        String responseStr = createSamlResponseStr(callbackHandler, requestId);
+
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(responseStr);
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
+        
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
+                            .size());
+    }
+    
+    /**
+     * Validate SAML 2 token which is expired
+     */
+    @org.junit.Test
+    public void validateSAML2TokenExpired() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                                                     TEST_IDP_ISSUER,
+                                                     requestId,
+                                                     TEST_REQUEST_URL,
+                                                     (String)config.getProtocol().getIssuer(),
+                                                     null,
+                                                     System.currentTimeMillis());
+
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
+
+        // Create SAML Response
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setAlsoAddAuthnStatement(true);
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_IDP_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        
+        ConditionsBean cp = new ConditionsBean();
+        DateTime currentTime = new DateTime();
+        currentTime = currentTime.minusSeconds(60);
+        cp.setNotAfter(currentTime);
+        currentTime = new DateTime();
+        currentTime = currentTime.minusSeconds(300);
+        cp.setNotBefore(currentTime);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_REQUEST_URL);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
+        callbackHandler.setConditions(cp);
+        
+        // Subject Confirmation Data
+        SubjectConfirmationDataBean subjectConfirmationData = new SubjectConfirmationDataBean();
+        subjectConfirmationData.setAddress(TEST_CLIENT_ADDRESS);
+        subjectConfirmationData.setInResponseTo(requestId);
+        subjectConfirmationData.setNotAfter(new DateTime().plusMinutes(5));
+        subjectConfirmationData.setRecipient(TEST_REQUEST_URL);
+        callbackHandler.setSubjectConfirmationData(subjectConfirmationData);
+        
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
+        Element response = createSamlResponse(assertion, "mystskey", true, requestId);
+        String responseStr = encodeResponse(response);
+        
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(responseStr);
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            fail("Failure expected on expired SAML token");
+        } catch (ProcessingException ex) {
+            if (!TYPE.TOKEN_EXPIRED.equals(ex.getType())) {
+                fail("Expected ProcessingException with TOKEN_EXPIRED type");
+            }
+        }
+    }
+    
+    /**
+     * Validate SAML 2 token which is not yet valid (in 30 seconds)
+     * but within the maximum clock skew range (60 seconds)
+     */
+    @org.junit.Test
+    public void validateSAML2TokenClockSkewRange() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+        config.setMaximumClockSkew(BigInteger.valueOf(60));
+
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                                                     TEST_IDP_ISSUER,
+                                                     requestId,
+                                                     TEST_REQUEST_URL,
+                                                     (String)config.getProtocol().getIssuer(),
+                                                     null,
+                                                     System.currentTimeMillis());
+
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
+
+        // Create SAML Response
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setAlsoAddAuthnStatement(true);
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_IDP_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        
+        ConditionsBean cp = new ConditionsBean();
+        DateTime currentTime = new DateTime();
+        currentTime = currentTime.plusSeconds(300);
+        cp.setNotAfter(currentTime);
+        currentTime = new DateTime();
+        currentTime = currentTime.plusSeconds(30);
+        cp.setNotBefore(currentTime);
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_REQUEST_URL);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
+        callbackHandler.setConditions(cp);
+        
+        // Subject Confirmation Data
+        SubjectConfirmationDataBean subjectConfirmationData = new SubjectConfirmationDataBean();
+        subjectConfirmationData.setAddress(TEST_CLIENT_ADDRESS);
+        subjectConfirmationData.setInResponseTo(requestId);
+        subjectConfirmationData.setNotAfter(new DateTime().plusMinutes(5));
+        subjectConfirmationData.setRecipient(TEST_REQUEST_URL);
+        callbackHandler.setSubjectConfirmationData(subjectConfirmationData);
+        
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
+        Element response = createSamlResponse(assertion, "mystskey", true, requestId);
+        String responseStr = encodeResponse(response);
+        
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(responseStr);
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
+        
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
+                            .size());
+    }
+
+    /**
+     * "Validate" SAML 2 token with a custom token validator
+     * If a validator is configured it precedes the SAMLTokenValidator as part of Fediz
+     */
+    @org.junit.Test
+    public void validateSAML2TokenCustomValidator() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("CUSTTOK");
+        Protocol protocol = config.getProtocol();
+        List<TokenValidator> validators = protocol.getTokenValidators();
+        Assert.assertEquals("Two validators must be found", 2, validators.size());
+        Assert.assertEquals("First validator must be custom validator",
+                            CustomValidator.class.getName(), validators.get(0).getClass().getName());
+
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                                                     TEST_IDP_ISSUER,
+                                                     requestId,
+                                                     TEST_REQUEST_URL,
+                                                     (String)config.getProtocol().getIssuer(),
+                                                     null,
+                                                     System.currentTimeMillis());
+
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
+
+        // Create SAML Response
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setAlsoAddAuthnStatement(true);
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_IDP_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+
+        String responseStr = createSamlResponseStr(callbackHandler, requestId);
+
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(responseStr);
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
+        
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
+    }
+
+    /**
+     * "Validate" SAML 2 token with a custom token validator
+     * If a validator is configured it precedes the SAMLTokenValidator as part of Fediz
+     */
+    @org.junit.Test
+    public void validateSAML2TokenMaxClockSkewNotDefined() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("NOCLOCKSKEW");
+
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                                                     TEST_IDP_ISSUER,
+                                                     requestId,
+                                                     TEST_REQUEST_URL,
+                                                     (String)config.getProtocol().getIssuer(),
+                                                     null,
+                                                     System.currentTimeMillis());
+
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
+
+        // Create SAML Response
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setAlsoAddAuthnStatement(true);
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_IDP_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+
+        String responseStr = createSamlResponseStr(callbackHandler, requestId);
+
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(responseStr);
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
+        
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
+                            .size());
+        Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
+    }
+    
+    private String createSamlResponseStr(String requestId) throws Exception {
+        // Create SAML Assertion
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setAlsoAddAuthnStatement(true);
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_IDP_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        
+        return createSamlResponseStr(callbackHandler, requestId);
+    }
+    
+    private String createSamlResponseStr(AbstractSAMLCallbackHandler saml2CallbackHandler,
+                                         String requestId) throws Exception {
+        ConditionsBean cp = new ConditionsBean();
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_REQUEST_URL);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
+        saml2CallbackHandler.setConditions(cp);
+        
+        // Subject Confirmation Data
+        SubjectConfirmationDataBean subjectConfirmationData = new SubjectConfirmationDataBean();
+        subjectConfirmationData.setAddress(TEST_CLIENT_ADDRESS);
+        subjectConfirmationData.setInResponseTo(requestId);
+        subjectConfirmationData.setNotAfter(new DateTime().plusMinutes(5));
+        subjectConfirmationData.setRecipient(TEST_REQUEST_URL);
+        saml2CallbackHandler.setSubjectConfirmationData(subjectConfirmationData);
+        
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(saml2CallbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         Element response = createSamlResponse(assertion, "mystskey", true, requestId);
         return encodeResponse(response);
