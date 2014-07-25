@@ -44,7 +44,6 @@ import org.apache.cxf.fediz.core.KeystoreCallbackHandler;
 import org.apache.cxf.fediz.core.SAML1CallbackHandler;
 import org.apache.cxf.fediz.core.SAML2CallbackHandler;
 import org.apache.cxf.fediz.core.TokenValidator;
-import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.config.Protocol;
@@ -611,8 +610,8 @@ public class FederationResponseTest {
         
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        FederationProtocol fp = (FederationProtocol)config.getProtocol();
-        fp.setRoleDelimiter(",");
+        Protocol protocol = config.getProtocol();
+        protocol.setRoleDelimiter(",");
 
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);

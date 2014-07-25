@@ -586,14 +586,13 @@ public class SAMLResponseTest {
     /**
      * Validate SAML 2 token which includes the role attribute with 2 values
      * Roles are encoded as a single saml attribute with encoded value
-     * 
-     * TODO
      */
     @org.junit.Test
-    @org.junit.Ignore
     public void validateSAML2TokenRoleEncodedValue() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+        Protocol protocol = config.getProtocol();
+        protocol.setRoleDelimiter(",");
 
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
 
@@ -616,7 +615,6 @@ public class SAMLResponseTest {
         callbackHandler.setIssuer(TEST_IDP_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
         callbackHandler.setMultiValueType(MultiValue.ENC_VALUE);
-
         String responseStr = createSamlResponseStr(callbackHandler, requestId);
 
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
@@ -635,6 +633,7 @@ public class SAMLResponseTest {
         Assert.assertEquals("Principal name wrong", TEST_USER,
                             wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
+        System.out.println("ROLE: " + wfRes.getRoles().get(0));
         Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles().size());
         Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
         assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
