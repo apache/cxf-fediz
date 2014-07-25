@@ -53,10 +53,18 @@ public final class SAML2PResponseComponentBuilder {
         
     }
     
-    @SuppressWarnings("unchecked")
     public static Response createSAMLResponse(
         String inResponseTo,
         String issuer,
+        Status status
+    ) {
+        return createSAMLResponse(inResponseTo, createIssuer(issuer), status);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static Response createSAMLResponse(
+        String inResponseTo,
+        Issuer issuer,
         Status status
     ) {
         if (responseBuilder == null) {
@@ -68,7 +76,7 @@ public final class SAML2PResponseComponentBuilder {
         response.setID(UUID.randomUUID().toString());
         response.setIssueInstant(new DateTime());
         response.setInResponseTo(inResponseTo);
-        response.setIssuer(createIssuer(issuer));
+        response.setIssuer(issuer);
         response.setStatus(status);
         response.setVersion(SAMLVersion.VERSION_20);
         
@@ -85,6 +93,22 @@ public final class SAML2PResponseComponentBuilder {
         }
         Issuer issuer = issuerBuilder.buildObject();
         issuer.setValue(issuerValue);
+        
+        return issuer;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static Issuer createIssuer(
+        String issuerValue,
+        String issuerFormat
+    ) {
+        if (issuerBuilder == null) {
+            issuerBuilder = (SAMLObjectBuilder<Issuer>)
+                builderFactory.getBuilder(Issuer.DEFAULT_ELEMENT_NAME);
+        }
+        Issuer issuer = issuerBuilder.buildObject();
+        issuer.setValue(issuerValue);
+        issuer.setFormat(issuerFormat);
         
         return issuer;
     }
