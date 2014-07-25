@@ -89,7 +89,7 @@ import static org.junit.Assert.fail;
 /**
  * Some tests for the WS-Federation "FederationProcessor".
  */
-public class FederationProcessorTest {
+public class FederationResponseTest {
     static final String TEST_USER = "alice";
     static final String TEST_RSTR_ISSUER = "FedizSTSIssuer";
     static final String TEST_AUDIENCE = "https://localhost/fedizhelloworld";
@@ -1100,10 +1100,10 @@ public class FederationProcessorTest {
         Document doc = STSUtil.toSOAPPart(STSUtil.SAMPLE_RSTR_COLL_MSG);
         Element token = assertion.toDOM(doc);
 
-        Element e = FederationProcessorTest.findElement(doc, "RequestedSecurityToken",
+        Element e = FederationResponseTest.findElement(doc, "RequestedSecurityToken",
                                                         FederationConstants.WS_TRUST_13_NS);
         if (e == null) {
-            e = FederationProcessorTest.findElement(doc, "RequestedSecurityToken",
+            e = FederationResponseTest.findElement(doc, "RequestedSecurityToken",
                                                     FederationConstants.WS_TRUST_2005_02_NS);
         }
         e.appendChild(token);
@@ -1220,10 +1220,10 @@ public class FederationProcessorTest {
         Document doc = STSUtil.toSOAPPart(STSUtil.SAMPLE_RSTR_COLL_MSG);
         Element token = assertion.toDOM(doc);
 
-        Element e = FederationProcessorTest.findElement(doc, "RequestedSecurityToken",
+        Element e = FederationResponseTest.findElement(doc, "RequestedSecurityToken",
                                                         FederationConstants.WS_TRUST_13_NS);
         if (e == null) {
-            e = FederationProcessorTest.findElement(doc, "RequestedSecurityToken",
+            e = FederationResponseTest.findElement(doc, "RequestedSecurityToken",
                                                     FederationConstants.WS_TRUST_2005_02_NS);
         }
         e.appendChild(token);
@@ -1266,10 +1266,10 @@ public class FederationProcessorTest {
         Document doc = STSUtil.toSOAPPart(rstr);
         Element token = assertion.toDOM(doc);
 
-        Element e = FederationProcessorTest.findElement(doc, "RequestedSecurityToken",
+        Element e = FederationResponseTest.findElement(doc, "RequestedSecurityToken",
                                                         FederationConstants.WS_TRUST_13_NS);
         if (e == null) {
-            e = FederationProcessorTest.findElement(doc, "RequestedSecurityToken",
+            e = FederationResponseTest.findElement(doc, "RequestedSecurityToken",
                                                     FederationConstants.WS_TRUST_2005_02_NS);
         }
         e.appendChild(token);

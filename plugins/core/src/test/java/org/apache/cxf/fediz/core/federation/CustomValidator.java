@@ -44,11 +44,11 @@ public class CustomValidator implements TokenValidator {
         FedizContext config
     ) {
         return new TokenValidatorResponse(null,
-                                          FederationProcessorTest.TEST_USER,
-                                          FederationProcessorTest.TEST_RSTR_ISSUER,
+                                          FederationResponseTest.TEST_USER,
+                                          FederationResponseTest.TEST_RSTR_ISSUER,
                                           null,
                                           null,
-                                          FederationProcessorTest.TEST_AUDIENCE);
+                                          FederationResponseTest.TEST_AUDIENCE);
     }
 
 }

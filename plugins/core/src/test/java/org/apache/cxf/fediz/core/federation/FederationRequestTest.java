@@ -1,0 +1,130 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+package org.apache.cxf.fediz.core.federation;
+
+import java.io.File;
+import java.net.URL;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.apache.cxf.fediz.common.SecurityTestUtil;
+import org.apache.cxf.fediz.core.config.FedizConfigurator;
+import org.apache.cxf.fediz.core.config.FedizContext;
+import org.apache.cxf.fediz.core.processor.FederationProcessorImpl;
+import org.apache.cxf.fediz.core.processor.FedizProcessor;
+import org.apache.cxf.fediz.core.processor.RedirectionResponse;
+import org.easymock.EasyMock;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+
+/**
+ * Some tests for creating WS-Federation requests using the FederationProcessorImpl
+ */
+public class FederationRequestTest {
+    static final String TEST_USER = "alice";
+    static final String TEST_RSTR_ISSUER = "FedizSTSIssuer";
+    static final String TEST_REQUEST_URL = "https://localhost/fedizhelloworld/";
+    static final String TEST_REQUEST_URI = "/fedizhelloworld";
+    static final String TEST_IDP_ISSUER = "http://url_to_the_issuer";
+    
+    private static final String CONFIG_FILE = "fediz_test_config.xml";
+    
+    private static FedizConfigurator configurator;
+    private static DocumentBuilderFactory docBuilderFactory;
+    
+    static {
+        docBuilderFactory = DocumentBuilderFactory.newInstance();
+        docBuilderFactory.setNamespaceAware(true);
+    }
+    
+    
+    @BeforeClass
+    public static void init() {
+        getFederationConfigurator();
+        Assert.assertNotNull(configurator);
+    }
+    
+    @AfterClass
+    public static void cleanup() {
+        SecurityTestUtil.cleanup();
+    }
+    
+
+    private static FedizConfigurator getFederationConfigurator() {
+        if (configurator != null) {
+            return configurator;
+        }
+        try {
+            configurator = new FedizConfigurator();
+            final URL resource = Thread.currentThread().getContextClassLoader()
+                    .getResource(CONFIG_FILE);
+            File f = new File(resource.toURI());
+            configurator.loadConfig(f);
+            return configurator;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    @org.junit.Test
+    public void createFederationSignInRequest() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+        
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL)).times(1, 2);
+        EasyMock.expect(req.getContextPath()).andReturn(TEST_REQUEST_URI);
+        EasyMock.replay(req);
+        
+        FedizProcessor wfProc = new FederationProcessorImpl();
+        RedirectionResponse response = wfProc.createSignInRequest(req, config);
+        
+        String redirectionURL = response.getRedirectionURL();
+        Assert.assertTrue(redirectionURL.startsWith(TEST_IDP_ISSUER));
+        Assert.assertTrue(redirectionURL.contains("wa=wsignin1.0"));
+        Assert.assertTrue(redirectionURL.contains("wreq=REQUEST"));
+        Assert.assertTrue(redirectionURL.contains("wfresh=10000"));
+        Assert.assertTrue(redirectionURL.contains("wct="));
+        Assert.assertTrue(redirectionURL.contains("wtrealm=target+realm"));
+        Assert.assertTrue(redirectionURL.contains("wreply="));
+    }
+    
+    @org.junit.Test
+    public void createFederationSignOutRequest() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+        
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL)).times(1, 2);
+        EasyMock.expect(req.getContextPath()).andReturn(TEST_REQUEST_URI);
+        EasyMock.replay(req);
+        
+        FedizProcessor wfProc = new FederationProcessorImpl();
+        RedirectionResponse response = wfProc.createSignOutRequest(req, config);
+        
+        String redirectionURL = response.getRedirectionURL();
+        Assert.assertTrue(redirectionURL.startsWith(TEST_IDP_ISSUER));
+        Assert.assertTrue(redirectionURL.contains("wa=wsignout1.0"));
+    }
+    
+}

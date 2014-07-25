@@ -22,7 +22,6 @@
 			<roleDelimiter>;</roleDelimiter>
 			<roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
 			<authenticationType value="some auth type" type="String" />
-			<homeRealm type="Class">org.apache.fediz.realm.MyHomeRealm.class</homeRealm>
 			<freshness>10000</freshness>
 			<reply>reply value</reply>
 			<request>REQUEST</request>
