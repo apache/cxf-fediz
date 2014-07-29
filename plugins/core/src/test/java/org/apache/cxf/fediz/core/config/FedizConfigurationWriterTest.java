@@ -41,6 +41,8 @@ import org.apache.cxf.fediz.core.config.jaxb.FederationProtocolType;
 import org.apache.cxf.fediz.core.config.jaxb.FedizConfig;
 import org.apache.cxf.fediz.core.config.jaxb.KeyManagersType;
 import org.apache.cxf.fediz.core.config.jaxb.KeyStoreType;
+import org.apache.cxf.fediz.core.config.jaxb.ProtocolType;
+import org.apache.cxf.fediz.core.config.jaxb.SamlProtocolType;
 import org.apache.cxf.fediz.core.config.jaxb.TokenValidators;
 import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
@@ -95,7 +97,7 @@ public class FedizConfigurationWriterTest {
     }
 
     //CHECKSTYLE:OFF
-    private FedizConfig createConfiguration() throws JAXBException {
+    private FedizConfig createConfiguration(boolean federation) throws JAXBException {
 
         FedizConfig rootConfig = new FedizConfig();
         ContextConfig config = new ContextConfig();
@@ -103,9 +105,6 @@ public class FedizConfigurationWriterTest {
 
         config.setName(CONFIG_NAME);
         config.setMaximumClockSkew(new BigInteger(CLOCK_SKEW));
-
-        FederationProtocolType protocol = new FederationProtocolType();
-        config.setProtocol(protocol);
 
         KeyManagersType sigManager = new KeyManagersType();
         sigManager.setKeyPassword(KEY_PASSWORD);
@@ -150,9 +149,31 @@ public class FedizConfigurationWriterTest {
         AudienceUris audienceUris = new AudienceUris();
         audienceUris.getAudienceItem().add(AUDIENCE_URI_1);
         config.setAudienceUris(audienceUris);
+        
+        ProtocolType protocol = null;
+        
+        if (federation) {
+            protocol = new FederationProtocolType();
+            
+            ((FederationProtocolType)protocol).setAuthenticationType(authType);
+            ((FederationProtocolType)protocol).setRequest(tokenRequest);
+            
+            CallbackType freshness = new CallbackType();
+            freshness.setValue(FRESHNESS_VALUE);
+            ((FederationProtocolType)protocol).setFreshness(freshness);
 
-        protocol.setAuthenticationType(authType);
-        protocol.setRequest(tokenRequest);
+            CallbackType homeRealm = new CallbackType();
+            homeRealm.setType(ArgumentType.CLASS);
+            homeRealm.setValue(HOME_REALM_CLASS);
+            ((FederationProtocolType)protocol).setHomeRealm(homeRealm);
+            
+            ((FederationProtocolType)protocol).setReply(REPLY);
+            ((FederationProtocolType)protocol).setVersion(PROTOCOL_VERSION);
+        } else {
+            protocol = new SamlProtocolType();
+        }
+        config.setProtocol(protocol);
+
         protocol.setRoleDelimiter(ROLE_DELIMITER);
         protocol.setRoleURI(ROLE_URI);
 
@@ -168,21 +189,9 @@ public class FedizConfigurationWriterTest {
 
         protocol.setClaimTypesRequested(claimTypeReq);
 
-        CallbackType freshness = new CallbackType();
-        freshness.setValue(FRESHNESS_VALUE);
-        protocol.setFreshness(freshness);
-
-        CallbackType homeRealm = new CallbackType();
-        homeRealm.setType(ArgumentType.CLASS);
-        homeRealm.setValue(HOME_REALM_CLASS);
-        protocol.setHomeRealm(homeRealm);
-        
         CallbackType realm = new CallbackType();
         realm.setValue(TARGET_REALM);
         protocol.setRealm(realm);
-        
-        protocol.setReply(REPLY);
-        protocol.setVersion(PROTOCOL_VERSION);
         
         CallbackType issuer = new CallbackType();
         issuer.setValue(ISSUER);
@@ -198,11 +207,25 @@ public class FedizConfigurationWriterTest {
     }
 
     @org.junit.Test
-    public void readWriteConfig() throws JAXBException {
+    public void readWriteConfigFederation() throws JAXBException {
 
         final JAXBContext jaxbContext = JAXBContext
                 .newInstance(FedizConfig.class);
-        FedizConfig configOut = createConfiguration();
+        FedizConfig configOut = createConfiguration(true);
+
+        StringWriter writer = new StringWriter();
+        jaxbContext.createMarshaller().marshal(configOut, writer);
+
+        StringReader reader = new StringReader(writer.toString());
+        jaxbContext.createUnmarshaller().unmarshal(reader);
+    }
+    
+    @org.junit.Test
+    public void readWriteConfigSAML() throws JAXBException {
+
+        final JAXBContext jaxbContext = JAXBContext
+                .newInstance(FedizConfig.class);
+        FedizConfig configOut = createConfiguration(false);
 
         StringWriter writer = new StringWriter();
         jaxbContext.createMarshaller().marshal(configOut, writer);
@@ -212,12 +235,34 @@ public class FedizConfigurationWriterTest {
     }
 
     @org.junit.Test
-    public void testSaveAndLoadConfig() throws JAXBException, IOException {
+    public void testSaveAndLoadConfigFederation() throws JAXBException, IOException {
         final JAXBContext jaxbContext = JAXBContext
                 .newInstance(FedizConfig.class);
 
         FedizConfigurator configurator = new FedizConfigurator();
-        FedizConfig configOut = createConfiguration();
+        FedizConfig configOut = createConfiguration(true);
+        StringWriter writer = new StringWriter();
+        jaxbContext.createMarshaller().marshal(configOut, writer);
+        StringReader reader = new StringReader(writer.toString());
+        configurator.loadConfig(reader);
+
+        File f = new File(CONFIG_FILE);
+        f.createNewFile();
+
+        configurator.saveConfiguration(f);
+        
+        configurator = new FedizConfigurator();
+        f = new File(CONFIG_FILE);
+        configurator.loadConfig(f);
+    }
+    
+    @org.junit.Test
+    public void testSaveAndLoadConfigSAML() throws JAXBException, IOException {
+        final JAXBContext jaxbContext = JAXBContext
+                .newInstance(FedizConfig.class);
+
+        FedizConfigurator configurator = new FedizConfigurator();
+        FedizConfig configOut = createConfiguration(false);
         StringWriter writer = new StringWriter();
         jaxbContext.createMarshaller().marshal(configOut, writer);
         StringReader reader = new StringReader(writer.toString());
@@ -234,7 +279,7 @@ public class FedizConfigurationWriterTest {
     }
 
     @org.junit.Test
-    public void verifyConfig() throws JAXBException {
+    public void verifyConfigFederation() throws JAXBException {
 
         final JAXBContext jaxbContext = JAXBContext
                 .newInstance(FedizConfig.class);
@@ -244,7 +289,7 @@ public class FedizConfigurationWriterTest {
          */
 
         FedizConfigurator configurator = new FedizConfigurator();
-        FedizConfig configOut = createConfiguration();
+        FedizConfig configOut = createConfiguration(true);
         StringWriter writer = new StringWriter();
         jaxbContext.createMarshaller().marshal(configOut, writer);
         StringReader reader = new StringReader(writer.toString());
@@ -278,6 +323,52 @@ public class FedizConfigurationWriterTest {
         Assert.assertEquals((String)wreq, TEST_WREQ);
         
         //Assert.assertEquals(ValidationMethod.CHAIN_TRUST, fedContext.getCertificateValidation());
+        List<String> audienceUris = fedContext.getAudienceUris();
+        Assert.assertEquals(1, audienceUris.size());
+        List<TrustedIssuer> trustedIssuers = fedContext.getTrustedIssuers();
+        Assert.assertEquals(1, trustedIssuers.size());
+        TrustedIssuer issuer = trustedIssuers.get(0);
+        Assert.assertEquals(TRUST_ISSUER_NAME, issuer.getName());
+        Assert.assertEquals(CertificateValidationMethod.CHAIN_TRUST, issuer.getCertificateValidationMethod());
+        Assert.assertEquals(TRUST_ISSUER_CERT_CONSTRAINT, issuer.getSubject());
+        
+        List<TrustManager> trustManagers = fedContext.getCertificateStores();
+        Assert.assertEquals(1, trustManagers.size());
+
+    }
+    
+    @org.junit.Test
+    public void verifyConfigSAML() throws JAXBException {
+
+        final JAXBContext jaxbContext = JAXBContext
+                .newInstance(FedizConfig.class);
+        
+        /**
+         * Test JAXB part
+         */
+
+        FedizConfigurator configurator = new FedizConfigurator();
+        FedizConfig configOut = createConfiguration(false);
+        StringWriter writer = new StringWriter();
+        jaxbContext.createMarshaller().marshal(configOut, writer);
+        StringReader reader = new StringReader(writer.toString());
+        configurator.loadConfig(reader);
+
+        ContextConfig config = configurator.getContextConfig(CONFIG_NAME);
+        Assert.assertNotNull(config);
+        AudienceUris audience = config.getAudienceUris();
+        Assert.assertEquals(1, audience.getAudienceItem().size());
+        Assert.assertTrue(config.getProtocol() instanceof SamlProtocolType);
+
+        /**
+         * Check Runtime configuration
+         */
+        FedizContext fedContext = configurator.getFedizContext(CONFIG_NAME);
+        Protocol protocol = fedContext.getProtocol();
+        Assert.assertTrue(protocol instanceof SAMLProtocol);
+        SAMLProtocol samlProtocol = (SAMLProtocol) protocol;
+        Assert.assertEquals(TARGET_REALM, samlProtocol.getRealm());
+        
         List<String> audienceUris = fedContext.getAudienceUris();
         Assert.assertEquals(1, audienceUris.size());
         List<TrustedIssuer> trustedIssuers = fedContext.getTrustedIssuers();
