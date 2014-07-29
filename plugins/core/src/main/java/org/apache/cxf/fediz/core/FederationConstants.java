@@ -221,6 +221,8 @@ public final class FederationConstants {
     
     public static final String METADATA_PATH_URI = "FederationMetadata/2007-06/FederationMetadata.xml";
     
+    public static final String FEDIZ_SAML_METADATA_PATH_URI = "SAML/Metadata.xml";
+    
     private FederationConstants() {
         
     }

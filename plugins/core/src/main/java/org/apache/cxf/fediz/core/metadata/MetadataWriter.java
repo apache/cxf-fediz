@@ -29,14 +29,15 @@ import java.util.List;
 import javax.security.auth.callback.CallbackHandler;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.w3c.dom.Document;
-
 import org.apache.cxf.fediz.core.config.Claim;
 import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.config.Protocol;
+import org.apache.cxf.fediz.core.config.SAMLProtocol;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.cxf.fediz.core.util.SignatureUtils;
@@ -77,13 +78,10 @@ public class MetadataWriter {
             writer.writeAttribute("ID", referenceID);
             
             String audience = "_someID";
-            String serviceURL = null;
-            if (protocol instanceof FederationProtocol) {
-                serviceURL = ((FederationProtocol)protocol).getApplicationServiceURL();
-                List<String> audienceList = config.getAudienceUris();
-                if (audienceList != null && audienceList.size() > 0 && !"".equals(audienceList.get(0))) {
-                    audience = audienceList.get(0);
-                }
+            String serviceURL = protocol.getApplicationServiceURL();
+            List<String> audienceList = config.getAudienceUris();
+            if (audienceList != null && audienceList.size() > 0 && !"".equals(audienceList.get(0))) {
+                audience = audienceList.get(0);
             }
             if (serviceURL == null) {
                 serviceURL = audience;
@@ -91,88 +89,16 @@ public class MetadataWriter {
             
             writer.writeAttribute("entityID", serviceURL);
 
-            writer.writeNamespace("fed", WS_FEDERATION_NS);
-            writer.writeNamespace("wsa", WS_ADDRESSING_NS);
-            writer.writeNamespace("auth", WS_FEDERATION_NS);
-            writer.writeNamespace("xsi", SCHEMA_INSTANCE_NS);
-
-            writer.writeStartElement("fed", "RoleDescriptor", WS_FEDERATION_NS);
-            writer.writeAttribute(SCHEMA_INSTANCE_NS, "type", "fed:ApplicationServiceType");
-            writer.writeAttribute("protocolSupportEnumeration", WS_FEDERATION_NS);
-
-            writer.writeStartElement("fed", "ApplicationServiceEndpoint", WS_FEDERATION_NS);
-            writer.writeStartElement("wsa", "EndpointReference", WS_ADDRESSING_NS);
-
-            writer.writeStartElement("wsa", "Address", WS_ADDRESSING_NS);
-            writer.writeCharacters(serviceURL);
-            
-            writer.writeEndElement(); // Address
-            writer.writeEndElement(); // EndpointReference
-            writer.writeEndElement(); // ApplicationServiceEndpoint
-
-            // create target scope element
-            writer.writeStartElement("fed", "TargetScope", WS_FEDERATION_NS);
-            writer.writeStartElement("wsa", "EndpointReference", WS_ADDRESSING_NS);
-            writer.writeStartElement("wsa", "Address", WS_ADDRESSING_NS);
-
-            Object realmObj = protocol.getRealm();
-            String realm = null;
-            if (realmObj instanceof String) {
-                realm = (String)realmObj;
-            } else if (realmObj instanceof CallbackHandler) {
-                //TODO
-                //If realm is resolved at runtime, metadata not updated
-            }
-
-            if (!(realm == null || "".equals(realm))) {
-                writer.writeCharacters(realm);
+            if (protocol instanceof FederationProtocol) {
+                writeFederationMetadata(writer, config, serviceURL);
+            } else if (protocol instanceof SAMLProtocol) {
+                writeSAMLMetadata(writer, config, serviceURL);
             }
             
-            // writer.writeCharacters("http://host:port/url from config");
-            writer.writeEndElement(); // Address
-            writer.writeEndElement(); // EndpointReference
-            writer.writeEndElement(); // TargetScope
-
-            List<Claim> claims = protocol.getClaimTypesRequested();
-            if (claims != null && claims.size() > 0) {
-
-                // create ClaimsType section
-                writer.writeStartElement("fed", "ClaimTypesRequested", WS_FEDERATION_NS);
-                for (Claim claim : claims) {
-
-                    writer.writeStartElement("auth", "ClaimType", WS_FEDERATION_NS);
-                    writer.writeAttribute("Uri", claim.getType());
-                    if (claim.isOptional()) {
-                        writer.writeAttribute("Optional", "true");
-                    } else {
-                        writer.writeAttribute("Optional", "false");
-                    }
-
-                    writer.writeEndElement(); // ClaimType
-
-                }
-                writer.writeEndElement(); // ClaimsTypeRequested
-            }
-            // create sign in endpoint section
-
-            writer.writeStartElement("fed", "PassiveRequestorEndpoint", WS_FEDERATION_NS);
-            writer.writeStartElement("wsa", "EndpointReference", WS_ADDRESSING_NS);
-            writer.writeStartElement("wsa", "Address", WS_ADDRESSING_NS);
-
-            Object issuer = protocol.getIssuer();
-            if (issuer instanceof String && !"".equals(issuer)) {
-                writer.writeCharacters((String)issuer);
-            }
-
-            // writer.writeCharacters("http://host:port/url Issuer from config");
-            writer.writeEndElement(); // Address
-            writer.writeEndElement(); // EndpointReference
-
-            writer.writeEndElement(); // PassiveRequestorEndpoint
-            writer.writeEndElement(); // RoleDescriptor
             writer.writeEndElement(); // EntityDescriptor
 
             writer.writeEndDocument();
+            
             streamWriter.flush();
             bout.flush();
             //
@@ -213,6 +139,115 @@ public class MetadataWriter {
 
     }
 
+    private void writeFederationMetadata(
+        XMLStreamWriter writer, 
+        FedizContext config,
+        String serviceURL
+    ) throws XMLStreamException {
+        writer.writeNamespace("fed", WS_FEDERATION_NS);
+        writer.writeNamespace("wsa", WS_ADDRESSING_NS);
+        writer.writeNamespace("auth", WS_FEDERATION_NS);
+        writer.writeNamespace("xsi", SCHEMA_INSTANCE_NS);
+
+        writer.writeStartElement("fed", "RoleDescriptor", WS_FEDERATION_NS);
+        writer.writeAttribute(SCHEMA_INSTANCE_NS, "type", "fed:ApplicationServiceType");
+        writer.writeAttribute("protocolSupportEnumeration", WS_FEDERATION_NS);
+
+        writer.writeStartElement("fed", "ApplicationServiceEndpoint", WS_FEDERATION_NS);
+        writer.writeStartElement("wsa", "EndpointReference", WS_ADDRESSING_NS);
+
+        writer.writeStartElement("wsa", "Address", WS_ADDRESSING_NS);
+        writer.writeCharacters(serviceURL);
+        
+        writer.writeEndElement(); // Address
+        writer.writeEndElement(); // EndpointReference
+        writer.writeEndElement(); // ApplicationServiceEndpoint
+
+        // create target scope element
+        writer.writeStartElement("fed", "TargetScope", WS_FEDERATION_NS);
+        writer.writeStartElement("wsa", "EndpointReference", WS_ADDRESSING_NS);
+        writer.writeStartElement("wsa", "Address", WS_ADDRESSING_NS);
+
+        FederationProtocol protocol = (FederationProtocol)config.getProtocol();
+        
+        Object realmObj = protocol.getRealm();
+        String realm = null;
+        if (realmObj instanceof String) {
+            realm = (String)realmObj;
+        } else if (realmObj instanceof CallbackHandler) {
+            //TODO
+            //If realm is resolved at runtime, metadata not updated
+        }
+
+        if (!(realm == null || "".equals(realm))) {
+            writer.writeCharacters(realm);
+        }
+        
+        // writer.writeCharacters("http://host:port/url from config");
+        writer.writeEndElement(); // Address
+        writer.writeEndElement(); // EndpointReference
+        writer.writeEndElement(); // TargetScope
+
+        List<Claim> claims = protocol.getClaimTypesRequested();
+        if (claims != null && claims.size() > 0) {
+
+            // create ClaimsType section
+            writer.writeStartElement("fed", "ClaimTypesRequested", WS_FEDERATION_NS);
+            for (Claim claim : claims) {
+
+                writer.writeStartElement("auth", "ClaimType", WS_FEDERATION_NS);
+                writer.writeAttribute("Uri", claim.getType());
+                if (claim.isOptional()) {
+                    writer.writeAttribute("Optional", "true");
+                } else {
+                    writer.writeAttribute("Optional", "false");
+                }
+
+                writer.writeEndElement(); // ClaimType
+
+            }
+            writer.writeEndElement(); // ClaimsTypeRequested
+        }
+        // create sign in endpoint section
+
+        writer.writeStartElement("fed", "PassiveRequestorEndpoint", WS_FEDERATION_NS);
+        writer.writeStartElement("wsa", "EndpointReference", WS_ADDRESSING_NS);
+        writer.writeStartElement("wsa", "Address", WS_ADDRESSING_NS);
+
+        Object issuer = protocol.getIssuer();
+        if (issuer instanceof String && !"".equals(issuer)) {
+            writer.writeCharacters((String)issuer);
+        }
+
+        // writer.writeCharacters("http://host:port/url Issuer from config");
+        writer.writeEndElement(); // Address
+        writer.writeEndElement(); // EndpointReference
+
+        writer.writeEndElement(); // PassiveRequestorEndpoint
+        writer.writeEndElement(); // RoleDescriptor
+    }
     
+    private void writeSAMLMetadata(
+        XMLStreamWriter writer, 
+        FedizContext config,
+        String serviceURL
+    ) throws XMLStreamException {
+        
+        SAMLProtocol protocol = (SAMLProtocol)config.getProtocol();
+        
+        writer.writeStartElement("", "SPSSODescriptor", SAML2_METADATA_NS);
+        writer.writeAttribute("AuthnRequestsSigned", Boolean.toString(protocol.isSignRequest()));
+        writer.writeAttribute("WantAssertionsSigned", "true");
+        writer.writeAttribute("protocolSupportEnumeration", "urn:oasis:names:tc:SAML:2.0:protocol");
+        
+        writer.writeStartElement("", "AssertionConsumerService", SAML2_METADATA_NS);
+        writer.writeAttribute("index", "0");
+        writer.writeAttribute("isDefault", "true");
+        writer.writeAttribute("Binding", "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
+        writer.writeAttribute("Location", serviceURL);
+
+        writer.writeEndElement(); // AssertionConsumerService
+        writer.writeEndElement(); // SPSSODescriptor
+    }
 
 }

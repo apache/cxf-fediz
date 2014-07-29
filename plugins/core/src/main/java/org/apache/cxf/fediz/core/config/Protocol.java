@@ -191,4 +191,11 @@ public abstract class Protocol {
         getProtocolType().setClaimTypesRequested(value);
     }
     
+    public String getApplicationServiceURL() {
+        return getProtocolType().getApplicationServiceURL();
+    }
+
+    public void setApplicationServiceURL(String value) {
+        getProtocolType().setApplicationServiceURL(value);
+    }
 }

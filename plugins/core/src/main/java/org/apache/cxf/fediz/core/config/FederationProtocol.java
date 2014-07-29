@@ -56,15 +56,6 @@ public class FederationProtocol extends Protocol {
         super.setProtocolType(federationProtocol);
     }
 
-
-    public String getApplicationServiceURL() {
-        return getFederationProtocol().getApplicationServiceURL();
-    }
-
-    public void setApplicationServiceURL(String value) {
-        getFederationProtocol().setApplicationServiceURL(value);
-    }
-
     public Object getAuthenticationType() {
         if (this.authenticationType != null) {
             return this.authenticationType;

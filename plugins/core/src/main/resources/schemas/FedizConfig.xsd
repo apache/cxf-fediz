@@ -99,7 +99,6 @@
 					<xs:element ref="reply" />
 					<xs:element ref="request" />
 					<xs:element ref="signInQuery" />
-					<xs:element ref="applicationServiceURL" />
 				</xs:sequence>
 				<xs:attribute name="version" use="required" type="xs:string" />
 			</xs:extension>
@@ -134,6 +133,7 @@
 	
 	<xs:complexType name="protocolType" abstract="true">
 	    <xs:sequence>
+	        <xs:element ref="applicationServiceURL" />
 	        <xs:element ref="roleDelimiter" />
 	        <xs:element ref="roleURI" />
 	        <xs:element ref="claimTypesRequested" />

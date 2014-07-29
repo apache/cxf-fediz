@@ -181,9 +181,10 @@ public class FederationAuthenticator extends FormAuthenticator {
         LOG.debug("WsFedAuthenticator:invoke()");
         request.setCharacterEncoding(this.encoding);
         
-        if (request.getRequestURL().indexOf(FederationConstants.METADATA_PATH_URI) != -1) {
+        if (request.getRequestURL().indexOf(FederationConstants.METADATA_PATH_URI) != -1
+            || request.getRequestURL().indexOf(FederationConstants.FEDIZ_SAML_METADATA_PATH_URI) != -1) {
             if (LOG.isInfoEnabled()) {
-                LOG.info("WS-Federation Metadata document requested");
+                LOG.info("Metadata document requested");
             }
             response.setContentType("text/xml");
             PrintWriter out = response.getWriter();
