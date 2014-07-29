@@ -37,7 +37,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
+import org.w3c.dom.NodeList;
 import org.apache.cxf.fediz.common.STSUtil;
 import org.apache.cxf.fediz.common.SecurityTestUtil;
 import org.apache.cxf.fediz.core.AbstractSAMLCallbackHandler;
@@ -72,9 +72,11 @@ import org.apache.wss4j.common.saml.bean.ConditionsBean;
 import org.apache.wss4j.common.saml.bean.SubjectConfirmationDataBean;
 import org.apache.wss4j.common.saml.builder.SAML2Constants;
 import org.apache.wss4j.common.util.DOM2Writer;
+import org.apache.wss4j.dom.WSConstants;
 import org.apache.xml.security.utils.Base64;
 import org.easymock.EasyMock;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -1139,6 +1141,148 @@ public class SAMLResponseTest {
         Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
     }
     
+    @org.junit.Test
+    public void testModifiedSignature() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+        
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                                                     TEST_IDP_ISSUER,
+                                                     requestId,
+                                                     TEST_REQUEST_URL,
+                                                     (String)config.getProtocol().getIssuer(),
+                                                     null,
+                                                     System.currentTimeMillis());
+        
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
+        
+        // Create SAML Response
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setAlsoAddAuthnStatement(true);
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_IDP_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        
+        ConditionsBean cp = new ConditionsBean();
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_REQUEST_URL);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
+        callbackHandler.setConditions(cp);
+        
+        // Subject Confirmation Data
+        SubjectConfirmationDataBean subjectConfirmationData = new SubjectConfirmationDataBean();
+        subjectConfirmationData.setAddress(TEST_CLIENT_ADDRESS);
+        subjectConfirmationData.setInResponseTo(requestId);
+        subjectConfirmationData.setNotAfter(new DateTime().plusMinutes(5));
+        subjectConfirmationData.setRecipient(TEST_REQUEST_URL);
+        callbackHandler.setSubjectConfirmationData(subjectConfirmationData);
+        
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
+        
+        WSPasswordCallback[] cb = {
+            new WSPasswordCallback("mystskey", WSPasswordCallback.SIGNATURE)
+        };
+        cbPasswordHandler.handle(cb);
+        String password = cb[0].getPassword();
+
+        assertion.signAssertion("mystskey", password, crypto, false);
+
+        DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+        Document doc = docBuilder.newDocument();
+
+        Status status =
+            SAML2PResponseComponentBuilder.createStatus(
+                "urn:oasis:names:tc:SAML:2.0:status:Success", null
+            );
+        Response response =
+            SAML2PResponseComponentBuilder.createSAMLResponse(requestId, 
+                                                              assertion.getIssuerString(), 
+                                                              status);
+
+        response.getAssertions().add(assertion.getSaml2());
+
+        Element policyElement = OpenSAMLUtil.toDom(response, doc);
+        doc.appendChild(policyElement);
+        
+        NodeList assertionNodes = 
+            policyElement.getElementsByTagNameNS(WSConstants.SAML2_NS, "Assertion");
+        Assert.assertTrue(assertionNodes != null && assertionNodes.getLength() == 1);
+        
+        Element assertionElement = (Element)assertionNodes.item(0);
+        
+        // Change IssueInstant attribute
+        String issueInstance = assertionElement.getAttributeNS(null, "IssueInstant");
+        DateTime issueDateTime = new DateTime(issueInstance, DateTimeZone.UTC);
+        issueDateTime = issueDateTime.plusSeconds(1);
+        assertionElement.setAttributeNS(null, "IssueInstant", issueDateTime.toString());
+
+        String responseStr = encodeResponse(policyElement);
+        
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+        
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(responseStr);
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+        
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            fail("Failure expected on modified Signature");
+        } catch (ProcessingException ex) {
+            // expected
+        }
+    }
+    
+    @org.junit.Test
+    public void testTrustFailure() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("CLIENT_TRUST");
+        
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                                                     TEST_IDP_ISSUER,
+                                                     requestId,
+                                                     TEST_REQUEST_URL,
+                                                     (String)config.getProtocol().getIssuer(),
+                                                     null,
+                                                     System.currentTimeMillis());
+        
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
+        
+        // Create SAML Response
+        String responseStr = createSamlResponseStr(requestId);
+        
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+        
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(responseStr);
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+        
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            fail("Failure expected on non-trusted signing cert");
+        } catch (ProcessingException ex) {
+            // expected
+        }
+    }
+    
     private String createSamlResponseStr(String requestId) throws Exception {
         // Create SAML Assertion
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -1206,8 +1350,6 @@ public class SAMLResponseTest {
 
         return policyElement;
     }
-    
-
     
     
     /**

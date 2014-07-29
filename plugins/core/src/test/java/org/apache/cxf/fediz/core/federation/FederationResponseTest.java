@@ -79,6 +79,7 @@ import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.wss4j.dom.WSConstants;
 import org.apache.wss4j.dom.message.WSSecEncrypt;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -1203,6 +1204,97 @@ public class FederationResponseTest {
 
     }
     
+    @org.junit.Test
+    public void testModifiedSignature() throws Exception {
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        ConditionsBean cp = new ConditionsBean();
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
+        callbackHandler.setConditions(cp);
+        
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
+        
+        WSPasswordCallback[] cb = {
+            new WSPasswordCallback("mystskey", WSPasswordCallback.SIGNATURE)
+        };
+        cbPasswordHandler.handle(cb);
+        String password = cb[0].getPassword();
+
+        assertion.signAssertion("mystskey", password, crypto, false);
+        Document doc = STSUtil.toSOAPPart(STSUtil.SAMPLE_RSTR_COLL_MSG);
+        Element token = assertion.toDOM(doc);
+        
+        // Change IssueInstant attribute
+        String issueInstance = token.getAttributeNS(null, "IssueInstant");
+        DateTime issueDateTime = new DateTime(issueInstance, DateTimeZone.UTC);
+        issueDateTime = issueDateTime.plusSeconds(1);
+        token.setAttributeNS(null, "IssueInstant", issueDateTime.toString());
+
+        Element e = FederationResponseTest.findElement(doc, "RequestedSecurityToken",
+                                                       FederationConstants.WS_TRUST_13_NS);
+        if (e == null) {
+            e = FederationResponseTest.findElement(doc, "RequestedSecurityToken",
+                                                   FederationConstants.WS_TRUST_2005_02_NS);
+        }
+        e.appendChild(token);
+        String rstr =  DOM2Writer.nodeToString(doc);
+        
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
+        
+        configurator = null;
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+        
+        FedizProcessor wfProc = new FederationProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            fail("Failure expected on signature validation");
+        } catch (ProcessingException ex) {
+            // expected
+        }
+    }
+    
+    @org.junit.Test
+    public void testTrustFailure() throws Exception {
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        ConditionsBean cp = new ConditionsBean();
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
+        callbackHandler.setConditions(cp);
+        
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
+        String rstr = createSamlToken(assertion, "mystskey", true);
+        
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
+        
+        configurator = null;
+        FedizContext config = getFederationConfigurator().getFedizContext("CLIENT_TRUST");
+        
+        FedizProcessor wfProc = new FederationProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            fail("Failure expected on non-trusted signing cert");
+        } catch (ProcessingException ex) {
+            // expected
+        }
+    }
     
     private String encryptAndSignToken(
         SamlAssertionWrapper assertion
