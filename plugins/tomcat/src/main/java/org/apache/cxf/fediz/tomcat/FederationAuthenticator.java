@@ -181,19 +181,20 @@ public class FederationAuthenticator extends FormAuthenticator {
         LOG.debug("WsFedAuthenticator:invoke()");
         request.setCharacterEncoding(this.encoding);
         
+        String contextName = request.getServletContext().getContextPath();
+        if (contextName == null || contextName.isEmpty()) {
+            contextName = "/";
+        }
+        FedizContext fedConfig = getContextConfiguration(contextName);
+        
         if (request.getRequestURL().indexOf(FederationConstants.METADATA_PATH_URI) != -1
-            || request.getRequestURL().indexOf(FederationConstants.FEDIZ_SAML_METADATA_PATH_URI) != -1) {
+            || request.getRequestURL().indexOf(getMetadataURI(fedConfig)) != -1) {
             if (LOG.isInfoEnabled()) {
                 LOG.info("Metadata document requested");
             }
             response.setContentType("text/xml");
             PrintWriter out = response.getWriter();
             
-            String contextName = request.getServletContext().getContextPath();
-            if (contextName == null || contextName.isEmpty()) {
-                contextName = "/";
-            }
-            FedizContext fedConfig = getContextConfiguration(contextName);
             FedizProcessor wfProc = 
                 FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
             try {
@@ -208,12 +209,6 @@ public class FederationAuthenticator extends FormAuthenticator {
         }
 
         //logout
-        String contextName = request.getServletContext().getContextPath();
-        if (contextName == null || contextName.isEmpty()) {
-            contextName = "/";
-        }
-        FedizContext fedConfig = getContextConfiguration(contextName);
-
         String logoutUrl = fedConfig.getLogoutURL();
         if (logoutUrl != null && !logoutUrl.isEmpty()) {
             HttpSession httpSession = request.getSession(false);
@@ -257,6 +252,18 @@ public class FederationAuthenticator extends FormAuthenticator {
         
         super.invoke(request, response);
 
+    }
+    
+    private String getMetadataURI(FedizContext fedConfig) {
+        if (fedConfig.getProtocol().getMetadataURI() != null) {
+            return fedConfig.getProtocol().getMetadataURI();
+        } else if (fedConfig.getProtocol() instanceof FederationProtocol) {
+            return FederationConstants.METADATA_PATH_URI;
+        } else if (fedConfig.getProtocol() instanceof SAMLProtocol) {
+            return FederationConstants.FEDIZ_SAML_METADATA_PATH_URI;
+        }
+        
+        return FederationConstants.METADATA_PATH_URI;
     }
 
     //CHECKSTYLE:OFF

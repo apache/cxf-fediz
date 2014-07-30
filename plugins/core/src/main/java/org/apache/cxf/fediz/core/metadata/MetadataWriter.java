@@ -24,6 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.security.cert.X509Certificate;
 import java.util.List;
 
 import javax.security.auth.callback.CallbackHandler;
@@ -39,9 +40,11 @@ import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.config.Protocol;
 import org.apache.cxf.fediz.core.config.SAMLProtocol;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
+import org.apache.cxf.fediz.core.util.CertsUtils;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.cxf.fediz.core.util.SignatureUtils;
 import org.apache.xml.security.stax.impl.util.IDGenerator;
+import org.apache.xml.security.utils.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -231,7 +234,7 @@ public class MetadataWriter {
         XMLStreamWriter writer, 
         FedizContext config,
         String serviceURL
-    ) throws XMLStreamException {
+    ) throws Exception {
         
         SAMLProtocol protocol = (SAMLProtocol)config.getProtocol();
         
@@ -245,8 +248,39 @@ public class MetadataWriter {
         writer.writeAttribute("isDefault", "true");
         writer.writeAttribute("Binding", "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
         writer.writeAttribute("Location", serviceURL);
-
         writer.writeEndElement(); // AssertionConsumerService
+        
+        if (config.getSigningKey() != null && protocol.isSignRequest()) {
+            writer.writeStartElement("", "KeyDescriptor", SAML2_METADATA_NS);
+            writer.writeAttribute("use", "signing");
+            
+            writer.writeStartElement("ds", "KeyInfo", "http://www.w3.org/2000/09/xmldsig#");
+            writer.writeNamespace("ds", "http://www.w3.org/2000/09/xmldsig#");
+            writer.writeStartElement("ds", "X509Data", "http://www.w3.org/2000/09/xmldsig#");
+            writer.writeStartElement("ds", "X509Certificate", "http://www.w3.org/2000/09/xmldsig#");
+
+            // Write the Base-64 encoded certificate
+            String keyAlias = config.getSigningKey().getKeyAlias();
+            if (keyAlias == null || "".equals(keyAlias)) {
+                keyAlias = config.getSigningKey().getCrypto().getDefaultX509Identifier();
+            }
+            X509Certificate cert = 
+                CertsUtils.getX509Certificate(config.getSigningKey().getCrypto(), keyAlias);
+            if (cert == null) {
+                throw new ProcessingException(
+                    "No signing certs were found to insert into the metadata using name: " 
+                        + keyAlias);
+            }
+            byte data[] = cert.getEncoded();
+            String encodedCertificate = Base64.encode(data);
+            writer.writeCharacters(encodedCertificate);
+            
+            writer.writeEndElement(); // X509Certificate
+            writer.writeEndElement(); // X509Data
+            writer.writeEndElement(); // KeyInfo
+            writer.writeEndElement(); // KeyDescriptor
+        }
+        
         writer.writeEndElement(); // SPSSODescriptor
     }
 

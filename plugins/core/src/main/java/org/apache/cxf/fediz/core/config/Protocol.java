@@ -108,6 +108,14 @@ public abstract class Protocol {
     public void setRoleURI(String value) {
         getProtocolType().setRoleURI(value);
     }
+    
+    public String getMetadataURI() {
+        return getProtocolType().getMetadataURI();
+    }
+    
+    public void setMetadataURI(String value) {
+        getProtocolType().setMetadataURI(value);
+    }
 
     public Object getIssuer() {
         if (this.issuer != null) {
