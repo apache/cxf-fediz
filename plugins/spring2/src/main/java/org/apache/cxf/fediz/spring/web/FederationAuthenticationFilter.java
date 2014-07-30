@@ -25,6 +25,8 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.cxf.fediz.core.FederationConstants;
+import org.apache.cxf.fediz.core.SAMLSSOConstants;
 import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.springframework.security.Authentication;
 import org.springframework.security.AuthenticationException;
@@ -59,12 +61,12 @@ public class FederationAuthenticationFilter extends AbstractProcessingFilter {
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request) throws AuthenticationException {
-        String wa = request.getParameter("wa");
+        String wa = request.getParameter(FederationConstants.PARAM_ACTION);
         String responseToken = getResponseToken(request);
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(wa);
         wfReq.setResponseToken(responseToken);
-        wfReq.setState(request.getParameter("RelayState"));
+        wfReq.setState(request.getParameter(SAMLSSOConstants.RELAY_STATE));
         wfReq.setRequest(request);
         
         X509Certificate certs[] = 
@@ -79,10 +81,10 @@ public class FederationAuthenticationFilter extends AbstractProcessingFilter {
     }
     
     private String getResponseToken(ServletRequest request) {
-        if (request.getParameter("wresult") != null) {
-            return request.getParameter("wresult");
-        } else if (request.getParameter("SAMLResponse") != null) {
-            return request.getParameter("SAMLResponse");
+        if (request.getParameter(FederationConstants.PARAM_RESULT) != null) {
+            return request.getParameter(FederationConstants.PARAM_RESULT);
+        } else if (request.getParameter(SAMLSSOConstants.SAML_RESPONSE) != null) {
+            return request.getParameter(SAMLSSOConstants.SAML_RESPONSE);
         }
         
         return null;

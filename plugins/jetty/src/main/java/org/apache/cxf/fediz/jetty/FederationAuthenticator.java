@@ -35,6 +35,7 @@ import javax.servlet.http.HttpSession;
 import javax.xml.bind.JAXBException;
 
 import org.apache.cxf.fediz.core.FederationConstants;
+import org.apache.cxf.fediz.core.SAMLSSOConstants;
 import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
@@ -173,7 +174,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
         FedizContext fedConfig = getContextConfiguration(contextName);
 
         try {
-            String action = request.getParameter("wa");
+            String action = request.getParameter(FederationConstants.PARAM_ACTION);
             String responseToken = getResponseToken(request, fedConfig);
             
             // Handle a request for authentication.
@@ -371,10 +372,11 @@ public class FederationAuthenticator extends LoginAuthenticator {
 
     private boolean isSignInRequest(ServletRequest request, FedizContext fedConfig) {
         if (fedConfig.getProtocol() instanceof FederationProtocol
-            && FederationConstants.ACTION_SIGNIN.equals(request.getParameter("wa"))) {
+            && FederationConstants.ACTION_SIGNIN.equals(
+                request.getParameter(FederationConstants.PARAM_ACTION))) {
             return true;
         } else if (fedConfig.getProtocol() instanceof SAMLProtocol
-            && request.getParameter("RelayState") != null) {
+            && request.getParameter(SAMLSSOConstants.RELAY_STATE) != null) {
             return true;
         }
 
@@ -383,9 +385,9 @@ public class FederationAuthenticator extends LoginAuthenticator {
     
     private String getResponseToken(ServletRequest request, FedizContext fedConfig) {
         if (fedConfig.getProtocol() instanceof FederationProtocol) {
-            return request.getParameter("wresult");
+            return request.getParameter(FederationConstants.PARAM_RESULT);
         } else if (fedConfig.getProtocol() instanceof SAMLProtocol) {
-            return request.getParameter("SAMLResponse");
+            return request.getParameter(SAMLSSOConstants.SAML_RESPONSE);
         }
         return null;
     }

@@ -47,6 +47,7 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.cxf.fediz.core.FederationConstants;
+import org.apache.cxf.fediz.core.SAMLSSOConstants;
 import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
@@ -224,7 +225,7 @@ public class FederationAuthenticator extends FormAuthenticator {
             }
         }
 
-        String wa = request.getParameter("wa");
+        String wa = request.getParameter(FederationConstants.PARAM_ACTION);
         if (FederationConstants.ACTION_SIGNOUT_CLEANUP.equals(wa)) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("SignOutCleanup request found");
@@ -260,7 +261,7 @@ public class FederationAuthenticator extends FormAuthenticator {
         } else if (fedConfig.getProtocol() instanceof FederationProtocol) {
             return FederationConstants.METADATA_PATH_URI;
         } else if (fedConfig.getProtocol() instanceof SAMLProtocol) {
-            return FederationConstants.FEDIZ_SAML_METADATA_PATH_URI;
+            return SAMLSSOConstants.FEDIZ_SAML_METADATA_PATH_URI;
         }
         
         return FederationConstants.METADATA_PATH_URI;
@@ -402,7 +403,7 @@ public class FederationAuthenticator extends FormAuthenticator {
         // Check whether it is the signin request, validate the token.
         // If failed, redirect to the error page if they are not correct
         FedizResponse wfRes = null;
-        String action = request.getParameter("wa");
+        String action = request.getParameter(FederationConstants.PARAM_ACTION);
         String responseToken = getResponseToken(request, fedConfig);
         
         // Handle a request for authentication.
@@ -569,10 +570,10 @@ public class FederationAuthenticator extends FormAuthenticator {
     
     private boolean isSignInRequired(Request request, FedizContext fedConfig) {
         if (fedConfig.getProtocol() instanceof FederationProtocol
-            && request.getParameter("wa") == null) {
+            && request.getParameter(FederationConstants.PARAM_ACTION) == null) {
             return true;
         } else if (fedConfig.getProtocol() instanceof SAMLProtocol
-            && request.getParameter("RelayState") == null) {
+            && request.getParameter(SAMLSSOConstants.RELAY_STATE) == null) {
             return true;
         }
         
@@ -581,10 +582,11 @@ public class FederationAuthenticator extends FormAuthenticator {
     
     private boolean isSignInRequest(Request request, FedizContext fedConfig) {
         if (fedConfig.getProtocol() instanceof FederationProtocol
-            && FederationConstants.ACTION_SIGNIN.equals(request.getParameter("wa"))) {
+            && FederationConstants.ACTION_SIGNIN.equals(
+                request.getParameter(FederationConstants.PARAM_ACTION))) {
             return true;
         } else if (fedConfig.getProtocol() instanceof SAMLProtocol
-            && request.getParameter("RelayState") != null) {
+            && request.getParameter(SAMLSSOConstants.RELAY_STATE) != null) {
             return true;
         }
         
@@ -593,9 +595,9 @@ public class FederationAuthenticator extends FormAuthenticator {
     
     private String getResponseToken(ServletRequest request, FedizContext fedConfig) {
         if (fedConfig.getProtocol() instanceof FederationProtocol) {
-            return request.getParameter("wresult");
+            return request.getParameter(FederationConstants.PARAM_RESULT);
         } else if (fedConfig.getProtocol() instanceof SAMLProtocol) {
-            return request.getParameter("SAMLResponse");
+            return request.getParameter(SAMLSSOConstants.SAML_RESPONSE);
         }
         
         return null;

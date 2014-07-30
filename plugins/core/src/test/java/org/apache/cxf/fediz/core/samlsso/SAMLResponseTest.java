@@ -44,7 +44,7 @@ import org.apache.cxf.fediz.core.AbstractSAMLCallbackHandler;
 import org.apache.cxf.fediz.core.AbstractSAMLCallbackHandler.MultiValue;
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimTypes;
-import org.apache.cxf.fediz.core.FederationConstants;
+import org.apache.cxf.fediz.core.FedizConstants;
 import org.apache.cxf.fediz.core.KeystoreCallbackHandler;
 import org.apache.cxf.fediz.core.SAML1CallbackHandler;
 import org.apache.cxf.fediz.core.SAML2CallbackHandler;
@@ -187,7 +187,7 @@ public class SAMLResponseTest {
         Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
                             .size());
         Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
-        assertClaims(wfRes.getClaims(), FederationConstants.DEFAULT_ROLE_URI.toString());
+        assertClaims(wfRes.getClaims(), FedizConstants.DEFAULT_ROLE_URI.toString());
     }
     
     /**

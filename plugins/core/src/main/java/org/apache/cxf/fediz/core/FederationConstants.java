@@ -24,12 +24,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class FederationConstants {
+/**
+ * Constants specific to WS-Federation
+ */
+public final class FederationConstants extends FedizConstants {
    
     public static final String WSFED_METHOD = "WSFED";
-
-    public static final URI DEFAULT_ROLE_URI = URI
-        .create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role");
 
     /**
      * Constants defined in following spec:
@@ -207,23 +207,9 @@ public final class FederationConstants {
     public static final URI AUTH_TYPE_SMARTCARD = URI
         .create("http://docs.oasis-open.org/wsfed/authorization/200706/authntypes/smartcard");
 
-    public static final String WS_TRUST_13_NS = "http://docs.oasis-open.org/ws-sx/ws-trust/200512";
-    
-    public static final String WS_TRUST_2005_02_NS = "http://schemas.xmlsoap.org/ws/2005/02/trust";
-    
-    public static final String SAML2_METADATA_NS = "urn:oasis:names:tc:SAML:2.0:metadata";
-    
-    public static final String WS_FEDERATION_NS = "http://docs.oasis-open.org/wsfed/federation/200706";
-    
-    public static final String WS_ADDRESSING_NS = "http://www.w3.org/2005/08/addressing";
-    
-    public static final String SCHEMA_INSTANCE_NS = "http://www.w3.org/2001/XMLSchema-instance";
-    
     public static final String METADATA_PATH_URI = "FederationMetadata/2007-06/FederationMetadata.xml";
     
-    public static final String FEDIZ_SAML_METADATA_PATH_URI = "SAML/Metadata.xml";
-    
     private FederationConstants() {
-        
+        super();
     }
 }

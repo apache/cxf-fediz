@@ -37,6 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.apache.cxf.fediz.core.FederationConstants;
+import org.apache.cxf.fediz.core.SAMLSSOConstants;
 import org.apache.cxf.fediz.core.TokenValidator;
 import org.apache.cxf.fediz.core.TokenValidatorRequest;
 import org.apache.cxf.fediz.core.TokenValidatorResponse;
@@ -333,15 +334,15 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
                 URLEncoder.encode(authnRequestEncoded, "UTF-8");
             
             StringBuilder sb = new StringBuilder();
-            sb.append("SAMLRequest").append('=').append(urlEncodedRequest);
-            sb.append("&RelayState").append('=').append(relayState);
+            sb.append(SAMLSSOConstants.SAML_REQUEST).append('=').append(urlEncodedRequest);
+            sb.append("&" + SAMLSSOConstants.RELAY_STATE).append('=').append(relayState);
             
             if (((SAMLProtocol)config.getProtocol()).isSignRequest()) {
                 String signature = signRequest(config, sb);
-                sb.append("&Signature").append('=').append(signature);
+                sb.append("&" + SAMLSSOConstants.SIGNATURE).append('=').append(signature);
             }
             
-            String contextCookie = createCookie("RelayState",
+            String contextCookie = createCookie(SAMLSSOConstants.RELAY_STATE,
                                                 relayState,
                                                 request.getRequestURI(),
                                                 webAppDomain,
@@ -405,7 +406,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
         Signature signature = Signature.getInstance(jceSigAlgo);
         signature.initSign(privateKey);
        
-        sb.append("&SigAlg").append('=').append(URLEncoder.encode(sigAlgo, "UTF-8"));
+        sb.append("&" + SAMLSSOConstants.SIG_ALG).append('=').append(URLEncoder.encode(sigAlgo, "UTF-8"));
         String requestToSign = sb.toString();
 
         signature.update(requestToSign.getBytes("UTF-8"));

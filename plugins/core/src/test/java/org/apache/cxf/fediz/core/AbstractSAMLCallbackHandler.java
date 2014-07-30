@@ -88,7 +88,7 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
     protected Map<String, String> claims;
     protected MultiValue multiValueType = MultiValue.MULTI_VALUE;
     protected String roleSeperator = ",";
-    protected String roleAttributeName = FederationConstants.DEFAULT_ROLE_URI.toString();
+    protected String roleAttributeName = FedizConstants.DEFAULT_ROLE_URI.toString();
     protected String countryClaimName = ClaimTypes.COUNTRY.toString();
     protected String customClaimName = CLAIM_TYPE_LANGUAGE.toString();
     protected String attributeNameFormat = "urn:oasis:names:tc:SAML:2.0:attrname-format:unspecified";
