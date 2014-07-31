@@ -19,10 +19,13 @@
 package org.apache.cxf.fediz.core.samlsso;
 
 import java.io.Serializable;
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
+
+import org.apache.cxf.fediz.core.Claim;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -36,6 +39,10 @@ public class ResponseState implements Serializable {
     private String webAppDomain;
     private long createdAt;
     private long expiresAt;
+    private List<String> roles;
+    private String issuer;
+    private List<Claim> claims;
+    private String subject;
     
     public ResponseState() {
         
@@ -77,5 +84,37 @@ public class ResponseState implements Serializable {
     
     public String getAssertion() {
         return assertion;
+    }
+
+    public List<String> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<String> roles) {
+        this.roles = roles;
+    }
+
+    public List<Claim> getClaims() {
+        return claims;
+    }
+
+    public void setClaims(List<Claim> claims) {
+        this.claims = claims;
+    }
+
+    public String getIssuer() {
+        return issuer;
+    }
+
+    public void setIssuer(String issuer) {
+        this.issuer = issuer;
+    }
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
     }
 }
