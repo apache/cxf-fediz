@@ -65,9 +65,6 @@ public class SamlRedirectBindingFilter extends AbstractServiceProviderFilter {
     public void filter(ContainerRequestContext context) {
         Message m = JAXRSUtils.getCurrentMessage();
         
-        String webAppContext = getWebAppContext(m);
-        System.out.println("WEB APP CTX: " + webAppContext);
-        
         if (checkSecurityContext(m)) {
             return;
         } else {
@@ -143,7 +140,7 @@ public class SamlRedirectBindingFilter extends AbstractServiceProviderFilter {
                         SAMLProtocol protocol = (SAMLProtocol)fedConfig.getProtocol();
                         
                         long currentTime = System.currentTimeMillis();
-                        Date notOnOrAfter =  wfRes.getTokenExpires();
+                        Date notOnOrAfter = wfRes.getTokenExpires();
                         long expiresAt = 0;
                         if (notOnOrAfter != null) {
                             expiresAt = notOnOrAfter.getTime();
@@ -158,10 +155,12 @@ public class SamlRedirectBindingFilter extends AbstractServiceProviderFilter {
                             roles = Collections.singletonList("Authenticated");
                         }
                         
+                        String webAppContext = getWebAppContext(m);
+                        
                         ResponseState responseState = 
                             new ResponseState(token,
                                               params.getFirst("RelayState"), 
-                                              null, // TODO
+                                              webAppContext,
                                               webAppDomain,
                                               currentTime, 
                                               expiresAt);
@@ -174,7 +173,7 @@ public class SamlRedirectBindingFilter extends AbstractServiceProviderFilter {
                         long stateTimeToLive = protocol.getStateTimeToLive();
                         String contextCookie = CookieUtils.createCookie(SECURITY_CONTEXT_TOKEN,
                                                             securityContextKey,
-                                                            null, // TODO
+                                                            webAppContext,
                                                             webAppDomain,
                                                             stateTimeToLive);
                         

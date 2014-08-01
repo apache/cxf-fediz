@@ -200,12 +200,12 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
             return null;
         }
         
-        // TODO String webAppContext = getWebAppContext(m);
+        String webAppContext = getWebAppContext(m);
         if (webAppDomain != null 
             && (responseState.getWebAppDomain() == null 
-                || !webAppDomain.equals(responseState.getWebAppDomain()))) {
-            // TODO || responseState.getWebAppContext() == null
-            // TODO || !webAppContext.equals(responseState.getWebAppContext())) {
+                || !webAppDomain.equals(responseState.getWebAppDomain()))
+                || responseState.getWebAppContext() == null
+                || !webAppContext.equals(responseState.getWebAppContext())) {
             protocol.getStateManager().removeResponseState(contextKey);
             reportError("INVALID_RESPONSE_STATE");
             return null;
@@ -218,10 +218,7 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
     }
     
     protected FedizContext getFedizContext(Message message) {
-        String contextName = new UriInfoImpl(message).getRequestUri().getPath();
-        if (contextName == null || contextName.isEmpty()) {
-            contextName = "/";
-        }
+        String contextName = getWebAppContext(message);
         String[] contextPath = contextName.split("/");
         if (contextPath.length > 0) {
             contextName = "/" + contextPath[1];
