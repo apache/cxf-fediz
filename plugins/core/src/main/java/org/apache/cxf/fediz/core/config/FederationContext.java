@@ -170,9 +170,10 @@ public class FederationContext implements Closeable {
             crypto = CryptoFactory.getInstance(sigProperties);
             keyManager.setCrypto(crypto);
         } catch (WSSecurityException e) {
+            String name = keyManager.getName();
             keyManager = null;
-            LOG.error("Failed to load keystore '" + keyManager.getName() + "'", e);
-            throw new IllegalConfigurationException("Failed to load keystore '" + keyManager.getName() + "'");
+            LOG.error("Failed to load keystore '" + name + "'", e);
+            throw new IllegalConfigurationException("Failed to load keystore '" + name + "'");
         }
         
         return keyManager; 
@@ -190,9 +191,10 @@ public class FederationContext implements Closeable {
             crypto = CryptoFactory.getInstance(decProperties);
             decryptionKeyManager.setCrypto(crypto);
         } catch (WSSecurityException e) {
+            String name = decryptionKeyManager.getName();
             decryptionKeyManager = null;
-            LOG.error("Failed to load keystore '" + decryptionKeyManager.getName() + "'", e);
-            throw new IllegalConfigurationException("Failed to load keystore '" + decryptionKeyManager.getName() + "'");
+            LOG.error("Failed to load keystore '" + name + "'", e);
+            throw new IllegalConfigurationException("Failed to load keystore '" + name + "'");
         }
         
         return decryptionKeyManager; 
