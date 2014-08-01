@@ -45,6 +45,7 @@ import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.apache.cxf.fediz.core.processor.RedirectionResponse;
 import org.apache.cxf.fediz.core.samlsso.ResponseState;
+import org.apache.cxf.fediz.core.util.CookieUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.jaxrs.impl.UriInfoImpl;
 import org.apache.cxf.jaxrs.utils.ExceptionUtils;
@@ -63,6 +64,10 @@ public class SamlRedirectBindingFilter extends AbstractServiceProviderFilter {
     
     public void filter(ContainerRequestContext context) {
         Message m = JAXRSUtils.getCurrentMessage();
+        
+        String webAppContext = getWebAppContext(m);
+        System.out.println("WEB APP CTX: " + webAppContext);
+        
         if (checkSecurityContext(m)) {
             return;
         } else {
@@ -154,7 +159,7 @@ public class SamlRedirectBindingFilter extends AbstractServiceProviderFilter {
                         }
                         
                         ResponseState responseState = 
-                            new ResponseState(token, // TODO
+                            new ResponseState(token,
                                               params.getFirst("RelayState"), 
                                               null, // TODO
                                               webAppDomain,
@@ -167,7 +172,7 @@ public class SamlRedirectBindingFilter extends AbstractServiceProviderFilter {
                         protocol.getStateManager().setResponseState(securityContextKey, responseState);
                            
                         long stateTimeToLive = protocol.getStateTimeToLive();
-                        String contextCookie = createCookie(SECURITY_CONTEXT_TOKEN,
+                        String contextCookie = CookieUtils.createCookie(SECURITY_CONTEXT_TOKEN,
                                                             securityContextKey,
                                                             null, // TODO
                                                             webAppDomain,

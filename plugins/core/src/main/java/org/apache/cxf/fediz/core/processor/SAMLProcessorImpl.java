@@ -24,11 +24,8 @@ import java.io.InputStream;
 import java.net.URLEncoder;
 import java.security.PrivateKey;
 import java.security.Signature;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
 import java.util.UUID;
 import java.util.zip.DataFormatException;
 
@@ -53,6 +50,7 @@ import org.apache.cxf.fediz.core.samlsso.RequestState;
 import org.apache.cxf.fediz.core.samlsso.SAMLProtocolResponseValidator;
 import org.apache.cxf.fediz.core.samlsso.SAMLSSOResponseValidator;
 import org.apache.cxf.fediz.core.samlsso.SSOValidatorResponse;
+import org.apache.cxf.fediz.core.util.CookieUtils;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.ext.WSSecurityException;
@@ -116,24 +114,12 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             LOG.error("Missing Request State");
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
-        if (isStateExpired(requestState.getCreatedAt(), 0, samlProtocol.getStateTimeToLive())) {
+        if (CookieUtils.isStateExpired(requestState.getCreatedAt(), 0, 
+                                       samlProtocol.getStateTimeToLive())) {
             LOG.error("EXPIRED_REQUEST_STATE");
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
         return requestState;
-    }
-    
-    private boolean isStateExpired(long stateCreatedAt, long expiresAt, long stateTTL) {
-        Date currentTime = new Date();
-        if (currentTime.after(new Date(stateCreatedAt + stateTTL))) {
-            return true;
-        }
-        
-        if (expiresAt > 0 && currentTime.after(new Date(expiresAt))) {
-            return true;
-        }
-        
-        return false;
     }
     
     protected FedizResponse processSignInRequest(
@@ -342,7 +328,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
                 sb.append("&" + SAMLSSOConstants.SIGNATURE).append('=').append(signature);
             }
             
-            String contextCookie = createCookie(SAMLSSOConstants.RELAY_STATE,
+            String contextCookie = CookieUtils.createCookie(SAMLSSOConstants.RELAY_STATE,
                                                 relayState,
                                                 request.getRequestURI(),
                                                 webAppDomain,
@@ -415,46 +401,6 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
         String encodedSignature = Base64.encode(signBytes);
         
         return URLEncoder.encode(encodedSignature, "UTF-8");
-    }
-    
-    protected String createCookie(String name, 
-                                  String value, 
-                                  String path,
-                                  String domain,
-                                  long stateTimeToLive) { 
-        
-        String contextCookie = name + "=" + value;
-        // Setting a specific path restricts the browsers
-        // to return a cookie only to the web applications
-        // listening on that specific context path
-        if (path != null) {
-            contextCookie += ";Path=" + path;
-        }
-        
-        // Setting a specific domain further restricts the browsers
-        // to return a cookie only to the web applications
-        // listening on the specific context path within a particular domain
-        if (domain != null) {
-            contextCookie += ";Domain=" + domain;
-        }
-        
-        // Keep the cookie across the browser restarts until it actually expires.
-        // Note that the Expires property has been deprecated but apparently is 
-        // supported better than 'max-age' property by different browsers 
-        // (Firefox, IE, etc)
-        Date expiresDate = new Date(System.currentTimeMillis() + stateTimeToLive);
-        String cookieExpires = getHttpDateFormat().format(expiresDate);
-        contextCookie += ";Expires=" + cookieExpires;
-        
-        return contextCookie;
-    }
-    
-    protected static SimpleDateFormat getHttpDateFormat() {
-        SimpleDateFormat dateFormat =
-            new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US);
-        TimeZone tZone = TimeZone.getTimeZone("GMT");
-        dateFormat.setTimeZone(tZone);
-        return dateFormat;
     }
     
     protected String encodeAuthnRequest(Element authnRequest) throws IOException {

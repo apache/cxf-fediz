@@ -19,22 +19,24 @@
 package org.apache.cxf.fediz.cxf.plugin;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.StringReader;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
-import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.Priority;
-import javax.ws.rs.Priorities;
+import javax.annotation.PreDestroy;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.xml.bind.JAXBException;
 
+import org.w3c.dom.Element;
 import org.apache.cxf.common.classloader.ClassLoaderUtils;
 import org.apache.cxf.common.i18n.BundleUtils;
 import org.apache.cxf.fediz.core.SAMLSSOConstants;
@@ -43,20 +45,17 @@ import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.config.SAMLProtocol;
 import org.apache.cxf.fediz.core.samlsso.ResponseState;
-import org.apache.cxf.fediz.core.util.DOMUtils;
+import org.apache.cxf.fediz.core.util.CookieUtils;
 import org.apache.cxf.jaxrs.impl.HttpHeadersImpl;
 import org.apache.cxf.jaxrs.impl.UriInfoImpl;
-import org.apache.cxf.jaxrs.utils.HttpUtils;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.security.SecurityContext;
 import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.wss4j.common.ext.WSSecurityException;
-import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @PreMatching
-@Priority(Priorities.AUTHENTICATION + 1)
 public abstract class AbstractServiceProviderFilter implements ContainerRequestFilter {
     
     public static final String SECURITY_CONTEXT_TOKEN = 
@@ -66,8 +65,8 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
     private static final Logger LOG = LoggerFactory.getLogger(AbstractServiceProviderFilter.class);
     
     private String webAppDomain;
-    // private boolean addWebAppContext = true;
-    // private boolean addEndpointAddressToContext;
+    private boolean addWebAppContext = true;
+    private boolean addEndpointAddressToContext;
     
     private FedizConfigurator configurator;
     private String configFile;
@@ -108,6 +107,22 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
         }
     }
     
+    @PreDestroy
+    public synchronized void cleanup() {
+        if (configurator != null) {
+            List<FedizContext> fedContextList = configurator.getFedizContextList();
+            if (fedContextList != null) {
+                for (FedizContext fedContext : fedContextList) {
+                    try {
+                        fedContext.close();
+                    } catch (IOException ex) {
+                        //
+                    }
+                }
+            }
+        }
+    }
+    
     protected boolean checkSecurityContext(Message m) {
         HttpHeaders headers = new HttpHeadersImpl(m);
         Map<String, Cookie> cookies = headers.getCookies();
@@ -133,10 +148,9 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
         
         // Create SecurityContext
         try {
-            SamlAssertionWrapper assertionWrapper = 
-                new SamlAssertionWrapper(
-                    StaxUtils.read(new StringReader(responseState.getAssertion())).getDocumentElement());
-            setSecurityContext(responseState, m, assertionWrapper);
+            Element token = 
+                StaxUtils.read(new StringReader(responseState.getAssertion())).getDocumentElement();
+            setSecurityContext(responseState, m, token);
         } catch (Exception ex) {
             reportError("INVALID_RESPONSE_STATE");
             return false;
@@ -146,11 +160,10 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
     }
     
     protected void setSecurityContext(
-        ResponseState responseState, Message m, SamlAssertionWrapper assertionWrapper
+        ResponseState responseState, Message m, Element token
     ) throws WSSecurityException {
         CXFFedizPrincipal principal = 
-            new CXFFedizPrincipal(responseState.getSubject(), responseState.getClaims(), 
-                              assertionWrapper.toDOM(DOMUtils.createDocument()));
+            new CXFFedizPrincipal(responseState.getSubject(), responseState.getClaims(), token);
         
         SecurityTokenThreadLocal.setToken(principal.getLoginToken());
         FedizSecurityContext context = 
@@ -171,6 +184,7 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
         String contextKey = securityContextCookie.getValue();
         
         FedizContext fedizConfig = getFedizContext(m);
+        
         SAMLProtocol protocol = (SAMLProtocol)fedizConfig.getProtocol();
         ResponseState responseState = protocol.getStateManager().getResponseState(contextKey);
         
@@ -178,11 +192,14 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
             reportError("MISSING_RESPONSE_STATE");
             return null;
         }
-        if (isStateExpired(responseState.getCreatedAt(), responseState.getExpiresAt(), fedizConfig)) {
+        
+        if (CookieUtils.isStateExpired(responseState.getCreatedAt(), responseState.getExpiresAt(), 
+                                    protocol.getStateTimeToLive())) {
             reportError("EXPIRED_RESPONSE_STATE");
             protocol.getStateManager().removeResponseState(contextKey);
             return null;
         }
+        
         // TODO String webAppContext = getWebAppContext(m);
         if (webAppDomain != null 
             && (responseState.getWebAppDomain() == null 
@@ -198,53 +215,6 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
             return null;
         }
         return responseState;
-    }
-    
-    protected String createCookie(String name, 
-                                  String value, 
-                                  String path,
-                                  String domain,
-                                  long stateTimeToLive) { 
-        
-        String contextCookie = name + "=" + value;
-        // Setting a specific path restricts the browsers
-        // to return a cookie only to the web applications
-        // listening on that specific context path
-        if (path != null) {
-            contextCookie += ";Path=" + path;
-        }
-        
-        // Setting a specific domain further restricts the browsers
-        // to return a cookie only to the web applications
-        // listening on the specific context path within a particular domain
-        if (domain != null) {
-            contextCookie += ";Domain=" + domain;
-        }
-        
-        // Keep the cookie across the browser restarts until it actually expires.
-        // Note that the Expires property has been deprecated but apparently is 
-        // supported better than 'max-age' property by different browsers 
-        // (Firefox, IE, etc)
-        Date expiresDate = new Date(System.currentTimeMillis() + stateTimeToLive);
-        String cookieExpires = HttpUtils.getHttpDateFormat().format(expiresDate);
-        contextCookie += ";Expires=" + cookieExpires;
-        //TODO: Consider adding an 'HttpOnly' attribute        
-        
-        return contextCookie;
-    }
-    
-    protected boolean isStateExpired(long stateCreatedAt, long expiresAt, FedizContext fedizConfig) {
-        Date currentTime = new Date();
-        long stateTimeToLive = ((SAMLProtocol)fedizConfig.getProtocol()).getStateTimeToLive();
-        if (currentTime.after(new Date(stateCreatedAt + stateTimeToLive))) {
-            return true;
-        }
-        
-        if (expiresAt > 0 && currentTime.after(new Date(expiresAt))) {
-            return true;
-        }
-        
-        return false;
     }
     
     protected FedizContext getFedizContext(Message message) {
@@ -265,12 +235,9 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
         }
         FedizContext config = configurator.getFedizContext(contextName);
         if (config == null) {
-            throw new IllegalStateException("No Fediz configuration for context :" + contextName);
+            throw new IllegalStateException("No Fediz configuration for context: " + contextName);
         }
-        String catalinaBase = System.getProperty("catalina.base");
-        if (catalinaBase != null && catalinaBase.length() > 0) {
-            config.setRelativePath(catalinaBase);
-        }
+
         return config;
     }
     
@@ -287,9 +254,8 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
             LOG.debug(errorMsg.toString());
         }
     }
-/*
- * TODO
-    private String getWebAppContext(Message m) {
+    
+    protected String getWebAppContext(Message m) {
         if (addWebAppContext) {
             if (addEndpointAddressToContext) {
                 return new UriInfoImpl(m).getBaseUri().getRawPath();
@@ -301,7 +267,7 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
             return "/";
         }
     }
-  */  
+  
     public String getWebAppDomain() {
         return webAppDomain;
     }
@@ -309,10 +275,9 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
     public void setWebAppDomain(String webAppDomain) {
         this.webAppDomain = webAppDomain;
     }
-/*
+
     public void setAddWebAppContext(boolean addWebAppContext) {
         this.addWebAppContext = addWebAppContext;
     }
-    */
         
 }

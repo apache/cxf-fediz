@@ -29,7 +29,7 @@ public class CXFFedizPrincipal implements FedizPrincipal {
     
     private final String subject;
     private final List<Claim> claims;
-    private final Element token;
+    private Element token;
     
     public CXFFedizPrincipal(String subject, List<Claim> claims, Element token) {
         this.subject = subject;
