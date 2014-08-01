@@ -235,7 +235,11 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
         }
         FedizContext config = configurator.getFedizContext(contextName);
         if (config == null) {
-            throw new IllegalStateException("No Fediz configuration for context: " + contextName);
+            throw new IllegalStateException("No Fediz configuration for context :" + contextName);
+        }
+        String catalinaBase = System.getProperty("catalina.base");
+        if (catalinaBase != null && catalinaBase.length() > 0) {
+            config.setRelativePath(catalinaBase);
         }
 
         return config;
