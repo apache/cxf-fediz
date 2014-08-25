@@ -321,5 +321,11 @@
                 </dependency>
             </dependencies>
         </profile>
+        <profile>
+            <id>kerberos</id>
+            <properties>
+                <adapter.resource>kerberos</adapter.resource>
+            </properties>
+        </profile>
     </profiles>
 </project>
