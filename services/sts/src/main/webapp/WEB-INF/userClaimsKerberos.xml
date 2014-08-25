@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements. See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership. The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License. You may obtain a copy of the License at
+ 
+  http://www.apache.org/licenses/LICENSE-2.0
+ 
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied. See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util-2.0.xsd">
+
+    <util:map id="userClaimsREALMA">
+        <entry key="alice@WS.APACHE.ORG" value-ref="REALMA_aliceClaims" />
+        <entry key="bob/service.ws.apache.org@WS.APACHE.ORG" value-ref="REALMA_bobClaims" />
+        <entry key="ted@WS.APACHE.ORG" value-ref="REALMA_tedClaims" />
+    </util:map>
+
+    <util:map id="REALMA_aliceClaims">
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"
+            value="Alice" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname"
+            value="Smith" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
+            value="alice@realma.org" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role"
+            value="User" />
+    </util:map>
+
+    <util:map id="REALMA_bobClaims">
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"
+            value="Bob" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname"
+            value="Windsor" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
+            value="bobwindsor@realma.org" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role"
+            value="User,Manager,Admin" />
+    </util:map>
+
+    <util:map id="REALMA_tedClaims">
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"
+            value="Ted" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname"
+            value="Cooper" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
+            value="tcooper@realma.org" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role"
+            value="" />
+    </util:map>
+
+    <util:map id="userClaimsREALMB">
+        <entry key="ALICE" value-ref="REALMB_aliceClaims" />
+        <entry key="BOB" value-ref="REALMB_bobClaims" />
+        <entry key="TED" value-ref="REALMB_tedClaims" />
+    </util:map>
+
+    <util:map id="REALMB_aliceClaims">
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"
+            value="Alice" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname"
+            value="Smith" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
+            value="alice@realmb.org" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role"
+            value="USER" />
+    </util:map>
+
+    <util:map id="REALMB_bobClaims">
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"
+            value="Bob" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname"
+            value="Windsor" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
+            value="bobwindsor@realmb.org" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role"
+            value="USER,MANAGER,ADMIN" />
+    </util:map>
+
+    <util:map id="REALMB_tedClaims">
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"
+            value="Ted" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname"
+            value="Cooper" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
+            value="tcooper@realmb.org" />
+        <entry
+            key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role"
+            value="" />
+    </util:map>
+
+    <util:list id="supportedClaims">
+        <value>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname</value>
+        <value>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname</value>
+        <value>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress</value>
+        <value>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</value>
+    </util:list>
+
+</beans>
