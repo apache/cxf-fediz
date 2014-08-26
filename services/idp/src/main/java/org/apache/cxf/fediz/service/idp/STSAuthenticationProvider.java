@@ -19,26 +19,39 @@
 package org.apache.cxf.fediz.service.idp;
 
 import java.net.URI;
+import java.security.Principal;
+import java.security.PrivilegedActionException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.security.auth.login.LoginException;
 import javax.xml.namespace.QName;
 
 import org.w3c.dom.Element;
+
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 //import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimTypes;
+import org.apache.cxf.fediz.service.idp.kerberos.KerberosServiceRequestToken;
+import org.apache.cxf.fediz.service.idp.kerberos.KerberosTokenValidator;
 //import org.apache.cxf.transport.http.HTTPConduit;
 //import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 import org.apache.cxf.ws.security.SecurityConstants;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
+import org.apache.wss4j.common.kerberos.KerberosServiceContext;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.apache.wss4j.dom.WSConstants;
+import org.ietf.jgss.GSSContext;
+import org.ietf.jgss.GSSCredential;
+import org.ietf.jgss.GSSException;
+import org.ietf.jgss.GSSManager;
+import org.ietf.jgss.GSSName;
+import org.ietf.jgss.Oid;
 import org.opensaml.xml.XMLObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,12 +99,13 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
     
     protected Map<String, Object> properties = new HashMap<String, Object>();
     
+    private KerberosTokenValidator kerberosTokenValidator;
+    
     
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         
         Bus cxfBus = getBus();
-        
         IdpSTSClient sts = new IdpSTSClient(cxfBus);
         sts.setAddressingNamespace("http://www.w3.org/2005/08/addressing");
         if (tokenType != null && tokenType.length() > 0) {
@@ -104,8 +118,43 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
         sts.setServiceQName(new QName(namespace, wsdlService));
         sts.setEndpointQName(new QName(namespace, wsdlEndpoint));
         
-        sts.getProperties().put(SecurityConstants.USERNAME, authentication.getName());
-        sts.getProperties().put(SecurityConstants.PASSWORD, (String)authentication.getCredentials());
+        Principal kerberosPrincipal = null;
+        if (authentication instanceof KerberosServiceRequestToken) {
+
+            if (kerberosTokenValidator == null) {
+                LOG.error("KerberosTokenValidator must be configured to support kerberos");
+                return null;
+            }
+            KerberosServiceContext kerberosContext;
+            try {
+                kerberosContext = 
+                    kerberosTokenValidator.validate((KerberosServiceRequestToken)authentication);
+                if (kerberosContext != null) {
+                    GSSCredential delegatedCredential = kerberosContext.getDelegationCredential();
+                    if (delegatedCredential != null) {
+                        sts.getProperties().put(SecurityConstants.DELEGATED_CREDENTIAL, 
+                                                delegatedCredential);
+                        sts.getProperties().put(SecurityConstants.KERBEROS_USE_CREDENTIAL_DELEGATION, "true");
+                    }
+                    kerberosPrincipal = kerberosContext.getPrincipal();
+                }
+            } catch (LoginException ex) {
+                LOG.info("Failed to authenticate user '" + authentication.getName() + "'", ex);
+                return null;
+            } catch (PrivilegedActionException ex) {
+                LOG.info("Failed to authenticate user '" + authentication.getName() + "'", ex);
+                return null;
+            }
+            
+            sts.getProperties().put(SecurityConstants.KERBEROS_JAAS_CONTEXT_NAME, 
+                                    kerberosTokenValidator.getContextName());
+            sts.getProperties().put(SecurityConstants.KERBEROS_SPN,
+                                    kerberosTokenValidator.getServiceName());
+        } else {
+            sts.getProperties().put(SecurityConstants.USERNAME, authentication.getName());
+            sts.getProperties().put(SecurityConstants.PASSWORD, (String)authentication.getCredentials());
+        }
+        
         sts.getProperties().putAll(properties);
         if (use200502Namespace) {
             sts.setNamespace(HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_02_TRUST);
@@ -148,27 +197,59 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
             
             //Add IDP_LOGIN role to be able to access resource Idp, TrustedIdp, etc.
             authorities.add(new SimpleGrantedAuthority("ROLE_IDP_LOGIN"));
-            UsernamePasswordAuthenticationToken upat = new UsernamePasswordAuthenticationToken(
-                authentication.getName(), authentication.getCredentials(), authorities);
             
-            STSUserDetails details = new STSUserDetails(authentication.getName(),
-                                                        (String)authentication.getCredentials(),
-                                                        authorities,
-                                                        token);
-            upat.setDetails(details);
+            if (authentication instanceof KerberosServiceRequestToken) {
+                KerberosServiceRequestToken ksrt = 
+                    new KerberosServiceRequestToken(kerberosPrincipal, authorities, 
+                                                    ((KerberosServiceRequestToken)authentication).getToken());
+                
+                STSUserDetails details = new STSUserDetails(kerberosPrincipal.getName(),
+                                                            "",
+                                                            authorities,
+                                                            token);
+                ksrt.setDetails(details);
+                
+                LOG.debug("[IDP_TOKEN={}] provided for user '{}'", token.getId(), kerberosPrincipal.getName());
+                return ksrt;
+            } else {
+                UsernamePasswordAuthenticationToken upat = new UsernamePasswordAuthenticationToken(
+                    authentication.getName(), authentication.getCredentials(), authorities);
+                
+                STSUserDetails details = new STSUserDetails(authentication.getName(),
+                                                            (String)authentication.getCredentials(),
+                                                            authorities,
+                                                            token);
+                upat.setDetails(details);
+                
+                LOG.debug("[IDP_TOKEN={}] provided for user '{}'", token.getId(), authentication.getName());
+                return upat;
+            }
             
-            LOG.debug("[IDP_TOKEN={}] provided for user '{}'", token.getId(), authentication.getName());
-            return upat;
         } catch (Exception ex) {
             LOG.info("Failed to authenticate user '" + authentication.getName() + "'", ex);
             return null;
         }
         
     }
+    
+    protected GSSContext createGSSContext() throws GSSException {
+        Oid oid = new Oid("1.2.840.113554.1.2.2");
+
+        GSSManager gssManager = GSSManager.getInstance();
+
+        String spn = "bob@service.ws.apache.org";
+        GSSName gssService = gssManager.createName(spn, null);
+
+        return gssManager.createContext(gssService.canonicalize(oid),
+                                        oid, null, GSSContext.DEFAULT_LIFETIME);
+
+    }
+
 
     @Override
     public boolean supports(Class<?> authentication) {
-        return authentication.equals(UsernamePasswordAuthenticationToken.class);
+        return authentication.equals(UsernamePasswordAuthenticationToken.class)
+            || authentication.equals(KerberosServiceRequestToken.class);
     }
     
     public String getWsdlLocation() {
@@ -336,6 +417,14 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
 
     public void setUse200502Namespace(boolean use200502Namespace) {
         this.use200502Namespace = use200502Namespace;
+    }
+
+    public KerberosTokenValidator getKerberosTokenValidator() {
+        return kerberosTokenValidator;
+    }
+
+    public void setKerberosTokenValidator(KerberosTokenValidator kerberosTokenValidator) {
+        this.kerberosTokenValidator = kerberosTokenValidator;
     }
 
 //May be uncommented for debugging    
