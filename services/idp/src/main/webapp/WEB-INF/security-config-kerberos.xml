@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements. See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership. The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License. You may obtain a copy of the License at
+ 
+  http://www.apache.org/licenses/LICENSE-2.0
+ 
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied. See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:security="http://www.springframework.org/schema/security"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.1.xsd">
+
+    <context:property-placeholder location="classpath:realm.properties"/>
+    <context:component-scan base-package="org.apache.cxf.fediz.service.idp"/>
+    
+    <!-- DIABLE in production as it might log confidential information about the user -->
+    <!-- <security:debug /> -->
+
+    <!-- Configure Spring Security -->
+    <security:http auto-config="false" use-expressions="true" entry-point-ref="kerberosEntryPoint">
+        <security:custom-filter after="CHANNEL_FILTER" ref="stsPortFilter" />
+        <security:intercept-url pattern="/FederationMetadata/2007-06/FederationMetadata.xml" access="isAnonymous() or isAuthenticated()" />
+
+        <!-- MUST be http-basic thus systests run fine -->
+        <!--<security:http-basic />-->
+        <!--<security:form-login />-->
+        <security:custom-filter ref="kerberosAuthenticationProcessingFilter" position="BASIC_AUTH_FILTER" />
+    </security:http>
+    
+    <bean id="kerberosEntryPoint"
+          class="org.apache.cxf.fediz.service.idp.kerberos.KerberosEntryPoint" />
+    
+    <bean id="kerberosAuthenticationProcessingFilter"
+          class="org.apache.cxf.fediz.service.idp.kerberos.KerberosAuthenticationProcessingFilter">
+          <property name="authenticationManager" ref="authenticationManager" />
+    </bean>
+
+    <security:authentication-manager alias="authenticationManager">
+        <security:authentication-provider ref="stsAuthProvider" />
+    </security:authentication-manager>
+	
+    <bean id="stsPortFilter" class="org.apache.cxf.fediz.service.idp.STSPortFilter" />
+    
+    <bean id="kerberosTokenValidator" class="org.apache.cxf.fediz.service.idp.kerberos.KerberosTokenValidator">
+        <property name="contextName" value="bob"/>
+        <property name="serviceName" value="bob@service.ws.apache.org"/>
+    </bean>
+	
+    <bean id="stsAuthProvider" class="org.apache.cxf.fediz.service.idp.STSAuthenticationProvider">
+        <!--<property name="wsdlLocation" value="https://localhost:0/fediz-idp-sts/${realm.STS_URI}/STSServiceTransportUT?wsdl"/>
+        <property name="wsdlEndpoint" value="TransportUT_Port"/>-->
+        <property name="wsdlLocation" value="https://localhost:0/fediz-idp-sts/${realm.STS_URI}/STSServiceTransportKerberos?wsdl"/>
+        <property name="wsdlEndpoint" value="TransportKerberos_Port"/>
+        <property name="wsdlService" value="SecurityTokenService"/>
+        <property name="appliesTo" value="urn:fediz:idp"/>
+        <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0"/>
+        <property name="kerberosTokenValidator" ref="kerberosTokenValidator"/>
+    </bean>
+
+</beans>
