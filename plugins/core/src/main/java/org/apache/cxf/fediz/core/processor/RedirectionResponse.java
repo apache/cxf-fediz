@@ -23,6 +23,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.cxf.fediz.core.RequestState;
+
 /**
  * Some parameters to redirect to a token issuer (either SignIn or SignOut)
  */
@@ -32,6 +34,7 @@ public class RedirectionResponse implements Serializable {
     
     private String redirectionURL;
     private Map<String, String> headers = new HashMap<String, String>();
+    private RequestState requestState;
     
     public String getRedirectionURL() {
         return redirectionURL;
@@ -48,4 +51,13 @@ public class RedirectionResponse implements Serializable {
     public void addHeader(String headerName, String headerValue) {
         headers.put(headerName, headerValue);
     }
+
+    public RequestState getRequestState() {
+        return requestState;
+    }
+
+    public void setRequestState(RequestState requestState) {
+        this.requestState = requestState;
+    }
+
 }

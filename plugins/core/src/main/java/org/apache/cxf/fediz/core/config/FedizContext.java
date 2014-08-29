@@ -272,10 +272,6 @@ public class FedizContext implements Closeable {
         if (replayCache != null) {
             replayCache.close();
         }
-        if (protocol instanceof SAMLProtocol
-            && ((SAMLProtocol)protocol).getStateManager() != null) {
-            ((SAMLProtocol)protocol).getStateManager().close();
-        }
     }
     
     private Properties createCryptoProperties(TrustManagersType tm) {

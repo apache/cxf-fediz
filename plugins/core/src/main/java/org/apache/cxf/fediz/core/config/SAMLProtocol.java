@@ -24,8 +24,6 @@ import org.apache.cxf.fediz.core.config.jaxb.SamlProtocolType;
 import org.apache.cxf.fediz.core.saml.SAMLTokenValidator;
 import org.apache.cxf.fediz.core.samlsso.AuthnRequestBuilder;
 import org.apache.cxf.fediz.core.samlsso.DefaultAuthnRequestBuilder;
-import org.apache.cxf.fediz.core.samlsso.EHCacheSPStateManager;
-import org.apache.cxf.fediz.core.samlsso.SPStateManager;
 import org.apache.wss4j.common.util.Loader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +33,6 @@ public class SAMLProtocol extends Protocol {
     private static final Logger LOG = LoggerFactory.getLogger(SAMLProtocol.class);
     
     private AuthnRequestBuilder authnRequestBuilder;
-    private SPStateManager stateManager;
     
     public SAMLProtocol(ProtocolType protocolType) {
         super(protocolType);
@@ -71,32 +68,6 @@ public class SAMLProtocol extends Protocol {
         getSAMLProtocol().setWebAppDomain(webAppDomain);
     }
     
-    public SPStateManager getStateManager() {
-        if (stateManager != null) {
-            return stateManager;
-        }
-        String stateManagerStr = getSAMLProtocol().getStateManager();
-        if (stateManagerStr == null || "".equals(stateManagerStr)) {
-            stateManager = new EHCacheSPStateManager("fediz-ehcache.xml");
-        } else {
-            try {
-                Class<?> stateManagerClass = Loader.loadClass(stateManagerStr);
-                stateManager = (SPStateManager) stateManagerClass.newInstance();
-            } catch (ClassNotFoundException e) {
-                stateManager = new EHCacheSPStateManager("fediz-ehcache.xml");
-            } catch (InstantiationException e) {
-                stateManager = new EHCacheSPStateManager("fediz-ehcache.xml");
-            } catch (IllegalAccessException e) {
-                stateManager = new EHCacheSPStateManager("fediz-ehcache.xml");
-            }
-        }
-        return stateManager;
-    }
-    
-    public void setStateManager(SPStateManager stateManager) {
-        this.stateManager = stateManager;
-    }
-
     public long getStateTimeToLive() {
         long ttl = getSAMLProtocol().getStateTimeToLive();
         if (ttl > 0) {

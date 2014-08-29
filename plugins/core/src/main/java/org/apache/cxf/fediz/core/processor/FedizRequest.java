@@ -24,6 +24,8 @@ import java.security.cert.Certificate;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.cxf.fediz.core.RequestState;
+
 public class FedizRequest implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -34,6 +36,7 @@ public class FedizRequest implements Serializable {
     private String state;
     private Certificate[] certs;
     private HttpServletRequest request;
+    private RequestState requestState;
 
     public Certificate[] getCerts() {
         return certs;
@@ -70,6 +73,12 @@ public class FedizRequest implements Serializable {
     }
     public void setRequest(HttpServletRequest request) {
         this.request = request;
+    }
+    public RequestState getRequestState() {
+        return requestState;
+    }
+    public void setRequestState(RequestState requestState) {
+        this.requestState = requestState;
     }
 
 

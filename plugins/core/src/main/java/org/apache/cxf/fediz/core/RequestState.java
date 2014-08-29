@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.cxf.fediz.core.samlsso;
+package org.apache.cxf.fediz.core;
 
 import java.io.Serializable;
 

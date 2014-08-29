@@ -37,10 +37,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.apache.cxf.fediz.common.SecurityTestUtil;
 import org.apache.cxf.fediz.core.KeystoreCallbackHandler;
+import org.apache.cxf.fediz.core.RequestState;
 import org.apache.cxf.fediz.core.SAML2CallbackHandler;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
-import org.apache.cxf.fediz.core.config.SAMLProtocol;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.core.processor.FedizProcessor;
@@ -148,7 +148,6 @@ public class SAMLResponseConformanceTest {
                                                      System.currentTimeMillis());
         
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
         
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -194,6 +193,7 @@ public class SAMLResponseConformanceTest {
         wfReq.setResponseToken(responseStr);
         wfReq.setState(relayState);
         wfReq.setRequest(req);
+        wfReq.setRequestState(requestState);
         
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
@@ -222,7 +222,6 @@ public class SAMLResponseConformanceTest {
                                                      System.currentTimeMillis());
         
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
         
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -268,6 +267,7 @@ public class SAMLResponseConformanceTest {
         wfReq.setResponseToken(responseStr);
         wfReq.setState(relayState);
         wfReq.setRequest(req);
+        wfReq.setRequestState(requestState);
         
         FedizProcessor wfProc = new SAMLProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
@@ -296,7 +296,6 @@ public class SAMLResponseConformanceTest {
                                                      System.currentTimeMillis());
         
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
         
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -334,6 +333,7 @@ public class SAMLResponseConformanceTest {
         wfReq.setResponseToken(responseStr);
         wfReq.setState(relayState);
         wfReq.setRequest(req);
+        wfReq.setRequestState(requestState);
         
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
@@ -362,7 +362,6 @@ public class SAMLResponseConformanceTest {
                                                      System.currentTimeMillis());
         
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
         
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -398,6 +397,7 @@ public class SAMLResponseConformanceTest {
         wfReq.setResponseToken(responseStr);
         wfReq.setState(relayState);
         wfReq.setRequest(req);
+        wfReq.setRequestState(requestState);
         
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
@@ -426,7 +426,6 @@ public class SAMLResponseConformanceTest {
                                                      System.currentTimeMillis());
         
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
         
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -465,6 +464,7 @@ public class SAMLResponseConformanceTest {
         wfReq.setResponseToken(responseStr);
         wfReq.setState(relayState);
         wfReq.setRequest(req);
+        wfReq.setRequestState(requestState);
         
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
@@ -493,7 +493,6 @@ public class SAMLResponseConformanceTest {
                                                      System.currentTimeMillis());
         
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
         
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -532,6 +531,7 @@ public class SAMLResponseConformanceTest {
         wfReq.setResponseToken(responseStr);
         wfReq.setState(relayState);
         wfReq.setRequest(req);
+        wfReq.setRequestState(requestState);
         
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
@@ -560,7 +560,6 @@ public class SAMLResponseConformanceTest {
                                                      System.currentTimeMillis());
         
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
         
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -599,6 +598,7 @@ public class SAMLResponseConformanceTest {
         wfReq.setResponseToken(responseStr);
         wfReq.setState(relayState);
         wfReq.setRequest(req);
+        wfReq.setRequestState(requestState);
         
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
@@ -627,7 +627,6 @@ public class SAMLResponseConformanceTest {
                                                      System.currentTimeMillis());
         
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
         
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -666,6 +665,7 @@ public class SAMLResponseConformanceTest {
         wfReq.setResponseToken(responseStr);
         wfReq.setState(relayState);
         wfReq.setRequest(req);
+        wfReq.setRequestState(requestState);
         
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
@@ -694,7 +694,6 @@ public class SAMLResponseConformanceTest {
                                                      System.currentTimeMillis());
         
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
         
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -733,6 +732,7 @@ public class SAMLResponseConformanceTest {
         wfReq.setResponseToken(responseStr);
         wfReq.setState(relayState);
         wfReq.setRequest(req);
+        wfReq.setRequestState(requestState);
         
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
@@ -761,7 +761,6 @@ public class SAMLResponseConformanceTest {
                                                      System.currentTimeMillis());
         
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
         
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -801,6 +800,7 @@ public class SAMLResponseConformanceTest {
         wfReq.setResponseToken(responseStr);
         wfReq.setState(relayState);
         wfReq.setRequest(req);
+        wfReq.setRequestState(requestState);
         
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
@@ -829,7 +829,6 @@ public class SAMLResponseConformanceTest {
                                                      System.currentTimeMillis());
         
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
         
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -867,6 +866,7 @@ public class SAMLResponseConformanceTest {
         wfReq.setResponseToken(responseStr);
         wfReq.setState(relayState);
         wfReq.setRequest(req);
+        wfReq.setRequestState(requestState);
         
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
@@ -895,7 +895,6 @@ public class SAMLResponseConformanceTest {
                                                      System.currentTimeMillis());
         
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
         
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -962,6 +961,7 @@ public class SAMLResponseConformanceTest {
         wfReq.setResponseToken(responseStr);
         wfReq.setState(relayState);
         wfReq.setRequest(req);
+        wfReq.setRequestState(requestState);
         
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {

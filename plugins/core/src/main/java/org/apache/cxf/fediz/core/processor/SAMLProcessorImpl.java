@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.apache.cxf.fediz.core.FederationConstants;
+import org.apache.cxf.fediz.core.RequestState;
 import org.apache.cxf.fediz.core.SAMLSSOConstants;
 import org.apache.cxf.fediz.core.TokenValidator;
 import org.apache.cxf.fediz.core.TokenValidatorRequest;
@@ -46,7 +47,6 @@ import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.core.metadata.MetadataWriter;
 import org.apache.cxf.fediz.core.samlsso.AuthnRequestBuilder;
 import org.apache.cxf.fediz.core.samlsso.CompressionUtils;
-import org.apache.cxf.fediz.core.samlsso.RequestState;
 import org.apache.cxf.fediz.core.samlsso.SAMLProtocolResponseValidator;
 import org.apache.cxf.fediz.core.samlsso.SAMLSSOResponseValidator;
 import org.apache.cxf.fediz.core.samlsso.SSOValidatorResponse;
@@ -103,13 +103,13 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
         return new MetadataWriter().getMetaData(config);
     }
     
-    private RequestState processRelayState(String relayState, SAMLProtocol samlProtocol) 
-        throws ProcessingException {
+    private RequestState processRelayState(
+        String relayState, RequestState requestState, SAMLProtocol samlProtocol
+    ) throws ProcessingException {
         if (relayState.getBytes().length < 0 || relayState.getBytes().length > 80) {
             LOG.error("Invalid RelayState");
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
-        RequestState requestState = samlProtocol.getStateManager().removeRequestState(relayState);
         if (requestState == null) {
             LOG.error("Missing Request State");
             throw new ProcessingException(TYPE.INVALID_REQUEST);
@@ -126,7 +126,8 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             FedizRequest request, FedizContext config)
         throws ProcessingException {
         SAMLProtocol protocol = (SAMLProtocol)config.getProtocol();
-        RequestState requestState = processRelayState(request.getState(), protocol);
+        RequestState requestState = 
+            processRelayState(request.getState(), request.getRequestState(), protocol);
         
         InputStream tokenStream = null;
         try {
@@ -304,7 +305,6 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             String authnRequestEncoded = encodeAuthnRequest(authnRequestElement);
             
             String webAppDomain = ((SAMLProtocol)config.getProtocol()).getWebAppDomain();
-            
             RequestState requestState = new RequestState(requestURL,
                                                          redirectURL,
                                                          authnRequest.getID(),
@@ -314,7 +314,6 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
                                                          System.currentTimeMillis());
             
             String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-            ((SAMLProtocol)config.getProtocol()).getStateManager().setRequestState(relayState, requestState);
             
             String urlEncodedRequest = 
                 URLEncoder.encode(authnRequestEncoded, "UTF-8");
@@ -338,6 +337,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             response.addHeader("Set-Cookie", contextCookie);
             response.addHeader("Cache-Control", "no-cache, no-store");
             response.addHeader("Pragma", "no-cache");
+            response.setRequestState(requestState);
             
             redirectURL = redirectURL + "?" + sb.toString();
             response.setRedirectionURL(redirectURL);

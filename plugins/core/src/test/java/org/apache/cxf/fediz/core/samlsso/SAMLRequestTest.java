@@ -32,9 +32,9 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 
 import org.apache.cxf.fediz.common.SecurityTestUtil;
+import org.apache.cxf.fediz.core.RequestState;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
-import org.apache.cxf.fediz.core.config.SAMLProtocol;
 import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.core.processor.RedirectionResponse;
 import org.apache.cxf.fediz.core.processor.SAMLProcessorImpl;
@@ -141,11 +141,9 @@ public class SAMLRequestTest {
         String redirectionURL = response.getRedirectionURL();
         String relayState = 
             redirectionURL.substring(redirectionURL.indexOf("RelayState=") + "RelayState=".length());
+        Assert.assertNotNull(relayState);
         
-        // Now retrieve the RequestState corresponding to the RelayState
-        RequestState requestState = 
-            ((SAMLProtocol)config.getProtocol()).getStateManager().removeRequestState(relayState);
-        Assert.assertNotNull(requestState);
+        RequestState requestState = response.getRequestState();
         
         Assert.assertEquals(TEST_IDP_ISSUER, requestState.getIdpServiceAddress());
         Assert.assertEquals(TEST_REQUEST_URL, requestState.getIssuerId());
