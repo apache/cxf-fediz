@@ -47,6 +47,7 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.cxf.fediz.core.FederationConstants;
+import org.apache.cxf.fediz.core.RequestState;
 import org.apache.cxf.fediz.core.SAMLSSOConstants;
 import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
@@ -66,6 +67,7 @@ import org.apache.wss4j.common.util.DOM2Writer;
 public class FederationAuthenticator extends FormAuthenticator {
 
     public static final String FEDERATION_NOTE = "org.apache.cxf.fediz.tomcat.FEDERATION";
+    public static final String REQUEST_STATE = "org.apache.cxf.fediz.REQUEST_STATE";
     public static final String SECURITY_TOKEN = "org.apache.fediz.SECURITY_TOKEN"; 
     
     /**
@@ -426,12 +428,16 @@ public class FederationAuthenticator extends FormAuthenticator {
                     LOG.debug("Process SignIn request");
                     LOG.debug("token=\n" + responseToken);
                 }
+                
+                session = request.getSessionInternal();
+                RequestState requestState = (RequestState)session.getNote(REQUEST_STATE);
 
                 FedizRequest wfReq = new FedizRequest();
                 wfReq.setAction(action);
                 wfReq.setResponseToken(responseToken);
                 wfReq.setState(request.getParameter("RelayState"));
                 wfReq.setRequest(request);
+                wfReq.setRequestState(requestState);
                 
                 X509Certificate certs[] = 
                     (X509Certificate[])request.getAttribute("javax.servlet.request.X509Certificate");
@@ -505,9 +511,6 @@ public class FederationAuthenticator extends FormAuthenticator {
         // HttpSessionAttributeListener
 
         if (session == null) {
-            session = request.getSessionInternal(false);
-        }
-        if (session == null) {
             if (containerLog.isDebugEnabled()) {
                 containerLog.debug("User took so long to log on the session expired");
             }
@@ -535,6 +538,9 @@ public class FederationAuthenticator extends FormAuthenticator {
 
         // Save Federation response in public session
         request.getSession(true).setAttribute(SECURITY_TOKEN, wfRes.getToken());
+        
+        // Remove RequestState
+        request.removeNote(REQUEST_STATE);
 
         /*
          * // Save the username and password as well
@@ -639,6 +645,13 @@ public class FederationAuthenticator extends FormAuthenticator {
                     for (String headerName : headers.keySet()) {
                         response.addHeader(headerName, headers.get(headerName));
                     }
+                }
+                
+                // Save Federation response in our session
+                RequestState requestState = redirectionResponse.getRequestState();
+                if (requestState != null) {
+                    Session session = request.getSessionInternal();
+                    session.setNote(REQUEST_STATE, requestState);
                 }
                 
                 response.sendRedirect(redirectURL);
