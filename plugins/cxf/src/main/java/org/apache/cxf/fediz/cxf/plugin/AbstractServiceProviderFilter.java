@@ -44,8 +44,10 @@ import org.apache.cxf.fediz.core.SecurityTokenThreadLocal;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.config.SAMLProtocol;
-import org.apache.cxf.fediz.core.samlsso.ResponseState;
 import org.apache.cxf.fediz.core.util.CookieUtils;
+import org.apache.cxf.fediz.cxf.plugin.state.EHCacheSPStateManager;
+import org.apache.cxf.fediz.cxf.plugin.state.ResponseState;
+import org.apache.cxf.fediz.cxf.plugin.state.SPStateManager;
 import org.apache.cxf.jaxrs.impl.HttpHeadersImpl;
 import org.apache.cxf.jaxrs.impl.UriInfoImpl;
 import org.apache.cxf.message.Message;
@@ -64,12 +66,12 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
         BundleUtils.getBundle(AbstractServiceProviderFilter.class);
     private static final Logger LOG = LoggerFactory.getLogger(AbstractServiceProviderFilter.class);
     
-    private String webAppDomain;
     private boolean addWebAppContext = true;
     private boolean addEndpointAddressToContext;
     
     private FedizConfigurator configurator;
     private String configFile;
+    private SPStateManager stateManager;
     
     public String getConfigFile() {
         return configFile;
@@ -105,10 +107,14 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
                 throw e;
             }
         }
+        
+        if (stateManager == null) {
+            stateManager = new EHCacheSPStateManager("fediz-ehcache.xml");
+        } 
     }
     
     @PreDestroy
-    public synchronized void cleanup() {
+    public synchronized void cleanup() throws IOException {
         if (configurator != null) {
             List<FedizContext> fedContextList = configurator.getFedizContextList();
             if (fedContextList != null) {
@@ -121,6 +127,8 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
                 }
             }
         }
+        
+        stateManager.close();
     }
     
     protected boolean checkSecurityContext(Message m) {
@@ -186,7 +194,7 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
         FedizContext fedizConfig = getFedizContext(m);
         
         SAMLProtocol protocol = (SAMLProtocol)fedizConfig.getProtocol();
-        ResponseState responseState = protocol.getStateManager().getResponseState(contextKey);
+        ResponseState responseState = stateManager.getResponseState(contextKey);
         
         if (responseState == null) {
             reportError("MISSING_RESPONSE_STATE");
@@ -196,17 +204,17 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
         if (CookieUtils.isStateExpired(responseState.getCreatedAt(), responseState.getExpiresAt(), 
                                     protocol.getStateTimeToLive())) {
             reportError("EXPIRED_RESPONSE_STATE");
-            protocol.getStateManager().removeResponseState(contextKey);
+            stateManager.removeResponseState(contextKey);
             return null;
         }
         
         String webAppContext = getWebAppContext(m);
-        if (webAppDomain != null 
+        if (protocol.getWebAppDomain() != null 
             && (responseState.getWebAppDomain() == null 
-                || !webAppDomain.equals(responseState.getWebAppDomain()))
+                || !protocol.getWebAppDomain().equals(responseState.getWebAppDomain()))
                 || responseState.getWebAppContext() == null
                 || !webAppContext.equals(responseState.getWebAppContext())) {
-            protocol.getStateManager().removeResponseState(contextKey);
+            stateManager.removeResponseState(contextKey);
             reportError("INVALID_RESPONSE_STATE");
             return null;
         }
@@ -269,16 +277,15 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
         }
     }
   
-    public String getWebAppDomain() {
-        return webAppDomain;
-    }
-
-    public void setWebAppDomain(String webAppDomain) {
-        this.webAppDomain = webAppDomain;
-    }
-
     public void setAddWebAppContext(boolean addWebAppContext) {
         this.addWebAppContext = addWebAppContext;
     }
         
+    public SPStateManager getStateManager() {
+        return stateManager;
+    }
+
+    public void setStateManager(SPStateManager stateManager) {
+        this.stateManager = stateManager;
+    }
 }

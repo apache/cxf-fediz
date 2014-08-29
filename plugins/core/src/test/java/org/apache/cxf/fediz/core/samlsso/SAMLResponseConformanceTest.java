@@ -139,15 +139,15 @@ public class SAMLResponseConformanceTest {
         
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         RequestState requestState = new RequestState(TEST_REQUEST_URL,
                                                      TEST_IDP_ISSUER,
                                                      requestId,
                                                      TEST_REQUEST_URL,
                                                      (String)config.getProtocol().getIssuer(),
                                                      null,
+                                                     relayState,
                                                      System.currentTimeMillis());
-        
-        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -213,15 +213,15 @@ public class SAMLResponseConformanceTest {
         
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         RequestState requestState = new RequestState(TEST_REQUEST_URL,
                                                      TEST_IDP_ISSUER,
                                                      requestId,
                                                      TEST_REQUEST_URL,
                                                      (String)config.getProtocol().getIssuer(),
                                                      null,
+                                                     relayState,
                                                      System.currentTimeMillis());
-        
-        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -287,15 +287,15 @@ public class SAMLResponseConformanceTest {
         
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         RequestState requestState = new RequestState(TEST_REQUEST_URL,
                                                      TEST_IDP_ISSUER,
                                                      requestId,
                                                      TEST_REQUEST_URL,
                                                      (String)config.getProtocol().getIssuer(),
                                                      null,
+                                                     relayState,
                                                      System.currentTimeMillis());
-        
-        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -353,15 +353,15 @@ public class SAMLResponseConformanceTest {
         
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         RequestState requestState = new RequestState(TEST_REQUEST_URL,
                                                      TEST_IDP_ISSUER,
                                                      requestId,
                                                      TEST_REQUEST_URL,
                                                      (String)config.getProtocol().getIssuer(),
                                                      null,
+                                                     relayState,
                                                      System.currentTimeMillis());
-        
-        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -417,15 +417,15 @@ public class SAMLResponseConformanceTest {
         
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         RequestState requestState = new RequestState(TEST_REQUEST_URL,
                                                      TEST_IDP_ISSUER,
                                                      requestId,
                                                      TEST_REQUEST_URL,
                                                      (String)config.getProtocol().getIssuer(),
                                                      null,
+                                                     relayState,
                                                      System.currentTimeMillis());
-        
-        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -484,15 +484,15 @@ public class SAMLResponseConformanceTest {
         
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         RequestState requestState = new RequestState(TEST_REQUEST_URL,
                                                      TEST_IDP_ISSUER,
                                                      requestId,
                                                      TEST_REQUEST_URL,
                                                      (String)config.getProtocol().getIssuer(),
                                                      null,
+                                                     relayState,
                                                      System.currentTimeMillis());
-        
-        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -551,15 +551,15 @@ public class SAMLResponseConformanceTest {
         
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         RequestState requestState = new RequestState(TEST_REQUEST_URL,
                                                      TEST_IDP_ISSUER,
                                                      requestId,
                                                      TEST_REQUEST_URL,
                                                      (String)config.getProtocol().getIssuer(),
                                                      null,
+                                                     relayState,
                                                      System.currentTimeMillis());
-        
-        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -618,15 +618,15 @@ public class SAMLResponseConformanceTest {
         
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         RequestState requestState = new RequestState(TEST_REQUEST_URL,
                                                      TEST_IDP_ISSUER,
                                                      requestId,
                                                      TEST_REQUEST_URL,
                                                      (String)config.getProtocol().getIssuer(),
                                                      null,
+                                                     relayState,
                                                      System.currentTimeMillis());
-        
-        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -685,15 +685,15 @@ public class SAMLResponseConformanceTest {
         
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         RequestState requestState = new RequestState(TEST_REQUEST_URL,
                                                      TEST_IDP_ISSUER,
                                                      requestId,
                                                      TEST_REQUEST_URL,
                                                      (String)config.getProtocol().getIssuer(),
                                                      null,
+                                                     relayState,
                                                      System.currentTimeMillis());
-        
-        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -752,15 +752,15 @@ public class SAMLResponseConformanceTest {
         
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         RequestState requestState = new RequestState(TEST_REQUEST_URL,
                                                      TEST_IDP_ISSUER,
                                                      requestId,
                                                      TEST_REQUEST_URL,
                                                      (String)config.getProtocol().getIssuer(),
                                                      null,
+                                                     relayState,
                                                      System.currentTimeMillis());
-        
-        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -820,15 +820,15 @@ public class SAMLResponseConformanceTest {
         
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         RequestState requestState = new RequestState(TEST_REQUEST_URL,
                                                      TEST_IDP_ISSUER,
                                                      requestId,
                                                      TEST_REQUEST_URL,
                                                      (String)config.getProtocol().getIssuer(),
                                                      null,
+                                                     relayState,
                                                      System.currentTimeMillis());
-        
-        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -886,15 +886,15 @@ public class SAMLResponseConformanceTest {
         
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         RequestState requestState = new RequestState(TEST_REQUEST_URL,
                                                      TEST_IDP_ISSUER,
                                                      requestId,
                                                      TEST_REQUEST_URL,
                                                      (String)config.getProtocol().getIssuer(),
                                                      null,
+                                                     relayState,
                                                      System.currentTimeMillis());
-        
-        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();

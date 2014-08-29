@@ -255,7 +255,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             ssoResponseValidator.setClientAddress(request.getRemoteAddr());
 
             ssoResponseValidator.setIssuerIDP(requestState.getIdpServiceAddress());
-            ssoResponseValidator.setRequestId(requestState.getSamlRequestId());
+            ssoResponseValidator.setRequestId(requestState.getRequestId());
             ssoResponseValidator.setSpIdentifier(requestState.getIssuerId());
             ssoResponseValidator.setEnforceAssertionsSigned(true);
             ssoResponseValidator.setEnforceKnownIssuer(true);
@@ -305,15 +305,15 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             String authnRequestEncoded = encodeAuthnRequest(authnRequestElement);
             
             String webAppDomain = ((SAMLProtocol)config.getProtocol()).getWebAppDomain();
+            String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
             RequestState requestState = new RequestState(requestURL,
                                                          redirectURL,
                                                          authnRequest.getID(),
                                                          realm,
                                                          authnRequest.getIssuer().getValue(),
                                                          webAppDomain,
+                                                         relayState,
                                                          System.currentTimeMillis());
-            
-            String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
             
             String urlEncodedRequest = 
                 URLEncoder.encode(authnRequestEncoded, "UTF-8");

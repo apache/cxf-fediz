@@ -32,31 +32,36 @@ public class RequestState implements Serializable {
     
     private String targetAddress;
     private String idpServiceAddress;
-    private String samlRequestId;
+    private String requestId;
     private String issuerId;
     private String webAppContext;
     private String webAppDomain;
     private long createdAt;
+    private String state;
  
     public RequestState() {
         
     }
     
+    // CHECKSTYLE:OFF
     public RequestState(String targetAddress,
                         String idpServiceAddress,
-                        String samlRequestId,
+                        String requestId,
                         String issuerId,
                         String webAppContext,
                         String webAppDomain,
+                        String state,
                         long createdAt) {
         this.targetAddress = targetAddress;
         this.idpServiceAddress = idpServiceAddress;
-        this.samlRequestId = samlRequestId;
+        this.requestId = requestId;
         this.issuerId = issuerId;
         this.webAppContext = webAppContext;
         this.webAppDomain = webAppDomain;
+        this.state  = state;
         this.createdAt = createdAt;
     }
+    // CHECKSTYLE:ON
 
     public String getTargetAddress() {
         return targetAddress;
@@ -66,8 +71,8 @@ public class RequestState implements Serializable {
         return idpServiceAddress;
     }
 
-    public String getSamlRequestId() {
-        return samlRequestId;
+    public String getRequestId() {
+        return requestId;
     }
 
     public String getIssuerId() {
@@ -85,4 +90,9 @@ public class RequestState implements Serializable {
     public String getWebAppDomain() {
         return webAppDomain;
     }
+
+    public String getState() {
+        return state;
+    }
+
 }

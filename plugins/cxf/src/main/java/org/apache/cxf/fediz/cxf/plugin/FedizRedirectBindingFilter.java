@@ -18,6 +18,7 @@
  */
 package org.apache.cxf.fediz.cxf.plugin;
 
+import java.io.IOException;
 import java.net.URI;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
@@ -27,6 +28,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MultivaluedMap;
@@ -34,6 +36,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.cxf.fediz.core.FederationConstants;
+import org.apache.cxf.fediz.core.RequestState;
 import org.apache.cxf.fediz.core.SAMLSSOConstants;
 import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.config.FedizContext;
@@ -44,8 +47,9 @@ import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
 import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.apache.cxf.fediz.core.processor.RedirectionResponse;
-import org.apache.cxf.fediz.core.samlsso.ResponseState;
 import org.apache.cxf.fediz.core.util.CookieUtils;
+import org.apache.cxf.fediz.cxf.plugin.state.ResponseState;
+import org.apache.cxf.helpers.IOUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.jaxrs.impl.UriInfoImpl;
 import org.apache.cxf.jaxrs.utils.ExceptionUtils;
@@ -55,9 +59,9 @@ import org.apache.wss4j.common.util.DOM2Writer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SamlRedirectBindingFilter extends AbstractServiceProviderFilter {
+public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
     
-    private static final Logger LOG = LoggerFactory.getLogger(SamlRedirectBindingFilter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FedizRedirectBindingFilter.class);
     
     @Context 
     private MessageContext messageContext;
@@ -70,7 +74,17 @@ public class SamlRedirectBindingFilter extends AbstractServiceProviderFilter {
         } else {
             try {
                 FedizContext fedConfig = getFedizContext(m);
-                if (isSignInRequired(context, fedConfig)) {
+                
+                String httpMethod = context.getMethod();
+                MultivaluedMap<String, String> params = null;
+                if (HttpMethod.GET.equals(httpMethod)) {
+                    params = context.getUriInfo().getQueryParameters();
+                } else if (HttpMethod.POST.equals(httpMethod)) {
+                    String strForm = IOUtils.toString(context.getEntityStream());
+                    params = JAXRSUtils.getStructuredParams(strForm, "&", false, false);
+                }
+                
+                if (isSignInRequired(fedConfig, params)) {
                     // Unauthenticated -> redirect
                     FedizProcessor processor = 
                         FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
@@ -88,14 +102,19 @@ public class SamlRedirectBindingFilter extends AbstractServiceProviderFilter {
                             }
                         }
 
+                        // Save the RequestState
+                        RequestState requestState = redirectionResponse.getRequestState();
+                        if (requestState != null && requestState.getState() != null) {
+                            getStateManager().setRequestState(requestState.getState(), requestState);
+                        }
+                        
                         context.abortWith(response.build());
                     } else {
                         LOG.warn("Failed to create SignInRequest.");
                         throw ExceptionUtils.toInternalServerErrorException(null, null);
                     }
-                } else if (isSignInRequest(context, fedConfig)) {
-                    String responseToken = getResponseToken(context, fedConfig);
-                    
+                } else if (isSignInRequest(fedConfig, params)) {
+                    String responseToken = getResponseToken(fedConfig, params);
                     if (responseToken == null) {
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("SignIn request must contain a response token from the IdP");
@@ -108,30 +127,12 @@ public class SamlRedirectBindingFilter extends AbstractServiceProviderFilter {
                             LOG.debug("token=\n" + responseToken);
                         }
 
-                        FedizRequest wfReq = new FedizRequest();
-                        MultivaluedMap<String, String> params = context.getUriInfo().getQueryParameters();
-                        wfReq.setAction(params.getFirst(FederationConstants.PARAM_ACTION));
-                        wfReq.setResponseToken(responseToken);
-                        wfReq.setState(params.getFirst("RelayState"));
-                        HttpServletRequest request = messageContext.getHttpServletRequest();
-                        wfReq.setRequest(request);
-                        
-                        X509Certificate certs[] = 
-                            (X509Certificate[])request.getAttribute("javax.servlet.request.X509Certificate");
-                        wfReq.setCerts(certs);
-
-                        FedizProcessor wfProc = 
-                            FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
-                        FedizResponse wfRes = null;
-                        try {
-                            wfRes = wfProc.processRequest(wfReq, fedConfig);
-                        } catch (ProcessingException ex) {
-                            LOG.error("Federation processing failed: " + ex.getMessage());
-                            throw ExceptionUtils.toNotAuthorizedException(ex, null);
-                        }
+                        FedizResponse wfRes = 
+                            validateSignInRequest(fedConfig, params, responseToken);
                         
                         // Validate AudienceRestriction
                         List<String> audienceURIs = fedConfig.getAudienceUris();
+                        HttpServletRequest request = messageContext.getHttpServletRequest();
                         validateAudienceRestrictions(wfRes, audienceURIs, request);
 
                         // Set the security context
@@ -168,7 +169,7 @@ public class SamlRedirectBindingFilter extends AbstractServiceProviderFilter {
                         responseState.setRoles(roles);
                         responseState.setIssuer(wfRes.getIssuer());
                         responseState.setSubject(wfRes.getUsername());
-                        protocol.getStateManager().setResponseState(securityContextKey, responseState);
+                        getStateManager().setResponseState(securityContextKey, responseState);
                            
                         long stateTimeToLive = protocol.getStateTimeToLive();
                         String contextCookie = CookieUtils.createCookie(SECURITY_CONTEXT_TOKEN,
@@ -196,13 +197,11 @@ public class SamlRedirectBindingFilter extends AbstractServiceProviderFilter {
         }
     }
     
-    private boolean isSignInRequired(ContainerRequestContext context, FedizContext fedConfig) {
-        
-        MultivaluedMap<String, String> params = context.getUriInfo().getQueryParameters();
-        if (fedConfig.getProtocol() instanceof FederationProtocol
+    private boolean isSignInRequired(FedizContext fedConfig, MultivaluedMap<String, String> params) {
+        if (params != null && fedConfig.getProtocol() instanceof FederationProtocol
             && params.getFirst(FederationConstants.PARAM_ACTION) == null) {
             return true;
-        } else if (fedConfig.getProtocol() instanceof SAMLProtocol
+        } else if (params != null && fedConfig.getProtocol() instanceof SAMLProtocol
             && params.getFirst(SAMLSSOConstants.RELAY_STATE) == null) {
             return true;
         }
@@ -210,14 +209,12 @@ public class SamlRedirectBindingFilter extends AbstractServiceProviderFilter {
         return false;
     }
     
-    private boolean isSignInRequest(ContainerRequestContext context, FedizContext fedConfig) {
-        
-        MultivaluedMap<String, String> params = context.getUriInfo().getQueryParameters();
-        if (fedConfig.getProtocol() instanceof FederationProtocol
+    private boolean isSignInRequest(FedizContext fedConfig, MultivaluedMap<String, String> params) { 
+        if (params != null && fedConfig.getProtocol() instanceof FederationProtocol
             && FederationConstants.ACTION_SIGNIN.equals(
                 params.getFirst(FederationConstants.PARAM_ACTION))) {
             return true;
-        } else if (fedConfig.getProtocol() instanceof SAMLProtocol
+        } else if (params != null && fedConfig.getProtocol() instanceof SAMLProtocol
             && params.getFirst(SAMLSSOConstants.RELAY_STATE) != null) {
             return true;
         }
@@ -225,16 +222,46 @@ public class SamlRedirectBindingFilter extends AbstractServiceProviderFilter {
         return false;
     }
     
-    private String getResponseToken(ContainerRequestContext context, FedizContext fedConfig) {
-        
-        MultivaluedMap<String, String> params = context.getUriInfo().getQueryParameters();
-        if (fedConfig.getProtocol() instanceof FederationProtocol) {
+    private String getResponseToken(FedizContext fedConfig, MultivaluedMap<String, String> params) 
+        throws IOException {
+        if (params != null && fedConfig.getProtocol() instanceof FederationProtocol) {
             return params.getFirst(FederationConstants.PARAM_RESULT);
-        } else if (fedConfig.getProtocol() instanceof SAMLProtocol) {
+        } else if (params != null && fedConfig.getProtocol() instanceof SAMLProtocol) {
             return params.getFirst(SAMLSSOConstants.SAML_RESPONSE);
         }
         
         return null;
+    }
+    
+    private FedizResponse validateSignInRequest(
+        FedizContext fedConfig,
+        MultivaluedMap<String, String> params,
+        String responseToken
+    ) {
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setAction(params.getFirst(FederationConstants.PARAM_ACTION));
+        wfReq.setResponseToken(responseToken);
+        String relayState = params.getFirst("RelayState");
+        wfReq.setState(relayState);
+        if (relayState != null) {
+            wfReq.setRequestState(getStateManager().removeRequestState(relayState));
+        }
+
+        HttpServletRequest request = messageContext.getHttpServletRequest();
+        wfReq.setRequest(request);
+
+        X509Certificate certs[] = 
+            (X509Certificate[])request.getAttribute("javax.servlet.request.X509Certificate");
+        wfReq.setCerts(certs);
+
+        FedizProcessor wfProc = 
+            FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
+        try {
+            return wfProc.processRequest(wfReq, fedConfig);
+        } catch (ProcessingException ex) {
+            LOG.error("Federation processing failed: " + ex.getMessage());
+            throw ExceptionUtils.toNotAuthorizedException(ex, null);
+        }
     }
     
     private void validateAudienceRestrictions(
