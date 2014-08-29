@@ -19,7 +19,9 @@
 package org.apache.cxf.fediz.cxf.plugin;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLDecoder;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.Date;
@@ -237,10 +239,11 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
         FedizContext fedConfig,
         MultivaluedMap<String, String> params,
         String responseToken
-    ) {
+    ) throws UnsupportedEncodingException {
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(params.getFirst(FederationConstants.PARAM_ACTION));
-        wfReq.setResponseToken(responseToken);
+        // TODO wfReq.setResponseToken(responseToken);
+        wfReq.setResponseToken(URLDecoder.decode(responseToken, "UTF-8"));
         String relayState = params.getFirst("RelayState");
         wfReq.setState(relayState);
         if (relayState != null) {

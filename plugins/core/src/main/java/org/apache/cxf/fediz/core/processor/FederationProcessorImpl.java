@@ -19,8 +19,8 @@
 
 package org.apache.cxf.fediz.core.processor;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -111,12 +111,10 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             FedizRequest request, FedizContext config)
         throws ProcessingException {
         
-        byte[] wresult = request.getResponseToken().getBytes();
-
         Document doc = null;
         Element el = null;
         try {
-            doc = DOMUtils.readXml(new ByteArrayInputStream(wresult));
+            doc = DOMUtils.readXml(new StringReader(request.getResponseToken()));
             el = doc.getDocumentElement();
 
         } catch (Exception e) {
