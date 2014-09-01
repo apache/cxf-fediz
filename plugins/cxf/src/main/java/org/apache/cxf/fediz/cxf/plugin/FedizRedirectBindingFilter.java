@@ -227,7 +227,10 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
     private String getResponseToken(FedizContext fedConfig, MultivaluedMap<String, String> params) 
         throws IOException {
         if (params != null && fedConfig.getProtocol() instanceof FederationProtocol) {
-            return params.getFirst(FederationConstants.PARAM_RESULT);
+            String result = params.getFirst(FederationConstants.PARAM_RESULT);
+            if (result != null) {
+                return URLDecoder.decode(result, "UTF-8");
+            }
         } else if (params != null && fedConfig.getProtocol() instanceof SAMLProtocol) {
             return params.getFirst(SAMLSSOConstants.SAML_RESPONSE);
         }
@@ -242,8 +245,7 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
     ) throws UnsupportedEncodingException {
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(params.getFirst(FederationConstants.PARAM_ACTION));
-        // TODO wfReq.setResponseToken(responseToken);
-        wfReq.setResponseToken(URLDecoder.decode(responseToken, "UTF-8"));
+        wfReq.setResponseToken(responseToken);
         String relayState = params.getFirst("RelayState");
         wfReq.setState(relayState);
         if (relayState != null) {
