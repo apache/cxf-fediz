@@ -35,9 +35,9 @@ public class RequestState implements Serializable {
     private String requestId;
     private String issuerId;
     private String webAppContext;
-    private String webAppDomain;
     private long createdAt;
     private String state;
+    private String webAppDomain;
  
     public RequestState() {
         
@@ -52,16 +52,44 @@ public class RequestState implements Serializable {
                         String webAppDomain,
                         String state,
                         long createdAt) {
+        setTargetAddress(targetAddress);
+        setIdpServiceAddress(idpServiceAddress);
+        setRequestId(requestId);
+        setIssuerId(issuerId);
+        setWebAppContext(webAppContext);
+        setWebAppDomain(webAppDomain);
+        setState(state);
+        setCreatedAt(createdAt);
+    }
+
+    
+    public void setTargetAddress(String targetAddress) {
         this.targetAddress = targetAddress;
+    }
+
+    public void setIdpServiceAddress(String idpServiceAddress) {
         this.idpServiceAddress = idpServiceAddress;
+    }
+
+    public void setRequestId(String requestId) {
         this.requestId = requestId;
+    }
+
+    public void setIssuerId(String issuerId) {
         this.issuerId = issuerId;
+    }
+
+    public void setWebAppContext(String webAppContext) {
         this.webAppContext = webAppContext;
-        this.webAppDomain = webAppDomain;
-        this.state  = state;
+    }
+
+    public void setCreatedAt(long createdAt) {
         this.createdAt = createdAt;
     }
-    // CHECKSTYLE:ON
+
+    public void setState(String state) {
+        this.state = state;
+    }
 
     public String getTargetAddress() {
         return targetAddress;
@@ -86,13 +114,17 @@ public class RequestState implements Serializable {
     public String getWebAppContext() {
         return webAppContext;
     }
+    
+    public String getState() {
+        return state;
+    }
 
     public String getWebAppDomain() {
         return webAppDomain;
     }
 
-    public String getState() {
-        return state;
+    public void setWebAppDomain(String webAppDomain) {
+        this.webAppDomain = webAppDomain;
     }
 
 }

@@ -60,26 +60,6 @@ public class SAMLProtocol extends Protocol {
         getSAMLProtocol().setSignRequest(signRequest);
     }
     
-    public String getWebAppDomain() {
-        return getSAMLProtocol().getWebAppDomain();
-    }
-    
-    public void setWebAppDomain(String webAppDomain) {
-        getSAMLProtocol().setWebAppDomain(webAppDomain);
-    }
-    
-    public long getStateTimeToLive() {
-        long ttl = getSAMLProtocol().getStateTimeToLive();
-        if (ttl > 0) {
-            return ttl;
-        }
-        return 2L * 60L * 1000L;
-    }
-    
-    public void setStateTimeToLive(long stateTimeToLive) {
-        getSAMLProtocol().setStateTimeToLive(stateTimeToLive);
-    }
-
     public AuthnRequestBuilder getAuthnRequestBuilder() {
         if (authnRequestBuilder != null) {
             return authnRequestBuilder;

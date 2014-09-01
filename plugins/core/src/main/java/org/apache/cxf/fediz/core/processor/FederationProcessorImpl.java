@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -41,6 +42,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.apache.cxf.fediz.core.FederationConstants;
+import org.apache.cxf.fediz.core.RequestState;
 import org.apache.cxf.fediz.core.TokenValidator;
 import org.apache.cxf.fediz.core.TokenValidatorRequest;
 import org.apache.cxf.fediz.core.TokenValidatorResponse;
@@ -348,6 +350,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         throws ProcessingException {
 
         String redirectURL = null;
+        RequestState requestState = null;
         try {
             if (!(config.getProtocol() instanceof FederationProtocol)) {
                 LOG.error("Unsupported protocol");
@@ -375,7 +378,15 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             String signInQuery = resolveSignInQuery(request, config);
             LOG.info("SignIn Query: " + signInQuery);
             
-             
+            String wctx = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+            String requestURL = request.getRequestURL().toString();
+           
+            requestState = new RequestState();
+            requestState.setTargetAddress(requestURL);
+            requestState.setIdpServiceAddress(redirectURL);
+            requestState.setState(wctx);
+            requestState.setCreatedAt(System.currentTimeMillis());
+
             StringBuilder sb = new StringBuilder();
             sb.append(FederationConstants.PARAM_ACTION).append('=').append(FederationConstants.ACTION_SIGNIN);
             
@@ -436,6 +447,10 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             sb.append('&').append(FederationConstants.PARAM_CURRENT_TIME).append('=')
             .append(URLEncoder.encode(wct, "UTF-8"));
             
+            LOG.debug("wctx=" + wctx);
+            sb.append('&').append(FederationConstants.PARAM_CONTEXT).append('=');
+            sb.append(URLEncoder.encode(wctx, "UTF-8"));
+            
             // add signin query extensions
             if (signInQuery != null && signInQuery.length() > 0) {
                 sb.append('&').append(signInQuery);
@@ -449,6 +464,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         
         RedirectionResponse response = new RedirectionResponse();
         response.setRedirectionURL(redirectURL);
+        response.setRequestState(requestState);
         return response;
     }
 

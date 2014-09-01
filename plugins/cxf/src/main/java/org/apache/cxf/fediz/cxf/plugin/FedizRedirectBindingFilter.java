@@ -44,6 +44,7 @@ import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.config.SAMLProtocol;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
+import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
 import org.apache.cxf.fediz.core.processor.FedizRequest;
@@ -108,6 +109,14 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
                         RequestState requestState = redirectionResponse.getRequestState();
                         if (requestState != null && requestState.getState() != null) {
                             getStateManager().setRequestState(requestState.getState(), requestState);
+                        
+                            String contextCookie = 
+                                CookieUtils.createCookie(SECURITY_CONTEXT_STATE,
+                                                         requestState.getState(),
+                                                         request.getRequestURI(),
+                                                         getWebAppDomain(),
+                                                         getStateTimeToLive());
+                            response.header("Set-Cookie", contextCookie);
                         }
                         
                         context.abortWith(response.build());
@@ -117,6 +126,8 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
                     }
                 } else if (isSignInRequest(fedConfig, params)) {
                     String responseToken = getResponseToken(fedConfig, params);
+                    String state = getState(fedConfig, params);
+                    
                     if (responseToken == null) {
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("SignIn request must contain a response token from the IdP");
@@ -130,7 +141,7 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
                         }
 
                         FedizResponse wfRes = 
-                            validateSignInRequest(fedConfig, params, responseToken);
+                            validateSignInRequest(fedConfig, params, responseToken, state);
                         
                         // Validate AudienceRestriction
                         List<String> audienceURIs = fedConfig.getAudienceUris();
@@ -140,18 +151,16 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
                         // Set the security context
                         String securityContextKey = UUID.randomUUID().toString();
                            
-                        SAMLProtocol protocol = (SAMLProtocol)fedConfig.getProtocol();
-                        
                         long currentTime = System.currentTimeMillis();
                         Date notOnOrAfter = wfRes.getTokenExpires();
                         long expiresAt = 0;
                         if (notOnOrAfter != null) {
                             expiresAt = notOnOrAfter.getTime();
                         } else {
-                            expiresAt = currentTime + protocol.getStateTimeToLive();
+                            expiresAt = currentTime + getStateTimeToLive();
                         }
                            
-                        String webAppDomain = protocol.getWebAppDomain();
+                        String webAppDomain = getWebAppDomain();
                         String token = DOM2Writer.nodeToString(wfRes.getToken());
                         List<String> roles = wfRes.getRoles();
                         if (roles == null || roles.size() == 0) {
@@ -162,7 +171,7 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
                         
                         ResponseState responseState = 
                             new ResponseState(token,
-                                              params.getFirst("RelayState"), 
+                                              state, 
                                               webAppContext,
                                               webAppDomain,
                                               currentTime, 
@@ -173,7 +182,7 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
                         responseState.setSubject(wfRes.getUsername());
                         getStateManager().setResponseState(securityContextKey, responseState);
                            
-                        long stateTimeToLive = protocol.getStateTimeToLive();
+                        long stateTimeToLive = getStateTimeToLive();
                         String contextCookie = CookieUtils.createCookie(SECURITY_CONTEXT_TOKEN,
                                                             securityContextKey,
                                                             webAppContext,
@@ -238,20 +247,45 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
         return null;
     }
     
+    private String getState(FedizContext fedConfig, MultivaluedMap<String, String> params) {
+        if (params != null && fedConfig.getProtocol() instanceof FederationProtocol) {
+            return params.getFirst(FederationConstants.PARAM_CONTEXT);
+        } else if (params != null && fedConfig.getProtocol() instanceof SAMLProtocol) {
+            return params.getFirst(SAMLSSOConstants.RELAY_STATE);
+        }
+        
+        return null;
+    }
+    
     private FedizResponse validateSignInRequest(
         FedizContext fedConfig,
         MultivaluedMap<String, String> params,
-        String responseToken
-    ) throws UnsupportedEncodingException {
+        String responseToken,
+        String state
+    ) throws UnsupportedEncodingException, ProcessingException {
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(params.getFirst(FederationConstants.PARAM_ACTION));
         wfReq.setResponseToken(responseToken);
-        String relayState = params.getFirst("RelayState");
-        wfReq.setState(relayState);
-        if (relayState != null) {
-            wfReq.setRequestState(getStateManager().removeRequestState(relayState));
+        
+        if (state == null || state.getBytes().length <= 0) {
+            LOG.error("Invalid RelayState/WCTX");
+            throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
-
+        
+        wfReq.setState(state);
+        wfReq.setRequestState(getStateManager().removeRequestState(state));
+        
+        if (wfReq.getRequestState() == null) {
+            LOG.error("Missing Request State");
+            throw new ProcessingException(TYPE.INVALID_REQUEST);
+        }
+        
+        if (CookieUtils.isStateExpired(wfReq.getRequestState().getCreatedAt(), 0, 
+                                       getStateTimeToLive())) {
+            LOG.error("EXPIRED_REQUEST_STATE");
+            throw new ProcessingException(TYPE.INVALID_REQUEST);
+        }
+        
         HttpServletRequest request = messageContext.getHttpServletRequest();
         wfReq.setRequest(request);
 

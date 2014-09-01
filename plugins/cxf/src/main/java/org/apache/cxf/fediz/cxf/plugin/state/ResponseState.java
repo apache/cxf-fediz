@@ -34,7 +34,7 @@ public class ResponseState implements Serializable {
     private static final long serialVersionUID = -3247188797004342462L;
     
     private String assertion;
-    private String relayState;
+    private String state;
     private String webAppContext;
     private String webAppDomain;
     private long createdAt;
@@ -49,13 +49,13 @@ public class ResponseState implements Serializable {
     }
     
     public ResponseState(String assertion,
-                         String relayState,
+                         String state,
                          String webAppContext,
                          String webAppDomain,
                          long createdAt, 
                          long expiresAt) {
         this.assertion = assertion;
-        this.relayState = relayState;
+        this.state = state;
         this.webAppContext = webAppContext;
         this.webAppDomain = webAppDomain;
         this.createdAt = createdAt;
@@ -70,8 +70,8 @@ public class ResponseState implements Serializable {
         return expiresAt;
     }
 
-    public String getRelayState() {
-        return relayState;
+    public String getState() {
+        return state;
     }
     
     public String getWebAppContext() {

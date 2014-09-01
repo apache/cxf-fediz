@@ -119,7 +119,6 @@ public class SAMLRequestTest {
         Map<String, String> headers = response.getHeaders();
         Assert.assertNotNull(headers);
         Assert.assertFalse(headers.isEmpty());
-        Assert.assertTrue(headers.containsKey("Set-Cookie"));
         Assert.assertTrue("no-cache, no-store".equals(headers.get("Cache-Control")));
         Assert.assertTrue("no-cache".equals(headers.get("Pragma")));
     }

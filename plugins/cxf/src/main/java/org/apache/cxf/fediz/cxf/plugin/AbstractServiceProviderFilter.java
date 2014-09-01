@@ -39,11 +39,9 @@ import javax.xml.bind.JAXBException;
 import org.w3c.dom.Element;
 import org.apache.cxf.common.classloader.ClassLoaderUtils;
 import org.apache.cxf.common.i18n.BundleUtils;
-import org.apache.cxf.fediz.core.SAMLSSOConstants;
 import org.apache.cxf.fediz.core.SecurityTokenThreadLocal;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
-import org.apache.cxf.fediz.core.config.SAMLProtocol;
 import org.apache.cxf.fediz.core.util.CookieUtils;
 import org.apache.cxf.fediz.cxf.plugin.state.EHCacheSPStateManager;
 import org.apache.cxf.fediz.cxf.plugin.state.ResponseState;
@@ -62,6 +60,9 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
     
     public static final String SECURITY_CONTEXT_TOKEN = 
         "org.apache.fediz.SECURITY_TOKEN";
+    public static final String SECURITY_CONTEXT_STATE = 
+        "org.apache.fediz.SECURITY_CONTEXT_STATE";
+    
     protected static final ResourceBundle BUNDLE = 
         BundleUtils.getBundle(AbstractServiceProviderFilter.class);
     private static final Logger LOG = LoggerFactory.getLogger(AbstractServiceProviderFilter.class);
@@ -72,6 +73,8 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
     private FedizConfigurator configurator;
     private String configFile;
     private SPStateManager stateManager;
+    private long stateTimeToLive = 120000;
+    private String webAppDomain;
     
     public String getConfigFile() {
         return configFile;
@@ -142,12 +145,12 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
             return false;    
         }
         
-        Cookie relayStateCookie = cookies.get(SAMLSSOConstants.RELAY_STATE);
+        Cookie relayStateCookie = cookies.get(SECURITY_CONTEXT_STATE);
         if (relayStateCookie == null) {
             reportError("MISSING_RELAY_COOKIE");
             return false;
         }
-        String originalRelayState = responseState.getRelayState();
+        String originalRelayState = responseState.getState();
         if (!originalRelayState.equals(relayStateCookie.getValue())) {
             // perhaps the response state should also be removed
             reportError("INVALID_RELAY_STATE");
@@ -190,10 +193,6 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
             return null;
         }
         String contextKey = securityContextCookie.getValue();
-        
-        FedizContext fedizConfig = getFedizContext(m);
-        
-        SAMLProtocol protocol = (SAMLProtocol)fedizConfig.getProtocol();
         ResponseState responseState = stateManager.getResponseState(contextKey);
         
         if (responseState == null) {
@@ -202,16 +201,16 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
         }
         
         if (CookieUtils.isStateExpired(responseState.getCreatedAt(), responseState.getExpiresAt(), 
-                                    protocol.getStateTimeToLive())) {
+                                    getStateTimeToLive())) {
             reportError("EXPIRED_RESPONSE_STATE");
             stateManager.removeResponseState(contextKey);
             return null;
         }
         
         String webAppContext = getWebAppContext(m);
-        if (protocol.getWebAppDomain() != null 
+        if (webAppDomain != null 
             && (responseState.getWebAppDomain() == null 
-                || !protocol.getWebAppDomain().equals(responseState.getWebAppDomain()))
+                || !webAppDomain.equals(responseState.getWebAppDomain()))
                 || responseState.getWebAppContext() == null
                 || !webAppContext.equals(responseState.getWebAppContext())) {
             stateManager.removeResponseState(contextKey);
@@ -287,5 +286,21 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
 
     public void setStateManager(SPStateManager stateManager) {
         this.stateManager = stateManager;
+    }
+
+    public String getWebAppDomain() {
+        return webAppDomain;
+    }
+
+    public void setWebAppDomain(String webAppDomain) {
+        this.webAppDomain = webAppDomain;
+    }
+
+    public long getStateTimeToLive() {
+        return stateTimeToLive;
+    }
+
+    public void setStateTimeToLive(long stateTimeToLive) {
+        this.stateTimeToLive = stateTimeToLive;
     }
 }

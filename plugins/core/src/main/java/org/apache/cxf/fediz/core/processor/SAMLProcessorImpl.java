@@ -50,7 +50,6 @@ import org.apache.cxf.fediz.core.samlsso.CompressionUtils;
 import org.apache.cxf.fediz.core.samlsso.SAMLProtocolResponseValidator;
 import org.apache.cxf.fediz.core.samlsso.SAMLSSOResponseValidator;
 import org.apache.cxf.fediz.core.samlsso.SSOValidatorResponse;
-import org.apache.cxf.fediz.core.util.CookieUtils;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.ext.WSSecurityException;
@@ -104,19 +103,14 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
     }
     
     private RequestState processRelayState(
-        String relayState, RequestState requestState, SAMLProtocol samlProtocol
+        String relayState, RequestState requestState
     ) throws ProcessingException {
-        if (relayState.getBytes().length < 0 || relayState.getBytes().length > 80) {
+        if (relayState.getBytes().length <= 0 || relayState.getBytes().length > 80) {
             LOG.error("Invalid RelayState");
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
         if (requestState == null) {
             LOG.error("Missing Request State");
-            throw new ProcessingException(TYPE.INVALID_REQUEST);
-        }
-        if (CookieUtils.isStateExpired(requestState.getCreatedAt(), 0, 
-                                       samlProtocol.getStateTimeToLive())) {
-            LOG.error("EXPIRED_REQUEST_STATE");
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
         return requestState;
@@ -127,7 +121,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
         throws ProcessingException {
         SAMLProtocol protocol = (SAMLProtocol)config.getProtocol();
         RequestState requestState = 
-            processRelayState(request.getState(), request.getRequestState(), protocol);
+            processRelayState(request.getState(), request.getRequestState());
         
         InputStream tokenStream = null;
         try {
@@ -304,16 +298,15 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             Element authnRequestElement = OpenSAMLUtil.toDom(authnRequest, doc);
             String authnRequestEncoded = encodeAuthnRequest(authnRequestElement);
             
-            String webAppDomain = ((SAMLProtocol)config.getProtocol()).getWebAppDomain();
             String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-            RequestState requestState = new RequestState(requestURL,
-                                                         redirectURL,
-                                                         authnRequest.getID(),
-                                                         realm,
-                                                         authnRequest.getIssuer().getValue(),
-                                                         webAppDomain,
-                                                         relayState,
-                                                         System.currentTimeMillis());
+            RequestState requestState = new RequestState();
+            requestState.setTargetAddress(requestURL);
+            requestState.setIdpServiceAddress(redirectURL);
+            requestState.setRequestId(authnRequest.getID());
+            requestState.setIssuerId(realm);
+            requestState.setWebAppContext(authnRequest.getIssuer().getValue());
+            requestState.setState(relayState);
+            requestState.setCreatedAt(System.currentTimeMillis());
             
             String urlEncodedRequest = 
                 URLEncoder.encode(authnRequestEncoded, "UTF-8");
@@ -327,14 +320,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
                 sb.append("&" + SAMLSSOConstants.SIGNATURE).append('=').append(signature);
             }
             
-            String contextCookie = CookieUtils.createCookie(SAMLSSOConstants.RELAY_STATE,
-                                                relayState,
-                                                request.getRequestURI(),
-                                                webAppDomain,
-                                                ((SAMLProtocol)config.getProtocol()).getStateTimeToLive());
-            
             RedirectionResponse response = new RedirectionResponse();
-            response.addHeader("Set-Cookie", contextCookie);
             response.addHeader("Cache-Control", "no-cache, no-store");
             response.addHeader("Pragma", "no-cache");
             response.setRequestState(requestState);
