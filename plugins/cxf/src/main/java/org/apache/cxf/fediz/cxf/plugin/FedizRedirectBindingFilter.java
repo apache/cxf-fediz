@@ -21,7 +21,6 @@ package org.apache.cxf.fediz.cxf.plugin;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URLDecoder;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.Date;
@@ -84,7 +83,7 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
                     params = context.getUriInfo().getQueryParameters();
                 } else if (HttpMethod.POST.equals(httpMethod)) {
                     String strForm = IOUtils.toString(context.getEntityStream());
-                    params = JAXRSUtils.getStructuredParams(strForm, "&", false, false);
+                    params = JAXRSUtils.getStructuredParams(strForm, "&", true, false);
                 }
                 
                 if (isSignInRequired(fedConfig, params)) {
@@ -236,10 +235,7 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
     private String getResponseToken(FedizContext fedConfig, MultivaluedMap<String, String> params) 
         throws IOException {
         if (params != null && fedConfig.getProtocol() instanceof FederationProtocol) {
-            String result = params.getFirst(FederationConstants.PARAM_RESULT);
-            if (result != null) {
-                return URLDecoder.decode(result, "UTF-8");
-            }
+            return params.getFirst(FederationConstants.PARAM_RESULT);
         } else if (params != null && fedConfig.getProtocol() instanceof SAMLProtocol) {
             return params.getFirst(SAMLSSOConstants.SAML_RESPONSE);
         }
