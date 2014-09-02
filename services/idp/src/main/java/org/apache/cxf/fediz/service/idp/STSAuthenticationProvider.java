@@ -27,11 +27,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
 import javax.xml.namespace.QName;
 
 import org.w3c.dom.Element;
-
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 //import org.apache.cxf.endpoint.Client;
@@ -101,6 +101,10 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
     
     private KerberosTokenValidator kerberosTokenValidator;
     
+    private CallbackHandler kerberosCallbackHandler;
+    
+    private boolean kerberosUsernameServiceNameForm;
+    
     
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -150,6 +154,12 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
                                     kerberosTokenValidator.getContextName());
             sts.getProperties().put(SecurityConstants.KERBEROS_SPN,
                                     kerberosTokenValidator.getServiceName());
+            sts.getProperties().put(SecurityConstants.CALLBACK_HANDLER, 
+                                    kerberosCallbackHandler);
+            if (kerberosUsernameServiceNameForm) {
+                sts.getProperties().put(SecurityConstants.KERBEROS_IS_USERNAME_IN_SERVICENAME_FORM, 
+                                        "true");
+            }
         } else {
             sts.getProperties().put(SecurityConstants.USERNAME, authentication.getName());
             sts.getProperties().put(SecurityConstants.PASSWORD, (String)authentication.getCredentials());
@@ -425,6 +435,22 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
 
     public void setKerberosTokenValidator(KerberosTokenValidator kerberosTokenValidator) {
         this.kerberosTokenValidator = kerberosTokenValidator;
+    }
+
+    public CallbackHandler getKerberosCallbackHandler() {
+        return kerberosCallbackHandler;
+    }
+
+    public void setKerberosCallbackHandler(CallbackHandler kerberosCallbackHandler) {
+        this.kerberosCallbackHandler = kerberosCallbackHandler;
+    }
+
+    public boolean isKerberosUsernameServiceNameForm() {
+        return kerberosUsernameServiceNameForm;
+    }
+
+    public void setKerberosUsernameServiceNameForm(boolean kerberosUsernameServiceNameForm) {
+        this.kerberosUsernameServiceNameForm = kerberosUsernameServiceNameForm;
     }
 
 //May be uncommented for debugging    
