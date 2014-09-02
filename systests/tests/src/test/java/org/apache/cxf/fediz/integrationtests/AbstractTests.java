@@ -35,7 +35,7 @@ public abstract class AbstractTests {
     public abstract String getRpHttpsPort();
 
     @org.junit.Test
-    public void testUserAlice() throws Exception {
+    public void testAlice() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
@@ -58,9 +58,49 @@ public abstract class AbstractTests {
                           response.indexOf(claim + "=alice@realma.org") > 0);
 
     }
+    
+    @org.junit.Test
+    public void testAliceUser() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/user/fedservlet";
+        String user = "alice";
+        String password = "ecila";
+        String response = 
+            HTTPTestUtils.sendHttpGet(url, user, password, Integer.parseInt(getIdpHttpsPort()));
+
+        Assert.assertTrue("Principal not " + user, response.indexOf("userPrincipal=" + user) > 0);
+        Assert.assertTrue("User " + user + " does not have role Admin", response.indexOf("role:Admin=false") > 0);
+        Assert.assertTrue("User " + user + " does not have role Manager", response.indexOf("role:Manager=false") > 0);
+        Assert.assertTrue("User " + user + " must have role User", response.indexOf("role:User=true") > 0);
+    }
+    
+    @org.junit.Test
+    public void testAliceAdminNoAccess() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/admin/fedservlet";
+        String user = "alice";
+        String password = "ecila";
+        HTTPTestUtils.sendHttpGet(url, user, password, 200, 403, Integer.parseInt(getIdpHttpsPort()));        
+    }
+    
+    @org.junit.Test
+    public void testliceManagerNoAccess() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/manager/fedservlet";
+        String user = "alice";
+        String password = "ecila";
+        HTTPTestUtils.sendHttpGet(url, user, password, 200, 403, Integer.parseInt(getIdpHttpsPort()));        
+    }
 
     @org.junit.Test
-    public void testUserBob() throws Exception {
+    public void testAliceWrongPasswordNoAccess() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String user = "alice";
+        String password = "alice";
+        // sendHttpGet(url, user, password, 500, 0);        
+        //[FIXED] Fix IDP return code from 500 to 401
+        HTTPTestUtils.sendHttpGet(url, user, password, 401, 0, Integer.parseInt(getIdpHttpsPort()));        
+    }
+
+    @org.junit.Test
+    public void testBob() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         String user = "bob";
         String password = "bob";
@@ -82,9 +122,51 @@ public abstract class AbstractTests {
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'bobwindsor@realma.org'",
                           response.indexOf(claim + "=bobwindsor@realma.org") > 0);
     }
+    
+    @org.junit.Test
+    public void testBobUser() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/user/fedservlet";
+        String user = "bob";
+        String password = "bob";
+        String response = 
+            HTTPTestUtils.sendHttpGet(url, user, password, Integer.parseInt(getIdpHttpsPort()));
+
+        Assert.assertTrue("Principal not " + user, response.indexOf("userPrincipal=" + user) > 0);
+        Assert.assertTrue("User " + user + " does not have role Admin", response.indexOf("role:Admin=true") > 0);
+        Assert.assertTrue("User " + user + " does not have role Manager", response.indexOf("role:Manager=true") > 0);
+        Assert.assertTrue("User " + user + " must have role User", response.indexOf("role:User=true") > 0);
+    }
+    
+    @org.junit.Test
+    public void testBobManager() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/manager/fedservlet";
+        String user = "bob";
+        String password = "bob";
+        String response = 
+            HTTPTestUtils.sendHttpGet(url, user, password, Integer.parseInt(getIdpHttpsPort()));
+
+        Assert.assertTrue("Principal not " + user, response.indexOf("userPrincipal=" + user) > 0);
+        Assert.assertTrue("User " + user + " does not have role Admin", response.indexOf("role:Admin=true") > 0);
+        Assert.assertTrue("User " + user + " does not have role Manager", response.indexOf("role:Manager=true") > 0);
+        Assert.assertTrue("User " + user + " must have role User", response.indexOf("role:User=true") > 0);
+    }
+    
+    @org.junit.Test
+    public void testBobAdmin() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/admin/fedservlet";
+        String user = "bob";
+        String password = "bob";
+        String response = 
+            HTTPTestUtils.sendHttpGet(url, user, password, Integer.parseInt(getIdpHttpsPort()));
+
+        Assert.assertTrue("Principal not " + user, response.indexOf("userPrincipal=" + user) > 0);
+        Assert.assertTrue("User " + user + " does not have role Admin", response.indexOf("role:Admin=true") > 0);
+        Assert.assertTrue("User " + user + " does not have role Manager", response.indexOf("role:Manager=true") > 0);
+        Assert.assertTrue("User " + user + " must have role User", response.indexOf("role:User=true") > 0);
+    }
 
     @org.junit.Test
-    public void testUserTed() throws Exception {
+    public void testTed() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         String user = "ted";
         String password = "det";
@@ -106,32 +188,29 @@ public abstract class AbstractTests {
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'tcooper@realma.org'",
                           response.indexOf(claim + "=tcooper@realma.org") > 0);
     }
-
+    
     @org.junit.Test
-    public void testUserAliceNoAccess() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/admin/fedservlet";
-        String user = "alice";
-        String password = "ecila";
-        HTTPTestUtils.sendHttpGet(url, user, password, 200, 403, Integer.parseInt(getIdpHttpsPort()));        
+    public void testTedUserNoAccess() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/user/fedservlet";
+        String user = "ted";
+        String password = "det";
+        HTTPTestUtils.sendHttpGet(url, user, password, 200, 403, Integer.parseInt(getIdpHttpsPort()));
     }
 
     @org.junit.Test
-    public void testUserAliceWrongPassword() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
-        String user = "alice";
-        String password = "alice";
-        // sendHttpGet(url, user, password, 500, 0);        
-        //[FIXED] Fix IDP return code from 500 to 401
-        HTTPTestUtils.sendHttpGet(url, user, password, 401, 0, Integer.parseInt(getIdpHttpsPort()));        
-    }
-
-    @org.junit.Test
-    public void testUserTedNoAccess() throws Exception {
+    public void testTedAdminNoAccess() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/admin/fedservlet";
         String user = "ted";
         String password = "det";
         HTTPTestUtils.sendHttpGet(url, user, password, 200, 403, Integer.parseInt(getIdpHttpsPort()));        
     }
-
+    
+    @org.junit.Test
+    public void testTedManagerNoAccess() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/manager/fedservlet";
+        String user = "ted";
+        String password = "det";
+        HTTPTestUtils.sendHttpGet(url, user, password, 200, 403, Integer.parseInt(getIdpHttpsPort()));        
+    }
 
 }
