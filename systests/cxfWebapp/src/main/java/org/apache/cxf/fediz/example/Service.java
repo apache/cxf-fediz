@@ -36,15 +36,42 @@ import org.apache.cxf.fediz.core.FedizPrincipal;
 import org.apache.cxf.fediz.core.SecurityTokenThreadLocal;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 
-@Path("/")
+@Path("/secure/")
+@Produces("text/html")
 public class Service {
     @Context
     private MessageContext messageContext;
 
+    @Path("/admin/fedservlet")
+    @RolesAllowed("Admin")
+    @GET
+    public String doGetAdmin(@Context UriInfo uriInfo) throws Exception {
+        return doGet(uriInfo);
+    }
+    
+    @Path("/manager/fedservlet")
+    @RolesAllowed("Manager")
+    @GET
+    public String doGetManager(@Context UriInfo uriInfo) throws Exception {
+        return doGet(uriInfo);
+    }
+    
+    @Path("/user/fedservlet")
+    @RolesAllowed({ "User", "Admin", "Manager" })
+    @GET
+    public String doGetUser(@Context UriInfo uriInfo) throws Exception {
+        return doGet(uriInfo);
+    }
+    
+    @Path("/fedservlet")
+    @RolesAllowed({ "User", "Admin", "Manager", "Authenticated" })
     @GET
     @Produces("text/html")
-    @RolesAllowed("Authenticated")
-    public String doGet(@Context UriInfo uriInfo) throws Exception {
+    public String doGetSecure(@Context UriInfo uriInfo) throws Exception {
+        return doGet(uriInfo);
+    }
+    
+    private String doGet(@Context UriInfo uriInfo) throws Exception {
        
         StringBuilder out = new StringBuilder();
         out.append("<html>\n");

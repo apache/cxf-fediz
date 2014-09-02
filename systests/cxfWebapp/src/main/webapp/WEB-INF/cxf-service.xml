@@ -54,14 +54,25 @@
        <property name="configFile" value="fediz_config.xml"/>
    </bean>
    
+   <bean id="exceptionMapper" class="org.apache.cxf.fediz.example.FedizExceptionMapper" />
+   
+   <bean id="authorizationInterceptor"
+      class="org.apache.cxf.interceptor.security.SecureAnnotationsInterceptor">
+      <property name="securedObject" ref="serviceBean" />
+   </bean>
+
    <jaxrs:server
-        address="/secure/fedservlet">
+        address="/">
          <jaxrs:serviceBeans>
             <ref bean="serviceBean"/>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
             <ref bean="fedizFilter"/>
+            <ref bean="exceptionMapper"/>
         </jaxrs:providers>
+        <jaxrs:inInterceptors>
+            <ref bean="authorizationInterceptor"/>
+        </jaxrs:inInterceptors>
    </jaxrs:server>
 
 </beans>

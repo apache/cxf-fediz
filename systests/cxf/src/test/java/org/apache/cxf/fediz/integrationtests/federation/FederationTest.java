@@ -25,6 +25,7 @@ import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.cxf.fediz.core.ClaimTypes;
+import org.apache.cxf.fediz.integrationtests.AbstractTests;
 import org.apache.cxf.fediz.integrationtests.HTTPTestUtils;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -33,7 +34,7 @@ import org.junit.BeforeClass;
 /**
  * A test for WS-Federation using the CXF plugin (deployed in Tomcat).
  */
-public class FederationTest {
+public class FederationTest extends AbstractTests {
 
     static String idpHttpsPort;
     static String rpHttpsPort;
@@ -170,11 +171,12 @@ public class FederationTest {
     }
     
     @org.junit.Test
-    public void testAlice() throws Exception {
+    public void testUserAliceClientAuth() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
-        String response = HTTPTestUtils.sendHttpGet(url, user, password, Integer.parseInt(getIdpHttpsPort()));
+        String response = 
+            HTTPTestUtils.sendHttpGet(url, user, password, 200, 200, Integer.parseInt(getIdpHttpsPort()));
 
         Assert.assertTrue("Principal not " + user, response.indexOf("userPrincipal=" + user) > 0);
         Assert.assertTrue("User " + user + " does not have role Admin", response.indexOf("role:Admin=false") > 0);
@@ -191,6 +193,10 @@ public class FederationTest {
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
                           response.indexOf(claim + "=alice@realma.org") > 0);
 
+    }
+
+    public String getServletContextName() {
+        return "fedizhelloworld";
     }
     
 }
