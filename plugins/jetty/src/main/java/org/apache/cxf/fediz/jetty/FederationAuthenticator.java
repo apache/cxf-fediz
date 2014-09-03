@@ -22,6 +22,7 @@ package org.apache.cxf.fediz.jetty;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Map;
@@ -33,6 +34,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.xml.bind.JAXBException;
+
+import org.w3c.dom.Document;
 
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.SAMLSSOConstants;
@@ -46,6 +49,7 @@ import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
 import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.apache.cxf.fediz.core.processor.RedirectionResponse;
+import org.apache.wss4j.common.util.DOM2Writer;
 import org.eclipse.jetty.http.HttpMethods;
 import org.eclipse.jetty.http.MimeTypes;
 import org.eclipse.jetty.security.ServerAuthException;
@@ -147,6 +151,43 @@ public class FederationAuthenticator extends LoginAuthenticator {
     /* ------------------------------------------------------------ */
     public Authentication validateRequest(ServletRequest req, ServletResponse res, boolean mandatory)
         throws ServerAuthException {
+        
+        HttpServletRequest request = (HttpServletRequest)req;
+        HttpServletResponse response = (HttpServletResponse)res;
+
+        HttpSession session = request.getSession(true);
+        
+        String contextName = request.getSession().getServletContext().getContextPath();
+        if (contextName == null || contextName.isEmpty()) {
+            contextName = "/";
+        }
+        FedizContext fedConfig = getContextConfiguration(contextName);
+        
+        // Check to see if it is a metadata request
+        try {
+            if (request.getRequestURL().indexOf(FederationConstants.METADATA_PATH_URI) != -1
+                || request.getRequestURL().indexOf(getMetadataURI(fedConfig)) != -1) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Metadata document requested");
+                }
+                response.setContentType("text/xml");
+                PrintWriter out = response.getWriter();
+                
+                FedizProcessor wfProc = 
+                    FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
+                try {
+                    Document metadata = wfProc.getMetaData(fedConfig);
+                    out.write(DOM2Writer.nodeToString(metadata));
+                    return Authentication.SEND_CONTINUE;
+                } catch (Exception ex) {
+                    LOG.warn("Failed to get metadata document: " + ex.getMessage());
+                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    return Authentication.SEND_FAILURE;
+                }            
+            }
+        } catch (IOException e) {
+            throw new ServerAuthException(e);
+        }
 
         if (!mandatory) {
             return new DeferredAuthentication(this);
@@ -158,20 +199,10 @@ public class FederationAuthenticator extends LoginAuthenticator {
             LOG.warn("Unsupported encoding '" + this.encoding + "'", ex);
         }
         
-        HttpServletRequest request = (HttpServletRequest)req;
-        HttpServletResponse response = (HttpServletResponse)res;
         String uri = request.getRequestURI();
         if (uri == null) {
             uri = URIUtil.SLASH;
         }
-
-        HttpSession session = request.getSession(true);
-        
-        String contextName = request.getSession().getServletContext().getContextPath();
-        if (contextName == null || contextName.isEmpty()) {
-            contextName = "/";
-        }
-        FedizContext fedConfig = getContextConfiguration(contextName);
 
         try {
             String action = request.getParameter(FederationConstants.PARAM_ACTION);
@@ -390,6 +421,18 @@ public class FederationAuthenticator extends LoginAuthenticator {
             return request.getParameter(SAMLSSOConstants.SAML_RESPONSE);
         }
         return null;
+    }
+    
+    private String getMetadataURI(FedizContext fedConfig) {
+        if (fedConfig.getProtocol().getMetadataURI() != null) {
+            return fedConfig.getProtocol().getMetadataURI();
+        } else if (fedConfig.getProtocol() instanceof FederationProtocol) {
+            return FederationConstants.METADATA_PATH_URI;
+        } else if (fedConfig.getProtocol() instanceof SAMLProtocol) {
+            return SAMLSSOConstants.FEDIZ_SAML_METADATA_PATH_URI;
+        }
+        
+        return FederationConstants.METADATA_PATH_URI;
     }
 
     /* ------------------------------------------------------------ */

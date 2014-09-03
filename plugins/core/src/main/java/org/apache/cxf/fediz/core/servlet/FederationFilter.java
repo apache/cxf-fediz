@@ -53,8 +53,8 @@ public class FederationFilter implements Filter {
             HttpServletRequest hrequest = (HttpServletRequest)request;
             Principal p = hrequest.getUserPrincipal();
             FedizPrincipal fedPrinc = (FedizPrincipal)p;
-            Element el = (Element)fedPrinc.getLoginToken();
-            if (el != null) {
+            if (fedPrinc != null && fedPrinc.getLoginToken() != null) {
+                Element el = (Element)fedPrinc.getLoginToken();
                 try {
                     SecurityTokenThreadLocal.setToken(el);
                     chain.doFilter(request, response);
