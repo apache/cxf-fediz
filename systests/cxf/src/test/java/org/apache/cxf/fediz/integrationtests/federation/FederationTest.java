@@ -195,6 +195,13 @@ public class FederationTest extends AbstractTests {
 
     }
 
+    @org.junit.Test
+    @org.junit.Ignore
+    @Override
+    public void testMetadata() throws Exception {
+    }
+
+
     public String getServletContextName() {
         return "fedizhelloworld";
     }

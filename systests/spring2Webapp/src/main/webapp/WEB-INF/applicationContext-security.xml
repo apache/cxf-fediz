@@ -15,6 +15,7 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
         <sec:intercept-url pattern="/index.html" access="permitAll"/>
         <sec:intercept-url pattern="/secure/fedservlet" access="isAuthenticated()"/>
 -->
+        <sec:intercept-url pattern="/FederationMetadata/**" access="IS_AUTHENTICATED_FULLY"/>
         <sec:intercept-url pattern="/secure/fedservlet" access="IS_AUTHENTICATED_FULLY"/>
         <sec:intercept-url pattern="/secure/manager/**" access="ROLE_MANAGER"/>
         <sec:intercept-url pattern="/secure/admin/**" access="ROLE_ADMIN"/>

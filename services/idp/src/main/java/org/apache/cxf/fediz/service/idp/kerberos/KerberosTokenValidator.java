@@ -43,6 +43,7 @@ public class KerberosTokenValidator {
     private CallbackHandler callbackHandler;
     private String contextName;
     private boolean usernameServiceNameForm;
+    private boolean spnego;
 
     /**
      * Get the JAAS Login context name to use.
@@ -133,7 +134,8 @@ public class KerberosTokenValidator {
 
         // Validate the ticket
         KerberosServiceExceptionAction action = 
-            new KerberosServiceExceptionAction(token.getToken(), service, isUsernameServiceNameForm());
+            new KerberosServiceExceptionAction(token.getToken(), service, 
+                                               isUsernameServiceNameForm(), spnego);
         KerberosServiceContext krbServiceCtx = Subject.doAs(subject, action);
 
         if (LOG.isDebugEnabled()) {
@@ -171,5 +173,13 @@ public class KerberosTokenValidator {
      */
     public void setUsernameServiceNameForm(boolean isUsernameServiceNameForm) {
         this.usernameServiceNameForm = isUsernameServiceNameForm;
+    }
+
+    public boolean isSpnego() {
+        return spnego;
+    }
+
+    public void setSpnego(boolean spnego) {
+        this.spnego = spnego;
     }
 }
