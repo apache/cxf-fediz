@@ -150,12 +150,18 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
                 return null;
             }
             
-            sts.getProperties().put(SecurityConstants.KERBEROS_JAAS_CONTEXT_NAME, 
+            if (kerberosTokenValidator.getContextName() != null) {
+                sts.getProperties().put(SecurityConstants.KERBEROS_JAAS_CONTEXT_NAME, 
                                     kerberosTokenValidator.getContextName());
-            sts.getProperties().put(SecurityConstants.KERBEROS_SPN,
+            }
+            if (kerberosTokenValidator.getServiceName() != null) {
+                sts.getProperties().put(SecurityConstants.KERBEROS_SPN,
                                     kerberosTokenValidator.getServiceName());
-            sts.getProperties().put(SecurityConstants.CALLBACK_HANDLER, 
+            }
+            if (kerberosCallbackHandler != null) {
+                sts.getProperties().put(SecurityConstants.CALLBACK_HANDLER, 
                                     kerberosCallbackHandler);
+            }
             if (kerberosUsernameServiceNameForm) {
                 sts.getProperties().put(SecurityConstants.KERBEROS_IS_USERNAME_IN_SERVICENAME_FORM, 
                                         "true");

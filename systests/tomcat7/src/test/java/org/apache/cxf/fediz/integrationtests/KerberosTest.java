@@ -222,7 +222,7 @@ public class KerberosTest {
     public void testKerberos() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         // Get a Kerberos Ticket +  Base64 encode it
-        String ticket = getEncodedKerberosTicket();
+        String ticket = getEncodedKerberosTicket(false);
         
         String response = sendHttpGet(url, ticket, 200, 200, Integer.parseInt(getIdpHttpsPort()));
 
@@ -244,12 +244,43 @@ public class KerberosTest {
     
     }
     
-    private String getEncodedKerberosTicket() throws Exception {
+    @org.junit.Test
+    public void testSpnego() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        // Get a Kerberos Ticket +  Base64 encode it
+        String ticket = getEncodedKerberosTicket(true);
+        
+        String response = sendHttpGet(url, ticket, 200, 200, Integer.parseInt(getIdpHttpsPort()));
+
+        String user = "alice";
+        Assert.assertTrue("Principal not " + user, response.indexOf("userPrincipal=" + user) > 0);
+        Assert.assertTrue("User " + user + " does not have role Admin", response.indexOf("role:Admin=false") > 0);
+        Assert.assertTrue("User " + user + " does not have role Manager", response.indexOf("role:Manager=false") > 0);
+        Assert.assertTrue("User " + user + " must have role User", response.indexOf("role:User=true") > 0);
+
+        String claim = ClaimTypes.FIRSTNAME.toString();
+        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
+                          response.indexOf(claim + "=Alice") > 0);
+        claim = ClaimTypes.LASTNAME.toString();
+        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
+                          response.indexOf(claim + "=Smith") > 0);
+        claim = ClaimTypes.EMAILADDRESS.toString();
+        Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
+                          response.indexOf(claim + "=alice@realma.org") > 0);
+    
+    }
+    
+    private String getEncodedKerberosTicket(boolean spnego) throws Exception {
         
         System.setProperty("java.security.auth.login.config", "src/test/resources/kerberos.jaas");
         System.setProperty("org.apache.xml.security.ignoreLineBreaks", "true");
         
-        Oid kerberos5Oid = new Oid("1.2.840.113554.1.2.2");
+        Oid kerberos5Oid = null;
+        if (spnego) {
+            kerberos5Oid = new Oid("1.3.6.1.5.5.2");
+        } else {
+            kerberos5Oid = new Oid("1.2.840.113554.1.2.2");
+        }
         
         GSSManager manager = GSSManager.getInstance();
         GSSName serverName = manager.createName("bob@service.ws.apache.org", 
