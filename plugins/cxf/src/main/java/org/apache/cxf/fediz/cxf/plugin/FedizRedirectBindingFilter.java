@@ -36,6 +36,8 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
+import org.w3c.dom.Document;
+
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.RequestState;
 import org.apache.cxf.fediz.core.SAMLSSOConstants;
@@ -70,13 +72,17 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
     
     public void filter(ContainerRequestContext context) {
         Message m = JAXRSUtils.getCurrentMessage();
+        FedizContext fedConfig = getFedizContext(m);
         
+        // See if it is a Metadata request
+        if (isMetadataRequest(context, fedConfig)) {
+            return;
+        }
+
         if (checkSecurityContext(m)) {
             return;
         } else {
             try {
-                FedizContext fedConfig = getFedizContext(m);
-                
                 String httpMethod = context.getMethod();
                 MultivaluedMap<String, String> params = null;
                 if (HttpMethod.GET.equals(httpMethod)) {
@@ -205,6 +211,45 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
                 throw ExceptionUtils.toInternalServerErrorException(ex, null);
             }
         }
+    }
+    
+    private boolean isMetadataRequest(ContainerRequestContext context, FedizContext fedConfig) {
+        String requestPath = context.getUriInfo().getPath();
+        // See if it is a Metadata request
+        if (requestPath.indexOf(FederationConstants.METADATA_PATH_URI) != -1
+            || requestPath.indexOf(getMetadataURI(fedConfig)) != -1) {
+            if (LOG.isInfoEnabled()) {
+                LOG.info("Metadata document requested");
+            }
+            
+            FedizProcessor wfProc = 
+                FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
+            try {
+                Document metadata = wfProc.getMetaData(fedConfig);
+                String metadataStr = DOM2Writer.nodeToString(metadata);
+                
+                ResponseBuilder response = Response.ok(metadataStr, "text/xml");
+                context.abortWith(response.build());
+                return true;
+            } catch (Exception ex) {
+                LOG.error("Failed to get metadata document: " + ex.getMessage());
+                throw ExceptionUtils.toInternalServerErrorException(ex, null);
+            }            
+        }
+        
+        return false;
+    }
+    
+    private String getMetadataURI(FedizContext fedConfig) {
+        if (fedConfig.getProtocol().getMetadataURI() != null) {
+            return fedConfig.getProtocol().getMetadataURI();
+        } else if (fedConfig.getProtocol() instanceof FederationProtocol) {
+            return FederationConstants.METADATA_PATH_URI;
+        } else if (fedConfig.getProtocol() instanceof SAMLProtocol) {
+            return SAMLSSOConstants.FEDIZ_SAML_METADATA_PATH_URI;
+        }
+        
+        return FederationConstants.METADATA_PATH_URI;
     }
     
     private boolean isSignInRequired(FedizContext fedConfig, MultivaluedMap<String, String> params) {
