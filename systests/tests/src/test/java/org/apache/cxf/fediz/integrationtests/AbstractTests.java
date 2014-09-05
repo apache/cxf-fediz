@@ -98,7 +98,7 @@ public abstract class AbstractTests {
     }
     
     @org.junit.Test
-    public void testliceManagerNoAccess() throws Exception {
+    public void testAliceManagerNoAccess() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/manager/fedservlet";
         String user = "alice";
         String password = "ecila";
@@ -279,6 +279,25 @@ public abstract class AbstractTests {
                 httpClient.close();
             }
         }
+    }
+    
+    @org.junit.Test
+    public void testAliceLogout() throws Exception {
+        // Authenticate as "alice"
+        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String user = "alice";
+        String password = "ecila";
+        
+        CloseableHttpClient httpClient = 
+            HTTPTestUtils.sendHttpGetForSignIn(url, user, password, 200, 200, Integer.parseInt(getIdpHttpsPort()));
+        
+        String logoutUrl = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/logout";
+        String logoutResponse = 
+            HTTPTestUtils.sendHttpGetForSignOut(httpClient, logoutUrl, 200, 200, Integer.parseInt(getIdpHttpsPort()));
+        
+        Assert.assertTrue(logoutResponse.contains("IDP SignOut Response Page"));
+        Assert.assertTrue(logoutResponse.contains("Logout status of RP"));
+        Assert.assertTrue(logoutResponse.contains("wsignoutcleanup1.0"));
     }
     
 }

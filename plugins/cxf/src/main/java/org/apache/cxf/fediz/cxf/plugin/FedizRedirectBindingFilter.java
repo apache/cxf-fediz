@@ -37,7 +37,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.w3c.dom.Document;
-
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.RequestState;
 import org.apache.cxf.fediz.core.SAMLSSOConstants;
@@ -79,6 +78,11 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
             return;
         }
 
+        // See if it is a Logout request
+        if (isLogoutRequest(context, fedConfig)) {
+            return;
+        }
+        
         if (checkSecurityContext(m)) {
             return;
         } else {
@@ -236,6 +240,44 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
                 throw ExceptionUtils.toInternalServerErrorException(ex, null);
             }            
         }
+        
+        return false;
+    }
+    
+    private boolean isLogoutRequest(ContainerRequestContext context, FedizContext fedConfig) {
+        //logout
+        String logoutUrl = fedConfig.getLogoutURL();
+        if (logoutUrl != null && !logoutUrl.isEmpty()) {
+            String requestPath = "/" + context.getUriInfo().getPath();
+            if (requestPath.equals(logoutUrl) || requestPath.equals(logoutUrl + "/")) {
+                try {
+                    FedizProcessor processor = 
+                        FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
+                    
+                    HttpServletRequest request = messageContext.getHttpServletRequest();
+                    RedirectionResponse redirectionResponse = 
+                        processor.createSignOutRequest(request, fedConfig);
+                    String redirectURL = redirectionResponse.getRedirectionURL();
+                    if (redirectURL != null) {
+                        ResponseBuilder response = Response.seeOther(new URI(redirectURL));
+                        Map<String, String> headers = redirectionResponse.getHeaders();
+                        if (!headers.isEmpty()) {
+                            for (String headerName : headers.keySet()) {
+                                response.header(headerName, headers.get(headerName));
+                            }
+                        }
+    
+                        context.abortWith(response.build());
+    
+                        return true;
+                    }
+                } catch (Exception ex) {
+                    LOG.debug(ex.getMessage(), ex);
+                    throw ExceptionUtils.toInternalServerErrorException(ex, null);
+                }
+            }
+        }
+        // TODO ACTION_SIGNOUT_CLEANUP
         
         return false;
     }
