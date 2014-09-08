@@ -146,11 +146,12 @@
     <bean id="entitlementsEnricher" class="org.apache.cxf.fediz.service.idp.service.security.GrantedAuthorityEntitlements" />
 
     <bean id="stsPortFilter" class="org.apache.cxf.fediz.service.idp.STSPortFilter" />
-    
+    <!--
     <bean id="kerberosTokenValidator" class="org.apache.cxf.fediz.service.idp.kerberos.KerberosTokenValidator">
         <property name="contextName" value="bob"/>
         <property name="serviceName" value="bob@service.ws.apache.org"/>
     </bean>
+    -->
     
     <bean id="stsAuthProvider" class="org.apache.cxf.fediz.service.idp.STSAuthenticationProvider">
         <!--<property name="wsdlLocation" value="https://localhost:0/fediz-idp-sts/${realm.STS_URI}/STSServiceTransportUT?wsdl"/>
@@ -160,7 +161,8 @@
         <property name="wsdlService" value="SecurityTokenService"/>
         <property name="appliesTo" value="urn:fediz:idp"/>
         <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0"/>
-        <property name="kerberosTokenValidator" ref="kerberosTokenValidator"/>
+        <!--<property name="kerberosTokenValidator" ref="kerberosTokenValidator"/>
+        <property name="requireDelegation" value="true"/>-->
     </bean>
     
 </beans>
