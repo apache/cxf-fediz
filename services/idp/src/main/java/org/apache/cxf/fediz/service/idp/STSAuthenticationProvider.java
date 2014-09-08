@@ -39,10 +39,12 @@ import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.service.idp.kerberos.KerberosServiceRequestToken;
 import org.apache.cxf.fediz.service.idp.kerberos.KerberosTokenValidator;
+import org.apache.cxf.fediz.service.idp.kerberos.PassThroughKerberosClient;
 //import org.apache.cxf.transport.http.HTTPConduit;
 //import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 import org.apache.cxf.ws.security.SecurityConstants;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
+import org.apache.ws.security.SAMLTokenPrincipal;
 import org.apache.ws.security.WSConstants;
 import org.apache.ws.security.message.token.KerberosServiceContext;
 import org.apache.ws.security.saml.ext.AssertionWrapper;
@@ -98,6 +100,8 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
     
     private boolean kerberosUsernameServiceNameForm;
     
+    private boolean requireDelegation;
+    
     
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -121,47 +125,22 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
         
         Principal kerberosPrincipal = null;
         if (authentication instanceof KerberosServiceRequestToken) {
-
-            if (kerberosTokenValidator == null) {
-                LOG.error("KerberosTokenValidator must be configured to support kerberos");
-                return null;
-            }
-            KerberosServiceContext kerberosContext;
-            try {
-                kerberosContext = 
-                    kerberosTokenValidator.validate((KerberosServiceRequestToken)authentication);
-                if (kerberosContext != null) {
-                    GSSCredential delegatedCredential = kerberosContext.getDelegationCredential();
-                    if (delegatedCredential != null) {
-                        sts.getProperties().put(SecurityConstants.DELEGATED_CREDENTIAL, 
-                                                delegatedCredential);
-                        sts.getProperties().put(SecurityConstants.KERBEROS_USE_CREDENTIAL_DELEGATION, "true");
-                    }
-                    kerberosPrincipal = kerberosContext.getPrincipal();
+            // 
+            // If delegation is required then validate the received token + store the
+            // Delegated Credential so that we can retrieve a new kerberos token for the
+            // STS with it. If delegation is not required, then we just get the received
+            // token + pass it to the STS
+            //
+            if (requireDelegation) {
+                kerberosPrincipal = 
+                    validateKerberosToken((KerberosServiceRequestToken)authentication, sts);
+                if (kerberosPrincipal == null) {
+                    return null;
                 }
-            } catch (LoginException ex) {
-                LOG.info("Failed to authenticate user '" + authentication.getName() + "'", ex);
-                return null;
-            } catch (PrivilegedActionException ex) {
-                LOG.info("Failed to authenticate user '" + authentication.getName() + "'", ex);
-                return null;
-            }
-            
-            if (kerberosTokenValidator.getContextName() != null) {
-                sts.getProperties().put(SecurityConstants.KERBEROS_JAAS_CONTEXT_NAME, 
-                                    kerberosTokenValidator.getContextName());
-            }
-            if (kerberosTokenValidator.getServiceName() != null) {
-                sts.getProperties().put(SecurityConstants.KERBEROS_SPN,
-                                    kerberosTokenValidator.getServiceName());
-            }
-            if (kerberosCallbackHandler != null) {
-                sts.getProperties().put(SecurityConstants.CALLBACK_HANDLER, 
-                                    kerberosCallbackHandler);
-            }
-            if (kerberosUsernameServiceNameForm) {
-                sts.getProperties().put(SecurityConstants.KERBEROS_IS_USERNAME_IN_SERVICENAME_FORM, 
-                                        "true");
+            } else {
+                PassThroughKerberosClient kerberosClient = new PassThroughKerberosClient();
+                kerberosClient.setToken(((KerberosServiceRequestToken)authentication).getToken());
+                sts.getProperties().put(SecurityConstants.KERBEROS_CLIENT, kerberosClient);
             }
         } else {
             sts.getProperties().put(SecurityConstants.USERNAME, authentication.getName());
@@ -209,6 +188,12 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
             authorities.add(new SimpleGrantedAuthority("ROLE_IDP_LOGIN"));
             
             if (authentication instanceof KerberosServiceRequestToken) {
+                if (kerberosPrincipal == null && token.getToken() != null
+                    && "Assertion".equals(token.getToken().getLocalName())) {
+                    // For the pass-through Kerberos case, we don't know the Principal name...
+                    kerberosPrincipal = 
+                        new SAMLTokenPrincipal(new AssertionWrapper(token.getToken()));
+                }
                 KerberosServiceRequestToken ksrt = 
                     new KerberosServiceRequestToken(kerberosPrincipal, authorities, 
                                                     ((KerberosServiceRequestToken)authentication).getToken());
@@ -239,6 +224,56 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
             return null;
         }
         
+    }
+    
+    private Principal validateKerberosToken(
+        KerberosServiceRequestToken token,
+        IdpSTSClient sts
+    ) {
+        if (kerberosTokenValidator == null) {
+            LOG.error("KerberosTokenValidator must be configured to support kerberos "
+                + "credential delegation");
+            return null;
+        }
+        KerberosServiceContext kerberosContext;
+        Principal kerberosPrincipal = null;
+        try {
+            kerberosContext = kerberosTokenValidator.validate(token);
+            if (kerberosContext == null || kerberosContext.getDelegationCredential() == null) {
+                LOG.info("Kerberos Validation failure");
+                return null;
+            }
+            GSSCredential delegatedCredential = kerberosContext.getDelegationCredential();
+            sts.getProperties().put(SecurityConstants.DELEGATED_CREDENTIAL, 
+                                    delegatedCredential);
+            sts.getProperties().put(SecurityConstants.KERBEROS_USE_CREDENTIAL_DELEGATION, "true");
+            kerberosPrincipal = kerberosContext.getPrincipal();
+        } catch (LoginException ex) {
+            LOG.info("Failed to authenticate user", ex);
+            return null;
+        } catch (PrivilegedActionException ex) {
+            LOG.info("Failed to authenticate user", ex);
+            return null;
+        }
+
+        if (kerberosTokenValidator.getContextName() != null) {
+            sts.getProperties().put(SecurityConstants.KERBEROS_JAAS_CONTEXT_NAME, 
+                                    kerberosTokenValidator.getContextName());
+        }
+        if (kerberosTokenValidator.getServiceName() != null) {
+            sts.getProperties().put(SecurityConstants.KERBEROS_SPN,
+                                    kerberosTokenValidator.getServiceName());
+        }
+        if (kerberosCallbackHandler != null) {
+            sts.getProperties().put(SecurityConstants.CALLBACK_HANDLER, 
+                                    kerberosCallbackHandler);
+        }
+        if (kerberosUsernameServiceNameForm) {
+            sts.getProperties().put(SecurityConstants.KERBEROS_IS_USERNAME_IN_SERVICENAME_FORM, 
+                                    "true");
+        }
+        
+        return kerberosPrincipal;
     }
     
     protected GSSContext createGSSContext() throws GSSException {
@@ -442,6 +477,14 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
 
     public void setKerberosUsernameServiceNameForm(boolean kerberosUsernameServiceNameForm) {
         this.kerberosUsernameServiceNameForm = kerberosUsernameServiceNameForm;
+    }
+
+    public boolean isRequireDelegation() {
+        return requireDelegation;
+    }
+
+    public void setRequireDelegation(boolean requireDelegation) {
+        this.requireDelegation = requireDelegation;
     }
 
 //May be uncommented for debugging    
