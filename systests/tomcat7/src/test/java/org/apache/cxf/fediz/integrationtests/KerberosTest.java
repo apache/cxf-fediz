@@ -22,18 +22,34 @@ package org.apache.cxf.fediz.integrationtests;
 
 import java.io.File;
 
-/*
-import net.htmlparser.jericho.Element;
-import net.htmlparser.jericho.FormField;
-import net.htmlparser.jericho.FormFields;
-import net.htmlparser.jericho.HTMLElementName;
-import net.htmlparser.jericho.Source;
-*/
+
+
+
+
+
+
+import java.security.PrivilegedExceptionAction;
+
+import javax.security.auth.Subject;
+import javax.security.auth.login.LoginContext;
+
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
+
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
+import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
+import org.apache.xml.security.utils.Base64;
+import org.ietf.jgss.GSSContext;
+import org.ietf.jgss.GSSException;
+import org.ietf.jgss.GSSManager;
+import org.ietf.jgss.GSSName;
+import org.ietf.jgss.Oid;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -187,57 +203,96 @@ public class KerberosTest {
     public String getServletContextName() {
         return "fedizhelloworld";
     }
-    /*
+    
     @org.junit.Test
     public void testKerberos() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         // Get a Kerberos Ticket +  Base64 encode it
         String ticket = getEncodedKerberosTicket(false);
         
-        String response = sendHttpGet(url, ticket, 200, 200, Integer.parseInt(getIdpHttpsPort()));
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getOptions().setSSLClientCertificate(
+            this.getClass().getClassLoader().getResource("client.jks"), "clientpass", "jks");
+        
+        webClient.getOptions().setJavaScriptEnabled(false);
+        webClient.addRequestHeader("Authorization", "Negotiate " + ticket);
+        final HtmlPage idpPage = webClient.getPage(url);
+        webClient.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
+        final HtmlForm form = idpPage.getFormByName("signinresponseform");
+        final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
+
+        final HtmlPage rpPage = button.click();
+        Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
+
+        final String bodyTextContent = rpPage.getBody().getTextContent();
         String user = "alice";
-        Assert.assertTrue("Principal not " + user, response.indexOf("userPrincipal=" + user) > 0);
-        Assert.assertTrue("User " + user + " does not have role Admin", response.indexOf("role:Admin=false") > 0);
-        Assert.assertTrue("User " + user + " does not have role Manager", response.indexOf("role:Manager=false") > 0);
-        Assert.assertTrue("User " + user + " must have role User", response.indexOf("role:User=true") > 0);
-
+        Assert.assertTrue("Principal not " + user,
+                          bodyTextContent.contains("userPrincipal=" + user));
+        Assert.assertTrue("User " + user + " does not have role Admin",
+                          bodyTextContent.contains("role:Admin=false"));
+        Assert.assertTrue("User " + user + " does not have role Manager",
+                          bodyTextContent.contains("role:Manager=false"));
+        Assert.assertTrue("User " + user + " must have role User",
+                          bodyTextContent.contains("role:User=true"));
+        
         String claim = ClaimTypes.FIRSTNAME.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
-                          response.indexOf(claim + "=Alice") > 0);
+                          bodyTextContent.contains(claim + "=Alice"));
         claim = ClaimTypes.LASTNAME.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
-                          response.indexOf(claim + "=Smith") > 0);
+                          bodyTextContent.contains(claim + "=Smith"));
         claim = ClaimTypes.EMAILADDRESS.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
-                          response.indexOf(claim + "=alice@realma.org") > 0);
-    
+                          bodyTextContent.contains(claim + "=alice@realma.org"));
     }
     
     @org.junit.Test
+    @org.junit.Ignore
     public void testSpnego() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         // Get a Kerberos Ticket +  Base64 encode it
         String ticket = getEncodedKerberosTicket(true);
         
-        String response = sendHttpGet(url, ticket, 200, 200, Integer.parseInt(getIdpHttpsPort()));
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getOptions().setSSLClientCertificate(
+            this.getClass().getClassLoader().getResource("client.jks"), "clientpass", "jks");
+        
+        webClient.getOptions().setJavaScriptEnabled(false);
+        webClient.addRequestHeader("Authorization", "Negotiate " + ticket);
+        final HtmlPage idpPage = webClient.getPage(url);
+        webClient.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
+        final HtmlForm form = idpPage.getFormByName("signinresponseform");
+        final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
+
+        final HtmlPage rpPage = button.click();
+        Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
+
+        final String bodyTextContent = rpPage.getBody().getTextContent();
         String user = "alice";
-        Assert.assertTrue("Principal not " + user, response.indexOf("userPrincipal=" + user) > 0);
-        Assert.assertTrue("User " + user + " does not have role Admin", response.indexOf("role:Admin=false") > 0);
-        Assert.assertTrue("User " + user + " does not have role Manager", response.indexOf("role:Manager=false") > 0);
-        Assert.assertTrue("User " + user + " must have role User", response.indexOf("role:User=true") > 0);
-
+        Assert.assertTrue("Principal not " + user,
+                          bodyTextContent.contains("userPrincipal=" + user));
+        Assert.assertTrue("User " + user + " does not have role Admin",
+                          bodyTextContent.contains("role:Admin=false"));
+        Assert.assertTrue("User " + user + " does not have role Manager",
+                          bodyTextContent.contains("role:Manager=false"));
+        Assert.assertTrue("User " + user + " must have role User",
+                          bodyTextContent.contains("role:User=true"));
+        
         String claim = ClaimTypes.FIRSTNAME.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
-                          response.indexOf(claim + "=Alice") > 0);
+                          bodyTextContent.contains(claim + "=Alice"));
         claim = ClaimTypes.LASTNAME.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
-                          response.indexOf(claim + "=Smith") > 0);
+                          bodyTextContent.contains(claim + "=Smith"));
         claim = ClaimTypes.EMAILADDRESS.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
-                          response.indexOf(claim + "=alice@realma.org") > 0);
-    
+                          bodyTextContent.contains(claim + "=alice@realma.org"));
     }
     
     private String getEncodedKerberosTicket(boolean spnego) throws Exception {
@@ -286,104 +341,4 @@ public class KerberosTest {
         }
     }
     
-    public static String sendHttpGet(String url, String ticket,
-                                     int returnCodeIDP, int returnCodeRP, int idpPort)
-        throws Exception {
-        
-        CloseableHttpClient httpClient = null;
-        try {
-            KeyStore trustStore  = KeyStore.getInstance(KeyStore.getDefaultType());
-            FileInputStream instream = new FileInputStream(new File("./target/test-classes/client.jks"));
-            try {
-                trustStore.load(instream, "clientpass".toCharArray());
-            } finally {
-                try {
-                    instream.close();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
-
-            SSLContextBuilder sslContextBuilder = new SSLContextBuilder();
-            sslContextBuilder.loadTrustMaterial(trustStore, new TrustSelfSignedStrategy());
-            sslContextBuilder.loadKeyMaterial(trustStore, "clientpass".toCharArray());
-            
-            SSLContext sslContext = sslContextBuilder.build();
-            SSLConnectionSocketFactory sslSocketFactory = 
-                new SSLConnectionSocketFactory(sslContext);
-            
-            HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
-            httpClientBuilder.setSSLSocketFactory(sslSocketFactory);
-            httpClientBuilder.setRedirectStrategy(new LaxRedirectStrategy());
-            
-            httpClient = httpClientBuilder.build();
-            
-            HttpGet httpget = new HttpGet(url);
-            httpget.addHeader("Authorization", "Negotiate " + ticket);
-
-            HttpResponse response = httpClient.execute(httpget);
-            HttpEntity entity = response.getEntity();
-
-            System.out.println(response.getStatusLine());
-            if (entity != null) {
-                System.out.println("Response content length: " + entity.getContentLength());
-            }
-            Assert.assertTrue("IDP HTTP Response code: " + response.getStatusLine().getStatusCode()
-                              + " [Expected: " + returnCodeIDP + "]",
-                              returnCodeIDP == response.getStatusLine().getStatusCode());
-
-            if (response.getStatusLine().getStatusCode() != 200) {
-                return null;
-            }
-
-            //            Redirect to a POST is not supported without user interaction
-            //            http://www.ietf.org/rfc/rfc2616.txt
-            //            If the 301 status code is received in response to a request other
-            //            than GET or HEAD, the user agent MUST NOT automatically redirect the
-            //            request unless it can be confirmed by the user, since this might
-            //            change the conditions under which the request was issued.
-            
-            Source source = new Source(EntityUtils.toString(entity));
-            List <NameValuePair> nvps = new ArrayList <NameValuePair>();
-            FormFields formFields = source.getFormFields();
-            
-            List<Element> forms = source.getAllElements(HTMLElementName.FORM);
-            Assert.assertEquals("Only one form expected but got " + forms.size(), 1, forms.size());
-            String postUrl = forms.get(0).getAttributeValue("action");
-            
-            Assert.assertNotNull("Form field 'wa' not found", formFields.get("wa"));
-            Assert.assertNotNull("Form field 'wresult' not found", formFields.get("wresult"));
-            
-            for (FormField formField : formFields) {
-                if (formField.getUserValueCount() != 0) {
-                    nvps.add(new BasicNameValuePair(formField.getName(),
-                             formField.getValues().get(0)));
-                }
-            } 
-            HttpPost httppost = new HttpPost(postUrl);
-            httppost.setEntity(new UrlEncodedFormEntity(nvps, Consts.UTF_8));
-
-            response = httpClient.execute(httppost);
-
-            entity = response.getEntity();
-            System.out.println(response.getStatusLine());
-            Assert.assertTrue("RP HTTP Response code: " + response.getStatusLine().getStatusCode()
-                              + " [Expected: " + returnCodeRP + "]",
-                              returnCodeRP == response.getStatusLine().getStatusCode());
-
-            if (entity != null) {
-                System.out.println("Response content length: " + entity.getContentLength());
-            }
-
-            return EntityUtils.toString(entity);
-        } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-            if (httpClient != null) {
-                httpClient.close();
-            }
-        }
-    }
-    */
 }
