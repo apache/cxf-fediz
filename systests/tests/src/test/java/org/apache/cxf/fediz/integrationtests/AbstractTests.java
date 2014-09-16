@@ -19,23 +19,9 @@
 
 package org.apache.cxf.fediz.integrationtests;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.security.KeyStore;
-
-import javax.net.ssl.SSLContext;
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 
 import org.apache.cxf.fediz.core.ClaimTypes;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLContextBuilder;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.LaxRedirectStrategy;
-import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 
 public abstract class AbstractTests {
@@ -55,23 +41,28 @@ public abstract class AbstractTests {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
-        String response = 
-            HTTPTestUtils.sendHttpGet(url, user, password, Integer.parseInt(getIdpHttpsPort()));
-
-        Assert.assertTrue("Principal not " + user, response.indexOf("userPrincipal=" + user) > 0);
-        Assert.assertTrue("User " + user + " does not have role Admin", response.indexOf("role:Admin=false") > 0);
-        Assert.assertTrue("User " + user + " does not have role Manager", response.indexOf("role:Manager=false") > 0);
-        Assert.assertTrue("User " + user + " must have role User", response.indexOf("role:User=true") > 0);
-
+        
+        final String bodyTextContent = 
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
+        
+        Assert.assertTrue("Principal not " + user,
+                          bodyTextContent.contains("userPrincipal=" + user));
+        Assert.assertTrue("User " + user + " does not have role Admin",
+                          bodyTextContent.contains("role:Admin=false"));
+        Assert.assertTrue("User " + user + " does not have role Manager",
+                          bodyTextContent.contains("role:Manager=false"));
+        Assert.assertTrue("User " + user + " must have role User",
+                          bodyTextContent.contains("role:User=true"));
+         
         String claim = ClaimTypes.FIRSTNAME.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
-                          response.indexOf(claim + "=Alice") > 0);
+                          bodyTextContent.contains(claim + "=Alice"));
         claim = ClaimTypes.LASTNAME.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
-                          response.indexOf(claim + "=Smith") > 0);
+                          bodyTextContent.contains(claim + "=Smith"));
         claim = ClaimTypes.EMAILADDRESS.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
-                          response.indexOf(claim + "=alice@realma.org") > 0);
+                          bodyTextContent.contains(claim + "=alice@realma.org"));
 
     }
     
@@ -80,13 +71,18 @@ public abstract class AbstractTests {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/user/fedservlet";
         String user = "alice";
         String password = "ecila";
-        String response = 
-            HTTPTestUtils.sendHttpGet(url, user, password, Integer.parseInt(getIdpHttpsPort()));
+        
+        final String bodyTextContent = 
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
 
-        Assert.assertTrue("Principal not " + user, response.indexOf("userPrincipal=" + user) > 0);
-        Assert.assertTrue("User " + user + " does not have role Admin", response.indexOf("role:Admin=false") > 0);
-        Assert.assertTrue("User " + user + " does not have role Manager", response.indexOf("role:Manager=false") > 0);
-        Assert.assertTrue("User " + user + " must have role User", response.indexOf("role:User=true") > 0);
+        Assert.assertTrue("Principal not " + user,
+                          bodyTextContent.contains("userPrincipal=" + user));
+        Assert.assertTrue("User " + user + " does not have role Admin",
+                          bodyTextContent.contains("role:Admin=false"));
+        Assert.assertTrue("User " + user + " does not have role Manager",
+                          bodyTextContent.contains("role:Manager=false"));
+        Assert.assertTrue("User " + user + " must have role User",
+                          bodyTextContent.contains("role:User=true"));
     }
     
     @org.junit.Test
@@ -94,7 +90,13 @@ public abstract class AbstractTests {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/admin/fedservlet";
         String user = "alice";
         String password = "ecila";
-        HTTPTestUtils.sendHttpGet(url, user, password, 200, 403, Integer.parseInt(getIdpHttpsPort()));        
+        
+        try {
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
+            Assert.fail("Exception expected");
+        } catch (FailingHttpStatusCodeException ex) {
+            Assert.assertEquals(ex.getStatusCode(), 403);
+        }
     }
     
     @org.junit.Test
@@ -102,7 +104,13 @@ public abstract class AbstractTests {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/manager/fedservlet";
         String user = "alice";
         String password = "ecila";
-        HTTPTestUtils.sendHttpGet(url, user, password, 200, 403, Integer.parseInt(getIdpHttpsPort()));        
+        
+        try {
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
+            Assert.fail("Exception expected");
+        } catch (FailingHttpStatusCodeException ex) {
+            Assert.assertEquals(ex.getStatusCode(), 403);
+        }
     }
 
     @org.junit.Test
@@ -110,9 +118,13 @@ public abstract class AbstractTests {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         String user = "alice";
         String password = "alice";
-        // sendHttpGet(url, user, password, 500, 0);        
-        //[FIXED] Fix IDP return code from 500 to 401
-        HTTPTestUtils.sendHttpGet(url, user, password, 401, 0, Integer.parseInt(getIdpHttpsPort()));        
+        
+        try {
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
+            Assert.fail("Exception expected");
+        } catch (FailingHttpStatusCodeException ex) {
+            Assert.assertEquals(ex.getStatusCode(), 401);
+        }
     }
 
     @org.junit.Test
@@ -120,23 +132,28 @@ public abstract class AbstractTests {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         String user = "bob";
         String password = "bob";
-        String response = 
-            HTTPTestUtils.sendHttpGet(url, user, password, Integer.parseInt(getIdpHttpsPort()));
+        
+        final String bodyTextContent = 
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
 
-        Assert.assertTrue("Principal not " + user, response.indexOf("userPrincipal=" + user) > 0);
-        Assert.assertTrue("User " + user + " does not have role Admin", response.indexOf("role:Admin=true") > 0);
-        Assert.assertTrue("User " + user + " does not have role Manager", response.indexOf("role:Manager=true") > 0);
-        Assert.assertTrue("User " + user + " must have role User", response.indexOf("role:User=true") > 0);
+        Assert.assertTrue("Principal not " + user,
+                          bodyTextContent.contains("userPrincipal=" + user));
+        Assert.assertTrue("User " + user + " does not have role Admin",
+                          bodyTextContent.contains("role:Admin=true"));
+        Assert.assertTrue("User " + user + " does not have role Manager",
+                          bodyTextContent.contains("role:Manager=true"));
+        Assert.assertTrue("User " + user + " must have role User",
+                          bodyTextContent.contains("role:User=true"));
 
         String claim = ClaimTypes.FIRSTNAME.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'Bob'",
-                          response.indexOf(claim + "=Bob") > 0);
+                          bodyTextContent.contains(claim + "=Bob"));
         claim = ClaimTypes.LASTNAME.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'Windsor'",
-                          response.indexOf(claim + "=Windsor") > 0);
+                          bodyTextContent.contains(claim + "=Windsor"));
         claim = ClaimTypes.EMAILADDRESS.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'bobwindsor@realma.org'",
-                          response.indexOf(claim + "=bobwindsor@realma.org") > 0);
+                          bodyTextContent.contains(claim + "=bobwindsor@realma.org"));
     }
     
     @org.junit.Test
@@ -144,13 +161,18 @@ public abstract class AbstractTests {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/user/fedservlet";
         String user = "bob";
         String password = "bob";
-        String response = 
-            HTTPTestUtils.sendHttpGet(url, user, password, Integer.parseInt(getIdpHttpsPort()));
+        
+        final String bodyTextContent = 
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
 
-        Assert.assertTrue("Principal not " + user, response.indexOf("userPrincipal=" + user) > 0);
-        Assert.assertTrue("User " + user + " does not have role Admin", response.indexOf("role:Admin=true") > 0);
-        Assert.assertTrue("User " + user + " does not have role Manager", response.indexOf("role:Manager=true") > 0);
-        Assert.assertTrue("User " + user + " must have role User", response.indexOf("role:User=true") > 0);
+        Assert.assertTrue("Principal not " + user,
+                          bodyTextContent.contains("userPrincipal=" + user));
+        Assert.assertTrue("User " + user + " does not have role Admin",
+                          bodyTextContent.contains("role:Admin=true"));
+        Assert.assertTrue("User " + user + " does not have role Manager",
+                          bodyTextContent.contains("role:Manager=true"));
+        Assert.assertTrue("User " + user + " must have role User",
+                          bodyTextContent.contains("role:User=true"));
     }
     
     @org.junit.Test
@@ -158,13 +180,18 @@ public abstract class AbstractTests {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/manager/fedservlet";
         String user = "bob";
         String password = "bob";
-        String response = 
-            HTTPTestUtils.sendHttpGet(url, user, password, Integer.parseInt(getIdpHttpsPort()));
+        
+        final String bodyTextContent = 
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
 
-        Assert.assertTrue("Principal not " + user, response.indexOf("userPrincipal=" + user) > 0);
-        Assert.assertTrue("User " + user + " does not have role Admin", response.indexOf("role:Admin=true") > 0);
-        Assert.assertTrue("User " + user + " does not have role Manager", response.indexOf("role:Manager=true") > 0);
-        Assert.assertTrue("User " + user + " must have role User", response.indexOf("role:User=true") > 0);
+        Assert.assertTrue("Principal not " + user,
+                          bodyTextContent.contains("userPrincipal=" + user));
+        Assert.assertTrue("User " + user + " does not have role Admin",
+                          bodyTextContent.contains("role:Admin=true"));
+        Assert.assertTrue("User " + user + " does not have role Manager",
+                          bodyTextContent.contains("role:Manager=true"));
+        Assert.assertTrue("User " + user + " must have role User",
+                          bodyTextContent.contains("role:User=true"));
     }
     
     @org.junit.Test
@@ -172,13 +199,18 @@ public abstract class AbstractTests {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/admin/fedservlet";
         String user = "bob";
         String password = "bob";
-        String response = 
-            HTTPTestUtils.sendHttpGet(url, user, password, Integer.parseInt(getIdpHttpsPort()));
+        
+        final String bodyTextContent = 
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
 
-        Assert.assertTrue("Principal not " + user, response.indexOf("userPrincipal=" + user) > 0);
-        Assert.assertTrue("User " + user + " does not have role Admin", response.indexOf("role:Admin=true") > 0);
-        Assert.assertTrue("User " + user + " does not have role Manager", response.indexOf("role:Manager=true") > 0);
-        Assert.assertTrue("User " + user + " must have role User", response.indexOf("role:User=true") > 0);
+        Assert.assertTrue("Principal not " + user,
+                          bodyTextContent.contains("userPrincipal=" + user));
+        Assert.assertTrue("User " + user + " does not have role Admin",
+                          bodyTextContent.contains("role:Admin=true"));
+        Assert.assertTrue("User " + user + " does not have role Manager",
+                          bodyTextContent.contains("role:Manager=true"));
+        Assert.assertTrue("User " + user + " must have role User",
+                          bodyTextContent.contains("role:User=true"));
     }
 
     @org.junit.Test
@@ -186,23 +218,28 @@ public abstract class AbstractTests {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         String user = "ted";
         String password = "det";
-        String response = 
-            HTTPTestUtils.sendHttpGet(url, user, password, Integer.parseInt(getIdpHttpsPort()));
+        
+        final String bodyTextContent = 
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
 
-        Assert.assertTrue("Principal not " + user, response.indexOf("userPrincipal=" + user) > 0);
-        Assert.assertTrue("User " + user + " does not have role Admin", response.indexOf("role:Admin=false") > 0);
-        Assert.assertTrue("User " + user + " does not have role Manager", response.indexOf("role:Manager=false") > 0);
-        Assert.assertTrue("User " + user + " must have role User", response.indexOf("role:User=false") > 0);
+        Assert.assertTrue("Principal not " + user,
+                          bodyTextContent.contains("userPrincipal=" + user));
+        Assert.assertTrue("User " + user + " does not have role Admin",
+                          bodyTextContent.contains("role:Admin=false"));
+        Assert.assertTrue("User " + user + " does not have role Manager",
+                          bodyTextContent.contains("role:Manager=false"));
+        Assert.assertTrue("User " + user + " must have role User",
+                          bodyTextContent.contains("role:User=false"));
 
         String claim = ClaimTypes.FIRSTNAME.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'Ted'",
-                          response.indexOf(claim + "=Ted") > 0);
+                          bodyTextContent.contains(claim + "=Ted"));
         claim = ClaimTypes.LASTNAME.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'Cooper'",
-                          response.indexOf(claim + "=Cooper") > 0);
+                          bodyTextContent.contains(claim + "=Cooper"));
         claim = ClaimTypes.EMAILADDRESS.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'tcooper@realma.org'",
-                          response.indexOf(claim + "=tcooper@realma.org") > 0);
+                          bodyTextContent.contains(claim + "=tcooper@realma.org"));
     }
     
     @org.junit.Test
@@ -210,7 +247,13 @@ public abstract class AbstractTests {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/user/fedservlet";
         String user = "ted";
         String password = "det";
-        HTTPTestUtils.sendHttpGet(url, user, password, 200, 403, Integer.parseInt(getIdpHttpsPort()));
+        
+        try {
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
+            Assert.fail("Exception expected");
+        } catch (FailingHttpStatusCodeException ex) {
+            Assert.assertEquals(ex.getStatusCode(), 403);
+        }
     }
 
     @org.junit.Test
@@ -218,7 +261,13 @@ public abstract class AbstractTests {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/admin/fedservlet";
         String user = "ted";
         String password = "det";
-        HTTPTestUtils.sendHttpGet(url, user, password, 200, 403, Integer.parseInt(getIdpHttpsPort()));        
+        
+        try {
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
+            Assert.fail("Exception expected");
+        } catch (FailingHttpStatusCodeException ex) {
+            Assert.assertEquals(ex.getStatusCode(), 403);
+        }
     }
     
     @org.junit.Test
@@ -226,9 +275,15 @@ public abstract class AbstractTests {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/manager/fedservlet";
         String user = "ted";
         String password = "det";
-        HTTPTestUtils.sendHttpGet(url, user, password, 200, 403, Integer.parseInt(getIdpHttpsPort()));        
+        
+        try {
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
+            Assert.fail("Exception expected");
+        } catch (FailingHttpStatusCodeException ex) {
+            Assert.assertEquals(ex.getStatusCode(), 403);
+        }
     }
-
+/*
     @org.junit.Test
     public void testMetadata() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() 
@@ -299,5 +354,5 @@ public abstract class AbstractTests {
         Assert.assertTrue(logoutResponse.contains("Logout status of RP"));
         Assert.assertTrue(logoutResponse.contains("wsignoutcleanup1.0"));
     }
-    
+    */
 }

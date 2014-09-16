@@ -184,22 +184,28 @@ public class WReqTest {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
-        String response = HTTPTestUtils.sendHttpGet(url, user, password, Integer.parseInt(getIdpHttpsPort()));
-
-        Assert.assertTrue("Principal not " + user, response.indexOf("userPrincipal=" + user) > 0);
-        Assert.assertTrue("User " + user + " does not have role Admin", response.indexOf("role:Admin=false") > 0);
-        Assert.assertTrue("User " + user + " does not have role Manager", response.indexOf("role:Manager=false") > 0);
-        Assert.assertTrue("User " + user + " must have role User", response.indexOf("role:User=true") > 0);
+        
+        final String bodyTextContent = 
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
+        
+        Assert.assertTrue("Principal not " + user,
+                          bodyTextContent.contains("userPrincipal=" + user));
+        Assert.assertTrue("User " + user + " does not have role Admin",
+                          bodyTextContent.contains("role:Admin=false"));
+        Assert.assertTrue("User " + user + " does not have role Manager",
+                          bodyTextContent.contains("role:Manager=false"));
+        Assert.assertTrue("User " + user + " must have role User",
+                          bodyTextContent.contains("role:User=true"));
 
         String claim = ClaimTypes.FIRSTNAME.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
-                          response.indexOf(claim + "=Alice") > 0);
+                          bodyTextContent.contains(claim + "=Alice"));
         claim = ClaimTypes.LASTNAME.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
-                          response.indexOf(claim + "=Smith") > 0);
+                          bodyTextContent.contains(claim + "=Smith"));
         claim = ClaimTypes.EMAILADDRESS.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
-                          response.indexOf(claim + "=alice@realma.org") > 0);
+                          bodyTextContent.contains(claim + "=alice@realma.org"));
 
     }
     

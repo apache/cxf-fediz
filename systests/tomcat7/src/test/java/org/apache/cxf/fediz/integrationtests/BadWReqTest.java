@@ -19,8 +19,9 @@
 
 package org.apache.cxf.fediz.integrationtests;
 
-
 import java.io.File;
+
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleState;
@@ -184,7 +185,14 @@ public class BadWReqTest {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
-        HTTPTestUtils.sendHttpGet(url, user, password, 500, 403, Integer.parseInt(getIdpHttpsPort()));
+        
+        try {
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
+            Assert.fail("Exception expected");
+            // TODO change exception
+        } catch (FailingHttpStatusCodeException ex) {
+            Assert.assertEquals(ex.getStatusCode(), 500);
+        }
     }
     
 }

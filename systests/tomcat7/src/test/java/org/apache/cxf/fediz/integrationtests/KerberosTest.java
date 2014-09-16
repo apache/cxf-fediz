@@ -21,49 +21,19 @@ package org.apache.cxf.fediz.integrationtests;
 
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.security.KeyStore;
-import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
-import java.util.List;
 
-import javax.net.ssl.SSLContext;
-import javax.security.auth.Subject;
-import javax.security.auth.login.LoginContext;
-
+/*
 import net.htmlparser.jericho.Element;
 import net.htmlparser.jericho.FormField;
 import net.htmlparser.jericho.FormFields;
 import net.htmlparser.jericho.HTMLElementName;
 import net.htmlparser.jericho.Source;
-
+*/
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
-import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
-import org.apache.http.Consts;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLContextBuilder;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.LaxRedirectStrategy;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
-import org.apache.xml.security.utils.Base64;
-import org.ietf.jgss.GSSContext;
-import org.ietf.jgss.GSSException;
-import org.ietf.jgss.GSSManager;
-import org.ietf.jgss.GSSName;
-import org.ietf.jgss.Oid;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -217,7 +187,7 @@ public class KerberosTest {
     public String getServletContextName() {
         return "fedizhelloworld";
     }
-    
+    /*
     @org.junit.Test
     public void testKerberos() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
@@ -415,5 +385,5 @@ public class KerberosTest {
             }
         }
     }
-    
+    */
 }
