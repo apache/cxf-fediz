@@ -20,6 +20,8 @@
 package org.apache.cxf.fediz.integrationtests;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 import org.apache.cxf.fediz.core.ClaimTypes;
 import org.junit.Assert;
@@ -283,59 +285,22 @@ public abstract class AbstractTests {
             Assert.assertEquals(ex.getStatusCode(), 403);
         }
     }
-/*
+
     @org.junit.Test
     public void testMetadata() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() 
             + "/fedizhelloworld/FederationMetadata/2007-06/FederationMetadata.xml";
 
-        CloseableHttpClient httpClient = null;
-        try {
-            KeyStore trustStore  = KeyStore.getInstance(KeyStore.getDefaultType());
-            FileInputStream instream = new FileInputStream(new File("./target/test-classes/client.jks"));
-            try {
-                trustStore.load(instream, "clientpass".toCharArray());
-            } finally {
-                try {
-                    instream.close();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getOptions().setSSLClientCertificate(
+            this.getClass().getClassLoader().getResource("client.jks"), "clientpass", "jks");
 
-            SSLContextBuilder sslContextBuilder = new SSLContextBuilder();
-            sslContextBuilder.loadTrustMaterial(trustStore, new TrustSelfSignedStrategy());
-            sslContextBuilder.loadKeyMaterial(trustStore, "clientpass".toCharArray());
-
-            SSLContext sslContext = sslContextBuilder.build();
-            SSLConnectionSocketFactory sslSocketFactory = 
-                new SSLConnectionSocketFactory(sslContext);
-
-            HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
-            httpClientBuilder.setSSLSocketFactory(sslSocketFactory);
-            httpClientBuilder.setRedirectStrategy(new LaxRedirectStrategy());
-
-            httpClient = httpClientBuilder.build();
-
-            HttpGet httpget = new HttpGet(url);
-
-            HttpResponse response = httpClient.execute(httpget);
-            HttpEntity entity = response.getEntity();
-
-            Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-
-            String metadata = EntityUtils.toString(entity);
-            Assert.assertTrue(metadata.startsWith("<EntityDescriptor"));
-        } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-            if (httpClient != null) {
-                httpClient.close();
-            }
-        }
+        final XmlPage rpPage = webClient.getPage(url);
+        final String xmlContent = rpPage.asXml();
+        Assert.assertTrue(xmlContent.startsWith("<EntityDescriptor"));
     }
-    
+    /*
     @org.junit.Test
     public void testAliceLogout() throws Exception {
         // Authenticate as "alice"
