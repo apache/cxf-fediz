@@ -19,6 +19,7 @@
 package org.apache.cxf.fediz.cxf.plugin;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.security.cert.X509Certificate;
@@ -28,10 +29,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Cookie;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -54,6 +59,7 @@ import org.apache.cxf.fediz.core.util.CookieUtils;
 import org.apache.cxf.fediz.cxf.plugin.state.ResponseState;
 import org.apache.cxf.helpers.IOUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.apache.cxf.jaxrs.impl.HttpHeadersImpl;
 import org.apache.cxf.jaxrs.impl.UriInfoImpl;
 import org.apache.cxf.jaxrs.utils.ExceptionUtils;
 import org.apache.cxf.jaxrs.utils.JAXRSUtils;
@@ -79,23 +85,31 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
         }
 
         // See if it is a Logout request
-        if (isLogoutRequest(context, fedConfig)) {
+        if (isLogoutRequest(context, m, fedConfig)) {
             return;
         }
         
-        if (checkSecurityContext(m)) {
+        String httpMethod = context.getMethod();
+        MultivaluedMap<String, String> params = null;
+        
+        try {
+            if (HttpMethod.GET.equals(httpMethod)) {
+                params = context.getUriInfo().getQueryParameters();
+            } else if (HttpMethod.POST.equals(httpMethod)) {
+                String strForm = IOUtils.toString(context.getEntityStream());
+                params = JAXRSUtils.getStructuredParams(strForm, "&", true, false);
+            }
+        } catch (Exception ex) {
+            LOG.debug(ex.getMessage(), ex);
+            throw ExceptionUtils.toInternalServerErrorException(ex, null);
+        }
+        
+        if (isSignoutCleanupRequest(fedConfig, m, params)) {
+            return;
+        } else if (checkSecurityContext(m)) {
             return;
         } else {
             try {
-                String httpMethod = context.getMethod();
-                MultivaluedMap<String, String> params = null;
-                if (HttpMethod.GET.equals(httpMethod)) {
-                    params = context.getUriInfo().getQueryParameters();
-                } else if (HttpMethod.POST.equals(httpMethod)) {
-                    String strForm = IOUtils.toString(context.getEntityStream());
-                    params = JAXRSUtils.getStructuredParams(strForm, "&", true, false);
-                }
-                
                 if (isSignInRequired(fedConfig, params)) {
                     // Unauthenticated -> redirect
                     FedizProcessor processor = 
@@ -244,12 +258,15 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
         return false;
     }
     
-    private boolean isLogoutRequest(ContainerRequestContext context, FedizContext fedConfig) {
+    private boolean isLogoutRequest(ContainerRequestContext context, Message message,
+                                    FedizContext fedConfig) {
         //logout
         String logoutUrl = fedConfig.getLogoutURL();
         if (logoutUrl != null && !logoutUrl.isEmpty()) {
             String requestPath = "/" + context.getUriInfo().getPath();
             if (requestPath.equals(logoutUrl) || requestPath.equals(logoutUrl + "/")) {
+                cleanupContext(message);
+                
                 try {
                     FedizProcessor processor = 
                         FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
@@ -277,9 +294,21 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
                 }
             }
         }
-        // TODO ACTION_SIGNOUT_CLEANUP
         
         return false;
+    }
+    
+    private void cleanupContext(Message message) {
+        HttpHeaders headers = new HttpHeadersImpl(message);
+        Map<String, Cookie> cookies = headers.getCookies();
+        if (cookies.containsKey(SECURITY_CONTEXT_TOKEN)) {
+            String contextKey = cookies.get(SECURITY_CONTEXT_TOKEN).getValue();
+            getStateManager().removeResponseState(contextKey);
+        }
+        if (cookies.containsKey(SECURITY_CONTEXT_STATE)) {
+            String contextKey = cookies.get(SECURITY_CONTEXT_STATE).getValue();
+            getStateManager().removeRequestState(contextKey);
+        }
     }
     
     private String getMetadataURI(FedizContext fedConfig) {
@@ -313,6 +342,51 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
             return true;
         } else if (params != null && fedConfig.getProtocol() instanceof SAMLProtocol
             && params.getFirst(SAMLSSOConstants.RELAY_STATE) != null) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    private boolean isSignoutCleanupRequest(FedizContext fedConfig, Message m, MultivaluedMap<String, String> params) { 
+        
+        boolean signoutCleanup = false;
+        if (params != null && fedConfig.getProtocol() instanceof FederationProtocol
+            && FederationConstants.ACTION_SIGNOUT_CLEANUP.equals(
+                params.getFirst(FederationConstants.PARAM_ACTION))) {
+            signoutCleanup = true;
+        } /* TODO else if (params != null && fedConfig.getProtocol() instanceof SAMLProtocol
+            && params.getFirst(SAMLSSOConstants.RELAY_STATE) != null) {
+            signoutCleanup = true;
+        }*/
+        
+        if (signoutCleanup) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("SignOutCleanup request found");
+                LOG.debug("SignOutCleanup action...");
+            }
+            cleanupContext(m);
+            
+            HttpServletResponse response = messageContext.getHttpServletResponse();
+            try {
+                final ServletOutputStream responseOutputStream = response.getOutputStream();
+                InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("logout.jpg");
+                if (inputStream == null) {
+                    LOG.warn("Could not write logout.jpg");
+                    return true;
+                }
+                int read = 0;
+                byte[] buf = new byte[1024];
+                while ((read = inputStream.read(buf)) != -1) {
+                    responseOutputStream.write(buf, 0, read);
+                }
+                inputStream.close();
+                responseOutputStream.flush();
+            } catch (Exception ex) {
+                LOG.debug(ex.getMessage(), ex);
+                throw ExceptionUtils.toInternalServerErrorException(ex, null);
+            }
+            
             return true;
         }
         
@@ -415,4 +489,5 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
             }
         }
     }
+    
 }

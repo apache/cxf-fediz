@@ -12,7 +12,7 @@
 <title>IDP SignOut Response Page</title>
 </head>
 <body>
-	<h1>CXF Fediz IDP succesfully logout.</h1>
+	<h1>CXF Fediz IDP successful logout.</h1>
 
     <p>
         <%

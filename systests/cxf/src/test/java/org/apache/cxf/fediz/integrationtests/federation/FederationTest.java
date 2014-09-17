@@ -223,16 +223,6 @@ public class FederationTest extends AbstractTests {
 
     }
 
-    @org.junit.Test
-    public void testRPLogout() throws Exception {
-        //
-    }
-    
-    @org.junit.Test
-    public void testIdPLogout() throws Exception {
-        //
-    }
-    
     public String getServletContextName() {
         return "fedizhelloworld";
     }
