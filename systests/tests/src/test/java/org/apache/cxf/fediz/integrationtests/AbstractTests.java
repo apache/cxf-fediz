@@ -19,11 +19,14 @@
 
 package org.apache.cxf.fediz.integrationtests;
 
+import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 import org.apache.cxf.fediz.core.ClaimTypes;
+import org.apache.cxf.fediz.core.FederationConstants;
 import org.junit.Assert;
 
 public abstract class AbstractTests {
@@ -300,24 +303,81 @@ public abstract class AbstractTests {
         final String xmlContent = rpPage.asXml();
         Assert.assertTrue(xmlContent.startsWith("<EntityDescriptor"));
     }
-    /*
+    
     @org.junit.Test
-    public void testAliceLogout() throws Exception {
-        // Authenticate as "alice"
+    public void testRPLogout() throws Exception {
+
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
+
+        CookieManager cookieManager = new CookieManager();
         
-        CloseableHttpClient httpClient = 
-            HTTPTestUtils.sendHttpGetForSignIn(url, user, password, 200, 200, Integer.parseInt(getIdpHttpsPort()));
+        // 1. Login
+        HTTPTestUtils.loginWithCookieManager(url, user, password, getIdpHttpsPort(), cookieManager);
         
-        String logoutUrl = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/logout";
-        String logoutResponse = 
-            HTTPTestUtils.sendHttpGetForSignOut(httpClient, logoutUrl, 200, 200, Integer.parseInt(getIdpHttpsPort()));
-        
-        Assert.assertTrue(logoutResponse.contains("IDP SignOut Response Page"));
-        Assert.assertTrue(logoutResponse.contains("Logout status of RP"));
-        Assert.assertTrue(logoutResponse.contains("wsignoutcleanup1.0"));
+        // 2. Now we should have a cookie from the RP and IdP and should be able to do
+        // subsequent requests without authenticate again. Lets test this first.
+        WebClient webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        final HtmlPage rpPage = webClient.getPage(url);
+        Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
+
+        // 3. now we logout from RP
+        String rpLogoutUrl = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/logout";
+
+        HTTPTestUtils.logout(rpLogoutUrl, cookieManager);
+
+        // 4. now we try to access the RP and idp without authentication but with the existing cookies
+        // to see if we are really logged out
+        String rpUrl = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+
+        webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        final HtmlPage idpPage = webClient.getPage(rpUrl);
+
+        Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
     }
-    */
+    
+    @org.junit.Test
+    public void testIdPLogout() throws Exception {
+
+        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String user = "alice";
+        String password = "ecila";
+
+        CookieManager cookieManager = new CookieManager();
+        
+        // 1. Login
+        HTTPTestUtils.loginWithCookieManager(url, user, password, getIdpHttpsPort(), cookieManager);
+       
+        // 2. Now we should have a cookie from the RP and IdP and should be able to do
+        // subsequent requests without authenticate again. Lets test this first.
+        WebClient webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        final HtmlPage rpPage = webClient.getPage(url);
+        Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
+        
+        // 3. now we logout from IdP
+        String idpLogoutUrl = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?wa="
+            + FederationConstants.ACTION_SIGNOUT; //todo logout url on idp?!?
+
+        HTTPTestUtils.logout(idpLogoutUrl, cookieManager);
+
+        // 4. now we try to access the RP and idp without authentication but with the existing cookies
+        // to see if we are really logged out
+        String rpUrl = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+
+        webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        final HtmlPage idpPage = webClient.getPage(rpUrl);
+
+        Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
+    }
 }
