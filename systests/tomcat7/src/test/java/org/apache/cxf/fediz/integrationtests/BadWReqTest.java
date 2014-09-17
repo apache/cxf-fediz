@@ -189,9 +189,8 @@ public class BadWReqTest {
         try {
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
             Assert.fail("Exception expected");
-            // TODO change exception
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 500);
+            Assert.assertEquals(ex.getStatusCode(), 400);
         }
     }
     

@@ -125,6 +125,7 @@
         <evaluate expression="signInParamCacheAction.storeRPUrlInSession(flowRequestContext)"
                 result="flowScope.res"/>
         <transition to="formResponseView" />
+        <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
         <transition on-exception="java.lang.Throwable" to="scInternalServerError" />
     </action-state>
     
@@ -152,7 +153,7 @@
         <on-entry>
             <evaluate
                 expression="externalContext.nativeResponse.setStatus(400,flowRequestContext.currentTransition.toString())" />
-            <set name="requestScope.reason" value="flowRequestContext.currentTransition" />
+            <!--<set name="requestScope.reason" value="flowRequestContext.currentTransition" />-->
         </on-entry>
     </end-state>
 

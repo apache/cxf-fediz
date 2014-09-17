@@ -37,6 +37,7 @@ import org.w3c.dom.NodeList;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
+import org.apache.cxf.binding.soap.SoapFault;
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
@@ -271,25 +272,7 @@ public class STSClientAction {
         }
         
         sts.setEnableLifetime(true);
-        if (serviceConfig.getLifeTime() > 0) {
-            try {
-                int lifetime = serviceConfig.getLifeTime();
-                sts.setTtl(lifetime);
-                sts.setEnableLifetime(lifetime > 0);
-                LOG.debug("Lifetime set to {} seconds for realm {}", serviceConfig.getLifeTime(), wtrealm);
-            } catch (NumberFormatException ex) {
-                LOG.warn("Invalid lifetime configured for service provider " + wtrealm);
-                sts.setTtl(this.ttl);
-                sts.setEnableLifetime(this.ttl > 0);
-            }
-        } else {
-            sts.setTtl(this.ttl);
-            sts.setEnableLifetime(this.ttl > 0);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Lifetime set to {} seconds for realm {}", this.ttl, wtrealm);
-            }
-        }
-        
+        setLifetime(sts, serviceConfig, wtrealm);
         
         sts.setOnBehalfOf(idpToken.getToken());
         if (!(serviceConfig.getProtocol() == null
@@ -298,7 +281,17 @@ public class STSClientAction {
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
         
-        String rpToken = sts.requestSecurityTokenResponse(wtrealm);
+        String rpToken = null;
+        try {
+            rpToken = sts.requestSecurityTokenResponse(wtrealm);
+        } catch (SoapFault ex) {
+            LOG.error("Error in retrieving a token", ex.getMessage());
+            if (ex.getFaultCode() != null 
+                && "RequestFailed".equals(ex.getFaultCode().getLocalPart())) {
+                throw new ProcessingException(TYPE.BAD_REQUEST);
+            }
+            throw ex;
+        }
         
         InputStream is = new ByteArrayInputStream(rpToken.getBytes());
         Document doc = StaxUtils.read(is);
@@ -312,7 +305,7 @@ public class STSClientAction {
 
         LOG.info("[RP_TOKEN={}] successfully created for realm [{}] on behalf of [IDP_TOKEN={}]",
                  id, wtrealm, idpToken.getId());
-        return StringEscapeUtils.escapeXml(rpToken);
+        return StringEscapeUtils.escapeXml11(rpToken);
     }
 
     private SecurityToken getSecurityToken(RequestContext context) throws ProcessingException {
@@ -406,4 +399,24 @@ public class STSClientAction {
         this.use200502Namespace = use200502Namespace;
     }
 
+    private void setLifetime(STSClient sts, Application serviceConfig, String wtrealm) {
+        if (serviceConfig.getLifeTime() > 0) {
+            try {
+                int lifetime = serviceConfig.getLifeTime();
+                sts.setTtl(lifetime);
+                sts.setEnableLifetime(lifetime > 0);
+                LOG.debug("Lifetime set to {} seconds for realm {}", serviceConfig.getLifeTime(), wtrealm);
+            } catch (NumberFormatException ex) {
+                LOG.warn("Invalid lifetime configured for service provider " + wtrealm);
+                sts.setTtl(this.ttl);
+                sts.setEnableLifetime(this.ttl > 0);
+            }
+        } else {
+            sts.setTtl(this.ttl);
+            sts.setEnableLifetime(this.ttl > 0);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Lifetime set to {} seconds for realm {}", this.ttl, wtrealm);
+            }
+        }
+    }
 }
