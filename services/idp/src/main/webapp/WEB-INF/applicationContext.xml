@@ -78,6 +78,9 @@
             <sec:trustManagers>
                 <sec:keyStore type="jks" password="ispass" resource="idp-ssl-trust.jks" />
             </sec:trustManagers>
+            <sec:keyManagers keyPassword="tompass">
+                <sec:keyStore type="jks" password="tompass" resource="idp-ssl-key.jks"/>
+            </sec:keyManagers>
         </http:tlsClientParameters>
     </http:conduit>
     

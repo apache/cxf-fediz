@@ -108,6 +108,9 @@ public class ITCrossRealmTest extends AbstractSTSTest {
             }
         }
         
+        // Need client auth for the second call
+        tlsClientParameters = initTLSClientParameters(testProps, true);
+        
         SecurityToken rpToken = requestSecurityTokenOnbehalfOf(
                                                                SAML2_TOKEN_TYPE,
                                                                BEARER_KEYTYPE,
@@ -190,6 +193,9 @@ public class ITCrossRealmTest extends AbstractSTSTest {
                 claimsList.add(st.nextToken());
             }
         }
+        
+        // Need client auth for the second call
+        tlsClientParameters = initTLSClientParameters(testProps, true);
         
         SecurityToken rpToken = requestSecurityTokenOnbehalfOf(
                                                                SAML2_TOKEN_TYPE,

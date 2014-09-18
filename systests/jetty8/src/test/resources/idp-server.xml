@@ -24,6 +24,9 @@
              <Set name="keyStore">./target/test-classes/server.jks</Set>
              <Set name="keyStorePassword">tompass</Set>
              <Set name="keyManagerPassword">tompass</Set>
+             <Set name="trustStore">./target/test-classes/server.jks</Set>
+             <Set name="trustStorePassword">tompass</Set>
+             <Set name="wantClientAuth">true</Set>
            </New>
          </Arg>
          <Set name="port">${idp.https.port}</Set>

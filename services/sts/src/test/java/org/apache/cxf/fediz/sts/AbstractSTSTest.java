@@ -216,7 +216,7 @@ public abstract class AbstractSTSTest {
         return writer.getDocument().getDocumentElement();
     }
 
-    protected Properties readTestProperties(Class clazz, String method) {
+    protected Properties readTestProperties(Class<?> clazz, String method) {
         Properties testProps = new Properties();
         String resourceName = "stsclient.properties";
         InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceName);

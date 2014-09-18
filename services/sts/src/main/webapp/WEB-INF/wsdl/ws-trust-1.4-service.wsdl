@@ -754,8 +754,10 @@
                <wsp:Policy>
                   <sp:TransportToken>
                      <wsp:Policy>
-                        <sp:HttpsToken RequireClientCertificate="false">
-                            <wsp:Policy/>
+                        <sp:HttpsToken>
+                            <wsp:Policy>
+                                <sp:RequireClientCertificate />
+                            </wsp:Policy>
                         </sp:HttpsToken>
                      </wsp:Policy>
                   </sp:TransportToken>
@@ -802,7 +804,7 @@
                <wsp:Policy>
                   <sp:TransportToken>
                      <wsp:Policy>
-                        <sp:HttpsToken RequireClientCertificate="false">
+                        <sp:HttpsToken>
                             <wsp:Policy/>
                         </sp:HttpsToken>
                      </wsp:Policy>
@@ -861,7 +863,7 @@
                <wsp:Policy>
                   <sp:TransportToken>
                      <wsp:Policy>
-                        <sp:HttpsToken RequireClientCertificate="false">
+                        <sp:HttpsToken>
                             <wsp:Policy/>
                         </sp:HttpsToken>
                      </wsp:Policy>
@@ -921,7 +923,7 @@
 					<wsp:Policy>
 						<sp:TransportToken>
 							<wsp:Policy>
-								<sp:HttpsToken RequireClientCertificate="false">
+								<sp:HttpsToken>
 									<wsp:Policy/>
 								</sp:HttpsToken>
 							</wsp:Policy>
