@@ -44,10 +44,10 @@ import org.apache.ws.security.util.UUIDGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.cxf.fediz.core.FedizConstants.SAML2_METADATA_NS;
-import static org.apache.cxf.fediz.core.FedizConstants.SCHEMA_INSTANCE_NS;
-import static org.apache.cxf.fediz.core.FedizConstants.WS_ADDRESSING_NS;
-import static org.apache.cxf.fediz.core.FedizConstants.WS_FEDERATION_NS;
+import static org.apache.cxf.fediz.core.FederationConstants.SAML2_METADATA_NS;
+import static org.apache.cxf.fediz.core.FederationConstants.SCHEMA_INSTANCE_NS;
+import static org.apache.cxf.fediz.core.FederationConstants.WS_ADDRESSING_NS;
+import static org.apache.cxf.fediz.core.FederationConstants.WS_FEDERATION_NS;
 
 public class MetadataWriter {
     
