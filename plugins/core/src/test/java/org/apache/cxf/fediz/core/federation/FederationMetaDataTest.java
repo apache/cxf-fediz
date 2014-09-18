@@ -25,6 +25,8 @@ import java.net.URL;
 import javax.xml.transform.TransformerException;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.apache.cxf.fediz.common.SecurityTestUtil;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
@@ -32,6 +34,10 @@ import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.processor.FederationProcessorImpl;
 import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.core.util.DOMUtils;
+import org.apache.xml.security.exceptions.XMLSecurityException;
+import org.apache.xml.security.keys.KeyInfo;
+import org.apache.xml.security.signature.XMLSignature;
+import org.apache.xml.security.signature.XMLSignatureException;
 import org.junit.AfterClass;
 import org.junit.Assert;
 
@@ -62,7 +68,7 @@ public class FederationMetaDataTest {
     
 
     @org.junit.Test
-    public void validateMetaDataWithAlias() throws ProcessingException {
+    public void validateMetaDataWithAlias() throws ProcessingException, XMLSignatureException, XMLSecurityException {
 
         FedizContext config = loadConfig("ROOT");
 
@@ -70,11 +76,24 @@ public class FederationMetaDataTest {
         Document doc = wfProc.getMetaData(config);
         Assert.assertNotNull(doc);
         
+        Node signatureNode = doc.getElementsByTagName("Signature").item(0);
+        Assert.assertNotNull(signatureNode);
+        
+        doc.getDocumentElement().setIdAttributeNS(null, "ID", true);
+
         try {
             DOMUtils.writeXml(doc, System.out);
         } catch (TransformerException e) {
             fail("Exception not expected: " + e.getMessage()); 
         }
+        
+        // Validate the signature
+        XMLSignature signature = new XMLSignature((Element)signatureNode, "");
+        KeyInfo ki = signature.getKeyInfo();
+        Assert.assertNotNull(ki);
+        Assert.assertNotNull(ki.getX509Certificate());
+
+        Assert.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
         
     }
 
@@ -112,6 +131,5 @@ public class FederationMetaDataTest {
         }
         
     }
-   
 
 }

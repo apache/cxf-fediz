@@ -34,6 +34,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.w3c.dom.Document;
+
 import org.apache.cxf.fediz.core.config.Claim;
 import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.config.FedizContext;
@@ -124,10 +125,10 @@ public class MetadataWriter {
                 LOG.info("No signingKey element found in config: " + ex.getMessage());
             }
             if (hasSigningKey) {
-                ByteArrayOutputStream result = SignatureUtils.signMetaInfo(
+                Document result = SignatureUtils.signMetaInfo(
                     config.getSigningKey().getCrypto(), config.getSigningKey().getKeyAlias(), config.getSigningKey().getKeyPassword(), is, referenceID);
                 if (result != null) {
-                    is = new ByteArrayInputStream(result.toByteArray());
+                    return result;
                 } else {
                     throw new ProcessingException("Failed to sign the metadata document: result=null");
                 }
