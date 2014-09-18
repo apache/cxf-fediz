@@ -34,7 +34,6 @@ import javax.xml.stream.XMLStreamWriter;
 import org.w3c.dom.Document;
 
 import org.apache.cxf.fediz.core.util.CertsUtils;
-import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.cxf.fediz.core.util.SignatureUtils;
 import org.apache.cxf.fediz.service.idp.model.IDPConfig;
 
@@ -45,10 +44,10 @@ import org.apache.ws.security.util.UUIDGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.cxf.fediz.core.FederationConstants.SAML2_METADATA_NS;
-import static org.apache.cxf.fediz.core.FederationConstants.SCHEMA_INSTANCE_NS;
-import static org.apache.cxf.fediz.core.FederationConstants.WS_ADDRESSING_NS;
-import static org.apache.cxf.fediz.core.FederationConstants.WS_FEDERATION_NS;
+import static org.apache.cxf.fediz.core.FedizConstants.SAML2_METADATA_NS;
+import static org.apache.cxf.fediz.core.FedizConstants.SCHEMA_INSTANCE_NS;
+import static org.apache.cxf.fediz.core.FedizConstants.WS_ADDRESSING_NS;
+import static org.apache.cxf.fediz.core.FedizConstants.WS_FEDERATION_NS;
 
 public class MetadataWriter {
     
@@ -173,14 +172,12 @@ public class MetadataWriter {
             
             InputStream is = new ByteArrayInputStream(bout.toByteArray());
             
-            ByteArrayOutputStream result = SignatureUtils.signMetaInfo(crypto, null, config.getCertificatePassword(), is, referenceID);
+            Document result = SignatureUtils.signMetaInfo(crypto, null, config.getCertificatePassword(), is, referenceID);
             if (result != null) {
-                is = new ByteArrayInputStream(result.toByteArray());
+                return result;
             } else {
                 throw new RuntimeException("Failed to sign the metadata document: result=null");
             }
-        
-            return DOMUtils.readXml(is);
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {

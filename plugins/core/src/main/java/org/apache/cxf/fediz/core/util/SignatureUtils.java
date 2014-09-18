@@ -19,7 +19,6 @@
 
 package org.apache.cxf.fediz.core.util;
 
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
@@ -42,10 +41,6 @@ import javax.xml.crypto.dsig.keyinfo.X509Data;
 import javax.xml.crypto.dsig.spec.C14NMethodParameterSpec;
 import javax.xml.crypto.dsig.spec.TransformParameterSpec;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
 
@@ -60,13 +55,12 @@ public final class SignatureUtils {
     
     private static final XMLSignatureFactory XML_SIGNATURE_FACTORY = XMLSignatureFactory.getInstance("DOM");
     private static final DocumentBuilderFactory DOC_BUILDER_FACTORY = DocumentBuilderFactory.newInstance();
-    private static final TransformerFactory TRANSFORMER_FACTORY = TransformerFactory.newInstance();
     
     private SignatureUtils() {
     }
     
     
-    public static ByteArrayOutputStream signMetaInfo(Crypto crypto, String keyAlias, String keyPassword,
+    public static Document signMetaInfo(Crypto crypto, String keyAlias, String keyPassword,
                                               InputStream metaInfo, String referenceID) throws Exception {
         if (keyAlias == null || "".equals(keyAlias)) {
             keyAlias = crypto.getDefaultX509Identifier();
@@ -164,12 +158,8 @@ public final class SignatureUtils {
 
         // step 4
         // Output the resulting document.
-
-        ByteArrayOutputStream os = new ByteArrayOutputStream(8192);
-        Transformer trans = TRANSFORMER_FACTORY.newTransformer();
-        trans.transform(new DOMSource(doc), new StreamResult(os));
-        os.flush();
-        return os;
+        
+        return doc;
     }
     
 }
