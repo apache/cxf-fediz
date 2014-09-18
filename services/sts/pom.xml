@@ -198,6 +198,8 @@
 									<keystore>${project.build.directory}/test-classes/jetty-ssl.keystore</keystore>
 									<password>jettypw</password>
 									<keyPassword>jettypw</keyPassword>
+                                                                        <truststore>${project.build.directory}/test-classes/jetty-ssl.keystore</truststore>
+                                                                        <trustPassword>jettypw</trustPassword>
 									<wantClientAuth>true</wantClientAuth>
 								</connector>
 							</connectors>
