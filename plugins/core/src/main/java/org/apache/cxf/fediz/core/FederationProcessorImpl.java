@@ -73,6 +73,10 @@ public class FederationProcessorImpl implements FederationProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(FederationProcessorImpl.class);
 
+    static {
+        WSSConfig.init();
+    }
+
     /**
      * Default constructor
      */
