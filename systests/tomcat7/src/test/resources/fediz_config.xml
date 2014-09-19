@@ -18,6 +18,9 @@
             <issuer certificateValidation="PeerTrust" />
         </trustedIssuers>
         <maximumClockSkew>1000</maximumClockSkew>
+        <signingKey keyAlias="mytomidpkey" keyPassword="tompass">
+            <keyStore file="test-classes/server.jks" password="tompass" type="JKS" />
+        </signingKey>
         <protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:type="federationProtocolType" version="1.0.0">
             <realm>urn:org:apache:cxf:fediz:fedizhelloworld</realm>

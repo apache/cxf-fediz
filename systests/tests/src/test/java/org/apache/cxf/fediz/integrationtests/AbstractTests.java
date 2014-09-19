@@ -19,6 +19,10 @@
 
 package org.apache.cxf.fediz.integrationtests;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -27,9 +31,17 @@ import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.core.FederationConstants;
+import org.apache.cxf.fediz.core.util.DOMUtils;
+import org.apache.wss4j.dom.WSSConfig;
+import org.apache.xml.security.keys.KeyInfo;
+import org.apache.xml.security.signature.XMLSignature;
 import org.junit.Assert;
 
 public abstract class AbstractTests {
+    
+    static {
+        WSSConfig.init();
+    }
 
     public AbstractTests() {
         super();
@@ -290,7 +302,7 @@ public abstract class AbstractTests {
     }
 
     @org.junit.Test
-    public void testMetadata() throws Exception {
+    public void testRPMetadata() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() 
             + "/fedizhelloworld/FederationMetadata/2007-06/FederationMetadata.xml";
 
@@ -302,6 +314,54 @@ public abstract class AbstractTests {
         final XmlPage rpPage = webClient.getPage(url);
         final String xmlContent = rpPage.asXml();
         Assert.assertTrue(xmlContent.startsWith("<EntityDescriptor"));
+        
+        // Now validate the Signature
+        Document doc = rpPage.getXmlDocument();
+        
+        doc.getDocumentElement().setIdAttributeNS(null, "ID", true);
+        
+        Node signatureNode = 
+            DOMUtils.getChild(doc.getDocumentElement(), "Signature");
+        Assert.assertNotNull(signatureNode);
+        
+        XMLSignature signature = new XMLSignature((Element)signatureNode, "");
+        KeyInfo ki = signature.getKeyInfo();
+        Assert.assertNotNull(ki);
+        Assert.assertNotNull(ki.getX509Certificate());
+
+        Assert.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
+    }
+    
+    @org.junit.Test
+    @org.junit.Ignore
+    public void testIdPMetadata() throws Exception {
+        String url = "https://localhost:" + getIdpHttpsPort() 
+            + "/fediz-idp/FederationMetadata/2007-06/FederationMetadata.xml";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getOptions().setSSLClientCertificate(
+            this.getClass().getClassLoader().getResource("client.jks"), "clientpass", "jks");
+
+        final XmlPage rpPage = webClient.getPage(url);
+        final String xmlContent = rpPage.asXml();
+        Assert.assertTrue(xmlContent.startsWith("<EntityDescriptor"));
+        
+        // Now validate the Signature
+        Document doc = rpPage.getXmlDocument();
+        
+        doc.getDocumentElement().setIdAttributeNS(null, "ID", true);
+        
+        Node signatureNode = 
+            DOMUtils.getChild(doc.getDocumentElement(), "Signature");
+        Assert.assertNotNull(signatureNode);
+        
+        XMLSignature signature = new XMLSignature((Element)signatureNode, "");
+        KeyInfo ki = signature.getKeyInfo();
+        Assert.assertNotNull(ki);
+        Assert.assertNotNull(ki.getX509Certificate());
+
+        Assert.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
     }
     
     @org.junit.Test
