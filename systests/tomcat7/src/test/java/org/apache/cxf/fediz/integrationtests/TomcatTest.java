@@ -20,18 +20,40 @@
 package org.apache.cxf.fediz.integrationtests;
 
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.security.KeyStore;
+
+import javax.net.ssl.SSLContext;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.cxf.fediz.core.ClaimTypes;
+import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContextBuilder;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.LaxRedirectStrategy;
+import org.apache.http.util.EntityUtils;
+import org.apache.xml.security.keys.KeyInfo;
+import org.apache.xml.security.signature.XMLSignature;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-
 
 public class TomcatTest extends AbstractTests {
 
@@ -203,6 +225,148 @@ public class TomcatTest extends AbstractTests {
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
                           response.indexOf(claim + "=alice@realma.org") > 0);
 
+    }
+    
+    @org.junit.Test
+    public void testMetadataRP() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() 
+            + "/fedizhelloworld/FederationMetadata/2007-06/FederationMetadata.xml";
+
+        CloseableHttpClient httpClient = null;
+        try {
+            KeyStore trustStore  = KeyStore.getInstance(KeyStore.getDefaultType());
+            FileInputStream instream = new FileInputStream(new File("./target/test-classes/client.jks"));
+            try {
+                trustStore.load(instream, "clientpass".toCharArray());
+            } finally {
+                try {
+                    instream.close();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+
+            SSLContextBuilder sslContextBuilder = new SSLContextBuilder();
+            sslContextBuilder.loadTrustMaterial(trustStore, new TrustSelfSignedStrategy());
+            sslContextBuilder.loadKeyMaterial(trustStore, "clientpass".toCharArray());
+
+            SSLContext sslContext = sslContextBuilder.build();
+            SSLConnectionSocketFactory sslSocketFactory = 
+                new SSLConnectionSocketFactory(sslContext);
+
+            HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+            httpClientBuilder.setSSLSocketFactory(sslSocketFactory);
+            httpClientBuilder.setRedirectStrategy(new LaxRedirectStrategy());
+
+            httpClient = httpClientBuilder.build();
+
+            HttpGet httpget = new HttpGet(url);
+
+            HttpResponse response = httpClient.execute(httpget);
+            HttpEntity entity = response.getEntity();
+
+            Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+
+            String metadata = EntityUtils.toString(entity);
+            Assert.assertTrue(metadata.startsWith("<EntityDescriptor"));
+            
+            // Now validate the Signature
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            dbf.setNamespaceAware(true);
+            Document doc = 
+                dbf.newDocumentBuilder().parse(new ByteArrayInputStream(metadata.getBytes()));
+            
+            doc.getDocumentElement().setIdAttributeNS(null, "ID", true);
+            
+            Node signatureNode = 
+                DOMUtils.getChild(doc.getDocumentElement(), "Signature");
+            Assert.assertNotNull(signatureNode);
+            
+            XMLSignature signature = new XMLSignature((Element)signatureNode, "");
+            KeyInfo ki = signature.getKeyInfo();
+            Assert.assertNotNull(ki);
+            Assert.assertNotNull(ki.getX509Certificate());
+
+            Assert.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
+        } finally {
+            // When HttpClient instance is no longer needed,
+            // shut down the connection manager to ensure
+            // immediate deallocation of all system resources
+            if (httpClient != null) {
+                httpClient.close();
+            }
+        }
+    }
+    
+    @org.junit.Test
+    public void testMetadataIdP() throws Exception {
+        String url = "https://localhost:" + getIdpHttpsPort() 
+            + "/fediz-idp/FederationMetadata/2007-06/FederationMetadata.xml";
+
+        CloseableHttpClient httpClient = null;
+        try {
+            KeyStore trustStore  = KeyStore.getInstance(KeyStore.getDefaultType());
+            FileInputStream instream = new FileInputStream(new File("./target/test-classes/client.jks"));
+            try {
+                trustStore.load(instream, "clientpass".toCharArray());
+            } finally {
+                try {
+                    instream.close();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+
+            SSLContextBuilder sslContextBuilder = new SSLContextBuilder();
+            sslContextBuilder.loadTrustMaterial(trustStore, new TrustSelfSignedStrategy());
+            sslContextBuilder.loadKeyMaterial(trustStore, "clientpass".toCharArray());
+
+            SSLContext sslContext = sslContextBuilder.build();
+            SSLConnectionSocketFactory sslSocketFactory = 
+                new SSLConnectionSocketFactory(sslContext);
+
+            HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+            httpClientBuilder.setSSLSocketFactory(sslSocketFactory);
+            httpClientBuilder.setRedirectStrategy(new LaxRedirectStrategy());
+
+            httpClient = httpClientBuilder.build();
+
+            HttpGet httpget = new HttpGet(url);
+
+            HttpResponse response = httpClient.execute(httpget);
+            HttpEntity entity = response.getEntity();
+
+            Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+
+            String metadata = EntityUtils.toString(entity);
+            Assert.assertTrue(metadata.startsWith("<EntityDescriptor"));
+            
+            // Now validate the Signature
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            dbf.setNamespaceAware(true);
+            Document doc = 
+                dbf.newDocumentBuilder().parse(new ByteArrayInputStream(metadata.getBytes()));
+            
+            doc.getDocumentElement().setIdAttributeNS(null, "ID", true);
+            
+            Node signatureNode = 
+                DOMUtils.getChild(doc.getDocumentElement(), "Signature");
+            Assert.assertNotNull(signatureNode);
+            
+            XMLSignature signature = new XMLSignature((Element)signatureNode, "");
+            KeyInfo ki = signature.getKeyInfo();
+            Assert.assertNotNull(ki);
+            Assert.assertNotNull(ki.getX509Certificate());
+
+            Assert.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
+        } finally {
+            // When HttpClient instance is no longer needed,
+            // shut down the connection manager to ensure
+            // immediate deallocation of all system resources
+            if (httpClient != null) {
+                httpClient.close();
+            }
+        }
     }
     
 }

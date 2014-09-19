@@ -56,6 +56,10 @@ public final class SignatureUtils {
     private static final XMLSignatureFactory XML_SIGNATURE_FACTORY = XMLSignatureFactory.getInstance("DOM");
     private static final DocumentBuilderFactory DOC_BUILDER_FACTORY = DocumentBuilderFactory.newInstance();
     
+    static {
+        DOC_BUILDER_FACTORY.setNamespaceAware(true);
+    }
+    
     private SignatureUtils() {
     }
     
