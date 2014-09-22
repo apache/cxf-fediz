@@ -48,16 +48,22 @@ public class ConfigServiceJPA implements ConfigService {
         Authentication currentAuthentication = SecurityContextHolder.getContext().getAuthentication();
         try {
             final Set<GrantedAuthority> authorities = new HashSet<GrantedAuthority>();
-            authorities.add(new SimpleGrantedAuthority("IDP_LIST"));
-            
-            UsernamePasswordAuthenticationToken technicalUser =
-                new UsernamePasswordAuthenticationToken("IDP_TEST", "N.A", authorities);
-            
-            SecurityContextHolder.getContext().setAuthentication(technicalUser);
             
             if (realm == null || realm.length() == 0) {
+                authorities.add(new SimpleGrantedAuthority("IDP_LIST"));
+                UsernamePasswordAuthenticationToken technicalUser =
+                    new UsernamePasswordAuthenticationToken("IDP_TEST", "N.A", authorities);
+                
+                SecurityContextHolder.getContext().setAuthentication(technicalUser);
+                
                 return idpService.getIdps(0, 1, Arrays.asList("all"), null).getIdps().iterator().next();
             } else {
+                authorities.add(new SimpleGrantedAuthority("IDP_READ"));
+                UsernamePasswordAuthenticationToken technicalUser =
+                    new UsernamePasswordAuthenticationToken("IDP_TEST", "N.A", authorities);
+                
+                SecurityContextHolder.getContext().setAuthentication(technicalUser);
+                
                 return idpService.getIdp(realm, Arrays.asList("all"));
             }
         } finally {

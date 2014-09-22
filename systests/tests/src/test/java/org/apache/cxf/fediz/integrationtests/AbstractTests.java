@@ -333,7 +333,6 @@ public abstract class AbstractTests {
     }
     
     @org.junit.Test
-    @org.junit.Ignore
     public void testIdPMetadata() throws Exception {
         String url = "https://localhost:" + getIdpHttpsPort() 
             + "/fediz-idp/FederationMetadata/2007-06/FederationMetadata.xml";
