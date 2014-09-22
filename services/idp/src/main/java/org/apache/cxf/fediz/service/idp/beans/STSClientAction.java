@@ -52,7 +52,6 @@ import org.apache.cxf.staxutils.W3CDOMStreamWriter;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.cxf.ws.security.trust.STSClient;
 import org.apache.cxf.ws.security.trust.STSUtils;
-import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.apache.wss4j.dom.WSConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -292,20 +291,33 @@ public class STSClientAction {
             }
             throw ex;
         }
-        
-        InputStream is = new ByteArrayInputStream(rpToken.getBytes());
-        Document doc = StaxUtils.read(is);
-        NodeList nd = doc.getElementsByTagName("saml2:Assertion");
-        if (nd.getLength() == 0) {
-            nd = doc.getElementsByTagName("saml1:Assertion");
-        }
-        Element e = (Element) nd.item(0);
-        SamlAssertionWrapper aw = new SamlAssertionWrapper(e);
-        String id = aw.getId();
 
+        String id = getIdFromToken(rpToken);
+        
         LOG.info("[RP_TOKEN={}] successfully created for realm [{}] on behalf of [IDP_TOKEN={}]",
                  id, wtrealm, idpToken.getId());
         return StringEscapeUtils.escapeXml11(rpToken);
+    }
+    
+    private String getIdFromToken(String token) throws XMLStreamException {
+        InputStream is = new ByteArrayInputStream(token.getBytes());
+        Document doc = StaxUtils.read(is);
+        NodeList nd = doc.getElementsByTagNameNS(WSConstants.SAML2_NS, "Assertion");
+        
+        String identifier = "ID";
+        if (nd.getLength() == 0) {
+            nd = doc.getElementsByTagNameNS(WSConstants.SAML_NS, "Assertion");
+            identifier = "AssertionID";
+        }
+        
+        if (nd.getLength() > 0) {
+            Element e = (Element) nd.item(0);
+            if (e.hasAttributeNS(null, identifier)) {
+                return e.getAttributeNS(null, identifier);
+            }
+        }
+        
+        return "";
     }
 
     private SecurityToken getSecurityToken(RequestContext context) throws ProcessingException {
