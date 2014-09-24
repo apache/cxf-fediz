@@ -77,7 +77,7 @@ a) Deploying the demo to Tomcat
 -------------------------------
 First copy this sample's Fediz Configuration file (src/main/config/fediz_config.xml)
 into the Tomcat-RP's conf folder.  This configuration references the 
-Java keystore 'tomcat-rp.jks' available in Fediz' examples/samplekeys folder 
+Java keystore 'rp-ssl-server.jks' available in Fediz' examples/samplekeys folder 
 but should already be in the Tomcat RP's root folder when you configured this
 instance as stated in the prerequisites.
 
@@ -89,7 +89,7 @@ b) Deploying the demo to Jetty
 ------------------------------
 First copy this sample's Fediz Configuration file (src/main/config/fediz_config.xml)
 into the Jetty-RP's etc folder.  This configuration references the 
-Java keystore 'tomcat-rp.jks' available in Fediz' examples/samplekeys folder 
+Java keystore 'rp-ssl-server.jks' available in Fediz' examples/samplekeys folder 
 but should already be in the Jetty RP's root folder when you configured this
 instance as stated in the prerequisites.
 
