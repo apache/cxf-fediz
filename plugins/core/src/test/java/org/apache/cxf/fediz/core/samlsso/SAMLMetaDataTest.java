@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.cxf.fediz.core.federation;
+package org.apache.cxf.fediz.core.samlsso;
 
 import java.io.File;
 import java.net.URL;
@@ -27,6 +27,7 @@ import javax.xml.transform.TransformerException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
 import org.apache.cxf.fediz.common.SecurityTestUtil;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
@@ -43,15 +44,17 @@ import org.junit.Assert;
 
 import static org.junit.Assert.fail;
 
-public class FederationMetaDataTest {
-    private static final String CONFIG_FILE = "fediz_meta_test_config.xml";
+/**
+ * Some tests for creating SAMLRequests using the SAMLProcessorImpl
+ */
+public class SAMLMetaDataTest {
+    private static final String CONFIG_FILE = "fediz_meta_test_config_saml.xml";
     
     @AfterClass
     public static void cleanup() {
         SecurityTestUtil.cleanup();
     }
     
-
     private FedizContext loadConfig(String context) {
         try {
             FedizConfigurator configurator = new FedizConfigurator();
@@ -66,7 +69,6 @@ public class FederationMetaDataTest {
         }
     }
     
-
     @org.junit.Test
     public void validateMetaDataWithAlias() throws ProcessingException, XMLSignatureException, XMLSecurityException {
 
@@ -94,6 +96,7 @@ public class FederationMetaDataTest {
         Assert.assertNotNull(ki.getX509Certificate());
 
         Assert.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
+        
     }
 
     @org.junit.Test
@@ -128,5 +131,4 @@ public class FederationMetaDataTest {
             fail("Exception not expected: " + e.getMessage()); 
         }
     }
-
 }

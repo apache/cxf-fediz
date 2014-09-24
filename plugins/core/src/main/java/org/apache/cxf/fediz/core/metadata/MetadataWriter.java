@@ -81,13 +81,13 @@ public class MetadataWriter {
             writer.writeStartElement("", "EntityDescriptor", SAML2_METADATA_NS);
             writer.writeAttribute("ID", referenceID);
             
-            String audience = "_someID";
             String serviceURL = protocol.getApplicationServiceURL();
-            List<String> audienceList = config.getAudienceUris();
-            if (audienceList != null && audienceList.size() > 0 && !"".equals(audienceList.get(0))) {
-                audience = audienceList.get(0);
-            }
             if (serviceURL == null) {
+                String audience = "_someID";
+                List<String> audienceList = config.getAudienceUris();
+                if (audienceList != null && audienceList.size() > 0 && !"".equals(audienceList.get(0))) {
+                    audience = audienceList.get(0);
+                }
                 serviceURL = audience;
             }
             
@@ -244,14 +244,50 @@ public class MetadataWriter {
         writer.writeAttribute("WantAssertionsSigned", "true");
         writer.writeAttribute("protocolSupportEnumeration", "urn:oasis:names:tc:SAML:2.0:protocol");
         
+        if (config.getLogoutURL() != null) {
+            writer.writeStartElement("", "SingleLogoutService", SAML2_METADATA_NS);
+            writer.writeAttribute("Location", config.getLogoutURL());
+            writer.writeAttribute("Binding", "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
+            writer.writeEndElement(); // SingleLogoutService
+        }
+        
         writer.writeStartElement("", "AssertionConsumerService", SAML2_METADATA_NS);
+        writer.writeAttribute("Location", serviceURL);
         writer.writeAttribute("index", "0");
         writer.writeAttribute("isDefault", "true");
         writer.writeAttribute("Binding", "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
-        writer.writeAttribute("Location", serviceURL);
         writer.writeEndElement(); // AssertionConsumerService
         
-        if (config.getSigningKey() != null && protocol.isSignRequest()) {
+        if (protocol.getClaimTypesRequested() != null && !protocol.getClaimTypesRequested().isEmpty()) {
+            writer.writeStartElement("", "AttributeConsumingService", SAML2_METADATA_NS);
+            writer.writeAttribute("index", "0");
+            
+            writer.writeStartElement("", "ServiceName", SAML2_METADATA_NS);
+            writer.writeAttribute("xml:lang", "en");
+            writer.writeCharacters(config.getName());
+            writer.writeEndElement(); // ServiceName
+            
+            for (Claim claim : protocol.getClaimTypesRequested()) {
+                writer.writeStartElement("", "RequestedAttribute", SAML2_METADATA_NS);
+                writer.writeAttribute("isRequired", Boolean.toString(claim.isOptional()));
+                writer.writeAttribute("Name", claim.getType());
+                writer.writeAttribute("NameFormat", 
+                                      "urn:oasis:names:tc:SAML:2.0:attrname-format:unspecified");
+                writer.writeEndElement(); // RequestedAttribute
+            }
+            
+            writer.writeEndElement(); // AttributeConsumingService
+        }
+        
+        boolean hasSigningKey = false;
+        try {
+            if (config.getSigningKey().getCrypto() != null) {
+                hasSigningKey = true;
+            }
+        } catch (Exception ex) {
+            LOG.info("No signingKey element found in config: " + ex.getMessage());
+        }
+        if (protocol.isSignRequest() && hasSigningKey) {
             writer.writeStartElement("", "KeyDescriptor", SAML2_METADATA_NS);
             writer.writeAttribute("use", "signing");
             
