@@ -69,20 +69,21 @@ public class MetadataWriter {
             Writer streamWriter = new OutputStreamWriter(bout, "UTF-8");
             XMLStreamWriter writer = XML_OUTPUT_FACTORY.createXMLStreamWriter(streamWriter);
 
-            writer.writeStartDocument();
+            writer.writeStartDocument("UTF-8", "1.0");
 
             String referenceID = IDGenerator.generateID("_");
-            writer.writeStartElement("", "EntityDescriptor", SAML2_METADATA_NS);
+            writer.writeStartElement("md", "EntityDescriptor", SAML2_METADATA_NS);
             writer.writeAttribute("ID", referenceID);
                       
             writer.writeAttribute("entityID", config.getIdpUrl().toString());
 
+            writer.writeNamespace("md", SAML2_METADATA_NS);
             writer.writeNamespace("fed", WS_FEDERATION_NS);
             writer.writeNamespace("wsa", WS_ADDRESSING_NS);
             writer.writeNamespace("auth", WS_FEDERATION_NS);
             writer.writeNamespace("xsi", SCHEMA_INSTANCE_NS);
 
-            writer.writeStartElement("fed", "RoleDescriptor", WS_FEDERATION_NS);
+            writer.writeStartElement("md", "RoleDescriptor", WS_FEDERATION_NS);
             writer.writeAttribute(SCHEMA_INSTANCE_NS, "type", "fed:SecurityTokenServiceType");
             writer.writeAttribute("protocolSupportEnumeration", WS_FEDERATION_NS);
             if (config.getServiceDescription() != null && config.getServiceDescription().length() > 0 ) {

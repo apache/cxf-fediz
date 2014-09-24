@@ -75,7 +75,7 @@ public class MetadataWriter {
 
             Protocol protocol = config.getProtocol();
 
-            writer.writeStartDocument();
+            writer.writeStartDocument("UTF-8", "1.0");
 
             String referenceID = IDGenerator.generateID("_");
             writer.writeStartElement("", "EntityDescriptor", SAML2_METADATA_NS);
@@ -92,6 +92,12 @@ public class MetadataWriter {
             }
             
             writer.writeAttribute("entityID", serviceURL);
+            
+            writer.writeNamespace("md", SAML2_METADATA_NS);
+            writer.writeNamespace("fed", WS_FEDERATION_NS);
+            writer.writeNamespace("wsa", WS_ADDRESSING_NS);
+            writer.writeNamespace("auth", WS_FEDERATION_NS);
+            writer.writeNamespace("xsi", SCHEMA_INSTANCE_NS);
 
             if (protocol instanceof FederationProtocol) {
                 writeFederationMetadata(writer, config, serviceURL);
@@ -148,12 +154,8 @@ public class MetadataWriter {
         FedizContext config,
         String serviceURL
     ) throws XMLStreamException {
-        writer.writeNamespace("fed", WS_FEDERATION_NS);
-        writer.writeNamespace("wsa", WS_ADDRESSING_NS);
-        writer.writeNamespace("auth", WS_FEDERATION_NS);
-        writer.writeNamespace("xsi", SCHEMA_INSTANCE_NS);
 
-        writer.writeStartElement("fed", "RoleDescriptor", WS_FEDERATION_NS);
+        writer.writeStartElement("md", "RoleDescriptor", WS_FEDERATION_NS);
         writer.writeAttribute(SCHEMA_INSTANCE_NS, "type", "fed:ApplicationServiceType");
         writer.writeAttribute("protocolSupportEnumeration", WS_FEDERATION_NS);
 
@@ -239,7 +241,7 @@ public class MetadataWriter {
         
         SAMLProtocol protocol = (SAMLProtocol)config.getProtocol();
         
-        writer.writeStartElement("", "SPSSODescriptor", SAML2_METADATA_NS);
+        writer.writeStartElement("md", "SPSSODescriptor", SAML2_METADATA_NS);
         writer.writeAttribute("AuthnRequestsSigned", Boolean.toString(protocol.isSignRequest()));
         writer.writeAttribute("WantAssertionsSigned", "true");
         writer.writeAttribute("protocolSupportEnumeration", "urn:oasis:names:tc:SAML:2.0:protocol");

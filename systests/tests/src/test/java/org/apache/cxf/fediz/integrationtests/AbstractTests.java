@@ -344,7 +344,7 @@ public abstract class AbstractTests {
 
         final XmlPage rpPage = webClient.getPage(url);
         final String xmlContent = rpPage.asXml();
-        Assert.assertTrue(xmlContent.startsWith("<EntityDescriptor"));
+        Assert.assertTrue(xmlContent.startsWith("<md:EntityDescriptor"));
         
         // Now validate the Signature
         Document doc = rpPage.getXmlDocument();
