@@ -78,7 +78,7 @@ public class MetadataWriter {
             writer.writeStartDocument("UTF-8", "1.0");
 
             String referenceID = IDGenerator.generateID("_");
-            writer.writeStartElement("", "EntityDescriptor", SAML2_METADATA_NS);
+            writer.writeStartElement("md", "EntityDescriptor", SAML2_METADATA_NS);
             writer.writeAttribute("ID", referenceID);
             
             String serviceURL = protocol.getApplicationServiceURL();
