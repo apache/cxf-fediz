@@ -247,13 +247,13 @@ public class MetadataWriter {
         writer.writeAttribute("protocolSupportEnumeration", "urn:oasis:names:tc:SAML:2.0:protocol");
         
         if (config.getLogoutURL() != null) {
-            writer.writeStartElement("", "SingleLogoutService", SAML2_METADATA_NS);
+            writer.writeStartElement("md", "SingleLogoutService", SAML2_METADATA_NS);
             writer.writeAttribute("Location", config.getLogoutURL());
             writer.writeAttribute("Binding", "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
             writer.writeEndElement(); // SingleLogoutService
         }
         
-        writer.writeStartElement("", "AssertionConsumerService", SAML2_METADATA_NS);
+        writer.writeStartElement("md", "AssertionConsumerService", SAML2_METADATA_NS);
         writer.writeAttribute("Location", serviceURL);
         writer.writeAttribute("index", "0");
         writer.writeAttribute("isDefault", "true");
@@ -261,16 +261,16 @@ public class MetadataWriter {
         writer.writeEndElement(); // AssertionConsumerService
         
         if (protocol.getClaimTypesRequested() != null && !protocol.getClaimTypesRequested().isEmpty()) {
-            writer.writeStartElement("", "AttributeConsumingService", SAML2_METADATA_NS);
+            writer.writeStartElement("md", "AttributeConsumingService", SAML2_METADATA_NS);
             writer.writeAttribute("index", "0");
             
-            writer.writeStartElement("", "ServiceName", SAML2_METADATA_NS);
+            writer.writeStartElement("md", "ServiceName", SAML2_METADATA_NS);
             writer.writeAttribute("xml:lang", "en");
             writer.writeCharacters(config.getName());
             writer.writeEndElement(); // ServiceName
             
             for (Claim claim : protocol.getClaimTypesRequested()) {
-                writer.writeStartElement("", "RequestedAttribute", SAML2_METADATA_NS);
+                writer.writeStartElement("md", "RequestedAttribute", SAML2_METADATA_NS);
                 writer.writeAttribute("isRequired", Boolean.toString(claim.isOptional()));
                 writer.writeAttribute("Name", claim.getType());
                 writer.writeAttribute("NameFormat", 
@@ -290,7 +290,7 @@ public class MetadataWriter {
             LOG.info("No signingKey element found in config: " + ex.getMessage());
         }
         if (protocol.isSignRequest() && hasSigningKey) {
-            writer.writeStartElement("", "KeyDescriptor", SAML2_METADATA_NS);
+            writer.writeStartElement("md", "KeyDescriptor", SAML2_METADATA_NS);
             writer.writeAttribute("use", "signing");
             
             writer.writeStartElement("ds", "KeyInfo", "http://www.w3.org/2000/09/xmldsig#");
