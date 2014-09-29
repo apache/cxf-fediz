@@ -189,8 +189,10 @@ public abstract class Protocol {
     public List<Claim> getClaimTypesRequested() {
         ClaimTypesRequested claimsRequested = getProtocolType().getClaimTypesRequested();
         List<Claim> claims = new ArrayList<Claim>();
-        for (ClaimType c : claimsRequested.getClaimType()) {
-            claims.add(new Claim(c));
+        if (claimsRequested != null) {
+            for (ClaimType c : claimsRequested.getClaimType()) {
+                claims.add(new Claim(c));
+            }
         }
         return claims;
     }
