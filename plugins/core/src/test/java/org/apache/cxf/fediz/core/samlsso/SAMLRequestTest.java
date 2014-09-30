@@ -199,4 +199,23 @@ public class SAMLRequestTest {
         Assert.assertTrue(signature != null && signature.length() > 0);
     }
     
+    @org.junit.Test
+    public void createSAMLLogoutRequest() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+        
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL)).times(1, 2);
+        EasyMock.expect(req.getContextPath()).andReturn(TEST_REQUEST_URI);
+        EasyMock.expect(req.getRequestURI()).andReturn(TEST_REQUEST_URI).times(1, 2);
+        EasyMock.replay(req);
+        
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        RedirectionResponse response = wfProc.createSignOutRequest(req, config);
+        
+        String redirectionURL = response.getRedirectionURL();
+        Assert.assertTrue(redirectionURL.startsWith(TEST_IDP_ISSUER));
+        Assert.assertTrue(redirectionURL.endsWith("wa=wsignout1.0"));
+    }
+    
 }

@@ -40,7 +40,6 @@ import org.apache.cxf.fediz.core.SAMLSSOConstants;
 import org.apache.cxf.fediz.core.TokenValidator;
 import org.apache.cxf.fediz.core.TokenValidatorRequest;
 import org.apache.cxf.fediz.core.TokenValidatorResponse;
-import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.config.SAMLProtocol;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
@@ -411,7 +410,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
 
         String redirectURL = null;
         try {
-            if (!(config.getProtocol() instanceof FederationProtocol)) {
+            if (!(config.getProtocol() instanceof SAMLProtocol)) {
                 LOG.error("Unsupported protocol");
                 throw new IllegalStateException("Unsupported protocol");
             }
