@@ -111,6 +111,8 @@
 				<xs:sequence>
 					<xs:element ref="signRequest" />
 					<xs:element ref="authnRequestBuilder"/>
+					<xs:element ref="disableDeflateEncoding"/>
+					<xs:element ref="doNotEnforceKnownIssuer"/>
 				</xs:sequence>
 				<xs:attribute name="version" use="required" type="xs:string" />
 			</xs:extension>
@@ -125,6 +127,8 @@
 
 	<xs:element name="signRequest" type="xs:boolean" />
 	<xs:element name="authnRequestBuilder" type="xs:string" />
+	<xs:element name="disableDeflateEncoding" type="xs:boolean"/>
+	<xs:element name="doNotEnforceKnownIssuer" type="xs:boolean"/>
 	
 	<xs:complexType name="protocolType" abstract="true">
 	    <xs:sequence>

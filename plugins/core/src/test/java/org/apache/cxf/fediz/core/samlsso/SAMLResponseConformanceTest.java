@@ -41,6 +41,7 @@ import org.apache.cxf.fediz.core.RequestState;
 import org.apache.cxf.fediz.core.SAML2CallbackHandler;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
+import org.apache.cxf.fediz.core.config.SAMLProtocol;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.core.processor.FedizProcessor;
@@ -974,6 +975,146 @@ public class SAMLResponseConformanceTest {
         }
     }
     
+    @org.junit.Test
+    public void testIssuerEnforcementFailure() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+        
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                                                     TEST_IDP_ISSUER,
+                                                     requestId,
+                                                     TEST_REQUEST_URL,
+                                                     (String)config.getProtocol().getIssuer(),
+                                                     null,
+                                                     relayState,
+                                                     System.currentTimeMillis());
+        
+        // Create SAML Response
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setAlsoAddAuthnStatement(true);
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_IDP_ISSUER + "/other-issuer");
+        callbackHandler.setSubjectName(TEST_USER);
+        
+        ConditionsBean cp = new ConditionsBean();
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_REQUEST_URL);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
+        callbackHandler.setConditions(cp);
+        
+        // Subject Confirmation Data
+        SubjectConfirmationDataBean subjectConfirmationData = new SubjectConfirmationDataBean();
+        subjectConfirmationData.setAddress(TEST_CLIENT_ADDRESS);
+        subjectConfirmationData.setInResponseTo(requestId);
+        subjectConfirmationData.setNotAfter(new DateTime().plusMinutes(5));
+        subjectConfirmationData.setRecipient(TEST_REQUEST_URL);
+        callbackHandler.setSubjectConfirmationData(subjectConfirmationData);
+        
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
+        
+        Issuer issuer =
+            SAML2PResponseComponentBuilder.createIssuer(assertion.getIssuerString());
+        
+        Element response = createSamlResponse(assertion, "mystskey", true, requestId, issuer);
+        String responseStr = encodeResponse(response);
+        
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+        
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(responseStr);
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+        wfReq.setRequestState(requestState);
+        
+        // Failure expected on an unknown issuer value
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            fail("Failure expected");
+        } catch (ProcessingException ex) {
+            if (!TYPE.INVALID_REQUEST.equals(ex.getType())) {
+                fail("Expected ProcessingException with INVALID_REQUEST type");
+            }
+        }
+    }
+    
+    @org.junit.Test
+    public void testIssuerEnforcementDisable() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+        
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                                                     TEST_IDP_ISSUER,
+                                                     requestId,
+                                                     TEST_REQUEST_URL,
+                                                     (String)config.getProtocol().getIssuer(),
+                                                     null,
+                                                     relayState,
+                                                     System.currentTimeMillis());
+        
+        // Create SAML Response
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setAlsoAddAuthnStatement(true);
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_IDP_ISSUER + "/other-issuer");
+        callbackHandler.setSubjectName(TEST_USER);
+        
+        ConditionsBean cp = new ConditionsBean();
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_REQUEST_URL);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
+        callbackHandler.setConditions(cp);
+        
+        // Subject Confirmation Data
+        SubjectConfirmationDataBean subjectConfirmationData = new SubjectConfirmationDataBean();
+        subjectConfirmationData.setAddress(TEST_CLIENT_ADDRESS);
+        subjectConfirmationData.setInResponseTo(requestId);
+        subjectConfirmationData.setNotAfter(new DateTime().plusMinutes(5));
+        subjectConfirmationData.setRecipient(TEST_REQUEST_URL);
+        callbackHandler.setSubjectConfirmationData(subjectConfirmationData);
+        
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
+        
+        Issuer issuer =
+            SAML2PResponseComponentBuilder.createIssuer(assertion.getIssuerString());
+        
+        Element response = createSamlResponse(assertion, "mystskey", true, requestId, issuer);
+        String responseStr = encodeResponse(response);
+        
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+        
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(responseStr);
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+        wfReq.setRequestState(requestState);
+        
+        // Disable the issuer enforcement check
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        ((SAMLProtocol)config.getProtocol()).setDoNotEnforceKnownIssuer(true);
+        Assert.assertTrue(((SAMLProtocol)config.getProtocol()).isDoNotEnforceKnownIssuer());
+        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
+        Assert.assertEquals("Principal name wrong", TEST_USER, wfRes.getUsername());
+        
+    }
     
     private Element createSamlResponse(SamlAssertionWrapper assertion, String alias, 
                                       boolean sign, String requestID, Issuer issuer)

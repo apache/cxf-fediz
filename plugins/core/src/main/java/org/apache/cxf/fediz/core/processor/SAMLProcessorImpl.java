@@ -19,6 +19,7 @@
 
 package org.apache.cxf.fediz.core.processor;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
@@ -126,13 +127,17 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
         InputStream tokenStream = null;
         try {
             byte[] deflatedToken = Base64.decode(request.getResponseToken());
-            tokenStream = CompressionUtils.inflate(deflatedToken); 
+            if (protocol.isDisableDeflateEncoding()) {
+                tokenStream = new ByteArrayInputStream(deflatedToken);
+            } else {
+                tokenStream = CompressionUtils.inflate(deflatedToken);
+            }
         } catch (DataFormatException ex) {
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         } catch (Base64DecodingException e) {
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
-
+        
         Document doc = null;
         Element el = null;
         try {
@@ -247,12 +252,15 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             String requestURL = request.getRequestURL().toString();
             ssoResponseValidator.setAssertionConsumerURL(requestURL);
             ssoResponseValidator.setClientAddress(request.getRemoteAddr());
+            
+            boolean doNotEnforceKnownIssuer = 
+                ((SAMLProtocol)config.getProtocol()).isDoNotEnforceKnownIssuer();
+            ssoResponseValidator.setEnforceKnownIssuer(!doNotEnforceKnownIssuer);
 
             ssoResponseValidator.setIssuerIDP(requestState.getIdpServiceAddress());
             ssoResponseValidator.setRequestId(requestState.getRequestId());
             ssoResponseValidator.setSpIdentifier(requestState.getIssuerId());
             ssoResponseValidator.setEnforceAssertionsSigned(true);
-            ssoResponseValidator.setEnforceKnownIssuer(true);
             ssoResponseValidator.setReplayCache(config.getTokenReplayCache());
 
             return ssoResponseValidator.validateSamlResponse(samlResponse, false);

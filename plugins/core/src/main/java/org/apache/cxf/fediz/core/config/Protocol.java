@@ -164,7 +164,7 @@ public abstract class Protocol {
     }
     
     protected Object loadCallbackType(CallbackType cbt, String name) {
-        if (cbt == null) {
+        if (cbt == null || cbt.getValue() == null) {
             return null;
         }
         if (cbt.getType() == null || cbt.getType().equals(ArgumentType.STRING)) {

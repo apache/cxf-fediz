@@ -245,7 +245,8 @@ public class SAMLSSOResponseValidator {
         
         // InResponseTo must match the AuthnRequest request Id
         if (requestId != null && !requestId.equals(subjectConfData.getInResponseTo())) {
-            LOG.debug("The InResponseTo String does match the original request id " + requestId);
+            LOG.debug("The InResponseTo String " + subjectConfData.getInResponseTo() 
+                     + " does match the original request id " + requestId);
             throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
         }
         

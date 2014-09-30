@@ -90,5 +90,21 @@ public class SAMLProtocol extends Protocol {
         this.authnRequestBuilder = authnRequestBuilder;
     }
     
+    public boolean isDisableDeflateEncoding() {
+        return getSAMLProtocol().isDisableDeflateEncoding();
+    }
+
+    public void setDisableDeflateEncoding(boolean disableDeflateEncoding) {
+        getSAMLProtocol().setDisableDeflateEncoding(disableDeflateEncoding);
+    }
+    
+    public boolean isDoNotEnforceKnownIssuer() {
+        return getSAMLProtocol().isDoNotEnforceKnownIssuer();
+    }
+
+    public void setDoNotEnforceKnownIssuer(boolean doNotEnforceKnownIssuer) {
+        getSAMLProtocol().setDoNotEnforceKnownIssuer(doNotEnforceKnownIssuer);
+    }
+    
     
 }
