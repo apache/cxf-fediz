@@ -98,7 +98,7 @@ public class SAMLRequestTest {
     }
     
     @org.junit.Test
-    public void createSAMLRequest() throws Exception {
+    public void createSAMLAuthnRequest() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
         
@@ -124,7 +124,7 @@ public class SAMLRequestTest {
     }
     
     @org.junit.Test
-    public void testRelayState() throws Exception {
+    public void testAuthnRelayState() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
         
@@ -150,7 +150,7 @@ public class SAMLRequestTest {
     }
     
     @org.junit.Test
-    public void testSAMLRequest() throws Exception {
+    public void testSAMLAuthnRequest() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
         
@@ -180,7 +180,7 @@ public class SAMLRequestTest {
     }
     
     @org.junit.Test
-    public void testSignedSAMLRequest() throws Exception {
+    public void testSignedSAMLAuthnRequest() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("SIGNED_ROOT");
         
@@ -228,4 +228,23 @@ public class SAMLRequestTest {
         Assert.assertEquals(TEST_REQUEST_URL, request.getIssuer().getValue());
     }
     
+    @org.junit.Test
+    public void testSignedSAMLLogoutRequest() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("SIGNED_ROOT");
+        
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL)).times(1, 2);
+        EasyMock.expect(req.getContextPath()).andReturn(TEST_REQUEST_URI);
+        EasyMock.expect(req.getRequestURI()).andReturn(TEST_REQUEST_URI).times(1, 2);
+        EasyMock.replay(req);
+        
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        RedirectionResponse response = wfProc.createSignOutRequest(req, config);
+        
+        String redirectionURL = response.getRedirectionURL();
+        String signature = 
+            redirectionURL.substring(redirectionURL.indexOf("Signature=") + "Signature=".length());
+        Assert.assertTrue(signature != null && signature.length() > 0);
+    }
 }
