@@ -243,7 +243,8 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
             FedizProcessor wfProc = 
                 FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
             try {
-                Document metadata = wfProc.getMetaData(fedConfig);
+                HttpServletRequest request = messageContext.getHttpServletRequest();
+                Document metadata = wfProc.getMetaData(request, fedConfig);
                 String metadataStr = DOM2Writer.nodeToString(metadata);
                 
                 ResponseBuilder response = Response.ok(metadataStr, "text/xml");

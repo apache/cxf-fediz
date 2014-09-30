@@ -176,7 +176,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
                 FedizProcessor wfProc = 
                     FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
                 try {
-                    Document metadata = wfProc.getMetaData(fedConfig);
+                    Document metadata = wfProc.getMetaData(request, fedConfig);
                     out.write(DOM2Writer.nodeToString(metadata));
                     return Authentication.SEND_CONTINUE;
                 } catch (Exception ex) {

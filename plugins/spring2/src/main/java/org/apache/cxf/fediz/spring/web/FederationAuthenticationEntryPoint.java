@@ -100,7 +100,7 @@ public class FederationAuthenticationEntryPoint implements AuthenticationEntryPo
             FedizProcessor wfProc = 
                 FedizProcessorFactory.newFedizProcessor(fedContext.getProtocol());
             try {
-                Document metadata = wfProc.getMetaData(fedContext);
+                Document metadata = wfProc.getMetaData(servletRequest, fedContext);
                 out.write(DOM2Writer.nodeToString(metadata));
                 return;
             } catch (Exception ex) {
@@ -189,7 +189,7 @@ public class FederationAuthenticationEntryPoint implements AuthenticationEntryPo
             FedizProcessor wfProc = 
                 FedizProcessorFactory.newFedizProcessor(fedContext.getProtocol());
             try {
-                Document metadata = wfProc.getMetaData(fedContext);
+                Document metadata = wfProc.getMetaData(hrequest, fedContext);
                 out.write(DOM2Writer.nodeToString(metadata));
                 return;
             } catch (Exception ex) {

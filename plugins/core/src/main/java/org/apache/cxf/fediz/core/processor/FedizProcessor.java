@@ -37,6 +37,8 @@ public interface FedizProcessor {
         HttpServletRequest request, FedizContext config
     ) throws ProcessingException;
 
-    Document getMetaData(FedizContext config) throws ProcessingException;
+    Document getMetaData(
+        HttpServletRequest request, FedizContext config
+    ) throws ProcessingException;
 
 }

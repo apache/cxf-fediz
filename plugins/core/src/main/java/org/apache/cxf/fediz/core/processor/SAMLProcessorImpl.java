@@ -98,8 +98,8 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
     }
     
 
-    public Document getMetaData(FedizContext config) throws ProcessingException {
-        return new MetadataWriter().getMetaData(config);
+    public Document getMetaData(HttpServletRequest request, FedizContext config) throws ProcessingException {
+        return new MetadataWriter().getMetaData(request, config);
     }
     
     private RequestState processRelayState(

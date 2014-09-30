@@ -24,17 +24,19 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
 import javax.security.auth.callback.CallbackHandler;
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.w3c.dom.Document;
-
 import org.apache.cxf.fediz.core.config.Claim;
 import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.config.FedizContext;
@@ -66,7 +68,9 @@ public class MetadataWriter {
     }
 
     //CHECKSTYLE:OFF
-    public Document getMetaData(FedizContext config) throws ProcessingException {
+    public Document getMetaData(
+        HttpServletRequest request, FedizContext config
+    ) throws ProcessingException {
 
         try {
             ByteArrayOutputStream bout = new ByteArrayOutputStream(4096);
@@ -102,7 +106,7 @@ public class MetadataWriter {
             if (protocol instanceof FederationProtocol) {
                 writeFederationMetadata(writer, config, serviceURL);
             } else if (protocol instanceof SAMLProtocol) {
-                writeSAMLMetadata(writer, config, serviceURL);
+                writeSAMLMetadata(writer, request, config, serviceURL);
             }
             
             writer.writeEndElement(); // EntityDescriptor
@@ -235,6 +239,7 @@ public class MetadataWriter {
     
     private void writeSAMLMetadata(
         XMLStreamWriter writer, 
+        HttpServletRequest request,
         FedizContext config,
         String serviceURL
     ) throws Exception {
@@ -248,7 +253,15 @@ public class MetadataWriter {
         
         if (config.getLogoutURL() != null) {
             writer.writeStartElement("md", "SingleLogoutService", SAML2_METADATA_NS);
-            writer.writeAttribute("Location", config.getLogoutURL());
+            
+            String logoutURL = config.getLogoutURL();
+            if (logoutURL.startsWith("/")) {
+                logoutURL = extractFullContextPath(request).concat(logoutURL.substring(1));
+            } else {
+                logoutURL = extractFullContextPath(request).concat(logoutURL);
+            }
+            writer.writeAttribute("Location", logoutURL);
+            
             writer.writeAttribute("Binding", "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
             writer.writeEndElement(); // SingleLogoutService
         }
@@ -323,4 +336,24 @@ public class MetadataWriter {
         writer.writeEndElement(); // SPSSODescriptor
     }
 
+    private String extractFullContextPath(HttpServletRequest request) throws MalformedURLException {
+        String result = null;
+        String contextPath = request.getContextPath();
+        String requestUrl = request.getRequestURL().toString();
+        String requestPath = new URL(requestUrl).getPath();
+        // Cut request path of request url and add context path if not ROOT
+        if (requestPath != null && requestPath.length() > 0) {
+            int lastIndex = requestUrl.lastIndexOf(requestPath);
+            result = requestUrl.substring(0, lastIndex);
+        } else {
+            result = requestUrl;
+        }
+        if (contextPath != null && contextPath.length() > 0) {
+            // contextPath contains starting slash
+            result = result + contextPath + "/";
+        } else {
+            result = result + "/";
+        }
+        return result;
+    }
 }

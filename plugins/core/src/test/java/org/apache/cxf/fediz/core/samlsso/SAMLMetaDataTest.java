@@ -22,12 +22,12 @@ package org.apache.cxf.fediz.core.samlsso;
 import java.io.File;
 import java.net.URL;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.transform.TransformerException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
 import org.apache.cxf.fediz.common.SecurityTestUtil;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
@@ -39,6 +39,7 @@ import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.keys.KeyInfo;
 import org.apache.xml.security.signature.XMLSignature;
 import org.apache.xml.security.signature.XMLSignatureException;
+import org.easymock.EasyMock;
 import org.junit.AfterClass;
 import org.junit.Assert;
 
@@ -49,6 +50,8 @@ import static org.junit.Assert.fail;
  */
 public class SAMLMetaDataTest {
     private static final String CONFIG_FILE = "fediz_meta_test_config_saml.xml";
+    private static final String TEST_REQUEST_URL = "https://localhost/fedizhelloworld/";
+    private static final String CONTEXT_PATH = "https://localhost:9443/";
     
     @AfterClass
     public static void cleanup() {
@@ -75,7 +78,12 @@ public class SAMLMetaDataTest {
         FedizContext config = loadConfig("ROOT");
 
         FedizProcessor wfProc = new FederationProcessorImpl();
-        Document doc = wfProc.getMetaData(config);
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getContextPath()).andReturn(CONTEXT_PATH);
+        EasyMock.replay(req);
+        
+        Document doc = wfProc.getMetaData(req, config);
         Assert.assertNotNull(doc);
         
         Node signatureNode = doc.getElementsByTagName("Signature").item(0);
@@ -107,8 +115,13 @@ public class SAMLMetaDataTest {
 
             FedizProcessor wfProc = new FederationProcessorImpl();
             Document doc;
+            
+            HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+            EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+            EasyMock.expect(req.getContextPath()).andReturn(CONTEXT_PATH);
+            EasyMock.replay(req);
            
-            doc = wfProc.getMetaData(config);
+            doc = wfProc.getMetaData(req, config);
             Assert.assertNull(doc);
             fail("Failure expected as signing store contains more than one certificate");
         } catch (ProcessingException ex) {
@@ -122,7 +135,12 @@ public class SAMLMetaDataTest {
         FedizContext config = loadConfig("ROOT_NO_SIGNINGKEY");
 
         FedizProcessor wfProc = new FederationProcessorImpl();
-        Document doc = wfProc.getMetaData(config);
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getContextPath()).andReturn(CONTEXT_PATH);
+        EasyMock.replay(req);
+        
+        Document doc = wfProc.getMetaData(req, config);
         Assert.assertNotNull(doc);
         
         try {

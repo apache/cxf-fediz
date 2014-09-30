@@ -73,7 +73,7 @@ public class FederationMetaDataTest {
         FedizContext config = loadConfig("ROOT");
 
         FedizProcessor wfProc = new FederationProcessorImpl();
-        Document doc = wfProc.getMetaData(config);
+        Document doc = wfProc.getMetaData(null, config);
         Assert.assertNotNull(doc);
         
         Node signatureNode = doc.getElementsByTagName("Signature").item(0);
@@ -105,7 +105,7 @@ public class FederationMetaDataTest {
             FedizProcessor wfProc = new FederationProcessorImpl();
             Document doc;
            
-            doc = wfProc.getMetaData(config);
+            doc = wfProc.getMetaData(null, config);
             Assert.assertNull(doc);
             fail("Failure expected as signing store contains more than one certificate");
         } catch (ProcessingException ex) {
@@ -119,7 +119,7 @@ public class FederationMetaDataTest {
         FedizContext config = loadConfig("ROOT_NO_SIGNINGKEY");
 
         FedizProcessor wfProc = new FederationProcessorImpl();
-        Document doc = wfProc.getMetaData(config);
+        Document doc = wfProc.getMetaData(null, config);
         Assert.assertNotNull(doc);
         
         try {
