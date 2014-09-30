@@ -34,7 +34,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.RequestState;
 import org.apache.cxf.fediz.core.SAMLSSOConstants;
 import org.apache.cxf.fediz.core.TokenValidator;
@@ -45,8 +44,8 @@ import org.apache.cxf.fediz.core.config.SAMLProtocol;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.core.metadata.MetadataWriter;
-import org.apache.cxf.fediz.core.samlsso.AuthnRequestBuilder;
 import org.apache.cxf.fediz.core.samlsso.CompressionUtils;
+import org.apache.cxf.fediz.core.samlsso.SAMLPRequestBuilder;
 import org.apache.cxf.fediz.core.samlsso.SAMLProtocolResponseValidator;
 import org.apache.cxf.fediz.core.samlsso.SAMLSSOResponseValidator;
 import org.apache.cxf.fediz.core.samlsso.SSOValidatorResponse;
@@ -60,6 +59,7 @@ import org.apache.xml.security.exceptions.Base64DecodingException;
 import org.apache.xml.security.utils.Base64;
 import org.opensaml.common.xml.SAMLConstants;
 import org.opensaml.saml2.core.AuthnRequest;
+import org.opensaml.saml2.core.LogoutRequest;
 import org.opensaml.xml.XMLObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -286,8 +286,8 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
                 redirectURL = issuerURL;
             }
             
-            AuthnRequestBuilder authnRequestBuilder = 
-                ((SAMLProtocol)config.getProtocol()).getAuthnRequestBuilder();
+            SAMLPRequestBuilder samlpRequestBuilder = 
+                ((SAMLProtocol)config.getProtocol()).getSAMLPRequestBuilder();
             
             Document doc = DOMUtils.createDocument();
             doc.appendChild(doc.createElement("root"));
@@ -296,7 +296,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             String requestURL = request.getRequestURL().toString();
             String realm = resolveWTRealm(request, config);
             AuthnRequest authnRequest = 
-                authnRequestBuilder.createAuthnRequest(realm, requestURL);
+                samlpRequestBuilder.createAuthnRequest(realm, requestURL);
             
             if (((SAMLProtocol)config.getProtocol()).isSignRequest()) {
                 authnRequest.setDestination(redirectURL);
@@ -407,7 +407,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
     @Override
     public RedirectionResponse createSignOutRequest(HttpServletRequest request, FedizContext config)
         throws ProcessingException {
-
+        
         String redirectURL = null;
         try {
             if (!(config.getProtocol() instanceof SAMLProtocol)) {
@@ -420,34 +420,63 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             if (issuerURL != null && issuerURL.length() > 0) {
                 redirectURL = issuerURL;
             }
+            redirectURL = "http://localhost:8081/IDBUS/CXF/CXFIDP/SAML2/SLO/REDIR";
+            
+            SAMLPRequestBuilder samlpRequestBuilder = 
+                ((SAMLProtocol)config.getProtocol()).getSAMLPRequestBuilder();
+            
+            Document doc = DOMUtils.createDocument();
+            doc.appendChild(doc.createElement("root"));
+     
+            // Create the LogoutRequest
+            String requestURL = request.getRequestURL().toString();
+            String realm = resolveWTRealm(request, config);
+            String reason = "urn:oasis:names:tc:SAML:2.0:logout:user";
+            LogoutRequest logoutRequest = 
+                samlpRequestBuilder.createLogoutRequest(realm, reason, null); // TODO
+            
+            if (((SAMLProtocol)config.getProtocol()).isSignRequest()) {
+                logoutRequest.setDestination(redirectURL);
+            }
+            
+            Element logoutRequestElement = OpenSAMLUtil.toDom(logoutRequest, doc);
+            String logoutRequestEncoded = encodeAuthnRequest(logoutRequestElement);
+            
+            String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+            RequestState requestState = new RequestState();
+            requestState.setTargetAddress(requestURL);
+            requestState.setIdpServiceAddress(redirectURL);
+            requestState.setRequestId(logoutRequest.getID());
+            requestState.setIssuerId(realm);
+            requestState.setWebAppContext(logoutRequest.getIssuer().getValue());
+            requestState.setState(relayState);
+            requestState.setCreatedAt(System.currentTimeMillis());
+            
+            String urlEncodedRequest = 
+                URLEncoder.encode(logoutRequestEncoded, "UTF-8");
 
             StringBuilder sb = new StringBuilder();
-            sb.append(FederationConstants.PARAM_ACTION).append('=').append(FederationConstants.ACTION_SIGNOUT);
-
-            String logoutRedirectTo = config.getLogoutRedirectTo();
-            if (logoutRedirectTo != null && !logoutRedirectTo.isEmpty()) {
-
-                if (logoutRedirectTo.startsWith("/")) {
-                    logoutRedirectTo = extractFullContextPath(request).concat(logoutRedirectTo.substring(1));
-                } else {
-                    logoutRedirectTo = extractFullContextPath(request).concat(logoutRedirectTo);
-                }
-
-                LOG.debug("wreply=" + logoutRedirectTo);
-
-                sb.append('&').append(FederationConstants.PARAM_REPLY).append('=');
-                sb.append(URLEncoder.encode(logoutRedirectTo, "UTF-8"));
+            sb.append(SAMLSSOConstants.SAML_REQUEST).append('=').append(urlEncodedRequest);
+            sb.append("&" + SAMLSSOConstants.RELAY_STATE).append('=').append(relayState);
+            
+            if (((SAMLProtocol)config.getProtocol()).isSignRequest()) {
+                String signature = signRequest(config, sb);
+                sb.append("&" + SAMLSSOConstants.SIGNATURE).append('=').append(signature);
             }
-
+            
+            RedirectionResponse response = new RedirectionResponse();
+            response.addHeader("Cache-Control", "no-cache, no-store");
+            response.addHeader("Pragma", "no-cache");
+            response.setRequestState(requestState);
+            
             redirectURL = redirectURL + "?" + sb.toString();
+            response.setRedirectionURL(redirectURL);
+            
+            return response;
         } catch (Exception ex) {
-            LOG.error("Failed to create SignInRequest", ex);
-            throw new ProcessingException("Failed to create SignInRequest");
+            LOG.error("Failed to create SignOutRequest", ex);
+            throw new ProcessingException("Failed to create SignOutRequest");
         }
-        
-        RedirectionResponse response = new RedirectionResponse();
-        response.setRedirectionURL(redirectURL);
-        return response;
     }
     
 }

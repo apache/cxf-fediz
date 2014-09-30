@@ -30,7 +30,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
-
 import org.apache.cxf.fediz.common.SecurityTestUtil;
 import org.apache.cxf.fediz.core.RequestState;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
@@ -46,6 +45,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.opensaml.saml2.core.AuthnRequest;
+import org.opensaml.saml2.core.LogoutRequest;
 
 /**
  * Some tests for creating SAMLRequests using the SAMLProcessorImpl
@@ -214,8 +214,18 @@ public class SAMLRequestTest {
         RedirectionResponse response = wfProc.createSignOutRequest(req, config);
         
         String redirectionURL = response.getRedirectionURL();
-        Assert.assertTrue(redirectionURL.startsWith(TEST_IDP_ISSUER));
-        Assert.assertTrue(redirectionURL.endsWith("wa=wsignout1.0"));
+        String samlRequest = 
+            redirectionURL.substring(redirectionURL.indexOf("SAMLRequest=") + "SAMLRequest=".length(),
+                                     redirectionURL.indexOf("RelayState=") - 1);
+        
+        byte[] deflatedToken = Base64.decode(URLDecoder.decode(samlRequest, "UTF-8"));
+        InputStream tokenStream = CompressionUtils.inflate(deflatedToken);
+
+        Document requestDoc = DOMUtils.readXml(new InputStreamReader(tokenStream, "UTF-8"));
+        LogoutRequest request =
+            (LogoutRequest)OpenSAMLUtil.fromDom(requestDoc.getDocumentElement());
+
+        Assert.assertEquals(TEST_REQUEST_URL, request.getIssuer().getValue());
     }
     
 }

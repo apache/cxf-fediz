@@ -19,21 +19,27 @@
 
 package org.apache.cxf.fediz.core.samlsso;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
+import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.opensaml.common.SAMLVersion;
 import org.opensaml.saml2.core.AuthnContextClassRef;
 import org.opensaml.saml2.core.AuthnContextComparisonTypeEnumeration;
 import org.opensaml.saml2.core.AuthnRequest;
+import org.opensaml.saml2.core.AuthnStatement;
 import org.opensaml.saml2.core.Issuer;
+import org.opensaml.saml2.core.LogoutRequest;
+import org.opensaml.saml2.core.NameID;
 import org.opensaml.saml2.core.NameIDPolicy;
 import org.opensaml.saml2.core.RequestedAuthnContext;
 
 /**
- * A default implementation of the AuthnRequestBuilder interface to create a SAML 2.0
- * Protocol AuthnRequest.
+ * A default implementation of the SAMLPRequestBuilder interface to create a SAML 2.0
+ * Protocol AuthnRequest and LogoutRequest
  */
-public class DefaultAuthnRequestBuilder implements AuthnRequestBuilder {
+public class DefaultSAMLPRequestBuilder implements SAMLPRequestBuilder {
     
     private boolean forceAuthn;
     private boolean isPassive;
@@ -100,6 +106,46 @@ public class DefaultAuthnRequestBuilder implements AuthnRequestBuilder {
 
     public void setProtocolBinding(String protocolBinding) {
         this.protocolBinding = protocolBinding;
+    }
+
+    @Override
+    public LogoutRequest createLogoutRequest(
+        String issuerId,
+        String reason,
+        SamlAssertionWrapper authenticatedAssertion
+    ) throws Exception {
+        Issuer issuer =
+            SamlpRequestComponentBuilder.createIssuer(issuerId);
+        
+        NameID nameID = null;
+        List<String> sessionIndices = new ArrayList<String>();
+        
+        if (authenticatedAssertion != null) {
+            if (authenticatedAssertion.getSaml2() != null) {
+                org.opensaml.saml2.core.Subject subject = 
+                    authenticatedAssertion.getSaml2().getSubject();
+                if (subject != null && subject.getNameID() != null) {
+                    nameID = subject.getNameID();
+                }
+            }
+            List<AuthnStatement> authnStatements = 
+                authenticatedAssertion.getSaml2().getAuthnStatements();
+            if (authnStatements != null && !authnStatements.isEmpty()) {
+                for (AuthnStatement authnStatement : authnStatements) {
+                    if (authnStatement.getSessionIndex() != null) {
+                        sessionIndices.add(authnStatement.getSessionIndex());
+                    }
+                }
+            }
+        }
+        
+        //CHECKSTYLE:OFF
+        return SamlpRequestComponentBuilder.createLogoutRequest(
+            issuer,
+            reason,
+            nameID,
+            sessionIndices
+        );
     }
     
 }

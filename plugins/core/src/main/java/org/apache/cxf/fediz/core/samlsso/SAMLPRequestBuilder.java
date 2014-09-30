@@ -19,12 +19,14 @@
 
 package org.apache.cxf.fediz.core.samlsso;
 
+import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.opensaml.saml2.core.AuthnRequest;
+import org.opensaml.saml2.core.LogoutRequest;
 
 /**
- * This interface defines a method to create a SAML 2.0 Protocol AuthnRequest.
+ * This interface defines a methods to create a SAML 2.0 Protocol AuthnRequest and LogoutRequest.
  */
-public interface AuthnRequestBuilder {
+public interface SAMLPRequestBuilder {
     
     /**
      * Create a SAML 2.0 Protocol AuthnRequest
@@ -32,5 +34,14 @@ public interface AuthnRequestBuilder {
     AuthnRequest createAuthnRequest(
         String issuerId,
         String assertionConsumerServiceAddress
+    ) throws Exception;
+    
+    /**
+     * Create a SAML 2.0 Protocol LogoutRequest
+     */
+    LogoutRequest createLogoutRequest(
+        String issuerId,
+        String reason,
+        SamlAssertionWrapper authenticatedAssertion
     ) throws Exception;
 }

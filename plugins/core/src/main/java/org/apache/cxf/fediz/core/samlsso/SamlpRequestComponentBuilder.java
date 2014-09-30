@@ -32,8 +32,11 @@ import org.opensaml.saml2.core.AuthnContextComparisonTypeEnumeration;
 import org.opensaml.saml2.core.AuthnContextDeclRef;
 import org.opensaml.saml2.core.AuthnRequest;
 import org.opensaml.saml2.core.Issuer;
+import org.opensaml.saml2.core.LogoutRequest;
+import org.opensaml.saml2.core.NameID;
 import org.opensaml.saml2.core.NameIDPolicy;
 import org.opensaml.saml2.core.RequestedAuthnContext;
+import org.opensaml.saml2.core.SessionIndex;
 import org.opensaml.xml.XMLObjectBuilderFactory;
 
 /**
@@ -42,6 +45,10 @@ import org.opensaml.xml.XMLObjectBuilderFactory;
 public final class SamlpRequestComponentBuilder {
     
     private static volatile SAMLObjectBuilder<AuthnRequest> authnRequestBuilder;
+    
+    private static volatile SAMLObjectBuilder<LogoutRequest> logoutRequestBuilder;
+    
+    private static volatile SAMLObjectBuilder<SessionIndex> sessionIndexBuilder;
     
     private static volatile SAMLObjectBuilder<Issuer> issuerBuilder;
     
@@ -87,6 +94,47 @@ public final class SamlpRequestComponentBuilder {
         authnRequest.setRequestedAuthnContext(requestedAuthnCtx);
         
         return authnRequest;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static LogoutRequest createLogoutRequest(
+        Issuer issuer,
+        String reason,
+        NameID nameId,
+        List<String> sessionIndices
+    ) {
+        if (logoutRequestBuilder == null) {
+            logoutRequestBuilder = (SAMLObjectBuilder<LogoutRequest>)
+                builderFactory.getBuilder(LogoutRequest.DEFAULT_ELEMENT_NAME);
+        }
+        if (sessionIndexBuilder == null) {
+            sessionIndexBuilder = (SAMLObjectBuilder<SessionIndex>)
+                builderFactory.getBuilder(SessionIndex.DEFAULT_ELEMENT_NAME);
+        }
+        
+        LogoutRequest logoutRequest = logoutRequestBuilder.buildObject();
+        
+        logoutRequest.setID(UUID.randomUUID().toString());
+        logoutRequest.setIssueInstant(new DateTime());
+        
+        if (reason != null) {
+            logoutRequest.setReason(reason);
+        }
+        if (nameId != null) {
+            logoutRequest.setNameID(nameId);
+        }
+        
+        if (sessionIndices != null && !sessionIndices.isEmpty()) {
+            for (String sessionIndex : sessionIndices) {
+                SessionIndex sessionIndexObj = sessionIndexBuilder.buildObject();
+                sessionIndexObj.setSessionIndex(sessionIndex);
+                logoutRequest.getSessionIndexes().add(sessionIndexObj);
+            }
+        }
+
+        logoutRequest.setIssuer(issuer);
+
+        return logoutRequest;
     }
     
     @SuppressWarnings("unchecked")

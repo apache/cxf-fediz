@@ -22,8 +22,8 @@ package org.apache.cxf.fediz.core.config;
 import org.apache.cxf.fediz.core.config.jaxb.ProtocolType;
 import org.apache.cxf.fediz.core.config.jaxb.SamlProtocolType;
 import org.apache.cxf.fediz.core.saml.SAMLTokenValidator;
-import org.apache.cxf.fediz.core.samlsso.AuthnRequestBuilder;
-import org.apache.cxf.fediz.core.samlsso.DefaultAuthnRequestBuilder;
+import org.apache.cxf.fediz.core.samlsso.DefaultSAMLPRequestBuilder;
+import org.apache.cxf.fediz.core.samlsso.SAMLPRequestBuilder;
 import org.apache.wss4j.common.util.Loader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +32,7 @@ public class SAMLProtocol extends Protocol {
 
     private static final Logger LOG = LoggerFactory.getLogger(SAMLProtocol.class);
     
-    private AuthnRequestBuilder authnRequestBuilder;
+    private SAMLPRequestBuilder samlpRequestBuilder;
     
     public SAMLProtocol(ProtocolType protocolType) {
         super(protocolType);
@@ -60,17 +60,17 @@ public class SAMLProtocol extends Protocol {
         getSAMLProtocol().setSignRequest(signRequest);
     }
     
-    public AuthnRequestBuilder getAuthnRequestBuilder() {
-        if (authnRequestBuilder != null) {
-            return authnRequestBuilder;
+    public SAMLPRequestBuilder getSAMLPRequestBuilder() {
+        if (samlpRequestBuilder != null) {
+            return samlpRequestBuilder;
         }
         
-        // See if we have a custom AuthnRequestBuilder
-        String authnRequestBuilderStr = getSAMLProtocol().getAuthnRequestBuilder();
-        if (authnRequestBuilderStr != null && !"".equals(authnRequestBuilderStr)) {
+        // See if we have a custom SAMLPRequestBuilder
+        String samlpRequestBuilderStr = getSAMLProtocol().getAuthnRequestBuilder();
+        if (samlpRequestBuilderStr != null && !"".equals(samlpRequestBuilderStr)) {
             try {
-                Class<?> authnRequestBuilderClass = Loader.loadClass(authnRequestBuilderStr);
-                authnRequestBuilder = (AuthnRequestBuilder) authnRequestBuilderClass.newInstance();
+                Class<?> samlpRequestBuilderClass = Loader.loadClass(samlpRequestBuilderStr);
+                samlpRequestBuilder = (SAMLPRequestBuilder) samlpRequestBuilderClass.newInstance();
             } catch (ClassNotFoundException ex) {
                 LOG.debug(ex.getMessage(), ex);
             } catch (InstantiationException ex) {
@@ -81,13 +81,13 @@ public class SAMLProtocol extends Protocol {
         }
         
         // Default implementation
-        authnRequestBuilder = new DefaultAuthnRequestBuilder();
+        samlpRequestBuilder = new DefaultSAMLPRequestBuilder();
         
-        return authnRequestBuilder;
+        return samlpRequestBuilder;
     }
 
-    public void setAuthnRequestBuilder(AuthnRequestBuilder authnRequestBuilder) {
-        this.authnRequestBuilder = authnRequestBuilder;
+    public void setSAMLPRequestBuilder(SAMLPRequestBuilder requestBuilder) {
+        this.samlpRequestBuilder = requestBuilder;
     }
     
     public boolean isDisableDeflateEncoding() {
