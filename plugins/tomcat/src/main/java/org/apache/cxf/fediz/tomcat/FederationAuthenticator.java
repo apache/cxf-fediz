@@ -217,6 +217,14 @@ public class FederationAuthenticator extends FormAuthenticator {
             HttpSession httpSession = request.getSession(false);
             String uri = request.getRequestURI();
             if (httpSession != null && uri.equals(contextName + logoutUrl)) {
+                Session session = request.getSessionInternal();
+                
+                // Cleanup session
+                if (session != null) {
+                    session.removeNote(FEDERATION_NOTE);
+                    session.setPrincipal(null);
+                    request.getSession().removeAttribute(SECURITY_TOKEN);
+                }
                 httpSession.invalidate();
 
                 FedizProcessor wfProc = 
@@ -319,7 +327,6 @@ public class FederationAuthenticator extends FormAuthenticator {
                     LOG.debug("Token already expired. Clean up and redirect");
 
                     session.removeNote(FEDERATION_NOTE);
-                    session.removeNote(Constants.FORM_PRINCIPAL_NOTE);
                     session.setPrincipal(null);
                     request.getSession().removeAttribute(SECURITY_TOKEN);
 
@@ -355,10 +362,13 @@ public class FederationAuthenticator extends FormAuthenticator {
                 LOG.debug("Restore request from session '"
                         + session.getIdInternal() + "'");
             }
+            
+            // Get principal from session, register, and then remove it
             principal = (Principal)session.getNote(Constants.FORM_PRINCIPAL_NOTE);
             register(request, response, principal,
                     FederationConstants.WSFED_METHOD, null, null);
-
+            request.removeNote(Constants.FORM_PRINCIPAL_NOTE);
+            
             if (restoreRequest(request, session)) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Proceed to restored request");
