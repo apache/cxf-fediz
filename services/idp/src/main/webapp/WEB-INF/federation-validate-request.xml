@@ -99,15 +99,26 @@
 		<evaluate expression="stsClientForRpAction.submit(flowRequestContext)"
                     result="flowScope.rpToken" 
                     result-type="java.lang.String" />
-        <transition to="formResponseView" />
+        <transition to="isWReplyProvided" />
+        <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
         <transition on-exception="java.lang.Throwable" to="scInternalServerError" />
+    </action-state>
+
+    <action-state id="isWReplyProvided">
+        <evaluate expression="flowScope.wreply != null" />
+        <transition on="yes" to="formResponseView" >
+            <set name="flowScope.signinResponseUrl" value="flowScope.wreply" />
+        </transition>
+        <transition on="no" to="formResponseView" >
+            <set name="flowScope.signinResponseUrl" value="flowScope.wtrealm" />
+        </transition>
     </action-state>
 
     <!-- normal exit point for login -->
     <!-- browser redirection (self-submitted form 'signinresponseform.jsp') -->
     <end-state id="formResponseView" view="signinresponseform">
         <on-entry>
-            <evaluate expression="flowScope.wreply" result="requestScope.fedAction" />
+            <evaluate expression="flowScope.signinResponseUrl" result="requestScope.fedAction" />
             <evaluate expression="flowScope.wtrealm" result="requestScope.fedWTrealm" />
             <evaluate expression="flowScope.wctx" result="requestScope.fedWCtx" />
             <evaluate expression="flowScope.rpToken" result="requestScope.fedWResult" />
