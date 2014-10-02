@@ -268,7 +268,7 @@ public class TomcatTest extends AbstractTests {
             Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 
             String metadata = EntityUtils.toString(entity);
-            Assert.assertTrue(metadata.startsWith("<EntityDescriptor"));
+            Assert.assertTrue(metadata.startsWith("<md:EntityDescriptor"));
             
             // Now validate the Signature
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -339,7 +339,7 @@ public class TomcatTest extends AbstractTests {
             Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 
             String metadata = EntityUtils.toString(entity);
-            Assert.assertTrue(metadata.startsWith("<EntityDescriptor"));
+            Assert.assertTrue(metadata.startsWith("<md:EntityDescriptor"));
             
             // Now validate the Signature
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();

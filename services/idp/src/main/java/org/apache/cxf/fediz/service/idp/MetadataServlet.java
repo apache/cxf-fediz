@@ -56,7 +56,7 @@ public class MetadataServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException,
         IOException {
-        response.setContentType("text/xml");
+        response.setContentType("text/xml; charset=utf-8");
         PrintWriter out = response.getWriter();
         try {
             ConfigService cs = (ConfigService)getApplicationContext().getBean("config");

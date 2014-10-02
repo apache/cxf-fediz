@@ -74,10 +74,10 @@ public class MetadataWriter {
 
             Protocol protocol = config.getProtocol();
 
-            writer.writeStartDocument();
+            writer.writeStartDocument("UTF-8", "1.0");
 
             String referenceID = "_" + UUIDGenerator.getUUID();
-            writer.writeStartElement("", "EntityDescriptor", SAML2_METADATA_NS);
+            writer.writeStartElement("md", "EntityDescriptor", SAML2_METADATA_NS);
             writer.writeAttribute("ID", referenceID);
             
             String audience = "_someID";
@@ -95,12 +95,13 @@ public class MetadataWriter {
             
             writer.writeAttribute("entityID", serviceURL);
 
+            writer.writeNamespace("md", SAML2_METADATA_NS);
             writer.writeNamespace("fed", WS_FEDERATION_NS);
             writer.writeNamespace("wsa", WS_ADDRESSING_NS);
             writer.writeNamespace("auth", WS_FEDERATION_NS);
             writer.writeNamespace("xsi", SCHEMA_INSTANCE_NS);
 
-            writer.writeStartElement("fed", "RoleDescriptor", WS_FEDERATION_NS);
+            writer.writeStartElement("md", "RoleDescriptor", SAML2_METADATA_NS);
             writer.writeAttribute(SCHEMA_INSTANCE_NS, "type", "fed:ApplicationServiceType");
             writer.writeAttribute("protocolSupportEnumeration", WS_FEDERATION_NS);
 
