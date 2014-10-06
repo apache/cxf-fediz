@@ -32,6 +32,9 @@
     <bean id="delegationCallbackHandler"
         class="org.apache.cxf.fediz.cxf.web.ThreadLocalCallbackHandler" />
 
+    <bean id="roleClaimsCallbackHandler"
+        class="org.apache.cxf.fediz.example.ClaimsCallbackHandler" />
+
     <jaxws:client id="HelloServiceClient" serviceName="svc:GreeterService"
         xmlns:svc="http://apache.org/hello_world_soap_http"
         serviceClass="org.apache.hello_world_soap_http.Greeter"
@@ -54,6 +57,7 @@
 
                         </map>
                     </property>
+                    <property name="claimsCallbackHandler" ref="roleClaimsCallbackHandler"/>
                 </bean>
             </entry>
             <entry key="ws-security.cache.issued.token.in.endpoint"
