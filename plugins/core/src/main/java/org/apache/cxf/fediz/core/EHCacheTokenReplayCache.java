@@ -45,7 +45,7 @@ public class EHCacheTokenReplayCache implements TokenReplayCache<String> {
     private long ttl = DEFAULT_TTL;
     
     public EHCacheTokenReplayCache(String key) {
-        String defaultConfigFile = "fediz-ehcache.xml";
+        String defaultConfigFile = "/fediz-ehcache.xml";
         URL configFileURL = Loader.getResource(defaultConfigFile);
         createCache(key, configFileURL);
     }
