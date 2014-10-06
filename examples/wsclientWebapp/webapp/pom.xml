@@ -82,32 +82,6 @@
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-ws-security</artifactId>
             <version>${cxf.version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>xmlsec</artifactId>
-                    <groupId>org.apache.santuario</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>wss4j-ws-security-dom</artifactId>
-                    <groupId>org.apache.wss4j</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>wss4j-policy</artifactId>
-                    <groupId>org.apache.wss4j</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>wss4j-ws-security-stax</artifactId>
-                    <groupId>org.apache.wss4j</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>wss4j-ws-security-policy-stax</artifactId>
-                    <groupId>org.apache.wss4j</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>ehcache-core</artifactId>
-                    <groupId>net.sf.ehcache</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
