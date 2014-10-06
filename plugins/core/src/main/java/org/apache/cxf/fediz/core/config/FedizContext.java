@@ -221,17 +221,17 @@ public class FedizContext implements Closeable {
         String cacheKey = CACHE_KEY_PREFIX + "-" + config.getName();
         ReplayCacheFactory replayCacheFactory = ReplayCacheFactory.newInstance();
         if (replayCacheString == null || "".equals(replayCacheString)) {
-            replayCache = replayCacheFactory.newReplayCache(cacheKey, "fediz-ehcache.xml");
+            replayCache = replayCacheFactory.newReplayCache(cacheKey, "/fediz-ehcache.xml");
         } else {
             try {
                 Class<?> replayCacheClass = Loader.loadClass(replayCacheString);
                 replayCache = (ReplayCache) replayCacheClass.newInstance();
             } catch (ClassNotFoundException e) {
-                replayCache = replayCacheFactory.newReplayCache(cacheKey, "fediz-ehcache.xml");
+                replayCache = replayCacheFactory.newReplayCache(cacheKey, "/fediz-ehcache.xml");
             } catch (InstantiationException e) {
-                replayCache = replayCacheFactory.newReplayCache(cacheKey, "fediz-ehcache.xml");
+                replayCache = replayCacheFactory.newReplayCache(cacheKey, "/fediz-ehcache.xml");
             } catch (IllegalAccessException e) {
-                replayCache = replayCacheFactory.newReplayCache(cacheKey, "fediz-ehcache.xml");
+                replayCache = replayCacheFactory.newReplayCache(cacheKey, "/fediz-ehcache.xml");
             }
         }
         return replayCache;
