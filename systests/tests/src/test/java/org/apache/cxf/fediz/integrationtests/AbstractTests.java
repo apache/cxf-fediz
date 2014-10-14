@@ -309,7 +309,7 @@ public abstract class AbstractTests {
         final WebClient webClient = new WebClient();
         webClient.getOptions().setUseInsecureSSL(true);
         webClient.getOptions().setSSLClientCertificate(
-            this.getClass().getClassLoader().getResource("client.jks"), "clientpass", "jks");
+            this.getClass().getClassLoader().getResource("client.jks"), "storepass", "jks");
 
         final XmlPage rpPage = webClient.getPage(url);
         final String xmlContent = rpPage.asXml();
@@ -340,7 +340,7 @@ public abstract class AbstractTests {
         final WebClient webClient = new WebClient();
         webClient.getOptions().setUseInsecureSSL(true);
         webClient.getOptions().setSSLClientCertificate(
-            this.getClass().getClassLoader().getResource("client.jks"), "clientpass", "jks");
+            this.getClass().getClassLoader().getResource("client.jks"), "storepass", "jks");
 
         final XmlPage rpPage = webClient.getPage(url);
         final String xmlContent = rpPage.asXml();

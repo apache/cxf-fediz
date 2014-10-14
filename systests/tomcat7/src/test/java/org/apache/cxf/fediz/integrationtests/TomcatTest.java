@@ -22,19 +22,11 @@ package org.apache.cxf.fediz.integrationtests;
 
 import java.io.File;
 
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
-
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
-import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -184,52 +176,6 @@ public class TomcatTest extends AbstractTests {
     @Override
     public String getServletContextName() {
         return "fedizhelloworld";
-    }
-    
-    @org.junit.Test
-    public void testUserAliceClientAuth() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
-        String user = "alice";
-        String password = "ecila";
-
-        final WebClient webClient = new WebClient();
-        webClient.getOptions().setUseInsecureSSL(true);
-        webClient.getOptions().setSSLClientCertificate(
-            this.getClass().getClassLoader().getResource("client.jks"), "clientpass", "jks");
-        webClient.getCredentialsProvider().setCredentials(
-            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
-            new UsernamePasswordCredentials(user, password));
-
-        webClient.getOptions().setJavaScriptEnabled(false);
-        final HtmlPage idpPage = webClient.getPage(url);
-        webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
-
-        final HtmlForm form = idpPage.getFormByName("signinresponseform");
-        final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
-
-        final HtmlPage rpPage = button.click();
-        Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
-
-        final String bodyTextContent = rpPage.getBody().getTextContent();
-        Assert.assertTrue("Principal not " + user,
-                          bodyTextContent.contains("userPrincipal=" + user));
-        Assert.assertTrue("User " + user + " does not have role Admin",
-                          bodyTextContent.contains("role:Admin=false"));
-        Assert.assertTrue("User " + user + " does not have role Manager",
-                          bodyTextContent.contains("role:Manager=false"));
-        Assert.assertTrue("User " + user + " must have role User",
-                          bodyTextContent.contains("role:User=true"));
-        
-        String claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
-                          bodyTextContent.contains(claim + "=Alice"));
-        claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
-                          bodyTextContent.contains(claim + "=Smith"));
-        claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
-                          bodyTextContent.contains(claim + "=alice@realma.org"));
     }
     
 }
