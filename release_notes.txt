@@ -1,4 +1,4 @@
-Apache CXF Fediz 1.1.1 Release Notes
+Apache CXF Fediz 1.1.2 Release Notes
 ------------------------------------
 
 1. Overview
@@ -56,6 +56,18 @@ N.A.
 
 
 8. Specific issues, features, and improvements fixed in this version
+
+Release Notes - CXF-Fediz - Version 1.1.2
+
+Bug
+
+    [FEDIZ-88] - wreply parameter must be optional
+
+New Feature
+
+    [FEDIZ-89] - Kerberos/SPNEGO Authentication Support
+    [FEDIZ-90] - Identity Federation via Claim Mappings
+
 
 Release Notes - CXF-Fediz - Version 1.1.1
 
