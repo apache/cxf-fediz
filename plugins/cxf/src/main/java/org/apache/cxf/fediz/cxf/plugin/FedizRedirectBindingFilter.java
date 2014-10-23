@@ -274,7 +274,7 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
                     
                     HttpServletRequest request = messageContext.getHttpServletRequest();
                     RedirectionResponse redirectionResponse = 
-                        processor.createSignOutRequest(request, fedConfig);
+                        processor.createSignOutRequest(request, null, fedConfig); //TODO
                     String redirectURL = redirectionResponse.getRedirectionURL();
                     if (redirectURL != null) {
                         ResponseBuilder response = Response.seeOther(new URI(redirectURL));

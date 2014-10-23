@@ -128,6 +128,11 @@ public class DefaultSAMLPRequestBuilder implements SAMLPRequestBuilder {
                     nameID = subject.getNameID();
                 }
             }
+            
+            if (nameID != null) {
+                nameID.detach();
+            }
+            
             List<AuthnStatement> authnStatements = 
                 authenticatedAssertion.getSaml2().getAuthnStatements();
             if (authnStatements != null && !authnStatements.isEmpty()) {

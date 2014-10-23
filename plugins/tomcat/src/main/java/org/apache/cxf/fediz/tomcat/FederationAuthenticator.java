@@ -38,6 +38,7 @@ import javax.servlet.http.HttpSession;
 import javax.xml.bind.JAXBException;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Session;
 import org.apache.catalina.authenticator.Constants;
@@ -61,6 +62,8 @@ import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.apache.cxf.fediz.core.processor.RedirectionResponse;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
+import org.apache.wss4j.common.ext.WSSecurityException;
+import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.apache.wss4j.common.util.DOM2Writer;
 
 
@@ -211,30 +214,6 @@ public class FederationAuthenticator extends FormAuthenticator {
             }            
         }
 
-        //logout
-        String logoutUrl = fedConfig.getLogoutURL();
-        if (logoutUrl != null && !logoutUrl.isEmpty()) {
-            HttpSession httpSession = request.getSession(false);
-            String uri = request.getRequestURI();
-            if (httpSession != null && uri.equals(contextName + logoutUrl)) {
-                Session session = request.getSessionInternal();
-                
-                // Cleanup session
-                if (session != null) {
-                    session.removeNote(FEDERATION_NOTE);
-                    session.setPrincipal(null);
-                    request.getSession().removeAttribute(SECURITY_TOKEN);
-                }
-                httpSession.invalidate();
-
-                FedizProcessor wfProc = 
-                    FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
-                signOutRedirectToIssuer(request, response, wfProc);
-
-                return;
-            }
-        }
-
         String wa = request.getParameter(FederationConstants.PARAM_ACTION);
         if (FederationConstants.ACTION_SIGNOUT_CLEANUP.equals(wa)) {
             if (LOG.isDebugEnabled()) {
@@ -291,6 +270,34 @@ public class FederationAuthenticator extends FormAuthenticator {
             contextName = "/";
         }
         FedizContext fedConfig = getContextConfiguration(contextName);
+        
+        //logout
+        String logoutUrl = fedConfig.getLogoutURL();
+        if (logoutUrl != null && !logoutUrl.isEmpty()) {
+            HttpSession httpSession = request.getSession(false);
+            String uri = request.getRequestURI();
+            if (httpSession != null && uri.equals(contextName + logoutUrl)) {
+                session = request.getSessionInternal();
+                
+                Element token = 
+                    (Element)request.getSession().getAttribute(SECURITY_TOKEN);
+                
+                // Cleanup session
+                if (session != null) {
+                    session.removeNote(FEDERATION_NOTE);
+                    session.setPrincipal(null);
+                    request.getSession().removeAttribute(SECURITY_TOKEN);
+                }
+                httpSession.invalidate();
+
+                FedizProcessor wfProc = 
+                    FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
+                signOutRedirectToIssuer(request, response, token, wfProc);
+
+                return false;
+            }
+        }
+
 
         // Have we already authenticated someone?
         Principal principal = request.getUserPrincipal();
@@ -677,7 +684,8 @@ public class FederationAuthenticator extends FormAuthenticator {
         }
     }
 
-    protected void signOutRedirectToIssuer(Request request, HttpServletResponse response, FedizProcessor processor)
+    protected void signOutRedirectToIssuer(Request request, HttpServletResponse response, 
+                                           Element token, FedizProcessor processor)
             throws IOException {
 
         String contextName = request.getServletContext().getContextPath();
@@ -686,7 +694,12 @@ public class FederationAuthenticator extends FormAuthenticator {
         }
         FedizContext fedCtx = this.configurator.getFedizContext(contextName);
         try {
-            RedirectionResponse redirectionResponse = processor.createSignOutRequest(request, fedCtx);
+            SamlAssertionWrapper assertionToken = null;
+            if (token != null) {
+                assertionToken = new SamlAssertionWrapper(token);
+            }
+            RedirectionResponse redirectionResponse = 
+                processor.createSignOutRequest(request, assertionToken, fedCtx);
             String redirectURL = redirectionResponse.getRedirectionURL();
             if (redirectURL != null) {
                 Map<String, String> headers = redirectionResponse.getHeaders();
@@ -703,6 +716,10 @@ public class FederationAuthenticator extends FormAuthenticator {
                         HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignOutRequest.");
             }
         } catch (ProcessingException ex) {
+            LOG.warn("Failed to create SignOutRequest: " + ex.getMessage());
+            response.sendError(
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignOutRequest.");
+        } catch (WSSecurityException ex) {
             LOG.warn("Failed to create SignOutRequest: " + ex.getMessage());
             response.sendError(
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignOutRequest.");

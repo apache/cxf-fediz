@@ -20,21 +20,25 @@
 package org.apache.cxf.fediz.core.processor;
 
 import javax.servlet.http.HttpServletRequest;
+
 import org.w3c.dom.Document;
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
+import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 
 
 public interface FedizProcessor {
 
-    FedizResponse processRequest(FedizRequest request, FedizContext config) throws ProcessingException;
+    FedizResponse processRequest(
+        FedizRequest request, FedizContext config
+    ) throws ProcessingException;
     
     RedirectionResponse createSignInRequest(
         HttpServletRequest request, FedizContext config
     ) throws ProcessingException;
 
     RedirectionResponse createSignOutRequest(
-        HttpServletRequest request, FedizContext config
+        HttpServletRequest request, SamlAssertionWrapper token, FedizContext config
     ) throws ProcessingException;
 
     Document getMetaData(

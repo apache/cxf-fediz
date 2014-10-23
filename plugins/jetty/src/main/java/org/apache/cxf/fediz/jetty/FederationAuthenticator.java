@@ -501,7 +501,8 @@ public class FederationAuthenticator extends LoginAuthenticator {
         }
         FedizContext fedCtx = this.configurator.getFedizContext(contextName);
         try {
-            RedirectionResponse redirectionResponse = processor.createSignOutRequest(request, fedCtx);
+            RedirectionResponse redirectionResponse = 
+                processor.createSignOutRequest(request, null, fedCtx); //TODO
             String redirectURL = redirectionResponse.getRedirectionURL();
             if (redirectURL != null) {
                 Map<String, String> headers = redirectionResponse.getHeaders();

@@ -53,6 +53,7 @@ import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.OpenSAMLUtil;
+import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.wss4j.dom.WSConstants;
 import org.apache.xml.security.exceptions.Base64DecodingException;
@@ -405,7 +406,9 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
     }
 
     @Override
-    public RedirectionResponse createSignOutRequest(HttpServletRequest request, FedizContext config)
+    public RedirectionResponse createSignOutRequest(HttpServletRequest request, 
+                                                    SamlAssertionWrapper token,
+                                                    FedizContext config)
         throws ProcessingException {
         
         String redirectURL = null;
@@ -433,7 +436,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             String realm = resolveWTRealm(request, config);
             String reason = "urn:oasis:names:tc:SAML:2.0:logout:user";
             LogoutRequest logoutRequest = 
-                samlpRequestBuilder.createLogoutRequest(realm, reason, null); // TODO
+                samlpRequestBuilder.createLogoutRequest(realm, reason, token);
             
             if (((SAMLProtocol)config.getProtocol()).isSignRequest()) {
                 logoutRequest.setDestination(redirectURL);

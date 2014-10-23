@@ -211,7 +211,7 @@ public class SAMLRequestTest {
         EasyMock.replay(req);
         
         FedizProcessor wfProc = new SAMLProcessorImpl();
-        RedirectionResponse response = wfProc.createSignOutRequest(req, config);
+        RedirectionResponse response = wfProc.createSignOutRequest(req, null, config);
         
         String redirectionURL = response.getRedirectionURL();
         String samlRequest = 
@@ -240,7 +240,7 @@ public class SAMLRequestTest {
         EasyMock.replay(req);
         
         FedizProcessor wfProc = new SAMLProcessorImpl();
-        RedirectionResponse response = wfProc.createSignOutRequest(req, config);
+        RedirectionResponse response = wfProc.createSignOutRequest(req, null, config);
         
         String redirectionURL = response.getRedirectionURL();
         String signature = 

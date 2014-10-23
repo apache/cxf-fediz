@@ -60,6 +60,7 @@ import org.apache.cxf.fediz.core.spi.WReqCallback;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.wss4j.common.ext.WSPasswordCallback;
 import org.apache.wss4j.common.ext.WSSecurityException;
+import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.apache.wss4j.dom.WSConstants;
 import org.apache.wss4j.dom.WSDataRef;
 import org.apache.wss4j.dom.WSDocInfo;
@@ -473,7 +474,9 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
     }
 
     @Override
-    public RedirectionResponse createSignOutRequest(HttpServletRequest request, FedizContext config)
+    public RedirectionResponse createSignOutRequest(HttpServletRequest request, 
+                                                    SamlAssertionWrapper token,
+                                                    FedizContext config)
         throws ProcessingException {
 
         String redirectURL = null;

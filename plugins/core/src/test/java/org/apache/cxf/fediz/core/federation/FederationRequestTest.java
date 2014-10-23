@@ -120,7 +120,7 @@ public class FederationRequestTest {
         EasyMock.replay(req);
         
         FedizProcessor wfProc = new FederationProcessorImpl();
-        RedirectionResponse response = wfProc.createSignOutRequest(req, config);
+        RedirectionResponse response = wfProc.createSignOutRequest(req, null, config);
         
         String redirectionURL = response.getRedirectionURL();
         Assert.assertTrue(redirectionURL.startsWith(TEST_IDP_ISSUER));

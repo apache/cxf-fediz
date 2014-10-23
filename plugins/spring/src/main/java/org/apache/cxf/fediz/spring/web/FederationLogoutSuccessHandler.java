@@ -60,7 +60,7 @@ public class FederationLogoutSuccessHandler implements LogoutSuccessHandler {
             FedizProcessor wfProc = 
                 FedizProcessorFactory.newFedizProcessor(fedCtx.getProtocol());
             RedirectionResponse redirectionResponse =
-                wfProc.createSignOutRequest(request, fedCtx);
+                wfProc.createSignOutRequest(request, null, fedCtx); //TODO
             String redirectURL = redirectionResponse.getRedirectionURL();
             if (redirectURL != null) {
                 Map<String, String> headers = redirectionResponse.getHeaders();
