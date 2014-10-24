@@ -106,5 +106,7 @@ public class SAMLProtocol extends Protocol {
         getSAMLProtocol().setDoNotEnforceKnownIssuer(doNotEnforceKnownIssuer);
     }
     
-    
+    public String getIssuerLogoutURL() {
+        return getSAMLProtocol().getIssuerLogoutURL();
+    }
 }

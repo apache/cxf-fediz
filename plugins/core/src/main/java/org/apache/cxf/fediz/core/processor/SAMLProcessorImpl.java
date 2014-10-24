@@ -418,12 +418,18 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
                 throw new IllegalStateException("Unsupported protocol");
             }
 
-            String issuerURL = resolveIssuer(request, config);
-            LOG.info("Issuer url: " + issuerURL);
-            if (issuerURL != null && issuerURL.length() > 0) {
-                redirectURL = issuerURL;
+            redirectURL = ((SAMLProtocol)config.getProtocol()).getIssuerLogoutURL();
+            if (redirectURL == null) {
+                String issuerURL = resolveIssuer(request, config);
+                LOG.info("Issuer url: " + issuerURL);
+                if (issuerURL != null && issuerURL.length() > 0) {
+                    redirectURL = issuerURL;
+                }
             }
-            redirectURL = "http://localhost:8081/IDBUS/CXF/CXFIDP/SAML2/SLO/REDIR";
+            if (redirectURL == null) {
+                LOG.debug("No issuerLogoutURL or issuer parameter specified for logout");
+                throw new ProcessingException("Failed to create SignOutRequest");
+            }
             
             SAMLPRequestBuilder samlpRequestBuilder = 
                 ((SAMLProtocol)config.getProtocol()).getSAMLPRequestBuilder();
@@ -432,7 +438,6 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             doc.appendChild(doc.createElement("root"));
      
             // Create the LogoutRequest
-            String requestURL = request.getRequestURL().toString();
             String realm = resolveWTRealm(request, config);
             String reason = "urn:oasis:names:tc:SAML:2.0:logout:user";
             LogoutRequest logoutRequest = 
@@ -446,14 +451,6 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             String logoutRequestEncoded = encodeAuthnRequest(logoutRequestElement);
             
             String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-            RequestState requestState = new RequestState();
-            requestState.setTargetAddress(requestURL);
-            requestState.setIdpServiceAddress(redirectURL);
-            requestState.setRequestId(logoutRequest.getID());
-            requestState.setIssuerId(realm);
-            requestState.setWebAppContext(logoutRequest.getIssuer().getValue());
-            requestState.setState(relayState);
-            requestState.setCreatedAt(System.currentTimeMillis());
             
             String urlEncodedRequest = 
                 URLEncoder.encode(logoutRequestEncoded, "UTF-8");
@@ -470,7 +467,6 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             RedirectionResponse response = new RedirectionResponse();
             response.addHeader("Cache-Control", "no-cache, no-store");
             response.addHeader("Pragma", "no-cache");
-            response.setRequestState(requestState);
             
             redirectURL = redirectURL + "?" + sb.toString();
             response.setRedirectionURL(redirectURL);

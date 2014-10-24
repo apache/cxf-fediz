@@ -222,26 +222,28 @@ public class FederationAuthenticator extends FormAuthenticator {
             }
 
             request.getSession().invalidate();
-
-            final ServletOutputStream responseOutputStream = response.getOutputStream();
-            InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("logout.jpg");
-            if (inputStream == null) {
-                LOG.warn("Could not write logout.jpg");
-                return;
-            }
-            int read = 0;
-            byte[] buf = new byte[1024];
-            while ((read = inputStream.read(buf)) != -1) {
-                responseOutputStream.write(buf, 0, read);
-            }
-            inputStream.close();
-            responseOutputStream.flush();
+            handleLogout(response.getOutputStream());
 
             return;
         }
         
         super.invoke(request, response);
 
+    }
+    
+    private void handleLogout(final ServletOutputStream responseOutputStream) throws IOException {
+        InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("logout.jpg");
+        if (inputStream == null) {
+            LOG.warn("Could not write logout.jpg");
+            return;
+        }
+        int read = 0;
+        byte[] buf = new byte[1024];
+        while ((read = inputStream.read(buf)) != -1) {
+            responseOutputStream.write(buf, 0, read);
+        }
+        inputStream.close();
+        responseOutputStream.flush();
     }
     
     private String getMetadataURI(FedizContext fedConfig) {
@@ -260,7 +262,7 @@ public class FederationAuthenticator extends FormAuthenticator {
     @Override
     public boolean authenticate(Request request, HttpServletResponse response,
             LoginConfig config) throws IOException {
-
+        
         LOG.debug("authenticate invoked");
         // References to objects we will need later
         Session session = null;
@@ -273,10 +275,11 @@ public class FederationAuthenticator extends FormAuthenticator {
         
         //logout
         String logoutUrl = fedConfig.getLogoutURL();
-        if (logoutUrl != null && !logoutUrl.isEmpty()) {
+        if (logoutUrl != null && !logoutUrl.isEmpty()
+            && request.getRequestURI().equals(contextName + logoutUrl)) {
             HttpSession httpSession = request.getSession(false);
-            String uri = request.getRequestURI();
-            if (httpSession != null && uri.equals(contextName + logoutUrl)) {
+            if (httpSession != null) {
+                // Here the user is already logged in
                 session = request.getSessionInternal();
                 
                 Element token = 
@@ -293,6 +296,11 @@ public class FederationAuthenticator extends FormAuthenticator {
                 FedizProcessor wfProc = 
                     FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
                 signOutRedirectToIssuer(request, response, token, wfProc);
+
+                return false;
+            } else {
+                // The user is already logged out
+                handleLogout(response.getOutputStream());
 
                 return false;
             }
