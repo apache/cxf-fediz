@@ -33,8 +33,8 @@
         <property name="useCurrentIdp" value="true" />
         <property name="certificate" value="stsKeystoreA.properties" />
         <property name="certificatePassword" value="realma" />
-        <property name="stsUrl" value="https://localhost:8443/fediz-idp-sts/REALMA" />
-        <property name="idpUrl" value="https://localhost:8443/fediz-idp/federation" />
+        <property name="stsUrl" value="https://localhost:9443/fediz-idp-sts/REALMA" />
+        <property name="idpUrl" value="https://localhost:9443/fediz-idp/federation" />
         <property name="rpSingleSignOutConfirmation" value="true"/>
         <property name="supportedProtocols">
             <util:list>
@@ -81,10 +81,10 @@
         class="org.apache.cxf.fediz.service.idp.service.jpa.TrustedIdpEntity">
         <property name="realm" value="urn:org:apache:cxf:fediz:idp:realm-B" />
         <property name="cacheTokens" value="true" />
-        <property name="url" value="http://localhost:12345/idp/samlsso" />
+        <property name="url" value="https://localhost:12443/fediz-idp-remote/federation" />
         <property name="certificate" value="realmb.cert" />
         <property name="trustType" value="PEER_TRUST" />
-        <property name="protocol" value="urn:oasis:names:tc:SAML:2.0:profiles:SSO:browser" />
+        <property name="protocol" value="http://docs.oasis-open.org/wsfed/federation/200706" />
         <property name="federationType" value="FEDERATE_IDENTITY" />
         <property name="name" value="Realm B" />
         <property name="description" value="Realm B description" />
