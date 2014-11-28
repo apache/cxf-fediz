@@ -27,7 +27,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.Date;
 import java.util.UUID;
 import java.util.zip.DataFormatException;
 
@@ -47,7 +46,6 @@ import org.apache.cxf.fediz.service.idp.spi.TrustedIdpProtocolHandler;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.jaxrs.utils.ExceptionUtils;
-import org.apache.cxf.jaxrs.utils.HttpUtils;
 import org.apache.cxf.rs.security.saml.DeflateEncoderDecoder;
 import org.apache.cxf.rs.security.saml.sso.AuthnRequestBuilder;
 import org.apache.cxf.rs.security.saml.sso.DefaultAuthnRequestBuilder;
@@ -74,7 +72,7 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
     private static final Logger LOG = LoggerFactory.getLogger(TrustedIdpSAMLProtocolHandler.class);
 
     private AuthnRequestBuilder authnRequestBuilder = new DefaultAuthnRequestBuilder();
-    private long stateTimeToLive = SSOConstants.DEFAULT_STATE_TIME;
+    // private long stateTimeToLive = SSOConstants.DEFAULT_STATE_TIME;
 
     static {
         OpenSAMLUtil.initSamlEngine();
@@ -119,15 +117,10 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
             //if (isSignRequest()) {
             //    signRequest(urlEncodedRequest, info.getRelayState(), ub);
             //}
-            // TODO String contextCookie = createCookie(SSOConstants.RELAY_STATE,
-            //                                    relayState,
-            //                                    idp.getIdpUrl().getPath(),
-            //                                    null);
 
             /*context.abortWith(Response.seeOther(ub.build())
                            .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store")
                            .header("Pragma", "no-cache") 
-                           .header(HttpHeaders.SET_COOKIE, contextCookie)
                            .build());*/
 
             return ub.build().toURL();
@@ -153,44 +146,10 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
         return Base64Utility.encode(deflatedBytes);
     }
 
-    protected String createCookie(String name, 
-                                  String value, 
-                                  String path,
-                                  String domain) { 
-
-        String contextCookie = name + "=" + value;
-        // Setting a specific path restricts the browsers
-        // to return a cookie only to the web applications
-        // listening on that specific context path
-        if (path != null) {
-            contextCookie += ";Path=" + path;
-        }
-
-        // Setting a specific domain further restricts the browsers
-        // to return a cookie only to the web applications
-        // listening on the specific context path within a particular domain
-        if (domain != null) {
-            contextCookie += ";Domain=" + domain;
-        }
-
-        // Keep the cookie across the browser restarts until it actually expires.
-        // Note that the Expires property has been deprecated but apparently is 
-        // supported better than 'max-age' property by different browsers 
-        // (Firefox, IE, etc)
-        Date expiresDate = new Date(System.currentTimeMillis() + stateTimeToLive);
-        String cookieExpires = HttpUtils.getHttpDateFormat().format(expiresDate);
-        contextCookie += ";Expires=" + cookieExpires;
-        //TODO: Consider adding an 'HttpOnly' attribute        
-
-        return contextCookie;
-    }
-
-
     @Override
     public SecurityToken mapSignInResponse(RequestContext context, Idp idp, TrustedIdp trustedIdp) {
 
         try {
-
             String relayState = (String) WebUtils.getAttributeFromFlowScope(context,
                                                                             SSOConstants.RELAY_STATE);
             // TODO Validate RelayState
@@ -305,7 +264,7 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
         try {
             SAMLProtocolResponseValidator protocolValidator = new SAMLProtocolResponseValidator();
             protocolValidator.setKeyInfoMustBeAvailable(true); // TODO
-            protocolValidator.validateSamlResponse(samlResponse, getSignatureCrypto(), getCallbackHandler());
+            protocolValidator.validateSamlResponse(samlResponse, getSignatureCrypto(), null);
         } catch (WSSecurityException ex) {
             LOG.debug(ex.getMessage(), ex);
             throw ExceptionUtils.toBadRequestException(null, null);
@@ -316,22 +275,21 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
      * Validate the received SAML Response as per the Web SSO profile
     protected SSOValidatorResponse validateSamlSSOResponse(
         boolean postBinding,
-        org.opensaml.saml2.core.Response samlResponse
+        org.opensaml.saml2.core.Response samlResponse,
+        Idp idp, 
+        TrustedIdp trustedIdp
     ) {
         try {
             SAMLSSOResponseValidator ssoResponseValidator = new SAMLSSOResponseValidator();
-            ssoResponseValidator.setAssertionConsumerURL(
-                                                         messageContext.getUriInfo().getAbsolutePath().toString());
+            ssoResponseValidator.setAssertionConsumerURL(idp.getIdpUrl());
 
-            ssoResponseValidator.setClientAddress(
-                                                  messageContext.getHttpServletRequest().getRemoteAddr());
+            // ssoResponseValidator.setClientAddress(client_ip);
 
-            ssoResponseValidator.setIssuerIDP(requestState.getIdpServiceAddress());
-            ssoResponseValidator.setRequestId(requestState.getSamlRequestId());
-            ssoResponseValidator.setSpIdentifier(requestState.getIssuerId());
+            ssoResponseValidator.setIssuerIDP(trustedIdp.getUrl());
+            // ssoResponseValidator.setRequestId(requestState.getSamlRequestId());
+            ssoResponseValidator.setSpIdentifier(idp.getRealm());
             ssoResponseValidator.setEnforceAssertionsSigned(true); // TODO
-            ssoResponseValidator.setEnforceKnownIssuer(enforceKnownIssuer);
-            // ssoResponseValidator.setReplayCache(getReplayCache());
+            // ssoResponseValidator.setEnforceKnownIssuer(enforceKnownIssuer);
 
             return ssoResponseValidator.validateSamlResponse(samlResponse, postBinding);
         } catch (WSSecurityException ex) {
