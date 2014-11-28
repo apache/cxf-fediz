@@ -140,6 +140,11 @@
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-rs-security-sso-saml</artifactId>
+            <version>${cxf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-transports-http</artifactId>
             <version>${cxf.version}</version>
         </dependency>
@@ -508,8 +513,8 @@
             <id>realm-b</id>
             <properties>
                 <jpa.url>jdbc:hsqldb:target/db/realmb/myDB;shutdown=true</jpa.url>
-                <idp.https.port>12443</idp.https.port>
-                <idp.http.port>12080</idp.http.port>
+                <idp.https.port>12346</idp.https.port>
+                <idp.http.port>12345</idp.http.port>
             </properties>
             <build>
                 <filters>
