@@ -37,14 +37,14 @@
         <cxf.version>2.7.14</cxf.version>
         <cxf.build-utils.version>2.6.0</cxf.build-utils.version>
         <ehcache.version>2.5.1</ehcache.version>
-        <httpclient.version>4.3.3</httpclient.version>
+        <httpclient.version>4.3.5</httpclient.version>
         <hsqldb.version>1.8.0.10</hsqldb.version>
         <javassist.version>3.16.1-GA</javassist.version>
         <javax.validation.version>1.1.0.Final</javax.validation.version>
         <jericho.version>3.3</jericho.version>
         <jetty.version>8.1.12.v20130726</jetty.version>
         <!--<jetty.version>7.6.8.v20121106</jetty.version>-->
-        <junit.version>4.11</junit.version>
+        <junit.version>4.12</junit.version>
         <log4j.version>1.2.17</log4j.version>
         <ognl.version>3.0.8</ognl.version>
         <openjpa.version>2.3.0</openjpa.version>
