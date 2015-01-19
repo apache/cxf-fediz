@@ -53,7 +53,7 @@
         <spring.version>3.1.4.RELEASE</spring.version>
         <spring.security.version>3.1.4.RELEASE</spring.security.version>
         <tomcat.version>7.0.54</tomcat.version>
-        <wss4j.version>1.6.17</wss4j.version>
+        <wss4j.version>1.6.18-SNAPSHOT</wss4j.version>
 
         <tomcat.url>http://localhost:8080/manager/text</tomcat.url>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
