@@ -202,6 +202,7 @@ public final class WebUtils {
         Cookie cookie = readCookie(context, cookieName);
         if (cookie != null) {
             cookie.setMaxAge(0);
+            cookie.setValue("");
             httpServletResponse.addCookie(cookie);
         }
     }

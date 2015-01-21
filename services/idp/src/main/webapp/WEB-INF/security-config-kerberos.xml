@@ -23,9 +23,9 @@
     xmlns:context="http://www.springframework.org/schema/context"
     xsi:schemaLocation="
         http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+        http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
         http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://www.springframework.org/schema/context/spring-context-3.1.xsd
         http://www.springframework.org/schema/security
         http://www.springframework.org/schema/security/spring-security-3.1.xsd">
 
@@ -35,18 +35,54 @@
     <!-- <security:debug /> -->
 
     <!-- Configure Spring Security -->
-    <security:http pattern="/federation/**" auto-config="false" use-expressions="true"
-        entry-point-ref="kerberosEntryPoint">
+    <!-- If enabled, you can't access the Service layer within the Spring Webflow -->
+    <!-- The user has no role during the login phase of WS-Federation -->
+    <security:global-method-security pre-post-annotations="enabled"/>
+
+    <security:http pattern="/services/rs/**" auto-config="false" use-expressions="true" entry-point-ref="kerberosEntryPoint">
+        <security:custom-filter after="CHANNEL_FILTER" ref="stsPortFilter" />
+        <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
+        <security:intercept-url pattern="/**" access="isAuthenticated()"/>
+        <!--<security:http-basic />-->
+        <security:custom-filter ref="kerberosAuthenticationProcessingFilter" position="BASIC_AUTH_FILTER" />
+    </security:http>
+
+    <bean id="bCryptPasswordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" />
+    
+    <bean id="defaultPasswordEncoder" class="org.springframework.security.crypto.password.StandardPasswordEncoder" />
+    
+    <bean id="kerberosEntryPoint" 
+          class="org.apache.cxf.fediz.service.idp.kerberos.KerberosEntryPoint" />
+    
+    <bean id="spnegoAuthenticationProcessingFilter"
+          class="org.apache.cxf.fediz.service.idp.kerberos.KerberosAuthenticationProcessingFilter">
+        <property name="authenticationManager" ref="restAuthenticationManager" />
+    </bean>
+    
+    <security:authentication-manager id="restAuthenticationManager">
+        <security:authentication-provider>
+          <!-- <security:password-encoder ref="defaultPasswordEncoder"/>-->
+          <!-- <security:password-encoder hash="sha-256" base64="true" />-->
+          <!--  
+          <security:password-encoder hash="sha-256" base64="true">
+            <security:salt-source user-property="username"/>
+          </security:password-encoder>
+          -->
+          <security:user-service properties="classpath:/users.properties" />
+        </security:authentication-provider>
+        <security:authentication-provider ref="stsAuthProvider" />
+    </security:authentication-manager>
+      
+    <security:http use-expressions="true" entry-point-ref="kerberosEntryPoint">
         <security:custom-filter after="CHANNEL_FILTER" ref="stsPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
         <security:intercept-url pattern="/FederationMetadata/2007-06/FederationMetadata.xml" access="isAnonymous() or isAuthenticated()" />
 
-        <!-- MUST be http-basic thus systests run fine -->
-        <!--<security:http-basic />-->
-        <!--<security:form-login />-->
+        <security:form-login login-page="/federation/login"/>
+        <security:http-basic />
         <security:custom-filter ref="kerberosAuthenticationProcessingFilter" position="BASIC_AUTH_FILTER" />
     </security:http>
-    
+
     <bean id="kerberosEntryPoint"
           class="org.apache.cxf.fediz.service.idp.kerberos.KerberosEntryPoint" />
     
@@ -60,6 +96,8 @@
     </security:authentication-manager>
 	
     <bean id="stsPortFilter" class="org.apache.cxf.fediz.service.idp.STSPortFilter" />
+    
+    <bean id="entitlementsEnricher" class="org.apache.cxf.fediz.service.idp.service.security.GrantedAuthorityEntitlements" />
     
     <!--<bean id="kerberosTokenValidator" class="org.apache.cxf.fediz.service.idp.kerberos.KerberosTokenValidator">
         <property name="contextName" value="bob"/>

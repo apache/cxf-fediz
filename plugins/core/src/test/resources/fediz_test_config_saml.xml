@@ -200,7 +200,7 @@
 		</audienceUris>
 		<certificateStores>
 			<trustManager>
-				<keyStore file="clientonly.jks" password="storepass"
+				<keyStore file="clientonly.jks" password="cspass"
 					type="JKS" />
 			</trustManager>		
 		</certificateStores>

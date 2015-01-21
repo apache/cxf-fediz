@@ -18,19 +18,15 @@
   under the License.
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:context="http://www.springframework.org/schema/context"
-    xmlns:jaxrs="http://cxf.apache.org/jaxrs"
-    xmlns:security="http://www.springframework.org/schema/security"
-    xsi:schemaLocation="
-        http://www.springframework.org/schema/beans
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
         http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://www.springframework.org/schema/context/spring-context-3.1.xsd
         http://cxf.apache.org/jaxrs
-        http://cxf.apache.org/schemas/jaxrs.xsd
-        http://www.springframework.org/schema/security
-        http://www.springframework.org/schema/security/spring-security-3.1.xsd">
+        http://cxf.apache.org/schemas/jaxrs.xsd">
 
 <!-- 
 <context:component-scan base-package="org.apache.cxf.fediz.service.idp.protocols" />
@@ -43,8 +39,7 @@
     
     <bean id="jaxbProvider" class="org.apache.cxf.jaxrs.provider.JAXBElementProvider">
         <property name="depthProperties">
-            <bean id="depthProperties"
-                class="org.apache.cxf.staxutils.DocumentDepthProperties">
+            <bean class="org.apache.cxf.staxutils.DocumentDepthProperties">
                 <property name="innerElementCountThreshold" value="500" />
             </bean>
         </property>
@@ -102,48 +97,6 @@
 
     <bean id="roleServiceImpl"
         class="org.apache.cxf.fediz.service.idp.rest.RoleServiceImpl" />
-
-
-    <!-- If enabled, you can't access the Service layer within the Spring Webflow -->
-    <!-- The user has no role during the login phase of WS-Federation -->
-    <security:global-method-security pre-post-annotations="enabled"/>
-
-    <security:http pattern="/services/rs/**" auto-config="false" use-expressions="true">
-        <security:custom-filter after="CHANNEL_FILTER" ref="stsPortFilter" />
-        <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
-        <security:intercept-url pattern="/**" access="isAuthenticated()"/>
-        <security:http-basic />
-    </security:http>
-
-    <bean id="bCryptPasswordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" />
-    
-    <bean id="defaultPasswordEncoder" class="org.springframework.security.crypto.password.StandardPasswordEncoder" />
-    
-    <security:authentication-manager>
-        <security:authentication-provider>
-          <!-- <security:password-encoder ref="defaultPasswordEncoder"/>-->
-          <!-- <security:password-encoder hash="sha-256" base64="true" />-->
-          <!--  
-          <security:password-encoder hash="sha-256" base64="true">
-            <security:salt-source user-property="username"/>
-          </security:password-encoder>
-          -->
-          <security:user-service properties="classpath:/users.properties" />
-        </security:authentication-provider>
-        <security:authentication-provider ref="stsAuthProvider" />
-    </security:authentication-manager>
-
-    <bean id="entitlementsEnricher" class="org.apache.cxf.fediz.service.idp.service.security.GrantedAuthorityEntitlements" />
-
-    <bean id="stsPortFilter" class="org.apache.cxf.fediz.service.idp.STSPortFilter" />
-    
-    <bean id="stsAuthProvider" class="org.apache.cxf.fediz.service.idp.STSAuthenticationProvider">
-        <property name="wsdlLocation" value="https://localhost:0/fediz-idp-sts/${realm.STS_URI}/STSServiceTransportUT?wsdl"/>
-        <property name="wsdlEndpoint" value="TransportUT_Port"/>
-        <property name="wsdlService" value="SecurityTokenService"/>
-        <property name="appliesTo" value="urn:fediz:idp"/>
-        <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0"/>
-    </bean>
     
 </beans>
 
