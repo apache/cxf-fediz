@@ -75,6 +75,11 @@
                 <sec:keyStore type="jks" password="waspass"
                     resource="webappKeystore.jks" />
             </sec:trustManagers>
+            <!-- new keyManager is needed for client cert authentication against STS Transport_Port,
+                 rp-ssl-key.jks is a copy of the keystore rp-ssl-server.jks that is used for SSL by the webapp. -->
+            <sec:keyManagers keyPassword="tompass">
+                <sec:keyStore type="jks" password="tompass" resource="rp-ssl-key.jks"/>
+            </sec:keyManagers>
         </http:tlsClientParameters>
     </http:conduit>
 
