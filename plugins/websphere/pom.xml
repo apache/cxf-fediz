@@ -23,7 +23,7 @@
     <parent>
         <groupId>org.apache.cxf.fediz</groupId>
         <artifactId>plugin</artifactId>
-        <version>1.1.0-SNAPSHOT</version>
+        <version>1.2.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>fediz-websphere</artifactId>
@@ -50,18 +50,50 @@
         <!--
         <dependency>
             <groupId>com.ibm.ws</groupId>
+            <artifactId>runtime</artifactId>
+            <version>7</version>
+            <scope>compile</scope>
+        </dependency>
+		<dependency>
+            <groupId>com.ibm.ws</groupId>
             <artifactId>runtime</artifactId> 
             <version>8</version>
             <type>jar</type>
             <scope>provided</scope>
         </dependency>
-        -->
-        <dependency>
-            <groupId>com.ibm.ws</groupId>
-            <artifactId>runtime</artifactId>
-            <version>7</version>
-            <scope>compile</scope>
+		-->
+		<dependency>
+			<groupId>com.ibm.websphere</groupId>
+			<artifactId>com.ibm.websphere.security</artifactId>
+			<version>1.0.3</version>
+			<type>jar</type>
+			<scope>compile</scope>
+ 		</dependency>
+		<dependency>
+			<groupId>com.ibm.ws.security</groupId>
+			<artifactId>com.ibm.ws.security.authentication.tai</artifactId>
+			<version>1.0.3</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.ibm.ws.security</groupId>
+			<artifactId>com.ibm.ws.security.token</artifactId>
+			<version>1.0.2</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>        
+
+		<dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${slf4j.version}</version>
         </dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
     </dependencies>
     <build>
         <plugins>
@@ -92,6 +124,26 @@
                     <verbose>true</verbose>
                 </configuration>
             </plugin>
+			<plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2.1</version>
+                <executions>
+                    <execution>
+                        <id>zip-file</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attached</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>src/main/assembly/assembly.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+	
 </project>

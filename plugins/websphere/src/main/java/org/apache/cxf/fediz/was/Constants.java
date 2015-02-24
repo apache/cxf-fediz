@@ -27,7 +27,7 @@ public interface Constants {
     
     String HTTP_POST_METHOD = "POST";
     //String UTF_8_ENCODING_SCHEME = "UTF-8";
-    String VERSION = "1.0.0";
+    String VERSION = "1.2.0";
     String TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
     
     String USER_REGISTRY_JNDI_NAME = "UserRegistry";
@@ -36,7 +36,28 @@ public interface Constants {
     String SUBJECT_SESSION_ATTRIBUTE_KEY = "_tai.subject";
     String SECURITY_TOKEN_SESSION_ATTRIBUTE_KEY = "fediz.security.token";
 
+    /**
+     * @deprecated Use FEDIZ_CONFIG_LOCATION instead.
+     *
+     * Using this property causes problems on Websphere 8.5. See https://issues.apache.org/jira/browse/FEDIZ-97 for more
+     * details.
+     */
+    @Deprecated
     String CONFIGURATION_FILE_PARAMETER = "config.file.location";
+    /**
+     * This constant contains the name for the property to discover the location of the fediz configuration file.
+     */
+    String FEDIZ_CONFIG_LOCATION = "fedizConfigLocation";
+
+    /**
+     * @deprecated Use FEDIZ_ROLE_MAPPER instead.
+     */
+    @Deprecated
     String ROLE_GROUP_MAPPER = "role.group.mapper";
 
+    /**
+     * This constant contains the name for the property to discover the class-name which should be used for role to
+     * group mappings.
+     */
+    String FEDIZ_ROLE_MAPPER = "fedizRoleMapper";
 }

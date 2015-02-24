@@ -39,8 +39,8 @@ import org.w3c.dom.Element;
 import com.ibm.websphere.security.WSSecurityException;
 import com.ibm.websphere.security.auth.WSSubject;
 
-import org.apache.cxf.fediz.core.FederationResponse;
 import org.apache.cxf.fediz.core.SecurityTokenThreadLocal;
+import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.apache.cxf.fediz.was.Constants;
 import org.apache.cxf.fediz.was.tai.FedizInterceptor;
 
@@ -81,7 +81,7 @@ public class SecurityContextTTLChecker extends HttpServlet implements Filter {
         throws IOException, ServletException {
 
         try {
-            FederationResponse fedResponse = null;
+            FedizResponse fedResponse = null;
             Subject subject = WSSubject.getCallerSubject();
             boolean validSecurityTokenFound = false;
             if (subject != null) {
@@ -115,12 +115,12 @@ public class SecurityContextTTLChecker extends HttpServlet implements Filter {
         }
     }
 
-    private boolean checkSecurityToken(FederationResponse response) {
+    private boolean checkSecurityToken(FedizResponse response) {
         long currentTime = System.currentTimeMillis();
         return response.getTokenExpires().getTime() > currentTime;
     }
     
-    private FederationResponse getCachedFederationResponse(Subject subject) {
+    private FedizResponse getCachedFederationResponse(Subject subject) {
         Iterator<?> i = subject.getPublicCredentials().iterator();
         
         while (i.hasNext()) {
@@ -128,7 +128,7 @@ public class SecurityContextTTLChecker extends HttpServlet implements Filter {
             if (o instanceof Hashtable) {
                 @SuppressWarnings("unchecked")
                 Map<Object, Object> table = (Hashtable<Object, Object>)o;
-                return (FederationResponse)table.get(Constants.SUBJECT_TOKEN_KEY);
+                return (FedizResponse)table.get(Constants.SUBJECT_TOKEN_KEY);
             }
         }
         return null;
@@ -145,6 +145,8 @@ public class SecurityContextTTLChecker extends HttpServlet implements Filter {
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
+        contextPath = filterConfig.getServletContext().getContextPath();
+        FedizInterceptor.registerContext(contextPath);
     }
 
 }

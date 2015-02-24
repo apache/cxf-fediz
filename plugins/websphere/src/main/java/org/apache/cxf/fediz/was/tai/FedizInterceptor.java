@@ -20,15 +20,17 @@ package org.apache.cxf.fediz.was.tai;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.security.auth.Subject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -44,33 +46,35 @@ import com.ibm.wsspi.security.tai.TrustAssociationInterceptor;
 import com.ibm.wsspi.security.token.AttributeNameConstants;
 
 import org.apache.cxf.fediz.core.FederationConstants;
-import org.apache.cxf.fediz.core.FederationProcessor;
-import org.apache.cxf.fediz.core.FederationProcessorImpl;
-import org.apache.cxf.fediz.core.FederationRequest;
-import org.apache.cxf.fediz.core.FederationResponse;
-import org.apache.cxf.fediz.core.config.FederationConfigurator;
-import org.apache.cxf.fediz.core.config.FederationContext;
+import org.apache.cxf.fediz.core.RequestState;
+import org.apache.cxf.fediz.core.SAMLSSOConstants;
+import org.apache.cxf.fediz.core.config.FederationProtocol;
+import org.apache.cxf.fediz.core.config.FedizConfigurator;
+import org.apache.cxf.fediz.core.config.FedizContext;
+import org.apache.cxf.fediz.core.config.SAMLProtocol;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
+import org.apache.cxf.fediz.core.processor.FederationProcessorImpl;
+import org.apache.cxf.fediz.core.processor.FedizProcessor;
+import org.apache.cxf.fediz.core.processor.FedizRequest;
+import org.apache.cxf.fediz.core.processor.FedizResponse;
+import org.apache.cxf.fediz.core.processor.RedirectionResponse;
 import org.apache.cxf.fediz.was.Constants;
 import org.apache.cxf.fediz.was.mapper.DefaultRoleToGroupMapper;
 import org.apache.cxf.fediz.was.mapper.RoleToGroupMapper;
 import org.apache.cxf.fediz.was.tai.exception.TAIConfigurationException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
- * A Trust Authentication Interceptor (TAI) that trusts a Sign-In-Response  
- * provided from a configured IP/STS and instantiates
- * the corresponding WAS Subject
+ * A Trust Authentication Interceptor (TAI) that trusts a Sign-In-Response provided from a configured IP/STS
+ * and instantiates the corresponding WAS Subject
  */
 public class FedizInterceptor implements TrustAssociationInterceptor {
     private static final Logger LOG = LoggerFactory.getLogger(FedizInterceptor.class);
-    private static List<String> authorizedWebApps = new ArrayList<String>(15);
-    
+    private static Set<String> authorizedWebApps = new HashSet<String>(15);
+
     private String configFile;
-    private FederationConfigurator configurator;
+    private FedizConfigurator configurator;
     private RoleToGroupMapper mapper;
 
     public String getConfigFile() {
@@ -110,8 +114,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
     }
 
     /**
-     * Registers a WebApplication using its contextPath as a key. 
-     * This method must be called by the associated
+     * Registers a WebApplication using its contextPath as a key. This method must be called by the associated
      * security ServletFilter instance of a secured application at initialization time
      * 
      * @param contextPath
@@ -122,10 +125,8 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
     }
 
     /**
-     * Deregister a WebApplication using its contextPath as a key. 
-     * This method must be called by the associated
-     * security ServletFilter instance of a secured application 
-     * in the #destroy() method
+     * Deregister a WebApplication using its contextPath as a key. This method must be called by the
+     * associated security ServletFilter instance of a secured application in the #destroy() method
      * 
      * @param contextPath
      */
@@ -146,7 +147,9 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
     public int initialize(Properties props) throws WebTrustAssociationFailedException {
         if (props != null) {
             try {
-                String roleGroupMapper = props.getProperty(Constants.ROLE_GROUP_MAPPER);
+                String roleGroupMapper = props.containsKey(Constants.FEDIZ_ROLE_MAPPER)
+                    ? props.getProperty(Constants.FEDIZ_ROLE_MAPPER)
+                    : props.getProperty(Constants.ROLE_GROUP_MAPPER);
                 if (roleGroupMapper != null && !roleGroupMapper.isEmpty()) {
                     try {
                         mapper = (RoleToGroupMapper)Class.forName(roleGroupMapper).newInstance();
@@ -163,18 +166,20 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
                     LOG.debug("Using the DefaultRoleToGroupMapper mapper class");
                 }
 
-                String configFileLocation = props.getProperty(Constants.CONFIGURATION_FILE_PARAMETER);
+                String configFileLocation = props.containsKey(Constants.FEDIZ_CONFIG_LOCATION)
+                    ? props.getProperty(Constants.FEDIZ_CONFIG_LOCATION)
+                    : props.getProperty(Constants.CONFIGURATION_FILE_PARAMETER);
                 if (configFileLocation != null) {
                     LOG.debug("Configuration file location set to {}", configFileLocation);
                     File f = new File(configFileLocation);
 
-                    configurator = new FederationConfigurator();
+                    configurator = new FedizConfigurator();
                     configurator.loadConfig(f);
 
                     LOG.debug("Federation config loaded from path: {}", configFileLocation);
                 } else {
                     throw new WebTrustAssociationFailedException("Missing required initialization parameter "
-                                                                 + Constants.CONFIGURATION_FILE_PARAMETER);
+                                                                 + Constants.FEDIZ_CONFIG_LOCATION);
                 }
             } catch (Throwable t) {
                 LOG.warn("Failed initializing TAI", t);
@@ -184,12 +189,12 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
         return 0;
     }
 
-    private FederationContext getFederationContext(HttpServletRequest req) {
+    private FedizContext getFederationContext(HttpServletRequest req) {
         String contextPath = req.getContextPath();
         if (contextPath == null || contextPath.isEmpty()) {
             contextPath = "/";
         }
-        return configurator.getFederationContext(contextPath);
+        return configurator.getFedizContext(contextPath);
 
     }
 
@@ -201,7 +206,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
     @Override
     public boolean isTargetInterceptor(HttpServletRequest req) throws WebTrustAssociationException {
         LOG.debug("Request URI: {}", req.getRequestURI());
-        FederationContext context = getFederationContext(req);
+        FedizContext context = getFederationContext(req);
 
         if (context != null) {
             return true;
@@ -222,7 +227,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
         throws WebTrustAssociationFailedException {
 
         LOG.debug("Request URI: {}", req.getRequestURI());
-        FederationContext fedCtx = getFederationContext(req);
+        FedizContext fedCtx = getFederationContext(req);
 
         if (fedCtx == null) {
             LOG.warn("No Federation Context configured for context-path {}", req.getContextPath());
@@ -259,14 +264,17 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
             if (wresult != null && wctx != null) {
                 LOG.debug("Validating RSTR...");
                 // process and validate the token
-                FederationResponse federationResponse = processSigninRequest(req, resp);
+                FedizResponse federationResponse = processSigninRequest(req, resp);
                 LOG.info("RSTR validated successfully");
-                
+
                 HttpSession session = req.getSession(true);
                 session.setAttribute(Constants.SECURITY_TOKEN_SESSION_ATTRIBUTE_KEY, federationResponse);
-
-                LOG.info("Redirecting request to {}", wctx);
-                resp.sendRedirect(wctx);
+                RequestState requestState = (RequestState) session.getAttribute(wctx);
+                if (requestState != null && requestState.getTargetAddress() != null) {
+                    LOG.info("Redirecting request to {}", requestState.getTargetAddress());
+                    resp.sendRedirect(requestState.getTargetAddress());
+                    session.removeAttribute(wctx);
+                }
                 return TAIResult.create(HttpServletResponse.SC_FOUND);
             } else {
                 throw new Exception("Missing required parameter [wctx or wresult]");
@@ -285,23 +293,23 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
             return TAIResult.create(HttpServletResponse.SC_FOUND);
         } else {
             LOG.debug("Session ID is {}", session.getId());
-            
-            FederationResponse federationResponse = (FederationResponse)session
+
+            FedizResponse federationResponse = (FedizResponse)session
                 .getAttribute(Constants.SECURITY_TOKEN_SESSION_ATTRIBUTE_KEY);
             if (federationResponse != null) {
                 LOG.info("Security Token found in session: {}", federationResponse.getUsername());
-                
+
                 TAIResult result = null;
                 // check that the target WebApp is properly configured for Token TTL enforcement
                 if (authorizedWebApps.contains(req.getContextPath())) {
-                    
+
                     LOG.info("Security Filter properly configured - forwarding subject");
-                    
+
                     // proceed creating the JAAS Subject
                     List<String> groupsIds = groupIdsFromTokenRoles(federationResponse);
                     Subject subject = createSubject(federationResponse, groupsIds, session.getId());
 
-                    result = TAIResult.create(HttpServletResponse.SC_OK, "ignore", subject);
+                    result = TAIResult.create(HttpServletResponse.SC_OK, federationResponse.getUsername(), subject);
                 } else {
                     result = TAIResult.create(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                     LOG.warn("No Security Filter configured for {}", req.getContextPath());
@@ -319,39 +327,34 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
 
     protected void redirectToIdp(HttpServletRequest request, HttpServletResponse response)
         throws IOException, WebTrustAssociationFailedException {
-        FederationProcessor processor = new FederationProcessorImpl();
+        FedizProcessor processor = new FederationProcessorImpl();
 
         String contextName = request.getContextPath();
         if (contextName == null || contextName.isEmpty()) {
             contextName = "/";
         }
-        FederationContext fedCtx = getFederationContext(request);
-
-        String redirectURL = null;
-        StringBuilder sb = new StringBuilder();
+        FedizContext fedCtx = getFederationContext(request);
 
         try {
-            redirectURL = processor.createSignInRequest(request, fedCtx);
+            RedirectionResponse redirectionResponse = processor.createSignInRequest(request, fedCtx);
+            String redirectURL = redirectionResponse.getRedirectionURL();
             if (redirectURL != null) {
-                sb.append(redirectURL);
-
-            }
-            request.getQueryString();
-            if (request.getRequestURI() != null && request.getRequestURI().length() > 0) {
-                sb.append('&').append(FederationConstants.PARAM_CONTEXT).append('=')
-                    .append(URLEncoder.encode(request.getRequestURI(), "UTF-8"));
-            }
-            if (request.getQueryString() != null && !request.getQueryString().isEmpty()) {
-                sb.append('?');
-                sb.append(URLEncoder.encode(request.getQueryString(), "UTF-8"));
-            }
-
-            if (redirectURL != null) {
-                response.sendRedirect(sb.toString());
+                Map<String, String> headers = redirectionResponse.getHeaders();
+                if (!headers.isEmpty()) {
+                    for (String headerName : headers.keySet()) {
+                        response.addHeader(headerName, headers.get(headerName));
+                    }
+                }
+                // Save request in our session before redirect to IDP
+                RequestState requestState = redirectionResponse.getRequestState();
+                if (requestState != null) {
+                    HttpSession session = request.getSession(true);
+                    session.setAttribute(requestState.getState(), requestState);
+                }
+                response.sendRedirect(redirectURL);
             } else {
                 LOG.error("RedirectUrl is null. Failed to create SignInRequest.");
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                                   "Failed to create SignInRequest.");
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignInRequest.");
             }
         } catch (ProcessingException ex) {
             LOG.error("Failed to create SignInRequest", ex);
@@ -360,38 +363,39 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
 
     }
 
-    private List<String> groupIdsFromTokenRoles(FederationResponse federationResponse) throws Exception {
+    private List<String> groupIdsFromTokenRoles(FedizResponse federationResponse) throws Exception {
         InitialContext ctx = new InitialContext();
-        UserRegistry reg = (UserRegistry)ctx.lookup(Constants.USER_REGISTRY_JNDI_NAME);
+        try {
+            UserRegistry reg = (UserRegistry)ctx.lookup(Constants.USER_REGISTRY_JNDI_NAME);
 
-        List<String> localGroups = mapper.groupsFromRoles(federationResponse.getRoles());
+            List<String> localGroups = mapper.groupsFromRoles(federationResponse.getRoles());
 
-        List<String> groupIds = new ArrayList<String>(1);
-        if (localGroups != null) {
-            LOG.debug("Converting {} group names to uids", localGroups.size());
-            for (String localGroup : localGroups) {
-                String guid = convertGroupNameToUniqueId(reg, localGroup);
-                LOG.debug("Group '{}' maps to guid: {}", localGroup, guid);
-                groupIds.add(guid);
+            List<String> groupIds = new ArrayList<String>(1);
+            if (localGroups != null) {
+                LOG.debug("Converting {} group names to uids", localGroups.size());
+                for (String localGroup : localGroups) {
+                    String guid = convertGroupNameToUniqueId(reg, localGroup);
+                    LOG.debug("Group '{}' maps to guid: {}", localGroup, guid);
+                    groupIds.add(guid);
+                }
             }
+            if (LOG.isInfoEnabled()) {
+                LOG.info("Group list: " + groupIds.toString());
+            }
+            return groupIds;
+        } catch (NamingException ex) {
+            LOG.error("User Registry could not be loaded from JNDI context.");
+            LOG.warn("No groups/roles could be mapped for user: {}", federationResponse.getUsername());
+            return new ArrayList<String>();
+        } finally {
+            ctx.close();
         }
-        if (LOG.isInfoEnabled()) {
-            LOG.info("Group list: " + groupIds.toString());
-        }
-        return groupIds;
     }
 
     /**
      * Creates the JAAS Subject so that WAS Runtime will not check the local registry
-     * 
-     * @param securityName
-     * @param uniqueid
-     * @param groups
-     * @param token
-     * @return
      */
-
-    private Subject createSubject(FederationResponse federationResponse, List<String> groups, String cacheKey) {
+    private Subject createSubject(FedizResponse federationResponse, List<String> groups, String cacheKey) {
         String uniqueId = "user:defaultWIMFileBasedRealm/cn=" + federationResponse.getUsername()
                           + ",o=defaultWIMFileBasedRealm";
         String completeCacheKey = uniqueId + ':' + cacheKey;
@@ -413,28 +417,32 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
         return subject;
     }
 
-    public FederationResponse processSigninRequest(HttpServletRequest req, HttpServletResponse resp)
+    public FedizResponse processSigninRequest(HttpServletRequest req, HttpServletResponse resp)
         throws ProcessingException {
-        FederationRequest federationRequest = new FederationRequest();
+        FedizContext fedCtx = getFederationContext(req);
+        FedizRequest federationRequest = new FedizRequest();
 
         String wa = req.getParameter(FederationConstants.PARAM_ACTION);
-        String wct = req.getParameter(FederationConstants.PARAM_CURRENT_TIME);
-        String wresult = req.getParameter(FederationConstants.PARAM_RESULT);
+        String responseToken = getResponseToken(req, fedCtx);
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("wa=" + wa);
-            LOG.debug("wct=" + wct);
-            LOG.debug("wresult=" + wresult);
-        }
+        federationRequest.setAction(wa);
+        federationRequest.setResponseToken(responseToken);
+        federationRequest.setState(req.getParameter("RelayState"));
+        federationRequest.setRequest(req);
 
-        federationRequest.setWa(wa);
-        federationRequest.setWct(wct);
-        federationRequest.setWresult(wresult);
+        LOG.debug("FederationRequest: {}", federationRequest);
 
-        FederationContext fedCtx = getFederationContext(req);
-
-        FederationProcessor processor = new FederationProcessorImpl();
+        FedizProcessor processor = new FederationProcessorImpl();
         return processor.processRequest(federationRequest, fedCtx);
+    }
+
+    private String getResponseToken(HttpServletRequest request, FedizContext fedConfig) {
+        if (fedConfig.getProtocol() instanceof FederationProtocol) {
+            return request.getParameter(FederationConstants.PARAM_RESULT);
+        } else if (fedConfig.getProtocol() instanceof SAMLProtocol) {
+            return request.getParameter(SAMLSSOConstants.SAML_RESPONSE);
+        }
+        return null;
     }
 
     /**
