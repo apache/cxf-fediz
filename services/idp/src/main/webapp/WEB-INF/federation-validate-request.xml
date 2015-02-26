@@ -38,13 +38,13 @@
                 result="flowScope.wauth" />
             <set name="flowScope.idpConfig" value="config.getIDP(null)" />
         </on-entry>
-        <!-- <if test="requestParameters.wa == null" then="viewBadRequest" />
+        <if test="requestParameters.wa == null" then="viewBadRequest" />
         <if
             test="requestParameters.wa != 'wsignin1.0' and requestParameters.wa != 'wsignout1.0' and requestParameters.wa != 'wsignoutcleanup1.0'"
             then="viewBadRequest" />
         <if
             test="requestParameters.wa == 'wsignout1.0' or requestParameters.wa == 'wsignoutcleanup1.0'"
-            then="selectSignOutProcess" /> -->
+            then="selectSignOutProcess" />
         <if
             test="requestParameters.wtrealm == null or requestParameters.wtrealm.length() == 0"
             then="viewBadRequest" else="selectSigninProcess" />
