@@ -27,7 +27,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.UUID;
 import java.util.zip.DataFormatException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -36,10 +35,10 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
 import org.apache.cxf.common.util.Base64Exception;
 import org.apache.cxf.common.util.Base64Utility;
 import org.apache.cxf.common.util.StringUtils;
+import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 import org.apache.cxf.fediz.service.idp.spi.TrustedIdpProtocolHandler;
@@ -54,8 +53,9 @@ import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.OpenSAMLUtil;
-import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.apache.wss4j.common.util.DOM2Writer;
+import org.apache.wss4j.common.util.XMLUtils;
+import org.apache.wss4j.dom.WSConstants;
 import org.apache.xml.security.stax.impl.util.IDGenerator;
 import org.opensaml.saml2.core.AuthnRequest;
 import org.opensaml.xml.XMLObject;
@@ -106,14 +106,16 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
             Element authnRequestElement = OpenSAMLUtil.toDom(authnRequest, doc);
             String authnRequestEncoded = encodeAuthnRequest(authnRequestElement);
 
-            String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-
             String urlEncodedRequest = URLEncoder.encode(authnRequestEncoded, "UTF-8");
 
             UriBuilder ub = UriBuilder.fromUri(trustedIdp.getUrl());
 
             ub.queryParam(SSOConstants.SAML_REQUEST, urlEncodedRequest);
-            ub.queryParam(SSOConstants.RELAY_STATE, relayState);
+            
+            String wctx = context.getFlowScope().getString(FederationConstants.PARAM_CONTEXT);
+            if (wctx != null) {
+                ub.queryParam(SSOConstants.RELAY_STATE, wctx);
+            }
             //if (isSignRequest()) {
             //    signRequest(urlEncodedRequest, info.getRelayState(), ub);
             //}
@@ -157,8 +159,10 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
 
             String encodedSAMLResponse = (String) WebUtils.getAttributeFromFlowScope(context, 
                                                                                      SSOConstants.SAML_RESPONSE);
-            org.opensaml.saml2.core.Response samlResponse = 
-                readSAMLResponse(false, encodedSAMLResponse);
+            
+            // Read the response + convert to an OpenSAML Response Object
+            Element responseElement = readSAMLResponse(false, encodedSAMLResponse);
+            // org.opensaml.saml2.core.Response samlResponse = convertToResponse(responseElement);
 
             // Validate the Response
             /*
@@ -169,9 +173,8 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
             String assertion = validatorResponse.getAssertion();
             SamlAssertionWrapper wrapper = new SamlAssertionWrapper(assertion);
             */
-            SamlAssertionWrapper wrapper = 
-                new SamlAssertionWrapper(samlResponse.getAssertions().get(0));
-
+            Element assertionElement = 
+                XMLUtils.getDirectChildElement(responseElement, "Assertion", WSConstants.SAML2_NS);
             // Create new Security token with new id. 
             // Parameters for freshness computation are copied from original IDP_TOKEN
             String id = IDGenerator.generateID("_");
@@ -179,7 +182,7 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
                 // new SecurityToken(id, new Date(), validatorResponse.getSessionNotOnOrAfter());
             // TODO new Date() above incorrect
 
-            idpToken.setToken(wrapper.toDOM(DOMUtils.newDocument()));
+            idpToken.setToken(assertionElement);
             // LOG.info("[IDP_TOKEN={}] for user '{}' created from [RP_TOKEN={}] issued by home realm [{}/{}]",
             //         id, wfResp.getUsername(), wfResp.getUniqueTokenId(), whr, wfResp.getIssuer());
             //.debug("Created date={}", wfResp.getTokenCreated());
@@ -197,7 +200,7 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
         }
     }
 
-    private org.opensaml.saml2.core.Response readSAMLResponse(
+    private Element readSAMLResponse(
         boolean postBinding, String samlResponse
     ) {
         if (StringUtils.isEmpty(samlResponse)) {
@@ -243,10 +246,15 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
         }
 
         LOG.debug("Received response: " + DOM2Writer.nodeToString(responseDoc.getDocumentElement()));
+        
+        return responseDoc.getDocumentElement();
 
+    }
+    
+    protected org.opensaml.saml2.core.Response convertToResponse(Element samlResponseElement) {
         XMLObject responseObject = null;
         try {
-            responseObject = OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
+            responseObject = OpenSAMLUtil.fromDom(samlResponseElement);
         } catch (WSSecurityException ex) {
             throw ExceptionUtils.toBadRequestException(ex, null);
         }

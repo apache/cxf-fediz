@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.apache.cxf.fediz.core.FederationConstants;
+import org.apache.cxf.fediz.core.SAMLSSOConstants;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.service.idp.domain.Application;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
@@ -66,6 +67,11 @@ public class SigninParametersCacheAction {
     public void restore(RequestContext context) {
         
         String uuidKey = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_CONTEXT);
+        
+        // TODO Abstract the concept of a context to cater for either protocol
+        if (uuidKey == null) {
+            uuidKey = (String)WebUtils.getAttributeFromFlowScope(context, SAMLSSOConstants.RELAY_STATE);
+        }
         @SuppressWarnings("unchecked")
         Map<String, Object> signinParams =
             (Map<String, Object>)WebUtils.getAttributeFromExternalContext(context, uuidKey);

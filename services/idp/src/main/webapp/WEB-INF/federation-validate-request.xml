@@ -32,17 +32,19 @@
             <set name="flowScope.whr" value="requestParameters.whr" />
             <set name="flowScope.wresult" value="requestParameters.wresult" />
             <set name="flowScope.wreq" value="requestParameters.wreq" />
+            <set name="flowScope.RelayState" value="requestParameters.RelayState" />
+            <set name="flowScope.SAMLResponse" value="requestParameters.SAMLResponse" />
             <evaluate expression="requestScope.getString('wauth','default')"
                 result="flowScope.wauth" />
             <set name="flowScope.idpConfig" value="config.getIDP(null)" />
         </on-entry>
-        <if test="requestParameters.wa == null" then="viewBadRequest" />
+        <!-- <if test="requestParameters.wa == null" then="viewBadRequest" />
         <if
             test="requestParameters.wa != 'wsignin1.0' and requestParameters.wa != 'wsignout1.0' and requestParameters.wa != 'wsignoutcleanup1.0'"
             then="viewBadRequest" />
         <if
             test="requestParameters.wa == 'wsignout1.0' or requestParameters.wa == 'wsignoutcleanup1.0'"
-            then="selectSignOutProcess" />
+            then="selectSignOutProcess" /> -->
         <if
             test="requestParameters.wtrealm == null or requestParameters.wtrealm.length() == 0"
             then="viewBadRequest" else="selectSigninProcess" />
@@ -74,6 +76,7 @@
 
         <output name="whr" />
         <output name="wctx" />
+        <output name="RelayState" />
         <output name="idpToken" />
 
         <transition on="requestRpToken" to="requestRpToken">
@@ -86,6 +89,7 @@
         <transition on="redirectToTrustedIDP" to="processTrustedIdpProtocol">
             <set name="flowScope.whr" value="currentEvent.attributes.whr" />
             <set name="flowScope.wctx" value="currentEvent.attributes.wctx" />
+            <set name="flowScope.RelayState" value="currentEvent.attributes.RelayState" />
         </transition>
         <transition on="redirectToLocalIDP" to="redirectToLocalIDP">
             <set name="flowScope.wctx" value="currentEvent.attributes.wctx" />
@@ -98,6 +102,8 @@
         <input name="wctx" value="flowScope.wctx" />
         <input name="wauth" value="flowScope.wauth" />
         <input name="wresult" value="flowScope.wresult" />
+        <input name="RelayState" value="flowScope.RelayState" />
+        <input name="SAMLResponse" value="flowScope.SAMLResponse" />
 
         <output name="wtrealm" />
         <output name="wreply" />

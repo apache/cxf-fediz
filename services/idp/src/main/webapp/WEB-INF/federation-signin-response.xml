@@ -27,6 +27,8 @@
     <input name="wctx" />
     <input name="wauth" />
     <input name="wresult" />
+    <input name="RelayState" />
+    <input name="SAMLResponse" />
 
     <on-start>
         <!-- restore 'wreply','wtrealm','whr' for current 'wctx' -->

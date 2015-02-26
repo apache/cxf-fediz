@@ -185,6 +185,7 @@
         </on-entry>
         <output name="whr" value="flowScope.whr" />
         <output name="wctx" value="flowScope.wctx" />
+        <output name="RelayState" value="flowScope.RelayState" />
     </end-state>
 
 </flow>
