@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <!--
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements. See the NOTICE file
@@ -17,30 +18,20 @@
   under the License.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.apache.cxf.fediz</groupId>
+        <artifactId>fediz-systests</artifactId>
+        <version>1.2.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <groupId>org.apache.cxf.fediz.systests</groupId>
+    <artifactId>fediz-systests-federation</artifactId>
+    <name>Apache Fediz Federation Systests</name>
+    <packaging>pom</packaging>
 
-   <modelVersion>4.0.0</modelVersion>
-   <parent>
-       <groupId>org.apache.cxf.fediz</groupId>
-       <artifactId>fediz</artifactId>
-       <version>1.2.0-SNAPSHOT</version>
-   </parent>
-   <groupId>org.apache.cxf.fediz</groupId>
-   <artifactId>fediz-systests</artifactId>
-   <name>Apache Fediz System tests</name>
-   <packaging>pom</packaging>
-
-   <modules>
-      <module>tests</module>
-      <module>simpleWebapp</module>
-      <module>springPreauthWebapp</module>
-      <module>springWebapp</module>
-      <module>spring2Webapp</module>
-      <module>cxfWebapp</module>
-      <module>jetty8</module>
-      <module>tomcat7</module>
-      <module>spring</module>
-      <module>cxf</module>
-      <module>federation</module>
-   </modules>
+    <modules>
+        <module>samlsso</module>
+    </modules>
 
 </project>
