@@ -21,7 +21,6 @@ package org.apache.cxf.fediz.core.processor;
 
 import java.io.Serializable;
 import java.security.cert.Certificate;
-import java.util.Arrays;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -81,17 +80,5 @@ public class FedizRequest implements Serializable {
     public void setRequestState(RequestState requestState) {
         this.requestState = requestState;
     }
-
-    @Override
-    public String toString() {
-        return "FedizRequest{" +
-                "action='" + action + '\'' +
-                ", responseToken='" + (responseToken == null ? null : responseToken.substring(0,15) + "..." ) + '\'' +
-                ", state='" + state + '\'' +
-                ", freshness='" + freshness + '\'' +
-                ", certs=" + (certs == null ? 0 : certs.length) +
-                ", request=" + request + '\'' +
-                ", requestState=" + requestState + '\'' +
-                '}';
-    }
+    
 }
