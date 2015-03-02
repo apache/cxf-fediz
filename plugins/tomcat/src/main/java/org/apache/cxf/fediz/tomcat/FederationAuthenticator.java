@@ -21,8 +21,6 @@ package org.apache.cxf.fediz.tomcat;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
 import java.security.Principal;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
@@ -31,14 +29,12 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import javax.xml.bind.JAXBException;
 
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Session;
 import org.apache.catalina.authenticator.Constants;
@@ -55,6 +51,9 @@ import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.config.SAMLProtocol;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
+import org.apache.cxf.fediz.core.handler.LogoutHandler;
+import org.apache.cxf.fediz.core.handler.RequestHandler;
+import org.apache.cxf.fediz.core.metadata.MetadataDocumentHandler;
 import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
 import org.apache.cxf.fediz.core.processor.FedizRequest;
@@ -62,9 +61,6 @@ import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.apache.cxf.fediz.core.processor.RedirectionResponse;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
-import org.apache.wss4j.common.ext.WSSecurityException;
-import org.apache.wss4j.common.saml.SamlAssertionWrapper;
-import org.apache.wss4j.common.util.DOM2Writer;
 
 
 public class FederationAuthenticator extends FormAuthenticator {
@@ -192,71 +188,33 @@ public class FederationAuthenticator extends FormAuthenticator {
             contextName = "/";
         }
         FedizContext fedConfig = getContextConfiguration(contextName);
-        
-        if (request.getRequestURL().indexOf(FederationConstants.METADATA_PATH_URI) != -1
-            || request.getRequestURL().indexOf(getMetadataURI(fedConfig)) != -1) {
-            if (LOG.isInfoEnabled()) {
-                LOG.info("Metadata document requested");
-            }
-            response.setContentType("text/xml");
-            PrintWriter out = response.getWriter();
-            
-            FedizProcessor wfProc = 
-                FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
-            try {
-                Document metadata = wfProc.getMetaData(request, fedConfig);
-                out.write(DOM2Writer.nodeToString(metadata));
-                return;
-            } catch (Exception ex) {
-                LOG.error("Failed to get metadata document: " + ex.getMessage());
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                return;
-            }            
+        RequestHandler mdHandler = new MetadataDocumentHandler(fedConfig);
+        if (mdHandler.canHandleRequest(request)) {
+            mdHandler.handleRequest(request, response);
+            return;
         }
 
-        String wa = request.getParameter(FederationConstants.PARAM_ACTION);
-        if (FederationConstants.ACTION_SIGNOUT_CLEANUP.equals(wa)) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("SignOutCleanup request found");
-                LOG.debug("SignOutCleanup action...");
+        LogoutHandler logoutHandler = new LogoutHandler(fedConfig, contextName);
+        if (logoutHandler.canHandleRequest(request)) {
+            Element token = (Element)request.getSession().getAttribute(SECURITY_TOKEN);
+            logoutHandler.setToken(token);
+
+            //TODO: Check if this internal session cleanup is really needed
+            Session session = request.getSessionInternal();
+            // Cleanup session
+            if (session != null) {
+                session.removeNote(FEDERATION_NOTE);
+                session.setPrincipal(null);
             }
 
-            request.getSession().invalidate();
-            handleLogout(response.getOutputStream());
+            logoutHandler.handleRequest(request, response);
 
             return;
         }
         
         super.invoke(request, response);
+    }
 
-    }
-    
-    private void handleLogout(final ServletOutputStream responseOutputStream) throws IOException {
-        InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("logout.jpg");
-        if (inputStream == null) {
-            LOG.warn("Could not write logout.jpg");
-            return;
-        }
-        int read = 0;
-        byte[] buf = new byte[1024];
-        while ((read = inputStream.read(buf)) != -1) {
-            responseOutputStream.write(buf, 0, read);
-        }
-        inputStream.close();
-        responseOutputStream.flush();
-    }
-    
-    private String getMetadataURI(FedizContext fedConfig) {
-        if (fedConfig.getProtocol().getMetadataURI() != null) {
-            return fedConfig.getProtocol().getMetadataURI();
-        } else if (fedConfig.getProtocol() instanceof FederationProtocol) {
-            return FederationConstants.METADATA_PATH_URI;
-        } else if (fedConfig.getProtocol() instanceof SAMLProtocol) {
-            return SAMLSSOConstants.FEDIZ_SAML_METADATA_PATH_URI;
-        }
-        
-        return FederationConstants.METADATA_PATH_URI;
-    }
 
     //CHECKSTYLE:OFF
     @Override
@@ -273,40 +231,6 @@ public class FederationAuthenticator extends FormAuthenticator {
         }
         FedizContext fedConfig = getContextConfiguration(contextName);
         
-        //logout
-        String logoutUrl = fedConfig.getLogoutURL();
-        if (logoutUrl != null && !logoutUrl.isEmpty()
-            && request.getRequestURI().equals(contextName + logoutUrl)) {
-            HttpSession httpSession = request.getSession(false);
-            if (httpSession != null) {
-                // Here the user is already logged in
-                session = request.getSessionInternal();
-                
-                Element token = 
-                    (Element)request.getSession().getAttribute(SECURITY_TOKEN);
-                
-                // Cleanup session
-                if (session != null) {
-                    session.removeNote(FEDERATION_NOTE);
-                    session.setPrincipal(null);
-                    request.getSession().removeAttribute(SECURITY_TOKEN);
-                }
-                httpSession.invalidate();
-
-                FedizProcessor wfProc = 
-                    FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
-                signOutRedirectToIssuer(request, response, token, wfProc);
-
-                return false;
-            } else {
-                // The user is already logged out
-                handleLogout(response.getOutputStream());
-
-                return false;
-            }
-        }
-
-
         // Have we already authenticated someone?
         Principal principal = request.getUserPrincipal();
         // String ssoId = (String) request.getNote(Constants.REQ_SSOID_NOTE);
@@ -692,45 +616,5 @@ public class FederationAuthenticator extends FormAuthenticator {
         }
     }
 
-    protected void signOutRedirectToIssuer(Request request, HttpServletResponse response, 
-                                           Element token, FedizProcessor processor)
-            throws IOException {
 
-        String contextName = request.getServletContext().getContextPath();
-        if (contextName == null || contextName.isEmpty()) {
-            contextName = "/";
-        }
-        FedizContext fedCtx = this.configurator.getFedizContext(contextName);
-        try {
-            SamlAssertionWrapper assertionToken = null;
-            if (token != null) {
-                assertionToken = new SamlAssertionWrapper(token);
-            }
-            RedirectionResponse redirectionResponse = 
-                processor.createSignOutRequest(request, assertionToken, fedCtx);
-            String redirectURL = redirectionResponse.getRedirectionURL();
-            if (redirectURL != null) {
-                Map<String, String> headers = redirectionResponse.getHeaders();
-                if (!headers.isEmpty()) {
-                    for (String headerName : headers.keySet()) {
-                        response.addHeader(headerName, headers.get(headerName));
-                    }
-                }
-                
-                response.sendRedirect(redirectURL);
-            } else {
-                LOG.warn("Failed to create SignOutRequest.");
-                response.sendError(
-                        HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignOutRequest.");
-            }
-        } catch (ProcessingException ex) {
-            LOG.warn("Failed to create SignOutRequest: " + ex.getMessage());
-            response.sendError(
-                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignOutRequest.");
-        } catch (WSSecurityException ex) {
-            LOG.warn("Failed to create SignOutRequest: " + ex.getMessage());
-            response.sendError(
-                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignOutRequest.");
-        }
-    }
 }

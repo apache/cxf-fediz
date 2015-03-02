@@ -145,6 +145,7 @@ public class FederationRequestTest {
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
         
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getParameter(FederationConstants.PARAM_REPLY)).andReturn(null);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL)).times(1, 2);
         EasyMock.expect(req.getContextPath()).andReturn(TEST_REQUEST_URI);
         EasyMock.replay(req);

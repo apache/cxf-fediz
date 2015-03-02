@@ -495,7 +495,10 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             StringBuilder sb = new StringBuilder();
             sb.append(FederationConstants.PARAM_ACTION).append('=').append(FederationConstants.ACTION_SIGNOUT);
 
-            String logoutRedirectTo = config.getLogoutRedirectTo();
+            String logoutRedirectTo = request.getParameter(FederationConstants.PARAM_REPLY);
+            if (logoutRedirectTo != null && !logoutRedirectTo.isEmpty()) {
+                logoutRedirectTo = config.getLogoutRedirectTo();
+            }
             if (logoutRedirectTo != null && !logoutRedirectTo.isEmpty()) {
 
                 if (logoutRedirectTo.startsWith("/")) {
@@ -505,7 +508,6 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                 }
 
                 LOG.debug("wreply=" + logoutRedirectTo);
-
                 sb.append('&').append(FederationConstants.PARAM_REPLY).append('=');
                 sb.append(URLEncoder.encode(logoutRedirectTo, "UTF-8"));
             }
