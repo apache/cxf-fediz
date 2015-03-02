@@ -50,8 +50,11 @@ import org.slf4j.LoggerFactory;
 
 /*
  * A Servlet Filter that MUST be configured to match the '/*' request scheme on each Web Application
- * to enforce SAML assertion TimeToLive checking 
+ * to enforce SAML assertion TimeToLive checking
+ *
+ * @deprecated  Not needed any longer since version 1.2.0
  */
+@Deprecated
 public class SecurityContextTTLChecker extends HttpServlet implements Filter {
     private static final Logger LOG = LoggerFactory.getLogger(SecurityContextTTLChecker.class);
     private static final long serialVersionUID = 5732969339258858728L;

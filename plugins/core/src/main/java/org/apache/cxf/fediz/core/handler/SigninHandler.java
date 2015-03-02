@@ -58,9 +58,9 @@ public abstract class SigninHandler implements RequestHandler {
                 LOG.debug("Validating RSTR...");
                 // process and validate the token
                 try {
-                    processSigninRequest(request, response);
+                    FedizResponse federationResponse = processSigninRequest(request, response);
                     LOG.info("RSTR validated successfully");
-                    resumeRequest();
+                    resumeRequest(request, response, federationResponse);
                     return true;
                 } catch (ProcessingException e) {
                     LOG.error("RSTR validated failed.");
@@ -74,8 +74,9 @@ public abstract class SigninHandler implements RequestHandler {
         return false;
     }
 
-    public abstract void resumeRequest();
-    
+    public abstract void resumeRequest(HttpServletRequest request, HttpServletResponse response,
+        FedizResponse federationResponse);
+
     public FedizResponse processSigninRequest(HttpServletRequest req, HttpServletResponse resp)
         throws ProcessingException {
         FedizRequest federationRequest = new FedizRequest();

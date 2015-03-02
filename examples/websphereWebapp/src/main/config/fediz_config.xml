@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- Place in Tomcat conf folder or other location as designated in this sample's file. 
+     Keystore referenced below must have IDP STS' public cert included in it.  This example uses the
+     ststrust Truststore (ststrust.jks) for this task.
+     In Fediz 1.0, one keystore was used for SSL and the STS public certificate.
+-->
+<FedizConfig>
+	<contextConfig name="/fedizhelloworld">
+		<audienceUris>
+			<audienceItem>urn:org:apache:cxf:fediz:fedizhelloworld</audienceItem>
+		</audienceUris>
+		<certificateStores>
+			<trustManager>
+				<keyStore file="ststrust.jks" password="storepass" type="JKS" />
+			</trustManager>
+		</certificateStores>
+		<trustedIssuers>
+			<issuer certificateValidation="PeerTrust" />
+		</trustedIssuers>
+		<maximumClockSkew>1000</maximumClockSkew>
+		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			xsi:type="federationProtocolType" version="1.0.0">
+			<realm>urn:org:apache:cxf:fediz:fedizhelloworld</realm>
+			<issuer>https://localhost:9443/fediz-idp/federation</issuer>
+			<roleDelimiter>,</roleDelimiter>
+			<roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
+			<claimTypesRequested>
+				<claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role" optional="false" />
+				<claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname" optional="true" />
+				<claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname" optional="true" />
+				<claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress" optional="true" />
+			</claimTypesRequested>
+		</protocol>
+	</contextConfig>
+</FedizConfig>
+
