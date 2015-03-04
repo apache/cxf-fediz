@@ -22,9 +22,12 @@ package org.apache.cxf.fediz.integrationtests;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URLEncoder;
 
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.DomElement;
+import com.gargoylesoftware.htmlunit.html.DomNodeList;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
@@ -237,7 +240,6 @@ public class WSFedTest {
     }
     
     @org.junit.Test
-    @org.junit.Ignore
     public void testWSFed() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         // System.out.println(url);
@@ -245,13 +247,11 @@ public class WSFedTest {
         String user = "ALICE";  // realm b credentials
         String password = "ECILA";
         
-        // Note passing the realm b port here to set the user/password on
-        CookieManager cookieManager = new CookieManager();
         final String bodyTextContent = 
-            loginWithCookieManager(url, user, password, getIdpRealmbHttpsPort(), cookieManager);
+            login(url, user, password, getIdpRealmbHttpsPort(), idpHttpsPort);
         
-        Assert.assertTrue("Principal not " + user,
-                          bodyTextContent.contains("userPrincipal=" + user));
+        Assert.assertTrue("Principal not alice",
+                          bodyTextContent.contains("userPrincipal=alice"));
         Assert.assertTrue("User " + user + " does not have role Admin",
                           bodyTextContent.contains("role:Admin=false"));
         Assert.assertTrue("User " + user + " does not have role Manager",
@@ -268,13 +268,17 @@ public class WSFedTest {
         claim = ClaimTypes.EMAILADDRESS.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
                           bodyTextContent.contains(claim + "=alice@realma.org"));
-                          
     }
     
-    public static String loginWithCookieManager(String url, String user, String password, 
-                                                String idpPort, CookieManager cookieManager) throws IOException {
+    public static String login(String url, String user, String password, 
+                                           String idpPort, String rpIdpPort) throws IOException {
+        //
+        // Access the RP + get redirected to the IdP for "realm a". Then get redirected to the IdP for
+        // "realm b".
+        //
         final WebClient webClient = new WebClient();
-        // webClient.setCookieManager(cookieManager);
+        CookieManager cookieManager = new CookieManager();
+        webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);
         webClient.getCredentialsProvider().setCredentials(
             new AuthScope("localhost", Integer.parseInt(idpPort)),
@@ -282,15 +286,50 @@ public class WSFedTest {
 
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
-        System.out.println("IDPPAGE: " + idpPage.asXml());
         webClient.getOptions().setJavaScriptEnabled(true);
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
-
-        final HtmlForm form = idpPage.getFormByName("signinresponseform");
         
-        final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
+        // For some reason, redirecting back to the IdP for "realm a" is not working with htmlunit. So extract
+        // the parameters manually from the form, and access the IdP for "realm a" with them
+        DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
 
-        final HtmlPage rpPage = button.click();
+        String wresult = null;
+        String wa = "wsignin1.0";
+        String wctx = null;
+        String wtrealm = null;
+        for (DomElement result : results) {
+            if ("wresult".equals(result.getAttributeNS(null, "name"))) {
+                wresult = result.getAttributeNS(null, "value");
+            } else if ("wctx".equals(result.getAttributeNS(null, "name"))) {
+                wctx = result.getAttributeNS(null, "value");
+            } else if ("wtrealm".equals(result.getAttributeNS(null, "name"))) {
+                wtrealm = result.getAttributeNS(null, "value");
+            }
+        }
+        Assert.assertTrue(wctx != null && wresult != null && wtrealm != null);
+
+        // Invoke on the IdP for "realm a"
+        final WebClient webClient2 = new WebClient();
+        webClient2.setCookieManager(cookieManager);
+        webClient2.getOptions().setUseInsecureSSL(true);
+        
+        String url2 = "https://localhost:" + rpIdpPort + "/fediz-idp/federation?";
+        url2 += "wctx=" + wctx + "&";
+        url2 += "wa=" + wa + "&";
+        url2 += "wtrealm=" + URLEncoder.encode(wtrealm, "UTF8") + "&";
+        url2 += "wresult=" + URLEncoder.encode(wresult, "UTF8") + "&";
+        
+        webClient2.getOptions().setJavaScriptEnabled(false);
+        final HtmlPage idpPage2 = webClient2.getPage(url2);
+        webClient2.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage2.getTitleText());
+        
+        // Now redirect back to the RP
+        final HtmlForm form2 = idpPage2.getFormByName("signinresponseform");
+        
+        final HtmlSubmitInput button2 = form2.getInputByName("_eventId_submit");
+
+        final HtmlPage rpPage = button2.click();
         Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
 
         return rpPage.getBody().getTextContent();
