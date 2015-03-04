@@ -31,6 +31,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>samlIdpWebapp</module>
         <module>samlsso</module>
         <module>wsfed</module>
     </modules>

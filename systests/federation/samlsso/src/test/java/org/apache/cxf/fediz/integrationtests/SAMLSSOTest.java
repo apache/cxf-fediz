@@ -21,24 +21,38 @@ package org.apache.cxf.fediz.integrationtests;
 
 
 import java.io.File;
+import java.io.IOException;
+
+import com.gargoylesoftware.htmlunit.CookieManager;
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 
 /**
+ * This is a test for federation in the IdP. The RP application is configured to use a home realm of "realm b". The
+ * client gets redirected to the IdP for "realm a", which in turn redirects to the IdP for "realm b", which is a 
+ * SAML SSO IdP. The IdP for "realm a" will convert the signin request to a SAML SSO sign in request. The IdP for 
+ * realm b authenticates the user, who is then redirected back to the IdP for "realm a" to get a SAML token from 
+ * the STS + then back to the application.
  */
 public class SAMLSSOTest {
 
     static String idpHttpsPort;
+    static String idpSamlSSOHttpsPort;
     static String rpHttpsPort;
     
     private static Tomcat idpServer;
+    private static Tomcat idpSamlSSOServer;
     private static Tomcat rpServer;
     
     @BeforeClass
@@ -54,10 +68,13 @@ public class SAMLSSOTest {
         
         idpHttpsPort = System.getProperty("idp.https.port");
         Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
+        idpSamlSSOHttpsPort = System.getProperty("idp.samlsso.https.port");
+        Assert.assertNotNull("Property 'idp.samlsso.https.port' null", idpSamlSSOHttpsPort);
         rpHttpsPort = System.getProperty("rp.https.port");
         Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
 
         initIdp();
+        initSamlSSOIdp();
         initRp();
     }
     
@@ -92,6 +109,41 @@ public class SAMLSSOTest {
             idpServer.addWebapp("/fediz-idp", "fediz-idp");
             
             idpServer.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private static void initSamlSSOIdp() {
+        try {
+            idpSamlSSOServer = new Tomcat();
+            idpSamlSSOServer.setPort(0);
+            String currentDir = new File(".").getCanonicalPath();
+            idpSamlSSOServer.setBaseDir(currentDir + File.separator + "target");
+            
+            idpSamlSSOServer.getHost().setAppBase("tomcat/idpsamlsso/webapps");
+            idpSamlSSOServer.getHost().setAutoDeploy(true);
+            idpSamlSSOServer.getHost().setDeployOnStartup(true);
+            
+            Connector httpsConnector = new Connector();
+            httpsConnector.setPort(Integer.parseInt(idpSamlSSOHttpsPort));
+            httpsConnector.setSecure(true);
+            httpsConnector.setScheme("https");
+            //httpsConnector.setAttribute("keyAlias", keyAlias);
+            httpsConnector.setAttribute("keystorePass", "tompass");
+            httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
+            httpsConnector.setAttribute("truststorePass", "tompass");
+            httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
+            httpsConnector.setAttribute("clientAuth", "want");
+            // httpsConnector.setAttribute("clientAuth", "false");
+            httpsConnector.setAttribute("sslProtocol", "TLS");
+            httpsConnector.setAttribute("SSLEnabled", true);
+
+            idpSamlSSOServer.getService().addConnector(httpsConnector);
+            
+            idpSamlSSOServer.addWebapp("/idp", "idpsaml");
+            
+            idpSamlSSOServer.start();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -181,15 +233,19 @@ public class SAMLSSOTest {
     @org.junit.Ignore
     public void testSAMLSSO() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
-        // String user = "alice";
-        // String password = "ecila";
-        
         System.out.println("URL: " + url);
+        // Thread.sleep(60 * 2 * 1000);
         
-        Thread.sleep(60 * 2 * 1000);
         /*
+         * TODO Logging in fine to the SAML SSO IdP, but when redirected the context is missing or something
+         * Maybe a bug with htmlunit
+         *
+        String user = "ALICE";  // realm b credentials
+        String password = "ECILA";
         final String bodyTextContent = 
-            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
+            login(url, user, password, idpSamlSSOHttpsPort, idpHttpsPort);
+        
+        System.out.println("BODY: " + bodyTextContent);
         
         Assert.assertTrue("Principal not " + user,
                           bodyTextContent.contains("userPrincipal=" + user));
@@ -210,6 +266,29 @@ public class SAMLSSOTest {
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
                           bodyTextContent.contains(claim + "=alice@realma.org"));
          */
+    }
+    
+    protected static String login(String url, String user, String password, 
+                               String idpPort, String rpIdpPort) throws IOException {
+        //
+        // Access the RP + get redirected to the IdP for "realm a". Then get redirected to the IdP for
+        // "realm b".
+        //
+        final WebClient webClient = new WebClient();
+        CookieManager cookieManager = new CookieManager();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(idpPort)),
+            new UsernamePasswordCredentials(user, password));
+
+        //webClient.getOptions().setJavaScriptEnabled(false);
+        final HtmlPage idpPage = webClient.getPage(url);
+        //webClient.getOptions().setJavaScriptEnabled(true);
+        // Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        
+        return idpPage.getBody().getTextContent();
+
     }
     
 }

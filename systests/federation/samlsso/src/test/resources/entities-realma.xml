@@ -81,7 +81,7 @@
         class="org.apache.cxf.fediz.service.idp.service.jpa.TrustedIdpEntity">
         <property name="realm" value="urn:org:apache:cxf:fediz:idp:realm-B" />
         <property name="cacheTokens" value="true" />
-        <property name="url" value="http://localhost:12345/idp/samlsso" />
+        <property name="url" value="https://localhost:${idp.samlsso.https.port}/idp/samlsso" />
         <property name="certificate" value="realmb.cert" />
         <property name="trustType" value="PEER_TRUST" />
         <property name="protocol" value="urn:oasis:names:tc:SAML:2.0:profiles:SSO:browser" />

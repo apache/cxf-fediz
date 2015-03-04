@@ -270,7 +270,7 @@ public class WSFedTest {
                           bodyTextContent.contains(claim + "=alice@realma.org"));
     }
     
-    public static String login(String url, String user, String password, 
+    private static String login(String url, String user, String password, 
                                            String idpPort, String rpIdpPort) throws IOException {
         //
         // Access the RP + get redirected to the IdP for "realm a". Then get redirected to the IdP for
