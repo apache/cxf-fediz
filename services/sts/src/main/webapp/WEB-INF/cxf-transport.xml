@@ -57,8 +57,12 @@
         </cxf:features>
     </cxf:bus>
 
-    <bean id="samlDelegationHandler"
-        class="org.apache.cxf.fediz.service.sts.FedizSAMLDelegationHandler" />
+    <util:list id="delegationHandlers">
+        <bean id="samlDelegationHandler"
+            class="org.apache.cxf.fediz.service.sts.FedizSAMLDelegationHandler" />
+        <bean id="x509DelegationHandler"
+            class="org.apache.cxf.fediz.service.sts.FedizX509DelegationHandler" />
+    </util:list>
 
     <bean id="transportSTSProviderBean"
         class="org.apache.cxf.ws.security.sts.provider.SecurityTokenServiceProvider">
@@ -73,7 +77,7 @@
         <property name="claimsManager" ref="claimsManager" />
         <property name="tokenValidators" ref="transportTokenValidators" />
         <property name="eventListener" ref="loggerListener" />
-        <property name="delegationHandlers" ref="samlDelegationHandler" />
+        <property name="delegationHandlers" ref="delegationHandlers" />
         <property name="encryptIssuedToken" value="true"/>
     </bean>
 
@@ -104,6 +108,7 @@
 
     <util:list id="transportTokenValidators">
         <ref bean="transportSamlTokenValidator" />
+        <bean class="org.apache.cxf.sts.token.validator.X509TokenValidator" />
     </util:list>
 
     <bean id="realmA" class="org.apache.cxf.sts.token.realm.SAMLRealm">

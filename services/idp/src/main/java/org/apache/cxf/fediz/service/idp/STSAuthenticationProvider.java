@@ -21,6 +21,7 @@ package org.apache.cxf.fediz.service.idp;
 import java.net.URI;
 import java.security.Principal;
 import java.security.PrivilegedActionException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,8 +30,10 @@ import java.util.Map;
 
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.namespace.QName;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
@@ -40,6 +43,8 @@ import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.service.idp.kerberos.KerberosServiceRequestToken;
 import org.apache.cxf.fediz.service.idp.kerberos.KerberosTokenValidator;
 import org.apache.cxf.fediz.service.idp.kerberos.PassThroughKerberosClient;
+import org.apache.cxf.fediz.service.idp.util.WebUtils;
+import org.apache.cxf.helpers.DOMUtils;
 //import org.apache.cxf.transport.http.HTTPConduit;
 //import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 import org.apache.cxf.ws.security.SecurityConstants;
@@ -48,6 +53,8 @@ import org.apache.wss4j.common.kerberos.KerberosServiceContext;
 import org.apache.wss4j.common.principal.SAMLTokenPrincipalImpl;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.apache.wss4j.dom.WSConstants;
+import org.apache.xml.security.exceptions.XMLSecurityException;
+import org.apache.xml.security.keys.content.X509Data;
 import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
@@ -63,6 +70,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
 public class STSAuthenticationProvider implements AuthenticationProvider {
 
@@ -109,6 +117,9 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
     
     private boolean requireDelegation;
     
+    private String technicalUser;
+    private String technicalPassword;
+    
     
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -144,6 +155,26 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
                 PassThroughKerberosClient kerberosClient = new PassThroughKerberosClient();
                 kerberosClient.setToken(((KerberosServiceRequestToken)authentication).getToken());
                 sts.getProperties().put(SecurityConstants.KERBEROS_CLIENT, kerberosClient);
+            }
+        } else if (authentication instanceof PreAuthenticatedAuthenticationToken) {
+            sts.getProperties().put(SecurityConstants.USERNAME, technicalUser);
+            sts.getProperties().put(SecurityConstants.PASSWORD, technicalPassword);
+            
+            X509Certificate cert = 
+                (X509Certificate)((PreAuthenticatedAuthenticationToken)authentication).getCredentials();
+            if (cert == null) {
+                return null;
+            }
+            
+            // Convert the received certificate to a DOM Element to write it out "OnBehalfOf"
+            Document doc = DOMUtils.newDocument();
+            X509Data certElem = new X509Data(doc);
+            try {
+                certElem.addCertificate(cert);
+                sts.setOnBehalfOf(certElem.getElement());
+            } catch (XMLSecurityException e) {
+                LOG.debug("Error parsing a client certificate", e);
+                return null;
             }
         } else {
             sts.getProperties().put(SecurityConstants.USERNAME, authentication.getName());
@@ -213,6 +244,16 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
                 
                 LOG.debug("[IDP_TOKEN={}] provided for user '{}'", token.getId(), kerberosPrincipal.getName());
                 return ksrt;
+            } else if (authentication instanceof PreAuthenticatedAuthenticationToken) {
+                STSUserDetails details = new STSUserDetails(authentication.getName(),
+                                                            "",
+                                                            authorities,
+                                                            token);
+                
+                ((PreAuthenticatedAuthenticationToken)authentication).setDetails(details);
+                
+                LOG.debug("[IDP_TOKEN={}] provided for user '{}'", token.getId(), authentication.getName());
+                return authentication;
             } else {
                 UsernamePasswordAuthenticationToken upat = new UsernamePasswordAuthenticationToken(
                     authentication.getName(), authentication.getCredentials(), authorities);
@@ -297,10 +338,10 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
 
     }
 
-
     @Override
     public boolean supports(Class<?> authentication) {
-        return authentication.equals(UsernamePasswordAuthenticationToken.class)
+        return authentication.equals(PreAuthenticatedAuthenticationToken.class)
+            || authentication.equals(UsernamePasswordAuthenticationToken.class)
             || authentication.equals(KerberosServiceRequestToken.class);
     }
     
@@ -501,6 +542,22 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
 
     public void setRequireDelegation(boolean requireDelegation) {
         this.requireDelegation = requireDelegation;
+    }
+
+    public String getTechnicalPassword() {
+        return technicalPassword;
+    }
+
+    public void setTechnicalPassword(String technicalPassword) {
+        this.technicalPassword = technicalPassword;
+    }
+
+    public String getTechnicalUser() {
+        return technicalUser;
+    }
+
+    public void setTechnicalUser(String technicalUser) {
+        this.technicalUser = technicalUser;
     }
 
 //May be uncommented for debugging    
