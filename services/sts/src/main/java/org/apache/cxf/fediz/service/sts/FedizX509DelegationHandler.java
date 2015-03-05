@@ -37,7 +37,7 @@ public class FedizX509DelegationHandler implements TokenDelegationHandler {
             Element tokenElement = (Element)token;
             String namespace = tokenElement.getNamespaceURI();
             String localname = tokenElement.getLocalName();
-            if ((WSConstants.SIG_NS.equals(namespace) && WSConstants.X509_DATA_LN.equals(localname))) {
+            if (WSConstants.SIG_NS.equals(namespace) && WSConstants.X509_DATA_LN.equals(localname)) {
                 return true;
             }
         }

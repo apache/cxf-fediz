@@ -30,7 +30,6 @@ import java.util.Map;
 
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
-import javax.servlet.http.HttpServletRequest;
 import javax.xml.namespace.QName;
 
 import org.w3c.dom.Document;
@@ -43,7 +42,6 @@ import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.service.idp.kerberos.KerberosServiceRequestToken;
 import org.apache.cxf.fediz.service.idp.kerberos.KerberosTokenValidator;
 import org.apache.cxf.fediz.service.idp.kerberos.PassThroughKerberosClient;
-import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.helpers.DOMUtils;
 //import org.apache.cxf.transport.http.HTTPConduit;
 //import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
@@ -121,6 +119,7 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
     private String technicalPassword;
     
     
+    //CHECKSTYLE:OFF
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         
@@ -274,6 +273,7 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
         }
         
     }
+    //CHECKSTYLE:ON
     
     private Principal validateKerberosToken(
         KerberosServiceRequestToken token,
