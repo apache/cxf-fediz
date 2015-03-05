@@ -34,7 +34,11 @@ import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class SigninHandler implements RequestHandler {
+/**
+ * It is recommended to extend this class and implement the resumeRequest method to continue invoking the originally
+ * requested website.
+ */
+public class SigninHandler implements RequestHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(SigninHandler.class);
     protected final FedizContext fedizConfig;
@@ -74,8 +78,10 @@ public abstract class SigninHandler implements RequestHandler {
         return false;
     }
 
-    public abstract void resumeRequest(HttpServletRequest request, HttpServletResponse response,
-        FedizResponse federationResponse);
+    public void resumeRequest(HttpServletRequest request, HttpServletResponse response,
+        FedizResponse federationResponse) {
+
+    }
 
     public FedizResponse processSigninRequest(HttpServletRequest req, HttpServletResponse resp)
         throws ProcessingException {
