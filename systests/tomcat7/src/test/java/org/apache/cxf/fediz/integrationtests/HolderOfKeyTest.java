@@ -22,6 +22,8 @@ package org.apache.cxf.fediz.integrationtests;
 import java.io.File;
 
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.DomElement;
+import com.gargoylesoftware.htmlunit.html.DomNodeList;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
@@ -205,6 +207,20 @@ public class HolderOfKeyTest {
 
         final HtmlForm form = idpPage.getFormByName("signinresponseform");
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
+        
+        // Test the Subject Confirmation method here
+        DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
+
+        String wresult = null;
+        for (DomElement result : results) {
+            if ("wresult".equals(result.getAttributeNS(null, "name"))) {
+                wresult = result.getAttributeNS(null, "value");
+                break;
+            }
+        }
+        Assert.assertTrue(wresult != null 
+            && wresult.contains("urn:oasis:names:tc:SAML:2.0:cm:holder-of-key"));
+        
 
         final HtmlPage rpPage = button.click();
         Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());

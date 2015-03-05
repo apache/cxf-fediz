@@ -21,6 +21,14 @@ package org.apache.cxf.fediz.integrationtests;
 
 
 import java.io.File;
+import java.io.IOException;
+
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.DomElement;
+import com.gargoylesoftware.htmlunit.html.DomNodeList;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleState;
@@ -28,6 +36,8 @@ import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -185,8 +195,7 @@ public class WReqTest {
         String user = "alice";
         String password = "ecila";
         
-        final String bodyTextContent = 
-            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
+        final String bodyTextContent = login(url, user, password, getIdpHttpsPort());
         
         Assert.assertTrue("Principal not " + user,
                           bodyTextContent.contains("userPrincipal=" + user));
@@ -207,6 +216,40 @@ public class WReqTest {
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
                           bodyTextContent.contains(claim + "=alice@realma.org"));
 
+    }
+    
+    private static String login(String url, String user, String password, String idpPort) throws IOException {
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(idpPort)),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        final HtmlPage idpPage = webClient.getPage(url);
+        webClient.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        
+        // Test the SAML Version here
+        DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
+
+        String wresult = null;
+        for (DomElement result : results) {
+            if ("wresult".equals(result.getAttributeNS(null, "name"))) {
+                wresult = result.getAttributeNS(null, "value");
+                break;
+            }
+        }
+        Assert.assertTrue(wresult != null 
+            && wresult.contains("urn:oasis:names:tc:SAML:1.0:cm:bearer"));
+
+        final HtmlForm form = idpPage.getFormByName("signinresponseform");
+        final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
+
+        final HtmlPage rpPage = button.click();
+        Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
+
+        return rpPage.getBody().getTextContent();
     }
     
 }
