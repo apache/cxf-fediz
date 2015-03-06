@@ -21,22 +21,20 @@
    <modelVersion>4.0.0</modelVersion>
    <parent>
        <groupId>org.apache.cxf.fediz</groupId>
-       <artifactId>fediz</artifactId>
+       <artifactId>fediz-systests</artifactId>
        <version>1.2.0-SNAPSHOT</version>
    </parent>
-   <groupId>org.apache.cxf.fediz</groupId>
-   <artifactId>fediz-systests</artifactId>
-   <name>Apache Fediz System tests</name>
+   <groupId>org.apache.cxf.fediz.systests</groupId>
+   <artifactId>fediz-systests-webapps</artifactId>
+   <name>Apache Fediz Webapps for the System tests</name>
    <packaging>pom</packaging>
 
    <modules>
-      <module>tests</module>
-      <module>webapps</module>
-      <module>jetty8</module>
-      <module>tomcat7</module>
-      <module>spring</module>
-      <module>cxf</module>
-      <module>federation</module>
+      <module>simpleWebapp</module>
+      <module>springPreauthWebapp</module>
+      <module>springWebapp</module>
+      <module>spring2Webapp</module>
+      <module>cxfWebapp</module>
    </modules>
 
 </project>
