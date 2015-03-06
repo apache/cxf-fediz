@@ -37,7 +37,7 @@ public interface Constants {
     String SECURITY_TOKEN_SESSION_ATTRIBUTE_KEY = "fediz.security.token";
 
     /**
-     * @deprecated Use FEDIZ_CONFIG_LOCATION instead.
+     * @deprecated Use PROPERTY_KEY_CONFIG_LOCATION instead.
      *
      * Using this property causes problems on Websphere 8.5. See https://issues.apache.org/jira/browse/FEDIZ-97 for more
      * details.
@@ -47,10 +47,10 @@ public interface Constants {
     /**
      * This constant contains the name for the property to discover the location of the fediz configuration file.
      */
-    String FEDIZ_CONFIG_LOCATION = "fedizConfigLocation";
+    String PROPERTY_KEY_CONFIG_LOCATION = "fedizConfigFileLocation";
 
     /**
-     * @deprecated Use FEDIZ_ROLE_MAPPER instead.
+     * @deprecated Use PROPERTY_KEY_ROLE_MAPPER instead.
      */
     @Deprecated
     String ROLE_GROUP_MAPPER = "role.group.mapper";
@@ -59,5 +59,14 @@ public interface Constants {
      * This constant contains the name for the property to discover the class-name which should be used for role to
      * group mappings.
      */
-    String FEDIZ_ROLE_MAPPER = "fedizRoleMapper";
+    String PROPERTY_KEY_ROLE_MAPPER = "roleMapper";
+
+    /**
+     * Usually the group name is mapped to the GroupUID by using the User Registry. In the WAS liberty profile there
+     * is no User Registry available via JNDI, thus the GroupUID mapping needs to take place directly in the
+     * Claim2Group Mapper. By using this interceptor property and setting the value to 'true' the UserRegistry will
+     * not be used to get the GroupUID but instead the GroupUID needs to be provided by the Claim2Group Mapper. The
+     * default value is set to 'false', thus the UserRegistry will be invoked.
+     */
+    String PROPERTY_KEY_DIRECT_GROUP_MAPPING = "directGroupMapping";
 }

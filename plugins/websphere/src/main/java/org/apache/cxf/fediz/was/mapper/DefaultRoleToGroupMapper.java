@@ -19,28 +19,56 @@
 
 package org.apache.cxf.fediz.was.mapper;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  */
 public class DefaultRoleToGroupMapper implements RoleToGroupMapper {
 
-    
+    public static final String PROPERTY_KEY_ROLE_MAPPING_TEMPLATE = "roleMappingTemplate";
+
+    public static final String ROLE_MAPPING_PLACEHOLDER = "%roleName%";
+
+    public static final String DEFAULT_MAPPING_TEMPLATE = "group:defaultWIMFileBasedRealm/"
+                                                          + DefaultRoleToGroupMapper.ROLE_MAPPING_PLACEHOLDER;
+
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultRoleToGroupMapper.class);
+
+    private String template;
+
     @Override
     public void cleanup() {
     }
 
-   
     @Override
     public List<String> groupsFromRoles(List<String> roles) {
-        return roles;
+        if (template == null || roles == null) {
+            return roles;
+        } else {
+            List<String> renamedRoles = new ArrayList<String>();
+            for (String role : roles) {
+                String renamedRole = template.replace(ROLE_MAPPING_PLACEHOLDER, role);
+                renamedRoles.add(renamedRole);
+                LOG.debug("Mapped role {} to {}", role, renamedRole);
+            }
+            return renamedRoles;
+        }
     }
 
-    
     @Override
     public void initialize(Properties properties) {
+        if (properties != null && properties.containsKey(PROPERTY_KEY_ROLE_MAPPING_TEMPLATE)) {
+            template = properties.getProperty(PROPERTY_KEY_ROLE_MAPPING_TEMPLATE);
+            LOG.info("Set RoleToGroup regex pattern: {}", template);
+        } else {
+            template = null;
+        }
     }
 
 }

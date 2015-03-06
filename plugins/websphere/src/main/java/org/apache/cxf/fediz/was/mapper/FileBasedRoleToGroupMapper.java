@@ -22,7 +22,12 @@ package org.apache.cxf.fediz.was.mapper;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -44,22 +49,23 @@ public class FileBasedRoleToGroupMapper implements RoleToGroupMapper {
      * This constant contains the name for the property to discover the role mapping file refresh rate. The value of
      * this property contains the number of seconds to wait, before changes in the file are detected and applied.
      */
-    public static final String FEDIZ_ROLE_MAPPING_REFRESH_TIMEOUT = "fedizRoleMappingRefreshTimeout";
+    public static final String PROPERTY_KEY_ROLE_MAPPING_REFRESH_TIMEOUT = "roleMappingRefreshTimeout";
     /**
      * This constant contains the name for the property to discover the location of the role to group mapping file.
      */
-    public static final String FEDIZ_ROLE_MAPPING_LOCATION = "fedizRoleMappingLocation";
+    public static final String PROPERTY_KEY_ROLE_MAPPING_LOCATION = "roleMappingLocation";
 
     /**
-     * @deprecated Use FEDIZ_ROLE_MAPPING_REFRESH_TIMEOUT instead.
+     * @deprecated Use PROPERTY_KEY_ROLE_MAPPING_REFRESH_TIMEOUT instead.
      */
     @Deprecated
     private static final String REFRESH_TIMEOUT_PARAMETER = "groups.mapping.refresh.timeout";
     /**
-     * @deprecated Use FEDIZ_ROLE_MAPPING_LOCATION instead.
+     * @deprecated Use PROPERTY_KEY_ROLE_MAPPING_LOCATION instead.
      */
     @Deprecated
     private static final String MAPPING_FILE_PARAMETER = "groups.mapping.file";
+
     private static final String INITIALIZATION_THREAD_NAME = "ClaimGroupMapper";
 
     private static final Logger LOG = LoggerFactory.getLogger(FileBasedRoleToGroupMapper.class);
@@ -87,15 +93,15 @@ public class FileBasedRoleToGroupMapper implements RoleToGroupMapper {
     @Override
     public void initialize(Properties props) {
         if (props != null) {
-            String fileLocation = props.containsKey(FEDIZ_ROLE_MAPPING_LOCATION)
-                    ? props.getProperty(FEDIZ_ROLE_MAPPING_LOCATION)
+            String fileLocation = props.containsKey(PROPERTY_KEY_ROLE_MAPPING_LOCATION)
+                    ? props.getProperty(PROPERTY_KEY_ROLE_MAPPING_LOCATION)
                     : props.getProperty(MAPPING_FILE_PARAMETER);
             if (fileLocation != null) {
                 groupMappingFilename = fileLocation;
                 LOG.info("Mapping file set to {}", fileLocation);
             }
-            String timeout = props.containsKey(FEDIZ_ROLE_MAPPING_REFRESH_TIMEOUT)
-                    ? props.getProperty(FEDIZ_ROLE_MAPPING_REFRESH_TIMEOUT)
+            String timeout = props.containsKey(PROPERTY_KEY_ROLE_MAPPING_REFRESH_TIMEOUT)
+                    ? props.getProperty(PROPERTY_KEY_ROLE_MAPPING_REFRESH_TIMEOUT)
                     : props.getProperty(REFRESH_TIMEOUT_PARAMETER);
             if (timeout != null) {
                 refreshRateMillisec = Integer.parseInt(timeout) * 1000;

@@ -77,6 +77,11 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
     private FedizConfigurator configurator;
     private RoleToGroupMapper mapper;
 
+    /**
+     * @see org.apache.cxf.fediz.was.Constants#PROPERTY_KEY_DIRECT_GROUP_MAPPING
+     */
+    private boolean directGrouMapping;
+
     public String getConfigFile() {
         return configFile;
     }
@@ -144,8 +149,8 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
         if (props != null) {
             try {
                 @SuppressWarnings("deprecation")
-                String roleGroupMapper = props.containsKey(Constants.FEDIZ_ROLE_MAPPER)
-                    ? props.getProperty(Constants.FEDIZ_ROLE_MAPPER)
+                String roleGroupMapper = props.containsKey(Constants.PROPERTY_KEY_ROLE_MAPPER)
+                    ? props.getProperty(Constants.PROPERTY_KEY_ROLE_MAPPER)
                     : props.getProperty(Constants.ROLE_GROUP_MAPPER);
                 if (roleGroupMapper != null && !roleGroupMapper.isEmpty()) {
                     try {
@@ -162,8 +167,8 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
                 }
 
                 @SuppressWarnings("deprecation")
-                String configFileLocation = props.containsKey(Constants.FEDIZ_CONFIG_LOCATION)
-                    ? props.getProperty(Constants.FEDIZ_CONFIG_LOCATION)
+                String configFileLocation = props.containsKey(Constants.PROPERTY_KEY_CONFIG_LOCATION)
+                    ? props.getProperty(Constants.PROPERTY_KEY_CONFIG_LOCATION)
                     : props.getProperty(Constants.CONFIGURATION_FILE_PARAMETER);
                 if (configFileLocation != null) {
                     LOG.debug("Configuration file location set to {}", configFileLocation);
@@ -175,8 +180,10 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
                     LOG.debug("Federation config loaded from path: {}", configFileLocation);
                 } else {
                     throw new WebTrustAssociationFailedException("Missing required initialization parameter "
-                                                                 + Constants.FEDIZ_CONFIG_LOCATION);
+                                                                 + Constants.PROPERTY_KEY_CONFIG_LOCATION);
                 }
+
+                directGrouMapping = Boolean.valueOf(props.getProperty(Constants.PROPERTY_KEY_DIRECT_GROUP_MAPPING));
             } catch (Throwable t) {
                 LOG.warn("Failed initializing TAI", t);
                 return 1;
@@ -374,6 +381,9 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
     }
 
     private boolean checkSecurityToken(FedizResponse response) {
+        if (response == null) {
+            return false;
+        }
         long currentTime = System.currentTimeMillis();
         return response.getTokenExpires().getTime() > currentTime;
     }
@@ -383,29 +393,37 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
         List<String> localGroups = mapper.groupsFromRoles(federationResponse.getRoles());
         List<String> groupIds = new ArrayList<String>(localGroups.size());
 
-        InitialContext ctx = new InitialContext();
-        try {
-            UserRegistry reg = (UserRegistry)ctx.lookup(Constants.USER_REGISTRY_JNDI_NAME);
+        if (directGrouMapping) {
+            LOG.debug("Direct Group Mapping was set in interceptor. Thus UserRegistry will not be invoked to get "
+                      + "GrouUID");
+            groupIds.addAll(localGroups);
+        } else {
+            InitialContext ctx = new InitialContext();
+            try {
+                UserRegistry reg = (UserRegistry)ctx.lookup(Constants.USER_REGISTRY_JNDI_NAME);
 
-            if (localGroups != null) {
-                LOG.debug("Converting {} group names to uids", localGroups.size());
-                for (String localGroup : localGroups) {
-                    try {
-                        String guid = convertGroupNameToUniqueId(reg, localGroup);
-                        LOG.debug("Group '{}' maps to guid: {}", localGroup, guid);
-                        groupIds.add(guid);
-                    } catch (EntryNotFoundException e) {
-                        LOG.warn("Group entry could not be found in UserRegistry: {}", localGroup);
+                if (localGroups != null) {
+                    LOG.debug("Converting {} group names to uids", localGroups.size());
+                    for (String localGroup : localGroups) {
+                        try {
+                            String guid = convertGroupNameToUniqueId(reg, localGroup);
+                            LOG.debug("Group '{}' maps to guid: {}", localGroup, guid);
+                            groupIds.add(guid);
+                        } catch (EntryNotFoundException e) {
+                            LOG.warn("Group entry '{}' could not be found in UserRegistry for user '{}'", localGroup,
+                                     federationResponse.getUsername());
+                        }
                     }
                 }
+            } catch (NamingException ex) {
+                LOG.error("User Registry could not be loaded via JNDI context.");
+                LOG.warn("Since Group mapping failed no groups will be set for user '{}'", federationResponse
+                    .getUsername());
+                LOG.info("To switch to direct GroupUID Mapping without UserRegistry being involved set "
+                         + "fedizDirectGroupMapping=\"true\"  in TAI Interceptor properties.");
+            } finally {
+                ctx.close();
             }
-        } catch (NamingException ex) {
-            LOG.error("User Registry could not be loaded via JNDI context.");
-            LOG.warn("GroupIDs from mapping will be used instead of UserRegistry mapping for user: {}",
-                     federationResponse.getUsername());
-            groupIds.addAll(localGroups);
-        } finally {
-            ctx.close();
         }
         LOG.debug("Group list: {}", groupIds);
         return groupIds;
