@@ -37,6 +37,7 @@
       <module>spring</module>
       <module>cxf</module>
       <module>federation</module>
+      <module>kerberos</module>
    </modules>
 
 </project>

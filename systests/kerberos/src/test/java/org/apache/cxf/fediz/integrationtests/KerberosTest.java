@@ -21,13 +21,8 @@ package org.apache.cxf.fediz.integrationtests;
 
 
 import java.io.File;
-
-
-
-
-
-
-
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.security.PrivilegedExceptionAction;
 
 import javax.security.auth.Subject;
@@ -42,8 +37,20 @@ import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
+import org.apache.commons.io.IOUtils;
 import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
+import org.apache.directory.server.annotations.CreateKdcServer;
+import org.apache.directory.server.annotations.CreateLdapServer;
+import org.apache.directory.server.annotations.CreateTransport;
+import org.apache.directory.server.core.annotations.ApplyLdifFiles;
+import org.apache.directory.server.core.annotations.CreateDS;
+import org.apache.directory.server.core.annotations.CreateIndex;
+import org.apache.directory.server.core.annotations.CreatePartition;
+import org.apache.directory.server.core.integ.AbstractLdapTestUnit;
+import org.apache.directory.server.core.integ.FrameworkRunner;
+import org.apache.directory.server.core.kerberos.KeyDerivationInterceptor;
+import org.apache.wss4j.dom.WSSConfig;
 import org.apache.xml.security.utils.Base64;
 import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSException;
@@ -52,21 +59,66 @@ import org.ietf.jgss.GSSName;
 import org.ietf.jgss.Oid;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
 
 /**
  * A test that sends a Kerberos ticket to the IdP for authentication. The IdP must be configured
  * to validate the Kerberos ticket, and in turn get a delegation token to authenticate to the
  * STS + retrieve claims etc.
+ * 
+ * This test uses an Apache DS instance as the KDC
  */
-@org.junit.Ignore
-public class KerberosTest {
+
+@RunWith(FrameworkRunner.class)
+
+//Define the DirectoryService
+@CreateDS(name = "KerberosTest-class",
+    enableAccessControl = false,
+    allowAnonAccess = false,
+    enableChangeLog = true,
+    partitions = {
+        @CreatePartition(
+            name = "example",
+            suffix = "dc=example,dc=com",
+            indexes = {
+                @CreateIndex(attribute = "objectClass"),
+                @CreateIndex(attribute = "dc"),
+                @CreateIndex(attribute = "ou")
+            }
+        ) },
+    additionalInterceptors = {
+        KeyDerivationInterceptor.class
+        }
+)
+
+@CreateLdapServer(
+    transports = {
+        @CreateTransport(protocol = "LDAP")
+        }
+)
+
+@CreateKdcServer(
+    transports = {
+        // @CreateTransport(protocol = "TCP", address = "127.0.0.1", port=1024)
+        @CreateTransport(protocol = "UDP", address = "127.0.0.1")
+        },
+    primaryRealm = "service.ws.apache.org",
+    kdcPrincipal = "krbtgt/service.ws.apache.org@service.ws.apache.org"
+)
+
+//Inject an file containing entries
+@ApplyLdifFiles("kerberos.ldif")
+
+public class KerberosTest extends AbstractLdapTestUnit {
 
     static String idpHttpsPort;
     static String rpHttpsPort;
     
     private static Tomcat idpServer;
     private static Tomcat rpServer;
+    private static boolean portUpdated;
     
     @BeforeClass
     public static void init() {
@@ -84,8 +136,38 @@ public class KerberosTest {
         rpHttpsPort = System.getProperty("rp.https.port");
         Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
 
+        WSSConfig.init();
+        
         initIdp();
         initRp();
+    }
+    
+    @Before
+    public void updatePort() throws Exception {
+        if (!portUpdated) {
+            String basedir = System.getProperty("basedir");
+            if (basedir == null) {
+                basedir = new File(".").getCanonicalPath();
+            }
+            
+            // Read in krb5.conf and substitute in the correct port
+            File f = new File(basedir + "/src/test/resources/krb5.conf");
+            
+            FileInputStream inputStream = new FileInputStream(f);
+            String content = IOUtils.toString(inputStream, "UTF-8");
+            inputStream.close();
+            content = content.replaceAll("port", "" + super.getKdcServer().getTransports()[0].getPort());
+            
+            File f2 = new File(basedir + "/target/test-classes/fediz.kerberos.krb5.conf");
+            FileOutputStream outputStream = new FileOutputStream(f2);
+            IOUtils.write(content, outputStream, "UTF-8");
+            outputStream.close();
+            
+            System.setProperty("java.security.krb5.conf", f2.getPath());
+            portUpdated = true;
+        }
+        
+        System.setProperty("java.security.auth.login.config", "src/test/resources/kerberos.jaas");
     }
     
     private static void initIdp() {
@@ -212,8 +294,6 @@ public class KerberosTest {
         
         final WebClient webClient = new WebClient();
         webClient.getOptions().setUseInsecureSSL(true);
-        webClient.getOptions().setSSLClientCertificate(
-            this.getClass().getClassLoader().getResource("client.jks"), "clientpass", "jks");
         
         webClient.getOptions().setJavaScriptEnabled(false);
         webClient.addRequestHeader("Authorization", "Negotiate " + ticket);
@@ -249,6 +329,7 @@ public class KerberosTest {
                           bodyTextContent.contains(claim + "=alice@realma.org"));
     }
     
+    // To get this test to work, uncomment the "spnego" configuration in the STS's kerberos.xml
     @org.junit.Test
     @org.junit.Ignore
     public void testSpnego() throws Exception {
@@ -258,8 +339,6 @@ public class KerberosTest {
         
         final WebClient webClient = new WebClient();
         webClient.getOptions().setUseInsecureSSL(true);
-        webClient.getOptions().setSSLClientCertificate(
-            this.getClass().getClassLoader().getResource("client.jks"), "clientpass", "jks");
         
         webClient.getOptions().setJavaScriptEnabled(false);
         webClient.addRequestHeader("Authorization", "Negotiate " + ticket);
@@ -297,9 +376,6 @@ public class KerberosTest {
     
     private String getEncodedKerberosTicket(boolean spnego) throws Exception {
         
-        System.setProperty("java.security.auth.login.config", "src/test/resources/kerberos.jaas");
-        System.setProperty("org.apache.xml.security.ignoreLineBreaks", "true");
-        
         Oid kerberos5Oid = null;
         if (spnego) {
             kerberos5Oid = new Oid("1.3.6.1.5.5.2");
@@ -320,7 +396,7 @@ public class KerberosTest {
         final byte[] token = new byte[0];
 
         String contextName = "alice";
-        LoginContext lc = new LoginContext(contextName);
+        LoginContext lc = new LoginContext(contextName, new KerberosClientPasswordCallback());
         lc.login();
         
         byte[] ticket = (byte[])Subject.doAs(lc.getSubject(), new CreateServiceTicketAction(context, token));

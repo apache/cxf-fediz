@@ -51,9 +51,6 @@
     
     <bean id="defaultPasswordEncoder" class="org.springframework.security.crypto.password.StandardPasswordEncoder" />
     
-    <bean id="kerberosEntryPoint" 
-          class="org.apache.cxf.fediz.service.idp.kerberos.KerberosEntryPoint" />
-    
     <bean id="spnegoAuthenticationProcessingFilter"
           class="org.apache.cxf.fediz.service.idp.kerberos.KerberosAuthenticationProcessingFilter">
         <property name="authenticationManager" ref="restAuthenticationManager" />
@@ -78,8 +75,8 @@
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
         <security:intercept-url pattern="/FederationMetadata/2007-06/FederationMetadata.xml" access="isAnonymous() or isAuthenticated()" />
 
-        <security:form-login login-page="/federation/login"/>
-        <security:http-basic />
+        <!-- <security:form-login login-page="/federation/login"/>
+        <security:http-basic />-->
         <security:custom-filter ref="kerberosAuthenticationProcessingFilter" position="BASIC_AUTH_FILTER" />
     </security:http>
 
