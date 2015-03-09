@@ -100,18 +100,36 @@
             <artifactId>apacheds-core-annotations</artifactId>
             <version>${apacheds.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>bouncycastle</groupId>
+                    <artifactId>bcprov-jdk15</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.directory.server</groupId>
             <artifactId>apacheds-core-integ</artifactId>
             <version>${apacheds.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>bouncycastle</groupId>
+                    <artifactId>bcprov-jdk15</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.directory.server</groupId>
             <artifactId>apacheds-protocol-shared</artifactId>
             <version>${apacheds.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>bouncycastle</groupId>
+                    <artifactId>bcprov-jdk15</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.directory.server</groupId>
@@ -123,6 +141,10 @@
                     <groupId>net.sf.ehcache</groupId>
                     <artifactId>ehcache-core</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>bouncycastle</groupId>
+                    <artifactId>bcprov-jdk15</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -130,12 +152,24 @@
             <artifactId>apacheds-interceptor-kerberos</artifactId>
             <version>${apacheds.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>bouncycastle</groupId>
+                    <artifactId>bcprov-jdk15</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.directory.server</groupId>
             <artifactId>apacheds-kerberos-codec</artifactId>
             <version>${apacheds.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>bouncycastle</groupId>
+                    <artifactId>bcprov-jdk15</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -143,6 +177,13 @@
             <version>2.4</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <scope>test</scope>
+            <version>1.51</version>
+        </dependency>
+
     </dependencies>
     <build>
         <testResources>
