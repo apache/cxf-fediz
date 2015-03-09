@@ -67,21 +67,21 @@
 			<artifactId>com.ibm.websphere.security</artifactId>
 			<version>1.0.3</version>
 			<type>jar</type>
-			<scope>compile</scope>
+			<scope>provided</scope>
  		</dependency>
 		<dependency>
 			<groupId>com.ibm.ws.security</groupId>
 			<artifactId>com.ibm.ws.security.authentication.tai</artifactId>
 			<version>1.0.3</version>
 			<type>jar</type>
-			<scope>compile</scope>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.ibm.ws.security</groupId>
 			<artifactId>com.ibm.ws.security.token</artifactId>
 			<version>1.0.2</version>
 			<type>jar</type>
-			<scope>compile</scope>
+			<scope>provided</scope>
 		</dependency>        
 
 		<dependency>
