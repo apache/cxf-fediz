@@ -363,25 +363,25 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             }
             
             String issuerURL = resolveIssuer(request, config);
-            LOG.info("Issuer url: " + issuerURL);
+            LOG.debug("Issuer url: " + issuerURL);
             if (issuerURL != null && issuerURL.length() > 0) {
                 redirectURL = issuerURL;
             }
             
             String wAuth = resolveAuthenticationType(request, config);
-            LOG.info("WAuth: " + wAuth);
+            LOG.debug("WAuth: " + wAuth);
             
             String wReq = resolveRequest(request, config);
-            LOG.info("WReq: " + wReq);
+            LOG.debug("WReq: " + wReq);
             
             String homeRealm = resolveHomeRealm(request, config);
-            LOG.info("HomeRealm: " + homeRealm);
+            LOG.debug("HomeRealm: " + homeRealm);
             
             String freshness = resolveFreshness(request, config);
-            LOG.info("Freshness: " + freshness);
+            LOG.debug("Freshness: " + freshness);
             
             String signInQuery = resolveSignInQuery(request, config);
-            LOG.info("SignIn Query: " + signInQuery);
+            LOG.debug("SignIn Query: " + signInQuery);
             
             String wctx = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
             String requestURL = request.getRequestURL().toString();
@@ -487,7 +487,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             }
 
             String issuerURL = resolveIssuer(request, config);
-            LOG.info("Issuer url: " + issuerURL);
+            LOG.debug("Issuer url: " + issuerURL);
             if (issuerURL != null && issuerURL.length() > 0) {
                 redirectURL = issuerURL;
             }

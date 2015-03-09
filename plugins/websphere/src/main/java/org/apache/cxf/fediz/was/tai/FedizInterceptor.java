@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -38,10 +37,8 @@ import javax.servlet.http.HttpSession;
 import com.ibm.websphere.security.CustomRegistryException;
 import com.ibm.websphere.security.EntryNotFoundException;
 import com.ibm.websphere.security.UserRegistry;
-import com.ibm.websphere.security.WSSecurityException;
 import com.ibm.websphere.security.WebTrustAssociationException;
 import com.ibm.websphere.security.WebTrustAssociationFailedException;
-import com.ibm.websphere.security.auth.WSSubject;
 import com.ibm.wsspi.security.tai.TAIResult;
 import com.ibm.wsspi.security.tai.TrustAssociationInterceptor;
 import com.ibm.wsspi.security.token.AttributeNameConstants;
@@ -283,22 +280,9 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
             }
 
             // Check if user was authenticated previously and token is still valid
-            String user = req.getRemoteUser();
-            String principal = WSSubject.getCallerPrincipal();
-            Subject subject = null;
-            try {
-                subject = WSSubject.getCallerSubject();
-            } catch (WSSecurityException e) {
-                LOG.error("Could not read subject");
-            }
-            LOG.info("Remote User: {}, Principal: {}, Subject {}", user, principal, subject);
-            if (principal != null && subject != null) {
-                // return TAIResult.create(HttpServletResponse.SC_OK, principal, subject);
-            } else {
-                TAIResult taiResult = checkUserAuthentication(req);
-                if (taiResult != null) {
-                    return taiResult;
-                }
+            TAIResult taiResult = checkUserAuthentication(req);
+            if (taiResult != null) {
+                return taiResult;
             }
 
             LOG.info("No Subject found in existing session. Redirecting to IDP");
@@ -321,17 +305,15 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
             if (federationResponse != null) {
                 LOG.info("Security Token found in session: {}", federationResponse.getUsername());
 
-                // check that the target WebApp is properly configured for Token TTL enforcement
+                // validate Security Token and create User Principal
                 if (checkSecurityToken(federationResponse)) {
                     // proceed creating the JAAS Subject
-                    LOG.info("Security Filter properly configured - forwarding subject");
                     List<String> groupsIds = groupIdsFromTokenRoles(federationResponse);
+                    LOG.debug("Mapped group IDs: {}", groupsIds);
                     Subject subject = createSubject(federationResponse, groupsIds, session.getId());
 
                     result = TAIResult.create(HttpServletResponse.SC_OK, federationResponse.getUsername(), subject);
                 }
-                // leave the Session untouched
-                // session.removeAttribute(Constants.SECURITY_TOKEN_SESSION_ATTRIBUTE_KEY);
             }
         }
         return result;
@@ -366,18 +348,6 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
             LOG.error("Failed to create SignInRequest", ex);
             throw new WebTrustAssociationFailedException(ex.getMessage());
         }
-    }
-
-    protected FedizResponse getCachedFederationResponse(Subject subject) {
-        Iterator<?> i = subject.getPublicCredentials().iterator();
-        while (i.hasNext()) {
-            Object o = i.next();
-            if (o instanceof Hashtable) {
-                Map<?, ?> table = (Hashtable<?, ?>)o;
-                return (FedizResponse)table.get(Constants.SUBJECT_TOKEN_KEY);
-            }
-        }
-        return null;
     }
 
     private boolean checkSecurityToken(FedizResponse response) {
