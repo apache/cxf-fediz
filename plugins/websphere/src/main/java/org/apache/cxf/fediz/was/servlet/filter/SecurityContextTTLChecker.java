@@ -52,9 +52,9 @@ import org.slf4j.LoggerFactory;
  * A Servlet Filter that MUST be configured to match the '/*' request scheme on each Web Application
  * to enforce SAML assertion TimeToLive checking
  *
- * @deprecated  Not needed any longer since version 1.2.0
+ * Only needed if TAI Interceptor is not registered with option "beforeSSO=true". Otherwise use FederationFilter
+ * instead.
  */
-@Deprecated
 public class SecurityContextTTLChecker extends HttpServlet implements Filter {
     private static final Logger LOG = LoggerFactory.getLogger(SecurityContextTTLChecker.class);
     private static final long serialVersionUID = 5732969339258858728L;
@@ -69,6 +69,7 @@ public class SecurityContextTTLChecker extends HttpServlet implements Filter {
         super();
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
@@ -80,6 +81,7 @@ public class SecurityContextTTLChecker extends HttpServlet implements Filter {
      * (non-Java-doc)
      * @see javax.servlet.Filter#doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
      */
+    @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
         throws IOException, ServletException {
 
@@ -145,10 +147,12 @@ public class SecurityContextTTLChecker extends HttpServlet implements Filter {
      * (non-Java-doc)
      * @see javax.servlet.Filter#destroy()
      */
+    @SuppressWarnings("deprecation")
     public void destroy() {
         FedizInterceptor.deRegisterContext(contextPath);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         contextPath = filterConfig.getServletContext().getContextPath();
