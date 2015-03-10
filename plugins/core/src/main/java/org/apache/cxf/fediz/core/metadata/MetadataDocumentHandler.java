@@ -38,7 +38,7 @@ import org.apache.wss4j.common.util.DOM2Writer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MetadataDocumentHandler implements RequestHandler {
+public class MetadataDocumentHandler implements RequestHandler<Boolean> {
 
     private static final Logger LOG = LoggerFactory.getLogger(MetadataDocumentHandler.class);
     protected final FedizContext fedizConfig;
@@ -64,7 +64,7 @@ public class MetadataDocumentHandler implements RequestHandler {
     }
 
     @Override
-    public boolean handleRequest(HttpServletRequest request, HttpServletResponse response) {
+    public Boolean handleRequest(HttpServletRequest request, HttpServletResponse response) {
         LOG.debug("Metadata document requested");
         FedizProcessor wfProc = FedizProcessorFactory.newFedizProcessor(fedizConfig.getProtocol());
         PrintWriter out = null;

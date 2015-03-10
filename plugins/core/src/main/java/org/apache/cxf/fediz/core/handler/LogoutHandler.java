@@ -37,7 +37,7 @@ import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LogoutHandler implements RequestHandler {
+public class LogoutHandler implements RequestHandler<Boolean> {
 
     private static final Logger LOG = LoggerFactory.getLogger(LogoutHandler.class);
     protected final FedizContext fedizConfig;
@@ -67,7 +67,7 @@ public class LogoutHandler implements RequestHandler {
     }
 
     @Override
-    public boolean handleRequest(HttpServletRequest request, HttpServletResponse response) {
+    public Boolean handleRequest(HttpServletRequest request, HttpServletResponse response) {
         String wa = request.getParameter(FederationConstants.PARAM_ACTION);
         if (FederationConstants.ACTION_SIGNOUT.equals(wa)) {
             return signout(request, response);

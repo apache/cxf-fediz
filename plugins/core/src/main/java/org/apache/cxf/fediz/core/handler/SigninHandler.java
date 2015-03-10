@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  * It is recommended to extend this class and implement the resumeRequest method to continue invoking the originally
  * requested website.
  */
-public class SigninHandler implements RequestHandler {
+public class SigninHandler<T> implements RequestHandler<T> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SigninHandler.class);
     protected final FedizContext fedizConfig;
@@ -53,34 +53,38 @@ public class SigninHandler implements RequestHandler {
     }
 
     @Override
-    public boolean handleRequest(HttpServletRequest request, HttpServletResponse response) {
+    public T handleRequest(HttpServletRequest request, HttpServletResponse response) {
         if (request.getMethod().equals("POST")) {
             LOG.debug("Sign-In-Response received");
             String wresult = request.getParameter(FederationConstants.PARAM_RESULT);
-            String wctx = request.getParameter(FederationConstants.PARAM_CONTEXT);
-            if (wresult != null && wctx != null) {
+            if (wresult != null) {
                 LOG.debug("Validating RSTR...");
                 // process and validate the token
                 try {
                     FedizResponse federationResponse = processSigninRequest(request, response);
-                    LOG.info("RSTR validated successfully");
+                    LOG.debug("RSTR validated successfully");
+                    T principal = createPrincipal(request, response, federationResponse);
                     resumeRequest(request, response, federationResponse);
-                    return true;
+                    return principal;
                 } catch (ProcessingException e) {
                     LOG.error("RSTR validated failed.");
                 }
             } else {
-                throw new RuntimeException("Missing required parameter [wctx or wresult]");
+                throw new RuntimeException("Missing required parameter 'wresult'");
             }
         } else {
             throw new RuntimeException("Incorrect method GET for Sign-In-Response");
         }
-        return false;
+        return null;
     }
 
-    public void resumeRequest(HttpServletRequest request, HttpServletResponse response,
-        FedizResponse federationResponse) {
+    protected T createPrincipal(HttpServletRequest request, HttpServletResponse response,
+                              FedizResponse federationResponse) {
+        return null;
+    }
 
+    protected void resumeRequest(HttpServletRequest request, HttpServletResponse response,
+        FedizResponse federationResponse) {
     }
 
     public FedizResponse processSigninRequest(HttpServletRequest req, HttpServletResponse resp)

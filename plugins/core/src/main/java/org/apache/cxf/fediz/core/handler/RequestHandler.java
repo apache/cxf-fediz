@@ -21,7 +21,7 @@ package org.apache.cxf.fediz.core.handler;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public interface RequestHandler {
+public interface RequestHandler<T> {
 
     /**
      * @param request Check if handler can handle this given request
@@ -34,7 +34,7 @@ public interface RequestHandler {
      *
      * @param request Request to be handled.
      * @param response Response to be populated.
-     * @return Returns true if request handling was successful.
+     * @return Returns result of request handling.
      */
-    boolean handleRequest(HttpServletRequest request, HttpServletResponse response);
+    T handleRequest(HttpServletRequest request, HttpServletResponse response);
 }
