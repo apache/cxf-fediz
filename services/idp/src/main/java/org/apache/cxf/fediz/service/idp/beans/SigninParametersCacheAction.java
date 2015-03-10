@@ -76,22 +76,27 @@ public class SigninParametersCacheAction {
         Map<String, Object> signinParams =
             (Map<String, Object>)WebUtils.getAttributeFromExternalContext(context, uuidKey);
         
-        String value = (String)signinParams.get(FederationConstants.PARAM_REPLY);
-        if (value != null) {
-            WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_REPLY, value);
+        if (signinParams != null) {
+            String value = (String)signinParams.get(FederationConstants.PARAM_REPLY);
+            if (value != null) {
+                WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_REPLY, value);
+            }
+            value = (String)signinParams.get(FederationConstants.PARAM_TREALM);
+            if (value != null) {
+                WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_TREALM, value);
+            }
+            value = (String)signinParams.get(FederationConstants.PARAM_HOME_REALM);
+            if (value != null) {
+                WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_HOME_REALM, value);
+            }
+            
+            LOG.debug("SignIn parameters restored: {}", signinParams.toString());
+            WebUtils.removeAttributeFromFlowScope(context, FederationConstants.PARAM_CONTEXT);
+            LOG.info("SignIn parameters restored and " + FederationConstants.PARAM_CONTEXT + "[" 
+                + uuidKey + "] cleared.");
+        } else {
+            LOG.debug("Error in restoring security context");
         }
-        value = (String)signinParams.get(FederationConstants.PARAM_TREALM);
-        if (value != null) {
-            WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_TREALM, value);
-        }
-        value = (String)signinParams.get(FederationConstants.PARAM_HOME_REALM);
-        if (value != null) {
-            WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_HOME_REALM, value);
-        }
-        
-        LOG.debug("SignIn parameters restored: {}", signinParams.toString());
-        WebUtils.removeAttributeFromFlowScope(context, FederationConstants.PARAM_CONTEXT);
-        LOG.info("SignIn parameters restored and " + FederationConstants.PARAM_CONTEXT + "[" + uuidKey + "] cleared.");
     }
 
     public void storeRPUrlInSession(RequestContext context) throws ProcessingException {
