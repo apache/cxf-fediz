@@ -26,12 +26,18 @@ import org.w3c.dom.Node;
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.DomElement;
+import com.gargoylesoftware.htmlunit.html.DomNodeList;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.util.DOMUtils;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.wss4j.dom.WSSConfig;
 import org.apache.xml.security.keys.KeyInfo;
 import org.apache.xml.security.signature.XMLSignature;
@@ -438,5 +444,54 @@ public abstract class AbstractTests {
         final HtmlPage idpPage = webClient.getPage(rpUrl);
 
         Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
+    }
+    
+    @org.junit.Test
+    public void testAliceModifiedSignature() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String user = "alice";
+        String password = "ecila";
+        
+        // Get the initial token
+        CookieManager cookieManager = new CookieManager();
+        final WebClient webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        final HtmlPage idpPage = webClient.getPage(url);
+        webClient.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+
+        // Parse the form to get the token (wresult)
+        DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
+
+        for (DomElement result : results) {
+            if ("wresult".equals(result.getAttributeNS(null, "name"))) {
+                // Now modify the Signature
+                String value = result.getAttributeNS(null, "value");
+                value = value.replace("alice", "bob");
+                result.setAttributeNS(null, "value", value);
+            }
+        }
+        
+        // Invoke back on the RP
+        
+        final HtmlForm form = idpPage.getFormByName("signinresponseform");
+        final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
+
+        try {
+            button.click();
+            Assert.fail("Failure expected on a modified signature");
+        } catch (FailingHttpStatusCodeException ex) {
+            // expected
+            Assert.assertTrue(ex.getMessage().contains("401 Unauthorized")
+                              || ex.getMessage().contains("401 Authentication Failed")
+                              || ex.getMessage().contains("403 Forbidden"));
+        }
+
     }
 }
