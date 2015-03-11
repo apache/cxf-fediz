@@ -12,4 +12,5 @@
 target/
 velocity.log
 .externalToolBuilders/
+.idea
 
