@@ -104,7 +104,7 @@ public class FederationContext implements Closeable {
         certificateStores = new ArrayList<TrustManager>();
         CertificateStores certStores = config.getCertificateStores();
         List<TrustManagersType> trustManagers = certStores.getTrustManager();
-        for (TrustManagersType manager:trustManagers) {
+        for (TrustManagersType manager : trustManagers) {
             TrustManager tm = new TrustManager(manager);
             
             Crypto crypto = null;
@@ -158,10 +158,13 @@ public class FederationContext implements Closeable {
     
     
     public KeyManager getSigningKey() {
-        //return new KeyManager(config.getSigningKey());
         
         if (keyManager != null) {
             return keyManager;
+        }
+        if (config.getSigningKey() == null) {
+            LOG.error("No signing key has been configured");
+            throw new IllegalConfigurationException("No signing key has been configured");
         }
         keyManager = new KeyManager(config.getSigningKey());
         Properties sigProperties = createCryptoProperties(config.getSigningKey());
@@ -183,6 +186,9 @@ public class FederationContext implements Closeable {
     public KeyManager getDecryptionKey() {
         if (decryptionKeyManager != null) {
             return decryptionKeyManager;
+        }
+        if (config.getTokenDecryptionKey() == null) {
+            return null;
         }
         decryptionKeyManager = new KeyManager(config.getTokenDecryptionKey());
         Properties decProperties = createCryptoProperties(config.getTokenDecryptionKey());
