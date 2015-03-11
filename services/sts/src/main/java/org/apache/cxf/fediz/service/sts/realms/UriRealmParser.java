@@ -19,6 +19,7 @@
 
 package org.apache.cxf.fediz.service.sts.realms;
 
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.xml.ws.WebServiceContext;
@@ -30,9 +31,9 @@ import org.slf4j.LoggerFactory;
 
 public class UriRealmParser implements RealmParser {
 
-    public enum REALMS { REALMA, REALMB };
-
     private static final Logger LOG = LoggerFactory.getLogger(UriRealmParser.class);
+
+    private Map<String, Object> realmMap;
 
     @Override
     public String parseRealm(WebServiceContext context) throws STSException {
@@ -52,13 +53,19 @@ public class UriRealmParser implements RealmParser {
             realm = st.nextToken();
         }
         realm = realm.toUpperCase();
-        try {
-            REALMS.valueOf(realm);
-        } catch (IllegalArgumentException ex) {
+        if (realmMap == null || !realmMap.containsKey(realm)) {
             LOG.warn("Unknown realm: " + realm);
             throw new STSException("Unknown realm: " + realm);
         }
         return realm;
+    }
+
+    public Map<String, Object> getRealmMap() {
+        return realmMap;
+    }
+
+    public void setRealmMap(Map<String, Object> realms) {
+        this.realmMap = realms;
     }
 
 }
