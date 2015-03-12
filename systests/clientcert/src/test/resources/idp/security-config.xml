@@ -21,6 +21,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:security="http://www.springframework.org/schema/security"
     xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:util="http://www.springframework.org/schema/util"
     xsi:schemaLocation="
         http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
@@ -28,6 +29,8 @@
         http://www.springframework.org/schema/context/spring-context-3.1.xsd
         http://www.springframework.org/schema/security
         http://www.springframework.org/schema/security/spring-security-3.1.xsd
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util-2.0.xsd
         ">
 
     <context:property-placeholder location="classpath:realm.properties"/>
@@ -83,14 +86,18 @@
     
     <bean id="entitlementsEnricher" class="org.apache.cxf.fediz.service.idp.service.security.GrantedAuthorityEntitlements" />
 	
+	<util:map id="securityProperties">
+        <entry key="ws-security.username" value="idp-user" />
+        <entry key="ws-security.password" value="idp-pass" />
+    </util:map>
+    
     <bean id="stsAuthProvider" class="org.apache.cxf.fediz.service.idp.STSAuthenticationProvider">
         <property name="wsdlLocation" value="https://localhost:0/fediz-idp-sts/${realm.STS_URI}/STSServiceTransportUT?wsdl"/>
         <property name="wsdlEndpoint" value="TransportUT_Port"/>
         <property name="wsdlService" value="SecurityTokenService"/>
         <property name="appliesTo" value="urn:fediz:idp"/>
         <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0"/>
-        <property name="technicalUser" value="idp-user"/>
-        <property name="technicalPassword" value="idp-pass"/>
+        <property name="properties" ref="securityProperties"/>
     </bean>
 
 </beans>
