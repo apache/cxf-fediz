@@ -11,34 +11,38 @@
 <title>IDP SignOut Response Page</title>
 </head>
 <body>
-	<h1>CXF Fediz IDP successful logout.</h1>
+    <%
+        @SuppressWarnings("unchecked")
+        Map<String, String> rum =
+                (Map<String, String>) request.getAttribute(SigninParametersCacheAction.REALM_URL_MAP);
 
-    <p>
-        <%
-            @SuppressWarnings("unchecked")
-            Map<String, String> rum =
-                    (Map<String, String>) request.getAttribute(SigninParametersCacheAction.REALM_URL_MAP);
-
-            if (rum == null) {
-        %>
-        <p>You have already logged out</p>
-        <%
-            } else {
-                Iterator<Map.Entry<String, String>> iterator = rum.entrySet().iterator();
+        if (rum == null) {
+    %>
+	        <p>You have already logged out</p>
+    <%
+        } else {
+    %>
+            <h1>CXF Fediz IDP successful logout.</h1>
+        
+            <p>
+    <%
+            Iterator<Map.Entry<String, String>> iterator = rum.entrySet().iterator();
             
-                while (iterator.hasNext()) {
-                    Map.Entry<String, String> next = iterator.next();
-                    String rpUri = next.getValue();
-                    if (rpUri != null) {
-        %>
-        Logout status of RP <%= rpUri%>:
-        <img src="<%=rpUri + "?" + FederationConstants.PARAM_ACTION + "=" + FederationConstants.ACTION_SIGNOUT_CLEANUP %>"/>
-        <br/>
-        <%
-                    }
+            while (iterator.hasNext()) {
+                Map.Entry<String, String> next = iterator.next();
+                String rpUri = next.getValue();
+                if (rpUri != null) {
+    %>
+                    Logout status of RP <%= rpUri%>:
+                    <img src="<%=rpUri + "?" + FederationConstants.PARAM_ACTION + "=" + FederationConstants.ACTION_SIGNOUT_CLEANUP %>"/>
+                    <br/>
+    <%
                 }
             }
-        %>
-    </p>
+    %>
+	        </p>
+    <%
+        }
+    %>
 </body>
 </html>
