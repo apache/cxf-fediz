@@ -91,10 +91,8 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
     }
 
     @Override
-    public FedizResponse processRequest(FedizRequest request,
-                                             FedizContext config)
-        throws ProcessingException {
-        
+    public FedizResponse processRequest(FedizRequest request, FedizContext config) throws ProcessingException {
+
         if (!(config.getProtocol() instanceof FederationProtocol)) {
             LOG.error("Unsupported protocol");
             throw new IllegalStateException("Unsupported protocol");
@@ -108,16 +106,13 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         }
         return response;
     }
-    
 
     public Document getMetaData(HttpServletRequest request, FedizContext config) throws ProcessingException {
         return new MetadataWriter().getMetaData(request, config);
     }
-    
-    protected FedizResponse processSignInRequest(
-            FedizRequest request, FedizContext config)
-        throws ProcessingException {
-        
+
+    protected FedizResponse processSignInRequest(FedizRequest request, FedizContext config) throws ProcessingException {
+
         Document doc = null;
         Element el = null;
         try {
@@ -143,7 +138,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
 
         while (el != null) {
             String ln = el.getLocalName();
-            if (FederationConstants.WS_TRUST_13_NS.equals(el.getNamespaceURI()) 
+            if (FederationConstants.WS_TRUST_13_NS.equals(el.getNamespaceURI())
                 || FederationConstants.WS_TRUST_2005_02_NS.equals(el.getNamespaceURI())) {
                 if ("Lifetime".equals(ln)) {
                     lifetimeElem = el;
@@ -156,11 +151,15 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             el = DOMUtils.getNextElement(el);
         }
         if (LOG.isDebugEnabled()) {
-            LOG.debug("RST: " + ((rst != null) ? rst.toString() : "null"));
-            LOG.debug("Lifetime: "
-                    + ((lifetimeElem != null) ? lifetimeElem.toString()
-                            : "null"));
-            LOG.debug("Tokentype: " + ((tt != null) ? tt.toString() : "null"));
+            LOG.debug("RST: " + ((rst != null)
+                ? rst.toString()
+                : "null"));
+            LOG.debug("Lifetime: " + ((lifetimeElem != null)
+                ? lifetimeElem.toString()
+                : "null"));
+            LOG.debug("Tokentype: " + ((tt != null)
+                ? tt.toString()
+                : "null"));
         }
         if (rst == null) {
             LOG.warn("RequestedSecurityToken element not found in wresult");
@@ -185,18 +184,16 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                 throw new ProcessingException(TYPE.TOKEN_INVALID);
             }
         }
-        
+
         // Check to see if RST is encrypted
-        if ("EncryptedData".equals(rst.getLocalName())
-            && WSConstants.ENC_NS.equals(rst.getNamespaceURI())) {
+        if ("EncryptedData".equals(rst.getLocalName()) && WSConstants.ENC_NS.equals(rst.getNamespaceURI())) {
             Element decryptedRST = decryptEncryptedRST(rst, config);
             if (decryptedRST != null) {
                 rst = decryptedRST;
             }
         }
-        
-        TokenValidatorResponse validatorResponse = 
-            validateToken(rst, tt, config, request.getCerts());
+
+        TokenValidatorResponse validatorResponse = validateToken(rst, tt, config, request.getCerts());
 
         // Check whether token already used for signin
         Date expires = null;
@@ -211,25 +208,17 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         if (lifeTime != null && lifeTime.getCreated() != null) {
             created = lifeTime.getCreated();
         }
-        
-        FedizResponse fedResponse = new FedizResponse(
-                validatorResponse.getUsername(), validatorResponse.getIssuer(),
-                validatorResponse.getRoles(), validatorResponse.getClaims(),
-                validatorResponse.getAudience(),
-                created,
-                expires, 
-                rst,
-                validatorResponse.getUniqueTokenId());
+
+        FedizResponse fedResponse = new FedizResponse(validatorResponse.getUsername(), validatorResponse.getIssuer(),
+                                                      validatorResponse.getRoles(), validatorResponse.getClaims(),
+                                                      validatorResponse.getAudience(), created, expires, rst,
+                                                      validatorResponse.getUniqueTokenId());
 
         return fedResponse;
     }
-    
-    private TokenValidatorResponse validateToken(
-        Element token,
-        String tokenType,
-        FedizContext config,
-        Certificate[] certs
-    ) throws ProcessingException {
+
+    private TokenValidatorResponse validateToken(Element token, String tokenType, FedizContext config,
+        Certificate[] certs) throws ProcessingException {
         TokenValidatorResponse validatorResponse = null;
         List<TokenValidator> validators = ((FederationProtocol)config.getProtocol()).getTokenValidators();
         for (TokenValidator validator : validators) {
@@ -241,8 +230,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             }
             if (canHandle) {
                 try {
-                    TokenValidatorRequest validatorRequest = 
-                        new TokenValidatorRequest(token, certs);
+                    TokenValidatorRequest validatorRequest = new TokenValidatorRequest(token, certs);
                     validatorResponse = validator.validateAndProcessToken(validatorRequest, config);
                 } catch (ProcessingException ex) {
                     throw ex;
@@ -256,49 +244,41 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                 throw new ProcessingException(TYPE.BAD_REQUEST);
             }
         }
-        
+
         return validatorResponse;
     }
-    
-    private Element decryptEncryptedRST(
-        Element encryptedRST,
-        FedizContext config
-    ) throws ProcessingException {
+
+    private Element decryptEncryptedRST(Element encryptedRST, FedizContext config) throws ProcessingException {
 
         KeyManager decryptionKeyManager = config.getDecryptionKey();
         if (decryptionKeyManager == null || decryptionKeyManager.getCrypto() == null) {
-            LOG.debug(
-                "We must have a decryption Crypto instance configured to decrypt encrypted tokens"
-            );
+            LOG.debug("We must have a decryption Crypto instance configured to decrypt encrypted tokens");
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
         String keyPassword = decryptionKeyManager.getKeyPassword();
         if (keyPassword == null) {
-            LOG.debug(
-                "We must have a decryption key password to decrypt encrypted tokens"
-            );
+            LOG.debug("We must have a decryption key password to decrypt encrypted tokens");
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
-        
+
         EncryptedDataProcessor proc = new EncryptedDataProcessor();
         WSDocInfo docInfo = new WSDocInfo(encryptedRST.getOwnerDocument());
         RequestData data = new RequestData();
-        
+
         // Disable WSS4J processing of the (decrypted) SAML Token
         WSSConfig wssConfig = WSSConfig.getNewInstance();
         wssConfig.setProcessor(WSSecurityEngine.SAML_TOKEN, new NOOpProcessor());
         wssConfig.setProcessor(WSSecurityEngine.SAML2_TOKEN, new NOOpProcessor());
         data.setWssConfig(wssConfig);
-        
+
         data.setDecCrypto(decryptionKeyManager.getCrypto());
         data.setCallbackHandler(new DecryptionCallbackHandler(keyPassword));
         try {
-            List<WSSecurityEngineResult> result =
-                proc.handleToken(encryptedRST, data, docInfo);
+            List<WSSecurityEngineResult> result = proc.handleToken(encryptedRST, data, docInfo);
             if (result.size() > 0) {
                 @SuppressWarnings("unchecked")
-                List<WSDataRef> dataRefs = 
-                    (List<WSDataRef>)result.get(result.size() - 1).get(WSSecurityEngineResult.TAG_DATA_REF_URIS);
+                List<WSDataRef> dataRefs = (List<WSDataRef>)result.get(result.size() - 1)
+                    .get(WSSecurityEngineResult.TAG_DATA_REF_URIS);
                 if (dataRefs != null && dataRefs.size() > 0) {
                     return dataRefs.get(0).getProtectedElement();
                 }
@@ -312,14 +292,14 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
 
     private LifeTime processLifeTime(Element lifetimeElem) throws ProcessingException {
         try {
-            Element createdElem = DOMUtils.getFirstChildWithName(lifetimeElem,
-                    WSConstants.WSU_NS, WSConstants.CREATED_LN);
+            Element createdElem = DOMUtils.getFirstChildWithName(lifetimeElem, WSConstants.WSU_NS,
+                                                                 WSConstants.CREATED_LN);
             DateFormat zulu = new XmlSchemaDateFormat();
 
             Date created = zulu.parse(DOMUtils.getContent(createdElem));
 
-            Element expiresElem = DOMUtils.getFirstChildWithName(lifetimeElem,
-                    WSConstants.WSU_NS, WSConstants.EXPIRES_LN);
+            Element expiresElem = DOMUtils.getFirstChildWithName(lifetimeElem, WSConstants.WSU_NS,
+                                                                 WSConstants.EXPIRES_LN);
             Date expires = zulu.parse(DOMUtils.getContent(expiresElem));
 
             return new LifeTime(created, expires);
@@ -361,40 +341,44 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                 LOG.error("Unsupported protocol");
                 throw new IllegalStateException("Unsupported protocol");
             }
-            
+
             String issuerURL = resolveIssuer(request, config);
             LOG.debug("Issuer url: " + issuerURL);
             if (issuerURL != null && issuerURL.length() > 0) {
                 redirectURL = issuerURL;
             }
-            
+
             String wAuth = resolveAuthenticationType(request, config);
             LOG.debug("WAuth: " + wAuth);
-            
+
             String wReq = resolveRequest(request, config);
             LOG.debug("WReq: " + wReq);
-            
+
             String homeRealm = resolveHomeRealm(request, config);
             LOG.debug("HomeRealm: " + homeRealm);
-            
+
             String freshness = resolveFreshness(request, config);
             LOG.debug("Freshness: " + freshness);
-            
+
             String signInQuery = resolveSignInQuery(request, config);
             LOG.debug("SignIn Query: " + signInQuery);
-            
+
             String wctx = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-            String requestURL = request.getRequestURL().toString();
-           
+            StringBuffer requestURL = request.getRequestURL();
+            String params = request.getQueryString();
+            if (params != null && !params.isEmpty()) {
+                requestURL.append("?").append(params);
+            }
+
             requestState = new RequestState();
-            requestState.setTargetAddress(requestURL);
+            requestState.setTargetAddress(requestURL.toString());
             requestState.setIdpServiceAddress(redirectURL);
             requestState.setState(wctx);
             requestState.setCreatedAt(System.currentTimeMillis());
 
             StringBuilder sb = new StringBuilder();
             sb.append(FederationConstants.PARAM_ACTION).append('=').append(FederationConstants.ACTION_SIGNIN);
-            
+
             String reply = ((FederationProtocol)config.getProtocol()).getReply();
             if (reply == null || reply.length() == 0) {
                 reply = request.getRequestURL().toString();
@@ -409,7 +393,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                     }
                 }
             }
-            
+
             LOG.debug("wreply=" + reply);
             sb.append('&').append(FederationConstants.PARAM_REPLY).append('=');
             sb.append(URLEncoder.encode(reply, "UTF-8"));
@@ -417,56 +401,59 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             String realm = resolveWTRealm(request, config);
             LOG.debug("wtrealm=" + realm);
 
-            //add wtrealm parameter
-            sb.append('&').append(FederationConstants.PARAM_TREALM).append('=')
-                .append(URLEncoder.encode(realm, "UTF-8"));
-            
+            // add wtrealm parameter
+            sb.append('&').append(FederationConstants.PARAM_TREALM).append('=').append(URLEncoder
+                                                                                           .encode(realm, "UTF-8"));
+
             // add authentication type parameter wauth if set
             if (wAuth != null && wAuth.length() > 0) {
-                sb.append('&').append(FederationConstants.PARAM_AUTH_TYPE).append('=')
-                    .append(URLEncoder.encode(wAuth, "UTF-8"));
+                sb.append('&').append(FederationConstants.PARAM_AUTH_TYPE).append('=').append(URLEncoder
+                                                                                                  .encode(wAuth,
+                                                                                                          "UTF-8"));
             }
-            
+
             // add tokenRequest parameter wreq if set
             if (wReq != null && wReq.length() > 0) {
-                sb.append('&').append(FederationConstants.PARAM_REQUEST).append('=')
-                    .append(URLEncoder.encode(wReq, "UTF-8"));
+                sb.append('&').append(FederationConstants.PARAM_REQUEST).append('=').append(URLEncoder.encode(wReq,
+                                                                                                              "UTF-8"));
             }
-            
+
             // add home realm parameter whr if set
             if (homeRealm != null && homeRealm.length() > 0) {
-                sb.append('&').append(FederationConstants.PARAM_HOME_REALM).append('=')
-                    .append(URLEncoder.encode(homeRealm, "UTF-8"));
+                sb.append('&').append(FederationConstants.PARAM_HOME_REALM).append('=').append(URLEncoder
+                                                                                                   .encode(homeRealm,
+                                                                                                           "UTF-8"));
             }
-            
+
             // add freshness parameter wfresh if set
             if (freshness != null && freshness.length() > 0) {
-                sb.append('&').append(FederationConstants.PARAM_FRESHNESS).append('=')
-                    .append(URLEncoder.encode(freshness, "UTF-8"));
+                sb.append('&').append(FederationConstants.PARAM_FRESHNESS).append('=').append(URLEncoder
+                                                                                                  .encode(freshness,
+                                                                                                          "UTF-8"));
             }
-            
+
             // add current time parameter wct
             Date creationTime = new Date();
             XmlSchemaDateFormat fmt = new XmlSchemaDateFormat();
             String wct = fmt.format(creationTime);
             sb.append('&').append(FederationConstants.PARAM_CURRENT_TIME).append('=')
-            .append(URLEncoder.encode(wct, "UTF-8"));
-            
+                .append(URLEncoder.encode(wct, "UTF-8"));
+
             LOG.debug("wctx=" + wctx);
             sb.append('&').append(FederationConstants.PARAM_CONTEXT).append('=');
             sb.append(URLEncoder.encode(wctx, "UTF-8"));
-            
+
             // add signin query extensions
             if (signInQuery != null && signInQuery.length() > 0) {
                 sb.append('&').append(signInQuery);
             }
-            
+
             redirectURL = redirectURL + "?" + sb.toString();
         } catch (Exception ex) {
             LOG.error("Failed to create SignInRequest", ex);
             throw new ProcessingException("Failed to create SignInRequest");
         }
-        
+
         RedirectionResponse response = new RedirectionResponse();
         response.setRedirectionURL(redirectURL);
         response.setRequestState(requestState);
@@ -474,10 +461,8 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
     }
 
     @Override
-    public RedirectionResponse createSignOutRequest(HttpServletRequest request, 
-                                                    SamlAssertionWrapper token,
-                                                    FedizContext config)
-        throws ProcessingException {
+    public RedirectionResponse createSignOutRequest(HttpServletRequest request, SamlAssertionWrapper token,
+        FedizContext config) throws ProcessingException {
 
         String redirectURL = null;
         try {
@@ -517,14 +502,14 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             LOG.error("Failed to create SignInRequest", ex);
             throw new ProcessingException("Failed to create SignInRequest");
         }
-        
+
         RedirectionResponse response = new RedirectionResponse();
         response.setRedirectionURL(redirectURL);
         return response;
     }
 
-    private String resolveSignInQuery(HttpServletRequest request, FedizContext config)
-        throws IOException, UnsupportedCallbackException, UnsupportedEncodingException {
+    private String resolveSignInQuery(HttpServletRequest request, FedizContext config) throws IOException,
+        UnsupportedCallbackException, UnsupportedEncodingException {
         Object signInQueryObj = ((FederationProtocol)config.getProtocol()).getSignInQuery();
         String signInQuery = null;
         if (signInQueryObj != null) {
@@ -533,18 +518,19 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             } else if (signInQueryObj instanceof CallbackHandler) {
                 CallbackHandler frCB = (CallbackHandler)signInQueryObj;
                 SignInQueryCallback callback = new SignInQueryCallback(request);
-                frCB.handle(new Callback[] {callback});
+                frCB.handle(new Callback[] {
+                    callback
+                });
                 Map<String, String> signInQueryMap = callback.getSignInQueryParamMap();
                 StringBuilder sbQuery = new StringBuilder();
                 for (String key : signInQueryMap.keySet()) {
                     if (sbQuery.length() > 0) {
                         sbQuery.append("&");
                     }
-                    sbQuery.append(key).append('=').
-                    append(URLEncoder.encode(signInQueryMap.get(key), "UTF-8"));
+                    sbQuery.append(key).append('=').append(URLEncoder.encode(signInQueryMap.get(key), "UTF-8"));
                 }
                 signInQuery = sbQuery.toString();
-               
+
             }
         }
         return signInQuery;
@@ -560,7 +546,9 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             } else if (freshnessObj instanceof CallbackHandler) {
                 CallbackHandler frCB = (CallbackHandler)freshnessObj;
                 FreshnessCallback callback = new FreshnessCallback(request);
-                frCB.handle(new Callback[] {callback});
+                frCB.handle(new Callback[] {
+                    callback
+                });
                 freshness = callback.getFreshness();
             }
         }
@@ -574,25 +562,23 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         
         if (homeRealm == null || homeRealm.isEmpty()) {
             // Check if home realm is set in configuration
-            Object homeRealmObj = ((FederationProtocol)config.getProtocol()).getHomeRealm();
-            if (homeRealmObj != null) {
-                if (homeRealmObj instanceof String) {
-                    homeRealm = (String)homeRealmObj;
-                } else if (homeRealmObj instanceof CallbackHandler) {
-                    CallbackHandler hrCB = (CallbackHandler)homeRealmObj;
-                    HomeRealmCallback callback = new HomeRealmCallback(request);
-                    hrCB.handle(new Callback[] {
-                        callback
-                    });
-                    homeRealm = callback.getHomeRealm();
-                }
-            }
+	        Object homeRealmObj = ((FederationProtocol)config.getProtocol()).getHomeRealm();
+	        if (homeRealmObj != null) {
+	            if (homeRealmObj instanceof String) {
+	                homeRealm = (String)homeRealmObj;
+	            } else if (homeRealmObj instanceof CallbackHandler) {
+	                CallbackHandler hrCB = (CallbackHandler)homeRealmObj;
+	                HomeRealmCallback callback = new HomeRealmCallback(request);
+	                hrCB.handle(new Callback[] {callback});
+	                homeRealm = callback.getHomeRealm();
+	            }
+	        }
         }
         return homeRealm;
     }
 
-    private String resolveAuthenticationType(HttpServletRequest request, FedizContext config)
-        throws IOException, UnsupportedCallbackException {
+    private String resolveAuthenticationType(HttpServletRequest request, FedizContext config) throws IOException,
+        UnsupportedCallbackException {
         Object wAuthObj = ((FederationProtocol)config.getProtocol()).getAuthenticationType();
         String wAuth = null;
         if (wAuthObj != null) {
@@ -601,15 +587,17 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             } else if (wAuthObj instanceof CallbackHandler) {
                 CallbackHandler wauthCB = (CallbackHandler)wAuthObj;
                 WAuthCallback callback = new WAuthCallback(request);
-                wauthCB.handle(new Callback[] {callback});
+                wauthCB.handle(new Callback[] {
+                    callback
+                });
                 wAuth = callback.getWauth();
-            }  
+            }
         }
         return wAuth;
     }
-    
-    private String resolveRequest(HttpServletRequest request, FedizContext config)
-        throws IOException, UnsupportedCallbackException {
+
+    private String resolveRequest(HttpServletRequest request, FedizContext config) throws IOException,
+        UnsupportedCallbackException {
         Object wReqObj = ((FederationProtocol)config.getProtocol()).getRequest();
         String wReq = null;
         if (wReqObj != null) {
@@ -618,17 +606,19 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             } else if (wReqObj instanceof CallbackHandler) {
                 CallbackHandler wauthCB = (CallbackHandler)wReqObj;
                 WReqCallback callback = new WReqCallback(request);
-                wauthCB.handle(new Callback[] {callback});
+                wauthCB.handle(new Callback[] {
+                    callback
+                });
                 wReq = callback.getWreq();
-            }  
+            }
         }
         return wReq;
     }
 
     private static class DecryptionCallbackHandler implements CallbackHandler {
-        
+
         private final String password;
-        
+
         public DecryptionCallbackHandler(String password) {
             this.password = password;
         }
@@ -637,14 +627,14 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
             for (int i = 0; i < callbacks.length; i++) {
                 if (callbacks[i] instanceof WSPasswordCallback) {
-                    WSPasswordCallback pc = (WSPasswordCallback) callbacks[i];
+                    WSPasswordCallback pc = (WSPasswordCallback)callbacks[i];
                     pc.setPassword(password);
                 } else {
                     throw new UnsupportedCallbackException(callbacks[i], "Unrecognized Callback");
                 }
             }
         }
-        
+
     }
 
     private static class NOOpProcessor implements Processor {
@@ -654,7 +644,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             throws WSSecurityException {
             return new ArrayList<WSSecurityEngineResult>();
         }
-        
+
     }
 
 }

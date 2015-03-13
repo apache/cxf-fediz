@@ -97,6 +97,7 @@ public class FederationRequestTest {
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_HOME_REALM)).andReturn(null);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL)).times(1, 2);
         EasyMock.expect(req.getContextPath()).andReturn(TEST_REQUEST_URI);
+        EasyMock.expect(req.getQueryString()).andReturn(null);
         EasyMock.replay(req);
         
         FedizProcessor wfProc = new FederationProcessorImpl();
