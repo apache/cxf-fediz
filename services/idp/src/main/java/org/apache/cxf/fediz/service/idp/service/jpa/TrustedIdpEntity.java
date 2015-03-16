@@ -76,6 +76,9 @@ public class TrustedIdpEntity {
     //optional (to provide a list of IDPs)
     private String logo;
     
+    // Whether to sign a request to the trusted IdP or not
+    private boolean signRequest;
+    
 
     public int getId() {
         return id;
@@ -163,6 +166,14 @@ public class TrustedIdpEntity {
 
     public void setTrustType(TrustType trustType) {
         this.trustType = trustType;
+    }
+
+    public boolean isSignRequest() {
+        return signRequest;
+    }
+
+    public void setSignRequest(boolean signRequest) {
+        this.signRequest = signRequest;
     }
 
 }

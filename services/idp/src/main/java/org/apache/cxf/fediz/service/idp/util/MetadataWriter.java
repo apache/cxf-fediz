@@ -104,7 +104,8 @@ public class MetadataWriter {
             writer.writeStartElement("", "X509Certificate", "http://www.w3.org/2000/09/xmldsig#");
             
             try {
-                X509Certificate cert = CertsUtils.getX509Certificate(crypto, null);
+                String keyAlias = crypto.getDefaultX509Identifier();
+                X509Certificate cert = CertsUtils.getX509Certificate(crypto, keyAlias);
                 writer.writeCharacters(Base64.encode(cert.getEncoded()));
             } catch (Exception ex) {
                 LOG.error("Failed to add certificate information to metadata. Metadata incomplete", ex);
