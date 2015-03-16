@@ -88,6 +88,7 @@
         <property name="federationType" value="FEDERATE_IDENTITY" />
         <property name="name" value="Realm B" />
         <property name="description" value="Realm B description" />
+        <property name="signRequest" value="true" />
     </bean>
 
     <bean id="srv-fedizhelloworld" class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationEntity">
