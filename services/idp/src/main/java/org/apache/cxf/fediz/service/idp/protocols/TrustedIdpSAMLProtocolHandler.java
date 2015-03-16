@@ -27,6 +27,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.security.PrivateKey;
+import java.security.Signature;
+import java.security.cert.X509Certificate;
 import java.util.zip.DataFormatException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,6 +42,7 @@ import org.apache.cxf.common.util.Base64Exception;
 import org.apache.cxf.common.util.Base64Utility;
 import org.apache.cxf.common.util.StringUtils;
 import org.apache.cxf.fediz.core.FederationConstants;
+import org.apache.cxf.fediz.core.util.CertsUtils;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 import org.apache.cxf.fediz.service.idp.spi.TrustedIdpProtocolHandler;
@@ -51,12 +55,14 @@ import org.apache.cxf.rs.security.saml.sso.DefaultAuthnRequestBuilder;
 import org.apache.cxf.rs.security.saml.sso.SSOConstants;
 import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
+import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.OpenSAMLUtil;
 import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.wss4j.common.util.XMLUtils;
 import org.apache.wss4j.dom.WSConstants;
 import org.apache.xml.security.stax.impl.util.IDGenerator;
+import org.apache.xml.security.utils.Base64;
 import org.opensaml.saml2.core.AuthnRequest;
 import org.opensaml.xml.XMLObject;
 import org.slf4j.Logger;
@@ -100,9 +106,9 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
                 authnRequestBuilder.createAuthnRequest(
                     null, idp.getRealm(), idp.getIdpUrl().toString()
                 );
-            // if (isSignRequest()) {
-            //    authnRequest.setDestination(idpServiceAddress);
-            //}
+            if (trustedIdp.isSignRequest()) {
+                authnRequest.setDestination(trustedIdp.getUrl());
+            }
             Element authnRequestElement = OpenSAMLUtil.toDom(authnRequest, doc);
             String authnRequestEncoded = encodeAuthnRequest(authnRequestElement);
 
@@ -116,15 +122,13 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
             if (wctx != null) {
                 ub.queryParam(SSOConstants.RELAY_STATE, wctx);
             }
-            //if (isSignRequest()) {
-            //    signRequest(urlEncodedRequest, info.getRelayState(), ub);
-            //}
+            if (trustedIdp.isSignRequest()) {
+                signRequest(urlEncodedRequest, wctx, idp, ub);
+            }
 
-            /*context.abortWith(Response.seeOther(ub.build())
-                           .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store")
-                           .header("Pragma", "no-cache") 
-                           .build());*/
-
+            // TODO How to set headers here?
+            // .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store")
+            // .header("Pragma", "no-cache") 
             return ub.build().toURL();
         } catch (MalformedURLException ex) {
             LOG.error("Invalid Redirect URL for Trusted Idp", ex);
@@ -138,15 +142,6 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
         }
     }
 
-
-    protected String encodeAuthnRequest(Element authnRequest) throws IOException {
-        String requestMessage = DOM2Writer.nodeToString(authnRequest);
-
-        DeflateEncoderDecoder encoder = new DeflateEncoderDecoder();
-        byte[] deflatedBytes = encoder.deflateToken(requestMessage.getBytes("UTF-8"));
-
-        return Base64Utility.encode(deflatedBytes);
-    }
 
     @Override
     public SecurityToken mapSignInResponse(RequestContext context, Idp idp, TrustedIdp trustedIdp) {
@@ -199,6 +194,73 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
             throw new IllegalStateException("Unexpected exception occured: " + ex.getMessage());
         }
     }
+    
+    private String encodeAuthnRequest(Element authnRequest) throws IOException {
+        String requestMessage = DOM2Writer.nodeToString(authnRequest);
+
+        DeflateEncoderDecoder encoder = new DeflateEncoderDecoder();
+        byte[] deflatedBytes = encoder.deflateToken(requestMessage.getBytes("UTF-8"));
+
+        return Base64Utility.encode(deflatedBytes);
+    }
+    
+    /**
+     * Sign a request according to the redirect binding spec for Web SSO
+     */
+    private void signRequest(
+        String authnRequest,
+        String relayState,
+        Idp config,
+        UriBuilder ub
+    ) throws Exception {
+        Crypto crypto = CertsUtils.createCrypto(config.getCertificate());
+        if (crypto == null) {
+            LOG.error("No crypto instance of properties file configured for signature");
+            throw new IllegalStateException("Invalid IdP configuration");
+        }
+        
+        String alias = crypto.getDefaultX509Identifier();
+        X509Certificate cert = CertsUtils.getX509Certificate(crypto, alias);
+        if (cert == null) {
+            LOG.error("No cert was found to sign the request using alias: " + alias);
+            throw new IllegalStateException("Invalid IdP configuration");
+        }
+
+        String sigAlgo = SSOConstants.RSA_SHA1;
+        String pubKeyAlgo = cert.getPublicKey().getAlgorithm();
+        String jceSigAlgo = "SHA1withRSA";
+        LOG.debug("automatic sig algo detection: " + pubKeyAlgo);
+        if (pubKeyAlgo.equalsIgnoreCase("DSA")) {
+            sigAlgo = SSOConstants.DSA_SHA1;
+            jceSigAlgo = "SHA1withDSA";
+        }
+        LOG.debug("Using Signature algorithm " + sigAlgo);
+        
+        ub.queryParam(SSOConstants.SIG_ALG, URLEncoder.encode(sigAlgo, "UTF-8"));
+        
+        // Get the password
+        String password = config.getCertificatePassword();
+        
+        // Get the private key
+        PrivateKey privateKey = crypto.getPrivateKey(alias, password);
+        
+        // Sign the request
+        Signature signature = Signature.getInstance(jceSigAlgo);
+        signature.initSign(privateKey);
+       
+        String requestToSign = 
+            SSOConstants.SAML_REQUEST + "=" + authnRequest + "&"
+            + SSOConstants.RELAY_STATE + "=" + relayState + "&"
+            + SSOConstants.SIG_ALG + "=" + URLEncoder.encode(sigAlgo, "UTF-8");
+
+        signature.update(requestToSign.getBytes("UTF-8"));
+        byte[] signBytes = signature.sign();
+        
+        String encodedSignature = Base64.encode(signBytes);
+        
+        ub.queryParam(SSOConstants.SIGNATURE, URLEncoder.encode(encodedSignature, "UTF-8"));
+    }
+
 
     private Element readSAMLResponse(
         boolean postBinding, String samlResponse

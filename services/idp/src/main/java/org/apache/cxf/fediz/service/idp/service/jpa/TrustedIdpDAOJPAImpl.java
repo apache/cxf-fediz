@@ -54,8 +54,7 @@ public class TrustedIdpDAOJPAImpl implements TrustedIdpDAO {
         Query query = null;
         query = em.createQuery("select t from TrustedIDP t");
         
-        //@SuppressWarnings("rawtypes")
-        List idpEntities = query
+        List<?> idpEntities = query
             .setFirstResult(start)
             .setMaxResults(size)
             .getResultList();
@@ -130,6 +129,7 @@ public class TrustedIdpDAOJPAImpl implements TrustedIdpDAO {
         entity.setRealm(trustedIDP.getRealm());
         entity.setTrustType(trustedIDP.getTrustType());
         entity.setUrl(trustedIDP.getUrl());
+        entity.setSignRequest(trustedIDP.isSignRequest());
     }
     
     public static TrustedIdp entity2domain(TrustedIdpEntity entity) {
@@ -145,6 +145,7 @@ public class TrustedIdpDAOJPAImpl implements TrustedIdpDAO {
         trustedIDP.setRealm(entity.getRealm());
         trustedIDP.setTrustType(entity.getTrustType());
         trustedIDP.setUrl(entity.getUrl());
+        trustedIDP.setSignRequest(entity.isSignRequest());
         return trustedIDP;
     }
 
