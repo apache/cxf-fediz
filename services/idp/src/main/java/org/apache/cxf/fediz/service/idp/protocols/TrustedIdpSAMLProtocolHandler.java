@@ -19,7 +19,6 @@
 
 package org.apache.cxf.fediz.service.idp.protocols;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -29,6 +28,8 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.security.PrivateKey;
 import java.security.Signature;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.zip.DataFormatException;
 
@@ -38,10 +39,12 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
 import org.apache.cxf.common.util.Base64Exception;
 import org.apache.cxf.common.util.Base64Utility;
 import org.apache.cxf.common.util.StringUtils;
 import org.apache.cxf.fediz.core.FederationConstants;
+import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.util.CertsUtils;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
@@ -52,15 +55,18 @@ import org.apache.cxf.jaxrs.utils.ExceptionUtils;
 import org.apache.cxf.rs.security.saml.DeflateEncoderDecoder;
 import org.apache.cxf.rs.security.saml.sso.AuthnRequestBuilder;
 import org.apache.cxf.rs.security.saml.sso.DefaultAuthnRequestBuilder;
+import org.apache.cxf.rs.security.saml.sso.SAMLProtocolResponseValidator;
+import org.apache.cxf.rs.security.saml.sso.SAMLSSOResponseValidator;
 import org.apache.cxf.rs.security.saml.sso.SSOConstants;
+import org.apache.cxf.rs.security.saml.sso.SSOValidatorResponse;
 import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
+import org.apache.wss4j.common.crypto.CertificateStore;
 import org.apache.wss4j.common.crypto.Crypto;
+import org.apache.wss4j.common.crypto.Merlin;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.OpenSAMLUtil;
 import org.apache.wss4j.common.util.DOM2Writer;
-import org.apache.wss4j.common.util.XMLUtils;
-import org.apache.wss4j.dom.WSConstants;
 import org.apache.xml.security.stax.impl.util.IDGenerator;
 import org.apache.xml.security.utils.Base64;
 import org.opensaml.saml2.core.AuthnRequest;
@@ -147,37 +153,29 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
     public SecurityToken mapSignInResponse(RequestContext context, Idp idp, TrustedIdp trustedIdp) {
 
         try {
-            String relayState = (String) WebUtils.getAttributeFromFlowScope(context,
-                                                                            SSOConstants.RELAY_STATE);
+            //String relayState = (String) WebUtils.getAttributeFromFlowScope(context,
+            //                                                                SSOConstants.RELAY_STATE);
             // TODO Validate RelayState
-            System.out.println("RS: " + relayState);
 
             String encodedSAMLResponse = (String) WebUtils.getAttributeFromFlowScope(context, 
                                                                                      SSOConstants.SAML_RESPONSE);
             
             // Read the response + convert to an OpenSAML Response Object
-            Element responseElement = readSAMLResponse(false, encodedSAMLResponse);
-            // org.opensaml.saml2.core.Response samlResponse = convertToResponse(responseElement);
-
+            org.opensaml.saml2.core.Response samlResponse = readSAMLResponse(encodedSAMLResponse);
+            
+            Crypto crypto = getCrypto(trustedIdp.getCertificate());
+            validateSamlResponseProtocol(samlResponse, crypto);
             // Validate the Response
-            /*
-             * TODOvalidateSamlResponseProtocol(samlResponse);
             SSOValidatorResponse validatorResponse = 
-                validateSamlSSOResponse(false, samlResponse, requestState);
+                validateSamlSSOResponse(samlResponse, idp, trustedIdp, context);
 
-            String assertion = validatorResponse.getAssertion();
-            SamlAssertionWrapper wrapper = new SamlAssertionWrapper(assertion);
-            */
-            Element assertionElement = 
-                XMLUtils.getDirectChildElement(responseElement, "Assertion", WSConstants.SAML2_NS);
             // Create new Security token with new id. 
             // Parameters for freshness computation are copied from original IDP_TOKEN
             String id = IDGenerator.generateID("_");
-            SecurityToken idpToken = new SecurityToken(id);
-                // new SecurityToken(id, new Date(), validatorResponse.getSessionNotOnOrAfter());
-            // TODO new Date() above incorrect
+            SecurityToken idpToken = 
+                new SecurityToken(id, validatorResponse.getCreated(), validatorResponse.getSessionNotOnOrAfter());
 
-            idpToken.setToken(assertionElement);
+            idpToken.setToken(validatorResponse.getAssertionElement());
             // LOG.info("[IDP_TOKEN={}] for user '{}' created from [RP_TOKEN={}] issued by home realm [{}/{}]",
             //         id, wfResp.getUsername(), wfResp.getUniqueTokenId(), whr, wfResp.getIssuer());
             //.debug("Created date={}", wfResp.getTokenCreated());
@@ -213,7 +211,7 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
         Idp config,
         UriBuilder ub
     ) throws Exception {
-        Crypto crypto = CertsUtils.createCrypto(config.getCertificate());
+        Crypto crypto = getCrypto(config.getCertificate());
         if (crypto == null) {
             LOG.error("No crypto instance of properties file configured for signature");
             throw new IllegalStateException("Invalid IdP configuration");
@@ -261,44 +259,57 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
         ub.queryParam(SSOConstants.SIGNATURE, URLEncoder.encode(encodedSignature, "UTF-8"));
     }
 
-
-    private Element readSAMLResponse(
-        boolean postBinding, String samlResponse
-    ) {
+    private Crypto getCrypto(String certificate) throws ProcessingException {
+        if (certificate == null) {
+            return null;
+        }
+        
+        // First see if it's a certificate file
+        InputStream is = null;
+        try {
+            is = Merlin.loadInputStream(Thread.currentThread().getContextClassLoader(), certificate);
+        
+            CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+            X509Certificate cert = (X509Certificate) certFactory.generateCertificate(is);
+            return new CertificateStore(new X509Certificate[]{cert});
+        } catch (WSSecurityException ex) {
+            LOG.error("Failed to load keystore " + certificate, ex);
+            throw new RuntimeException("Failed to load keystore " + certificate);
+        } catch (IOException ex) {
+            LOG.error("Failed to read keystore", ex);
+            throw new RuntimeException("Failed to read keystore");
+        } catch (CertificateException ex) {
+            // This is ok as it could be a WSS4J properties file
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    // Do nothing
+                }
+            }
+        }
+        
+        // Maybe it's a WSS4J properties file...
+        return CertsUtils.createCrypto(certificate);
+    }
+    
+    private org.opensaml.saml2.core.Response readSAMLResponse(String samlResponse) {
         if (StringUtils.isEmpty(samlResponse)) {
             throw ExceptionUtils.toBadRequestException(null, null);
         }
 
         String samlResponseDecoded = samlResponse;
-        /*
-            // URL Decoding only applies for the re-direct binding
-            if (!postBinding) {
-            try {
-                samlResponseDecoded = URLDecoder.decode(samlResponse, "UTF-8");
-                } catch (UnsupportedEncodingException e) {
-                    throw ExceptionUtils.toBadRequestException(null, null);
-                }
-            }
-         */
+        
         InputStream tokenStream = null;
-        // (isSupportBase64Encoding()) { TODO
         try {
             byte[] deflatedToken = Base64Utility.decode(samlResponseDecoded);
-            tokenStream = !postBinding //&& isSupportDeflateEncoding() 
-                ? new DeflateEncoderDecoder().inflateToken(deflatedToken)
-                    : new ByteArrayInputStream(deflatedToken); 
+            tokenStream = new DeflateEncoderDecoder().inflateToken(deflatedToken); 
         } catch (Base64Exception ex) {
             throw ExceptionUtils.toBadRequestException(ex, null);
         } catch (DataFormatException ex) {
             throw ExceptionUtils.toBadRequestException(ex, null);
         }
-        /*} else { TODO
-            try {
-                tokenStream = new ByteArrayInputStream(samlResponseDecoded.getBytes("UTF-8"));
-            } catch (UnsupportedEncodingException ex) {
-                throw ExceptionUtils.toBadRequestException(ex, null);
-            }
-        }*/
 
         Document responseDoc = null;
         try {
@@ -306,17 +317,12 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
         } catch (Exception ex) {
             throw new WebApplicationException(400);
         }
-
+        
         LOG.debug("Received response: " + DOM2Writer.nodeToString(responseDoc.getDocumentElement()));
         
-        return responseDoc.getDocumentElement();
-
-    }
-    
-    protected org.opensaml.saml2.core.Response convertToResponse(Element samlResponseElement) {
         XMLObject responseObject = null;
         try {
-            responseObject = OpenSAMLUtil.fromDom(samlResponseElement);
+            responseObject = OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
         } catch (WSSecurityException ex) {
             throw ExceptionUtils.toBadRequestException(ex, null);
         }
@@ -324,122 +330,54 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
             throw ExceptionUtils.toBadRequestException(null, null);
         }
         return (org.opensaml.saml2.core.Response)responseObject;
-    }
 
+    }
+    
     /**
      * Validate the received SAML Response as per the protocol
-    protected void validateSamlResponseProtocol(
-        org.opensaml.saml2.core.Response samlResponse
+     */
+    private void validateSamlResponseProtocol(
+        org.opensaml.saml2.core.Response samlResponse, Crypto crypto
     ) {
         try {
             SAMLProtocolResponseValidator protocolValidator = new SAMLProtocolResponseValidator();
-            protocolValidator.setKeyInfoMustBeAvailable(true); // TODO
-            protocolValidator.validateSamlResponse(samlResponse, getSignatureCrypto(), null);
+            protocolValidator.setKeyInfoMustBeAvailable(true);
+            protocolValidator.validateSamlResponse(samlResponse, crypto, null);
         } catch (WSSecurityException ex) {
             LOG.debug(ex.getMessage(), ex);
+            ex.printStackTrace();
             throw ExceptionUtils.toBadRequestException(null, null);
         }
     }
-    */
+    
     /**
      * Validate the received SAML Response as per the Web SSO profile
-    protected SSOValidatorResponse validateSamlSSOResponse(
-        boolean postBinding,
+     */
+    private SSOValidatorResponse validateSamlSSOResponse(
         org.opensaml.saml2.core.Response samlResponse,
         Idp idp, 
-        TrustedIdp trustedIdp
+        TrustedIdp trustedIdp,
+        RequestContext requestContext
     ) {
         try {
             SAMLSSOResponseValidator ssoResponseValidator = new SAMLSSOResponseValidator();
-            ssoResponseValidator.setAssertionConsumerURL(idp.getIdpUrl());
+            ssoResponseValidator.setAssertionConsumerURL(idp.getIdpUrl().toString());
 
-            // ssoResponseValidator.setClientAddress(client_ip);
+            HttpServletRequest servletRequest = WebUtils.getHttpServletRequest(requestContext);
+            ssoResponseValidator.setClientAddress(servletRequest.getRemoteAddr());
 
             ssoResponseValidator.setIssuerIDP(trustedIdp.getUrl());
-            // ssoResponseValidator.setRequestId(requestState.getSamlRequestId());
+            // TODO ssoResponseValidator.setRequestId(requestState.getSamlRequestId());
             ssoResponseValidator.setSpIdentifier(idp.getRealm());
-            ssoResponseValidator.setEnforceAssertionsSigned(true); // TODO
-            // ssoResponseValidator.setEnforceKnownIssuer(enforceKnownIssuer);
+            ssoResponseValidator.setEnforceAssertionsSigned(true);
+            ssoResponseValidator.setEnforceKnownIssuer(true);
 
-            return ssoResponseValidator.validateSamlResponse(samlResponse, postBinding);
+            return ssoResponseValidator.validateSamlResponse(samlResponse, false);
         } catch (WSSecurityException ex) {
             LOG.debug(ex.getMessage(), ex);
             throw ExceptionUtils.toBadRequestException(ex, null);
         }
     }
-    */
 
-/*
-    private FedizContext getFedizContext(Idp idpConfig,
-                                         TrustedIdp trustedIdpConfig) throws ProcessingException {
-
-        ContextConfig config = new ContextConfig();
-
-        config.setName("whatever");
-
-        // Configure certificate store
-        String certificate = trustedIdpConfig.getCertificate();
-        boolean isCertificateLocation = !certificate.startsWith("-----BEGIN CERTIFICATE");
-        if (isCertificateLocation) {
-            CertificateStores certStores = new CertificateStores();
-            TrustManagersType tm0 = new TrustManagersType();
-            KeyStoreType ks0 = new KeyStoreType();
-            ks0.setType("PEM");
-            // ks0.setType("JKS");
-            // ks0.setPassword("changeit");
-            ks0.setFile(trustedIdpConfig.getCertificate());
-            tm0.setKeyStore(ks0);
-            certStores.getTrustManager().add(tm0);
-            config.setCertificateStores(certStores);
-        }
-
-        // Configure trusted IDP
-        TrustedIssuers trustedIssuers = new TrustedIssuers();
-        TrustedIssuerType ti0 = new TrustedIssuerType();
-        ti0.setCertificateValidation(ValidationType.PEER_TRUST);
-        ti0.setName(trustedIdpConfig.getName());
-        // ti0.setSubject(".*CN=www.sts.com.*");
-        trustedIssuers.getIssuer().add(ti0);
-        config.setTrustedIssuers(trustedIssuers);
-
-        FederationProtocolType protocol = new FederationProtocolType();
-        config.setProtocol(protocol);
-
-        AudienceUris audienceUris = new AudienceUris();
-        audienceUris.getAudienceItem().add(idpConfig.getRealm());
-        config.setAudienceUris(audienceUris);
-
-        FedizContext fedContext = new FedizContext(config);
-        if (!isCertificateLocation) {
-            CertificateStore cs = null;
-
-            X509Certificate cert;
-            try {
-                cert = parseCertificate(trustedIdpConfig.getCertificate());
-            } catch (Exception ex) {
-                LOG.error("Failed to parse trusted certificate", ex);
-                throw new ProcessingException("Failed to parse trusted certificate");
-            }
-            cs = new CertificateStore(Collections.singletonList(cert).toArray(new X509Certificate[0]));
-
-            TrustManager tm = new TrustManager(cs);
-            fedContext.getCertificateStores().add(tm);
-        }
-
-        fedContext.init();
-        return fedContext;
-    }
-
-    private X509Certificate parseCertificate(String certificate)
-        throws CertificateException, Base64DecodingException {
-
-        //before decoding we need to get rod off the prefix and suffix
-        byte [] decoded = Base64.decode(certificate.replaceAll("-----BEGIN CERTIFICATE-----", "").
-                                        replaceAll("-----END CERTIFICATE-----", ""));
-
-        return (X509Certificate)CertificateFactory.getInstance("X.509").
-            generateCertificate(new ByteArrayInputStream(decoded));
-    }
-*/
 
 }
