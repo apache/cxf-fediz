@@ -21,11 +21,13 @@ package org.apache.cxf.fediz.core.federation;
 
 import java.io.File;
 import java.net.URL;
+import java.net.URLEncoder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.cxf.fediz.common.SecurityTestUtil;
+import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.processor.FederationProcessorImpl;
@@ -92,6 +94,7 @@ public class FederationRequestTest {
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
         
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getParameter(FederationConstants.PARAM_HOME_REALM)).andReturn(null);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL)).times(1, 2);
         EasyMock.expect(req.getContextPath()).andReturn(TEST_REQUEST_URI);
         EasyMock.replay(req);
@@ -107,6 +110,33 @@ public class FederationRequestTest {
         Assert.assertTrue(redirectionURL.contains("wct="));
         Assert.assertTrue(redirectionURL.contains("wtrealm=target+realm"));
         Assert.assertTrue(redirectionURL.contains("wreply="));
+    }
+    
+    @org.junit.Test
+    public void createFederationSignInRequestWithUrlDefinedHomeRealm() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getParameter(FederationConstants.PARAM_HOME_REALM))
+            .andReturn("urn:org:apache:cxf:fediz:idp:realm-A");
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL)).times(1, 2);
+        EasyMock.expect(req.getContextPath()).andReturn(TEST_REQUEST_URI);
+        EasyMock.replay(req);
+
+        FedizProcessor wfProc = new FederationProcessorImpl();
+        RedirectionResponse response = wfProc.createSignInRequest(req, config);
+
+        String redirectionURL = response.getRedirectionURL();
+        Assert.assertTrue(redirectionURL.startsWith(TEST_IDP_ISSUER));
+        Assert.assertTrue(redirectionURL.contains("wa=wsignin1.0"));
+        Assert.assertTrue(redirectionURL.contains("wreq=REQUEST"));
+        Assert.assertTrue(redirectionURL.contains("wfresh=10000"));
+        Assert.assertTrue(redirectionURL.contains("wct="));
+        Assert.assertTrue(redirectionURL.contains("wtrealm=target+realm"));
+        Assert.assertTrue(redirectionURL.contains("wreply="));
+        Assert.assertTrue(redirectionURL.contains("whr="
+                                                + URLEncoder.encode("urn:org:apache:cxf:fediz:idp:realm-A", "UTF-8")));
     }
     
     @org.junit.Test

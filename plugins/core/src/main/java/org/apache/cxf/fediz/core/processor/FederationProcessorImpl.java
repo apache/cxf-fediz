@@ -567,16 +567,23 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
 
     private String resolveHomeRealm(HttpServletRequest request, FedizContext config) throws IOException,
         UnsupportedCallbackException {
-        Object homeRealmObj = ((FederationProtocol)config.getProtocol()).getHomeRealm();
-        String homeRealm = null;
-        if (homeRealmObj != null) {
-            if (homeRealmObj instanceof String) {
-                homeRealm = (String)homeRealmObj;
-            } else if (homeRealmObj instanceof CallbackHandler) {
-                CallbackHandler hrCB = (CallbackHandler)homeRealmObj;
-                HomeRealmCallback callback = new HomeRealmCallback(request);
-                hrCB.handle(new Callback[] {callback});
-                homeRealm = callback.getHomeRealm();
+        // Check if whr parameter was provided in request
+        String homeRealm = request.getParameter(FederationConstants.PARAM_HOME_REALM);
+        
+        if (homeRealm == null || homeRealm.isEmpty()) {
+            // Check if home realm is set in configuration
+            Object homeRealmObj = ((FederationProtocol)config.getProtocol()).getHomeRealm();
+            if (homeRealmObj != null) {
+                if (homeRealmObj instanceof String) {
+                    homeRealm = (String)homeRealmObj;
+                } else if (homeRealmObj instanceof CallbackHandler) {
+                    CallbackHandler hrCB = (CallbackHandler)homeRealmObj;
+                    HomeRealmCallback callback = new HomeRealmCallback(request);
+                    hrCB.handle(new Callback[] {
+                        callback
+                    });
+                    homeRealm = callback.getHomeRealm();
+                }
             }
         }
         return homeRealm;
