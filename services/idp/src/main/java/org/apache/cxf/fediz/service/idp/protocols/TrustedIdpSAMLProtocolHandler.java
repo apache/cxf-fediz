@@ -39,7 +39,6 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
 import org.apache.cxf.common.util.Base64Exception;
 import org.apache.cxf.common.util.Base64Utility;
 import org.apache.cxf.common.util.StringUtils;
@@ -82,6 +81,7 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
     public static final String PROTOCOL = "urn:oasis:names:tc:SAML:2.0:profiles:SSO:browser";
 
     private static final Logger LOG = LoggerFactory.getLogger(TrustedIdpSAMLProtocolHandler.class);
+    private static final String SAML_SSO_REQUEST_ID = "saml-sso-request-id";
 
     private AuthnRequestBuilder authnRequestBuilder = new DefaultAuthnRequestBuilder();
     // private long stateTimeToLive = SSOConstants.DEFAULT_STATE_TIME;
@@ -131,6 +131,10 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
             if (trustedIdp.isSignRequest()) {
                 signRequest(urlEncodedRequest, wctx, idp, ub);
             }
+            
+            // Store the Request ID
+            String authnRequestId = authnRequest.getID();
+            WebUtils.putAttributeInExternalContext(context, SAML_SSO_REQUEST_ID, authnRequestId);
 
             // TODO How to set headers here?
             // .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store")
@@ -367,7 +371,11 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
             ssoResponseValidator.setClientAddress(servletRequest.getRemoteAddr());
 
             ssoResponseValidator.setIssuerIDP(trustedIdp.getUrl());
-            // TODO ssoResponseValidator.setRequestId(requestState.getSamlRequestId());
+            
+            // Get the stored request ID
+            String requestId = 
+                (String)WebUtils.getAttributeFromExternalContext(requestContext, SAML_SSO_REQUEST_ID);
+            ssoResponseValidator.setRequestId(requestId);
             ssoResponseValidator.setSpIdentifier(idp.getRealm());
             ssoResponseValidator.setEnforceAssertionsSigned(true);
             ssoResponseValidator.setEnforceKnownIssuer(true);
