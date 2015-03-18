@@ -34,6 +34,7 @@ import java.security.cert.X509Certificate;
 import java.util.zip.DataFormatException;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.UriBuilder;
 
@@ -136,9 +137,10 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
             String authnRequestId = authnRequest.getID();
             WebUtils.putAttributeInExternalContext(context, SAML_SSO_REQUEST_ID, authnRequestId);
 
-            // TODO How to set headers here?
-            // .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store")
-            // .header("Pragma", "no-cache") 
+            HttpServletResponse response = WebUtils.getHttpServletResponse(context);
+            response.addHeader("Cache-Control", "no-cache, no-store");
+            response.addHeader("Pragma", "no-cache");
+
             return ub.build().toURL();
         } catch (MalformedURLException ex) {
             LOG.error("Invalid Redirect URL for Trusted Idp", ex);
@@ -157,10 +159,6 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
     public SecurityToken mapSignInResponse(RequestContext context, Idp idp, TrustedIdp trustedIdp) {
 
         try {
-            //String relayState = (String) WebUtils.getAttributeFromFlowScope(context,
-            //                                                                SSOConstants.RELAY_STATE);
-            // TODO Validate RelayState
-
             String encodedSAMLResponse = (String) WebUtils.getAttributeFromFlowScope(context, 
                                                                                      SSOConstants.SAML_RESPONSE);
             
@@ -180,14 +178,17 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
                 new SecurityToken(id, validatorResponse.getCreated(), validatorResponse.getSessionNotOnOrAfter());
 
             idpToken.setToken(validatorResponse.getAssertionElement());
-            // LOG.info("[IDP_TOKEN={}] for user '{}' created from [RP_TOKEN={}] issued by home realm [{}/{}]",
-            //         id, wfResp.getUsername(), wfResp.getUniqueTokenId(), whr, wfResp.getIssuer());
-            //.debug("Created date={}", wfResp.getTokenCreated());
-            //LOG.debug("Expired date={}", wfResp.getTokenExpires());
-            //if (LOG.isDebugEnabled()) {
-            //    LOG.debug("Validated 'wresult' : "
-            //        + System.getProperty("line.separator") + wresult);
-            //}
+            
+            String whr = (String) WebUtils.getAttributeFromFlowScope(context,
+                                                                     FederationConstants.PARAM_HOME_REALM);
+            LOG.info("[IDP_TOKEN={}] created from [RP_TOKEN={}] issued by home realm [{}]",
+                     id, validatorResponse.getResponseId(), whr);
+            LOG.debug("Created date={}", validatorResponse.getCreated());
+            LOG.debug("Expired date={}", validatorResponse.getSessionNotOnOrAfter());
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Validated: "
+                    + System.getProperty("line.separator") + validatorResponse.getAssertion());
+            }
             return idpToken;
         } catch (IllegalStateException ex) {
             throw ex;
