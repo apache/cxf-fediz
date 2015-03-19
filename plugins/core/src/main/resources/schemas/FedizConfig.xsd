@@ -16,6 +16,7 @@
 				<xs:element ref="audienceUris" />
 				<xs:element ref="certificateValidation" />
 				<xs:element ref="certificateStores" />
+                <xs:element ref="tokenExpirationValidation" />
 				<xs:element ref="maximumClockSkew" />
 				<xs:element ref="tokenReplayCache" />
 				<xs:element ref="serviceCertificate" />
@@ -55,6 +56,10 @@
 	</xs:element>
 
 	<xs:element name="audienceUris">
+        <xs:annotation>
+            <xs:documentation>If a SAML token contains a audience restriction which is not listed
+                within this collection, the token will be refused.</xs:documentation>
+        </xs:annotation>
 		<xs:complexType>
 			<xs:sequence minOccurs="1" maxOccurs="unbounded">
 				<xs:element ref="audienceItem" />
@@ -62,7 +67,11 @@
 		</xs:complexType>
 	</xs:element>
 
-	<xs:element name="audienceItem" type="xs:anyURI" />
+	<xs:element name="audienceItem" type="xs:anyURI">
+        <xs:annotation>
+            <xs:documentation>Valid value within the SAML token audience restriction element.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
 
 	<xs:element name="certificateValidation" type="validationType" />
 
@@ -74,20 +83,47 @@
 	</xs:simpleType>
 
 	<xs:element name="maximumClockSkew" type="xs:integer" default="5"/>
-	
+
+    <xs:element name="tokenExpirationValidation" type="xs:boolean" default="true">
+        <xs:annotation>
+            <xs:documentation>Decision weather the token validation (e.g. lifetime) shall be
+                performed on every request (true) or only once at initial authentication (false).</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
 	<xs:element name="tokenReplayCache" type="xs:string" />
 
 	<xs:element name="serviceCertificate" type="KeyManagersType" />
 	
-	<xs:element name="signingKey" type="KeyManagersType" />
+	<xs:element name="signingKey" type="KeyManagersType">
+        <xs:annotation>
+            <xs:documentation>Signing key required to generate a XML signature element within the federation
+                metadata document, as well as for generating a signed signin request.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
 	
 	<xs:element name="tokenDecryptionKey" type="KeyManagersType" />
 
 	<xs:element name="protocol" type="protocolType" />
 
-    <xs:element name="logoutURL" type="xs:string"/>
+    <xs:element name="logoutURL" type="xs:string">
+        <xs:annotation>
+            <xs:documentation>User defined logout URL to trigger federated logout process. This URL will be
+                available in addition to the 'wa=wsignout1.0' URL parameter.
+                If the URL is overlapping an existing resource URL, the logout handling will be performed instead of
+                accessing the resource.
+                Example: '/logout'
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
 
-    <xs:element name="logoutRedirectTo" type="xs:string"/>
+    <xs:element name="logoutRedirectTo" type="xs:string">
+        <xs:annotation>
+            <xs:documentation>URL to landing-page after successful logout.
+                Example: '/index.jsp'
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
 
 	<xs:complexType name="federationProtocolType">
 		<xs:complexContent>
