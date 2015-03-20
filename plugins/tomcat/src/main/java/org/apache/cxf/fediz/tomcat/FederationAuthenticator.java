@@ -52,15 +52,14 @@ import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.config.SAMLProtocol;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.handler.LogoutHandler;
-import org.apache.cxf.fediz.core.handler.RequestHandler;
 import org.apache.cxf.fediz.core.metadata.MetadataDocumentHandler;
 import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
 import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.apache.cxf.fediz.core.processor.RedirectionResponse;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class FederationAuthenticator extends FormAuthenticator {
@@ -75,13 +74,12 @@ public class FederationAuthenticator extends FormAuthenticator {
     protected static final String INFO = "org.apache.cxf.fediz.tomcat.WsFedAuthenticator/1.0";
     protected static final String TRUSTED_ISSUER = "org.apache.cxf.fediz.tomcat.TRUSTED_ISSUER";
 
-    private static final Log LOG = LogFactory.getLog(FormAuthenticator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FormAuthenticator.class);
 
     /**
      * Fediz Configuration file
      */
     protected String configFile;
-    protected boolean tokenExpirationValidation = true;
     protected String encoding = "UTF-8";
 
     private FedizConfigurator configurator;
@@ -114,14 +112,6 @@ public class FederationAuthenticator extends FormAuthenticator {
         this.encoding = encoding;
     }
     
-    public boolean isTokenExpirationValidation() {
-        return tokenExpirationValidation;
-    }
-
-    public void setTokenExpirationValidation(boolean tokenExpirationValidation) {
-        this.tokenExpirationValidation = tokenExpirationValidation;
-    }
-
     @Override
     protected synchronized void startInternal() throws LifecycleException {
 
@@ -188,7 +178,7 @@ public class FederationAuthenticator extends FormAuthenticator {
             contextName = "/";
         }
         FedizContext fedConfig = getContextConfiguration(contextName);
-        RequestHandler mdHandler = new MetadataDocumentHandler(fedConfig);
+        MetadataDocumentHandler mdHandler = new MetadataDocumentHandler(fedConfig);
         if (mdHandler.canHandleRequest(request)) {
             mdHandler.handleRequest(request, response);
             return;
@@ -216,6 +206,7 @@ public class FederationAuthenticator extends FormAuthenticator {
     }
 
 
+    //TODO Fix checkstyle errors
     //CHECKSTYLE:OFF
     @Override
     public boolean authenticate(Request request, HttpServletResponse response,
@@ -235,72 +226,28 @@ public class FederationAuthenticator extends FormAuthenticator {
         Principal principal = request.getUserPrincipal();
         // String ssoId = (String) request.getNote(Constants.REQ_SSOID_NOTE);
         if (principal != null) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Already authenticated '" + principal.getName() + "'");
-            }
+            LOG.debug("Already authenticated '{}'", principal.getName());
+            
             // Associate the session with any existing SSO session
             /*
              * if (ssoId != null) associate(ssoId,
              * request.getSessionInternal(true));
              */
 
-            // Check whether security token still valid
-            session = request.getSessionInternal();
-            if (session == null) {
-                LOG.debug("Session should not be null after authentication");
+            if (fedConfig.isDetectExpiredTokens()) {
+                // Check whether security token still valid
+                return validateToken(request, response, fedConfig);
             } else {
-                FedizResponse wfRes = (FedizResponse)session.getNote(FEDERATION_NOTE);
-
-                Date tokenExpires = wfRes.getTokenExpires();
-                if (tokenExpires == null) {
-                    LOG.debug("Token doesn't expire");
-                    return true;
-                }
-                if (!this.tokenExpirationValidation) {
-                    LOG.debug("Token expiration not validated.");
-                    return true;
-                }
-
-                Date currentTime = new Date();
-                if (currentTime.after(wfRes.getTokenExpires())) {
-                    LOG.debug("Token already expired. Clean up and redirect");
-
-                    session.removeNote(FEDERATION_NOTE);
-                    session.setPrincipal(null);
-                    request.getSession().removeAttribute(SECURITY_TOKEN);
-
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Save request in session '"
-                                + session.getIdInternal() + "'");
-                    }
-                    try {
-                        saveRequest(request, session);
-                    } catch (IOException ioe) {
-                        LOG.debug("Request body too big to save during authentication");
-                        response.sendError(HttpServletResponse.SC_FORBIDDEN,
-                                sm.getString("authenticator.requestBodyTooBig"));
-                        return false;
-                    }
-                    
-                    FedizProcessor wfProc = 
-                        FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
-                    signInRedirectToIssuer(request, response, wfProc);
-
-                    return false;
-                }
+                LOG.debug("Token expiration not validated.");
+                return true;
             }
-
-            return true;
         }
 
         // Is this the re-submit of the original request URI after successful
         // authentication? If so, forward the *original* request instead.
         if (matchRequest(request)) {
             session = request.getSessionInternal(true);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Restore request from session '"
-                        + session.getIdInternal() + "'");
-            }
+            LOG.debug("Restore request from session '{}'", session.getIdInternal());
             
             // Get principal from session, register, and then remove it
             principal = (Principal)session.getNote(Constants.FORM_PRINCIPAL_NOTE);
@@ -309,14 +256,11 @@ public class FederationAuthenticator extends FormAuthenticator {
             request.removeNote(Constants.FORM_PRINCIPAL_NOTE);
             
             if (restoreRequest(request, session)) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Proceed to restored request");
-                }
+                LOG.debug("Proceed to restored request");
                 return true;
             } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Restore of original request failed");
-                }
+                // TODO Is a authentication failed result realy needed if no initial request can be restored? 
+                LOG.warn("Restore of original request failed");
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 return false;
             }
@@ -327,7 +271,6 @@ public class FederationAuthenticator extends FormAuthenticator {
          * MessageBytes uriMB = MessageBytes.newInstance(); CharChunk uriCC =
          * uriMB.getCharChunk(); uriCC.setLimit(-1);
          */
-        // String contextPath = request.getContextPath();
         String requestURI = request.getDecodedRequestURI();
 
         if (isSignInRequired(request, fedConfig)) {
@@ -365,18 +308,14 @@ public class FederationAuthenticator extends FormAuthenticator {
             }
 
             if (responseToken == null) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("SignIn request must contain a response token from the IdP");
-                }
+                LOG.debug("SignIn request must contain a response token from the IdP");
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 return false;
             } else {
                 request.getResponse().sendAcknowledgement();
                 // processSignInRequest
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Process SignIn request");
-                    LOG.debug("token=\n" + responseToken);
-                }
+                LOG.debug("Process SignIn request");
+                LOG.debug("token=\n{}", responseToken);
                 
                 session = request.getSessionInternal();
                 RequestState requestState = (RequestState)session.getNote(REQUEST_STATE);
@@ -388,12 +327,12 @@ public class FederationAuthenticator extends FormAuthenticator {
                 wfReq.setRequest(request);
                 wfReq.setRequestState(requestState);
                 
-                X509Certificate certs[] = 
-                    (X509Certificate[])request.getAttribute("javax.servlet.request.X509Certificate");
+                X509Certificate certs[] = (X509Certificate[])request
+                    .getAttribute("javax.servlet.request.X509Certificate");
                 wfReq.setCerts(certs);
 
-                FedizProcessor wfProc = 
-                    FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
+                FedizProcessor wfProc = FedizProcessorFactory
+                    .newFedizProcessor(fedConfig.getProtocol());
                 try {
                     wfRes = wfProc.processRequest(wfReq, fedConfig);
                 } catch (ProcessingException ex) {
@@ -460,9 +399,7 @@ public class FederationAuthenticator extends FormAuthenticator {
         // HttpSessionAttributeListener
 
         if (session == null) {
-            if (containerLog.isDebugEnabled()) {
-                containerLog.debug("User took so long to log on the session expired");
-            }
+            containerLog.debug("User took so long to log on the session expired");
             if (landingPage == null) {
                 response.sendError(HttpServletResponse.SC_REQUEST_TIMEOUT,
                         sm.getString("authenticator.sessionExpired"));
@@ -499,9 +436,7 @@ public class FederationAuthenticator extends FormAuthenticator {
         // Redirect the user to the original request URI (which will cause
         // the original request to be restored)
         requestURI = savedRequestURL(session);
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Redirecting to original '" + requestURI + "'");
-        }
+        LOG.debug("Redirecting to original '{}", requestURI);
         if (requestURI == null) {
             if (landingPage == null) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST,
@@ -519,6 +454,48 @@ public class FederationAuthenticator extends FormAuthenticator {
             }
         } else {
             response.sendRedirect(response.encodeRedirectURL(requestURI));
+        }
+        return false;
+    }
+
+    protected boolean validateToken(Request request, HttpServletResponse response, FedizContext fedConfig)
+        throws IOException {
+        Session session;
+        session = request.getSessionInternal();
+        if (session != null) {
+
+            FedizResponse wfRes = (FedizResponse)session.getNote(FEDERATION_NOTE);
+            Date tokenExpires = wfRes.getTokenExpires();
+            if (tokenExpires == null) {
+                LOG.debug("Token doesn't expire");
+                return true;
+            }
+
+            Date currentTime = new Date();
+            if (!currentTime.after(wfRes.getTokenExpires())){ 
+                return true;
+            } else {
+                LOG.warn("Token already expired. Clean up and redirect");
+
+                session.removeNote(FEDERATION_NOTE);
+                session.setPrincipal(null);
+                request.getSession().removeAttribute(SECURITY_TOKEN);
+
+                LOG.debug("Save request in session '{}'", session.getIdInternal());
+                try {
+                    saveRequest(request, session);
+                } catch (IOException ioe) {
+                    LOG.debug("Request body too big to save during authentication");
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, 
+                                       sm.getString("authenticator.requestBodyTooBig"));
+                    return false;
+                }
+
+                FedizProcessor wfProc = FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
+                signInRedirectToIssuer(request, response, wfProc);
+            } 
+        } else {
+            LOG.debug("Session should not be null after authentication");
         }
         return false;
     }
@@ -606,13 +583,11 @@ public class FederationAuthenticator extends FormAuthenticator {
                 response.sendRedirect(redirectURL);
             } else {
                 LOG.warn("Failed to create SignInRequest.");
-                response.sendError(
-                        HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignInRequest.");
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignInRequest.");
             }
         } catch (ProcessingException ex) {
-            LOG.warn("Failed to create SignInRequest: " + ex.getMessage());
-            response.sendError(
-                               HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignInRequest.");
+            LOG.warn("Failed to create SignInRequest: {}", ex.getMessage());
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignInRequest.");
         }
     }
 
