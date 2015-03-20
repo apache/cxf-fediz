@@ -211,6 +211,12 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
         FedizContext fedCtx = getFederationContext(req);
 
         if (fedCtx != null) {
+
+            // Validate SAML token lifetime on each request?
+            if (fedCtx.isDetectExpiredTokens()) {
+                return true;
+            }
+
             // Handle Metadata Document requests
             MetadataDocumentHandler mddHandler = new MetadataDocumentHandler(fedCtx);
             if (mddHandler.canHandleRequest(req)) {
@@ -329,7 +335,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
                     HttpSession session = request.getSession(true);
                     RequestState requestState = (RequestState)session.getAttribute(wctx);
                     if (requestState != null && requestState.getTargetAddress() != null) {
-                        LOG.info("Redirecting request to {}", requestState.getTargetAddress());
+                        LOG.debug("Restore request to {}", requestState.getTargetAddress());
                         try {
                             response.sendRedirect(requestState.getTargetAddress());
                         } catch (IOException e) {
@@ -344,8 +350,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
             }
 
             // Check if user was authenticated previously and token is still valid
-            // TODO validate SAML TTL
-            TAIResult taiResult = checkUserAuthentication(req);
+            TAIResult taiResult = checkUserAuthentication(req, fedCtx);
             if (taiResult != null) {
                 return taiResult;
             }
@@ -360,7 +365,8 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
         }
     }
 
-    private TAIResult checkUserAuthentication(HttpServletRequest req) throws WebTrustAssociationFailedException {
+    private TAIResult checkUserAuthentication(HttpServletRequest req, FedizContext fedCtx)
+        throws WebTrustAssociationFailedException {
         TAIResult result = null;
         HttpSession session = req.getSession(false);
         if (session != null) {
@@ -368,10 +374,11 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
             FedizResponse federationResponse = (FedizResponse)session
                 .getAttribute(Constants.SECURITY_TOKEN_SESSION_ATTRIBUTE_KEY);
             if (federationResponse != null) {
-                LOG.info("Security Token found in session for user: {}", federationResponse.getUsername());
+                LOG.debug("Security Token found in session for user: {}", federationResponse.getUsername());
 
                 // validate Security Token and create User Principal
                 if (checkSecurityToken(federationResponse)) {
+                    // TODO check if there is a better way to avoid recreation of subject each validated call
                     // proceed creating the JAAS Subject
                     List<String> groupsIds = groupIdsFromTokenRoles(federationResponse);
                     LOG.debug("Mapped group IDs: {}", groupsIds);
@@ -379,8 +386,11 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
 
                     result = TAIResult.create(HttpServletResponse.SC_OK, federationResponse.getUsername(), subject);
                 }
-                // Cleanup session
-                session.removeAttribute(Constants.SECURITY_TOKEN_SESSION_ATTRIBUTE_KEY);
+                if (!fedCtx.isDetectExpiredTokens()) {
+                    // token is not required for TTL validation
+                    // Cleanup session
+                    session.removeAttribute(Constants.SECURITY_TOKEN_SESSION_ATTRIBUTE_KEY);
+                }
             }
         }
         return result;

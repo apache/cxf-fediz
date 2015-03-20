@@ -51,7 +51,8 @@ public class FedizResponse implements Serializable {
     private Date tokenExpires;
 
     //CHECKSTYLE:OFF
-    public FedizResponse(String username, String issuer, List<String> roles, List<Claim> claims, String audience, Date created, Date expires, Element token, String uniqueTokenId) {
+    public FedizResponse(String username, String issuer, List<String> roles, List<Claim> claims, String audience, 
+        Date created, Date expires, Element token, String uniqueTokenId) {
         this.username = username;
         this.issuer = issuer;
         this.roles = roles;

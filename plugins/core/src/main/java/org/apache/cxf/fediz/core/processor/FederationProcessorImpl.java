@@ -562,17 +562,17 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         
         if (homeRealm == null || homeRealm.isEmpty()) {
             // Check if home realm is set in configuration
-	        Object homeRealmObj = ((FederationProtocol)config.getProtocol()).getHomeRealm();
-	        if (homeRealmObj != null) {
-	            if (homeRealmObj instanceof String) {
-	                homeRealm = (String)homeRealmObj;
-	            } else if (homeRealmObj instanceof CallbackHandler) {
-	                CallbackHandler hrCB = (CallbackHandler)homeRealmObj;
-	                HomeRealmCallback callback = new HomeRealmCallback(request);
-	                hrCB.handle(new Callback[] {callback});
-	                homeRealm = callback.getHomeRealm();
-	            }
-	        }
+            Object homeRealmObj = ((FederationProtocol)config.getProtocol()).getHomeRealm();
+            if (homeRealmObj != null) {
+                if (homeRealmObj instanceof String) {
+                    homeRealm = (String)homeRealmObj;
+                } else if (homeRealmObj instanceof CallbackHandler) {
+                    CallbackHandler hrCB = (CallbackHandler)homeRealmObj;
+                    HomeRealmCallback callback = new HomeRealmCallback(request);
+                    hrCB.handle(new Callback[] {callback});
+                    homeRealm = callback.getHomeRealm();
+                }
+            }
         }
         return homeRealm;
     }

@@ -62,7 +62,6 @@ public class FedizContext implements Closeable {
     
     private ContextConfig config;
 
-    private boolean detectExpiredTokens = true;
     private boolean detectReplayedTokens = true;
     private String relativePath;
     private ReplayCache replayCache;
@@ -74,6 +73,9 @@ public class FedizContext implements Closeable {
     
 
     public FedizContext(ContextConfig config) {
+        if (config == null) {
+            throw new IllegalArgumentException("ContextConfig cannot be null!");
+        }
         this.config = config;
         
     }
@@ -249,11 +251,11 @@ public class FedizContext implements Closeable {
 
 
     public boolean isDetectExpiredTokens() {
-        return detectExpiredTokens;
+        return config.isTokenExpirationValidation();
     }
     
     public void setDetectExpiredTokens(boolean detectExpiredTokens) {
-        this.detectExpiredTokens = detectExpiredTokens;
+        config.setTokenExpirationValidation(detectExpiredTokens);
     }
 
     
