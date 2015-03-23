@@ -77,7 +77,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
     /**
      * @see org.apache.cxf.fediz.was.Constants#PROPERTY_KEY_DIRECT_GROUP_MAPPING
      */
-    private boolean directGrouMapping;
+    private boolean directGroupMapping;
 
     public String getConfigFile() {
         return configFile;
@@ -180,7 +180,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
                                                                  + Constants.PROPERTY_KEY_CONFIG_LOCATION);
                 }
 
-                directGrouMapping = Boolean.valueOf(props.getProperty(Constants.PROPERTY_KEY_DIRECT_GROUP_MAPPING));
+                directGroupMapping = Boolean.valueOf(props.getProperty(Constants.PROPERTY_KEY_DIRECT_GROUP_MAPPING));
             } catch (Throwable t) {
                 LOG.warn("Failed initializing TAI", t);
                 return 1;
@@ -189,7 +189,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
         return 0;
     }
 
-    private FedizContext getFederationContext(HttpServletRequest req) {
+    protected FedizContext getFederationContext(HttpServletRequest req) {
         String contextPath = req.getContextPath();
         if (contextPath == null || contextPath.isEmpty()) {
             contextPath = "/";
@@ -427,7 +427,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
         }
     }
 
-    private boolean checkSecurityToken(FedizResponse response) {
+    protected boolean checkSecurityToken(FedizResponse response) {
         if (response == null) {
             return false;
         }
@@ -435,51 +435,54 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
         return response.getTokenExpires().getTime() > currentTime;
     }
 
-    private List<String> groupIdsFromTokenRoles(FedizResponse federationResponse) {
+    protected List<String> groupIdsFromTokenRoles(FedizResponse federationResponse) {
 
         List<String> localGroups = mapper.groupsFromRoles(federationResponse.getRoles());
-        List<String> groupIds = new ArrayList<String>(localGroups.size());
+        int size = (localGroups == null) ? 0 : localGroups.size();
+        List<String> groupIds = new ArrayList<String>(size);
 
-        if (directGrouMapping) {
-            LOG.debug("Direct Group Mapping was set in interceptor. Thus UserRegistry will not be invoked to get "
-                      + "GrouUID");
-            groupIds.addAll(localGroups);
-        } else {
-            InitialContext ctx = null;
-            try {
-                ctx = new InitialContext();
-                UserRegistry userRegistry = (UserRegistry)ctx.lookup(Constants.USER_REGISTRY_JNDI_NAME);
+        if (size > 0) {
+            if (directGroupMapping) {
+                LOG.debug("Direct Group Mapping was set in interceptor. Thus UserRegistry will not be invoked to get "
+                          + "GrouUID");
+                groupIds.addAll(localGroups);
+            } else {
+                InitialContext ctx = null;
+                try {
+                    ctx = new InitialContext();
+                    UserRegistry userRegistry = (UserRegistry)ctx.lookup(Constants.USER_REGISTRY_JNDI_NAME);
 
-                if (localGroups != null) {
-                    LOG.debug("Converting {} group names to uids", localGroups.size());
-                    for (String localGroup : localGroups) {
-                        try {
-                            String guid = convertGroupNameToUniqueId(userRegistry, localGroup);
-                            LOG.debug("Group '{}' maps to guid: {}", localGroup, guid);
-                            groupIds.add(guid);
-                        } catch (EntryNotFoundException e) {
-                            LOG.warn("Group entry '{}' could not be found in UserRegistry for user '{}'", localGroup,
-                                     federationResponse.getUsername());
+                    if (localGroups != null) {
+                        LOG.debug("Converting {} group names to uids", size);
+                        for (String localGroup : localGroups) {
+                            try {
+                                String guid = convertGroupNameToUniqueId(userRegistry, localGroup);
+                                LOG.debug("Group '{}' maps to guid: {}", localGroup, guid);
+                                groupIds.add(guid);
+                            } catch (EntryNotFoundException e) {
+                                LOG.warn("Group entry '{}' could not be found in UserRegistry for user '{}'",
+                                         localGroup, federationResponse.getUsername());
+                            }
                         }
                     }
-                }
-            } catch (NamingException ex) {
-                LOG.error("User Registry could not be loaded via JNDI context.");
-                LOG.warn("Group mapping failed for user '{}'", federationResponse.getUsername());
-                LOG.info("To switch to direct GroupUID Mapping without UserRegistry being involved set "
-                         + "fedizDirectGroupMapping=\"true\"  in TAI Interceptor properties.");
-            } catch (RemoteException e) {
-                LOG.error("RemoteException in UserRegistry", e);
-                LOG.warn("Group mapping failed for user '{}'", federationResponse.getUsername());
-            } catch (CustomRegistryException e) {
-                LOG.error("CustomRegistryException in UserRegistry", e);
-                LOG.warn("Group mapping failed for user '{}'", federationResponse.getUsername());
-            } finally {
-                if (ctx != null) {
-                    try {
-                        ctx.close();
-                    } catch (NamingException e) {
-                        // Ignore
+                } catch (NamingException ex) {
+                    LOG.error("User Registry could not be loaded via JNDI context.");
+                    LOG.warn("Group mapping failed for user '{}'", federationResponse.getUsername());
+                    LOG.info("To switch to direct GroupUID Mapping without UserRegistry being involved set "
+                             + "fedizDirectGroupMapping=\"true\"  in TAI Interceptor properties.");
+                } catch (RemoteException e) {
+                    LOG.error("RemoteException in UserRegistry", e);
+                    LOG.warn("Group mapping failed for user '{}'", federationResponse.getUsername());
+                } catch (CustomRegistryException e) {
+                    LOG.error("CustomRegistryException in UserRegistry", e);
+                    LOG.warn("Group mapping failed for user '{}'", federationResponse.getUsername());
+                } finally {
+                    if (ctx != null) {
+                        try {
+                            ctx.close();
+                        } catch (NamingException e) {
+                            // Ignore
+                        }
                     }
                 }
             }
@@ -491,7 +494,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
     /**
      * Creates the JAAS Subject so that WAS Runtime will not check the local registry
      */
-    private Subject createSubject(FedizResponse federationResponse, List<String> groups, String cacheKey) {
+    protected Subject createSubject(FedizResponse federationResponse, List<String> groups, String cacheKey) {
         String uniqueId = "user:defaultWIMFileBasedRealm/cn=" + federationResponse.getUsername()
                           + ",o=defaultWIMFileBasedRealm";
         String completeCacheKey = uniqueId + ':' + cacheKey;

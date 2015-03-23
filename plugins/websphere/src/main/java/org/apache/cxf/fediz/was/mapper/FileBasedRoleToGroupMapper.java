@@ -78,6 +78,10 @@ public class FileBasedRoleToGroupMapper implements RoleToGroupMapper {
 
     @Override
     public List<String> groupsFromRoles(List<String> roles) {
+        if (roles == null) {
+            return null;
+        }
+        
         List<String> groups = new ArrayList<String>(20);
         for (String key : roles) {
             List<String> groupList = mappings.get(key);
