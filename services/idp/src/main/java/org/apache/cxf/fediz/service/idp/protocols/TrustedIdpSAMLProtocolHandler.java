@@ -31,6 +31,7 @@ import java.security.Signature;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Map;
 import java.util.zip.DataFormatException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -78,6 +79,10 @@ import org.springframework.webflow.execution.RequestContext;
 
 @Component
 public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler {
+    public static final String SIGN_REQUEST = "sign.request";
+    public static final String REQUIRE_KEYINFO = "require.keyinfo";
+    public static final String REQUIRE_SIGNED_ASSERTIONS = "require.signed.assertions";
+    public static final String REQUIRE_KNOWN_ISSUER = "require.known.issuer";
 
     public static final String PROTOCOL = "urn:oasis:names:tc:SAML:2.0:profiles:SSO:browser";
 
@@ -85,7 +90,6 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
     private static final String SAML_SSO_REQUEST_ID = "saml-sso-request-id";
 
     private AuthnRequestBuilder authnRequestBuilder = new DefaultAuthnRequestBuilder();
-    // private long stateTimeToLive = SSOConstants.DEFAULT_STATE_TIME;
 
     static {
         OpenSAMLUtil.initSamlEngine();
@@ -113,7 +117,9 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
                 authnRequestBuilder.createAuthnRequest(
                     null, idp.getRealm(), idp.getIdpUrl().toString()
                 );
-            if (trustedIdp.isSignRequest()) {
+            
+            boolean signRequest = isSignRequest(trustedIdp);
+            if (signRequest) {
                 authnRequest.setDestination(trustedIdp.getUrl());
             }
             Element authnRequestElement = OpenSAMLUtil.toDom(authnRequest, doc);
@@ -129,7 +135,7 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
             if (wctx != null) {
                 ub.queryParam(SSOConstants.RELAY_STATE, wctx);
             }
-            if (trustedIdp.isSignRequest()) {
+            if (signRequest) {
                 signRequest(urlEncodedRequest, wctx, idp, ub);
             }
             
@@ -166,7 +172,7 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
             org.opensaml.saml2.core.Response samlResponse = readSAMLResponse(encodedSAMLResponse);
             
             Crypto crypto = getCrypto(trustedIdp.getCertificate());
-            validateSamlResponseProtocol(samlResponse, crypto);
+            validateSamlResponseProtocol(samlResponse, crypto, trustedIdp);
             // Validate the Response
             SSOValidatorResponse validatorResponse = 
                 validateSamlSSOResponse(samlResponse, idp, trustedIdp, context);
@@ -342,11 +348,11 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
      * Validate the received SAML Response as per the protocol
      */
     private void validateSamlResponseProtocol(
-        org.opensaml.saml2.core.Response samlResponse, Crypto crypto
+        org.opensaml.saml2.core.Response samlResponse, Crypto crypto, TrustedIdp trustedIdp
     ) {
         try {
             SAMLProtocolResponseValidator protocolValidator = new SAMLProtocolResponseValidator();
-            protocolValidator.setKeyInfoMustBeAvailable(true);
+            protocolValidator.setKeyInfoMustBeAvailable(isRequireKeyInfo(trustedIdp));
             protocolValidator.validateSamlResponse(samlResponse, crypto, null);
         } catch (WSSecurityException ex) {
             LOG.debug(ex.getMessage(), ex);
@@ -378,8 +384,8 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
                 (String)WebUtils.getAttributeFromExternalContext(requestContext, SAML_SSO_REQUEST_ID);
             ssoResponseValidator.setRequestId(requestId);
             ssoResponseValidator.setSpIdentifier(idp.getRealm());
-            ssoResponseValidator.setEnforceAssertionsSigned(true);
-            ssoResponseValidator.setEnforceKnownIssuer(true);
+            ssoResponseValidator.setEnforceAssertionsSigned(isRequireSignedAssertions(trustedIdp));
+            ssoResponseValidator.setEnforceKnownIssuer(isRequireKnownIssuer(trustedIdp));
 
             return ssoResponseValidator.validateSamlResponse(samlResponse, false);
         } catch (WSSecurityException ex) {
@@ -388,5 +394,49 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
         }
     }
 
+    private boolean isSignRequest(TrustedIdp trustedIdp) {
+        Map<String, String> parameters = trustedIdp.getParameters();
+        
+        if (parameters != null && parameters.containsKey(SIGN_REQUEST)) {
+            return Boolean.parseBoolean(parameters.get(SIGN_REQUEST));
+        }
+        
+        // Sign the request by default
+        return true;
+    }
+    
+    private boolean isRequireKeyInfo(TrustedIdp trustedIdp) {
+        Map<String, String> parameters = trustedIdp.getParameters();
+        
+        if (parameters != null && parameters.containsKey(REQUIRE_KEYINFO)) {
+            return Boolean.parseBoolean(parameters.get(REQUIRE_KEYINFO));
+        }
+        
+        // Require KeyInfo by default
+        return true;
+    }
+    
+    private boolean isRequireSignedAssertions(TrustedIdp trustedIdp) {
+        Map<String, String> parameters = trustedIdp.getParameters();
+        
+        if (parameters != null && parameters.containsKey(REQUIRE_SIGNED_ASSERTIONS)) {
+            return Boolean.parseBoolean(parameters.get(REQUIRE_SIGNED_ASSERTIONS));
+        }
+        
+        // Require signed Assertions by default
+        return true;
+    }
+    
+    private boolean isRequireKnownIssuer(TrustedIdp trustedIdp) {
+        Map<String, String> parameters = trustedIdp.getParameters();
+        
+        if (parameters != null && parameters.containsKey(REQUIRE_KNOWN_ISSUER)) {
+            return Boolean.parseBoolean(parameters.get(REQUIRE_KNOWN_ISSUER));
+        }
+        
+        // Require known issuers by default by default
+        return true;
+    }
+    
 
 }

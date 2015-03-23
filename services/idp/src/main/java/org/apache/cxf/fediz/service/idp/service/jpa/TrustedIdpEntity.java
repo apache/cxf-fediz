@@ -18,10 +18,18 @@
  */
 package org.apache.cxf.fediz.service.idp.service.jpa;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.MapKeyColumn;
 import javax.validation.constraints.NotNull;
 
 import org.apache.cxf.fediz.service.idp.domain.FederationType;
@@ -76,8 +84,12 @@ public class TrustedIdpEntity {
     //optional (to provide a list of IDPs)
     private String logo;
     
-    // Whether to sign a request to the trusted IdP or not
-    private boolean signRequest;
+    // Additional (possibly protocol specific parameters)
+    @ElementCollection
+    @MapKeyColumn(name = "name")
+    @Column(name = "value")
+    @CollectionTable(name = "trusted_idp_parameters", joinColumns = @JoinColumn(name = "trusted_idp_id"))
+    private Map<String, String> parameters = new HashMap<String, String>();
     
 
     public int getId() {
@@ -168,12 +180,12 @@ public class TrustedIdpEntity {
         this.trustType = trustType;
     }
 
-    public boolean isSignRequest() {
-        return signRequest;
+    public Map<String, String> getParameters() {
+        return parameters;
     }
 
-    public void setSignRequest(boolean signRequest) {
-        this.signRequest = signRequest;
+    public void setParameters(Map<String, String> parameters) {
+        this.parameters = parameters;
     }
 
 }

@@ -129,7 +129,7 @@ public class TrustedIdpDAOJPAImpl implements TrustedIdpDAO {
         entity.setRealm(trustedIDP.getRealm());
         entity.setTrustType(trustedIDP.getTrustType());
         entity.setUrl(trustedIDP.getUrl());
-        entity.setSignRequest(trustedIDP.isSignRequest());
+        entity.setParameters(trustedIDP.getParameters());
     }
     
     public static TrustedIdp entity2domain(TrustedIdpEntity entity) {
@@ -145,7 +145,7 @@ public class TrustedIdpDAOJPAImpl implements TrustedIdpDAO {
         trustedIDP.setRealm(entity.getRealm());
         trustedIDP.setTrustType(entity.getTrustType());
         trustedIDP.setUrl(entity.getUrl());
-        trustedIDP.setSignRequest(entity.isSignRequest());
+        trustedIDP.setParameters(entity.getParameters());
         return trustedIDP;
     }
 
