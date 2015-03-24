@@ -19,6 +19,7 @@
 
 package org.apache.cxf.fediz.service.idp.protocols;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -79,10 +80,35 @@ import org.springframework.webflow.execution.RequestContext;
 
 @Component
 public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler {
+    /**
+     * Whether to sign the request or not. The default is "true".
+     */
     public static final String SIGN_REQUEST = "sign.request";
+    
+    /**
+     * Whether to require a KeyInfo or not when processing a (signed) Response. The default is "true".
+     */
     public static final String REQUIRE_KEYINFO = "require.keyinfo";
+    
+    /**
+     * Whether the assertions contained in the Response must be signed or not. The default is "true".
+     */
     public static final String REQUIRE_SIGNED_ASSERTIONS = "require.signed.assertions";
+    
+    /**
+     * Whether we have to "know" the issuer of the SAML Response or not. The default is "true".
+     */
     public static final String REQUIRE_KNOWN_ISSUER = "require.known.issuer";
+    
+    /**
+     * Whether we BASE-64 decode the response or not. The default is "true".
+     */
+    public static final String SUPPORT_BASE64_ENCODING = "support.base64.encoding";
+    
+    /**
+     * Whether we support Deflate encoding or not. The default is "true".
+     */
+    public static final String SUPPORT_DEFLATE_ENCODING = "support.deflate.encoding";
 
     public static final String PROTOCOL = "urn:oasis:names:tc:SAML:2.0:profiles:SSO:browser";
 
@@ -118,7 +144,7 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
                     null, idp.getRealm(), idp.getIdpUrl().toString()
                 );
             
-            boolean signRequest = isSignRequest(trustedIdp);
+            boolean signRequest = isPropertyConfigured(trustedIdp, SIGN_REQUEST);
             if (signRequest) {
                 authnRequest.setDestination(trustedIdp.getUrl());
             }
@@ -169,7 +195,8 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
                                                                                      SSOConstants.SAML_RESPONSE);
             
             // Read the response + convert to an OpenSAML Response Object
-            org.opensaml.saml2.core.Response samlResponse = readSAMLResponse(encodedSAMLResponse);
+            org.opensaml.saml2.core.Response samlResponse = 
+                readSAMLResponse(encodedSAMLResponse, trustedIdp);
             
             Crypto crypto = getCrypto(trustedIdp.getCertificate());
             validateSamlResponseProtocol(samlResponse, crypto, trustedIdp);
@@ -305,7 +332,7 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
         return CertsUtils.createCrypto(certificate);
     }
     
-    private org.opensaml.saml2.core.Response readSAMLResponse(String samlResponse) {
+    private org.opensaml.saml2.core.Response readSAMLResponse(String samlResponse, TrustedIdp trustedIdp) {
         if (StringUtils.isEmpty(samlResponse)) {
             throw ExceptionUtils.toBadRequestException(null, null);
         }
@@ -313,13 +340,23 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
         String samlResponseDecoded = samlResponse;
         
         InputStream tokenStream = null;
-        try {
-            byte[] deflatedToken = Base64Utility.decode(samlResponseDecoded);
-            tokenStream = new DeflateEncoderDecoder().inflateToken(deflatedToken); 
-        } catch (Base64Exception ex) {
-            throw ExceptionUtils.toBadRequestException(ex, null);
-        } catch (DataFormatException ex) {
-            throw ExceptionUtils.toBadRequestException(ex, null);
+        if (isPropertyConfigured(trustedIdp, SUPPORT_BASE64_ENCODING)) {
+            try {
+                byte[] deflatedToken = Base64Utility.decode(samlResponseDecoded);
+                tokenStream = isPropertyConfigured(trustedIdp, SUPPORT_DEFLATE_ENCODING)
+                    ? new DeflateEncoderDecoder().inflateToken(deflatedToken)
+                    : new ByteArrayInputStream(deflatedToken); 
+            } catch (Base64Exception ex) {
+                throw ExceptionUtils.toBadRequestException(ex, null);
+            } catch (DataFormatException ex) {
+                throw ExceptionUtils.toBadRequestException(ex, null);
+            }
+        } else {
+            try {
+                tokenStream = new ByteArrayInputStream(samlResponseDecoded.getBytes("UTF-8"));
+            } catch (UnsupportedEncodingException ex) {
+                throw ExceptionUtils.toBadRequestException(ex, null);
+            }
         }
 
         Document responseDoc = null;
@@ -352,7 +389,8 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
     ) {
         try {
             SAMLProtocolResponseValidator protocolValidator = new SAMLProtocolResponseValidator();
-            protocolValidator.setKeyInfoMustBeAvailable(isRequireKeyInfo(trustedIdp));
+            protocolValidator.setKeyInfoMustBeAvailable(
+                isPropertyConfigured(trustedIdp, REQUIRE_KNOWN_ISSUER));
             protocolValidator.validateSamlResponse(samlResponse, crypto, null);
         } catch (WSSecurityException ex) {
             LOG.debug(ex.getMessage(), ex);
@@ -384,8 +422,10 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
                 (String)WebUtils.getAttributeFromExternalContext(requestContext, SAML_SSO_REQUEST_ID);
             ssoResponseValidator.setRequestId(requestId);
             ssoResponseValidator.setSpIdentifier(idp.getRealm());
-            ssoResponseValidator.setEnforceAssertionsSigned(isRequireSignedAssertions(trustedIdp));
-            ssoResponseValidator.setEnforceKnownIssuer(isRequireKnownIssuer(trustedIdp));
+            ssoResponseValidator.setEnforceAssertionsSigned(
+                isPropertyConfigured(trustedIdp, REQUIRE_SIGNED_ASSERTIONS));
+            ssoResponseValidator.setEnforceKnownIssuer(
+                isPropertyConfigured(trustedIdp, REQUIRE_KNOWN_ISSUER));
 
             return ssoResponseValidator.validateSamlResponse(samlResponse, false);
         } catch (WSSecurityException ex) {
@@ -394,49 +434,15 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
         }
     }
 
-    private boolean isSignRequest(TrustedIdp trustedIdp) {
+    // Is a property configured. Defaults to "true" if not
+    private boolean isPropertyConfigured(TrustedIdp trustedIdp, String property) {
         Map<String, String> parameters = trustedIdp.getParameters();
         
-        if (parameters != null && parameters.containsKey(SIGN_REQUEST)) {
-            return Boolean.parseBoolean(parameters.get(SIGN_REQUEST));
-        }
-        
-        // Sign the request by default
-        return true;
-    }
-    
-    private boolean isRequireKeyInfo(TrustedIdp trustedIdp) {
-        Map<String, String> parameters = trustedIdp.getParameters();
-        
-        if (parameters != null && parameters.containsKey(REQUIRE_KEYINFO)) {
-            return Boolean.parseBoolean(parameters.get(REQUIRE_KEYINFO));
+        if (parameters != null && parameters.containsKey(property)) {
+            return Boolean.parseBoolean(parameters.get(property));
         }
         
         // Require KeyInfo by default
         return true;
     }
-    
-    private boolean isRequireSignedAssertions(TrustedIdp trustedIdp) {
-        Map<String, String> parameters = trustedIdp.getParameters();
-        
-        if (parameters != null && parameters.containsKey(REQUIRE_SIGNED_ASSERTIONS)) {
-            return Boolean.parseBoolean(parameters.get(REQUIRE_SIGNED_ASSERTIONS));
-        }
-        
-        // Require signed Assertions by default
-        return true;
-    }
-    
-    private boolean isRequireKnownIssuer(TrustedIdp trustedIdp) {
-        Map<String, String> parameters = trustedIdp.getParameters();
-        
-        if (parameters != null && parameters.containsKey(REQUIRE_KNOWN_ISSUER)) {
-            return Boolean.parseBoolean(parameters.get(REQUIRE_KNOWN_ISSUER));
-        }
-        
-        // Require known issuers by default by default
-        return true;
-    }
-    
-
 }
