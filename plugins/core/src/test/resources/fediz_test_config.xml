@@ -265,4 +265,66 @@
 		</protocol>
 	</contextConfig>
 	
+	<contextConfig name="CHAIN_TRUST">
+		<audienceUris>
+			<audienceItem>http://host_one:port/url</audienceItem>
+		</audienceUris>
+		<certificateStores>
+			<trustManager>
+				<keyStore file="ststrust.jks" password="storepass"
+					type="JKS" />
+			</trustManager>	
+		</certificateStores>
+		<trustedIssuers>
+			<issuer certificateValidation="ChainTrust" subject=".*CN=www.sts.com.*" />
+		</trustedIssuers>
+
+		<maximumClockSkew>1000</maximumClockSkew>
+		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			xsi:type="federationProtocolType" version="1.2">
+			<realm>target realm</realm>
+			<issuer>http://url_to_the_issuer</issuer>
+			<roleDelimiter>;</roleDelimiter>
+			<roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
+			<authenticationType value="some auth type" type="String" />
+			<freshness>10000</freshness>
+			<reply>reply value</reply>
+			<request>REQUEST</request>
+			<claimTypesRequested>
+				<claimType type="a particular claim type" optional="true" />
+			</claimTypesRequested>
+		</protocol>
+	</contextConfig>
+	
+	<contextConfig name="CHAIN_TRUST2">
+		<audienceUris>
+			<audienceItem>http://host_one:port/url</audienceItem>
+		</audienceUris>
+		<certificateStores>
+			<trustManager>
+				<keyStore file="ststrust.jks" password="storepass"
+					type="JKS" />
+			</trustManager>	
+		</certificateStores>
+		<trustedIssuers>
+			<issuer certificateValidation="ChainTrust" subject=".*CN=www.sts2.com.*" />
+		</trustedIssuers>
+
+		<maximumClockSkew>1000</maximumClockSkew>
+		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			xsi:type="federationProtocolType" version="1.2">
+			<realm>target realm</realm>
+			<issuer>http://url_to_the_issuer</issuer>
+			<roleDelimiter>;</roleDelimiter>
+			<roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
+			<authenticationType value="some auth type" type="String" />
+			<freshness>10000</freshness>
+			<reply>reply value</reply>
+			<request>REQUEST</request>
+			<claimTypesRequested>
+				<claimType type="a particular claim type" optional="true" />
+			</claimTypesRequested>
+		</protocol>
+	</contextConfig>
+	
 </FedizConfig>

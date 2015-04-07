@@ -260,6 +260,53 @@ public class FederationResponseTest {
         
     }
     
+    @org.junit.Test
+    public void testChainTrust() throws Exception {
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        ConditionsBean cp = new ConditionsBean();
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
+        callbackHandler.setConditions(cp);
+        
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
+        String rstr = createSamlToken(assertion, "mystskey", true);
+        
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
+        
+        // Test successful trust validation (subject cert constraint)
+        configurator = null;
+        FedizContext config = getFederationConfigurator().getFedizContext("CHAIN_TRUST");
+        
+        FedizProcessor wfProc = new FederationProcessorImpl();
+        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
+        
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+        
+        // Test unsuccessful trust validation (bad subject cert constraint)
+        configurator = null;
+        config = getFederationConfigurator().getFedizContext("CHAIN_TRUST2");
+        
+        wfProc = new FederationProcessorImpl();
+        try {
+            wfRes = wfProc.processRequest(wfReq, config);
+            Assert.fail("Processing must fail because of invalid subject cert constraint");
+        } catch (ProcessingException ex) {
+            // expected
+        }
+    }
+    
     /**
      * Validate SAML 2 token which includes the role attribute with 2 values
      * Roles are encoded as a multi-value saml attribute
