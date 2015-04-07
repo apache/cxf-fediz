@@ -123,7 +123,13 @@ public class SAMLTokenValidator implements TokenValidator {
             
             List<TrustedIssuer> trustedIssuers = config.getTrustedIssuers();
             for (TrustedIssuer ti : trustedIssuers) {
-                List<String> subjectConstraints = Collections.singletonList(ti.getSubject());
+                List<String> subjectConstraints = null;
+                if (ti.getSubject() == null) {
+                    subjectConstraints = Collections.emptyList();
+                } else {
+                    subjectConstraints = Collections.singletonList(ti.getSubject());
+                }
+                
                 if (ti.getCertificateValidationMethod().equals(CertificateValidationMethod.CHAIN_TRUST)) {
                     trustValidator.setSubjectConstraints(subjectConstraints);
                     trustValidator.setSignatureTrustType(TRUST_TYPE.CHAIN_TRUST_CONSTRAINTS);

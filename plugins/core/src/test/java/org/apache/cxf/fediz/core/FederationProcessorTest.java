@@ -243,6 +243,51 @@ public class FederationProcessorTest {
         
     }
     
+    @org.junit.Test
+    public void testChainTrust() throws Exception {
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        ConditionsBean cp = new ConditionsBean();
+        cp.setAudienceURI(TEST_AUDIENCE);
+        callbackHandler.setConditions(cp);
+        
+        SAMLParms samlParms = new SAMLParms();
+        samlParms.setCallbackHandler(callbackHandler);
+        AssertionWrapper assertion = new AssertionWrapper(samlParms);
+        String rstr = createSamlToken(assertion, "mystskey", true);
+        
+        FederationRequest wfReq = new FederationRequest();
+        wfReq.setWa(FederationConstants.ACTION_SIGNIN);
+        wfReq.setWresult(rstr);
+        
+        // Test successful trust validation (subject cert constraint)
+        configurator = null;
+        FederationContext config = getFederationConfigurator().getFederationContext("CHAIN_TRUST");
+        
+        FederationProcessor wfProc = new FederationProcessorImpl();
+        FederationResponse wfRes = wfProc.processRequest(wfReq, config);
+        
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+        
+        // Test unsuccessful trust validation (bad subject cert constraint)
+        configurator = null;
+        config = getFederationConfigurator().getFederationContext("CHAIN_TRUST2");
+        
+        wfProc = new FederationProcessorImpl();
+        try {
+            wfRes = wfProc.processRequest(wfReq, config);
+            Assert.fail("Processing must fail because of invalid subject cert constraint");
+        } catch (ProcessingException ex) {
+            // expected
+        }
+    }
+    
     /**
      * Validate SAML 2 token which includes the role attribute with 2 values
      * Roles are encoded as a multi-value saml attribute
