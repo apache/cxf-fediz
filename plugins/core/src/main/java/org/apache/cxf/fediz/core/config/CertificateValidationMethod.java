@@ -27,7 +27,6 @@ public enum CertificateValidationMethod {
     CHAIN_TRUST("ChainTrust");
     
     private final String value;
-    private ValidationType validationType;
 
     CertificateValidationMethod(String v) {
         value = v;
