@@ -66,13 +66,25 @@
         <security:authentication-provider ref="stsAuthProvider" />
     </security:authentication-manager>
 
-    <security:http use-expressions="true">
+    <!-- Redirects to a dedicated http config -->
+    <bean id="federationEntryPoint" class="org.apache.cxf.fediz.service.idp.FederationEntryPoint">
+        <property name="realm" value="urn:org:apache:cxf:fediz:idp:realm-B" />
+        <property name="configService" ref="config" />
+    </bean>
+    
+    <!-- Main entry point -->
+    <security:http pattern="/federation" use-expressions="true" entry-point-ref="federationEntryPoint">
+        <security:custom-filter after="CHANNEL_FILTER" ref="stsPortFilter" />
+        <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
+        <security:intercept-url pattern="/FederationMetadata/2007-06/FederationMetadata.xml" access="isAnonymous() or isAuthenticated()" />
+    </security:http>
+    
+    <!-- HTTP/BA entry point -->
+    <security:http pattern="/federation/up" use-expressions="true">
         <security:custom-filter after="CHANNEL_FILTER" ref="stsPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
         <security:intercept-url pattern="/FederationMetadata/2007-06/FederationMetadata.xml" access="isAnonymous() or isAuthenticated()" />
 
-        <!-- MUST be http-basic thus systests run fine -->
-        <!--<security:form-login />-->
         <security:http-basic />
         <security:logout delete-cookies="FEDIZ_HOME_REALM" invalidate-session="true" />
     </security:http>
@@ -85,7 +97,7 @@
     
     <bean id="entitlementsEnricher" class="org.apache.cxf.fediz.service.idp.service.security.GrantedAuthorityEntitlements" />
 	
-    <bean id="stsAuthProvider" class="org.apache.cxf.fediz.service.idp.STSAuthenticationProvider">
+    <bean id="stsAuthProvider" class="org.apache.cxf.fediz.service.idp.STSUPAuthenticationProvider">
         <property name="wsdlLocation" value="https://localhost:0/fediz-idp-sts-realmb/${realm.STS_URI}/STSServiceTransportUT?wsdl"/>
         <property name="wsdlEndpoint" value="TransportUT_Port"/>
         <property name="wsdlService" value="SecurityTokenService"/>
