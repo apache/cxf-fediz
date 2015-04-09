@@ -26,10 +26,15 @@ import org.apache.cxf.sts.token.delegation.TokenDelegationParameters;
 import org.apache.cxf.sts.token.delegation.TokenDelegationResponse;
 import org.apache.wss4j.dom.WSConstants;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * A delegation handler to allow X.509 Certificates.
  */
 public class FedizX509DelegationHandler implements TokenDelegationHandler {
+    
+    private static final Logger LOG = LoggerFactory.getLogger(FedizX509DelegationHandler.class);
     
     public boolean canHandleToken(ReceivedToken delegateTarget) {
         Object token = delegateTarget.getToken();
@@ -55,6 +60,9 @@ public class FedizX509DelegationHandler implements TokenDelegationHandler {
         
         if (delegateTarget.getState() == STATE.VALID && delegateTarget.getPrincipal() != null) {
             response.setDelegationAllowed(true);
+            LOG.debug("Delegation is allowed for: " + delegateTarget.getPrincipal());
+        } else {
+            LOG.debug("Delegation is not allowed, as the token is invalid or the principal is null");
         }
         
         return response;
