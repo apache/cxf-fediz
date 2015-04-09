@@ -35,6 +35,8 @@
 				<claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname" optional="true" />
 				<claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress" optional="true" />
             </claimTypesRequested>
+            <authenticationType>http://docs.oasis-open.org/wsfed/authorization/200706/authntypes/Ssl</authenticationType>
+             <request type="Class">org.apache.cxf.fediz.integrationtests.HOKCallbackHandler</request>
         </protocol>
         <logoutURL>/secure/logout</logoutURL>
         <logoutRedirectTo>/index.html</logoutRedirectTo>

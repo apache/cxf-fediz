@@ -52,6 +52,12 @@
         <property name="authenticationURIs">
             <util:map>
                 <entry key="default" value="federation/up" />
+                <entry key="http://docs.oasis-open.org/wsfed/authorization/200706/authntypes/SslAndKey" 
+                       value="federation/krb" />
+                <entry key="http://docs.oasis-open.org/wsfed/authorization/200706/authntypes/default"
+                       value="federation/up" />
+                <entry key="http://docs.oasis-open.org/wsfed/authorization/200706/authntypes/Ssl"
+                       value="federation/clientcert" />
             </util:map>
         </property>
         <property name="serviceDisplayName" value="REALM B" />

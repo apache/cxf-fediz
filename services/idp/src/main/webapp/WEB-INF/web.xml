@@ -91,6 +91,11 @@ under the License.
     </servlet-mapping>
     
     <servlet-mapping>
+        <servlet-name>idp</servlet-name>
+        <url-pattern>/federation/clientcert</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
         <servlet-name>metadata</servlet-name>
         <url-pattern>/FederationMetadata/2007-06/FederationMetadata.xml</url-pattern>
     </servlet-mapping>

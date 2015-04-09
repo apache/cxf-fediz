@@ -92,7 +92,7 @@ public class IdpDAOJPATest {
                       "ProvideIDPList doesn't match");
         Assert.isTrue(idp.isUseCurrentIdp(),
                       "UseCurrentIDP doesn't match");
-        Assert.isTrue(1 == idp.getAuthenticationURIs().size(),
+        Assert.isTrue(4 == idp.getAuthenticationURIs().size(),
                       "Number of AuthenticationURIs doesn't match");
         Assert.isTrue(2 == idp.getSupportedProtocols().size(),
                       "Number of SupportedProtocols doesn't match");

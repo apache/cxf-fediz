@@ -21,6 +21,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:security="http://www.springframework.org/schema/security"
     xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:util="http://www.springframework.org/schema/util"
     xsi:schemaLocation="
         http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
@@ -28,6 +29,8 @@
         http://www.springframework.org/schema/context/spring-context-3.1.xsd
         http://www.springframework.org/schema/security
         http://www.springframework.org/schema/security/spring-security-3.1.xsd
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util-2.0.xsd
         ">
 
     <context:property-placeholder location="classpath:realm.properties"/>
@@ -106,10 +109,21 @@
         <security:custom-filter ref="kerberosAuthenticationProcessingFilter" position="BASIC_AUTH_FILTER" />
         <security:logout delete-cookies="FEDIZ_HOME_REALM" invalidate-session="true" />
     </security:http>
+    
+    <!-- SSL Client Cert entry point -->
+    <security:http pattern="/federation/clientcert" use-expressions="true">
+        <security:custom-filter after="CHANNEL_FILTER" ref="stsClientCertPortFilter" />
+        <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
+        <security:intercept-url pattern="/FederationMetadata/2007-06/FederationMetadata.xml" access="isAnonymous() or isAuthenticated()" />
+
+        <security:x509 />
+        <security:logout delete-cookies="FEDIZ_HOME_REALM" invalidate-session="true" />
+    </security:http>
 
     <security:authentication-manager alias="authenticationManagers">
         <security:authentication-provider ref="stsUPAuthProvider" />
         <security:authentication-provider ref="stsKrbAuthProvider" />
+        <security:authentication-provider ref="stsClientCertAuthProvider" />
     </security:authentication-manager>
 	
     <bean id="stsUPPortFilter" class="org.apache.cxf.fediz.service.idp.STSPortFilter">
@@ -147,4 +161,22 @@
         <property name="requireDelegation" value="true"/>-->
     </bean>
 
+    <bean id="stsClientCertPortFilter" class="org.apache.cxf.fediz.service.idp.STSPortFilter">
+        <property name="authenticationProvider" ref="stsClientCertAuthProvider" />
+    </bean>
+    
+    <util:map id="securityProperties">
+        <entry key="ws-security.username" value="idp-user" />
+        <entry key="ws-security.password" value="idp-pass" />
+    </util:map>
+    
+    <bean id="stsClientCertAuthProvider" class="org.apache.cxf.fediz.service.idp.STSPreAuthAuthenticationProvider">
+        <property name="wsdlLocation" value="https://localhost:0/fediz-idp-sts/${realm.STS_URI}/STSServiceTransportUT?wsdl"/>
+        <property name="wsdlEndpoint" value="TransportUT_Port"/>
+        <property name="wsdlService" value="SecurityTokenService"/>
+        <property name="appliesTo" value="urn:fediz:idp"/>
+        <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0"/>
+        <property name="properties" ref="securityProperties"/>
+    </bean>
+    
 </beans>

@@ -289,25 +289,6 @@
                 <version>2.7</version>
                 <executions>
                     <execution>
-                        <id>copy-entities-to-idp</id>
-                        <phase>generate-test-sources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/target/tomcat/idp/webapps/fediz-idp/WEB-INF</outputDirectory>
-                            <resources>          
-                                <resource>
-                                    <directory>${basedir}/src/test/resources/idp</directory>
-                                    <includes>
-                                        <include>security-config.xml</include>
-                                    </includes>
-                                    <filtering>true</filtering>
-                                </resource>
-                            </resources>              
-                        </configuration>            
-                    </execution>
-                    <execution>
                         <id>copy-entities-to-sts</id>
                         <phase>generate-test-sources</phase>
                         <goals>

@@ -108,7 +108,7 @@ public class RestITTest {
         Assert.assertTrue("ProvideIDPList doesn't match", idp.isProvideIdpList());
         Assert.assertTrue("UseCurrentIDP doesn't match", idp.isUseCurrentIdp());
         Assert.assertEquals("Number of AuthenticationURIs doesn't match",
-                            1, idp.getAuthenticationURIs().size());
+                            4, idp.getAuthenticationURIs().size());
         Assert.assertEquals("Number of SupportedProtocols doesn't match",
                             2, idp.getSupportedProtocols().size());
         Assert.assertEquals("Number of TokenTypesOffered doesn't match",
