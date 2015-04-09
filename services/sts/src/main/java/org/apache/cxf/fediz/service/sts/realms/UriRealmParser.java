@@ -57,6 +57,8 @@ public class UriRealmParser implements RealmParser {
             LOG.warn("Unknown realm: " + realm);
             throw new STSException("Unknown realm: " + realm);
         }
+        
+        LOG.debug("URI realm parsed: " + realm);
         return realm;
     }
 

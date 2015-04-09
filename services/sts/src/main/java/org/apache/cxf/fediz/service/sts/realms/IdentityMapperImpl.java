@@ -49,8 +49,10 @@ public class IdentityMapperImpl implements IdentityMapper {
             String name = sourcePrincipal.getName().toLowerCase();
             LOG.info("Principal '" + sourcePrincipal.getName() + "' mapped to '" + name);
             return new CustomTokenPrincipal(name);
+        } else {
+            LOG.info("The source realm of " + sourceRealm + " is unknown");
+            return null;
         }
-        return null;
     }
 
 }
