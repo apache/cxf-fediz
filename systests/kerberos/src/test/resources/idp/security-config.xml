@@ -101,7 +101,7 @@
         <property name="serviceName" value="bob@service.ws.apache.org"/>
     </bean>-->
 	
-    <bean id="stsAuthProvider" class="org.apache.cxf.fediz.service.idp.STSAuthenticationProvider">
+    <bean id="stsAuthProvider" class="org.apache.cxf.fediz.service.idp.STSKrbAuthenticationProvider">
         <!--<property name="wsdlLocation" value="https://localhost:0/fediz-idp-sts/${realm.STS_URI}/STSServiceTransportUT?wsdl"/>
         <property name="wsdlEndpoint" value="TransportUT_Port"/> -->
         <property name="wsdlLocation" value="https://localhost:0/fediz-idp-sts/${realm.STS_URI}/STSServiceTransportKerberos?wsdl"/>
