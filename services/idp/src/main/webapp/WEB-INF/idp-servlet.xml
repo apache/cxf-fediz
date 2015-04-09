@@ -75,6 +75,10 @@
         flow-builder-services="builder">
         <webflow:flow-location
             path="/WEB-INF/federation-validate-request.xml" id="federation" />
+        <webflow:flow-location
+            path="/WEB-INF/federation-validate-request.xml" id="federation/up" />
+        <webflow:flow-location
+            path="/WEB-INF/federation-validate-request.xml" id="federation/krb" />
         <webflow:flow-location path="/WEB-INF/federation-signin-request.xml"
             id="signinRequest" />
         <webflow:flow-location path="/WEB-INF/federation-signin-response.xml"

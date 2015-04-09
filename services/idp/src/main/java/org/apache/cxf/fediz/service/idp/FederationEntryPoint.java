@@ -79,13 +79,14 @@ public class FederationEntryPoint implements AuthenticationEntryPoint,
         Assert.notNull(this.appContext, "ApplicationContext cannot be null.");
         Assert.notNull(this.configService, "ConfigService cannot be null.");
         Assert.notNull(this.realm, "realm cannot be null.");
-        idpConfig = configService.getIDP(realm);
-        Assert.notNull(this.idpConfig, "idpConfig cannot be null. Check realm and config service implementation");
     }
 
     public final void commence(final HttpServletRequest servletRequest, final HttpServletResponse response,
             final AuthenticationException authenticationException) throws IOException, ServletException {
 
+        idpConfig = configService.getIDP(realm);
+        Assert.notNull(this.idpConfig, "idpConfig cannot be null. Check realm and config service implementation");
+        
         String redirectUrl = null;
         String wauth = servletRequest.getParameter(FederationConstants.PARAM_AUTH_TYPE);
         if (wauth == null) {
@@ -98,7 +99,7 @@ public class FederationEntryPoint implements AuthenticationEntryPoint,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "wauth value '" + wauth + "' not supported");
         }
         redirectUrl = new StringBuilder(extractFullContextPath(servletRequest))
-            .append(realm).append(loginUri).toString();
+            .append(loginUri).append("?").append(servletRequest.getQueryString()).toString();
         
         preCommence(servletRequest, response);
         if (LOG.isInfoEnabled()) {
@@ -127,6 +128,7 @@ public class FederationEntryPoint implements AuthenticationEntryPoint,
         String result = null;
         String contextPath = request.getContextPath();
         String requestUrl = request.getRequestURL().toString();
+        
         String requestPath = new URL(requestUrl).getPath();
         // Cut request path of request url and add context path if not ROOT
         if (requestPath != null && requestPath.length() > 0) {
@@ -137,8 +139,9 @@ public class FederationEntryPoint implements AuthenticationEntryPoint,
         }
         if (contextPath != null && contextPath.length() > 0) {
             // contextPath contains starting slash
-            result = result + contextPath + "/";
-        } else {
+            result = result + contextPath;
+        }
+        if (result.charAt(result.length() - 1) != '/') {
             result = result + "/";
         }
         return result;

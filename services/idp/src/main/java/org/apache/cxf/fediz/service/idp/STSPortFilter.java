@@ -40,6 +40,7 @@ public class STSPortFilter extends GenericFilterBean implements ApplicationConte
     private static final Logger LOG = LoggerFactory.getLogger(STSPortFilter.class);
     
     private ApplicationContext applicationContext;
+    private STSAuthenticationProvider authenticationProvider;
     
     private boolean isPortSet;
     
@@ -48,7 +49,10 @@ public class STSPortFilter extends GenericFilterBean implements ApplicationConte
         throws IOException, ServletException {
         
         Assert.isTrue(applicationContext != null, "Application context must not be null");
-        STSAuthenticationProvider authProvider = applicationContext.getBean(STSAuthenticationProvider.class);
+        STSAuthenticationProvider authProvider = authenticationProvider;
+        if (authProvider == null) {
+            authProvider = applicationContext.getBean(STSAuthenticationProvider.class);
+        }
         Assert.isTrue(authProvider != null, "STSAuthenticationProvider must be configured");
         
         //Only update the port if HTTPS is used, otherwise ignored (like retrieving the WADL over HTTP)
@@ -78,6 +82,14 @@ public class STSPortFilter extends GenericFilterBean implements ApplicationConte
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
+    }
+
+    public STSAuthenticationProvider getAuthenticationProvider() {
+        return authenticationProvider;
+    }
+
+    public void setAuthenticationProvider(STSAuthenticationProvider authenticationProvider) {
+        this.authenticationProvider = authenticationProvider;
     }
 
 }

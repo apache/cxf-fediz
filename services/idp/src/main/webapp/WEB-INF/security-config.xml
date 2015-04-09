@@ -42,7 +42,7 @@
     <security:global-method-security pre-post-annotations="enabled"/>
 
     <security:http pattern="/services/rs/**" use-expressions="true" authentication-manager-ref="restAuthenticationManager">
-        <security:custom-filter after="CHANNEL_FILTER" ref="stsPortFilter" />
+        <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
         <security:intercept-url pattern="/services/rs/**" access="isAuthenticated()"/>
         <security:http-basic />
@@ -63,34 +63,88 @@
           -->
           <security:user-service properties="classpath:/users.properties" />
         </security:authentication-provider>
-        <security:authentication-provider ref="stsAuthProvider" />
+        <security:authentication-provider ref="stsUPAuthProvider" />
     </security:authentication-manager>
-
-    <security:http use-expressions="true">
-        <security:custom-filter after="CHANNEL_FILTER" ref="stsPortFilter" />
+    
+    <!-- Redirects to a dedicated http config -->
+    <bean id="federationEntryPoint" class="org.apache.cxf.fediz.service.idp.FederationEntryPoint">
+        <property name="realm" value="urn:org:apache:cxf:fediz:idp:realm-A" />
+        <property name="configService" ref="config" />
+    </bean>
+    
+    <!-- Main entry point -->
+    <security:http pattern="/federation" use-expressions="true" entry-point-ref="federationEntryPoint">
+        <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
+        <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
+        <security:intercept-url pattern="/FederationMetadata/2007-06/FederationMetadata.xml" access="isAnonymous() or isAuthenticated()" />
+    </security:http>
+    
+    <!-- HTTP/BA entry point -->
+    <security:http pattern="/federation/up" use-expressions="true">
+        <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
         <security:intercept-url pattern="/FederationMetadata/2007-06/FederationMetadata.xml" access="isAnonymous() or isAuthenticated()" />
 
-        <!-- MUST be http-basic thus systests run fine -->
-        <!--<security:form-login />-->
         <security:http-basic />
         <security:logout delete-cookies="FEDIZ_HOME_REALM" invalidate-session="true" />
     </security:http>
+    
+    <!-- Kerberos entry point -->
+    <bean id="kerberosEntryPoint"
+          class="org.apache.cxf.fediz.service.idp.kerberos.KerberosEntryPoint" />
+    
+    <bean id="kerberosAuthenticationProcessingFilter"
+          class="org.apache.cxf.fediz.service.idp.kerberos.KerberosAuthenticationProcessingFilter">
+          <property name="authenticationManager" ref="authenticationManagers" />
+    </bean>
+    
+    <security:http pattern="/federation/krb" use-expressions="true" entry-point-ref="kerberosEntryPoint">
+        <security:custom-filter after="CHANNEL_FILTER" ref="stsKrbPortFilter" />
+        <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
+        <security:intercept-url pattern="/FederationMetadata/2007-06/FederationMetadata.xml" access="isAnonymous() or isAuthenticated()" />
 
-    <security:authentication-manager>
-        <security:authentication-provider ref="stsAuthProvider" />
+        <security:custom-filter ref="kerberosAuthenticationProcessingFilter" position="BASIC_AUTH_FILTER" />
+        <security:logout delete-cookies="FEDIZ_HOME_REALM" invalidate-session="true" />
+    </security:http>
+
+    <security:authentication-manager alias="authenticationManagers">
+        <security:authentication-provider ref="stsUPAuthProvider" />
+        <security:authentication-provider ref="stsKrbAuthProvider" />
     </security:authentication-manager>
 	
-    <bean id="stsPortFilter" class="org.apache.cxf.fediz.service.idp.STSPortFilter" />
+    <bean id="stsUPPortFilter" class="org.apache.cxf.fediz.service.idp.STSPortFilter">
+        <property name="authenticationProvider" ref="stsUPAuthProvider" />
+    </bean>
     
     <bean id="entitlementsEnricher" class="org.apache.cxf.fediz.service.idp.service.security.GrantedAuthorityEntitlements" />
 	
-    <bean id="stsAuthProvider" class="org.apache.cxf.fediz.service.idp.STSAuthenticationProvider">
+	<!-- U/P Authentication Provider -->
+    <bean id="stsUPAuthProvider" class="org.apache.cxf.fediz.service.idp.STSUPAuthenticationProvider">
         <property name="wsdlLocation" value="https://localhost:0/fediz-idp-sts/${realm.STS_URI}/STSServiceTransportUT?wsdl"/>
         <property name="wsdlEndpoint" value="TransportUT_Port"/>
         <property name="wsdlService" value="SecurityTokenService"/>
         <property name="appliesTo" value="urn:fediz:idp"/>
         <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0"/>
+    </bean>
+    
+    <bean id="stsKrbPortFilter" class="org.apache.cxf.fediz.service.idp.STSPortFilter">
+        <property name="authenticationProvider" ref="stsKrbAuthProvider" />
+    </bean>
+    
+    <!--<bean id="kerberosTokenValidator" class="org.apache.cxf.fediz.service.idp.kerberos.KerberosTokenValidator">
+        <property name="contextName" value="bob"/>
+        <property name="serviceName" value="bob@service.ws.apache.org"/>
+    </bean>-->
+	
+	<!-- Kerberos authentication provider -->
+    <bean id="stsKrbAuthProvider" class="org.apache.cxf.fediz.service.idp.STSKrbAuthenticationProvider">
+        <property name="wsdlLocation" value="https://localhost:0/fediz-idp-sts/${realm.STS_URI}/STSServiceTransportKerberos?wsdl"/>
+        <property name="wsdlEndpoint" value="TransportKerberos_Port"/>
+        <property name="wsdlService" value="SecurityTokenService"/>
+        <property name="appliesTo" value="urn:fediz:idp"/>
+        <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0"/>
+        <!-- <property name="kerberosTokenValidator" ref="kerberosTokenValidator"/>
+        <property name="requireDelegation" value="true"/>-->
     </bean>
 
 </beans>

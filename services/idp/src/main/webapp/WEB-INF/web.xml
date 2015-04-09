@@ -79,7 +79,17 @@ under the License.
         <servlet-name>idp</servlet-name>
         <url-pattern>/federation</url-pattern>
     </servlet-mapping>
-
+    
+    <servlet-mapping>
+        <servlet-name>idp</servlet-name>
+        <url-pattern>/federation/up</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+        <servlet-name>idp</servlet-name>
+        <url-pattern>/federation/krb</url-pattern>
+    </servlet-mapping>
+    
     <servlet-mapping>
         <servlet-name>metadata</servlet-name>
         <url-pattern>/FederationMetadata/2007-06/FederationMetadata.xml</url-pattern>

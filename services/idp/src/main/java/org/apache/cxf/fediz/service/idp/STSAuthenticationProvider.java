@@ -19,71 +19,46 @@
 package org.apache.cxf.fediz.service.idp;
 
 import java.net.URI;
-import java.security.Principal;
-import java.security.PrivilegedActionException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.login.LoginException;
-import javax.xml.namespace.QName;
-
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 //import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimTypes;
-import org.apache.cxf.fediz.service.idp.kerberos.KerberosServiceRequestToken;
-import org.apache.cxf.fediz.service.idp.kerberos.KerberosTokenValidator;
-import org.apache.cxf.fediz.service.idp.kerberos.PassThroughKerberosClient;
-import org.apache.cxf.helpers.DOMUtils;
-//import org.apache.cxf.transport.http.HTTPConduit;
-//import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
-import org.apache.cxf.ws.security.SecurityConstants;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.wss4j.common.ext.WSSecurityException;
-import org.apache.wss4j.common.kerberos.KerberosServiceContext;
-import org.apache.wss4j.common.principal.SAMLTokenPrincipalImpl;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
-import org.apache.wss4j.dom.WSConstants;
-import org.apache.xml.security.exceptions.XMLSecurityException;
-import org.apache.xml.security.keys.content.X509Data;
-import org.ietf.jgss.GSSContext;
-import org.ietf.jgss.GSSCredential;
-import org.ietf.jgss.GSSException;
-import org.ietf.jgss.GSSManager;
-import org.ietf.jgss.GSSName;
-import org.ietf.jgss.Oid;
 import org.opensaml.xml.XMLObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
+//import org.apache.cxf.transport.http.HTTPConduit;
+//import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 
-public class STSAuthenticationProvider implements AuthenticationProvider {
+/**
+ * A base class for authenticating credentials to the STS
+ */
+public abstract class STSAuthenticationProvider implements AuthenticationProvider {
 
-    private static final String HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER = 
+    public static final String HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER = 
         "http://docs.oasis-open.org/ws-sx/ws-trust/200512/Bearer";
     
-    private static final String HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512 = 
+    public static final String HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512 = 
         "http://docs.oasis-open.org/ws-sx/ws-trust/200512/";
     
-    private static final String HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_02_TRUST =
+    public static final String HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_02_TRUST =
         "http://schemas.xmlsoap.org/ws/2005/02/trust";
     
-    private static final Logger LOG = LoggerFactory
-            .getLogger(STSAuthenticationProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(STSAuthenticationProvider.class);
 
     protected String wsdlLocation;
     
@@ -108,190 +83,7 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
     
     protected Map<String, Object> properties = new HashMap<String, Object>();
     
-    private KerberosTokenValidator kerberosTokenValidator;
-    
-    private CallbackHandler kerberosCallbackHandler;
-    
-    private boolean kerberosUsernameServiceNameForm;
-    
-    private boolean requireDelegation;
-    
-    
-    @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        
-        Bus cxfBus = getBus();
-        IdpSTSClient sts = new IdpSTSClient(cxfBus);
-        sts.setAddressingNamespace("http://www.w3.org/2005/08/addressing");
-        if (tokenType != null && tokenType.length() > 0) {
-            sts.setTokenType(tokenType);
-        } else {
-            sts.setTokenType(WSConstants.WSS_SAML2_TOKEN_TYPE);
-        }
-        sts.setKeyType(HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER);
-        sts.setWsdlLocation(wsdlLocation);
-        sts.setServiceQName(new QName(namespace, wsdlService));
-        sts.setEndpointQName(new QName(namespace, wsdlEndpoint));
-        
-        sts.getProperties().putAll(properties);
-        if (use200502Namespace) {
-            sts.setNamespace(HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_02_TRUST);
-        }
-        
-        if (lifetime != null) {
-            sts.setEnableLifetime(true);
-            sts.setTtl(lifetime.intValue());
-        }
-        
-        if (authentication instanceof KerberosServiceRequestToken) {
-            return handleKerberos((KerberosServiceRequestToken)authentication, sts);
-        } else if (authentication instanceof PreAuthenticatedAuthenticationToken) {
-            return handlePreAuthenticated((PreAuthenticatedAuthenticationToken)authentication, sts);
-        } else if (authentication instanceof UsernamePasswordAuthenticationToken) {
-            return handleUsernamePassword((UsernamePasswordAuthenticationToken)authentication, sts);
-        } else {
-            LOG.debug("An unknown authentication token was supplied");
-            return null;
-        }
-        
-    }
-    
-    private Authentication handleKerberos(
-        KerberosServiceRequestToken kerberosRequestToken,
-        IdpSTSClient sts
-    ) {
-        Principal kerberosPrincipal = null;
-        // 
-        // If delegation is required then validate the received token + store the
-        // Delegated Credential so that we can retrieve a new kerberos token for the
-        // STS with it. If delegation is not required, then we just get the received
-        // token + pass it to the STS
-        //
-        if (requireDelegation) {
-            kerberosPrincipal = validateKerberosToken(kerberosRequestToken, sts);
-            if (kerberosPrincipal == null) {
-                return null;
-            }
-        } else {
-            PassThroughKerberosClient kerberosClient = new PassThroughKerberosClient();
-            kerberosClient.setToken(kerberosRequestToken.getToken());
-            sts.getProperties().put(SecurityConstants.KERBEROS_CLIENT, kerberosClient);
-        }
-        
-        try {
-            // Line below may be uncommented for debugging    
-            // setTimeout(sts.getClient(), 3600000L);
-
-            SecurityToken token = sts.requestSecurityToken(this.appliesTo);
-            
-            if (kerberosPrincipal == null && token.getToken() != null
-                && "Assertion".equals(token.getToken().getLocalName())) {
-                // For the pass-through Kerberos case, we don't know the Principal name...
-                kerberosPrincipal = 
-                    new SAMLTokenPrincipalImpl(new SamlAssertionWrapper(token.getToken()));
-            }
-            
-            List<GrantedAuthority> authorities = createAuthorities(token);
-            
-            KerberosServiceRequestToken ksrt = 
-                new KerberosServiceRequestToken(kerberosPrincipal, authorities, kerberosRequestToken.getToken());
-            
-            STSUserDetails details = new STSUserDetails(kerberosPrincipal.getName(),
-                                                        "",
-                                                        authorities,
-                                                        token);
-            ksrt.setDetails(details);
-            
-            LOG.debug("[IDP_TOKEN={}] provided for user '{}'", token.getId(), kerberosPrincipal.getName());
-            return ksrt;
-        } catch (Exception ex) {
-            LOG.info("Failed to authenticate user '" + kerberosRequestToken.getName() + "'", ex);
-            return null;
-        }
-    }
-    
-    private Authentication handlePreAuthenticated(
-        PreAuthenticatedAuthenticationToken preauthenticatedToken,
-        IdpSTSClient sts
-    ) {
-        X509Certificate cert = (X509Certificate)preauthenticatedToken.getCredentials();
-        if (cert == null) {
-            return null;
-        }
-        
-        // Convert the received certificate to a DOM Element to write it out "OnBehalfOf"
-        Document doc = DOMUtils.newDocument();
-        X509Data certElem = new X509Data(doc);
-        try {
-            certElem.addCertificate(cert);
-            sts.setOnBehalfOf(certElem.getElement());
-        } catch (XMLSecurityException e) {
-            LOG.debug("Error parsing a client certificate", e);
-            return null;
-        }
-        
-        try {
-            // Line below may be uncommented for debugging    
-            // setTimeout(sts.getClient(), 3600000L);
-
-            SecurityToken token = sts.requestSecurityToken(this.appliesTo);
-            
-            List<GrantedAuthority> authorities = createAuthorities(token);
-            
-            STSUserDetails details = new STSUserDetails(preauthenticatedToken.getName(),
-                                                        "",
-                                                        authorities,
-                                                        token);
-            
-            preauthenticatedToken.setDetails(details);
-            
-            LOG.debug("[IDP_TOKEN={}] provided for user '{}'", token.getId(), preauthenticatedToken.getName());
-            return preauthenticatedToken;
-            
-        } catch (Exception ex) {
-            LOG.info("Failed to authenticate user '" + preauthenticatedToken.getName() + "'", ex);
-            return null;
-        }
-    }
-    
-    private Authentication handleUsernamePassword(
-        UsernamePasswordAuthenticationToken usernamePasswordToken,
-        IdpSTSClient sts
-    ) {
-        sts.getProperties().put(SecurityConstants.USERNAME, usernamePasswordToken.getName());
-        sts.getProperties().put(SecurityConstants.PASSWORD, (String)usernamePasswordToken.getCredentials());
-        
-        try {
-
-            // Line below may be uncommented for debugging    
-            // setTimeout(sts.getClient(), 3600000L);
-
-            SecurityToken token = sts.requestSecurityToken(this.appliesTo);
-            
-            List<GrantedAuthority> authorities = createAuthorities(token);
-            
-            UsernamePasswordAuthenticationToken upat = 
-                new UsernamePasswordAuthenticationToken(usernamePasswordToken.getName(), 
-                                                        usernamePasswordToken.getCredentials(), 
-                                                        authorities);
-
-            STSUserDetails details = new STSUserDetails(usernamePasswordToken.getName(),
-                                                        (String)usernamePasswordToken.getCredentials(),
-                                                        authorities,
-                                                        token);
-            upat.setDetails(details);
-
-            LOG.debug("[IDP_TOKEN={}] provided for user '{}'", token.getId(), usernamePasswordToken.getName());
-            return upat;
-                                                                                           
-        } catch (Exception ex) {
-            LOG.info("Failed to authenticate user '" + usernamePasswordToken.getName() + "'", ex);
-            return null;
-        }
-        
-    }
-    
-    private List<GrantedAuthority> createAuthorities(SecurityToken token) throws WSSecurityException {
+    protected List<GrantedAuthority> createAuthorities(SecurityToken token) throws WSSecurityException {
         List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
         //authorities.add(new SimpleGrantedAuthority("ROLE_AUTHENTICATED"));
         //Not needed because AuthenticatedVoter has been added for SecurityFlowExecutionListener
@@ -323,76 +115,6 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
         authorities.add(new SimpleGrantedAuthority("ROLE_IDP_LOGIN"));
         
         return authorities;
-    }
-    
-    private Principal validateKerberosToken(
-        KerberosServiceRequestToken token,
-        IdpSTSClient sts
-    ) {
-        if (kerberosTokenValidator == null) {
-            LOG.error("KerberosTokenValidator must be configured to support kerberos "
-                + "credential delegation");
-            return null;
-        }
-        KerberosServiceContext kerberosContext;
-        Principal kerberosPrincipal = null;
-        try {
-            kerberosContext = kerberosTokenValidator.validate(token);
-            if (kerberosContext == null || kerberosContext.getDelegationCredential() == null) {
-                LOG.info("Kerberos Validation failure");
-                return null;
-            }
-            GSSCredential delegatedCredential = kerberosContext.getDelegationCredential();
-            sts.getProperties().put(SecurityConstants.DELEGATED_CREDENTIAL, 
-                                    delegatedCredential);
-            sts.getProperties().put(SecurityConstants.KERBEROS_USE_CREDENTIAL_DELEGATION, "true");
-            kerberosPrincipal = kerberosContext.getPrincipal();
-        } catch (LoginException ex) {
-            LOG.info("Failed to authenticate user", ex);
-            return null;
-        } catch (PrivilegedActionException ex) {
-            LOG.info("Failed to authenticate user", ex);
-            return null;
-        }
-
-        if (kerberosTokenValidator.getContextName() != null) {
-            sts.getProperties().put(SecurityConstants.KERBEROS_JAAS_CONTEXT_NAME, 
-                                    kerberosTokenValidator.getContextName());
-        }
-        if (kerberosTokenValidator.getServiceName() != null) {
-            sts.getProperties().put(SecurityConstants.KERBEROS_SPN,
-                                    kerberosTokenValidator.getServiceName());
-        }
-        if (kerberosCallbackHandler != null) {
-            sts.getProperties().put(SecurityConstants.CALLBACK_HANDLER, 
-                                    kerberosCallbackHandler);
-        }
-        if (kerberosUsernameServiceNameForm) {
-            sts.getProperties().put(SecurityConstants.KERBEROS_IS_USERNAME_IN_SERVICENAME_FORM, 
-                                    "true");
-        }
-        
-        return kerberosPrincipal;
-    }
-    
-    protected GSSContext createGSSContext() throws GSSException {
-        Oid oid = new Oid("1.2.840.113554.1.2.2");
-
-        GSSManager gssManager = GSSManager.getInstance();
-
-        String spn = "bob@service.ws.apache.org";
-        GSSName gssService = gssManager.createName(spn, null);
-
-        return gssManager.createContext(gssService.canonicalize(oid),
-                                        oid, null, GSSContext.DEFAULT_LIFETIME);
-
-    }
-
-    @Override
-    public boolean supports(Class<?> authentication) {
-        return authentication.equals(PreAuthenticatedAuthenticationToken.class)
-            || authentication.equals(UsernamePasswordAuthenticationToken.class)
-            || authentication.equals(KerberosServiceRequestToken.class);
     }
     
     public String getWsdlLocation() {
@@ -561,38 +283,6 @@ public class STSAuthenticationProvider implements AuthenticationProvider {
 
     public void setUse200502Namespace(boolean use200502Namespace) {
         this.use200502Namespace = use200502Namespace;
-    }
-
-    public KerberosTokenValidator getKerberosTokenValidator() {
-        return kerberosTokenValidator;
-    }
-
-    public void setKerberosTokenValidator(KerberosTokenValidator kerberosTokenValidator) {
-        this.kerberosTokenValidator = kerberosTokenValidator;
-    }
-
-    public CallbackHandler getKerberosCallbackHandler() {
-        return kerberosCallbackHandler;
-    }
-
-    public void setKerberosCallbackHandler(CallbackHandler kerberosCallbackHandler) {
-        this.kerberosCallbackHandler = kerberosCallbackHandler;
-    }
-
-    public boolean isKerberosUsernameServiceNameForm() {
-        return kerberosUsernameServiceNameForm;
-    }
-
-    public void setKerberosUsernameServiceNameForm(boolean kerberosUsernameServiceNameForm) {
-        this.kerberosUsernameServiceNameForm = kerberosUsernameServiceNameForm;
-    }
-
-    public boolean isRequireDelegation() {
-        return requireDelegation;
-    }
-
-    public void setRequireDelegation(boolean requireDelegation) {
-        this.requireDelegation = requireDelegation;
     }
 
 //May be uncommented for debugging    

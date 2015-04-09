@@ -74,7 +74,7 @@
         </property>
         <property name="authenticationURIs">
             <util:map>
-                <entry key="default" value="/login/default" />
+                <entry key="default" value="federation/up" />
             </util:map>
         </property>
         <property name="trustedIDPs">
