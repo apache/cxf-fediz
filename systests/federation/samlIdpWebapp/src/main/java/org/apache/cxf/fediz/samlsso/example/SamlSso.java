@@ -97,10 +97,6 @@ public class SamlSso {
         ub.queryParam("SAMLResponse", responseStr);
         ub.queryParam("RelayState", relayState);
         
-        // TODO hack just to keep the Fediz IdP happy
-        ub.queryParam("wtrealm", "blah");
-        ub.queryParam("wresult", "blah");
-        
         return javax.ws.rs.core.Response.seeOther(ub.build()).build();
     }
     

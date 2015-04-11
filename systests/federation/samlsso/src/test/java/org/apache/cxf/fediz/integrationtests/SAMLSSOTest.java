@@ -25,12 +25,15 @@ import java.io.IOException;
 
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
+import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -230,25 +233,18 @@ public class SAMLSSOTest {
     }
     
     @org.junit.Test
-    @org.junit.Ignore
     public void testSAMLSSO() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
-        System.out.println("URL: " + url);
+        // System.out.println("URL: " + url);
         // Thread.sleep(60 * 2 * 1000);
-        
-        /*
-         * TODO Logging in fine to the SAML SSO IdP, but when redirected the context is missing or something
-         * Maybe a bug with htmlunit
-         *
         String user = "ALICE";  // realm b credentials
         String password = "ECILA";
+        
         final String bodyTextContent = 
             login(url, user, password, idpSamlSSOHttpsPort, idpHttpsPort);
         
-        System.out.println("BODY: " + bodyTextContent);
-        
-        Assert.assertTrue("Principal not " + user,
-                          bodyTextContent.contains("userPrincipal=" + user));
+        Assert.assertTrue("Principal not alice",
+                          bodyTextContent.contains("userPrincipal=alice"));
         Assert.assertTrue("User " + user + " does not have role Admin",
                           bodyTextContent.contains("role:Admin=false"));
         Assert.assertTrue("User " + user + " does not have role Manager",
@@ -265,11 +261,10 @@ public class SAMLSSOTest {
         claim = ClaimTypes.EMAILADDRESS.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
                           bodyTextContent.contains(claim + "=alice@realma.org"));
-         */
     }
     
-    protected static String login(String url, String user, String password, 
-                               String idpPort, String rpIdpPort) throws IOException {
+    private static String login(String url, String user, String password, 
+                                String idpPort, String rpIdpPort) throws IOException {
         //
         // Access the RP + get redirected to the IdP for "realm a". Then get redirected to the IdP for
         // "realm b".
@@ -282,13 +277,20 @@ public class SAMLSSOTest {
             new AuthScope("localhost", Integer.parseInt(idpPort)),
             new UsernamePasswordCredentials(user, password));
 
-        //webClient.getOptions().setJavaScriptEnabled(false);
+        webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
-        //webClient.getOptions().setJavaScriptEnabled(true);
-        // Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
-        
-        return idpPage.getBody().getTextContent();
+        webClient.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
+        // Now redirect back to the RP
+        final HtmlForm form = idpPage.getFormByName("signinresponseform");
+
+        final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
+
+        final HtmlPage rpPage = button.click();
+        Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
+
+        return rpPage.getBody().getTextContent();
     }
     
 }
