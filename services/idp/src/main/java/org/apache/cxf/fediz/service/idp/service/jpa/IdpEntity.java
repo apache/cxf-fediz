@@ -134,6 +134,8 @@ public class IdpEntity {
 
     // ServiceDescription
     private String serviceDescription;
+    
+    private boolean rpSingleSignOutCleanupConfirmation;
 
 
     public int getId() {
@@ -286,6 +288,14 @@ public class IdpEntity {
 
     public void setRpSingleSignOutConfirmation(boolean rpSingleSignOutConfirmation) {
         this.rpSingleSignOutConfirmation = rpSingleSignOutConfirmation;
+    }
+
+    public boolean isRpSingleSignOutCleanupConfirmation() {
+        return rpSingleSignOutCleanupConfirmation;
+    }
+
+    public void setRpSingleSignOutCleanupConfirmation(boolean rpSingleSignOutCleanupConfirmation) {
+        this.rpSingleSignOutCleanupConfirmation = rpSingleSignOutCleanupConfirmation;
     }
 
 }

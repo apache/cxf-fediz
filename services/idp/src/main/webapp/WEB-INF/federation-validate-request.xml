@@ -69,7 +69,8 @@
             <evaluate expression="@org.apache.cxf.fediz.service.idp.util.WebUtils@getHttpHeader(flowRequestContext, 'Referer')" result="flowScope.wreply"/>
         </on-entry>
         <if
-            test="flowScope.idpConfig.rpSingleSignOutConfirmation == true"
+            test="requestParameters.wa == 'wsignout1.0' and flowScope.idpConfig.rpSingleSignOutConfirmation == true
+            or requestParameters.wa == 'wsignoutcleanup1.0' and flowScope.idpConfig.rpSingleSignOutCleanupConfirmation == true"
             then="viewSignoutConfirmation" else="invalidateSessionAction" />
     </decision-state>
 

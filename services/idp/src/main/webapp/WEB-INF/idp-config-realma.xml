@@ -91,8 +91,8 @@
         </property>
         <property name="serviceDisplayName" value="REALM A" />
         <property name="serviceDescription" value="IDP of Realm A" />
-        <property name="localSingleSignOutConfirmation" value="true"/>
         <property name="rpSingleSignOutConfirmation" value="true"/>
+        <property name="rpSingleSignOutCleanupConfirmation" value="false"/>
     </bean>
 
     <bean id="trusted-idp-realmB"
