@@ -447,6 +447,45 @@ public abstract class AbstractTests {
     }
     
     @org.junit.Test
+    public void testIdPLogoutCleanup() throws Exception {
+
+        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String user = "alice";
+        String password = "ecila";
+
+        CookieManager cookieManager = new CookieManager();
+        
+        // 1. Login
+        HTTPTestUtils.loginWithCookieManager(url, user, password, getIdpHttpsPort(), cookieManager);
+       
+        // 2. Now we should have a cookie from the RP and IdP and should be able to do
+        // subsequent requests without authenticate again. Lets test this first.
+        WebClient webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        final HtmlPage rpPage = webClient.getPage(url);
+        Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
+        
+        // 3. now we logout from IdP
+        String idpLogoutUrl = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?wa="
+            + FederationConstants.ACTION_SIGNOUT_CLEANUP;
+
+        HTTPTestUtils.logoutCleanup(idpLogoutUrl, cookieManager);
+
+        // 4. now we try to access the RP and idp without authentication but with the existing cookies
+        // to see if we are really logged out
+        String rpUrl = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+
+        webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        final HtmlPage idpPage = webClient.getPage(rpUrl);
+
+        Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
+    }
+    
+    @org.junit.Test
     public void testAliceModifiedSignature() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         String user = "alice";

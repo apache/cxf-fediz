@@ -121,5 +121,26 @@ public final class HTTPTestUtils {
             webClient.getPage(imgSrc);
         }
     }
+    
+    public static void logoutCleanup(String url, CookieManager cookieManager) throws IOException {
+        final WebClient webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        final HtmlPage idpPage = webClient.getPage(url);
+
+        Assert.assertEquals("IDP SignOut Response Page", idpPage.getTitleText());
+
+        Assert.assertTrue(idpPage.asText().contains("CXF Fediz IDP successful logout"));
+        
+        DomNodeList<DomElement> images = idpPage.getElementsByTagName("img");
+        Assert.assertEquals(1, images.getLength());
+        for (int i = 0; i < images.size(); i++) {
+            DomElement domElement = images.get(i);
+            String imgSrc = domElement.getAttribute("src");
+
+            //we should get a fault if the image isn't available.
+            webClient.getPage(imgSrc);
+        }
+    }
 
 }
