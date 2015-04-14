@@ -61,7 +61,7 @@ public class MetadataServlet extends HttpServlet {
             Idp idpConfig = cs.getIDP(realm);
             LOG.debug(idpConfig.toString());
             MetadataWriter mw = new MetadataWriter();
-            Document metadata =  mw.getMetaData(idpConfig);
+            Document metadata = mw.getMetaData(idpConfig);
             out.write(DOM2Writer.nodeToString(metadata));
         } catch (Exception ex) {
             LOG.error("Failed to get metadata document: ", ex);

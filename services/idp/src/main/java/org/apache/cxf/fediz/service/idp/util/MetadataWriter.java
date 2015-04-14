@@ -28,10 +28,10 @@ import java.security.cert.X509Certificate;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.w3c.dom.Document;
-
 import org.apache.cxf.fediz.core.util.CertsUtils;
 import org.apache.cxf.fediz.core.util.SignatureUtils;
 import org.apache.cxf.fediz.service.idp.domain.Claim;
@@ -62,7 +62,6 @@ public class MetadataWriter {
     public Document getMetaData(Idp config) throws RuntimeException {
         //Return as text/xml
         try {
-            
             Crypto crypto = CertsUtils.createCrypto(config.getCertificate());
             
             ByteArrayOutputStream bout = new ByteArrayOutputStream(4096);
@@ -82,86 +81,14 @@ public class MetadataWriter {
             writer.writeNamespace("wsa", WS_ADDRESSING_NS);
             writer.writeNamespace("auth", WS_FEDERATION_NS);
             writer.writeNamespace("xsi", SCHEMA_INSTANCE_NS);
-
-            writer.writeStartElement("md", "RoleDescriptor", WS_FEDERATION_NS);
-            writer.writeAttribute(SCHEMA_INSTANCE_NS, "type", "fed:SecurityTokenServiceType");
-            writer.writeAttribute("protocolSupportEnumeration", WS_FEDERATION_NS);
-            if (config.getServiceDescription() != null && config.getServiceDescription().length() > 0 ) {
-                writer.writeAttribute("ServiceDescription", config.getServiceDescription());
-            }
-            if (config.getServiceDisplayName() != null && config.getServiceDisplayName().length() > 0 ) {
-                writer.writeAttribute("ServiceDisplayName", config.getServiceDisplayName());
-            }
             
-            //http://docs.oasis-open.org/security/saml/v2.0/saml-schema-metadata-2.0.xsd
-            //missing organization, contactperson
+            writeFederationMetadata(writer, config, crypto);
             
-            //KeyDescriptor
-            writer.writeStartElement("", "KeyDescriptor", SAML2_METADATA_NS);
-            writer.writeAttribute("use", "signing");
-            writer.writeStartElement("", "KeyInfo", "http://www.w3.org/2000/09/xmldsig#");
-            writer.writeStartElement("", "X509Data", "http://www.w3.org/2000/09/xmldsig#");
-            writer.writeStartElement("", "X509Certificate", "http://www.w3.org/2000/09/xmldsig#");
-            
-            try {
-                String keyAlias = crypto.getDefaultX509Identifier();
-                X509Certificate cert = CertsUtils.getX509Certificate(crypto, keyAlias);
-                writer.writeCharacters(Base64.encode(cert.getEncoded()));
-            } catch (Exception ex) {
-                LOG.error("Failed to add certificate information to metadata. Metadata incomplete", ex);
-            }
-            
-            writer.writeEndElement(); // X509Certificate
-            writer.writeEndElement(); // X509Data
-            writer.writeEndElement(); // KeyInfo
-            writer.writeEndElement(); // KeyDescriptor
-            
-            
-            // SecurityTokenServiceEndpoint
-            writer.writeStartElement("fed", "SecurityTokenServiceEndpoint", WS_FEDERATION_NS);
-            writer.writeStartElement("wsa", "EndpointReference", WS_ADDRESSING_NS);
-
-            writer.writeStartElement("wsa", "Address", WS_ADDRESSING_NS);
-            writer.writeCharacters(config.getStsUrl().toString());
-            
-            writer.writeEndElement(); // Address
-            writer.writeEndElement(); // EndpointReference
-            writer.writeEndElement(); // SecurityTokenServiceEndpoint
-            
-            
-            // PassiveRequestorEndpoint
-            writer.writeStartElement("fed", "PassiveRequestorEndpoint", WS_FEDERATION_NS);
-            writer.writeStartElement("wsa", "EndpointReference", WS_ADDRESSING_NS);
-
-            writer.writeStartElement("wsa", "Address", WS_ADDRESSING_NS);
-            writer.writeCharacters(config.getIdpUrl().toString());
-            
-            writer.writeEndElement(); // Address
-            writer.writeEndElement(); // EndpointReference
-            writer.writeEndElement(); // PassiveRequestorEndpoint
-
-            
-            // create ClaimsType section
-            if (config.getClaimTypesOffered() != null && config.getClaimTypesOffered().size() > 0) {
-                writer.writeStartElement("fed", "ClaimTypesOffered", WS_FEDERATION_NS);
-                for (Claim claim : config.getClaimTypesOffered()) {
-    
-                    writer.writeStartElement("auth", "ClaimType", WS_FEDERATION_NS);
-                    writer.writeAttribute("Uri", claim.getClaimType().toString());
-                    writer.writeAttribute("Optional", "true");
-                    writer.writeEndElement(); // ClaimType
-    
-                }
-                writer.writeEndElement(); // ClaimTypesOffered
-            }
-            
-            writer.writeEndElement(); // RoleDescriptor
             writer.writeEndElement(); // EntityDescriptor
 
             writer.writeEndDocument();
             streamWriter.flush();
             bout.flush();
-            //
 
             if (LOG.isDebugEnabled()) {
                 String out = new String(bout.toByteArray());
@@ -184,7 +111,86 @@ public class MetadataWriter {
             LOG.error("Error creating service metadata information ", e);
             throw new RuntimeException("Error creating service metadata information: " + e.getMessage());
         }
+        
+    }
+    
+    private void writeFederationMetadata(
+        XMLStreamWriter writer, Idp config, Crypto crypto
+    ) throws XMLStreamException {
 
+        writer.writeStartElement("md", "RoleDescriptor", WS_FEDERATION_NS);
+        writer.writeAttribute(SCHEMA_INSTANCE_NS, "type", "fed:SecurityTokenServiceType");
+        writer.writeAttribute("protocolSupportEnumeration", WS_FEDERATION_NS);
+        if (config.getServiceDescription() != null && config.getServiceDescription().length() > 0 ) {
+            writer.writeAttribute("ServiceDescription", config.getServiceDescription());
+        }
+        if (config.getServiceDisplayName() != null && config.getServiceDisplayName().length() > 0 ) {
+            writer.writeAttribute("ServiceDisplayName", config.getServiceDisplayName());
+        }
+
+        //http://docs.oasis-open.org/security/saml/v2.0/saml-schema-metadata-2.0.xsd
+        //missing organization, contactperson
+
+        //KeyDescriptor
+        writer.writeStartElement("", "KeyDescriptor", SAML2_METADATA_NS);
+        writer.writeAttribute("use", "signing");
+        writer.writeStartElement("", "KeyInfo", "http://www.w3.org/2000/09/xmldsig#");
+        writer.writeStartElement("", "X509Data", "http://www.w3.org/2000/09/xmldsig#");
+        writer.writeStartElement("", "X509Certificate", "http://www.w3.org/2000/09/xmldsig#");
+
+        try {
+            String keyAlias = crypto.getDefaultX509Identifier();
+            X509Certificate cert = CertsUtils.getX509Certificate(crypto, keyAlias);
+            writer.writeCharacters(Base64.encode(cert.getEncoded()));
+        } catch (Exception ex) {
+            LOG.error("Failed to add certificate information to metadata. Metadata incomplete", ex);
+        }
+
+        writer.writeEndElement(); // X509Certificate
+        writer.writeEndElement(); // X509Data
+        writer.writeEndElement(); // KeyInfo
+        writer.writeEndElement(); // KeyDescriptor
+
+
+        // SecurityTokenServiceEndpoint
+        writer.writeStartElement("fed", "SecurityTokenServiceEndpoint", WS_FEDERATION_NS);
+        writer.writeStartElement("wsa", "EndpointReference", WS_ADDRESSING_NS);
+
+        writer.writeStartElement("wsa", "Address", WS_ADDRESSING_NS);
+        writer.writeCharacters(config.getStsUrl().toString());
+
+        writer.writeEndElement(); // Address
+        writer.writeEndElement(); // EndpointReference
+        writer.writeEndElement(); // SecurityTokenServiceEndpoint
+
+
+        // PassiveRequestorEndpoint
+        writer.writeStartElement("fed", "PassiveRequestorEndpoint", WS_FEDERATION_NS);
+        writer.writeStartElement("wsa", "EndpointReference", WS_ADDRESSING_NS);
+
+        writer.writeStartElement("wsa", "Address", WS_ADDRESSING_NS);
+        writer.writeCharacters(config.getIdpUrl().toString());
+
+        writer.writeEndElement(); // Address
+        writer.writeEndElement(); // EndpointReference
+        writer.writeEndElement(); // PassiveRequestorEndpoint
+
+
+        // create ClaimsType section
+        if (config.getClaimTypesOffered() != null && config.getClaimTypesOffered().size() > 0) {
+            writer.writeStartElement("fed", "ClaimTypesOffered", WS_FEDERATION_NS);
+            for (Claim claim : config.getClaimTypesOffered()) {
+
+                writer.writeStartElement("auth", "ClaimType", WS_FEDERATION_NS);
+                writer.writeAttribute("Uri", claim.getClaimType().toString());
+                writer.writeAttribute("Optional", "true");
+                writer.writeEndElement(); // ClaimType
+
+            }
+            writer.writeEndElement(); // ClaimTypesOffered
+        }
+
+        writer.writeEndElement(); // RoleDescriptor
     }
 
  
