@@ -233,6 +233,10 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
     
     private String encodeAuthnRequest(Element authnRequest) throws IOException {
         String requestMessage = DOM2Writer.nodeToString(authnRequest);
+        
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(requestMessage);
+        }
 
         DeflateEncoderDecoder encoder = new DeflateEncoderDecoder();
         byte[] deflatedBytes = encoder.deflateToken(requestMessage.getBytes("UTF-8"));
