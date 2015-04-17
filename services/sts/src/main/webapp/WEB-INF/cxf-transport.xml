@@ -108,7 +108,7 @@
 
     <util:list id="transportTokenValidators">
         <ref bean="transportSamlTokenValidator" />
-        <bean class="org.apache.cxf.sts.token.validator.X509TokenValidator" />
+        <bean class="org.apache.cxf.fediz.service.sts.X509TokenValidator" />
     </util:list>
 
     <bean id="realmA" class="org.apache.cxf.sts.token.realm.SAMLRealm">
@@ -129,11 +129,14 @@
         <entry key="REALMA" value-ref="realmA" />
         <entry key="REALMB" value-ref="realmB" />
     </util:map>
+    
+    <bean id="subjectProvider" class="org.apache.cxf.fediz.service.sts.DefaultSubjectProvider"/>
 
     <bean id="transportSamlTokenProvider" class="org.apache.cxf.sts.token.provider.SAMLTokenProvider">
         <property name="attributeStatementProviders" ref="attributeStatementProvidersList" />
         <property name="realmMap" ref="realms" />
         <property name="conditionsProvider" ref="conditionsProvider" />
+        <property name="subjectProvider" ref="subjectProvider" />
     </bean>
 
     <bean id="conditionsProvider"
