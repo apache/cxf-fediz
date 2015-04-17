@@ -106,7 +106,7 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
     public static final String SUPPORT_BASE64_ENCODING = "support.base64.encoding";
     
     /**
-     * Whether we support Deflate encoding or not. The default is "true".
+     * Whether we support Deflate encoding or not. The default is "false".
      */
     public static final String SUPPORT_DEFLATE_ENCODING = "support.deflate.encoding";
 
@@ -144,7 +144,7 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
                     null, idp.getRealm(), idp.getIdpUrl().toString()
                 );
             
-            boolean signRequest = isPropertyConfigured(trustedIdp, SIGN_REQUEST);
+            boolean signRequest = isPropertyConfigured(trustedIdp, SIGN_REQUEST, true);
             if (signRequest) {
                 authnRequest.setDestination(trustedIdp.getUrl());
             }
@@ -340,10 +340,10 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
         String samlResponseDecoded = samlResponse;
         
         InputStream tokenStream = null;
-        if (isPropertyConfigured(trustedIdp, SUPPORT_BASE64_ENCODING)) {
+        if (isPropertyConfigured(trustedIdp, SUPPORT_BASE64_ENCODING, true)) {
             try {
                 byte[] deflatedToken = Base64Utility.decode(samlResponseDecoded);
-                tokenStream = isPropertyConfigured(trustedIdp, SUPPORT_DEFLATE_ENCODING)
+                tokenStream = isPropertyConfigured(trustedIdp, SUPPORT_DEFLATE_ENCODING, false)
                     ? new DeflateEncoderDecoder().inflateToken(deflatedToken)
                     : new ByteArrayInputStream(deflatedToken); 
             } catch (Base64Exception ex) {
@@ -390,7 +390,7 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
         try {
             SAMLProtocolResponseValidator protocolValidator = new SAMLProtocolResponseValidator();
             protocolValidator.setKeyInfoMustBeAvailable(
-                isPropertyConfigured(trustedIdp, REQUIRE_KNOWN_ISSUER));
+                isPropertyConfigured(trustedIdp, REQUIRE_KNOWN_ISSUER, true));
             protocolValidator.validateSamlResponse(samlResponse, crypto, null);
         } catch (WSSecurityException ex) {
             LOG.debug(ex.getMessage(), ex);
@@ -423,9 +423,9 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
             ssoResponseValidator.setRequestId(requestId);
             ssoResponseValidator.setSpIdentifier(idp.getRealm());
             ssoResponseValidator.setEnforceAssertionsSigned(
-                isPropertyConfigured(trustedIdp, REQUIRE_SIGNED_ASSERTIONS));
+                isPropertyConfigured(trustedIdp, REQUIRE_SIGNED_ASSERTIONS, true));
             ssoResponseValidator.setEnforceKnownIssuer(
-                isPropertyConfigured(trustedIdp, REQUIRE_KNOWN_ISSUER));
+                isPropertyConfigured(trustedIdp, REQUIRE_KNOWN_ISSUER, true));
 
             return ssoResponseValidator.validateSamlResponse(samlResponse, false);
         } catch (WSSecurityException ex) {
@@ -435,14 +435,13 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
     }
 
     // Is a property configured. Defaults to "true" if not
-    private boolean isPropertyConfigured(TrustedIdp trustedIdp, String property) {
+    private boolean isPropertyConfigured(TrustedIdp trustedIdp, String property, boolean defaultValue) {
         Map<String, String> parameters = trustedIdp.getParameters();
         
         if (parameters != null && parameters.containsKey(property)) {
             return Boolean.parseBoolean(parameters.get(property));
         }
         
-        // Require KeyInfo by default
-        return true;
+        return defaultValue;
     }
 }
