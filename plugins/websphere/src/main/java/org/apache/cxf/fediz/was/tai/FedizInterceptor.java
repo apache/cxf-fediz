@@ -326,26 +326,13 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
                         return null;
                     }
                 }
-
-                @Override
-                public void resumeRequest(HttpServletRequest request, HttpServletResponse response,
-                    FedizResponse federationResponse) {
-                    String wctx = request.getParameter(FederationConstants.PARAM_CONTEXT);
-                    HttpSession session = request.getSession(true);
-                    RequestState requestState = (RequestState)session.getAttribute(wctx);
-                    if (requestState != null && requestState.getTargetAddress() != null) {
-                        LOG.debug("Restore request to {}", requestState.getTargetAddress());
-                        try {
-                            response.sendRedirect(requestState.getTargetAddress());
-                        } catch (IOException e) {
-                            LOG.error("Cannot resume with original request.", e);
-                        }
-                        session.removeAttribute(wctx);
-                    }
-                }
             };
             if (signinHandler.canHandleRequest(req)) {
-                return signinHandler.handleRequest(req, resp);
+                TAIResult taiResult = signinHandler.handleRequest(req, resp);
+                if (taiResult != null) {
+                    resumeRequest(req, resp);
+                }
+                return taiResult;
             }
 
             // Check if user was authenticated previously and token is still valid
@@ -364,6 +351,21 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
         }
     }
 
+    protected void resumeRequest(HttpServletRequest request, HttpServletResponse response) {
+        String wctx = request.getParameter(FederationConstants.PARAM_CONTEXT);
+        HttpSession session = request.getSession(true);
+        RequestState requestState = (RequestState)session.getAttribute(wctx);
+        if (requestState != null && requestState.getTargetAddress() != null) {
+            LOG.debug("Restore request to {}", requestState.getTargetAddress());
+            try {
+                response.sendRedirect(requestState.getTargetAddress());
+            } catch (IOException e) {
+                LOG.error("Cannot resume with original request.", e);
+            }
+            session.removeAttribute(wctx);
+        }
+    }
+    
     private TAIResult checkUserAuthentication(HttpServletRequest req, FedizContext fedCtx)
         throws WebTrustAssociationFailedException {
         TAIResult result = null;

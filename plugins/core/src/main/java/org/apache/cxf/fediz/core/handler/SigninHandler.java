@@ -67,9 +67,7 @@ public class SigninHandler<T> implements RequestHandler<T> {
                     FedizResponse federationResponse = processSigninRequest(responseToken, request, response);
                     validateAudienceRestrictions(federationResponse.getAudience(), request.getRequestURL().toString());
                     LOG.debug("RSTR validated successfully");
-                    T principal = createPrincipal(request, response, federationResponse);
-                    resumeRequest(request, response, federationResponse);
-                    return principal;
+                    return createPrincipal(request, response, federationResponse);
                 } catch (ProcessingException e) {
                     LOG.error("Federation processing failed: " + e.getMessage());
                 }
@@ -83,10 +81,6 @@ public class SigninHandler<T> implements RequestHandler<T> {
     protected T createPrincipal(HttpServletRequest request, HttpServletResponse response,
                               FedizResponse federationResponse) {
         return null;
-    }
-
-    protected void resumeRequest(HttpServletRequest request, HttpServletResponse response,
-        FedizResponse federationResponse) {
     }
 
     public FedizResponse processSigninRequest(String responseToken, HttpServletRequest req, HttpServletResponse resp)

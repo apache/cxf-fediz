@@ -42,6 +42,7 @@ import org.apache.wss4j.dom.WSSConfig;
 import org.apache.xml.security.keys.KeyInfo;
 import org.apache.xml.security.signature.XMLSignature;
 import org.junit.Assert;
+import org.junit.Test;
 
 public abstract class AbstractTests {
     
@@ -59,7 +60,7 @@ public abstract class AbstractTests {
 
     public abstract String getRpHttpsPort();
 
-    @org.junit.Test
+    @Test
     public void testAlice() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         String user = "alice";
@@ -89,7 +90,7 @@ public abstract class AbstractTests {
 
     }
     
-    @org.junit.Test
+    @Test
     public void testAliceUser() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/user/fedservlet";
         String user = "alice";
@@ -108,7 +109,7 @@ public abstract class AbstractTests {
                           bodyTextContent.contains("role:User=true"));
     }
     
-    @org.junit.Test
+    @Test
     public void testAliceAdminNoAccess() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/admin/fedservlet";
         String user = "alice";
@@ -122,7 +123,7 @@ public abstract class AbstractTests {
         }
     }
     
-    @org.junit.Test
+    @Test
     public void testAliceManagerNoAccess() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/manager/fedservlet";
         String user = "alice";
@@ -136,7 +137,7 @@ public abstract class AbstractTests {
         }
     }
 
-    @org.junit.Test
+    @Test
     public void testAliceWrongPasswordNoAccess() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         String user = "alice";
@@ -150,7 +151,7 @@ public abstract class AbstractTests {
         }
     }
 
-    @org.junit.Test
+    @Test
     public void testBob() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         String user = "bob";
@@ -179,7 +180,7 @@ public abstract class AbstractTests {
                           bodyTextContent.contains(claim + "=bobwindsor@realma.org"));
     }
     
-    @org.junit.Test
+    @Test
     public void testBobUser() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/user/fedservlet";
         String user = "bob";
@@ -198,7 +199,7 @@ public abstract class AbstractTests {
                           bodyTextContent.contains("role:User=true"));
     }
     
-    @org.junit.Test
+    @Test
     public void testBobManager() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/manager/fedservlet";
         String user = "bob";
@@ -217,7 +218,7 @@ public abstract class AbstractTests {
                           bodyTextContent.contains("role:User=true"));
     }
     
-    @org.junit.Test
+    @Test
     public void testBobAdmin() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/admin/fedservlet";
         String user = "bob";
@@ -236,7 +237,7 @@ public abstract class AbstractTests {
                           bodyTextContent.contains("role:User=true"));
     }
 
-    @org.junit.Test
+    @Test
     public void testTed() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         String user = "ted";
@@ -265,7 +266,7 @@ public abstract class AbstractTests {
                           bodyTextContent.contains(claim + "=tcooper@realma.org"));
     }
     
-    @org.junit.Test
+    @Test
     public void testTedUserNoAccess() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/user/fedservlet";
         String user = "ted";
@@ -279,7 +280,7 @@ public abstract class AbstractTests {
         }
     }
 
-    @org.junit.Test
+    @Test
     public void testTedAdminNoAccess() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/admin/fedservlet";
         String user = "ted";
@@ -293,7 +294,7 @@ public abstract class AbstractTests {
         }
     }
     
-    @org.junit.Test
+    @Test
     public void testTedManagerNoAccess() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/manager/fedservlet";
         String user = "ted";
@@ -307,7 +308,7 @@ public abstract class AbstractTests {
         }
     }
 
-    @org.junit.Test
+    @Test
     public void testRPMetadata() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() 
             + "/fedizhelloworld/FederationMetadata/2007-06/FederationMetadata.xml";
@@ -338,7 +339,7 @@ public abstract class AbstractTests {
         Assert.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
     }
     
-    @org.junit.Test
+    @Test
     public void testIdPMetadata() throws Exception {
         String url = "https://localhost:" + getIdpHttpsPort() 
             + "/fediz-idp/FederationMetadata/2007-06/FederationMetadata.xml";
@@ -369,7 +370,7 @@ public abstract class AbstractTests {
         Assert.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
     }
     
-    @org.junit.Test
+    @Test
     public void testRPLogout() throws Exception {
 
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
@@ -407,7 +408,7 @@ public abstract class AbstractTests {
         Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
     }
     
-    @org.junit.Test
+    @Test
     public void testIdPLogout() throws Exception {
 
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
@@ -446,7 +447,7 @@ public abstract class AbstractTests {
         Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
     }
     
-    @org.junit.Test
+    @Test
     public void testIdPLogoutCleanup() throws Exception {
 
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
@@ -485,7 +486,7 @@ public abstract class AbstractTests {
         Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
     }
     
-    @org.junit.Test
+    @Test
     public void testAliceModifiedSignature() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         String user = "alice";
@@ -531,6 +532,50 @@ public abstract class AbstractTests {
                               || ex.getMessage().contains("401 Authentication Failed")
                               || ex.getMessage().contains("403 Forbidden"));
         }
+
+    }
+    
+    @Test
+    public void testConcurrentRequests() throws Exception {
+        
+        String url1 = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String url2 = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/test.html";
+        String user = "bob";
+        String password = "bob";
+        
+        // Get the initial token
+        CookieManager cookieManager = new CookieManager();
+        final WebClient webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        final HtmlPage idpPage1 = webClient.getPage(url1);
+        final HtmlPage idpPage2 = webClient.getPage(url2);
+        webClient.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage1.getTitleText());
+        Assert.assertEquals("IDP SignIn Response Form", idpPage2.getTitleText());
+        
+        // Invoke back on the page1 RP
+        final HtmlForm form = idpPage1.getFormByName("signinresponseform");
+        final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
+        final HtmlPage rpPage1 = button.click();
+        Assert.assertEquals("WS Federation Systests Examples", rpPage1.getTitleText());
+        String bodyTextContent1 = rpPage1.getBody().getTextContent();
+
+        Assert.assertTrue("Principal not " + user,
+                          bodyTextContent1.contains("userPrincipal=" + user));
+
+        // Invoke back on the page2 RP
+        final HtmlForm form2 = idpPage2.getFormByName("signinresponseform");
+        final HtmlSubmitInput button2 = form2.getInputByName("_eventId_submit");
+        final HtmlPage rpPage2 = button2.click();
+        String bodyTextContent2 = rpPage2.getBody().getTextContent();
+
+        Assert.assertTrue("Unexpected content of RP page", bodyTextContent2.contains("Secure Test"));
 
     }
 }

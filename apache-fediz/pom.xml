@@ -52,7 +52,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.cxf.fediz</groupId>
-            <artifactId>fediz-tomcat</artifactId>
+            <artifactId>fediz-tomcat7</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

@@ -31,7 +31,7 @@
 
    <modules>
       <module>core</module>
-      <module>tomcat</module>
+      <module>tomcat7</module>
       <module>jetty</module>
       <module>spring</module>
       <module>spring2</module>
