@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -260,8 +261,6 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
                 return isTargetInterceptor;
             }
 
-            // TODO enable/disable SAML lifetime checks
-
             // User not authenticated
             LOG.debug("User is not yet authenticated. Fediz TAI Interceptor will be invoked");
             isTargetInterceptor = true;
@@ -355,7 +354,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
                 return taiResult;
             }
 
-            LOG.info("No Subject found in existing session. Redirecting to IDP");
+            LOG.info("No valid principal found in existing session. Redirecting to IDP");
             redirectToIdp(req, resp, fedCtx);
             return TAIResult.create(HttpServletResponse.SC_FOUND);
 
@@ -427,12 +426,24 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
         }
     }
 
-    protected boolean checkSecurityToken(FedizResponse response) {
-        if (response == null) {
+    protected boolean checkSecurityToken(FedizResponse wfRes) {
+        if (wfRes == null) {
             return false;
         }
-        long currentTime = System.currentTimeMillis();
-        return response.getTokenExpires().getTime() > currentTime;
+
+        Date tokenExpires = wfRes.getTokenExpires();
+        if (tokenExpires == null) {
+            LOG.debug("Token doesn't expire");
+            return true;
+        }
+
+        Date currentTime = new Date();
+        if (!currentTime.after(tokenExpires)) {
+            return true;
+        } else {
+            LOG.warn("Token already expired since {}", tokenExpires);
+        }
+        return false;
     }
 
     protected List<String> groupIdsFromTokenRoles(FedizResponse federationResponse) {
