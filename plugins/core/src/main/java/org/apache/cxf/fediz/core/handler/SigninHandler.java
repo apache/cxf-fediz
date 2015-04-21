@@ -18,6 +18,9 @@
  */
 package org.apache.cxf.fediz.core.handler;
 
+import java.security.cert.X509Certificate;
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -27,8 +30,8 @@ import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.config.SAMLProtocol;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
-import org.apache.cxf.fediz.core.processor.FederationProcessorImpl;
 import org.apache.cxf.fediz.core.processor.FedizProcessor;
+import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
 import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.slf4j.Logger;
@@ -41,10 +44,10 @@ import org.slf4j.LoggerFactory;
 public class SigninHandler<T> implements RequestHandler<T> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SigninHandler.class);
-    protected final FedizContext fedizConfig;
+    private final FedizContext fedizContext;
 
-    public SigninHandler(FedizContext fedConfig) {
-        this.fedizConfig = fedConfig;
+    public SigninHandler(FedizContext fedizContext) {
+        this.fedizContext = fedizContext;
     }
 
     @Override
@@ -56,21 +59,20 @@ public class SigninHandler<T> implements RequestHandler<T> {
     public T handleRequest(HttpServletRequest request, HttpServletResponse response) {
         if (request.getMethod().equals("POST")) {
             LOG.debug("Sign-In-Response received");
-            String wresult = request.getParameter(FederationConstants.PARAM_RESULT);
-            if (wresult != null) {
+            String responseToken = getResponseToken(request);
+            if (responseToken != null) {
                 LOG.debug("Validating RSTR...");
                 // process and validate the token
                 try {
-                    FedizResponse federationResponse = processSigninRequest(request, response);
+                    FedizResponse federationResponse = processSigninRequest(responseToken, request, response);
+                    validateAudienceRestrictions(federationResponse.getAudience(), request.getRequestURL().toString());
                     LOG.debug("RSTR validated successfully");
                     T principal = createPrincipal(request, response, federationResponse);
                     resumeRequest(request, response, federationResponse);
                     return principal;
                 } catch (ProcessingException e) {
-                    LOG.error("RSTR validated failed.");
+                    LOG.error("Federation processing failed: " + e.getMessage());
                 }
-            } else {
-                throw new RuntimeException("Missing required parameter 'wresult'");
             }
         } else {
             throw new RuntimeException("Incorrect method GET for Sign-In-Response");
@@ -87,28 +89,68 @@ public class SigninHandler<T> implements RequestHandler<T> {
         FedizResponse federationResponse) {
     }
 
-    public FedizResponse processSigninRequest(HttpServletRequest req, HttpServletResponse resp)
+    public FedizResponse processSigninRequest(String responseToken, HttpServletRequest req, HttpServletResponse resp)
         throws ProcessingException {
+        LOG.debug("Process SignIn request");
+        LOG.debug("token=\n{}", responseToken);
+        
         FedizRequest federationRequest = new FedizRequest();
 
         String wa = req.getParameter(FederationConstants.PARAM_ACTION);
-        String responseToken = getResponseToken(req, fedizConfig);
 
         federationRequest.setAction(wa);
         federationRequest.setResponseToken(responseToken);
         federationRequest.setState(req.getParameter("RelayState"));
         federationRequest.setRequest(req);
+        federationRequest.setCerts((X509Certificate[])req.getAttribute("javax.servlet.request.X509Certificate"));
 
-        FedizProcessor processor = new FederationProcessorImpl();
-        return processor.processRequest(federationRequest, fedizConfig);
+        FedizProcessor processor = FedizProcessorFactory.newFedizProcessor(fedizContext.getProtocol());
+        return processor.processRequest(federationRequest, fedizContext);
     }
 
-    public String getResponseToken(HttpServletRequest request, FedizContext fedConfig) {
-        if (fedConfig.getProtocol() instanceof FederationProtocol) {
-            return request.getParameter(FederationConstants.PARAM_RESULT);
-        } else if (fedConfig.getProtocol() instanceof SAMLProtocol) {
-            return request.getParameter(SAMLSSOConstants.SAML_RESPONSE);
+    protected boolean validateAudienceRestrictions(String audience, String requestURL) {
+        // Validate the AudienceRestriction in Security Token (e.g. SAML) 
+        // against the configured list of audienceURIs
+        boolean validAudience = false;
+        if (audience != null) {
+            List<String> audienceURIs = fedizContext.getAudienceUris();
+            for (String a : audienceURIs) {
+                if (audience.startsWith(a)) {
+                    validAudience = true;
+                    LOG.debug("Token audience matches with valid URIs.");
+                    break;
+                }
+            }
+            
+            if (!validAudience) {
+                LOG.warn("Token AudienceRestriction [{}] doesn't match with specified list of URIs.");
+                LOG.debug("Authenticated URIs are: {}", audience, audienceURIs);
+            }
+            
+            if (LOG.isDebugEnabled() && requestURL != null && requestURL.indexOf(audience) == -1) {
+                LOG.debug("Token AudienceRestriction doesn't match with request URL [{}]  [{}]", audience, requestURL);
+            }
         }
-        return null;
+        return validAudience;
+    }
+
+    public String getResponseToken(HttpServletRequest request) {
+        String token = null;
+        if (fedizContext.getProtocol() instanceof FederationProtocol) {
+            token = request.getParameter(FederationConstants.PARAM_RESULT);
+            if (token == null) {
+                new RuntimeException("Missing required parameter 'wresult'");
+            }
+        } else if (fedizContext.getProtocol() instanceof SAMLProtocol) {
+            token = request.getParameter(SAMLSSOConstants.SAML_RESPONSE);
+            if (token == null) {
+                new RuntimeException("Missing required parameter 'SAMLResponse'");
+            }
+        }
+        return token;
+    }
+
+    public FedizContext getFedizContext() {
+        return fedizContext;
     }
 }
