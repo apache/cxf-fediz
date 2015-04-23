@@ -56,11 +56,11 @@
     <import resource="classpath:persistenceContext.xml" />
     <import resource="classpath:restContext.xml" />
 
-    <cxf:bus>
+    <!--cxf:bus>
         <cxf:features>
             <cxf:logging />
         </cxf:features>
-    </cxf:bus>
+    </cxf:bus-->
 
     <http:conduit name="*.http-conduit">
         <http:tlsClientParameters

@@ -51,12 +51,6 @@
          If built with Maven Profile 'ldap', the resource <ldap.xml> is imported -->
     <import resource="${adapter.resource}.xml" />
 
-    <cxf:bus>
-        <cxf:features>
-            <cxf:logging />
-        </cxf:features>
-    </cxf:bus>
-
     <util:list id="delegationHandlers">
         <bean id="samlDelegationHandler"
             class="org.apache.cxf.fediz.service.sts.FedizSAMLDelegationHandler" />

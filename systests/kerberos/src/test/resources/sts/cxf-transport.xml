@@ -51,11 +51,11 @@
          If built with Maven Profile 'ldap', the resource <ldap.xml> is imported -->
     <import resource="kerberos.xml" />
 
-    <cxf:bus>
+    <!--cxf:bus>
         <cxf:features>
             <cxf:logging />
         </cxf:features>
-    </cxf:bus>
+    </cxf:bus-->
 
     <util:list id="delegationHandlers">
         <bean id="samlDelegationHandler"

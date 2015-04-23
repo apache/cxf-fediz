@@ -41,11 +41,11 @@
    
    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
    
-   <cxf:bus>
+   <!--cxf:bus>
         <cxf:features>
             <cxf:logging/>
         </cxf:features>
-   </cxf:bus>
+   </cxf:bus-->
    
    <bean id="serviceBean" class="org.apache.cxf.fediz.example.Service">
    </bean>
