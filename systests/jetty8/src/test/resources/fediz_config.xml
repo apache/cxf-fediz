@@ -10,7 +10,7 @@
         </audienceUris>
         <certificateStores>
             <trustManager>
-                <keyStore file="ststrust.jks" password="storepass"
+                <keyStore file="clienttrust.jks" password="storepass"
                           type="JKS" />
             </trustManager>
         </certificateStores>
@@ -45,7 +45,7 @@
         </audienceUris>
         <certificateStores>
             <trustManager>
-                <keyStore file="ststrust.jks" password="storepass"
+                <keyStore file="clienttrust.jks" password="storepass"
                           type="JKS" />
             </trustManager>
         </certificateStores>
