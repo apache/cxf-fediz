@@ -29,7 +29,6 @@ import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
-import javax.security.auth.callback.CallbackHandler;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.XMLOutputFactory;
@@ -171,29 +170,20 @@ public class MetadataWriter {
 
         // create target scope element
         writer.writeStartElement("fed", "TargetScope", WS_FEDERATION_NS);
-        writer.writeStartElement("wsa", "EndpointReference", WS_ADDRESSING_NS);
-        writer.writeStartElement("wsa", "Address", WS_ADDRESSING_NS);
 
-        FederationProtocol protocol = (FederationProtocol)config.getProtocol();
-        
-        Object realmObj = protocol.getRealm();
-        String realm = null;
-        if (realmObj instanceof String) {
-            realm = (String)realmObj;
-        } else if (realmObj instanceof CallbackHandler) {
-            //TODO
-            //If realm is resolved at runtime, metadata not updated
+        List<String> audienceUris = config.getAudienceUris();
+        if (audienceUris != null) {
+            for (String uri : audienceUris) {
+                writer.writeStartElement("wsa", "EndpointReference", WS_ADDRESSING_NS);
+                writer.writeStartElement("wsa", "Address", WS_ADDRESSING_NS);
+                writer.writeCharacters(uri);
+                writer.writeEndElement(); // Address
+                writer.writeEndElement(); // EndpointReference
+            }
         }
-
-        if (!(realm == null || "".equals(realm))) {
-            writer.writeCharacters(realm);
-        }
-        
-        // writer.writeCharacters("http://host:port/url from config");
-        writer.writeEndElement(); // Address
-        writer.writeEndElement(); // EndpointReference
         writer.writeEndElement(); // TargetScope
 
+        FederationProtocol protocol = (FederationProtocol)config.getProtocol();
         List<Claim> claims = protocol.getClaimTypesRequested();
         if (claims != null && claims.size() > 0) {
 
