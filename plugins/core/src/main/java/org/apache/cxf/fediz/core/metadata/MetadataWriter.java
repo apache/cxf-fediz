@@ -220,10 +220,7 @@ public class MetadataWriter {
         writer.writeStartElement("wsa", "EndpointReference", WS_ADDRESSING_NS);
         writer.writeStartElement("wsa", "Address", WS_ADDRESSING_NS);
 
-        Object issuer = protocol.getIssuer();
-        if (issuer instanceof String && !"".equals(issuer)) {
-            writer.writeCharacters((String)issuer);
-        }
+        writer.writeCharacters(serviceURL);
 
         // writer.writeCharacters("http://host:port/url Issuer from config");
         writer.writeEndElement(); // Address
