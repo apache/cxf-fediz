@@ -19,6 +19,9 @@
 
 package org.apache.cxf.fediz.integrationtests;
 
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.util.resource.Resource;
+import org.eclipse.jetty.xml.XmlConfiguration;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -31,6 +34,8 @@ public class ClientCertificateTest extends AbstractClientCertTests {
 
     static String idpHttpsPort;
     static String rpHttpsPort;
+    
+    private static Server rpServer;
     
     @BeforeClass
     public static void init() {
@@ -51,14 +56,28 @@ public class ClientCertificateTest extends AbstractClientCertTests {
 
         JettyUtils.initIdpServer();
         JettyUtils.startIdpServer();
-        JettyUtils.initRpServer("rp-client-cert-server.xml");
-        JettyUtils.startRpServer();
+        
+        try {
+            Resource testServerConfig = Resource.newSystemResource("rp-client-cert-server.xml");
+            XmlConfiguration configuration = new XmlConfiguration(testServerConfig.getInputStream());
+            rpServer = (Server)configuration.configure();   
+            rpServer.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
     @AfterClass
     public static void cleanup() {
         JettyUtils.stopIdpServer();
-        JettyUtils.stopRpServer();
+        
+        if (rpServer != null && rpServer.isStarted()) {
+            try {
+                rpServer.stop();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
