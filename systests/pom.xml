@@ -38,7 +38,6 @@
       <module>cxf</module>
       <module>federation</module>
       <module>kerberos</module>
-      <module>clientcert</module>
    </modules>
 
 </project>
