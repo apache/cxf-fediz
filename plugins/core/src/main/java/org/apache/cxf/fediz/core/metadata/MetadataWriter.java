@@ -37,6 +37,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.w3c.dom.Document;
+
 import org.apache.cxf.fediz.core.config.Claim;
 import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.config.FedizContext;
@@ -87,12 +88,7 @@ public class MetadataWriter {
             
             String serviceURL = protocol.getApplicationServiceURL();
             if (serviceURL == null) {
-                String audience = "_someID";
-                List<String> audienceList = config.getAudienceUris();
-                if (audienceList != null && audienceList.size() > 0 && !"".equals(audienceList.get(0))) {
-                    audience = audienceList.get(0);
-                }
-                serviceURL = audience;
+                serviceURL = extractFullContextPath(request);
             }
             
             writer.writeAttribute("entityID", serviceURL);

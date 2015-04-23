@@ -50,8 +50,9 @@ import static org.junit.Assert.fail;
  */
 public class SAMLMetaDataTest {
     private static final String CONFIG_FILE = "fediz_meta_test_config_saml.xml";
-    private static final String TEST_REQUEST_URL = "https://localhost/fedizhelloworld/";
-    private static final String CONTEXT_PATH = "https://localhost:9443/";
+    private static final String TEST_REQUEST_URL = 
+        "https://localhost/fedizhelloworld/FederationMetadata/2007-06/FederationMetadata.xml";
+    private static final String CONTEXT_PATH = "/fedizhelloworld";
     
     @AfterClass
     public static void cleanup() {
@@ -79,8 +80,8 @@ public class SAMLMetaDataTest {
 
         FedizProcessor wfProc = new FederationProcessorImpl();
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
-        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
-        EasyMock.expect(req.getContextPath()).andReturn(CONTEXT_PATH);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL)).times(2);
+        EasyMock.expect(req.getContextPath()).andReturn(CONTEXT_PATH).times(2);
         EasyMock.replay(req);
         
         Document doc = wfProc.getMetaData(req, config);
@@ -117,8 +118,8 @@ public class SAMLMetaDataTest {
             Document doc;
             
             HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
-            EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
-            EasyMock.expect(req.getContextPath()).andReturn(CONTEXT_PATH);
+            EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL)).times(2);
+            EasyMock.expect(req.getContextPath()).andReturn(CONTEXT_PATH).times(2);
             EasyMock.replay(req);
            
             doc = wfProc.getMetaData(req, config);
@@ -136,8 +137,8 @@ public class SAMLMetaDataTest {
 
         FedizProcessor wfProc = new FederationProcessorImpl();
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
-        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
-        EasyMock.expect(req.getContextPath()).andReturn(CONTEXT_PATH);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL)).times(2);
+        EasyMock.expect(req.getContextPath()).andReturn(CONTEXT_PATH).times(2);
         EasyMock.replay(req);
         
         Document doc = wfProc.getMetaData(req, config);

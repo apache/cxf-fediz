@@ -22,11 +22,13 @@ package org.apache.cxf.fediz.core.federation;
 import java.io.File;
 import java.net.URL;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.transform.TransformerException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
 import org.apache.cxf.fediz.common.SecurityTestUtil;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
@@ -38,6 +40,7 @@ import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.keys.KeyInfo;
 import org.apache.xml.security.signature.XMLSignature;
 import org.apache.xml.security.signature.XMLSignatureException;
+import org.easymock.EasyMock;
 import org.junit.AfterClass;
 import org.junit.Assert;
 
@@ -45,6 +48,9 @@ import static org.junit.Assert.fail;
 
 public class FederationMetaDataTest {
     private static final String CONFIG_FILE = "fediz_meta_test_config.xml";
+    private static final String TEST_REQUEST_URL = 
+        "https://localhost/fedizhelloworld/FederationMetadata/2007-06/FederationMetadata.xml";
+    private static final String CONTEXT_PATH = "/fedizhelloworld";
     
     @AfterClass
     public static void cleanup() {
@@ -118,8 +124,13 @@ public class FederationMetaDataTest {
 
         FedizContext config = loadConfig("ROOT_NO_SIGNINGKEY");
 
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL)).times(2);
+        EasyMock.expect(req.getContextPath()).andReturn(CONTEXT_PATH).times(2);
+        EasyMock.replay(req);
+        
         FedizProcessor wfProc = new FederationProcessorImpl();
-        Document doc = wfProc.getMetaData(null, config);
+        Document doc = wfProc.getMetaData(req, config);
         Assert.assertNotNull(doc);
         
         try {
