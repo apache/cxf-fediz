@@ -101,8 +101,8 @@
                 <filtering>true</filtering>
                 <includes>
                     <include>**/idp-server.xml</include>
-                    <include>**/rp-server.xml</include>
-                    <include>**/fediz_config.xml</include>
+                    <include>**/rp-*server.xml</include>
+                    <include>**/fediz_config*.xml</include>
                 </includes>
             </testResource>
             <testResource>
@@ -110,8 +110,8 @@
                 <filtering>false</filtering>
                 <excludes>
                     <exclude>**/idp-server.xml</exclude>
-                    <exclude>**/rp-server.xml</exclude>
-                    <exclude>**/fediz_config.xml</exclude>
+                    <exclude>**/rp-*server.xml</exclude>
+                    <exclude>**/fediz_config*.xml</exclude>
                 </excludes>
             </testResource>
         </testResources>
