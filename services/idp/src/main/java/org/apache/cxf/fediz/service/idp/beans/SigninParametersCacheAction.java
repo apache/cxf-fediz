@@ -57,6 +57,10 @@ public class SigninParametersCacheAction {
         if (value != null) {
             signinParams.put(FederationConstants.PARAM_HOME_REALM, value);
         }
+        value = WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_CONTEXT);
+        if (value != null) {
+            signinParams.put(FederationConstants.PARAM_CONTEXT, value);
+        }
         WebUtils.putAttributeInExternalContext(context, uuidKey, signinParams);
         
         LOG.debug("SignIn parameters cached: {}", signinParams.toString());
@@ -94,6 +98,11 @@ public class SigninParametersCacheAction {
             WebUtils.removeAttributeFromFlowScope(context, FederationConstants.PARAM_CONTEXT);
             LOG.info("SignIn parameters restored and " + FederationConstants.PARAM_CONTEXT + "[" 
                 + uuidKey + "] cleared.");
+            
+            value = (String)signinParams.get(FederationConstants.PARAM_CONTEXT);
+            if (value != null) {
+                WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_CONTEXT, value);
+            }
         } else {
             LOG.debug("Error in restoring security context");
         }
