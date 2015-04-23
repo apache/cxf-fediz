@@ -28,6 +28,7 @@
 
     <util:map id="userClaimsREALMA">
         <entry key="alice" value-ref="REALMA_aliceClaims" />
+        <entry key="CN=alice,OU=Unknown,O=Apache,L=Dublin,ST=Unknown,C=IE" value-ref="REALMA_aliceClaims" />
         <entry key="bob" value-ref="REALMA_bobClaims" />
         <entry key="ted" value-ref="REALMA_tedClaims" />
     </util:map>
