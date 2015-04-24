@@ -17,12 +17,13 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.apache.cxf.fediz</groupId>
         <artifactId>fediz</artifactId>
-        <version>1.2.0</version>
+        <version>1.2.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>fediz-idp</artifactId>
@@ -364,11 +365,13 @@
                     <stopPort>${idp.stop.port}</stopPort>
                     <stopKey>STOP</stopKey>
                     <connectors>
-                        <connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
+                        <connector
+                            implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
                             <port>${idp.http.port}</port>
                             <maxIdleTime>30000</maxIdleTime>
                         </connector>
-                        <connector implementation="org.eclipse.jetty.server.ssl.SslSelectChannelConnector">
+                        <connector
+                            implementation="org.eclipse.jetty.server.ssl.SslSelectChannelConnector">
                             <port>${idp.https.port}</port>
                             <maxIdleTime>30000</maxIdleTime>
                             <keystore>${basedir}/../../examples/samplekeys/idp-ssl-server.jks</keystore>
@@ -377,12 +380,14 @@
                         </connector>
                     </connectors>
                     <contextHandlers>
-                        <contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
+                        <contextHandler
+                            implementation="org.eclipse.jetty.webapp.WebAppContext">
                             <war>${basedir}/target/fediz-idp-sts.war</war>
                             <contextPath>/fediz-idp-sts</contextPath>
                             <throwUnavailableOnStartupException>false</throwUnavailableOnStartupException>
                         </contextHandler>
-                        <contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
+                        <contextHandler
+                            implementation="org.eclipse.jetty.webapp.WebAppContext">
                             <war>${basedir}/target/fediz-idp.war</war>
                             <contextPath>/fediz-idp</contextPath>
                         </contextHandler>
@@ -493,7 +498,8 @@
                         <artifactId>jetty-maven-plugin</artifactId>
                         <configuration>
                             <contextHandlers>
-                                <contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
+                                <contextHandler
+                                    implementation="org.eclipse.jetty.webapp.WebAppContext">
                                     <war>${basedir}/target/fediz-idp.war</war>
                                     <contextPath>/fediz-idp</contextPath>
                                 </contextHandler>
@@ -520,7 +526,8 @@
                         <artifactId>jetty-maven-plugin</artifactId>
                         <configuration>
                             <contextHandlers>
-                                <contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
+                                <contextHandler
+                                    implementation="org.eclipse.jetty.webapp.WebAppContext">
                                     <war>${basedir}/target/fediz-idp-remote.war</war>
                                     <contextPath>/fediz-idp-remote</contextPath>
                                 </contextHandler>
@@ -579,7 +586,8 @@
                         <artifactId>jetty-maven-plugin</artifactId>
                         <configuration>
                             <contextHandlers combine.children="append">
-                                <contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
+                                <contextHandler
+                                    implementation="org.eclipse.jetty.webapp.WebAppContext">
                                     <war>${basedir}/target/fediz-idp-sts.war</war>
                                     <contextPath>/fediz-idp-sts</contextPath>
                                 </contextHandler>
