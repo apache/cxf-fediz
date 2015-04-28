@@ -1,9 +1,9 @@
-Apache CXF Fediz 1.1.2 Release Notes
+Apache CXF Fediz 1.2.0 Release Notes
 ------------------------------------
 
 1. Overview
 
-The 1.1.x versions of Apache CXF Fediz provide the following features:
+The 1.2.x versions of Apache CXF Fediz provide the following features:
 
 * WS-Federation 1.0/1.1/1.2
 * SAML 1.1/2.0 Tokens
@@ -13,6 +13,12 @@ The 1.1.x versions of Apache CXF Fediz provide the following features:
 * Claims information provided by FederationPrincipal interface
 * Fediz IDP supports Resource and Requestor IDP role, Home Realm Discovery Service, ...
 * Support for Jetty, Tomcat, Websphere and Spring Security 2.0/3.1
+* Support for logout in the RP and IDP
+* Support for logging on to the IdP via UsernamePassword, Kerberos and TLS
+client authentication
+* A container independent CXF plugin for WS-Federation
+* A REST API for the IDP
+* Support to use the IDP as an identity broker with a remote SAML SSO IDP
 
 
 2. Installation Prerequisites 
@@ -56,6 +62,58 @@ N.A.
 
 
 8. Specific issues, features, and improvements fixed in this version
+
+Release Notes - CXF-Fediz - Version 1.2.0
+
+Sub-task
+
+    [FEDIZ-105] - Websphere plugin support for configurable token validation
+    [FEDIZ-109] - Tomcat plugin support for configurable token validation
+
+Bug
+
+    [FEDIZ-70] - Missing support for Web Services Policy 1.2 (http://schemas.xmlsoap.org/ws/2004/09/policy)
+    [FEDIZ-83] - wfreshparser incorrectly treats a freshness of 0 as negative
+    [FEDIZ-88] - wreply parameter must be optional
+    [FEDIZ-96] - Nullpointer exception if logout is called before login
+    [FEDIZ-97] - Plugin configuration property naming conflict with WebSphere 8.5
+    [FEDIZ-99] - Wrong Address in PassiveRequestorEndpoint for ApplicationServiceType
+    [FEDIZ-100] - Wrong Value in EndpointReference for ApplicationServiceType
+    [FEDIZ-111] - NPE when ChainTrust is configured + no Subject is provided
+    [FEDIZ-112] - Race condition in tomcat plugin related to request restoration after redirect
+
+Improvement
+
+    [FEDIZ-23] - Support different authentication mechanism
+    [FEDIZ-69] - Support starting IDP with jetty maven plugin
+    [FEDIZ-71] - Enable use of Apache CXF Fediz IDP with external third-party WS-Trust STS
+    [FEDIZ-72] - Make Trusted IDP protocol customizable
+    [FEDIZ-78] - Provide a configurable mechanism to load the DB initially
+    [FEDIZ-79] - Encoding of SignInResponse configurable
+    [FEDIZ-84] - Support wreq parameter in SP/IdP
+    [FEDIZ-93] - Provide correct fediz_config.xml to match with fedizhelloworld demo
+    [FEDIZ-94] - Provide correct fediz_config.xml to match with fedizhelloworld demo
+    [FEDIZ-95] - Moving Spring-Security configuration to central location
+    [FEDIZ-98] - Dynamic STS Realm Parser
+    [FEDIZ-101] - audienceUris as TargetScope in MetadataDocument
+    [FEDIZ-102] - Direct Logout at IDP with wsignoutcleanup1.0 action
+
+New Feature
+
+    [FEDIZ-19] - Single Sign Out
+    [FEDIZ-27] - Support signout/cleanup message in Fediz plugin
+    [FEDIZ-46] - WS-FederationSupport for CXF JAX-RS
+    [FEDIZ-53] - Browser can pass the home realm to the Fediz plugin
+    [FEDIZ-65] - REST interface for IDP
+    [FEDIZ-73] - Support SAML-P protocol for Trusted IDP
+    [FEDIZ-77] - RBAC Support for REST Interface
+    [FEDIZ-89] - Kerberos/SPNEGO Authentication Support
+    [FEDIZ-90] - Identity Federation via Claim Mappings
+
+Task
+
+    [FEDIZ-86] - Add support for Metadata to other plugins
+
 
 Release Notes - CXF-Fediz - Version 1.1.2
 
