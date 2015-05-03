@@ -80,7 +80,7 @@ public class FedizConfigurator {
     }
     
     public FedizContext getFedizContext(String contextName) {
-        if (contextName == null || contextName.isEmpty()) {
+        if (contextName == null) {
             throw new IllegalArgumentException("Invalid Context Name '" + contextName + "'");
         }
         if (rootConfig == null) {
