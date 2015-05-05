@@ -73,7 +73,7 @@ public class FileBasedRoleToGroupMapper implements RoleToGroupMapper {
     private String groupMappingFilename = "./mapping.xml";
     private int refreshRateMillisec = 30 * 1000;
     private boolean doLoop = true;
-    private Map<String, List<String>> mappings = new HashMap<String, List<String>>(10);
+    private Map<String, List<String>> mappings = new HashMap<>(10);
     private long mappingFileLastModificationDate = -1;
 
     @Override
@@ -82,7 +82,7 @@ public class FileBasedRoleToGroupMapper implements RoleToGroupMapper {
             return null;
         }
         
-        List<String> groups = new ArrayList<String>(20);
+        List<String> groups = new ArrayList<>(20);
         for (String key : roles) {
             List<String> groupList = mappings.get(key);
             if (groupList != null) {
@@ -172,7 +172,7 @@ public class FileBasedRoleToGroupMapper implements RoleToGroupMapper {
         JAXBContext context = JAXBContext.newInstance(Mapping.class);
         Mapping localmappings = (Mapping) context.createUnmarshaller().unmarshal(input);
 
-        Map<String, List<String>> map = new HashMap<String, List<String>>(10);
+        Map<String, List<String>> map = new HashMap<>(10);
 
         Iterator<SamlToJ2EE> i = localmappings.getSamlToJ2EE().iterator();
         while (i.hasNext()) {

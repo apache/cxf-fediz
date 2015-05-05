@@ -23,17 +23,16 @@ import java.util.Map;
 
 import org.apache.cxf.fediz.service.idp.domain.Application;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
-import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 
 public class IDPConfig extends Idp {
 
     private static final long serialVersionUID = -5570301342547139039L;
 
     public void setServices(Map<String, Application> applications) {
-        this.applications = new ArrayList<Application>(applications.values());
+        this.applications = new ArrayList<>(applications.values());
     }
     
     public void setTrustedIDPs(Map<String, TrustedIDPConfig> trustedIDPs) {
-        this.trustedIdpList = new ArrayList<TrustedIdp>(trustedIDPs.values());
+        this.trustedIdpList = new ArrayList<>(trustedIDPs.values());
     }
 }

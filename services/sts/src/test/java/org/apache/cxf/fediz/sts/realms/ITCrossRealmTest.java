@@ -101,7 +101,7 @@ public class ITCrossRealmTest extends AbstractSTSTest {
         List<String> claimsList = null;
         String claims = testProps.getProperty(PROPERTY_CLAIMS);
         if (claims != null && claims.length() > 0) {
-            claimsList = new ArrayList<String>();
+            claimsList = new ArrayList<>();
             StringTokenizer st = new StringTokenizer(claims, ";");
             while (st.hasMoreTokens()) {
                 claimsList.add(st.nextToken());
@@ -187,7 +187,7 @@ public class ITCrossRealmTest extends AbstractSTSTest {
         List<String> claimsList = null;
         String claims = testProps.getProperty(PROPERTY_CLAIMS);
         if (claims != null && claims.length() > 0) {
-            claimsList = new ArrayList<String>();
+            claimsList = new ArrayList<>();
             StringTokenizer st = new StringTokenizer(claims, ";");
             while (st.hasMoreTokens()) {
                 claimsList.add(st.nextToken());

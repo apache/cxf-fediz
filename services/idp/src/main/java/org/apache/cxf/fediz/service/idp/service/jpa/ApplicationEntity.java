@@ -54,7 +54,7 @@ public class ApplicationEntity {
     
     // Could be read from Metadata, fed:ClaimTypesRequested
     @OneToMany(mappedBy = "application", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ApplicationClaimEntity> requestedClaims = new ArrayList<ApplicationClaimEntity>();
+    private List<ApplicationClaimEntity> requestedClaims = new ArrayList<>();
     
     //Could be read from Metadata, ServiceDisplayName
     //usage for list of application where user is logged in

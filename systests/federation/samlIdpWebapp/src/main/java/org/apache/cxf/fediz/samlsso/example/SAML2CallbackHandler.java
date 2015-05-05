@@ -59,7 +59,7 @@ public class SAML2CallbackHandler implements CallbackHandler {
         callback.setAuthenticationStatementData(Collections.singletonList(authBean));
 
         // Add roles for certain users
-        List<Object> roles = new ArrayList<Object>();
+        List<Object> roles = new ArrayList<>();
         if ("alice".equals(subjectName)) {
             roles.add("boss");
             roles.add("employee");

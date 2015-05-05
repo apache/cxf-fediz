@@ -30,8 +30,8 @@ import org.apache.cxf.fediz.service.idp.model.ServiceConfig;
 
 public class ConfigServiceSpring implements ConfigService {
 
-    private Map<String, Application> serviceConfigs = new HashMap<String, Application>();
-    private Map<String, Idp> idpConfigs = new HashMap<String, Idp>();
+    private Map<String, Application> serviceConfigs = new HashMap<>();
+    private Map<String, Idp> idpConfigs = new HashMap<>();
 
 
     @Override

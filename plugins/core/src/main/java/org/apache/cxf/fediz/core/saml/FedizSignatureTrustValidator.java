@@ -54,7 +54,7 @@ public class FedizSignatureTrustValidator implements Validator {
     /**
      * a collection of compiled regular expression patterns for the subject DN
      */
-    private Collection<Pattern> subjectDNPatterns = new ArrayList<Pattern>();
+    private Collection<Pattern> subjectDNPatterns = new ArrayList<>();
     
     
     /**

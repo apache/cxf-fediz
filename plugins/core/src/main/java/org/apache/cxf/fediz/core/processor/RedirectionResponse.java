@@ -33,7 +33,7 @@ public class RedirectionResponse implements Serializable {
     private static final long serialVersionUID = 3182350165552249151L;
     
     private String redirectionURL;
-    private Map<String, String> headers = new HashMap<String, String>();
+    private Map<String, String> headers = new HashMap<>();
     private RequestState requestState;
     
     public String getRedirectionURL() {

@@ -49,7 +49,7 @@ public class EntitlementDAOJPAImpl implements EntitlementDAO {
     
     @Override
     public List<Entitlement> getEntitlements(int start, int size) {
-        List<Entitlement> list = new ArrayList<Entitlement>();
+        List<Entitlement> list = new ArrayList<>();
         
         Query query = null;
         query = em.createQuery("select e from Entitlement e");

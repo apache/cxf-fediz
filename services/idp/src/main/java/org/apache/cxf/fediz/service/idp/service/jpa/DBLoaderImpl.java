@@ -137,10 +137,10 @@ public class DBLoaderImpl implements DBLoader {
             idpEntity.setServiceDescription("IDP of Realm A");
             idpEntity.setUri("realma");
             idpEntity.setProvideIdpList(true);
-            Map<String, String> authUris = new HashMap<String, String>();
+            Map<String, String> authUris = new HashMap<>();
             authUris.put("default", "/login/default");
             idpEntity.setAuthenticationURIs(authUris);
-            List<String> protocols = new ArrayList<String>();
+            List<String> protocols = new ArrayList<>();
             protocols.add("http://docs.oasis-open.org/wsfed/federation/200706");
             protocols.add("http://docs.oasis-open.org/ws-sx/ws-trust/200512");
             idpEntity.setSupportedProtocols(protocols);
@@ -148,7 +148,7 @@ public class DBLoaderImpl implements DBLoader {
             idpEntity.getClaimTypesOffered().add(claimEntity2);
             idpEntity.getClaimTypesOffered().add(claimEntity3);
             idpEntity.getClaimTypesOffered().add(claimEntity4);
-            List<String> tokenTypes = new ArrayList<String>();
+            List<String> tokenTypes = new ArrayList<>();
             tokenTypes.add(WSConstants.SAML2_NS);
             tokenTypes.add(WSConstants.SAML_NS);
             idpEntity.setTokenTypesOffered(tokenTypes);

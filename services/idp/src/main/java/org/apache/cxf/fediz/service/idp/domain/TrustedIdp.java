@@ -72,7 +72,7 @@ public class TrustedIdp implements Serializable {
     protected String logo;
     
     // Additional (possibly protocol specific parameters)
-    protected Map<String, String> parameters = new HashMap<String, String>();
+    protected Map<String, String> parameters = new HashMap<>();
 
     
     @XmlAttribute

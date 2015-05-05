@@ -50,7 +50,7 @@ public class TrustedIdpProtocolControllerImpl implements ProtocolController<Trus
     
     @Override
     public List<String> getProtocols() {
-        List<String> protocols = new ArrayList<String>();
+        List<String> protocols = new ArrayList<>();
         for (TrustedIdpProtocolHandler protocolHandler : protocolHandlers) {
             protocols.add(protocolHandler.getProtocol());
         }

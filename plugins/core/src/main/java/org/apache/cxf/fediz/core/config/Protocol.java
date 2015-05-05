@@ -41,7 +41,7 @@ public abstract class Protocol {
     private ClassLoader classloader;
     private Object issuer;
     private Object realm;
-    private List<TokenValidator> validators = new ArrayList<TokenValidator>();
+    private List<TokenValidator> validators = new ArrayList<>();
 
     public Protocol(ProtocolType protocolType) {
         super();
@@ -188,7 +188,7 @@ public abstract class Protocol {
 
     public List<Claim> getClaimTypesRequested() {
         ClaimTypesRequested claimsRequested = getProtocolType().getClaimTypesRequested();
-        List<Claim> claims = new ArrayList<Claim>();
+        List<Claim> claims = new ArrayList<>();
         if (claimsRequested != null) {
             for (ClaimType c : claimsRequested.getClaimType()) {
                 claims.add(new Claim(c));

@@ -54,7 +54,7 @@ public class IdpDAOJPAImpl implements IdpDAO {
     
     @Override
     public List<Idp> getIdps(int start, int size, List<String> expandList) {
-        List<Idp> list = new ArrayList<Idp>();
+        List<Idp> list = new ArrayList<>();
         
         Query query = null;
         query = em.createQuery("select i from IDP i");

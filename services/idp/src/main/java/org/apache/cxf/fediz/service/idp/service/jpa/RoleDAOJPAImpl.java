@@ -51,7 +51,7 @@ public class RoleDAOJPAImpl implements RoleDAO {
     
     @Override
     public List<Role> getRoles(int start, int size, List<String> expandList) {
-        List<Role> list = new ArrayList<Role>();
+        List<Role> list = new ArrayList<>();
         
         Query query = null;
         query = em.createQuery("select r from Role r");

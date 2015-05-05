@@ -42,7 +42,7 @@ public class SigninParametersCacheAction {
     private static final Logger LOG = LoggerFactory.getLogger(SigninParametersCacheAction.class);
 
     public void store(RequestContext context) {
-        Map<String, Object> signinParams = new HashMap<String, Object>();
+        Map<String, Object> signinParams = new HashMap<>();
         String uuidKey = UUID.randomUUID().toString();
         
         Object value = WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_REPLY);
@@ -151,7 +151,7 @@ public class SigninParametersCacheAction {
                         .getAttributeFromExternalContext(context, REALM_URL_MAP);
 
         if (rum == null) {
-            rum = new HashMap<String, String>();
+            rum = new HashMap<>();
             WebUtils.putAttributeInExternalContext(context, REALM_URL_MAP, rum);
         }
 

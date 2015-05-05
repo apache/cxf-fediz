@@ -117,7 +117,7 @@ public final class StringUtils {
     }
 
     public static List<String> getParts(String str, String sperator) {
-        List<String> ret = new ArrayList<String>();
+        List<String> ret = new ArrayList<>();
         List<String> parts = Arrays.asList(str.split("/"));
         for (String part : parts) {
             if (!isEmpty(part)) {
@@ -153,7 +153,7 @@ public final class StringUtils {
         if (isEmpty(regex) || isEmpty(contents)) {
             return null;
         }
-        List<String> results = new ArrayList<String>();
+        List<String> results = new ArrayList<>();
         Pattern pattern = Pattern.compile(regex, Pattern.UNICODE_CASE);
         Matcher matcher = pattern.matcher(contents);
 

@@ -153,7 +153,7 @@ public final class FederationConstants extends FedizConstants {
 
     public static final Map<String, URI> AUTH_TYPE_MAP;
     static {
-        Map<String, URI> aMap = new HashMap<String, URI>();
+        Map<String, URI> aMap = new HashMap<>();
         aMap.put("UNKNOWN", FederationConstants.AUTH_TYPE_UNKNOWN);
         aMap.put("DEFAULT", FederationConstants.AUTH_TYPE_DEFAULT);
         aMap.put("SSL", FederationConstants.AUTH_TYPE_SSL);

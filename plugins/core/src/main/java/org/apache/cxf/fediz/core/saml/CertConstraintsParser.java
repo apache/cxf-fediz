@@ -35,7 +35,7 @@ public class CertConstraintsParser {
     /**
      * a collection of compiled regular expression patterns for the subject DN
      */
-    private Collection<Pattern> subjectDNPatterns = new ArrayList<Pattern>();
+    private Collection<Pattern> subjectDNPatterns = new ArrayList<>();
 
     /**
      * Set a list of Strings corresponding to regular expression constraints on
@@ -43,7 +43,7 @@ public class CertConstraintsParser {
      */
     public void setSubjectConstraints(List<String> constraints) {
         if (constraints != null) {
-            subjectDNPatterns = new ArrayList<Pattern>();
+            subjectDNPatterns = new ArrayList<>();
             for (String constraint : constraints) {
                 try {
                     subjectDNPatterns.add(Pattern.compile(constraint.trim()));

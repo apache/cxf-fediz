@@ -89,7 +89,7 @@ public class TrustedIdpEntity {
     @MapKeyColumn(name = "name")
     @Column(name = "value")
     @CollectionTable(name = "trusted_idp_parameters", joinColumns = @JoinColumn(name = "trusted_idp_id"))
-    private Map<String, String> parameters = new HashMap<String, String>();
+    private Map<String, String> parameters = new HashMap<>();
     
 
     public int getId() {

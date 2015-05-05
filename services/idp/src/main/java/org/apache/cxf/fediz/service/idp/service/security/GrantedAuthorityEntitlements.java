@@ -62,7 +62,7 @@ public class GrantedAuthorityEntitlements extends GenericFilterBean {
                 return;
             }
             
-            final Set<GrantedAuthority> authorities = new HashSet<GrantedAuthority>();
+            final Set<GrantedAuthority> authorities = new HashSet<>();
             if (currentAuth.getAuthorities() != null) {
                 authorities.addAll(currentAuth.getAuthorities());
             }

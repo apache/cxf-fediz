@@ -66,7 +66,7 @@ public class TestCallbackHandler implements CallbackHandler {
                 callback.setIssuerUrl(new URL(TEST_IDP));
             } else if (callbacks[i] instanceof SignInQueryCallback) {
                 SignInQueryCallback callback = (SignInQueryCallback) callbacks[i];
-                Map<String, String> queryParamMap = new HashMap<String, String>();
+                Map<String, String> queryParamMap = new HashMap<>();
                 queryParamMap.put("pubid", "myid");
                 queryParamMap.put("testenc", "<=>");
                 callback.setSignInQueryParamMap(queryParamMap);

@@ -50,7 +50,7 @@ public class ClaimDAOJPAImpl implements ClaimDAO {
     
     @Override
     public List<Claim> getClaims(int start, int size) {
-        List<Claim> list = new ArrayList<Claim>();
+        List<Claim> list = new ArrayList<>();
         
         Query query = null;
         query = em.createQuery("select c from Claim c");

@@ -92,7 +92,7 @@ public class FedizContext implements Closeable {
     public List<TrustedIssuer> getTrustedIssuers() {
         TrustedIssuers issuers = config.getTrustedIssuers();
         List<TrustedIssuerType> trustManagers =  issuers.getIssuer();
-        List<TrustedIssuer> trustedIssuers = new ArrayList<TrustedIssuer>();
+        List<TrustedIssuer> trustedIssuers = new ArrayList<>();
         for (TrustedIssuerType manager:trustManagers) {
             trustedIssuers.add(new TrustedIssuer(manager));
         }
@@ -103,7 +103,7 @@ public class FedizContext implements Closeable {
         if (certificateStores != null) {
             return certificateStores;
         }
-        certificateStores = new ArrayList<TrustManager>();
+        certificateStores = new ArrayList<>();
         CertificateStores certStores = config.getCertificateStores();
         List<TrustManagersType> trustManagers = certStores.getTrustManager();
         for (TrustManagersType manager : trustManagers) {

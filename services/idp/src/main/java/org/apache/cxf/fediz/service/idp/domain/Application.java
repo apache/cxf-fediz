@@ -57,7 +57,7 @@ public class Application implements Serializable {
     protected String encryptionCertificate;
     
     // Could be read from Metadata, fed:ClaimTypesRequested
-    protected List<RequestClaim> requestedClaims = new ArrayList<RequestClaim>();
+    protected List<RequestClaim> requestedClaims = new ArrayList<>();
     
     //Could be read from Metadata, ServiceDisplayName
     //usage for list of application where user is logged in

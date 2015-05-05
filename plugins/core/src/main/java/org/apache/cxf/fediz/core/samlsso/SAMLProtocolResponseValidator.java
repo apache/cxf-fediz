@@ -231,7 +231,7 @@ public class SAMLProtocolResponseValidator {
         List<TrustedIssuer> trustedIssuers = config.getTrustedIssuers();
         for (TrustedIssuer ti : trustedIssuers) {
             Pattern subjectConstraint = ti.getCompiledSubject();
-            List<Pattern> subjectConstraints = new ArrayList<Pattern>(1);
+            List<Pattern> subjectConstraints = new ArrayList<>(1);
             if (subjectConstraint != null) {
                 subjectConstraints.add(subjectConstraint);
             }

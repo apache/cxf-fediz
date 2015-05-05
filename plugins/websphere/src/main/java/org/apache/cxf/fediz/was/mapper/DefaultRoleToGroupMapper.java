@@ -51,7 +51,7 @@ public class DefaultRoleToGroupMapper implements RoleToGroupMapper {
         if (template == null || roles == null) {
             return roles;
         } else {
-            List<String> renamedRoles = new ArrayList<String>();
+            List<String> renamedRoles = new ArrayList<>();
             for (String role : roles) {
                 String renamedRole = template.replace(ROLE_MAPPING_PLACEHOLDER, role);
                 renamedRoles.add(renamedRole);

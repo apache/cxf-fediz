@@ -83,28 +83,28 @@ public class Idp implements Serializable {
     // "http://docs.oasis-open.org/wsfed/federation/200706"
     // "http://docs.oasis-open.org/ws-sx/ws-trust/200512"
     // Could be more in the future
-    protected List<String> supportedProtocols = new ArrayList<String>();
+    protected List<String> supportedProtocols = new ArrayList<>();
 
     // list of RPs and RP-IDPs from whom we accept SignInResponse
     // which includes RP IDPs
     // key: wtrealm
-    protected List<Application> applications = new ArrayList<Application>();
+    protected List<Application> applications = new ArrayList<>();
 
     // list of trusted IDP from whom we accept SignInResponse
     // key: whr
-    protected List<TrustedIdp> trustedIdpList = new ArrayList<TrustedIdp>();
+    protected List<TrustedIdp> trustedIdpList = new ArrayList<>();
 
     // which URI to redirect for authentication
     // fediz-idp/<IDP uri>/login/auth/<auth URI>
     // wauth to auth URI mapping
-    protected Map<String, String> authenticationURIs = new HashMap<String, String>();
+    protected Map<String, String> authenticationURIs = new HashMap<>();
 
     // required to create Federation Metadata document
     // fed:TokenTypesOffered
-    protected List<String> tokenTypesOffered = new ArrayList<String>();
+    protected List<String> tokenTypesOffered = new ArrayList<>();
 
     // fed:ClaimTypesOffered
-    protected List<Claim> claimTypesOffered = new ArrayList<Claim>();
+    protected List<Claim> claimTypesOffered = new ArrayList<>();
 
     // ServiceDisplayName
     protected String serviceDisplayName;

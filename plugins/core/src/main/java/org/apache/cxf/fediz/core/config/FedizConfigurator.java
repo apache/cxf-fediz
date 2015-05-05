@@ -52,7 +52,7 @@ public class FedizConfigurator {
     }
     
     private void parseFedizContextList() {
-        fedizContextList = new ArrayList<FedizContext>();
+        fedizContextList = new ArrayList<>();
         for (ContextConfig config : rootConfig.getContextConfig()) {
             fedizContextList.add(new FedizContext(config));            
         }

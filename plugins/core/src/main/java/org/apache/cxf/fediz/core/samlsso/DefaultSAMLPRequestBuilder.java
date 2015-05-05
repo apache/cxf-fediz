@@ -118,7 +118,7 @@ public class DefaultSAMLPRequestBuilder implements SAMLPRequestBuilder {
             SamlpRequestComponentBuilder.createIssuer(issuerId);
         
         NameID nameID = null;
-        List<String> sessionIndices = new ArrayList<String>();
+        List<String> sessionIndices = new ArrayList<>();
         
         if (authenticatedAssertion != null) {
             if (authenticatedAssertion.getSaml2() != null) {

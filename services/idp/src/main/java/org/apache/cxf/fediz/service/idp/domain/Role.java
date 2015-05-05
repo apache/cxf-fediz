@@ -36,7 +36,7 @@ public class Role implements Serializable {
     protected String description;
     protected int id;
     
-    protected List<Entitlement> entitlements = new ArrayList<Entitlement>();
+    protected List<Entitlement> entitlements = new ArrayList<>();
     
     @XmlAttribute
     public int getId() {

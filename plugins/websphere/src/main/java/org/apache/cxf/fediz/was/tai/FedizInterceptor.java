@@ -452,7 +452,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
 
         List<String> localGroups = mapper.groupsFromRoles(federationResponse.getRoles());
         int size = (localGroups == null) ? 0 : localGroups.size();
-        List<String> groupIds = new ArrayList<String>(size);
+        List<String> groupIds = new ArrayList<>(size);
 
         if (size > 0) {
             if (directGroupMapping) {

@@ -58,7 +58,7 @@ public class ApplicationDAOJPAImpl implements ApplicationDAO {
     
     @Override
     public List<Application> getApplications(int start, int size, List<String> expandList) {
-        List<Application> list = new ArrayList<Application>();
+        List<Application> list = new ArrayList<>();
         
         Query query = null;
         query = em.createQuery("select a from Application a");

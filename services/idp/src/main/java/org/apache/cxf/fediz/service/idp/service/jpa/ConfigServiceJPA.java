@@ -47,7 +47,7 @@ public class ConfigServiceJPA implements ConfigService {
     public Idp getIDP(String realm) {
         Authentication currentAuthentication = SecurityContextHolder.getContext().getAuthentication();
         try {
-            final Set<GrantedAuthority> authorities = new HashSet<GrantedAuthority>();
+            final Set<GrantedAuthority> authorities = new HashSet<>();
             
             if (realm == null || realm.length() == 0) {
                 authorities.add(new SimpleGrantedAuthority("IDP_LIST"));

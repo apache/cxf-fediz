@@ -34,7 +34,7 @@ public class FedizSecurityContext implements SecurityContext {
     public FedizSecurityContext(Principal principal,
                                 Collection<String> roles) {
         this.principal = principal;
-        this.roles = new HashSet<Principal>();
+        this.roles = new HashSet<>();
         if (roles != null) {
             for (String role : roles) {
                 this.roles.add(new SimplePrincipal(role));

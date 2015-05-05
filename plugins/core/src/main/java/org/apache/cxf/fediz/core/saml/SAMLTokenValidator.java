@@ -136,7 +136,7 @@ public class SAMLTokenValidator implements TokenValidator {
             List<TrustedIssuer> trustedIssuers = config.getTrustedIssuers();
             for (TrustedIssuer ti : trustedIssuers) {
                 Pattern subjectConstraint = ti.getCompiledSubject();
-                List<Pattern> subjectConstraints = new ArrayList<Pattern>(1);
+                List<Pattern> subjectConstraints = new ArrayList<>(1);
                 if (subjectConstraint != null) {
                     subjectConstraints.add(subjectConstraint);
                 }
@@ -261,8 +261,8 @@ public class SAMLTokenValidator implements TokenValidator {
             LOG.debug("No attribute statements found");
             return Collections.emptyList();
         }
-        List<Claim> collection = new ArrayList<Claim>();
-        Map<String, Claim> claimsMap = new HashMap<String, Claim>();
+        List<Claim> collection = new ArrayList<>();
+        Map<String, Claim> claimsMap = new HashMap<>();
 
         for (org.opensaml.saml1.core.AttributeStatement statement : attributeStatements) {
             LOG.debug("parsing statement: {}", statement.getElementQName());
@@ -299,7 +299,7 @@ public class SAMLTokenValidator implements TokenValidator {
                 } else {
                     c.setClaimType(URI.create(attribute.getAttributeName()));
                 }
-                List<String> valueList = new ArrayList<String>();
+                List<String> valueList = new ArrayList<>();
                 for (XMLObject attributeValue : attribute.getAttributeValues()) {
                     Element attributeValueElement = attributeValue.getDOM();
                     String value = attributeValueElement.getTextContent();
@@ -324,8 +324,8 @@ public class SAMLTokenValidator implements TokenValidator {
             return Collections.emptyList();
         }
 
-        List<Claim> collection = new ArrayList<Claim>();
-        Map<String, Claim> claimsMap = new HashMap<String, Claim>();
+        List<Claim> collection = new ArrayList<>();
+        Map<String, Claim> claimsMap = new HashMap<>();
 
         for (org.opensaml.saml2.core.AttributeStatement statement : attributeStatements) {
             LOG.debug("parsing statement: {}", statement.getElementQName());
@@ -349,7 +349,7 @@ public class SAMLTokenValidator implements TokenValidator {
                 }
                 c.setIssuer(assertion.getIssuer().getNameQualifier());
                 
-                List<String> valueList = new ArrayList<String>();
+                List<String> valueList = new ArrayList<>();
                 for (XMLObject attributeValue : attribute.getAttributeValues()) {
                     Element attributeValueElement = attributeValue.getDOM();
                     String value = attributeValueElement.getTextContent();
@@ -372,7 +372,7 @@ public class SAMLTokenValidator implements TokenValidator {
             Object oValue = t.getValue();
             if (oValue instanceof String) {
                 //one child element AttributeValue only
-                List<String> values = new ArrayList<String>();
+                List<String> values = new ArrayList<>();
                 values.add((String)oValue); //add existing value
                 values.addAll(valueList);
                 t.setValue(values);
@@ -398,7 +398,7 @@ public class SAMLTokenValidator implements TokenValidator {
     }
     
     protected List<String> parseRoles(String value, String delim) {
-        List<String> roles = new ArrayList<String>();
+        List<String> roles = new ArrayList<>();
         StringTokenizer st = new StringTokenizer(value, delim);
         while (st.hasMoreTokens()) {
             String role = st.nextToken();

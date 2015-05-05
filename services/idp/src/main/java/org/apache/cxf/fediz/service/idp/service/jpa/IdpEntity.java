@@ -93,18 +93,18 @@ public class IdpEntity {
     @ElementCollection
     @CollectionTable(name = "idp_protocols")
     @Column(name = "protocol")
-    private List<String> supportedProtocols = new ArrayList<String>();
+    private List<String> supportedProtocols = new ArrayList<>();
 
     // list of RPs and RP-IDPs from whom we accept SignInResponse
     // which includes RP IDPs
     // key: wtrealm
     @ManyToMany(cascade = CascadeType.ALL)
-    private List<ApplicationEntity> applications = new ArrayList<ApplicationEntity>();
+    private List<ApplicationEntity> applications = new ArrayList<>();
 
     // list of trusted IDP from whom we accept SignInResponse
     // key: whr
     @ManyToMany(cascade = CascadeType.ALL)
-    private List<TrustedIdpEntity> trustedIdps = new ArrayList<TrustedIdpEntity>();
+    private List<TrustedIdpEntity> trustedIdps = new ArrayList<>();
 
     // which URI to redirect for authentication
     // fediz-idp/<IDP uri>/login/auth/<auth URI>
@@ -113,7 +113,7 @@ public class IdpEntity {
     @MapKeyColumn(name = "name")
     @Column(name = "value")
     @CollectionTable(name = "idp_auth_uris", joinColumns = @JoinColumn(name = "idp_id"))
-    private Map<String, String> authenticationURIs = new HashMap<String, String>();
+    private Map<String, String> authenticationURIs = new HashMap<>();
 
     // required to create Federation Metadata document
     // fed:TokenTypesOffered
@@ -122,11 +122,11 @@ public class IdpEntity {
     @ElementCollection
     @CollectionTable(name = "idp_tokentypes")
     @Column(name = "tokentype")
-    private List<String> tokenTypesOffered = new ArrayList<String>();
+    private List<String> tokenTypesOffered = new ArrayList<>();
 
     // fed:ClaimTypesOffered
     @ManyToMany(cascade = CascadeType.ALL)
-    private List<ClaimEntity> claimTypesOffered = new ArrayList<ClaimEntity>();
+    private List<ClaimEntity> claimTypesOffered = new ArrayList<>();
 
     // ServiceDisplayName
     @NotNull

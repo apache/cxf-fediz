@@ -40,7 +40,7 @@ public class RoleEntity {
     private String description;
     
     @ManyToMany(cascade = CascadeType.ALL)
-    private List<EntitlementEntity> entitlements = new ArrayList<EntitlementEntity>();
+    private List<EntitlementEntity> entitlements = new ArrayList<>();
     
     public int getId() {
         return id;

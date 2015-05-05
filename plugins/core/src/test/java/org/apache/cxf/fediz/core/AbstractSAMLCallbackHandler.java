@@ -239,7 +239,7 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
                 return;
             }
             
-            List<AttributeBean> attributeList = new ArrayList<AttributeBean>();
+            List<AttributeBean> attributeList = new ArrayList<>();
                         
             if (this.multiValueType.equals(MultiValue.MULTI_VALUE)
                 || this.multiValueType.equals(MultiValue.ENC_VALUE)) {
@@ -294,7 +294,7 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
 //                <saml:AttributeValue>Value2</saml:AttributeValue>
 //              </saml:Attribute>
                 
-                //List<AttributeBean> attrBeans = new ArrayList<AttributeBean>();
+                //List<AttributeBean> attrBeans = new ArrayList<>();
                 for (String role: roles) {
                     AttributeBean attributeBean = new AttributeBean();
                     if (subjectBean != null) {

@@ -49,7 +49,7 @@ public class TrustedIdpDAOJPAImpl implements TrustedIdpDAO {
     
     @Override
     public List<TrustedIdp> getTrustedIDPs(int start, int size) {
-        List<TrustedIdp> list = new ArrayList<TrustedIdp>();
+        List<TrustedIdp> list = new ArrayList<>();
         
         Query query = null;
         query = em.createQuery("select t from TrustedIDP t");

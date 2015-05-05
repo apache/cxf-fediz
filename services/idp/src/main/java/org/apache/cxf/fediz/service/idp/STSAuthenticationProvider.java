@@ -81,10 +81,10 @@ public abstract class STSAuthenticationProvider implements AuthenticationProvide
     //Required to get IDP roles to use the IDP application, used in future release
     protected String roleURI;
     
-    protected Map<String, Object> properties = new HashMap<String, Object>();
+    protected Map<String, Object> properties = new HashMap<>();
     
     protected List<GrantedAuthority> createAuthorities(SecurityToken token) throws WSSecurityException {
-        List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
+        List<GrantedAuthority> authorities = new ArrayList<>();
         //authorities.add(new SimpleGrantedAuthority("ROLE_AUTHENTICATED"));
         //Not needed because AuthenticatedVoter has been added for SecurityFlowExecutionListener
         if (roleURI != null) {
@@ -190,8 +190,8 @@ public abstract class STSAuthenticationProvider implements AuthenticationProvide
             return Collections.emptyList();
         }
 
-        List<Claim> collection = new ArrayList<Claim>();
-        Map<String, Claim> claimsMap = new HashMap<String, Claim>();
+        List<Claim> collection = new ArrayList<>();
+        Map<String, Claim> claimsMap = new HashMap<>();
 
         for (org.opensaml.saml2.core.AttributeStatement statement : attributeStatements) {
             LOG.debug("parsing statement: {}", statement.getElementQName());
@@ -213,7 +213,7 @@ public abstract class STSAuthenticationProvider implements AuthenticationProvide
                 }
                 c.setIssuer(assertion.getIssuer().getNameQualifier());
 
-                List<String> valueList = new ArrayList<String>();
+                List<String> valueList = new ArrayList<>();
                 for (XMLObject attributeValue : attribute.getAttributeValues()) {
                     Element attributeValueElement = attributeValue.getDOM();
                     String value = attributeValueElement.getTextContent();
@@ -236,7 +236,7 @@ public abstract class STSAuthenticationProvider implements AuthenticationProvide
             Object oValue = t.getValue();
             if (oValue instanceof String) {
                 //one child element AttributeValue only
-                List<String> values = new ArrayList<String>();
+                List<String> values = new ArrayList<>();
                 values.add((String)oValue); //add existing value
                 values.addAll(valueList);
                 t.setValue(values);

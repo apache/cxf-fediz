@@ -155,7 +155,7 @@ public abstract class AbstractClientCertTests {
         
         WebRequest request = new WebRequest(new URL(url), HttpMethod.POST);
 
-        request.setRequestParameters(new ArrayList<NameValuePair>());
+        request.setRequestParameters(new ArrayList<>());
         request.getRequestParameters().add(new NameValuePair("wctx", wctx));
         request.getRequestParameters().add(new NameValuePair("wa", wa));
         request.getRequestParameters().add(new NameValuePair("wtrealm", wtrealm));

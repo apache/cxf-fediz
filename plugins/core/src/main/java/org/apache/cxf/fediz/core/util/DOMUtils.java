@@ -331,7 +331,7 @@ public final class DOMUtils {
      * @param localName
      */
     public static List<Element> getChildrenWithName(Element parent, String ns, String localName) {
-        List<Element> r = new ArrayList<Element>();
+        List<Element> r = new ArrayList<>();
         for (Node n = parent.getFirstChild(); n != null; n = n.getNextSibling()) {
             if (n instanceof Element) {
                 Element e = (Element)n;
@@ -352,7 +352,7 @@ public final class DOMUtils {
      * @return all child elements with specified namespace
      */
     public static List<Element> getChildrenWithNamespace(Element parent, String ns) {
-        List<Element> r = new ArrayList<Element>();
+        List<Element> r = new ArrayList<>();
         for (Node n = parent.getFirstChild(); n != null; n = n.getNextSibling()) {
             if (n instanceof Element) {
                 Element e = (Element)n;
@@ -617,7 +617,7 @@ public final class DOMUtils {
     }
 
     public static List<Element> findAllElementsByTagNameNS(Element elem, String nameSpaceURI, String localName) {
-        List<Element> ret = new LinkedList<Element>();
+        List<Element> ret = new LinkedList<>();
         findAllElementsByTagNameNS(elem, nameSpaceURI, localName, ret);
         return ret;
     }
@@ -636,7 +636,7 @@ public final class DOMUtils {
     }
 
     public static List<Element> findAllElementsByTagName(Element elem, String tagName) {
-        List<Element> ret = new LinkedList<Element>();
+        List<Element> ret = new LinkedList<>();
         findAllElementsByTagName(elem, tagName, ret);
         return ret;
     }

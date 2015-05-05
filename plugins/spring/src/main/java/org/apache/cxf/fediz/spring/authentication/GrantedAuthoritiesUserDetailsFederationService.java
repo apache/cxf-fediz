@@ -39,7 +39,7 @@ public class GrantedAuthoritiesUserDetailsFederationService
     @Override
     protected UserDetails loadUserDetails(FedizResponse response) {
         
-        final List<GrantedAuthority> grantedAuthorities = new ArrayList<GrantedAuthority>();
+        final List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
         
         if (response.getRoles() != null) {
             for (final String role : response.getRoles()) {

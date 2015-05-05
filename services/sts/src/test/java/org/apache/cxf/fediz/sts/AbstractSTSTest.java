@@ -138,7 +138,7 @@ public abstract class AbstractSTSTest {
         TLSClientParameters tlsParameters = http.getTlsClientParameters();
         Assert.assertNotNull("the http conduit's tlsParameters should not be null", tlsParameters);
 
-        Map<String, Object> properties = new HashMap<String, Object>();
+        Map<String, Object> properties = new HashMap<>();
         properties.put(SecurityConstants.USERNAME, username);
         properties.put(SecurityConstants.PASSWORD, password);
         properties.put(SecurityConstants.IS_BSP_COMPLIANT, "false");
@@ -169,7 +169,7 @@ public abstract class AbstractSTSTest {
         TLSClientParameters tlsParameters = http.getTlsClientParameters();
         Assert.assertNotNull("the http conduit's tlsParameters should not be null", tlsParameters);
 
-        Map<String, Object> properties = new HashMap<String, Object>();
+        Map<String, Object> properties = new HashMap<>();
         properties.put(SecurityConstants.IS_BSP_COMPLIANT, "false");
 
         Assert.assertNotNull("supportingToken must not be null", supportingToken);

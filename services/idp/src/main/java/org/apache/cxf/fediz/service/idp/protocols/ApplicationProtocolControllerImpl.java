@@ -50,7 +50,7 @@ public class ApplicationProtocolControllerImpl implements ProtocolController<App
     
     @Override
     public List<String> getProtocols() {
-        List<String> protocols = new ArrayList<String>();
+        List<String> protocols = new ArrayList<>();
         for (ApplicationProtocolHandler protocolHandler : protocolHandlers) {
             protocols.add(protocolHandler.getProtocol());
         }

@@ -42,7 +42,7 @@ public class SamlAssertionValidator extends org.apache.wss4j.dom.validate.SamlAs
     /**
      * a collection of compiled regular expression patterns for the subject DN
      */
-    private Collection<Pattern> subjectDNPatterns = new ArrayList<Pattern>();
+    private Collection<Pattern> subjectDNPatterns = new ArrayList<>();
     
     /**
      * Set a list of Strings corresponding to regular expression constraints on
