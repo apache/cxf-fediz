@@ -66,7 +66,7 @@
 
         <tomcat.url>http://localhost:8080/manager/text</tomcat.url>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jdk.version>1.6</jdk.version>
+        <jdk.version>1.7</jdk.version>
         <compiler.fork>false</compiler.fork>
 
         <fediz.protect-xmlschema-collections>false</fediz.protect-xmlschema-collections>
@@ -704,7 +704,7 @@
                 <fediz.jaxb.version>${fediz.jaxb22.version}</fediz.jaxb.version>
                 <fediz.jaxb.impl.version>${fediz.jaxb22.impl.version}</fediz.jaxb.impl.version>
                 <fediz.jaxb.xjc.version>${fediz.jaxb22.impl.version}</fediz.jaxb.xjc.version>
-                <jdk.version>1.6</jdk.version>
+                <jdk.version>1.7</jdk.version>
             </properties>
             <build>
                 <plugins>
