@@ -288,7 +288,7 @@
                     <version>2.10.1</version>
                     <configuration>
                         <attach>true</attach>
-                        <source>1.5</source>
+                        <source>${jdk.version}</source>
                         <quiet>true</quiet>
                         <bottom>Apache Fediz</bottom>
                         <encoding>UTF-8</encoding>
