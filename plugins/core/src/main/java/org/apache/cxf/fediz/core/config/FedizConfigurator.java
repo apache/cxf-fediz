@@ -81,7 +81,10 @@ public class FedizConfigurator {
     
     public FedizContext getFedizContext(String contextName) {
         if (contextName == null) {
-            throw new IllegalArgumentException("Invalid Context Name '" + contextName + "'");
+            throw new IllegalArgumentException("Context Name cannot be 'null'.");
+        }
+        if (contextName.isEmpty()) {
+            contextName = "/";
         }
         if (rootConfig == null) {
             throw new IllegalArgumentException("No configuration loaded");
@@ -97,8 +100,11 @@ public class FedizConfigurator {
     }
 
     public ContextConfig getContextConfig(String contextName) throws IllegalArgumentException {
-        if (contextName == null || contextName.isEmpty()) {
-            throw new IllegalArgumentException("Invalid Context Name '" + contextName + "'");
+        if (contextName == null) {
+            throw new IllegalArgumentException("Context Name cannot be 'null'.");
+        }
+        if (contextName.isEmpty()) {
+            contextName = "/";
         }
         if (rootConfig == null) {
             throw new IllegalArgumentException("No configuration loaded");
