@@ -18,20 +18,27 @@
   under the License.
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:webflow="http://www.springframework.org/schema/webflow-config"
-       xmlns:p="http://www.springframework.org/schema/p"
-       xmlns:context="http://www.springframework.org/schema/context"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:webflow="http://www.springframework.org/schema/webflow-config"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
         http://www.springframework.org/schema/context
         http://www.springframework.org/schema/context/spring-context-3.1.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
         http://www.springframework.org/schema/webflow-config
         http://www.springframework.org/schema/webflow-config/spring-webflow-config-2.0.xsd">
 
     <context:property-placeholder location="classpath:realm.properties" />
     
     <context:component-scan base-package="org.apache.cxf.fediz.service.idp.beans" />
+
+    <mvc:resources mapping="/images/**" location="/resources/images/" />
+	<mvc:view-controller path="/" view-name="index" />
+	<mvc:view-controller path="/federation/up/login" view-name="signinform" />
 
     <bean class="org.springframework.webflow.mvc.servlet.FlowHandlerMapping"
         p:flowRegistry-ref="flowRegistry" p:order="2">
@@ -47,9 +54,9 @@
                 value="false" />
         </webflow:flow-execution-attributes>
 
-        <webflow:flow-execution-listeners>
-            <webflow:listener ref="securityFlowExecutionListener" />
-        </webflow:flow-execution-listeners>
+	<webflow:flow-execution-listeners>
+	    <webflow:listener ref="securityFlowExecutionListener" />
+	</webflow:flow-execution-listeners>
     </webflow:flow-executor>
 
     <bean id="securityFlowExecutionListener"
@@ -74,16 +81,16 @@
     <webflow:flow-registry id="flowRegistry"
         flow-builder-services="builder">
         <webflow:flow-location
-            path="/WEB-INF/federation-validate-request.xml" id="federation" />
+            path="/WEB-INF/flows/federation-validate-request.xml" id="federation" />
         <webflow:flow-location
-            path="/WEB-INF/federation-validate-request.xml" id="federation/up" />
+            path="/WEB-INF/flows/federation-validate-request.xml" id="federation/up" />
         <webflow:flow-location
-            path="/WEB-INF/federation-validate-request.xml" id="federation/krb" />
+            path="/WEB-INF/flows/federation-validate-request.xml" id="federation/krb" />
         <webflow:flow-location
-            path="/WEB-INF/federation-validate-request.xml" id="federation/clientcert" />
-        <webflow:flow-location path="/WEB-INF/federation-signin-request.xml"
+            path="/WEB-INF/flows/federation-validate-request.xml" id="federation/clientcert" />
+        <webflow:flow-location path="/WEB-INF/flows/federation-signin-request.xml"
             id="signinRequest" />
-        <webflow:flow-location path="/WEB-INF/federation-signin-response.xml"
+        <webflow:flow-location path="/WEB-INF/flows/federation-signin-response.xml"
             id="signinResponse" />
     </webflow:flow-registry>
 
@@ -104,7 +111,7 @@
 
     <bean id="viewResolver"
         class="org.springframework.web.servlet.view.InternalResourceViewResolver">
-        <property name="prefix" value="/WEB-INF/" />
+        <property name="prefix" value="/WEB-INF/views/" />
         <property name="suffix" value=".jsp" />
     </bean>
 

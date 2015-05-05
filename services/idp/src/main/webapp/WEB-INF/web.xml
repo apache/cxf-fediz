@@ -77,21 +77,10 @@ under the License.
 
     <servlet-mapping>
         <servlet-name>idp</servlet-name>
+		<url-pattern>/</url-pattern>
         <url-pattern>/federation</url-pattern>
-    </servlet-mapping>
-    
-    <servlet-mapping>
-        <servlet-name>idp</servlet-name>
-        <url-pattern>/federation/up</url-pattern>
-    </servlet-mapping>
-    
-    <servlet-mapping>
-        <servlet-name>idp</servlet-name>
+		<url-pattern>/federation/up</url-pattern>
         <url-pattern>/federation/krb</url-pattern>
-    </servlet-mapping>
-    
-    <servlet-mapping>
-        <servlet-name>idp</servlet-name>
         <url-pattern>/federation/clientcert</url-pattern>
     </servlet-mapping>
     

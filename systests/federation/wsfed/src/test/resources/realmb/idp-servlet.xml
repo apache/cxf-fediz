@@ -74,12 +74,12 @@
     <webflow:flow-registry id="flowRegistry"
         flow-builder-services="builder">
         <webflow:flow-location
-            path="/WEB-INF/federation-validate-request.xml" id="federation" />
+            path="/WEB-INF/flows/federation-validate-request.xml" id="federation" />
         <webflow:flow-location
-            path="/WEB-INF/federation-validate-request.xml" id="federation/up" />
-        <webflow:flow-location path="/WEB-INF/federation-signin-request.xml"
+            path="/WEB-INF/flows/federation-validate-request.xml" id="federation/up" />
+        <webflow:flow-location path="/WEB-INF/flows/federation-signin-request.xml"
             id="signinRequest" />
-        <webflow:flow-location path="/WEB-INF/federation-signin-response.xml"
+        <webflow:flow-location path="/WEB-INF/flows/federation-signin-response.xml"
             id="signinResponse" />
     </webflow:flow-registry>
 
@@ -100,7 +100,7 @@
 
     <bean id="viewResolver"
         class="org.springframework.web.servlet.view.InternalResourceViewResolver">
-        <property name="prefix" value="/WEB-INF/" />
+        <property name="prefix" value="/WEB-INF/views/" />
         <property name="suffix" value=".jsp" />
     </bean>
 

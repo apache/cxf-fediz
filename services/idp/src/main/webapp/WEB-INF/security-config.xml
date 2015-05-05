@@ -79,17 +79,27 @@
     <security:http pattern="/federation" use-expressions="true" entry-point-ref="federationEntryPoint">
         <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
-        <security:intercept-url pattern="/FederationMetadata/2007-06/FederationMetadata.xml" access="isAnonymous() or isAuthenticated()" />
     </security:http>
     
     <!-- HTTP/BA entry point -->
-    <security:http pattern="/federation/up" use-expressions="true">
+    <security:http pattern="/federation/up/**" use-expressions="true">
+		<security:intercept-url requires-channel="https" pattern="/federation/up/login*" access="isAnonymous() or isAuthenticated()" />
         <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
-        <security:intercept-url pattern="/FederationMetadata/2007-06/FederationMetadata.xml" access="isAnonymous() or isAuthenticated()" />
 
         <security:http-basic />
-        <security:logout delete-cookies="FEDIZ_HOME_REALM" invalidate-session="true" />
+		<!--security:form-login login-page='/federation/up/login'
+			login-processing-url="/federation/up/login.do"
+			authentication-failure-url="/federation/up/login?error" 
+			default-target-url="/"
+			username-parameter="username" 
+			password-parameter="password"
+			/-->
+		<security:logout logout-url="/federation/up/logout" 
+			logout-success-url="/federation/up/login?out" 
+			delete-cookies="FEDIZ_HOME_REALM,JSESSIONID" 
+			invalidate-session="true" 
+			/>
     </security:http>
     
     <!-- Kerberos entry point -->
@@ -104,7 +114,6 @@
     <security:http pattern="/federation/krb" use-expressions="true" entry-point-ref="kerberosEntryPoint">
         <security:custom-filter after="CHANNEL_FILTER" ref="stsKrbPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
-        <security:intercept-url pattern="/FederationMetadata/2007-06/FederationMetadata.xml" access="isAnonymous() or isAuthenticated()" />
 
         <security:custom-filter ref="kerberosAuthenticationProcessingFilter" position="BASIC_AUTH_FILTER" />
         <security:logout delete-cookies="FEDIZ_HOME_REALM" invalidate-session="true" />
@@ -114,7 +123,6 @@
     <security:http pattern="/federation/clientcert" use-expressions="true">
         <security:custom-filter after="CHANNEL_FILTER" ref="stsClientCertPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
-        <security:intercept-url pattern="/FederationMetadata/2007-06/FederationMetadata.xml" access="isAnonymous() or isAuthenticated()" />
 
         <security:x509 />
         <security:logout delete-cookies="FEDIZ_HOME_REALM" invalidate-session="true" />

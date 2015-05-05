@@ -231,7 +231,11 @@
             <artifactId>bval-jsr303</artifactId>
             <version>${bval.version}</version>
         </dependency>
-        
+        <dependency>
+            <groupId>jstl</groupId>
+            <artifactId>jstl</artifactId>
+            <version>1.2</version>
+        </dependency>
     </dependencies>
     <build>
         <resources>
