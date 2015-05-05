@@ -28,7 +28,7 @@ import java.net.URLEncoder;
 import java.security.cert.Certificate;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -642,7 +642,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         @Override
         public List<WSSecurityEngineResult> handleToken(Element arg0, RequestData arg1, WSDocInfo arg2)
             throws WSSecurityException {
-            return new ArrayList<WSSecurityEngineResult>();
+            return Collections.emptyList();
         }
 
     }

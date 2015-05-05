@@ -44,19 +44,23 @@ public final class CertsUtils {
     }
     
     public static X509Certificate getX509Certificate(String filename) {
-        Certificate cert = null;
-        BufferedInputStream bis = null;
-        try {
-            
-            InputStream is = Merlin.loadInputStream(Thread.currentThread().getContextClassLoader(), filename);
-            
-            //FileInputStream fis = new FileInputStream(filename);
-            bis = new BufferedInputStream(is);
+        return getX509Certificate(filename,
+                                  Thread.currentThread().getContextClassLoader());
+    }
+    
+    public static X509Certificate getX509Certificate(String filename, ClassLoader classLoader) {
+        ClassLoader cl = classLoader;
+        if (cl == null) {
+            cl = Thread.currentThread().getContextClassLoader();
+        }
+
+        try (InputStream is = Merlin.loadInputStream(cl, filename);
+            BufferedInputStream bis = new BufferedInputStream(is)) {
 
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
 
             if (bis.available() > 0) {
-                cert = cf.generateCertificate(bis);
+                Certificate cert = cf.generateCertificate(bis);
                 if (!(cert instanceof X509Certificate)) {
                     LOG.error("Certificate " + filename + " is not of type X509Certificate");
                     throw new RuntimeException("Certificate "
@@ -73,12 +77,6 @@ public final class CertsUtils {
         } catch (Exception ex) {
             LOG.error("Failed to read certificate file " + filename, ex);
             throw new RuntimeException("Failed to read certificate file " + filename, ex);
-        } finally {
-            try {
-                bis.close();
-            } catch (IOException ex) {
-                LOG.error("Failed to close certificate file " + filename, ex);
-            }
         }
     }
     

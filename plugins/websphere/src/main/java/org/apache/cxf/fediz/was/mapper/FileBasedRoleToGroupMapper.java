@@ -168,19 +168,20 @@ public class FileBasedRoleToGroupMapper implements RoleToGroupMapper {
     }
 
     private Map<String, List<String>> loadMappingFile() throws FileNotFoundException, JAXBException {
-        InputSource input = new InputSource(new FileInputStream(groupMappingFilename));
-        JAXBContext context = JAXBContext.newInstance(Mapping.class);
-        Mapping localmappings = (Mapping) context.createUnmarshaller().unmarshal(input);
-
         Map<String, List<String>> map = new HashMap<>(10);
 
-        Iterator<SamlToJ2EE> i = localmappings.getSamlToJ2EE().iterator();
-        while (i.hasNext()) {
-            SamlToJ2EE mapping = i.next();
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("{} mapped to {} entries", mapping.getClaim(), mapping.getGroups().getJ2EeGroup().size());
+        try (InputSource input = new InputSource(new FileInputStream(groupMappingFilename))) {
+            JAXBContext context = JAXBContext.newInstance(Mapping.class);
+            Mapping localmappings = (Mapping) context.createUnmarshaller().unmarshal(input);
+
+            Iterator<SamlToJ2EE> i = localmappings.getSamlToJ2EE().iterator();
+            while (i.hasNext()) {
+                SamlToJ2EE mapping = i.next();
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("{} mapped to {} entries", mapping.getClaim(), mapping.getGroups().getJ2EeGroup().size());
+                }
+                map.put(mapping.getClaim(), mapping.getGroups().getJ2EeGroup());
             }
-            map.put(mapping.getClaim(), mapping.getGroups().getJ2EeGroup());
         }
 
         return map;

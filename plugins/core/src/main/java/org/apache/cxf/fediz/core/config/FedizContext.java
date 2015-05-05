@@ -19,14 +19,10 @@
 
 package org.apache.cxf.fediz.core.config;
 
-import java.io.BufferedInputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigInteger;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,12 +39,12 @@ import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuers;
 import org.apache.cxf.fediz.core.exception.IllegalConfigurationException;
+import org.apache.cxf.fediz.core.util.CertsUtils;
 import org.apache.wss4j.common.cache.ReplayCache;
 import org.apache.wss4j.common.cache.ReplayCacheFactory;
 import org.apache.wss4j.common.crypto.CertificateStore;
 import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.crypto.CryptoFactory;
-import org.apache.wss4j.common.crypto.Merlin;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.util.Loader;
 import org.slf4j.Logger;
@@ -113,7 +109,7 @@ public class FedizContext implements Closeable {
             try {
                 if (manager.getKeyStore().getType().equalsIgnoreCase("PEM")) {
                     X509Certificate[] certificates = new X509Certificate[1];
-                    certificates[0] = readX509Certificate(tm.getName());
+                    certificates[0] = CertsUtils.getX509Certificate(tm.getName(), classloader);
                     crypto = new CertificateStore(certificates);
                 } else {
                     Properties sigProperties = createCryptoProperties(manager);
@@ -351,49 +347,6 @@ public class FedizContext implements Closeable {
         return p;
     }
     
-    private X509Certificate readX509Certificate(String filename) {
-        Certificate cert = null;
-        BufferedInputStream bis = null;
-        try {
-            ClassLoader cl = getClassloader();
-            if (cl == null) {
-                cl = Thread.currentThread().getContextClassLoader();
-            }
-            InputStream is = Merlin.loadInputStream(cl, filename);
-            
-            bis = new BufferedInputStream(is);
-
-            CertificateFactory cf = CertificateFactory.getInstance("X.509");
-
-            if (bis.available() > 0) {
-                cert = cf.generateCertificate(bis);
-                if (!(cert instanceof X509Certificate)) {
-                    LOG.error("Certificate " + filename + " is not of type X509Certificate");
-                    throw new IllegalConfigurationException("Certificate "
-                                                            + filename + " is not of type X509Certificate");
-                }
-                if (bis.available() > 0) {
-                    LOG.warn("There are more certificates configured in " + filename + ". Only first is parsed");
-                }
-                return (X509Certificate)cert;    
-            } else  {
-                LOG.error("No bytes can be read in certificate file " + filename);
-                throw new IllegalConfigurationException("No bytes can be read in certificate file " + filename);
-            }
-        } catch (IllegalConfigurationException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            LOG.error("Failed to read certificate file " + filename, ex);
-            throw new IllegalConfigurationException("Failed to read certificate file " + filename, ex);
-        } finally {
-            try {
-                bis.close();
-            } catch (IOException ex) {
-                LOG.error("Failed to close certificate file " + filename, ex);
-            }
-        }
-    }
-
     public ClassLoader getClassloader() {
         return classloader;
     }

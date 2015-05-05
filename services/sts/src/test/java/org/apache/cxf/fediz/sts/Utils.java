@@ -96,7 +96,9 @@ public final class Utils {
         char[] password = ksPassword != null ? ksPassword.toCharArray() : null;
         // We just use the default Keystore provider
         KeyStore keyStore = KeyStore.getInstance(type);
-        keyStore.load(new FileInputStream(file), password);
+        try (FileInputStream inputStream = new FileInputStream(file)) {
+            keyStore.load(inputStream, password);
+        }
         return keyStore;
     }
 
