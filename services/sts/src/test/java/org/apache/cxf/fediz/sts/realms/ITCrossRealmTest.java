@@ -33,7 +33,7 @@ import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.opensaml.saml2.core.Attribute;
+import org.opensaml.saml.saml2.core.Attribute;
 
 /**
  * Some unit tests for the CXF STSClient Issue Binding.

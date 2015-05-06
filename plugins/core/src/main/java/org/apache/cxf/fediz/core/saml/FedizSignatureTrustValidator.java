@@ -44,12 +44,12 @@ public class FedizSignatureTrustValidator implements Validator {
     
     private static final Logger LOG = LoggerFactory.getLogger(FedizSignatureTrustValidator.class);
     
-    public enum TRUST_TYPE { CHAIN_TRUST, CHAIN_TRUST_CONSTRAINTS, PEER_TRUST }
+    public enum TrustType { CHAIN_TRUST, CHAIN_TRUST_CONSTRAINTS, PEER_TRUST }
     
     /**
      * Defines the kind of trust which is required
      */
-    private TRUST_TYPE signatureTrustType = TRUST_TYPE.CHAIN_TRUST;
+    private TrustType signatureTrustType = TrustType.CHAIN_TRUST;
         
     /**
      * a collection of compiled regular expression patterns for the subject DN
@@ -60,7 +60,7 @@ public class FedizSignatureTrustValidator implements Validator {
     /**
      * Set the kind of trust. The default is CHAIN_TRUST.
      */
-    public void setSignatureTrustType(TRUST_TYPE trustType) {
+    public void setSignatureTrustType(TrustType trustType) {
         this.signatureTrustType = trustType;
     }
 
@@ -117,7 +117,7 @@ public class FedizSignatureTrustValidator implements Validator {
         if (certs != null && certs.length > 0) {
             validateCertificates(certs);
             verifyTrustInCerts(certs, crypto, data, data.isRevocationEnabled());
-            if (signatureTrustType.equals(TRUST_TYPE.CHAIN_TRUST_CONSTRAINTS)) {
+            if (signatureTrustType.equals(TrustType.CHAIN_TRUST_CONSTRAINTS)) {
                 if (matches(certs[0])) {
                     return credential;
                 } else {

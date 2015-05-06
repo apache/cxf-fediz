@@ -43,7 +43,7 @@ import org.apache.cxf.fediz.core.config.TrustManager;
 import org.apache.cxf.fediz.core.config.TrustedIssuer;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
-import org.apache.cxf.fediz.core.saml.FedizSignatureTrustValidator.TRUST_TYPE;
+import org.apache.cxf.fediz.core.saml.FedizSignatureTrustValidator.TrustType;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.principal.SAMLTokenPrincipal;
 import org.apache.wss4j.common.principal.SAMLTokenPrincipalImpl;
@@ -56,10 +56,10 @@ import org.apache.wss4j.dom.handler.RequestData;
 import org.apache.wss4j.dom.saml.WSSSAMLKeyInfoProcessor;
 import org.apache.wss4j.dom.validate.Credential;
 import org.joda.time.DateTime;
-import org.opensaml.common.SAMLVersion;
-import org.opensaml.xml.XMLObject;
-import org.opensaml.xml.signature.KeyInfo;
-import org.opensaml.xml.signature.Signature;
+import org.opensaml.core.xml.XMLObject;
+import org.opensaml.saml.common.SAMLVersion;
+import org.opensaml.xmlsec.signature.KeyInfo;
+import org.opensaml.xmlsec.signature.Signature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -143,9 +143,9 @@ public class SAMLTokenValidator implements TokenValidator {
                 
                 if (ti.getCertificateValidationMethod().equals(CertificateValidationMethod.CHAIN_TRUST)) {
                     trustValidator.setSubjectConstraints(subjectConstraints);
-                    trustValidator.setSignatureTrustType(TRUST_TYPE.CHAIN_TRUST_CONSTRAINTS);
+                    trustValidator.setSignatureTrustType(TrustType.CHAIN_TRUST_CONSTRAINTS);
                 } else if (ti.getCertificateValidationMethod().equals(CertificateValidationMethod.PEER_TRUST)) {
-                    trustValidator.setSignatureTrustType(TRUST_TYPE.PEER_TRUST);
+                    trustValidator.setSignatureTrustType(TrustType.PEER_TRUST);
                 } else {
                     throw new IllegalStateException("Unsupported certificate validation method: " 
                                                     + ti.getCertificateValidationMethod());
@@ -254,8 +254,8 @@ public class SAMLTokenValidator implements TokenValidator {
     }
 
     protected List<Claim> parseClaimsInAssertion(
-            org.opensaml.saml1.core.Assertion assertion) {
-        List<org.opensaml.saml1.core.AttributeStatement> attributeStatements = assertion
+            org.opensaml.saml.saml1.core.Assertion assertion) {
+        List<org.opensaml.saml.saml1.core.AttributeStatement> attributeStatements = assertion
                 .getAttributeStatements();
         if (attributeStatements == null || attributeStatements.isEmpty()) {
             LOG.debug("No attribute statements found");
@@ -264,12 +264,12 @@ public class SAMLTokenValidator implements TokenValidator {
         List<Claim> collection = new ArrayList<>();
         Map<String, Claim> claimsMap = new HashMap<>();
 
-        for (org.opensaml.saml1.core.AttributeStatement statement : attributeStatements) {
+        for (org.opensaml.saml.saml1.core.AttributeStatement statement : attributeStatements) {
             LOG.debug("parsing statement: {}", statement.getElementQName());
 
-            List<org.opensaml.saml1.core.Attribute> attributes = statement
+            List<org.opensaml.saml.saml1.core.Attribute> attributes = statement
                     .getAttributes();
-            for (org.opensaml.saml1.core.Attribute attribute : attributes) {
+            for (org.opensaml.saml.saml1.core.Attribute attribute : attributes) {
                 LOG.debug("parsing attribute: {}", attribute.getAttributeName());
                 Claim c = new Claim();
                 c.setIssuer(assertion.getIssuer());
@@ -316,8 +316,8 @@ public class SAMLTokenValidator implements TokenValidator {
 
 
     protected List<Claim> parseClaimsInAssertion(
-            org.opensaml.saml2.core.Assertion assertion) {
-        List<org.opensaml.saml2.core.AttributeStatement> attributeStatements = assertion
+            org.opensaml.saml.saml2.core.Assertion assertion) {
+        List<org.opensaml.saml.saml2.core.AttributeStatement> attributeStatements = assertion
                 .getAttributeStatements();
         if (attributeStatements == null || attributeStatements.isEmpty()) {
             LOG.debug("No attribute statements found");
@@ -327,11 +327,11 @@ public class SAMLTokenValidator implements TokenValidator {
         List<Claim> collection = new ArrayList<>();
         Map<String, Claim> claimsMap = new HashMap<>();
 
-        for (org.opensaml.saml2.core.AttributeStatement statement : attributeStatements) {
+        for (org.opensaml.saml.saml2.core.AttributeStatement statement : attributeStatements) {
             LOG.debug("parsing statement: {}", statement.getElementQName());
-            List<org.opensaml.saml2.core.Attribute> attributes = statement
+            List<org.opensaml.saml.saml2.core.Attribute> attributes = statement
                     .getAttributes();
-            for (org.opensaml.saml2.core.Attribute attribute : attributes) {
+            for (org.opensaml.saml.saml2.core.Attribute attribute : attributes) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("parsing attribute: " + attribute.getName());
                 }
@@ -408,7 +408,7 @@ public class SAMLTokenValidator implements TokenValidator {
     }
 
     protected String getAudienceRestriction(
-            org.opensaml.saml1.core.Assertion assertion) {
+            org.opensaml.saml.saml1.core.Assertion assertion) {
         String audience = null;
         try {
             audience = assertion.getConditions()
@@ -421,7 +421,7 @@ public class SAMLTokenValidator implements TokenValidator {
     }
 
     protected String getAudienceRestriction(
-            org.opensaml.saml2.core.Assertion assertion) {
+            org.opensaml.saml.saml2.core.Assertion assertion) {
         String audience = null;
         try {
             audience = assertion.getConditions().getAudienceRestrictions()

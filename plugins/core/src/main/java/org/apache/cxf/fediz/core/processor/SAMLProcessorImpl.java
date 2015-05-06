@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
 import org.apache.cxf.fediz.core.RequestState;
 import org.apache.cxf.fediz.core.SAMLSSOConstants;
 import org.apache.cxf.fediz.core.TokenValidator;
@@ -58,10 +59,10 @@ import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.wss4j.dom.WSConstants;
 import org.apache.xml.security.exceptions.Base64DecodingException;
 import org.apache.xml.security.utils.Base64;
-import org.opensaml.common.xml.SAMLConstants;
-import org.opensaml.saml2.core.AuthnRequest;
-import org.opensaml.saml2.core.LogoutRequest;
-import org.opensaml.xml.XMLObject;
+import org.opensaml.core.xml.XMLObject;
+import org.opensaml.saml.common.xml.SAMLConstants;
+import org.opensaml.saml.saml2.core.AuthnRequest;
+import org.opensaml.saml.saml2.core.LogoutRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -158,15 +159,15 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             LOG.debug(ex.getMessage(), ex);
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
-        if (!(responseObject instanceof org.opensaml.saml2.core.Response)) {
+        if (!(responseObject instanceof org.opensaml.saml.saml2.core.Response)) {
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
         
         // Validate the Response
-        validateSamlResponseProtocol((org.opensaml.saml2.core.Response)responseObject, config);
+        validateSamlResponseProtocol((org.opensaml.saml.saml2.core.Response)responseObject, config);
         
         SSOValidatorResponse ssoValidatorResponse = 
-            validateSamlSSOResponse((org.opensaml.saml2.core.Response)responseObject, 
+            validateSamlSSOResponse((org.opensaml.saml.saml2.core.Response)responseObject, 
                                 request.getRequest(), requestState, config);
         
         // Validate the internal assertion(s)
@@ -225,7 +226,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
      * @throws ProcessingException 
      */
     protected void validateSamlResponseProtocol(
-        org.opensaml.saml2.core.Response samlResponse,
+        org.opensaml.saml.saml2.core.Response samlResponse,
         FedizContext config
     ) throws ProcessingException {
         try {
@@ -242,7 +243,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
      * @throws ProcessingException 
      */
     protected SSOValidatorResponse validateSamlSSOResponse(
-        org.opensaml.saml2.core.Response samlResponse,
+        org.opensaml.saml.saml2.core.Response samlResponse,
         HttpServletRequest request,
         RequestState requestState,
         FedizContext config

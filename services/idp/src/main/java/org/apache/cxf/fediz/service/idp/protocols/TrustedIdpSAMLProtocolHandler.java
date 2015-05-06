@@ -42,6 +42,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
 import org.apache.cxf.common.util.Base64Exception;
 import org.apache.cxf.common.util.Base64Utility;
 import org.apache.cxf.common.util.StringUtils;
@@ -71,8 +72,8 @@ import org.apache.wss4j.common.saml.OpenSAMLUtil;
 import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.xml.security.stax.impl.util.IDGenerator;
 import org.apache.xml.security.utils.Base64;
-import org.opensaml.saml2.core.AuthnRequest;
-import org.opensaml.xml.XMLObject;
+import org.opensaml.core.xml.XMLObject;
+import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -195,7 +196,7 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
                                                                                      SSOConstants.SAML_RESPONSE);
             
             // Read the response + convert to an OpenSAML Response Object
-            org.opensaml.saml2.core.Response samlResponse = 
+            org.opensaml.saml.saml2.core.Response samlResponse = 
                 readSAMLResponse(encodedSAMLResponse, trustedIdp);
             
             Crypto crypto = getCrypto(trustedIdp.getCertificate());
@@ -336,7 +337,7 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
         return CertsUtils.createCrypto(certificate);
     }
     
-    private org.opensaml.saml2.core.Response readSAMLResponse(String samlResponse, TrustedIdp trustedIdp) {
+    private org.opensaml.saml.saml2.core.Response readSAMLResponse(String samlResponse, TrustedIdp trustedIdp) {
         if (StringUtils.isEmpty(samlResponse)) {
             throw ExceptionUtils.toBadRequestException(null, null);
         }
@@ -378,10 +379,10 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
         } catch (WSSecurityException ex) {
             throw ExceptionUtils.toBadRequestException(ex, null);
         }
-        if (!(responseObject instanceof org.opensaml.saml2.core.Response)) {
+        if (!(responseObject instanceof org.opensaml.saml.saml2.core.Response)) {
             throw ExceptionUtils.toBadRequestException(null, null);
         }
-        return (org.opensaml.saml2.core.Response)responseObject;
+        return (org.opensaml.saml.saml2.core.Response)responseObject;
 
     }
     
@@ -389,7 +390,7 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
      * Validate the received SAML Response as per the protocol
      */
     private void validateSamlResponseProtocol(
-        org.opensaml.saml2.core.Response samlResponse, Crypto crypto, TrustedIdp trustedIdp
+        org.opensaml.saml.saml2.core.Response samlResponse, Crypto crypto, TrustedIdp trustedIdp
     ) {
         try {
             SAMLProtocolResponseValidator protocolValidator = new SAMLProtocolResponseValidator();
@@ -407,7 +408,7 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
      * Validate the received SAML Response as per the Web SSO profile
      */
     private SSOValidatorResponse validateSamlSSOResponse(
-        org.opensaml.saml2.core.Response samlResponse,
+        org.opensaml.saml.saml2.core.Response samlResponse,
         Idp idp, 
         TrustedIdp trustedIdp,
         RequestContext requestContext

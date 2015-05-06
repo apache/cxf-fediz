@@ -35,7 +35,7 @@ import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
-import org.opensaml.xml.XMLObject;
+import org.opensaml.core.xml.XMLObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -182,8 +182,8 @@ public abstract class STSAuthenticationProvider implements AuthenticationProvide
         this.lifetime = lifetime;
     }
 
-    protected List<Claim> parseClaimsInAssertion(org.opensaml.saml2.core.Assertion assertion) {
-        List<org.opensaml.saml2.core.AttributeStatement> attributeStatements = assertion
+    protected List<Claim> parseClaimsInAssertion(org.opensaml.saml.saml2.core.Assertion assertion) {
+        List<org.opensaml.saml.saml2.core.AttributeStatement> attributeStatements = assertion
         .getAttributeStatements();
         if (attributeStatements == null || attributeStatements.isEmpty()) {
             LOG.debug("No attribute statements found");
@@ -193,11 +193,11 @@ public abstract class STSAuthenticationProvider implements AuthenticationProvide
         List<Claim> collection = new ArrayList<>();
         Map<String, Claim> claimsMap = new HashMap<>();
 
-        for (org.opensaml.saml2.core.AttributeStatement statement : attributeStatements) {
+        for (org.opensaml.saml.saml2.core.AttributeStatement statement : attributeStatements) {
             LOG.debug("parsing statement: {}", statement.getElementQName());
-            List<org.opensaml.saml2.core.Attribute> attributes = statement
+            List<org.opensaml.saml.saml2.core.Attribute> attributes = statement
             .getAttributes();
-            for (org.opensaml.saml2.core.Attribute attribute : attributes) {
+            for (org.opensaml.saml.saml2.core.Attribute attribute : attributes) {
                 LOG.debug("parsing attribute: {}", attribute.getName());
                 Claim c = new Claim();
                 // Workaround for CXF-4484 

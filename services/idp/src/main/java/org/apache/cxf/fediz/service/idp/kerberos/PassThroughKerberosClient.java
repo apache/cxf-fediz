@@ -22,10 +22,10 @@ package org.apache.cxf.fediz.service.idp.kerberos;
 import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.ws.security.kerberos.KerberosClient;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
+import org.apache.wss4j.common.util.KeyUtils;
 import org.apache.wss4j.dom.WSConstants;
 import org.apache.wss4j.dom.WSSConfig;
 import org.apache.wss4j.dom.message.token.KerberosSecurity;
-import org.apache.wss4j.dom.util.WSSecurityUtil;
 import org.apache.xml.security.utils.Base64;
 
 /**
@@ -53,7 +53,7 @@ public class PassThroughKerberosClient extends KerberosClient {
         securityToken.setToken(bst.getElement());
         securityToken.setWsuId(bst.getID());
         securityToken.setData(bst.getToken());
-        String sha1 = Base64.encode(WSSecurityUtil.generateDigest(bst.getToken()));
+        String sha1 = Base64.encode(KeyUtils.generateDigest(bst.getToken()));
         securityToken.setSHA1(sha1);
         securityToken.setTokenType(bst.getValueType());
 

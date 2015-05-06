@@ -24,16 +24,16 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
-import org.opensaml.common.SAMLVersion;
-import org.opensaml.saml2.core.AuthnContextClassRef;
-import org.opensaml.saml2.core.AuthnContextComparisonTypeEnumeration;
-import org.opensaml.saml2.core.AuthnRequest;
-import org.opensaml.saml2.core.AuthnStatement;
-import org.opensaml.saml2.core.Issuer;
-import org.opensaml.saml2.core.LogoutRequest;
-import org.opensaml.saml2.core.NameID;
-import org.opensaml.saml2.core.NameIDPolicy;
-import org.opensaml.saml2.core.RequestedAuthnContext;
+import org.opensaml.saml.common.SAMLVersion;
+import org.opensaml.saml.saml2.core.AuthnContextClassRef;
+import org.opensaml.saml.saml2.core.AuthnContextComparisonTypeEnumeration;
+import org.opensaml.saml.saml2.core.AuthnRequest;
+import org.opensaml.saml.saml2.core.AuthnStatement;
+import org.opensaml.saml.saml2.core.Issuer;
+import org.opensaml.saml.saml2.core.LogoutRequest;
+import org.opensaml.saml.saml2.core.NameID;
+import org.opensaml.saml.saml2.core.NameIDPolicy;
+import org.opensaml.saml.saml2.core.RequestedAuthnContext;
 
 /**
  * A default implementation of the SAMLPRequestBuilder interface to create a SAML 2.0
@@ -122,7 +122,7 @@ public class DefaultSAMLPRequestBuilder implements SAMLPRequestBuilder {
         
         if (authenticatedAssertion != null) {
             if (authenticatedAssertion.getSaml2() != null) {
-                org.opensaml.saml2.core.Subject subject = 
+                org.opensaml.saml.saml2.core.Subject subject = 
                     authenticatedAssertion.getSaml2().getSubject();
                 if (subject != null && subject.getNameID() != null) {
                     nameID = subject.getNameID();

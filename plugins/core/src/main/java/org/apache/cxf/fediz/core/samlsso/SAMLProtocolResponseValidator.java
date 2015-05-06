@@ -28,7 +28,7 @@ import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.config.TrustManager;
 import org.apache.cxf.fediz.core.config.TrustedIssuer;
 import org.apache.cxf.fediz.core.saml.FedizSignatureTrustValidator;
-import org.apache.cxf.fediz.core.saml.FedizSignatureTrustValidator.TRUST_TYPE;
+import org.apache.cxf.fediz.core.saml.FedizSignatureTrustValidator.TrustType;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.SAMLKeyInfo;
 import org.apache.wss4j.common.saml.SAMLUtil;
@@ -37,13 +37,13 @@ import org.apache.wss4j.dom.WSSConfig;
 import org.apache.wss4j.dom.handler.RequestData;
 import org.apache.wss4j.dom.saml.WSSSAMLKeyInfoProcessor;
 import org.apache.wss4j.dom.validate.Credential;
-import org.opensaml.security.SAMLSignatureProfileValidator;
-import org.opensaml.xml.security.x509.BasicX509Credential;
-import org.opensaml.xml.signature.KeyInfo;
-import org.opensaml.xml.signature.Signature;
-import org.opensaml.xml.signature.SignatureValidator;
-import org.opensaml.xml.validation.ValidationException;
-import org.opensaml.xml.validation.ValidatorSuite;
+import org.opensaml.saml.security.impl.SAMLSignatureProfileValidator;
+import org.opensaml.security.credential.BasicCredential;
+import org.opensaml.security.x509.BasicX509Credential;
+import org.opensaml.xmlsec.signature.KeyInfo;
+import org.opensaml.xmlsec.signature.Signature;
+import org.opensaml.xmlsec.signature.support.SignatureException;
+import org.opensaml.xmlsec.signature.support.SignatureValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,7 +68,7 @@ public class SAMLProtocolResponseValidator {
      * @throws WSSecurityException
      */
     public void validateSamlResponse(
-        org.opensaml.saml2.core.Response samlResponse,
+        org.opensaml.saml.saml2.core.Response samlResponse,
         FedizContext config
     ) throws WSSecurityException {
         // Check the Status Code
@@ -85,7 +85,6 @@ public class SAMLProtocolResponseValidator {
             throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
         }
         
-        validateResponseAgainstSchemas(samlResponse);
         validateResponseSignature(samlResponse, config);
     }
     
@@ -95,7 +94,7 @@ public class SAMLProtocolResponseValidator {
      * @throws WSSecurityException
      */
     public void validateSamlResponse(
-        org.opensaml.saml1.core.Response samlResponse,
+        org.opensaml.saml.saml1.core.Response samlResponse,
         FedizContext config
     ) throws WSSecurityException {
         // Check the Status Code
@@ -114,49 +113,14 @@ public class SAMLProtocolResponseValidator {
             throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
         }
 
-        validateResponseAgainstSchemas(samlResponse);
         validateResponseSignature(samlResponse, config);
-    }
-    
-    /**
-     * Validate the Response against the schemas
-     */
-    private void validateResponseAgainstSchemas(
-        org.opensaml.saml2.core.Response samlResponse
-    ) throws WSSecurityException {
-        // Validate SAML Response against schemas
-        ValidatorSuite schemaValidators = 
-            org.opensaml.Configuration.getValidatorSuite("saml2-core-schema-validator");
-        try {
-            schemaValidators.validate(samlResponse);
-        } catch (ValidationException e) {
-            LOG.debug("Saml Validation error: " + e.getMessage(), e);
-            throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
-        }
-    }
-    
-    /**
-     * Validate the Response against the schemas
-     */
-    private void validateResponseAgainstSchemas(
-        org.opensaml.saml1.core.Response samlResponse
-    ) throws WSSecurityException {
-        // Validate SAML Response against schemas
-        ValidatorSuite schemaValidators = 
-            org.opensaml.Configuration.getValidatorSuite("saml1-core-schema-validator");
-        try {
-            schemaValidators.validate(samlResponse);
-        } catch (ValidationException e) {
-            LOG.debug("Saml Validation error: " + e.getMessage(), e);
-            throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
-        }
     }
     
     /**
      * Validate the Response signature (if it exists)
      */
     private void validateResponseSignature(
-        org.opensaml.saml2.core.Response samlResponse,
+        org.opensaml.saml.saml2.core.Response samlResponse,
         FedizContext config
     ) throws WSSecurityException {
         if (!samlResponse.isSigned()) {
@@ -172,7 +136,7 @@ public class SAMLProtocolResponseValidator {
      * Validate the Response signature (if it exists)
      */
     private void validateResponseSignature(
-        org.opensaml.saml1.core.Response samlResponse,
+        org.opensaml.saml.saml1.core.Response samlResponse,
         FedizContext config
     ) throws WSSecurityException {
         if (!samlResponse.isSigned()) {
@@ -238,9 +202,9 @@ public class SAMLProtocolResponseValidator {
             
             if (ti.getCertificateValidationMethod().equals(CertificateValidationMethod.CHAIN_TRUST)) {
                 trustValidator.setSubjectConstraints(subjectConstraints);
-                trustValidator.setSignatureTrustType(TRUST_TYPE.CHAIN_TRUST_CONSTRAINTS);
+                trustValidator.setSignatureTrustType(TrustType.CHAIN_TRUST_CONSTRAINTS);
             } else if (ti.getCertificateValidationMethod().equals(CertificateValidationMethod.PEER_TRUST)) {
-                trustValidator.setSignatureTrustType(TRUST_TYPE.PEER_TRUST);
+                trustValidator.setSignatureTrustType(TrustType.PEER_TRUST);
             } else {
                 throw new IllegalStateException("Unsupported certificate validation method: " 
                                                 + ti.getCertificateValidationMethod());
@@ -284,24 +248,23 @@ public class SAMLProtocolResponseValidator {
         SAMLSignatureProfileValidator validator = new SAMLSignatureProfileValidator();
         try {
             validator.validate(signature);
-        } catch (ValidationException ex) {
+        } catch (SignatureException ex) {
             LOG.debug("Error in validating the SAML Signature: " + ex.getMessage(), ex);
             throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
         }
 
-        BasicX509Credential credential = new BasicX509Credential();
+        BasicCredential credential = null;
         if (samlKeyInfo.getCerts() != null) {
-            credential.setEntityCertificate(samlKeyInfo.getCerts()[0]);
+            credential = new BasicX509Credential(samlKeyInfo.getCerts()[0]);
         } else if (samlKeyInfo.getPublicKey() != null) {
-            credential.setPublicKey(samlKeyInfo.getPublicKey());
+            credential = new BasicCredential(samlKeyInfo.getPublicKey());
         } else {
             LOG.debug("Can't get X509Certificate or PublicKey to verify signature");
             throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
         }
-        SignatureValidator sigValidator = new SignatureValidator(credential);
         try {
-            sigValidator.validate(signature);
-        } catch (ValidationException ex) {
+            SignatureValidator.validate(signature, credential);
+        } catch (SignatureException ex) {
             LOG.debug("Error in validating the SAML Signature: " + ex.getMessage(), ex);
             throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
         }

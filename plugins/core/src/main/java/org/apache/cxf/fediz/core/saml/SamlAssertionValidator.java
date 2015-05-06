@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.regex.Pattern;
 
-import org.apache.cxf.fediz.core.saml.FedizSignatureTrustValidator.TRUST_TYPE;
+import org.apache.cxf.fediz.core.saml.FedizSignatureTrustValidator.TrustType;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.SAMLKeyInfo;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
@@ -37,7 +37,7 @@ import org.apache.wss4j.dom.validate.Credential;
  */
 public class SamlAssertionValidator extends org.apache.wss4j.dom.validate.SamlAssertionValidator {
     
-    private TRUST_TYPE signatureTrustType = TRUST_TYPE.CHAIN_TRUST;
+    private TrustType signatureTrustType = TrustType.CHAIN_TRUST;
         
     /**
      * a collection of compiled regular expression patterns for the subject DN
@@ -58,7 +58,7 @@ public class SamlAssertionValidator extends org.apache.wss4j.dom.validate.SamlAs
     /**
      * Set the kind of trust. The default is CHAIN_TRUST.
      */
-    public void setSignatureTrustType(TRUST_TYPE trustType) {
+    public void setSignatureTrustType(TrustType trustType) {
         this.signatureTrustType = trustType;
     }
 

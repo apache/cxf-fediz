@@ -27,9 +27,8 @@ import org.apache.wss4j.common.cache.ReplayCache;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.builder.SAML2Constants;
 import org.apache.wss4j.common.util.DOM2Writer;
-import org.opensaml.saml2.core.AudienceRestriction;
-import org.opensaml.saml2.core.AuthnStatement;
-
+import org.opensaml.saml.saml2.core.AudienceRestriction;
+import org.opensaml.saml.saml2.core.AuthnStatement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,7 +71,7 @@ public class SAMLSSOResponseValidator {
      * @throws WSSecurityException
      */
     public SSOValidatorResponse validateSamlResponse(
-        org.opensaml.saml2.core.Response samlResponse,
+        org.opensaml.saml.saml2.core.Response samlResponse,
         boolean postBinding
     ) throws WSSecurityException {
         // Check the Issuer
@@ -96,7 +95,7 @@ public class SAMLSSOResponseValidator {
         // Validate Assertions
         boolean foundValidSubject = false;
         Date sessionNotOnOrAfter = null;
-        for (org.opensaml.saml2.core.Assertion assertion : samlResponse.getAssertions()) {
+        for (org.opensaml.saml.saml2.core.Assertion assertion : samlResponse.getAssertions()) {
             // Check the Issuer
             if (assertion.getIssuer() == null) {
                 LOG.debug("Assertion Issuer must not be null");
@@ -113,7 +112,7 @@ public class SAMLSSOResponseValidator {
             // Check for AuthnStatements and validate the Subject accordingly
             if (assertion.getAuthnStatements() != null
                 && !assertion.getAuthnStatements().isEmpty()) {
-                org.opensaml.saml2.core.Subject subject = assertion.getSubject();
+                org.opensaml.saml.saml2.core.Subject subject = assertion.getSubject();
                 if (validateAuthenticationSubject(subject, assertion.getID(), postBinding)) {
                     validateAudienceRestrictionCondition(assertion.getConditions());
                     foundValidSubject = true;
@@ -146,7 +145,7 @@ public class SAMLSSOResponseValidator {
     /**
      * Validate the Issuer (if it exists)
      */
-    private void validateIssuer(org.opensaml.saml2.core.Issuer issuer) throws WSSecurityException {
+    private void validateIssuer(org.opensaml.saml.saml2.core.Issuer issuer) throws WSSecurityException {
         if (issuer == null) {
             return;
         }
@@ -171,7 +170,7 @@ public class SAMLSSOResponseValidator {
      * Validate the Subject (of an Authentication Statement).
      */
     private boolean validateAuthenticationSubject(
-        org.opensaml.saml2.core.Subject subject, String id, boolean postBinding
+        org.opensaml.saml.saml2.core.Subject subject, String id, boolean postBinding
     ) throws WSSecurityException {
         if (subject.getSubjectConfirmations() == null) {
             return false;
@@ -179,7 +178,7 @@ public class SAMLSSOResponseValidator {
         
         boolean foundBearerSubjectConf = false;
         // We need to find a Bearer Subject Confirmation method
-        for (org.opensaml.saml2.core.SubjectConfirmation subjectConf 
+        for (org.opensaml.saml.saml2.core.SubjectConfirmation subjectConf 
             : subject.getSubjectConfirmations()) {
             if (SAML2Constants.CONF_BEARER.equals(subjectConf.getMethod())) {
                 foundBearerSubjectConf = true;
@@ -194,7 +193,7 @@ public class SAMLSSOResponseValidator {
      * Validate a (Bearer) Subject Confirmation
      */
     private void validateSubjectConfirmation(
-        org.opensaml.saml2.core.SubjectConfirmationData subjectConfData, String id, boolean postBinding
+        org.opensaml.saml.saml2.core.SubjectConfirmationData subjectConfData, String id, boolean postBinding
     ) throws WSSecurityException {
         if (subjectConfData == null) {
             LOG.debug("Subject Confirmation Data of a Bearer Subject Confirmation is null");
@@ -253,7 +252,7 @@ public class SAMLSSOResponseValidator {
     }
     
     private void validateAudienceRestrictionCondition(
-        org.opensaml.saml2.core.Conditions conditions
+        org.opensaml.saml.saml2.core.Conditions conditions
     ) throws WSSecurityException {
         if (conditions == null) {
             LOG.debug("Conditions are null");
@@ -275,7 +274,7 @@ public class SAMLSSOResponseValidator {
         if (audienceRestrictions != null && !audienceRestrictions.isEmpty()) {
             for (AudienceRestriction audienceRestriction : audienceRestrictions) {
                 if (audienceRestriction.getAudiences() != null) {
-                    for (org.opensaml.saml2.core.Audience audience : audienceRestriction.getAudiences()) {
+                    for (org.opensaml.saml.saml2.core.Audience audience : audienceRestriction.getAudiences()) {
                         if (appliesTo.equals(audience.getAudienceURI())) {
                             return true;
                         }

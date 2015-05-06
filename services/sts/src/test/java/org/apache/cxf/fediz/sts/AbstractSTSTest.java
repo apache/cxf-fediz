@@ -38,9 +38,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
 import org.xml.sax.SAXException;
-
 import org.apache.cxf.Bus;
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.staxutils.StaxUtils;
@@ -57,7 +55,7 @@ import org.apache.cxf.ws.security.trust.STSUtils;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.apache.wss4j.dom.WSConstants;
 import org.junit.Assert;
-import org.opensaml.saml2.core.Attribute;
+import org.opensaml.saml.saml2.core.Attribute;
 
 
 public abstract class AbstractSTSTest {
