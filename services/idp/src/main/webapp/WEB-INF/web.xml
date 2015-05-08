@@ -36,10 +36,26 @@ under the License.
     </context-param>
 
     <filter>
+		<filter-name>encodingFilter</filter-name>
+		<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</init-param>
+		<init-param>
+			<param-name>forceEncoding</param-name>
+			<param-value>true</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<filter>
         <filter-name>springSecurityFilterChain</filter-name>
         <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
     </filter>
-
     <filter-mapping>
         <filter-name>springSecurityFilterChain</filter-name>
         <url-pattern>/*</url-pattern>
@@ -54,6 +70,14 @@ under the License.
         </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
+	<servlet-mapping>
+		<servlet-name>idp</servlet-name>
+		<url-pattern>/</url-pattern>
+		<url-pattern>/federation</url-pattern>
+		<url-pattern>/federation/up</url-pattern>
+		<url-pattern>/federation/krb</url-pattern>
+		<url-pattern>/federation/clientcert</url-pattern>
+	</servlet-mapping>
 
     <servlet>
         <servlet-name>metadata</servlet-name>
@@ -63,41 +87,19 @@ under the License.
             <param-value>${realm-uri}</param-value>
         </init-param>
     </servlet>
+	<servlet-mapping>
+		<servlet-name>metadata</servlet-name>
+		<url-pattern>/FederationMetadata/2007-06/FederationMetadata.xml</url-pattern>
+	</servlet-mapping>
 
     <servlet>
         <servlet-name>CXFServlet</servlet-name>
         <servlet-class>org.apache.cxf.transport.servlet.CXFServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
-
     <servlet-mapping>
         <servlet-name>CXFServlet</servlet-name>
         <url-pattern>/services/*</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>idp</servlet-name>
-        <url-pattern>/federation</url-pattern>
-    </servlet-mapping>
-    
-    <servlet-mapping>
-        <servlet-name>idp</servlet-name>
-        <url-pattern>/federation/up</url-pattern>
-    </servlet-mapping>
-    
-    <servlet-mapping>
-        <servlet-name>idp</servlet-name>
-        <url-pattern>/federation/krb</url-pattern>
-    </servlet-mapping>
-    
-    <servlet-mapping>
-        <servlet-name>idp</servlet-name>
-        <url-pattern>/federation/clientcert</url-pattern>
-    </servlet-mapping>
-    
-    <servlet-mapping>
-        <servlet-name>metadata</servlet-name>
-        <url-pattern>/FederationMetadata/2007-06/FederationMetadata.xml</url-pattern>
     </servlet-mapping>
 
     <listener>
