@@ -65,7 +65,7 @@ public class FederationConfigImpl implements FederationConfig, ServletContextAwa
             configurator.loadConfig(this.configFile.getFile());
         } catch (Exception e) {
             LOG.error("Failed to parse '" + configFile.getDescription() + "'", e);
-            throw new BeanCreationException("Failed to parse '" + configFile.getDescription() + "'");
+            throw new BeanCreationException("Failed to parse '" + configFile.getDescription() + "'", e);
         }
     }
 
