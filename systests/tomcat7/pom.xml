@@ -49,7 +49,7 @@
         <dependency>
             <groupId>org.eclipse.jdt.core.compiler</groupId>
             <artifactId>ecj</artifactId>
-            <version>3.7.1</version>
+            <version>${ecj.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
