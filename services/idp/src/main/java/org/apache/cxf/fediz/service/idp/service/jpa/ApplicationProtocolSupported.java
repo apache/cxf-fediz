@@ -19,8 +19,6 @@
 
 package org.apache.cxf.fediz.service.idp.service.jpa;
 
-
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -34,13 +32,11 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import javax.validation.Constraint;
 import javax.validation.Payload;
 
-
-
 @Target({ METHOD, FIELD, ANNOTATION_TYPE })
 @Retention(RUNTIME)
-@Constraint(validatedBy = ProtocolSupportValidator.class)
+@Constraint(validatedBy = ApplicationIdpProtocolSupportValidator.class)
 @Documented
-public @interface ProtocolSupported {
+public @interface ApplicationProtocolSupported {
 
     String message() default "{Protocol not supported}";
 

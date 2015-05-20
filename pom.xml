@@ -43,26 +43,26 @@
         <cxf.build-utils.version>3.1.0</cxf.build-utils.version>
         <easymock.version>3.3</easymock.version>
         <ehcache.version>2.9.0</ehcache.version>
+        <hibernate.version>5.1.1.Final</hibernate.version>
         <httpclient.version>4.3.5</httpclient.version>
         <hsqldb.version>1.8.0.10</hsqldb.version>
         <htmlunit.version>2.15</htmlunit.version>
         <javassist.version>3.16.1-GA</javassist.version>
+        <javax.el.version>2.2</javax.el.version>
         <javax.validation.version>1.1.0.Final</javax.validation.version>
         <jericho.version>3.3</jericho.version>
         <jetty.version>8.1.12.v20130726</jetty.version>
-        <!--<jetty.version>7.6.8.v20121106</jetty.version>-->
         <junit.version>4.12</junit.version>
         <log4j.version>1.2.17</log4j.version>
         <ognl.version>3.0.8</ognl.version>
         <openjpa.version>2.3.0</openjpa.version>
         <servlet.version>2.5</servlet.version>
         <slf4j.version>1.7.9</slf4j.version>
-        <spring.version>3.2.6.RELEASE</spring.version>
+        <spring.version>4.1.6.RELEASE</spring.version>
         <spring.security.version>3.1.4.RELEASE</spring.security.version>
         <tomcat.version>7.0.54</tomcat.version>
         <wss4j.version>2.1.0</wss4j.version>
         <xalan.version>2.7.2</xalan.version>
-        <bval.version>0.5</bval.version>
 
         <tomcat.url>http://localhost:8080/manager/text</tomcat.url>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
