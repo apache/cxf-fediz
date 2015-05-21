@@ -267,7 +267,7 @@
             <plugin>
                 <groupId>org.apache.openjpa</groupId>
                 <artifactId>openjpa-maven-plugin</artifactId>
-                <version>2.2.2</version>
+                <version>${openjpa.version}</version>
                 <inherited>true</inherited>
                 <configuration>
                     <persistenceXmlFile>${project.basedir}/src/main/resources/META-INF/spring-persistence.xml</persistenceXmlFile>
