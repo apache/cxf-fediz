@@ -21,6 +21,7 @@ package org.apache.cxf.fediz.service.idp.util;
 
 import org.w3c.dom.Document;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
+import org.apache.cxf.fediz.service.idp.metadata.IdpMetadataWriter;
 import org.apache.cxf.fediz.service.idp.service.ConfigService;
 import org.apache.wss4j.common.util.DOM2Writer;
 import org.junit.BeforeClass;
@@ -45,7 +46,7 @@ public class MetadataWriterTest {
         Idp idpConfig = config.getIDP("urn:org:apache:cxf:fediz:idp:realm-A");
         Assert.notNull(idpConfig, "IDPConfig must not be null");
         
-        MetadataWriter writer = new MetadataWriter();
+        IdpMetadataWriter writer = new IdpMetadataWriter();
         Document doc = writer.getMetaData(idpConfig);
         Assert.notNull(doc, "doc must not be null");
         

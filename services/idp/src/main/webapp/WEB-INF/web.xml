@@ -90,6 +90,7 @@ under the License.
 	<servlet-mapping>
 		<servlet-name>metadata</servlet-name>
 		<url-pattern>/FederationMetadata/2007-06/FederationMetadata.xml</url-pattern>
+		<url-pattern>/metadata/*</url-pattern>
 	</servlet-mapping>
 
 	<servlet>
