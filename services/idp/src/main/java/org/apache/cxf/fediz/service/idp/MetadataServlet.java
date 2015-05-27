@@ -30,8 +30,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.w3c.dom.Document;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
+import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
+import org.apache.cxf.fediz.service.idp.metadata.IdpMetadataWriter;
 import org.apache.cxf.fediz.service.idp.service.ConfigService;
-import org.apache.cxf.fediz.service.idp.util.MetadataWriter;
 import org.apache.wss4j.common.util.DOM2Writer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,13 +57,30 @@ public class MetadataServlet extends HttpServlet {
         IOException {
         response.setContentType("text/xml; charset=utf-8");
         PrintWriter out = response.getWriter();
+        
+        ConfigService cs = (ConfigService)getApplicationContext().getBean("config");
+        Idp idpConfig = cs.getIDP(realm);
         try {
-            ConfigService cs = (ConfigService)getApplicationContext().getBean("config");
-            Idp idpConfig = cs.getIDP(realm);
-            LOG.debug(idpConfig.toString());
-            MetadataWriter mw = new MetadataWriter();
-            Document metadata = mw.getMetaData(idpConfig);
-            out.write(DOM2Writer.nodeToString(metadata));
+            if (request.getServletPath() != null && request.getServletPath().startsWith("/metadata")) {
+                String serviceRealm = 
+                    request.getRequestURI().substring(request.getRequestURI().indexOf("/metadata")
+                                                      + "/metadata".length());
+                if (serviceRealm != null && serviceRealm.charAt(0) == '/') {
+                    serviceRealm = serviceRealm.substring(1);
+                }
+                TrustedIdp trustedIdp = idpConfig.findTrustedIdp(serviceRealm);
+                if (trustedIdp == null) {
+                    LOG.error("No TrustedIdp found for desired realm: " + serviceRealm);
+                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                }
+                // TODO
+            } else {
+                // Otherwise return the Metadata for the Idp
+                LOG.debug(idpConfig.toString());
+                IdpMetadataWriter mw = new IdpMetadataWriter();
+                Document metadata = mw.getMetaData(idpConfig);
+                out.write(DOM2Writer.nodeToString(metadata));
+            }
         } catch (Exception ex) {
             LOG.error("Failed to get metadata document: ", ex);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

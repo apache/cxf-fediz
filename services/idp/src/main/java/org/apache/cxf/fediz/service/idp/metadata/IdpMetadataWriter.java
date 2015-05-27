@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.cxf.fediz.service.idp.util;
+package org.apache.cxf.fediz.service.idp.metadata;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -47,9 +47,9 @@ import static org.apache.cxf.fediz.core.FedizConstants.SCHEMA_INSTANCE_NS;
 import static org.apache.cxf.fediz.core.FedizConstants.WS_ADDRESSING_NS;
 import static org.apache.cxf.fediz.core.FedizConstants.WS_FEDERATION_NS;
 
-public class MetadataWriter {
+public class IdpMetadataWriter {
     
-    private static final Logger LOG = LoggerFactory.getLogger(MetadataWriter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IdpMetadataWriter.class);
     
     private static final XMLOutputFactory XML_OUTPUT_FACTORY = XMLOutputFactory.newInstance();
     private static final DocumentBuilderFactory DOC_BUILDER_FACTORY = DocumentBuilderFactory.newInstance();
