@@ -435,6 +435,7 @@
                             <skip>false</skip>
                             <systemPropertyVariables>
                                 <idp.https.port>${idp.https.port}</idp.https.port>
+                                <catalina.base>target</catalina.base>
                             </systemPropertyVariables>
                             <includes>
                                 <include>**/integrationtests/**</include>
