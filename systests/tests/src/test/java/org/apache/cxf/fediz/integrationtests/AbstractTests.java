@@ -371,6 +371,37 @@ public abstract class AbstractTests {
     }
     
     @Test
+    public void testIdPServiceMetadata() throws Exception {
+        String url = "https://localhost:" + getIdpHttpsPort() 
+            + "/fediz-idp/metadata/urn:org:apache:cxf:fediz:idp:realm-B";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getOptions().setSSLClientCertificate(
+            this.getClass().getClassLoader().getResource("client.jks"), "storepass", "jks");
+
+        final XmlPage rpPage = webClient.getPage(url);
+        final String xmlContent = rpPage.asXml();
+        Assert.assertTrue(xmlContent.startsWith("<md:EntityDescriptor"));
+        
+        // Now validate the Signature
+        Document doc = rpPage.getXmlDocument();
+        
+        doc.getDocumentElement().setIdAttributeNS(null, "ID", true);
+        
+        Node signatureNode = 
+            DOMUtils.getChild(doc.getDocumentElement(), "Signature");
+        Assert.assertNotNull(signatureNode);
+        
+        XMLSignature signature = new XMLSignature((Element)signatureNode, "");
+        KeyInfo ki = signature.getKeyInfo();
+        Assert.assertNotNull(ki);
+        Assert.assertNotNull(ki.getX509Certificate());
+
+        Assert.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
+    }
+    
+    @Test
     public void testRPLogout() throws Exception {
 
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";

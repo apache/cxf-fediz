@@ -32,6 +32,7 @@ import org.w3c.dom.Document;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 import org.apache.cxf.fediz.service.idp.metadata.IdpMetadataWriter;
+import org.apache.cxf.fediz.service.idp.metadata.ServiceMetadataWriter;
 import org.apache.cxf.fediz.service.idp.service.ConfigService;
 import org.apache.wss4j.common.util.DOM2Writer;
 import org.slf4j.Logger;
@@ -73,7 +74,9 @@ public class MetadataServlet extends HttpServlet {
                     LOG.error("No TrustedIdp found for desired realm: " + serviceRealm);
                     response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 }
-                // TODO
+                ServiceMetadataWriter mw = new ServiceMetadataWriter();
+                Document metadata = mw.getMetaData(idpConfig, trustedIdp);
+                out.write(DOM2Writer.nodeToString(metadata));
             } else {
                 // Otherwise return the Metadata for the Idp
                 LOG.debug(idpConfig.toString());
