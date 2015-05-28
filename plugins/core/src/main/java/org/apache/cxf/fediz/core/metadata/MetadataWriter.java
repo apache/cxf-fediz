@@ -72,8 +72,7 @@ public class MetadataWriter {
         HttpServletRequest request, FedizContext config
     ) throws ProcessingException {
 
-        try {
-            ByteArrayOutputStream bout = new ByteArrayOutputStream(4096);
+        try (ByteArrayOutputStream bout = new ByteArrayOutputStream(4096)) {
             Writer streamWriter = new OutputStreamWriter(bout, "UTF-8");
             XMLStreamWriter writer = XML_OUTPUT_FACTORY.createXMLStreamWriter(streamWriter);
 
@@ -119,8 +118,6 @@ public class MetadataWriter {
                 LOG.debug("***************** unsigned ****************");
             }
 
-            InputStream is = new ByteArrayInputStream(bout.toByteArray());
-            
             boolean hasSigningKey = false;
             try {
                 if (config.getSigningKey().getCrypto() != null) {
@@ -129,16 +126,18 @@ public class MetadataWriter {
             } catch (Exception ex) {
                 LOG.info("No signingKey element found in config: " + ex.getMessage());
             }
-            if (hasSigningKey) {
-                Document result = SignatureUtils.signMetaInfo(
-                    config.getSigningKey().getCrypto(), config.getSigningKey().getKeyAlias(), config.getSigningKey().getKeyPassword(), is, referenceID);
-                if (result != null) {
-                    return result;
-                } else {
-                    throw new ProcessingException("Failed to sign the metadata document: result=null");
+            try (InputStream is = new ByteArrayInputStream(bout.toByteArray())) {
+                if (hasSigningKey) {
+                    Document result = SignatureUtils.signMetaInfo(
+                        config.getSigningKey().getCrypto(), config.getSigningKey().getKeyAlias(), config.getSigningKey().getKeyPassword(), is, referenceID);
+                    if (result != null) {
+                        return result;
+                    } else {
+                        throw new ProcessingException("Failed to sign the metadata document: result=null");
+                    }
                 }
+                return DOMUtils.readXml(is);
             }
-            return DOMUtils.readXml(is);
         } catch (ProcessingException e) {
             throw e;
         } catch (Exception e) {

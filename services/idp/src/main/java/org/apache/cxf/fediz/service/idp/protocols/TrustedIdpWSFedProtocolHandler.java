@@ -20,6 +20,8 @@
 package org.apache.cxf.fediz.service.idp.protocols;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -234,14 +236,15 @@ public class TrustedIdpWSFedProtocolHandler implements TrustedIdpProtocolHandler
     }
     
     private X509Certificate parseCertificate(String certificate)
-        throws CertificateException, Base64DecodingException {
+        throws CertificateException, Base64DecodingException, IOException {
         
         //before decoding we need to get rod off the prefix and suffix
         byte [] decoded = Base64.decode(certificate.replaceAll("-----BEGIN CERTIFICATE-----", "").
                                         replaceAll("-----END CERTIFICATE-----", ""));
 
-        return (X509Certificate)CertificateFactory.getInstance("X.509").
-            generateCertificate(new ByteArrayInputStream(decoded));
+        try (InputStream is = new ByteArrayInputStream(decoded)) {
+            return (X509Certificate)CertificateFactory.getInstance("X.509").generateCertificate(is);
+        }
     }
     
 

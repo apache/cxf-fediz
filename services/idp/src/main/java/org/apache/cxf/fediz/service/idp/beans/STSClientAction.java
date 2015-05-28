@@ -19,6 +19,7 @@
 package org.apache.cxf.fediz.service.idp.beans;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.net.MalformedURLException;
@@ -299,9 +300,11 @@ public class STSClientAction {
         return StringEscapeUtils.escapeXml11(rpToken);
     }
     
-    private String getIdFromToken(String token) throws XMLStreamException {
-        InputStream is = new ByteArrayInputStream(token.getBytes());
-        Document doc = StaxUtils.read(is);
+    private String getIdFromToken(String token) throws IOException, XMLStreamException {
+        Document doc = null;
+        try (InputStream is = new ByteArrayInputStream(token.getBytes())) {
+            doc = StaxUtils.read(is);
+        }
         NodeList nd = doc.getElementsByTagNameNS(WSConstants.SAML2_NS, "Assertion");
         
         String identifier = "ID";

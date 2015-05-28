@@ -159,9 +159,9 @@ public class KerberosTest extends AbstractLdapTestUnit {
             content = content.replaceAll("port", "" + super.getKdcServer().getTransports()[0].getPort());
             
             File f2 = new File(basedir + "/target/test-classes/fediz.kerberos.krb5.conf");
-            FileOutputStream outputStream = new FileOutputStream(f2);
-            IOUtils.write(content, outputStream, "UTF-8");
-            outputStream.close();
+            try (FileOutputStream outputStream = new FileOutputStream(f2)) {
+                IOUtils.write(content, outputStream, "UTF-8");
+            }
             
             System.setProperty("java.security.krb5.conf", f2.getPath());
             portUpdated = true;

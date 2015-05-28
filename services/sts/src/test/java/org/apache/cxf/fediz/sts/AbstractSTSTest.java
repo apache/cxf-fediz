@@ -36,7 +36,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
 
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 import org.apache.cxf.Bus;
@@ -86,9 +85,9 @@ public abstract class AbstractSTSTest {
         StringWriter writer = new StringWriter();
         jaxbContext.createMarshaller().marshal(supportingToken, writer);
         writer.flush();
-        InputStream is = new ByteArrayInputStream(writer.toString().getBytes());
-        Document doc = StaxUtils.read(is);
-        return doc.getDocumentElement();
+        try (InputStream is = new ByteArrayInputStream(writer.toString().getBytes())) {
+            return StaxUtils.read(is).getDocumentElement();
+        }
     }
 
     protected JAXBElement<UsernameTokenType> createUsernameToken(String name, String password) {

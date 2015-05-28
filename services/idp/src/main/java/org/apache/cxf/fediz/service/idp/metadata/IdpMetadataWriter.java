@@ -61,10 +61,9 @@ public class IdpMetadataWriter {
     //CHECKSTYLE:OFF
     public Document getMetaData(Idp config) throws RuntimeException {
         //Return as text/xml
-        try {
+        try (ByteArrayOutputStream bout = new ByteArrayOutputStream(4096)) {
             Crypto crypto = CertsUtils.createCrypto(config.getCertificate());
             
-            ByteArrayOutputStream bout = new ByteArrayOutputStream(4096);
             Writer streamWriter = new OutputStreamWriter(bout, "UTF-8");
             XMLStreamWriter writer = XML_OUTPUT_FACTORY.createXMLStreamWriter(streamWriter);
 
@@ -97,13 +96,13 @@ public class IdpMetadataWriter {
                 LOG.debug("***************** unsigned ****************");
             }
             
-            InputStream is = new ByteArrayInputStream(bout.toByteArray());
-            
-            Document result = SignatureUtils.signMetaInfo(crypto, null, config.getCertificatePassword(), is, referenceID);
-            if (result != null) {
-                return result;
-            } else {
-                throw new RuntimeException("Failed to sign the metadata document: result=null");
+            try (InputStream is = new ByteArrayInputStream(bout.toByteArray())) {
+                Document result = SignatureUtils.signMetaInfo(crypto, null, config.getCertificatePassword(), is, referenceID);
+                if (result != null) {
+                    return result;
+                } else {
+                    throw new RuntimeException("Failed to sign the metadata document: result=null");
+                }
             }
         } catch (RuntimeException e) {
             throw e;
