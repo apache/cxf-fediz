@@ -64,7 +64,7 @@ public class IdpDAOJPAImpl implements IdpDAO {
             .getResultList();*/
         
         //@SuppressWarnings("rawtypes")
-        List idpEntities = query
+        List<?> idpEntities = query
             .setFirstResult(start)
             .setMaxResults(size)
             .getResultList();

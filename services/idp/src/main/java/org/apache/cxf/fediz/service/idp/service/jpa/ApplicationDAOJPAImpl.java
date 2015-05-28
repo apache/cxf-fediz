@@ -64,7 +64,7 @@ public class ApplicationDAOJPAImpl implements ApplicationDAO {
         query = em.createQuery("select a from Application a");
         
         //@SuppressWarnings("rawtypes")
-        List serviceEntities = query
+        List<?> serviceEntities = query
             .setFirstResult(start)
             .setMaxResults(size)
             .getResultList();
