@@ -245,6 +245,7 @@
                             <skip>false</skip>
                             <systemPropertyVariables>
                                 <sts.https.port>${sts.https.port}</sts.https.port>
+                                <catalina.base>target</catalina.base>
                             </systemPropertyVariables>
 
                             <includes>
