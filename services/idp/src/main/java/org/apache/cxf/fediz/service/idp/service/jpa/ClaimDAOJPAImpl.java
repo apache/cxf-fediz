@@ -56,7 +56,7 @@ public class ClaimDAOJPAImpl implements ClaimDAO {
         query = em.createQuery("select c from Claim c");
         
         //@SuppressWarnings("rawtypes")
-        List claimEntities = query
+        List<?> claimEntities = query
             .setFirstResult(start)
             .setMaxResults(size)
             .getResultList();

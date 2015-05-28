@@ -55,7 +55,7 @@ public class EntitlementDAOJPAImpl implements EntitlementDAO {
         query = em.createQuery("select e from Entitlement e");
         
         //@SuppressWarnings("rawtypes")
-        List entitlementEntities = query
+        List<?> entitlementEntities = query
             .setFirstResult(start)
             .setMaxResults(size)
             .getResultList();

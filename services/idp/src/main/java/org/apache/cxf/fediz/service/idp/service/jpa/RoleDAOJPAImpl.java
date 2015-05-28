@@ -57,7 +57,7 @@ public class RoleDAOJPAImpl implements RoleDAO {
         query = em.createQuery("select r from Role r");
         
         //@SuppressWarnings("rawtypes")
-        List roleEntities = query
+        List<?> roleEntities = query
             .setFirstResult(start)
             .setMaxResults(size)
             .getResultList();
