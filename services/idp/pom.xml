@@ -371,7 +371,7 @@
                         <connector implementation="org.eclipse.jetty.server.ssl.SslSelectChannelConnector">
                             <port>${idp.https.port}</port>
                             <maxIdleTime>30000</maxIdleTime>
-                            <keystore>${basedir}/../../examples/samplekeys/idp-ssl-server.jks</keystore>
+                            <keystore>${basedir}/../../examples/samplekeys/idp-ssl-key.jks</keystore>
                             <keyPassword>tompass</keyPassword>
                             <password>tompass</password>
                         </connector>

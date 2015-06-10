@@ -25,7 +25,7 @@
         <http:client ConnectionTimeout="3000000" ReceiveTimeout="3000000"/>
         <http:tlsClientParameters disableCNCheck="true">
             <sec:trustManagers>
-                <sec:keyStore type="JKS" password="tompass" file="../../examples/samplekeys/idp-ssl-server.jks"/>
+                <sec:keyStore type="JKS" password="tompass" file="../../examples/samplekeys/idp-ssl-key.jks"/>
             </sec:trustManagers>
         </http:tlsClientParameters>
     </http:conduit>
