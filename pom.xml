@@ -230,8 +230,8 @@
     </organization>
 
     <modules>
-        <module>services</module>
         <module>plugins</module>
+        <module>services</module>
         <module>systests</module>
         <module>examples</module>
         <module>apache-fediz</module>
