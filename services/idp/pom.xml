@@ -183,7 +183,7 @@
             <version>1.9.13</version>
         </dependency>
         <dependency>
-            <groupId>hsqldb</groupId>
+            <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
             <version>${hsqldb.version}</version>
             <scope>provided</scope>
@@ -410,9 +410,9 @@
                 </executions>
                 <dependencies>
                     <dependency>
-                        <groupId>hsqldb</groupId>
+                        <groupId>org.hsqldb</groupId>
                         <artifactId>hsqldb</artifactId>
-                        <version>1.8.0.7</version>
+                        <version>${hsqldb.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>
