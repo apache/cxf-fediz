@@ -113,7 +113,7 @@
             <scope>runtime</scope>
         </dependencySet>
         <dependencySet>
-            <outputDirectory>apache-fediz-${project.version}/plugins/tomcat/lib</outputDirectory>
+            <outputDirectory>apache-fediz-${project.version}/plugins/tomcat7/lib</outputDirectory>
             <unpack>false</unpack>
             <useTransitiveFiltering>true</useTransitiveFiltering>
             <excludes>
