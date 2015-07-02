@@ -19,28 +19,22 @@
 
 package org.apache.cxf.fediz.service.idp.metadata;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.security.cert.X509Certificate;
 import java.util.Map;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.w3c.dom.Document;
-
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.util.CertsUtils;
 import org.apache.cxf.fediz.core.util.SignatureUtils;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 import org.apache.cxf.fediz.service.idp.protocols.TrustedIdpSAMLProtocolHandler;
+import org.apache.cxf.staxutils.W3CDOMStreamWriter;
 import org.apache.wss4j.common.crypto.Crypto;
+import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.xml.security.stax.impl.util.IDGenerator;
 import org.apache.xml.security.utils.Base64;
 import org.slf4j.Logger;
@@ -54,13 +48,6 @@ import static org.apache.cxf.fediz.core.FedizConstants.WS_FEDERATION_NS;
 public class ServiceMetadataWriter {
     
     private static final Logger LOG = LoggerFactory.getLogger(ServiceMetadataWriter.class);
-    
-    private static final XMLOutputFactory XML_OUTPUT_FACTORY = XMLOutputFactory.newInstance();
-    private static final DocumentBuilderFactory DOC_BUILDER_FACTORY = DocumentBuilderFactory.newInstance();
-    
-    static {
-        DOC_BUILDER_FACTORY.setNamespaceAware(true);
-    }
 
     //CHECKSTYLE:OFF
     public Document getMetaData(Idp config, TrustedIdp serviceConfig) throws ProcessingException {
@@ -68,9 +55,7 @@ public class ServiceMetadataWriter {
         try {
             Crypto crypto = CertsUtils.createCrypto(config.getCertificate());
             
-            ByteArrayOutputStream bout = new ByteArrayOutputStream(4096);
-            Writer streamWriter = new OutputStreamWriter(bout, "UTF-8");
-            XMLStreamWriter writer = XML_OUTPUT_FACTORY.createXMLStreamWriter(streamWriter);
+            W3CDOMStreamWriter writer = new W3CDOMStreamWriter();
 
             writer.writeStartDocument("UTF-8", "1.0");
 
@@ -97,20 +82,17 @@ public class ServiceMetadataWriter {
 
             writer.writeEndDocument();
             
-            streamWriter.flush();
-            bout.flush();
-            //
+            writer.close();
 
             if (LOG.isDebugEnabled()) {
-                String out = new String(bout.toByteArray());
+                String out = DOM2Writer.nodeToString(writer.getDocument());
                 LOG.debug("***************** unsigned ****************");
                 LOG.debug(out);
                 LOG.debug("***************** unsigned ****************");
             }
 
-            InputStream is = new ByteArrayInputStream(bout.toByteArray());
-            
-            Document result = SignatureUtils.signMetaInfo(crypto, null, config.getCertificatePassword(), is, referenceID);
+            Document result = SignatureUtils.signMetaInfo(crypto, null, config.getCertificatePassword(), 
+                                                          writer.getDocument(), referenceID);
             if (result != null) {
                 return result;
             } else {
