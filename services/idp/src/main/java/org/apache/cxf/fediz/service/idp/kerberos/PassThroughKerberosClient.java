@@ -19,7 +19,7 @@
 
 package org.apache.cxf.fediz.service.idp.kerberos;
 
-import org.apache.cxf.helpers.DOMUtils;
+import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.cxf.ws.security.kerberos.KerberosClient;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.ws.security.WSConstants;
