@@ -19,7 +19,6 @@
 
 package org.apache.cxf.fediz.core.util;
 
-import java.io.InputStream;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -40,7 +39,6 @@ import javax.xml.crypto.dsig.keyinfo.KeyInfoFactory;
 import javax.xml.crypto.dsig.keyinfo.X509Data;
 import javax.xml.crypto.dsig.spec.C14NMethodParameterSpec;
 import javax.xml.crypto.dsig.spec.TransformParameterSpec;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
 
@@ -54,18 +52,12 @@ public final class SignatureUtils {
     private static final Logger LOG = LoggerFactory.getLogger(SignatureUtils.class);
     
     private static final XMLSignatureFactory XML_SIGNATURE_FACTORY = XMLSignatureFactory.getInstance("DOM");
-    private static final DocumentBuilderFactory DOC_BUILDER_FACTORY = DocumentBuilderFactory.newInstance();
-    
-    static {
-        DOC_BUILDER_FACTORY.setNamespaceAware(true);
-    }
     
     private SignatureUtils() {
     }
     
-    
     public static Document signMetaInfo(Crypto crypto, String keyAlias, String keyPassword,
-                                              InputStream metaInfo, String referenceID) throws Exception {
+                                              Document doc, String referenceID) throws Exception {
         if (keyAlias == null || "".equals(keyAlias)) {
             keyAlias = crypto.getDefaultX509Identifier();
         }
@@ -144,8 +136,6 @@ public final class SignatureUtils {
         KeyInfo ki = kif.newKeyInfo(Collections.singletonList(xd));
 
         // step3
-        // Instantiate the document to be signed.
-        Document doc = DOC_BUILDER_FACTORY.newDocumentBuilder().parse(metaInfo);
 
         // Create a DOMSignContext and specify the RSA PrivateKey and
         // location of the resulting XMLSignature's parent element.

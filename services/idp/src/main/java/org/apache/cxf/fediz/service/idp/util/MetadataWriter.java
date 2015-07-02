@@ -34,6 +34,7 @@ import javax.xml.stream.XMLStreamWriter;
 import org.w3c.dom.Document;
 
 import org.apache.cxf.fediz.core.util.CertsUtils;
+import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.cxf.fediz.core.util.SignatureUtils;
 import org.apache.cxf.fediz.service.idp.model.IDPConfig;
 
@@ -173,7 +174,8 @@ public class MetadataWriter {
             
             InputStream is = new ByteArrayInputStream(bout.toByteArray());
             
-            Document result = SignatureUtils.signMetaInfo(crypto, null, config.getCertificatePassword(), is, referenceID);
+            Document doc = DOMUtils.readXml(is);
+            Document result = SignatureUtils.signMetaInfo(crypto, null, config.getCertificatePassword(), doc, referenceID);
             if (result != null) {
                 return result;
             } else {

@@ -29,7 +29,6 @@ import java.io.Writer;
 import java.util.List;
 
 import javax.security.auth.callback.CallbackHandler;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -58,11 +57,6 @@ public class MetadataWriter {
     private static final Logger LOG = LoggerFactory.getLogger(MetadataWriter.class);
     
     private static final XMLOutputFactory XML_OUTPUT_FACTORY = XMLOutputFactory.newInstance();
-    private static final DocumentBuilderFactory DOC_BUILDER_FACTORY = DocumentBuilderFactory.newInstance();
-    
-    static {
-        DOC_BUILDER_FACTORY.setNamespaceAware(true);
-    }
 
     //CHECKSTYLE:OFF
     public Document getMetaData(FederationContext config) throws ProcessingException {
@@ -209,8 +203,9 @@ public class MetadataWriter {
                 LOG.info("No signingKey element found in config: " + ex.getMessage());
             }
             if (hasSigningKey) {
+                Document doc = DOMUtils.readXml(is);
                 Document result = SignatureUtils.signMetaInfo(
-                    config.getSigningKey().getCrypto(), config.getSigningKey().getKeyAlias(), config.getSigningKey().getKeyPassword(), is, referenceID);
+                    config.getSigningKey().getCrypto(), config.getSigningKey().getKeyAlias(), config.getSigningKey().getKeyPassword(), doc, referenceID);
                 if (result != null) {
                     return result;
                 } else {

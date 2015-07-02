@@ -75,11 +75,13 @@ public final class DOMUtils {
             loader = DOMUtils.class.getClassLoader();
         }
         if (loader == null) {
-            return XMLUtils.getParser();
+            DocumentBuilderFactory dbf = createDocumentBuilderFactory();
+            return dbf.newDocumentBuilder();
         }
         DocumentBuilder builder = DOCUMENT_BUILDERS.get(loader);
         if (builder == null) {
-            builder = XMLUtils.getParser();
+            DocumentBuilderFactory dbf = createDocumentBuilderFactory();
+            builder = dbf.newDocumentBuilder();
             DOCUMENT_BUILDERS.put(loader, builder);
         }
         return builder;
@@ -421,76 +423,50 @@ public final class DOMUtils {
             return new InputSource(new StringReader(""));
         }
     }
+    
+    private static DocumentBuilderFactory createDocumentBuilderFactory() throws ParserConfigurationException {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING , true);
+
+        dbf.setValidating(false);
+        dbf.setIgnoringComments(false);
+        dbf.setIgnoringElementContentWhitespace(true);
+        dbf.setNamespaceAware(true);
+        // dbf.setCoalescing(true);
+        // dbf.setExpandEntityReferences(true);
+        
+        return dbf;
+    }
 
     /**
      * Read XML as DOM.
      */
     public static Document readXml(InputStream is) throws SAXException, IOException,
         ParserConfigurationException {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-
-        dbf.setValidating(false);
-        dbf.setIgnoringComments(false);
-        dbf.setIgnoringElementContentWhitespace(true);
-        dbf.setNamespaceAware(true);
-        // dbf.setCoalescing(true);
-        // dbf.setExpandEntityReferences(true);
-
-        DocumentBuilder db = null;
-        db = dbf.newDocumentBuilder();
-        db.setEntityResolver(new NullResolver());
-
-        // db.setErrorHandler( new MyErrorHandler());
-
+        DocumentBuilder db = getBuilder();
         return db.parse(is);
     }
 
     public static Document readXml(Reader is) throws SAXException, IOException, ParserConfigurationException {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-
-        dbf.setValidating(false);
-        dbf.setIgnoringComments(false);
-        dbf.setIgnoringElementContentWhitespace(true);
-        dbf.setNamespaceAware(true);
-        // dbf.setCoalescing(true);
-        // dbf.setExpandEntityReferences(true);
-
-        DocumentBuilder db = null;
-        db = dbf.newDocumentBuilder();
-        db.setEntityResolver(new NullResolver());
-
-        // db.setErrorHandler( new MyErrorHandler());
         InputSource ips = new InputSource(is);
+        DocumentBuilder db = getBuilder();
         return db.parse(ips);
     }
 
     public static Document readXml(StreamSource is) throws SAXException, IOException,
         ParserConfigurationException {
-
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-
-        dbf.setValidating(false);
-        dbf.setIgnoringComments(false);
-        dbf.setIgnoringElementContentWhitespace(true);
-        dbf.setNamespaceAware(true);
-        // dbf.setCoalescing(true);
-        // dbf.setExpandEntityReferences(true);
-
-        DocumentBuilder db = null;
-        db = dbf.newDocumentBuilder();
-        db.setEntityResolver(new NullResolver());
-
-        // db.setErrorHandler( new MyErrorHandler());
         InputSource is2 = new InputSource();
         is2.setSystemId(is.getSystemId());
         is2.setByteStream(is.getInputStream());
         is2.setCharacterStream(is.getReader());
 
+        DocumentBuilder db = getBuilder();
         return db.parse(is2);
     }
 
     public static void writeXml(Node n, OutputStream os) throws TransformerException {
         TransformerFactory tf = TransformerFactory.newInstance();
+        tf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING , true);
         // identity
         Transformer t = tf.newTransformer();
         t.setOutputProperty(OutputKeys.INDENT, "yes");
