@@ -42,18 +42,17 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
 import org.apache.cxf.common.util.Base64Exception;
 import org.apache.cxf.common.util.Base64Utility;
 import org.apache.cxf.common.util.StringUtils;
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.util.CertsUtils;
+import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 import org.apache.cxf.fediz.service.idp.spi.TrustedIdpProtocolHandler;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
-import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.jaxrs.utils.ExceptionUtils;
 import org.apache.cxf.rs.security.saml.DeflateEncoderDecoder;
 import org.apache.cxf.rs.security.saml.sso.AuthnRequestBuilder;
