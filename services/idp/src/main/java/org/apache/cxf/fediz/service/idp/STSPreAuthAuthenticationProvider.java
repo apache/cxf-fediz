@@ -24,9 +24,8 @@ import java.util.List;
 import javax.xml.namespace.QName;
 
 import org.w3c.dom.Document;
-
 import org.apache.cxf.Bus;
-import org.apache.cxf.helpers.DOMUtils;
+import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.wss4j.dom.WSConstants;
 import org.apache.xml.security.exceptions.XMLSecurityException;
@@ -89,7 +88,7 @@ public class STSPreAuthAuthenticationProvider extends STSAuthenticationProvider 
         }
         
         // Convert the received certificate to a DOM Element to write it out "OnBehalfOf"
-        Document doc = DOMUtils.newDocument();
+        Document doc = DOMUtils.createDocument();
         X509Data certElem = new X509Data(doc);
         try {
             certElem.addCertificate(cert);
