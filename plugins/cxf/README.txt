@@ -4,7 +4,7 @@ Fediz Plugin for CXF
 The Fediz plugin for CXF contains two separate pieces of functionality.
 The first is a CallbackHandler that allows the SAML Token of the Web
 SSO session to be used by the CXF Web Services Stack, i.e. for delegation.
-The second is a full SAML SSO RP plugin based solely on Apache CXF, which
+The second is a full WS-Federation RP plugin based solely on Apache CXF, which
 is container independent. 
 
 = Delegation scenario =
