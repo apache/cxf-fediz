@@ -32,7 +32,6 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.apache.cxf.fediz.common.STSUtil;
 import org.apache.cxf.fediz.common.SecurityTestUtil;
 import org.apache.cxf.fediz.core.AbstractSAMLCallbackHandler;
@@ -76,6 +75,7 @@ import org.apache.wss4j.common.saml.bean.ConditionsBean;
 import org.apache.wss4j.common.saml.builder.SAML1Constants;
 import org.apache.wss4j.common.saml.builder.SAML2Constants;
 import org.apache.wss4j.common.util.DOM2Writer;
+import org.apache.wss4j.common.util.XMLUtils;
 import org.apache.wss4j.dom.WSConstants;
 import org.apache.wss4j.dom.message.WSSecEncrypt;
 import org.joda.time.DateTime;
@@ -90,6 +90,20 @@ import static org.junit.Assert.fail;
  * Some tests for the WS-Federation "FederationProcessor".
  */
 public class FederationResponseTest {
+    public static final String SAMPLE_MULTIPLE_RSTR_COLL_MSG = 
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+        + "<RequestSecurityTokenResponseCollection "
+        +   "xmlns=\"http://docs.oasis-open.org/ws-sx/ws-trust/200512\"> "
+        +   "<RequestSecurityTokenResponse>"
+        +     "<RequestedSecurityToken>"
+        +     "</RequestedSecurityToken>"
+        +   "</RequestSecurityTokenResponse>"
+        +   "<RequestSecurityTokenResponse>"
+        +     "<RequestedSecurityToken>"
+        +     "</RequestedSecurityToken>"
+        +   "</RequestSecurityTokenResponse>"
+        + "</RequestSecurityTokenResponseCollection>";
+    
     static final String TEST_USER = "alice";
     static final String TEST_RSTR_ISSUER = "FedizSTSIssuer";
     static final String TEST_AUDIENCE = "https://localhost/fedizhelloworld";
@@ -760,6 +774,221 @@ public class FederationResponseTest {
         }
     }
     
+    @org.junit.Test
+    public void testUnsignedAssertionAfterSignedAssertion() throws Exception {
+        // First assertion
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        ConditionsBean cp = new ConditionsBean();
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
+        callbackHandler.setConditions(cp);
+        
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion1 = new SamlAssertionWrapper(samlCallback);
+        
+        // Second assertion
+        SAML2CallbackHandler callbackHandler2 = new SAML2CallbackHandler();
+        callbackHandler2.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler2.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler2.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler2.setSubjectName("bob");
+        ConditionsBean cp2 = new ConditionsBean();
+        AudienceRestrictionBean audienceRestriction2 = new AudienceRestrictionBean();
+        audienceRestriction2.getAudienceURIs().add(TEST_AUDIENCE);
+        cp2.setAudienceRestrictions(Collections.singletonList(audienceRestriction2));
+        callbackHandler2.setConditions(cp2);
+        
+        SAMLCallback samlCallback2 = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler2, samlCallback2);
+        SamlAssertionWrapper assertion2 = new SamlAssertionWrapper(samlCallback2);
+        
+        Element rstrElement = 
+            createResponseWithMultipleAssertions(assertion1, true, assertion2, false, "mystskey");
+        String rstr = DOM2Writer.nodeToString(rstrElement);
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
+        
+        // Load and update the config to enforce an error
+        configurator = null;
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");       
+        
+        FedizProcessor wfProc = new FederationProcessorImpl();
+        FedizResponse fedizResponse = wfProc.processRequest(wfReq, config);
+        Assert.assertEquals(TEST_USER, fedizResponse.getUsername());
+    }
+    
+    @org.junit.Test
+    public void testSignedAssertionAfterUnsignedAssertion() throws Exception {
+        // First assertion
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        ConditionsBean cp = new ConditionsBean();
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
+        callbackHandler.setConditions(cp);
+        
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion1 = new SamlAssertionWrapper(samlCallback);
+        
+        // Second assertion
+        SAML2CallbackHandler callbackHandler2 = new SAML2CallbackHandler();
+        callbackHandler2.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler2.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler2.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler2.setSubjectName("bob");
+        ConditionsBean cp2 = new ConditionsBean();
+        AudienceRestrictionBean audienceRestriction2 = new AudienceRestrictionBean();
+        audienceRestriction2.getAudienceURIs().add(TEST_AUDIENCE);
+        cp2.setAudienceRestrictions(Collections.singletonList(audienceRestriction2));
+        callbackHandler2.setConditions(cp2);
+        
+        SAMLCallback samlCallback2 = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler2, samlCallback2);
+        SamlAssertionWrapper assertion2 = new SamlAssertionWrapper(samlCallback2);
+        
+        Element rstrElement = 
+            createResponseWithMultipleAssertions(assertion2, false, assertion1, true, "mystskey");
+        String rstr = DOM2Writer.nodeToString(rstrElement);
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
+        
+        // Load and update the config to enforce an error
+        configurator = null;
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");       
+        
+        FedizProcessor wfProc = new FederationProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            Assert.fail("Processing must fail because of missing signature");
+        } catch (ProcessingException ex) {
+            if (!TYPE.TOKEN_NO_SIGNATURE.equals(ex.getType())) {
+                fail("Expected ProcessingException with TOKEN_NO_SIGNATURE type");
+            }
+        }
+    }
+    
+    @org.junit.Test
+    public void testWrappingAttack() throws Exception {
+        // First assertion
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        ConditionsBean cp = new ConditionsBean();
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
+        callbackHandler.setConditions(cp);
+        
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion1 = new SamlAssertionWrapper(samlCallback);
+        
+        // Second assertion
+        SAML2CallbackHandler callbackHandler2 = new SAML2CallbackHandler();
+        callbackHandler2.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler2.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler2.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler2.setSubjectName("bob");
+        ConditionsBean cp2 = new ConditionsBean();
+        AudienceRestrictionBean audienceRestriction2 = new AudienceRestrictionBean();
+        audienceRestriction2.getAudienceURIs().add(TEST_AUDIENCE);
+        cp2.setAudienceRestrictions(Collections.singletonList(audienceRestriction2));
+        callbackHandler2.setConditions(cp2);
+        
+        SAMLCallback samlCallback2 = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler2, samlCallback2);
+        SamlAssertionWrapper assertion2 = new SamlAssertionWrapper(samlCallback2);
+        
+        WSPasswordCallback[] cb = {
+            new WSPasswordCallback("mystskey", WSPasswordCallback.SIGNATURE)
+        };
+        cbPasswordHandler.handle(cb);
+        String password = cb[0].getPassword();
+
+        assertion1.signAssertion("mystskey", password, crypto, false);
+        assertion2.signAssertion("mystskey", password, crypto, false);
+
+        Document doc = STSUtil.toSOAPPart(SAMPLE_MULTIPLE_RSTR_COLL_MSG);
+        Element token1 = assertion2.toDOM(doc);
+        Element token2 = assertion1.toDOM(doc);
+        
+        // Now modify the first Signature to point to the other Element
+        Element sig1 = XMLUtils.findElement(token1, "Signature", WSConstants.SIG_NS);
+        Element sig2 = XMLUtils.findElement(token2, "Signature", WSConstants.SIG_NS);
+        sig1.getParentNode().replaceChild(sig2.cloneNode(true), sig1);
+
+        List<Element> requestedTokenElements = 
+            XMLUtils.findElements(doc, "RequestedSecurityToken", FederationConstants.WS_TRUST_13_NS);
+        Assert.assertEquals(2, requestedTokenElements.size());
+        requestedTokenElements.get(0).appendChild(token1);
+        requestedTokenElements.get(1).appendChild(token2);
+
+        Element rstrElement = doc.getDocumentElement();
+        
+        String rstr = DOM2Writer.nodeToString(rstrElement);
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
+        
+        // Load and update the config to enforce an error
+        configurator = null;
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");       
+        
+        FedizProcessor wfProc = new FederationProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            Assert.fail("Processing must fail because of bad signature");
+        } catch (ProcessingException ex) {
+            // expected
+        }
+    }
+    
+    private Element createResponseWithMultipleAssertions(SamlAssertionWrapper assertion1, 
+                                          boolean signFirstAssertion,
+                                          SamlAssertionWrapper assertion2,
+                                          boolean signSecondAssertion,
+                                          String alias) throws Exception {
+        WSPasswordCallback[] cb = {
+            new WSPasswordCallback(alias, WSPasswordCallback.SIGNATURE)
+        };
+        cbPasswordHandler.handle(cb);
+        String password = cb[0].getPassword();
+
+        if (signFirstAssertion) {
+            assertion1.signAssertion(alias, password, crypto, false);
+        }
+        if (signSecondAssertion) {
+            assertion2.signAssertion(alias, password, crypto, false);
+        }
+        
+        Document doc = STSUtil.toSOAPPart(SAMPLE_MULTIPLE_RSTR_COLL_MSG);
+        Element token1 = assertion1.toDOM(doc);
+        Element token2 = assertion2.toDOM(doc);
+
+        List<Element> requestedTokenElements = 
+            XMLUtils.findElements(doc, "RequestedSecurityToken", FederationConstants.WS_TRUST_13_NS);
+        Assert.assertEquals(2, requestedTokenElements.size());
+        requestedTokenElements.get(0).appendChild(token1);
+        requestedTokenElements.get(1).appendChild(token2);
+        
+        return doc.getDocumentElement();
+    }
+    
     /**
      * Validate SAML 2 token twice which causes an exception
      * due to replay attack
@@ -1147,10 +1376,10 @@ public class FederationResponseTest {
         Document doc = STSUtil.toSOAPPart(STSUtil.SAMPLE_RSTR_COLL_MSG);
         Element token = assertion.toDOM(doc);
 
-        Element e = FederationResponseTest.findElement(doc, "RequestedSecurityToken",
+        Element e = XMLUtils.findElement(doc, "RequestedSecurityToken",
                                                         FederationConstants.WS_TRUST_13_NS);
         if (e == null) {
-            e = FederationResponseTest.findElement(doc, "RequestedSecurityToken",
+            e = XMLUtils.findElement(doc, "RequestedSecurityToken",
                                                     FederationConstants.WS_TRUST_2005_02_NS);
         }
         e.appendChild(token);
@@ -1284,10 +1513,10 @@ public class FederationResponseTest {
         issueDateTime = issueDateTime.plusSeconds(1);
         token.setAttributeNS(null, "IssueInstant", issueDateTime.toString());
 
-        Element e = FederationResponseTest.findElement(doc, "RequestedSecurityToken",
+        Element e = XMLUtils.findElement(doc, "RequestedSecurityToken",
                                                        FederationConstants.WS_TRUST_13_NS);
         if (e == null) {
-            e = FederationResponseTest.findElement(doc, "RequestedSecurityToken",
+            e = XMLUtils.findElement(doc, "RequestedSecurityToken",
                                                    FederationConstants.WS_TRUST_2005_02_NS);
         }
         e.appendChild(token);
@@ -1358,10 +1587,10 @@ public class FederationResponseTest {
         Document doc = STSUtil.toSOAPPart(STSUtil.SAMPLE_RSTR_COLL_MSG);
         Element token = assertion.toDOM(doc);
 
-        Element e = FederationResponseTest.findElement(doc, "RequestedSecurityToken",
+        Element e = XMLUtils.findElement(doc, "RequestedSecurityToken",
                                                         FederationConstants.WS_TRUST_13_NS);
         if (e == null) {
-            e = FederationResponseTest.findElement(doc, "RequestedSecurityToken",
+            e = XMLUtils.findElement(doc, "RequestedSecurityToken",
                                                     FederationConstants.WS_TRUST_2005_02_NS);
         }
         e.appendChild(token);
@@ -1404,77 +1633,16 @@ public class FederationResponseTest {
         Document doc = STSUtil.toSOAPPart(rstr);
         Element token = assertion.toDOM(doc);
 
-        Element e = FederationResponseTest.findElement(doc, "RequestedSecurityToken",
+        Element e = XMLUtils.findElement(doc, "RequestedSecurityToken",
                                                         FederationConstants.WS_TRUST_13_NS);
         if (e == null) {
-            e = FederationResponseTest.findElement(doc, "RequestedSecurityToken",
+            e = XMLUtils.findElement(doc, "RequestedSecurityToken",
                                                     FederationConstants.WS_TRUST_2005_02_NS);
         }
         e.appendChild(token);
         return DOM2Writer.nodeToString(doc);
     }
     
-
-    
-    
-    /**
-     * Returns the first element that matches <code>name</code> and
-     * <code>namespace</code>. <p/> This is a replacement for a XPath lookup
-     * <code>//name</code> with the given namespace. It's somewhat faster than
-     * XPath, and we do not deal with prefixes, just with the real namespace URI
-     * 
-     * @param startNode Where to start the search
-     * @param name Local name of the element
-     * @param namespace Namespace URI of the element
-     * @return The found element or <code>null</code>
-     */
-    public static Element findElement(Node startNode, String name, String namespace) {
-        //
-        // Replace the formerly recursive implementation with a depth-first-loop
-        // lookup
-        //
-        if (startNode == null) {
-            return null;
-        }
-        Node startParent = startNode.getParentNode();
-        Node processedNode = null;
-
-        while (startNode != null) {
-            // start node processing at this point
-            if (startNode.getNodeType() == Node.ELEMENT_NODE
-                && startNode.getLocalName().equals(name)) {
-                String ns = startNode.getNamespaceURI();
-                if (ns != null && ns.equals(namespace)) {
-                    return (Element)startNode;
-                }
-
-                if ((namespace == null || namespace.length() == 0)
-                    && (ns == null || ns.length() == 0)) {
-                    return (Element)startNode;
-                }
-            }
-            processedNode = startNode;
-            startNode = startNode.getFirstChild();
-
-            // no child, this node is done.
-            if (startNode == null) {
-                // close node processing, get sibling
-                startNode = processedNode.getNextSibling();
-            }
-            // no more siblings, get parent, all children
-            // of parent are processed.
-            while (startNode == null) {
-                processedNode = processedNode.getParentNode();
-                if (processedNode == startParent) {
-                    return null;
-                }
-                // close parent node processing (processed node now)
-                startNode = processedNode.getNextSibling();
-            }
-        }
-        return null;
-    }
-
     private void assertClaims(List<Claim> claims, String roleClaimType) {
         for (Claim c : claims) {
             Assert.assertTrue("Invalid ClaimType URI: " + c.getClaimType(), 
