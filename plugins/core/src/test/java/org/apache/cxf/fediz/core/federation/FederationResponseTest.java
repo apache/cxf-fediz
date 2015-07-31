@@ -75,9 +75,9 @@ import org.apache.wss4j.common.saml.bean.ConditionsBean;
 import org.apache.wss4j.common.saml.builder.SAML1Constants;
 import org.apache.wss4j.common.saml.builder.SAML2Constants;
 import org.apache.wss4j.common.util.DOM2Writer;
-import org.apache.wss4j.common.util.XMLUtils;
 import org.apache.wss4j.dom.WSConstants;
 import org.apache.wss4j.dom.message.WSSecEncrypt;
+import org.apache.wss4j.dom.util.WSSecurityUtil;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.junit.AfterClass;
@@ -928,12 +928,12 @@ public class FederationResponseTest {
         Element token2 = assertion1.toDOM(doc);
         
         // Now modify the first Signature to point to the other Element
-        Element sig1 = XMLUtils.findElement(token1, "Signature", WSConstants.SIG_NS);
-        Element sig2 = XMLUtils.findElement(token2, "Signature", WSConstants.SIG_NS);
+        Element sig1 = WSSecurityUtil.findElement(token1, "Signature", WSConstants.SIG_NS);
+        Element sig2 = WSSecurityUtil.findElement(token2, "Signature", WSConstants.SIG_NS);
         sig1.getParentNode().replaceChild(sig2.cloneNode(true), sig1);
 
         List<Element> requestedTokenElements = 
-            XMLUtils.findElements(doc, "RequestedSecurityToken", FederationConstants.WS_TRUST_13_NS);
+            WSSecurityUtil.findElements(doc, "RequestedSecurityToken", FederationConstants.WS_TRUST_13_NS);
         Assert.assertEquals(2, requestedTokenElements.size());
         requestedTokenElements.get(0).appendChild(token1);
         requestedTokenElements.get(1).appendChild(token2);
@@ -981,7 +981,7 @@ public class FederationResponseTest {
         Element token2 = assertion2.toDOM(doc);
 
         List<Element> requestedTokenElements = 
-            XMLUtils.findElements(doc, "RequestedSecurityToken", FederationConstants.WS_TRUST_13_NS);
+            WSSecurityUtil.findElements(doc, "RequestedSecurityToken", FederationConstants.WS_TRUST_13_NS);
         Assert.assertEquals(2, requestedTokenElements.size());
         requestedTokenElements.get(0).appendChild(token1);
         requestedTokenElements.get(1).appendChild(token2);
@@ -1376,10 +1376,10 @@ public class FederationResponseTest {
         Document doc = STSUtil.toSOAPPart(STSUtil.SAMPLE_RSTR_COLL_MSG);
         Element token = assertion.toDOM(doc);
 
-        Element e = XMLUtils.findElement(doc, "RequestedSecurityToken",
+        Element e = WSSecurityUtil.findElement(doc, "RequestedSecurityToken",
                                                         FederationConstants.WS_TRUST_13_NS);
         if (e == null) {
-            e = XMLUtils.findElement(doc, "RequestedSecurityToken",
+            e = WSSecurityUtil.findElement(doc, "RequestedSecurityToken",
                                                     FederationConstants.WS_TRUST_2005_02_NS);
         }
         e.appendChild(token);
@@ -1513,10 +1513,10 @@ public class FederationResponseTest {
         issueDateTime = issueDateTime.plusSeconds(1);
         token.setAttributeNS(null, "IssueInstant", issueDateTime.toString());
 
-        Element e = XMLUtils.findElement(doc, "RequestedSecurityToken",
+        Element e = WSSecurityUtil.findElement(doc, "RequestedSecurityToken",
                                                        FederationConstants.WS_TRUST_13_NS);
         if (e == null) {
-            e = XMLUtils.findElement(doc, "RequestedSecurityToken",
+            e = WSSecurityUtil.findElement(doc, "RequestedSecurityToken",
                                                    FederationConstants.WS_TRUST_2005_02_NS);
         }
         e.appendChild(token);
@@ -1587,10 +1587,10 @@ public class FederationResponseTest {
         Document doc = STSUtil.toSOAPPart(STSUtil.SAMPLE_RSTR_COLL_MSG);
         Element token = assertion.toDOM(doc);
 
-        Element e = XMLUtils.findElement(doc, "RequestedSecurityToken",
+        Element e = WSSecurityUtil.findElement(doc, "RequestedSecurityToken",
                                                         FederationConstants.WS_TRUST_13_NS);
         if (e == null) {
-            e = XMLUtils.findElement(doc, "RequestedSecurityToken",
+            e = WSSecurityUtil.findElement(doc, "RequestedSecurityToken",
                                                     FederationConstants.WS_TRUST_2005_02_NS);
         }
         e.appendChild(token);
@@ -1633,10 +1633,10 @@ public class FederationResponseTest {
         Document doc = STSUtil.toSOAPPart(rstr);
         Element token = assertion.toDOM(doc);
 
-        Element e = XMLUtils.findElement(doc, "RequestedSecurityToken",
+        Element e = WSSecurityUtil.findElement(doc, "RequestedSecurityToken",
                                                         FederationConstants.WS_TRUST_13_NS);
         if (e == null) {
-            e = XMLUtils.findElement(doc, "RequestedSecurityToken",
+            e = WSSecurityUtil.findElement(doc, "RequestedSecurityToken",
                                                     FederationConstants.WS_TRUST_2005_02_NS);
         }
         e.appendChild(token);
