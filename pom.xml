@@ -39,7 +39,7 @@
         <apacheds.version>2.0.0-M20</apacheds.version>
         <commons.lang.version>3.4</commons.lang.version>
         <commons.logging.version>1.2</commons.logging.version>
-        <cxf.version>3.1.1</cxf.version>
+        <cxf.version>3.1.2</cxf.version>
         <cxf.build-utils.version>3.1.0</cxf.build-utils.version>
         <easymock.version>3.3</easymock.version>
         <ecj.version>4.4.2</ecj.version>
@@ -62,7 +62,7 @@
         <spring.version>4.1.6.RELEASE</spring.version>
         <spring.security.version>3.1.4.RELEASE</spring.security.version>
         <tomcat.version>7.0.54</tomcat.version>
-        <wss4j.version>2.1.0</wss4j.version>
+        <wss4j.version>2.1.2</wss4j.version>
         <xalan.version>2.7.2</xalan.version>
 
         <tomcat.url>http://localhost:8080/manager/text</tomcat.url>
