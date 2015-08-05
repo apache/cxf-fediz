@@ -1,4 +1,4 @@
-Apache CXF Fediz 1.2.0 Release Notes
+Apache CXF Fediz 1.2.1 Release Notes
 ------------------------------------
 
 1. Overview
@@ -62,6 +62,23 @@ N.A.
 
 
 8. Specific issues, features, and improvements fixed in this version
+
+Release Notes - CXF-Fediz - Version 1.2.1
+
+Bug
+
+    [FEDIZ-118] - Allow securing root context applications
+
+Improvement
+
+    [FEDIZ-113] - Support SAML SSO Metadata in the IdP
+    [FEDIZ-120] - IDP Encoding of SignInResponse configurable
+    [FEDIZ-123] - Update certificates to 2048 bits
+
+Task
+
+    [FEDIZ-114] - Remove X509TokenValidator and DefaultSubjectProvider in the STS
+
 
 Release Notes - CXF-Fediz - Version 1.2.0
 
