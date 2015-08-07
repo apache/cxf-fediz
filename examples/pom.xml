@@ -37,4 +37,14 @@
         <module>spring2Webapp</module>
         <module>springPreauthWebapp</module>
     </modules>
+	
+	<profiles>
+     <profile>
+       <id>websphere</id>
+       <modules>
+			<module>websphereWebapp</module>
+			<module>websphereWebappEar</module>
+       </modules>
+     </profile>
+   </profiles>
 </project>

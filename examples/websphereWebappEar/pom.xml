@@ -27,9 +27,9 @@
     </parent>
 
     <groupId>org.apache.cxf.fediz.examples</groupId>
-    <artifactId>websphereWebapp</artifactId>
-    <name>Fediz Example: WebsphereWebapp</name>
-    <packaging>war</packaging>
+    <artifactId>websphereWebappEar</artifactId>
+    <name>Fediz Example: WebsphereWebappEar</name>
+    <packaging>ear</packaging>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -37,49 +37,47 @@
 
     <dependencies>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>${servlet.version}</version>
-            <scope>provided</scope>
+            <groupId>org.apache.cxf.fediz.examples</groupId>
+			<artifactId>websphereWebapp</artifactId>
+            <version>${project.version}</version>  
+			<type>war</type>			
         </dependency>
-        <!-- Required to cast Principal to FederationPrincipal -->
-        <dependency>
-            <groupId>org.apache.cxf.fediz</groupId>
-            <artifactId>fediz-core</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>             
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>${commons.lang.version}</version>
-        </dependency>
-        
-        <dependency>
-			<groupId>com.ibm.websphere</groupId>
-			<artifactId>com.ibm.websphere.security</artifactId>
-			<version>1.0.3</version>
-			<type>jar</type>
-			<scope>provided</scope>
- 		</dependency>
-		<dependency>
-			<groupId>com.ibm.ws.security</groupId>
-			<artifactId>com.ibm.ws.security.authentication.tai</artifactId>
-			<version>1.0.3</version>
-			<type>jar</type>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.ibm.ws.security</groupId>
-			<artifactId>com.ibm.ws.security.token</artifactId>
-			<version>1.0.2</version>
-			<type>jar</type>
-			<scope>provided</scope>
-		</dependency>  
     </dependencies>
 
     <build>
-        <finalName>fedizhelloworld</finalName>
+        <plugins>
+			<plugin>
+				<artifactId>maven-ear-plugin</artifactId>
+				<version>2.10.1</version>
+				<configuration>
+					<displayName>Fediz Hello World</displayName>
+					<description>Fediz Hello World demo application.</description>
+					<finalName>fedizhelloworld</finalName>
+					<modules>
+						<webModule>
+							<groupId>org.apache.cxf.fediz.examples</groupId>
+							<artifactId>websphereWebapp</artifactId>
+							<contextRoot>fedizhelloworld</contextRoot>
+							<uri>fedizhelloworld.war</uri>
+						</webModule>
+					</modules>
+					<security>
+						<security-role id="SecurityRole_1311175300750">
+						  <role-name>User</role-name>
+						</security-role>
+						<security-role id="SecurityRole_1311175300751">
+						  <role-name>Manager</role-name>
+						</security-role>
+						<security-role id="SecurityRole_1311175300752">
+						  <role-name>Admin</role-name>
+						</security-role>
+						<security-role id="SecurityRole_1425914835358">
+						  <role-name>Authenticated</role-name>
+						</security-role>						
+					</security>
+				</configuration>
+			  </plugin>
+        </plugins>
     </build>
 
 </project>

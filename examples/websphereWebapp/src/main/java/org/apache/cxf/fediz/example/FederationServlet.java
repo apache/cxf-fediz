@@ -21,95 +21,106 @@ package org.apache.cxf.fediz.example;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.security.Principal;
 import java.util.Arrays;
+import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import javax.security.auth.Subject;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Element;
 
-import org.apache.commons.lang3.StringEscapeUtils;
+import com.ibm.websphere.security.WSSecurityException;
+import com.ibm.websphere.security.auth.WSSubject;
+
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.FedizPrincipal;
 import org.apache.cxf.fediz.core.SecurityTokenThreadLocal;
-
+import org.apache.cxf.fediz.core.processor.FedizResponse;
 
 public class FederationServlet extends HttpServlet {
 
     /**
      * 
      */
+    private static final String SUBJECT_TOKEN_KEY = "_security.token";
+
     private static final long serialVersionUID = -9019993850246851112L;
 
-    public void doGet(HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, IOException {
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException,
+        IOException {
 
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();
 
         out.println("<html>");
-        out.println("<head><title>WS Federation Example</title></head>");
+        out.println("<head><title>WS Federation Systests Examples</title></head>");
         out.println("<body>");
-        out.println("<h1>Hello World</h1>");
-        out.println("Request url: " + request.getRequestURL().toString() + "<p>");
+        out.println("<p>Request url: " + request.getRequestURL().toString() + "</p>");
 
-
-        out.println("<br><b>User</b><p>");
+        out.print("<p>userPrincipal=");
         Principal p = request.getUserPrincipal();
         if (p != null) {
-            out.println("Principal: " + p.getName() + "<p>");
+            out.print(p.getName());
         }
+        out.println("</p>");
 
-        out.println("<br><b>Roles</b><p>");
         List<String> roleListToCheck = Arrays.asList("Admin", "Manager", "User", "Authenticated");
-        for (String item: roleListToCheck) {
-            out.println("Has role '" + item + "': " + ((request.isUserInRole(item)) ? "<b>yes</b>" : "no") + "<p>");
+        for (String item : roleListToCheck) {
+            out.println("<p>role:" + item + "=" + ((request.isUserInRole(item)) ? "true" : "false") + "</p>");
         }
 
         if (p instanceof FedizPrincipal) {
             FedizPrincipal fp = (FedizPrincipal)p;
 
-            out.println("<br><b>Claims</b><p>");
             ClaimCollection claims = fp.getClaims();
-            for (Claim c: claims) {
-                out.println(c.getClaimType().toString() + ": " + c.getValue() + "<p>");
+            for (Claim c : claims) {
+                out.println("<p>" + c.getClaimType().toString() + "=" + c.getValue() + "</p>");
             }
-        } else {
-            out.println("<br>Principal is not instance of FedizPrincipal<p>");
+
+            Element el = fp.getLoginToken();
+            if (el != null) {
+                out.println("loginToken=FOUND{FedizPrincipal}<p>");
+            }
+
+            el = SecurityTokenThreadLocal.getToken();
+            if (el != null) {
+                out.println("loginToken=FOUND{SecurityTokenThreadLocal}<p>");
+            }
+
         }
 
-        Element el = SecurityTokenThreadLocal.getToken();
-        if (el != null) {
-            out.println("<br><b>Bootstrap token</b><p>");
-            String token = null;
-            try {
-                TransformerFactory transFactory = TransformerFactory.newInstance();
-                Transformer transformer = transFactory.newTransformer();
-                StringWriter buffer = new StringWriter();
-                transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-                transformer.transform(new DOMSource(el),
-                                      new StreamResult(buffer));
-                token = buffer.toString();
-                out.println("<p>" + StringEscapeUtils.escapeXml11(token));
-            } catch (Exception ex) {
-                out.println("<p>Failed to transform cached element to string: " + ex.toString());
-            }
-        } else {
-            out.println("<p>Bootstrap token not cached in thread local storage");
-        }
+        try {
+            Subject subject = WSSubject.getCallerSubject();
+            if (subject != null) {
+                FedizResponse fedResponse = getCachedFederationResponse(subject);
 
-        out.println("</body>");
+                ClaimCollection claims = new ClaimCollection(fedResponse.getClaims());
+                for (Claim c : claims) {
+                    out.println("<p>" + c.getClaimType().toString() + "=" + c.getValue() + "</p>");
+                }
+            }
+        } catch (WSSecurityException e) {
+            out.println("<p>Exception=" + e.getMessage() + "</p>");
+        } 
     }
 
+    private FedizResponse getCachedFederationResponse(Subject subject) {
+        Iterator<?> i = subject.getPublicCredentials().iterator();
+        while (i.hasNext()) {
+            Object o = i.next();
+            if (o instanceof Hashtable) {
+                Map<?, ?> table = (Hashtable<?, ?>)o;
+                return (FedizResponse)table.get(SUBJECT_TOKEN_KEY);
+            }
+        }
+        return null;
+    }
 }
