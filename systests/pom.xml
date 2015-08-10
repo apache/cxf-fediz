@@ -39,5 +39,14 @@
       <module>federation</module>
       <module>kerberos</module>
    </modules>
+   
+   <profiles>
+     <profile>
+       <id>websphere</id>
+       <modules>
+         <module>websphere</module>
+       </modules>
+     </profile>
+   </profiles>
 
 </project>
