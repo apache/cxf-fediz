@@ -79,7 +79,7 @@ public final class ClassLoaderUtils {
     }
     
     /**
-     * Load a given resource. <p/> This method will try to load the resource
+     * Load a given resource. This method will try to load the resource
      * using the following methods (in order):
      * <ul>
      * <li>From Thread.currentThread().getContextClassLoader()
