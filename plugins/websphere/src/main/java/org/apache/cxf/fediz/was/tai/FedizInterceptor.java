@@ -31,6 +31,7 @@ import java.util.Properties;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.security.auth.Subject;
+import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -64,6 +65,8 @@ import org.apache.cxf.fediz.was.tai.exception.TAIConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+
 /**
  * A Trust Authentication Interceptor (TAI) that trusts a Sign-In-Response provided from a configured IP/STS
  * and instantiates the corresponding WAS Subject
@@ -74,6 +77,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
     private String configFile;
     private FedizConfigurator configurator;
     private RoleToGroupMapper mapper;
+    private String cookieName;
 
     /**
      * @see org.apache.cxf.fediz.was.Constants#PROPERTY_KEY_DIRECT_GROUP_MAPPING
@@ -140,24 +144,26 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
 
     /*
      * (non-Javadoc)
-     * @see com.ibm.wsspi.security.tai.TrustAssociationInterceptor#initialize(java.util.Properties)
+     * @see com.ibm.wsspi.security.tai.TrustAssociationInterceptor#initialize(java .util.Properties)
      */
     @Override
     public int initialize(Properties props) throws WebTrustAssociationFailedException {
         if (props != null) {
             try {
                 @SuppressWarnings("deprecation")
-                String roleGroupMapper = props.containsKey(Constants.PROPERTY_KEY_ROLE_MAPPER)
-                    ? props.getProperty(Constants.PROPERTY_KEY_ROLE_MAPPER)
-                    : props.getProperty(Constants.ROLE_GROUP_MAPPER);
+                String roleGroupMapper = props.containsKey(Constants.PROPERTY_KEY_ROLE_MAPPER) ? props
+                    .getProperty(Constants.PROPERTY_KEY_ROLE_MAPPER) : props
+                    .getProperty(Constants.ROLE_GROUP_MAPPER);
                 if (roleGroupMapper != null && !roleGroupMapper.isEmpty()) {
                     try {
                         mapper = (RoleToGroupMapper)Class.forName(roleGroupMapper).newInstance();
                         LOG.debug("Using the {} mapper class", roleGroupMapper);
                         mapper.initialize(props);
                     } catch (Exception e) {
-                        throw new TAIConfigurationException("Invalid TAI configuration for idpRoleToGroupMapper: "
-                                                            + e.getClass().getName() + " " + e.getMessage());
+                        throw new TAIConfigurationException(
+                                                            "Invalid TAI configuration for idpRoleToGroupMapper: "
+                                                                + e.getClass().getName() + " "
+                                                                + e.getMessage());
                     }
                 } else {
                     mapper = new DefaultRoleToGroupMapper();
@@ -165,9 +171,9 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
                 }
 
                 @SuppressWarnings("deprecation")
-                String configFileLocation = props.containsKey(Constants.PROPERTY_KEY_CONFIG_LOCATION)
-                    ? props.getProperty(Constants.PROPERTY_KEY_CONFIG_LOCATION)
-                    : props.getProperty(Constants.CONFIGURATION_FILE_PARAMETER);
+                String configFileLocation = props.containsKey(Constants.PROPERTY_KEY_CONFIG_LOCATION) ? props
+                    .getProperty(Constants.PROPERTY_KEY_CONFIG_LOCATION) : props
+                    .getProperty(Constants.CONFIGURATION_FILE_PARAMETER);
                 if (configFileLocation != null) {
                     LOG.debug("Configuration file location set to {}", configFileLocation);
                     File f = new File(configFileLocation);
@@ -181,7 +187,13 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
                                                                  + Constants.PROPERTY_KEY_CONFIG_LOCATION);
                 }
 
-                directGroupMapping = Boolean.valueOf(props.getProperty(Constants.PROPERTY_KEY_DIRECT_GROUP_MAPPING));
+                directGroupMapping = Boolean.valueOf(props
+                    .getProperty(Constants.PROPERTY_KEY_DIRECT_GROUP_MAPPING));
+
+                cookieName = props.getProperty(Constants.PROPERTY_SESSION_COOKIE_NAME);
+                if (cookieName == null) {
+                    cookieName = Constants.SESSION_COOKIE_DEFAULT_NAME;
+                }
             } catch (Throwable t) {
                 LOG.warn("Failed initializing TAI", t);
                 return 1;
@@ -226,7 +238,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
             }
 
             // Handle Logout requests
-            LogoutHandler logoutHandler = new LogoutHandler(fedCtx);
+            LogoutHandler logoutHandler = new LogoutHandler(fedCtx, req.getContextPath());
             if (logoutHandler.canHandleRequest(req)) {
                 LOG.debug("Logout URL request detected");
                 return true;
@@ -252,7 +264,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
                         }
                     }
                 }
-                // Check if token is already in session 
+                // Check if token is already in session
                 Object token = session.getAttribute(Constants.SECURITY_TOKEN_SESSION_ATTRIBUTE_KEY);
                 if (token != null) {
                     LOG.debug("SAML Token found in session");
@@ -272,9 +284,9 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
 
     /*
      * (non-Javadoc)
-     * @see
-     * com.ibm.wsspi.security.tai.TrustAssociationInterceptor#negotiateValidateandEstablishTrust(javax.servlet
-     * .http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+     * @see com.ibm.wsspi.security.tai.TrustAssociationInterceptor#
+     * negotiateValidateandEstablishTrust(javax.servlet .http.HttpServletRequest,
+     * javax.servlet.http.HttpServletResponse)
      */
     @Override
     public TAIResult negotiateValidateandEstablishTrust(HttpServletRequest req, HttpServletResponse resp)
@@ -293,16 +305,49 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
             MetadataDocumentHandler mddHandler = new MetadataDocumentHandler(fedCtx);
             if (mddHandler.canHandleRequest(req)) {
                 return TAIResult.create(mddHandler.handleRequest(req, resp)
-                    ? HttpServletResponse.SC_OK
-                    : HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    ? HttpServletResponse.SC_OK : HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             }
 
             // Handle Logout requests
-            LogoutHandler logoutHandler = new LogoutHandler(fedCtx);
+            LogoutHandler logoutHandler = new LogoutHandler(fedCtx, req.getContextPath()) {
+
+                @Override
+                protected boolean signoutCleanup(HttpServletRequest request, HttpServletResponse response) {
+                    HttpSession session = request.getSession();
+                    session.removeAttribute(Constants.SECURITY_TOKEN_SESSION_ATTRIBUTE_KEY);
+                    session.removeAttribute(Constants.SUBJECT_TOKEN_KEY);
+                    session.invalidate();
+                    Cookie cookie = new Cookie(Constants.PROPERTY_SESSION_COOKIE_NAME, "");
+                    cookie.setMaxAge(0);
+                    response.addCookie(cookie);
+                    try {
+                        request.logout();
+                    } catch (ServletException e) {
+                        LOG.error("Could not logout users");
+                        e.printStackTrace();
+                    }
+                    // WSSecurityHelper.revokeSSOCookies(request, response);
+                    return super.signoutCleanup(request, response);
+                }
+
+                @Override
+                protected boolean signout(HttpServletRequest request, HttpServletResponse response) {
+                    HttpSession session = request.getSession();
+                    session.removeAttribute(Constants.SECURITY_TOKEN_SESSION_ATTRIBUTE_KEY);
+                    session.removeAttribute(Constants.SUBJECT_TOKEN_KEY);
+                    session.invalidate();
+                    try {
+                        request.logout();
+                    } catch (ServletException e) {
+                        LOG.error("Could not logout users");
+                        e.printStackTrace();
+                    }
+                    return super.signout(request, response);
+                }
+            };
             if (logoutHandler.canHandleRequest(req)) {
                 return TAIResult.create(logoutHandler.handleRequest(req, resp)
-                    ? HttpServletResponse.SC_OK
-                    : HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    ? HttpServletResponse.SC_OK : HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             }
 
             // Handle Signin requests
@@ -310,16 +355,20 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
 
                 @Override
                 protected TAIResult createPrincipal(HttpServletRequest request, HttpServletResponse response,
-                    FedizResponse federationResponse) {
+                                                    FedizResponse federationResponse) {
                     // proceed creating the JAAS Subject
                     HttpSession session = request.getSession(true);
                     session.setAttribute(Constants.SECURITY_TOKEN_SESSION_ATTRIBUTE_KEY, federationResponse);
                     String username = federationResponse.getUsername();
-                    // List<String> groupsIds = groupIdsFromTokenRoles(federationResponse);
-                    // Subject subject = createSubject(federationResponse, groupsIds, session.getId());
-                    // LOG.info("UserPrincipal was created successfully for {}", username);
+                    // List<String> groupsIds =
+                    // groupIdsFromTokenRoles(federationResponse);
+                    // Subject subject = createSubject(federationResponse,
+                    // groupsIds, session.getId());
+                    // LOG.info("UserPrincipal was created successfully for {}",
+                    // username);
                     try {
-                        // return TAIResult.create(HttpServletResponse.SC_FOUND, username, subject);
+                        // return TAIResult.create(HttpServletResponse.SC_FOUND,
+                        // username, subject);
                         return TAIResult.create(HttpServletResponse.SC_FOUND);
                     } catch (WebTrustAssociationFailedException e) {
                         LOG.error("TAIResult for user '" + username + "' could not be created", e);
@@ -335,7 +384,8 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
                 return taiResult;
             }
 
-            // Check if user was authenticated previously and token is still valid
+            // Check if user was authenticated previously and token is still
+            // valid
             TAIResult taiResult = checkUserAuthentication(req, fedCtx);
             if (taiResult != null) {
                 return taiResult;
@@ -365,7 +415,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
             session.removeAttribute(wctx);
         }
     }
-    
+
     private TAIResult checkUserAuthentication(HttpServletRequest req, FedizContext fedCtx)
         throws WebTrustAssociationFailedException {
         TAIResult result = null;
@@ -379,13 +429,15 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
 
                 // validate Security Token and create User Principal
                 if (checkSecurityToken(federationResponse)) {
-                    // TODO check if there is a better way to avoid recreation of subject each validated call
+                    // TODO check if there is a better way to avoid recreation
+                    // of subject each validated call
                     // proceed creating the JAAS Subject
                     List<String> groupsIds = groupIdsFromTokenRoles(federationResponse);
                     LOG.debug("Mapped group IDs: {}", groupsIds);
                     Subject subject = createSubject(federationResponse, groupsIds, session.getId());
 
-                    result = TAIResult.create(HttpServletResponse.SC_OK, federationResponse.getUsername(), subject);
+                    result = TAIResult.create(HttpServletResponse.SC_OK, federationResponse.getUsername(),
+                                              subject);
                 }
                 if (!fedCtx.isDetectExpiredTokens()) {
                     // token is not required for TTL validation
@@ -420,7 +472,8 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
                 response.sendRedirect(redirectURL);
             } else {
                 LOG.error("RedirectUrl is null. Failed to create SignInRequest.");
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignInRequest.");
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                                   "Failed to create SignInRequest.");
             }
         } catch (ProcessingException ex) {
             LOG.error("Failed to create SignInRequest", ex);
@@ -512,7 +565,8 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
                           + ",o=defaultWIMFileBasedRealm";
         String completeCacheKey = uniqueId + ':' + cacheKey;
 
-        // creating the JAAS Subject so that WAS won't do a lookup in the registry
+        // creating the JAAS Subject so that WAS won't do a lookup in the
+        // registry
         Subject subject = new Subject();
 
         Map<String, Object> map = new Hashtable<String, Object>();
@@ -520,7 +574,8 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
         map.put(AttributeNameConstants.WSCREDENTIAL_SECURITYNAME, federationResponse.getUsername());
         map.put(AttributeNameConstants.WSCREDENTIAL_GROUPS, groups);
         map.put(AttributeNameConstants.WSCREDENTIAL_CACHE_KEY, completeCacheKey);
-        // caching the WS-Federation security token for further reuse by the application
+        // caching the WS-Federation security token for further reuse by the
+        // application
         map.put(Constants.SUBJECT_TOKEN_KEY, federationResponse);
 
         subject.getPublicCredentials().add(map);

@@ -69,4 +69,15 @@ public interface Constants {
      * default value is set to 'false', thus the UserRegistry will be invoked.
      */
     String PROPERTY_KEY_DIRECT_GROUP_MAPPING = "directGroupMapping";
+    
+    /**
+     * The session cookie name can be renamed in WebSphere. If it is renames, it is required to change it in the
+     * interceptor configuration too. A missconfiguration would lead to performance loss.
+     */
+    String PROPERTY_SESSION_COOKIE_NAME = "sessionCookieName";
+    
+    /**
+     * Default name of the session cookie in wbesphere
+     */
+    String SESSION_COOKIE_DEFAULT_NAME = "LtpaToken2";
 }

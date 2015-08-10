@@ -22,6 +22,8 @@ package org.apache.cxf.fediz.was.mapper;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -32,11 +34,8 @@ import java.util.Properties;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
-import org.xml.sax.InputSource;
-
 import org.apache.cxf.fediz.was.mapping.config.Mapping;
 import org.apache.cxf.fediz.was.mapping.config.SamlToJ2EE;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -159,7 +158,7 @@ public class FileBasedRoleToGroupMapper implements RoleToGroupMapper {
                     mappings.putAll(newMap);
                     LOG.info("Mapping file reloaded.");
                 }
-            } catch (FileNotFoundException e) {
+            } catch (IOException e) {
                 LOG.warn("Unable to load mappings due to: " + e.getMessage());
             } catch (JAXBException e) {
                 LOG.warn("Unable to parse mappings due to: " + e.getMessage());
@@ -167,10 +166,10 @@ public class FileBasedRoleToGroupMapper implements RoleToGroupMapper {
         }
     }
 
-    private Map<String, List<String>> loadMappingFile() throws FileNotFoundException, JAXBException {
+    private Map<String, List<String>> loadMappingFile() throws JAXBException, IOException {
         Map<String, List<String>> map = new HashMap<>(10);
 
-        try (InputSource input = new InputSource(new FileInputStream(groupMappingFilename))) {
+        try (InputStream input = new FileInputStream(groupMappingFilename)) {
             JAXBContext context = JAXBContext.newInstance(Mapping.class);
             Mapping localmappings = (Mapping) context.createUnmarshaller().unmarshal(input);
 
