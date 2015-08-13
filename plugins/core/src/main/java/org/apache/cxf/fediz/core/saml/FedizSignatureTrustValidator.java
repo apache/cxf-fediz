@@ -151,11 +151,11 @@ public class FedizSignatureTrustValidator implements Validator {
             }
         } catch (CertificateExpiredException e) {
             throw new WSSecurityException(
-                WSSecurityException.ErrorCode.FAILED_CHECK, "invalidCert", e 
+                WSSecurityException.ErrorCode.FAILED_CHECK, e, "invalidCert"
             );
         } catch (CertificateNotYetValidException e) {
             throw new WSSecurityException(
-                WSSecurityException.ErrorCode.FAILED_CHECK, "invalidCert", e
+                WSSecurityException.ErrorCode.FAILED_CHECK, e, "invalidCert"
             );
         }
     }
