@@ -1,4 +1,4 @@
-Apache CXF Fediz 1.1.2 Release Notes
+Apache CXF Fediz 1.1.3 Release Notes
 ------------------------------------
 
 1. Overview
@@ -54,8 +54,17 @@ http://issues.apache.org/jira/browse/FEDIZ
 
 N.A.
 
-
 8. Specific issues, features, and improvements fixed in this version
+
+Release Notes - CXF-Fediz - Version 1.1.3
+
+Bug
+
+    [FEDIZ-111] - NPE when ChainTrust is configured + no Subject is provided
+
+Improvement
+
+    [FEDIZ-98] - Dynamic STS Realm Parser
 
 Release Notes - CXF-Fediz - Version 1.1.2
 
