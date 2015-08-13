@@ -71,8 +71,8 @@ public interface Constants {
     String PROPERTY_KEY_DIRECT_GROUP_MAPPING = "directGroupMapping";
     
     /**
-     * The session cookie name can be renamed in WebSphere. If it is renames, it is required to change it in the
-     * interceptor configuration too. A missconfiguration would lead to performance loss.
+     * The session cookie name can be renamed in WebSphere. If it is renamed, it is required to change it in the
+     * interceptor configuration too. A misconfiguration would lead to performance loss.
      */
     String PROPERTY_SESSION_COOKIE_NAME = "sessionCookieName";
     

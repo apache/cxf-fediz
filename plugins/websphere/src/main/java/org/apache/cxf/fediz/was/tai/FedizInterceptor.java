@@ -324,7 +324,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
                         request.logout();
                     } catch (ServletException e) {
                         LOG.error("Could not logout users");
-                        e.printStackTrace();
+                        // e.printStackTrace();
                     }
                     // WSSecurityHelper.revokeSSOCookies(request, response);
                     return super.signoutCleanup(request, response);
@@ -340,7 +340,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
                         request.logout();
                     } catch (ServletException e) {
                         LOG.error("Could not logout users");
-                        e.printStackTrace();
+                        // e.printStackTrace();
                     }
                     return super.signout(request, response);
                 }

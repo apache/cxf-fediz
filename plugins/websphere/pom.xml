@@ -17,8 +17,7 @@
   specific language governing permissions and limitations
   under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.apache.cxf.fediz</groupId>
@@ -32,13 +31,12 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
     <dependencies>
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
             <!--<version>${servlet.version}</version>-->
-			<version>3.1.0</version>
+            <version>3.1.0</version>
             <!--<type>jar</type>-->
             <!--<scope>compile</scope>-->
         </dependency>
@@ -63,40 +61,38 @@
             <scope>provided</scope>
         </dependency>
 		-->
-		<dependency>
-			<groupId>com.ibm.websphere</groupId>
-			<artifactId>com.ibm.websphere.security</artifactId>
-			<version>1.0.3</version>
-			<type>jar</type>
-			<scope>provided</scope>
- 		</dependency>
-		<dependency>
-			<groupId>com.ibm.ws.security</groupId>
-			<artifactId>com.ibm.ws.security.authentication.tai</artifactId>
-			<version>1.0.3</version>
-			<type>jar</type>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.ibm.ws.security</groupId>
-			<artifactId>com.ibm.ws.security.token</artifactId>
-			<version>1.0.2</version>
-			<type>jar</type>
-			<scope>provided</scope>
-		</dependency>        
-
-		<dependency>
+        <dependency>
+            <groupId>com.ibm.websphere</groupId>
+            <artifactId>com.ibm.websphere.security</artifactId>
+            <version>1.0.3</version>
+            <type>jar</type>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.ibm.ws.security</groupId>
+            <artifactId>com.ibm.ws.security.authentication.tai</artifactId>
+            <version>1.0.3</version>
+            <type>jar</type>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.ibm.ws.security</groupId>
+            <artifactId>com.ibm.ws.security.token</artifactId>
+            <version>1.0.2</version>
+            <type>jar</type>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>${slf4j.version}</version>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j.version}</version>
             <scope>test</scope>
-		</dependency>
-
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -139,7 +135,7 @@
                     <verbose>true</verbose>
                 </configuration>
             </plugin>
-			<plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
@@ -159,5 +155,4 @@
             </plugin>
         </plugins>
     </build>
-	
 </project>

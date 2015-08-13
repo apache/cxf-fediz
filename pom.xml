@@ -136,6 +136,18 @@
                 <enabled>false</enabled>
             </releases>
         </repository>
+        <repository>
+            <id>central</id>
+            <url>https://repo1.maven.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>wasdev-maven-repo</id>
+            <name>wasdev-maven-repo</name>
+            <url>http://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/wasdev/maven/repository/</url>
+        </repository>
     </repositories>
     <pluginRepositories>
         <pluginRepository>
@@ -149,6 +161,19 @@
                 <enabled>false</enabled>
             </releases>
         </pluginRepository>
+        <pluginRepository>
+            <id>Liberty</id>
+            <name>Liberty Repository</name>
+            <url>http://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/wasdev/maven/repository/</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </pluginRepository>
+
     </pluginRepositories>
 
     <inceptionYear>2011</inceptionYear>
