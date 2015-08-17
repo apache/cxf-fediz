@@ -77,8 +77,8 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
     private String configFile;
     private FedizConfigurator configurator;
     private RoleToGroupMapper mapper;
-    private String cookieName;
-
+    private String cookieName = "LtpaToken2";
+    
     /**
      * @see org.apache.cxf.fediz.was.Constants#PROPERTY_KEY_DIRECT_GROUP_MAPPING
      */
@@ -256,8 +256,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
                 Cookie[] cookies = req.getCookies();
                 if (cookies != null) {
                     for (Cookie c : cookies) {
-                        // TODO Make Cookie Name customizable
-                        if ("LtpaToken2".equals(c.getName())) {
+                        if (cookieName.equals(c.getName())) {
                             LOG.debug("User is already authenticated. Fediz TAI Interceptor will not be invoked");
                             isTargetInterceptor = false;
                             break;
@@ -313,10 +312,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
 
                 @Override
                 protected boolean signoutCleanup(HttpServletRequest request, HttpServletResponse response) {
-                    HttpSession session = request.getSession();
-                    session.removeAttribute(Constants.SECURITY_TOKEN_SESSION_ATTRIBUTE_KEY);
-                    session.removeAttribute(Constants.SUBJECT_TOKEN_KEY);
-                    session.invalidate();
+                    terminateSession(request);
                     Cookie cookie = new Cookie(Constants.PROPERTY_SESSION_COOKIE_NAME, "");
                     cookie.setMaxAge(0);
                     response.addCookie(cookie);
@@ -324,23 +320,30 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
                         request.logout();
                     } catch (ServletException e) {
                         LOG.error("Could not logout users");
-                        // e.printStackTrace();
                     }
-                    // WSSecurityHelper.revokeSSOCookies(request, response);
+                    FedizContext fedCtx = getFederationContext(request);
+                    String logoutRedirectUrl = fedCtx.getLogoutRedirectTo();
+                    String contextPath = request.getContextPath();
+                    try {
+                        if (logoutRedirectUrl != null && logoutRedirectUrl.length() > 0) {
+                            response.sendRedirect(contextPath + logoutRedirectUrl);
+                        } else {
+                            response.sendRedirect(contextPath);
+                        }
+                    } catch (IOException e) {
+                        LOG.error("Could not redirect to logout page");
+                    }
+                        
                     return super.signoutCleanup(request, response);
                 }
 
                 @Override
                 protected boolean signout(HttpServletRequest request, HttpServletResponse response) {
-                    HttpSession session = request.getSession();
-                    session.removeAttribute(Constants.SECURITY_TOKEN_SESSION_ATTRIBUTE_KEY);
-                    session.removeAttribute(Constants.SUBJECT_TOKEN_KEY);
-                    session.invalidate();
+                    terminateSession(request);
                     try {
                         request.logout();
                     } catch (ServletException e) {
                         LOG.error("Could not logout users");
-                        // e.printStackTrace();
                     }
                     return super.signout(request, response);
                 }
@@ -399,6 +402,13 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
             LOG.error("Exception occured validating request", e);
             throw new WebTrustAssociationFailedException(e.getMessage());
         }
+    }
+    
+    protected void terminateSession(HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        session.removeAttribute(Constants.SECURITY_TOKEN_SESSION_ATTRIBUTE_KEY);
+        session.removeAttribute(Constants.SUBJECT_TOKEN_KEY);
+        session.invalidate();
     }
 
     protected void resumeRequest(HttpServletRequest request, HttpServletResponse response) {
