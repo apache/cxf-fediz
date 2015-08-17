@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.apache.cxf.fediz</groupId>
         <artifactId>plugin</artifactId>
-        <version>1.2.1-SNAPSHOT</version>
+        <version>1.2.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>fediz-websphere</artifactId>
@@ -35,8 +35,9 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <!--<version>${servlet.version}</version>-->
-            <version>3.1.0</version>
+            <!-- Servlet since version 3 supports logout.-->
+			<!--<version>${servlet.version}</version>-->
+            <version>3.0.1</version>
             <!--<type>jar</type>-->
             <!--<scope>compile</scope>-->
         </dependency>
