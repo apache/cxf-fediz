@@ -321,19 +321,6 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
                     } catch (ServletException e) {
                         LOG.error("Could not logout users");
                     }
-                    FedizContext fedCtx = getFederationContext(request);
-                    String logoutRedirectUrl = fedCtx.getLogoutRedirectTo();
-                    String contextPath = request.getContextPath();
-                    try {
-                        if (logoutRedirectUrl != null && logoutRedirectUrl.length() > 0) {
-                            response.sendRedirect(contextPath + logoutRedirectUrl);
-                        } else {
-                            response.sendRedirect(contextPath);
-                        }
-                    } catch (IOException e) {
-                        LOG.error("Could not redirect to logout page");
-                    }
-                        
                     return super.signoutCleanup(request, response);
                 }
 
