@@ -401,5 +401,13 @@ public class FedizConfigurationTest {
         
         return fedContext.getTokenReplayCache();
     }
+    
+    @org.junit.Test
+    public void testDefaultValues() throws JAXBException, IOException {
+        ContextConfig config = new ContextConfig();
+
+        Assert.assertTrue(config.getMaximumClockSkew().intValue() == 5);
+        Assert.assertTrue(config.isTokenExpirationValidation());
+    }
 
 }

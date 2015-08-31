@@ -16,7 +16,7 @@
                 <xs:element ref="audienceUris" />
                 <xs:element ref="certificateValidation" />
                 <xs:element ref="certificateStores" />
-                <xs:element ref="tokenExpirationValidation" />
+                <xs:element ref="tokenExpirationValidation" minOccurs="0" />
                 <xs:element ref="maximumClockSkew" />
                 <xs:element ref="tokenReplayCache" />
                 <xs:element ref="serviceCertificate" />
@@ -85,9 +85,9 @@
 
     <xs:element name="maximumClockSkew" type="xs:integer" default="5" />
 
-    <xs:element name="tokenExpirationValidation" type="xs:boolean" default="true">
+    <xs:element name="tokenExpirationValidation" type="xs:boolean" default="true" >
         <xs:annotation>
-            <xs:documentation>Decision weather the token validation (e.g. lifetime) shall be
+            <xs:documentation>Decision whether the token validation (e.g. lifetime) shall be
                 performed on every request
                 (true) or only once at initial authentication (false).
             </xs:documentation>
