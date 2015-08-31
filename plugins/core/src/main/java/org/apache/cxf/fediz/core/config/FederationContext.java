@@ -168,9 +168,8 @@ public class FederationContext implements Closeable {
         }
         keyManager = new KeyManager(config.getSigningKey());
         Properties sigProperties = createCryptoProperties(config.getSigningKey());
-        Crypto crypto;
         try {
-            crypto = CryptoFactory.getInstance(sigProperties);
+            Crypto crypto = CryptoFactory.getInstance(sigProperties);
             keyManager.setCrypto(crypto);
         } catch (WSSecurityException e) {
             String name = keyManager.getName();
@@ -192,9 +191,8 @@ public class FederationContext implements Closeable {
         }
         decryptionKeyManager = new KeyManager(config.getTokenDecryptionKey());
         Properties decProperties = createCryptoProperties(config.getTokenDecryptionKey());
-        Crypto crypto;
         try {
-            crypto = CryptoFactory.getInstance(decProperties);
+            Crypto crypto = CryptoFactory.getInstance(decProperties);
             decryptionKeyManager.setCrypto(crypto);
         } catch (WSSecurityException e) {
             String name = decryptionKeyManager.getName();

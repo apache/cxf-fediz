@@ -316,12 +316,12 @@ public class FederationProtocol extends Protocol {
     }
     
     private Object loadCallbackType(CallbackType cbt, String name) {
-        if (cbt == null) {
+        if (cbt == null || cbt.getValue() == null) {
             return null;
         }
-        if (cbt.getType() == null || cbt.getType().equals(ArgumentType.STRING)) {
+        if (ArgumentType.STRING.equals(cbt.getType()) || cbt.getType() == null) {
             return new String(cbt.getValue());
-        } else if (cbt.getType().equals(ArgumentType.CLASS)) {
+        } else if (ArgumentType.CLASS.equals(cbt.getType())) {
             try {
                 if (this.classloader == null) {
                     return ClassLoaderUtils.loadClass(cbt.getValue(), this.getClass()).newInstance();
