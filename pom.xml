@@ -86,14 +86,6 @@
 
         <!-- OSGi related properties -->
 
-        <!-- please maintain alphabetical order here -->
-        <fediz.jaxb21.version>2.1</fediz.jaxb21.version>
-        <fediz.jaxb21.impl.version>2.1.13</fediz.jaxb21.impl.version>
-        <fediz.jaxb21.xjc.version>2.1.13</fediz.jaxb21.xjc.version>
-        <fediz.jaxb22.version>2.2.6</fediz.jaxb22.version>
-        <fediz.jaxb22.impl.version>2.2.5</fediz.jaxb22.impl.version>
-        <fediz.jaxb22.xjc.version>2.2.5</fediz.jaxb22.xjc.version>
-
         <fediz.checkstyle.extension />
         <fediz.downloadSources>true</fediz.downloadSources>
 
@@ -765,9 +757,6 @@
                 <jdk>1.7</jdk>
             </activation>
             <properties>
-                <fediz.jaxb.version>${fediz.jaxb22.version}</fediz.jaxb.version>
-                <fediz.jaxb.impl.version>${fediz.jaxb22.impl.version}</fediz.jaxb.impl.version>
-                <fediz.jaxb.xjc.version>${fediz.jaxb22.impl.version}</fediz.jaxb.xjc.version>
                 <jdk.version>1.6</jdk.version>
             </properties>
             <build>
