@@ -73,13 +73,14 @@ public final class CookieUtils  {
         return dateFormat;
     }
     
-    public static boolean isStateExpired(long stateCreatedAt, long expiresAt, long stateTTL) {
+    public static boolean isStateExpired(long stateCreatedAt, boolean detectExpiredTokens,
+                                         long expiresAt, long stateTTL) {
         Date currentTime = new Date();
         if (currentTime.after(new Date(stateCreatedAt + stateTTL))) {
             return true;
         }
         
-        if (expiresAt > 0 && currentTime.after(new Date(expiresAt))) {
+        if (detectExpiredTokens && expiresAt > 0 && currentTime.after(new Date(expiresAt))) {
             return true;
         }
         
