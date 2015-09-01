@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.cxf.fediz.jetty;
+package org.apache.cxf.fediz.jetty8;
 
 import org.w3c.dom.Element;
 import org.apache.cxf.fediz.core.ClaimCollection;

@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.cxf.fediz.jetty;
+package org.apache.cxf.fediz.jetty8;
 
 
 import java.security.Principal;

@@ -27,7 +27,7 @@
     </parent>
     <groupId>org.apache.cxf.fediz.systests</groupId>
     <artifactId>fediz-systests-jetty8</artifactId>
-    <name>Apache Fediz Systests Jetty 8</name>
+    <name>Apache Fediz Systests for Jetty 8</name>
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -37,29 +37,29 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
-            <version>${jetty.version}</version>
+            <version>${jetty8.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-security</artifactId>
-            <version>${jetty.version}</version>
+            <version>${jetty8.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-xml</artifactId>
-            <version>${jetty.version}</version>
+            <version>${jetty8.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-webapp</artifactId>
-            <version>${jetty.version}</version>
+            <version>${jetty8.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-jsp</artifactId>
-            <version>${jetty.version}</version>
+            <version>${jetty8.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
