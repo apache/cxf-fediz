@@ -134,13 +134,13 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
         stateManager.close();
     }
     
-    protected boolean checkSecurityContext(Message m) {
+    protected boolean checkSecurityContext(FedizContext fedConfig, Message m) {
         HttpHeaders headers = new HttpHeadersImpl(m);
         Map<String, Cookie> cookies = headers.getCookies();
         
         Cookie securityContextCookie = cookies.get(SECURITY_CONTEXT_TOKEN);
         
-        ResponseState responseState = getValidResponseState(securityContextCookie, m);
+        ResponseState responseState = getValidResponseState(securityContextCookie, fedConfig, m);
         if (responseState == null) {
             return false;    
         }
@@ -183,6 +183,7 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
     }
     
     protected ResponseState getValidResponseState(Cookie securityContextCookie, 
+                                                  FedizContext fedConfig,
                                                   Message m) {
         if (securityContextCookie == null) {
             // most likely it means that the user has not been offered
@@ -200,8 +201,8 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
             return null;
         }
         
-        if (CookieUtils.isStateExpired(responseState.getCreatedAt(), responseState.getExpiresAt(), 
-                                    getStateTimeToLive())) {
+        if (CookieUtils.isStateExpired(responseState.getCreatedAt(), fedConfig.isDetectExpiredTokens(),
+                                       responseState.getExpiresAt(), getStateTimeToLive())) {
             reportError("EXPIRED_RESPONSE_STATE");
             stateManager.removeResponseState(contextKey);
             return null;

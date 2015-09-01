@@ -103,7 +103,7 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
         
         if (isSignoutCleanupRequest(fedConfig, m, params)) {
             return;
-        } else if (checkSecurityContext(m)) {
+        } else if (checkSecurityContext(fedConfig, m)) {
             return;
         } else {
             if (isSignInRequired(fedConfig, params)) {
@@ -434,7 +434,7 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
             throw ExceptionUtils.toBadRequestException(null, null);
         }
         
-        if (CookieUtils.isStateExpired(wfReq.getRequestState().getCreatedAt(), 0, 
+        if (CookieUtils.isStateExpired(wfReq.getRequestState().getCreatedAt(), false, 0, 
                                        getStateTimeToLive())) {
             LOG.error("EXPIRED_REQUEST_STATE");
             throw ExceptionUtils.toBadRequestException(null, null);
