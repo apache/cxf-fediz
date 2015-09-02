@@ -58,9 +58,11 @@ public class FederationUserIdentity implements UserIdentity {
             role = scope.getRoleRefMap().get(role);
         }
         
-        for (String r : this.roles) {
-            if (r.equals(role)) {
-                return true;
+        if (this.roles != null) {
+            for (String r : this.roles) {
+                if (r.equals(role)) {
+                    return true;
+                }
             }
         }
         return false;
