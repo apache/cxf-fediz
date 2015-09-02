@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.security.cert.X509Certificate;
+import java.util.Date;
 import java.util.Map;
 
 import javax.servlet.ServletOutputStream;
@@ -240,7 +241,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
                     {
                         session=renewSession(request,response);
 
-                        FederationUserIdentity  fui = (FederationUserIdentity)user;
+                        FederationUserIdentity fui = (FederationUserIdentity)user;
                         session.setAttribute(SECURITY_TOKEN_ATTR, fui.getToken());
 
                         // Redirect to original request
@@ -306,11 +307,8 @@ public class FederationAuthenticator extends LoginAuthenticator {
             if (authentication != null) 
             {
                 // Has authentication been revoked?
-                if (authentication instanceof Authentication.User && 
-                    _loginService!=null &&
-                    !_loginService.validate(((Authentication.User)authentication).getUserIdentity()))
-                {
-                
+                if (authentication instanceof Authentication.User
+                    && isTokenExpired(fedConfig, ((Authentication.User)authentication).getUserIdentity())) {
                     session.removeAttribute(SessionAuthentication.__J_AUTHENTICATED);
                 }
                 else
@@ -399,6 +397,33 @@ public class FederationAuthenticator extends LoginAuthenticator {
         /*
          * catch (ServletException e) { throw new ServerAuthException(e); }
          */
+    }
+    
+    private boolean isTokenExpired(FedizContext fedConfig, UserIdentity userIdentity) {
+        if (fedConfig.isDetectExpiredTokens()) {
+            try {
+                FederationUserIdentity fui = (FederationUserIdentity)userIdentity;
+                Date tokenExpires = fui.getExpiryDate();
+                if (tokenExpires == null) {
+                    LOG.debug("Token doesn't expire");
+                    return false;
+                }
+    
+                Date currentTime = new Date();
+                if (!currentTime.after(tokenExpires)) {
+                    return false;
+                } else {
+                    LOG.warn("Token already expired. Clean up and redirect");
+    
+                    return true;
+                }
+            } catch (ClassCastException ex) {
+                LOG.warn("UserIdentity must be instance of FederationUserIdentity");
+                throw new IllegalStateException("UserIdentity must be instance of FederationUserIdentity");
+            }
+        }
+        
+        return false;
     }
 
     private boolean isSignInRequest(ServletRequest request, FedizContext fedConfig) {
