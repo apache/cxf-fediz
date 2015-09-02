@@ -57,7 +57,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.cxf.fediz</groupId>
-            <artifactId>fediz-jetty</artifactId>
+            <artifactId>fediz-jetty8</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

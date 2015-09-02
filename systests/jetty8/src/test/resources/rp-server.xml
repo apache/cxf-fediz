@@ -40,7 +40,7 @@
 	             
                 <Get name="securityHandler">
                   <Set name="authenticator">
-                    <New class="org.apache.cxf.fediz.jetty.FederationAuthenticator">
+                    <New class="org.apache.cxf.fediz.jetty8.FederationAuthenticator">
                       <Set name="configFile">./target/test-classes/fediz_config.xml</Set>
                     </New>
                   </Set>
@@ -55,7 +55,7 @@
 	             
                 <Get name="securityHandler">
                   <Set name="authenticator">
-                    <New class="org.apache.cxf.fediz.jetty.FederationAuthenticator">
+                    <New class="org.apache.cxf.fediz.jetty8.FederationAuthenticator">
                       <Set name="configFile">./target/test-classes/fediz_config.xml</Set>
                     </New>
                   </Set>
@@ -69,7 +69,7 @@
 
     <Call name="addBean">
         <Arg>
-            <New class="org.apache.cxf.fediz.jetty.FederationLoginService">
+            <New class="org.apache.cxf.fediz.jetty8.FederationLoginService">
                 <Set name="name">WSFED</Set>
             </New>
         </Arg>
