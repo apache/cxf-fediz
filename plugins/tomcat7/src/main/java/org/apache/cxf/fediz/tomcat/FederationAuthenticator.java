@@ -399,8 +399,7 @@ public class FederationAuthenticator extends FormAuthenticator {
     }
 
     protected boolean validateToken(Request request, HttpServletResponse response, FedizContext fedConfig) {
-        Session session;
-        session = request.getSessionInternal();
+        Session session = request.getSessionInternal();
         if (session != null) {
 
             FedizResponse wfRes = (FedizResponse)session.getNote(FEDERATION_NOTE);
@@ -411,7 +410,7 @@ public class FederationAuthenticator extends FormAuthenticator {
             }
 
             Date currentTime = new Date();
-            if (!currentTime.after(wfRes.getTokenExpires())) {
+            if (!currentTime.after(tokenExpires)) {
                 return true;
             } else {
                 LOG.warn("Token already expired. Clean up and redirect");

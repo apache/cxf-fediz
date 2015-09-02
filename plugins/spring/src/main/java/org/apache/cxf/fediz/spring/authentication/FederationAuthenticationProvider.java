@@ -102,13 +102,8 @@ public class FederationAuthenticationProvider implements AuthenticationProvider,
                     "Failed to get SignIn request"));
         }
 
-        FederationAuthenticationToken result = null;
-        
-        if (result == null) {
-            result = this.authenticateNow(authentication);
-            result.setDetails(authentication.getDetails());
-        }
-
+        FederationAuthenticationToken result = this.authenticateNow(authentication);
+        result.setDetails(authentication.getDetails());
         return result;
     }
 
