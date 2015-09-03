@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.cxf.fediz.tomcat;
+package org.apache.cxf.fediz.tomcat8;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,8 +51,8 @@ import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.apache.cxf.fediz.core.processor.RedirectionResponse;
-import org.apache.cxf.fediz.tomcat.handler.TomcatLogoutHandler;
-import org.apache.cxf.fediz.tomcat.handler.TomcatSigninHandler;
+import org.apache.cxf.fediz.tomcat8.handler.TomcatLogoutHandler;
+import org.apache.cxf.fediz.tomcat8.handler.TomcatSigninHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

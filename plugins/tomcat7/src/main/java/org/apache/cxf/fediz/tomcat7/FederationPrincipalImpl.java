@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.cxf.fediz.tomcat;
+package org.apache.cxf.fediz.tomcat7;
 
 import java.util.List;
 

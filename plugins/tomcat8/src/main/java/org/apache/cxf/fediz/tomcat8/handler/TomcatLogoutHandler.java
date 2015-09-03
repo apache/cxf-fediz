@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.cxf.fediz.tomcat.handler;
+package org.apache.cxf.fediz.tomcat8.handler;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,7 +26,7 @@ import org.apache.catalina.Session;
 import org.apache.catalina.connector.Request;
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.handler.LogoutHandler;
-import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
+import org.apache.cxf.fediz.tomcat8.FederationAuthenticator;
 
 public class TomcatLogoutHandler extends LogoutHandler {
     private final Request request;

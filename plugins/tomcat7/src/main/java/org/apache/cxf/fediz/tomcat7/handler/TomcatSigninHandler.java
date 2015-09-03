@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.cxf.fediz.tomcat.handler;
+package org.apache.cxf.fediz.tomcat7.handler;
 
 import java.util.Collections;
 import java.util.List;
@@ -36,8 +36,8 @@ import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.config.SAMLProtocol;
 import org.apache.cxf.fediz.core.handler.SigninHandler;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
-import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
-import org.apache.cxf.fediz.tomcat.FederationPrincipalImpl;
+import org.apache.cxf.fediz.tomcat7.FederationAuthenticator;
+import org.apache.cxf.fediz.tomcat7.FederationPrincipalImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
