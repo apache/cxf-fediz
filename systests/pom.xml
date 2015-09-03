@@ -33,7 +33,8 @@
       <module>tests</module>
       <module>webapps</module>
       <module>jetty8</module>
-      <module>tomcat7</module>
+      <module>romcat7</module>
+      <module>tomcat8</module>
       <module>spring</module>
       <module>cxf</module>
       <module>federation</module>

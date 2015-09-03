@@ -32,6 +32,7 @@
    <modules>
       <module>core</module>
       <module>tomcat7</module>
+      <module>tomcat8</module>
       <module>jetty8</module>
       <module>spring</module>
       <module>spring2</module>
