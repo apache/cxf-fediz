@@ -48,7 +48,7 @@
         <dependency>
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-catalina</artifactId>
-            <version>${tomcat.version}</version>
+            <version>${tomcat7.version}</version>
             <scope>provided</scope>
         </dependency>
         <!-- Required to cast Principal to FederationPrincipal -->

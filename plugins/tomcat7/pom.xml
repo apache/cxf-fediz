@@ -26,7 +26,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>fediz-tomcat7</artifactId>
-    <name>Apache Fediz Plugin Tomcat</name>
+    <name>Apache Fediz Plugin for Tomcat 7</name>
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -35,7 +35,7 @@
         <dependency>
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-catalina</artifactId>
-            <version>${tomcat.version}</version>
+            <version>${tomcat7.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
