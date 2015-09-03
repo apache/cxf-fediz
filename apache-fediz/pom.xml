@@ -57,6 +57,11 @@
         </dependency>
         <dependency>
             <groupId>org.apache.cxf.fediz</groupId>
+            <artifactId>fediz-tomcat8</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.cxf.fediz</groupId>
             <artifactId>fediz-jetty8</artifactId>
             <version>${project.version}</version>
         </dependency>
