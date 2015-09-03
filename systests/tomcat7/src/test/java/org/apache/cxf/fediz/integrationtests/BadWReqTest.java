@@ -27,7 +27,7 @@ import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
-import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
+import org.apache.cxf.fediz.tomcat7.FederationAuthenticator;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
