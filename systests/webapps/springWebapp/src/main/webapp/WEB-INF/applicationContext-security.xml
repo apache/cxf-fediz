@@ -55,10 +55,11 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
  
     <bean id="federationFilter"
         class="org.apache.cxf.fediz.spring.web.FederationAuthenticationFilter"
-        p:authenticationManager-ref="authManager">
+        p:authenticationManager-ref="authManager"
+        p:federationConfig-ref="fedizConfig">
 
         <property name="authenticationFailureHandler">
-            <bean class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler" />
+            <bean class="org.apache.cxf.fediz.spring.web.FederationAuthenticationFailureHandler" p:federationConfig-ref="fedizConfig" />
         </property>
     </bean>
     

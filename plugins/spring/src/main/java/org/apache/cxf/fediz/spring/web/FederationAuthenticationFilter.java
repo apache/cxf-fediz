@@ -21,6 +21,7 @@ package org.apache.cxf.fediz.spring.web;
 
 import java.io.IOException;
 import java.security.cert.X509Certificate;
+import java.util.Date;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
@@ -29,14 +30,21 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.SAMLSSOConstants;
 import org.apache.cxf.fediz.core.processor.FedizRequest;
+import org.apache.cxf.fediz.spring.FederationConfig;
+import org.apache.cxf.fediz.spring.authentication.ExpiredTokenException;
+import org.apache.cxf.fediz.spring.authentication.FederationAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 
 
 public class FederationAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
+    
+    private FederationConfig federationConfig;
     
     public FederationAuthenticationFilter() {
         super("/j_spring_fediz_security_check");
@@ -47,9 +55,18 @@ public class FederationAuthenticationFilter extends AbstractAuthenticationProces
     public Authentication attemptAuthentication(final HttpServletRequest request, final HttpServletResponse response)
         throws AuthenticationException, IOException {
 
-        
+        SecurityContext context = SecurityContextHolder.getContext();
+        if (context != null) {
+            Authentication authentication = context.getAuthentication();
+            if (authentication instanceof FederationAuthenticationToken) {
+                // If we reach this point then the token must be expired
+                throw new ExpiredTokenException("Token is expired");
+            }
+        }
+ 
         String wa = request.getParameter(FederationConstants.PARAM_ACTION);
         String responseToken = getResponseToken(request);
+        
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(wa);
         wfReq.setResponseToken(responseToken);
@@ -65,6 +82,29 @@ public class FederationAuthenticationFilter extends AbstractAuthenticationProces
         authRequest.setDetails(authenticationDetailsSource.buildDetails(request));
 
         return this.getAuthenticationManager().authenticate(authRequest);
+    }
+        
+    private boolean isTokenExpired() {
+        SecurityContext context = SecurityContextHolder.getContext();
+        boolean detectExpiredTokens = 
+            federationConfig != null && federationConfig.getFedizContext().isDetectExpiredTokens();
+        if (context != null && detectExpiredTokens) {
+            Authentication authentication = context.getAuthentication();
+            if (authentication instanceof FederationAuthenticationToken) {
+                Date tokenExpires = 
+                    ((FederationAuthenticationToken)authentication).getResponse().getTokenExpires();
+                if (tokenExpires == null) {
+                    return false;
+                }
+
+                Date currentTime = new Date();
+                if (currentTime.after(tokenExpires)) {
+                    return true;
+                }
+            }
+        }
+            
+        return false;
     }
   
     private String getResponseToken(ServletRequest request) {
@@ -82,13 +122,20 @@ public class FederationAuthenticationFilter extends AbstractAuthenticationProces
      */
     @Override
     protected boolean requiresAuthentication(final HttpServletRequest request, final HttpServletResponse response) {
-        final boolean result = request.getRequestURI().contains(getFilterProcessesUrl());
-        
+        boolean result = request.getRequestURI().contains(getFilterProcessesUrl());
+        result |= isTokenExpired();
         if (logger.isDebugEnabled()) {
             logger.debug("requiresAuthentication = " + result);
         }
         return result;
     }
 
+    public FederationConfig getFederationConfig() {
+        return federationConfig;
+    }
 
+    public void setFederationConfig(FederationConfig fedConfig) {
+        this.federationConfig = fedConfig;
+    }
+    
 }
