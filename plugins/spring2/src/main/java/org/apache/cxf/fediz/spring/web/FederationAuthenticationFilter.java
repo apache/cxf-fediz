@@ -19,7 +19,10 @@
 
 package org.apache.cxf.fediz.spring.web;
 
+import java.io.IOException;
 import java.security.cert.X509Certificate;
+import java.util.Date;
+import java.util.Map;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
@@ -27,15 +30,32 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.SAMLSSOConstants;
+import org.apache.cxf.fediz.core.config.FedizContext;
+import org.apache.cxf.fediz.core.exception.ProcessingException;
+import org.apache.cxf.fediz.core.processor.FedizProcessor;
+import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
 import org.apache.cxf.fediz.core.processor.FedizRequest;
+import org.apache.cxf.fediz.core.processor.RedirectionResponse;
+import org.apache.cxf.fediz.spring.FederationConfig;
+import org.apache.cxf.fediz.spring.authentication.ExpiredTokenException;
+import org.apache.cxf.fediz.spring.authentication.FederationAuthenticationToken;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.Authentication;
 import org.springframework.security.AuthenticationException;
+import org.springframework.security.BadCredentialsException;
+import org.springframework.security.context.SecurityContext;
+import org.springframework.security.context.SecurityContextHolder;
 import org.springframework.security.providers.UsernamePasswordAuthenticationToken;
 import org.springframework.security.ui.AbstractProcessingFilter;
 import org.springframework.security.ui.FilterChainOrder;
 
 
 public class FederationAuthenticationFilter extends AbstractProcessingFilter {
+    
+    private static final Logger LOG = LoggerFactory.getLogger(FederationAuthenticationFilter.class);
+                                                              
+    private FederationConfig federationConfig;
     
     public FederationAuthenticationFilter() {
         super();
@@ -46,12 +66,35 @@ public class FederationAuthenticationFilter extends AbstractProcessingFilter {
      */
     @Override
     protected boolean requiresAuthentication(final HttpServletRequest request, final HttpServletResponse response) {
-        final boolean result = request.getRequestURI().contains(getFilterProcessesUrl());
-        
+        boolean result = request.getRequestURI().contains(getFilterProcessesUrl());
+        result |= isTokenExpired();
         if (logger.isDebugEnabled()) {
             logger.debug("requiresAuthentication = " + result);
         }
         return result;
+    }
+    
+    private boolean isTokenExpired() {
+        SecurityContext context = SecurityContextHolder.getContext();
+        boolean detectExpiredTokens = 
+            federationConfig != null && federationConfig.getFedizContext().isDetectExpiredTokens();
+        if (context != null && detectExpiredTokens) {
+            Authentication authentication = context.getAuthentication();
+            if (authentication instanceof FederationAuthenticationToken) {
+                Date tokenExpires = 
+                    ((FederationAuthenticationToken)authentication).getResponse().getTokenExpires();
+                if (tokenExpires == null) {
+                    return false;
+                }
+
+                Date currentTime = new Date();
+                if (currentTime.after(tokenExpires)) {
+                    return true;
+                }
+            }
+        }
+            
+        return false;
     }
 
     @Override
@@ -61,6 +104,16 @@ public class FederationAuthenticationFilter extends AbstractProcessingFilter {
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request) throws AuthenticationException {
+        
+        SecurityContext context = SecurityContextHolder.getContext();
+        if (context != null) {
+            Authentication authentication = context.getAuthentication();
+            if (authentication instanceof FederationAuthenticationToken) {
+                // If we reach this point then the token must be expired
+                throw new ExpiredTokenException("Token is expired");
+            }
+        }
+        
         String wa = request.getParameter(FederationConstants.PARAM_ACTION);
         String responseToken = getResponseToken(request);
         FedizRequest wfReq = new FedizRequest();
@@ -80,6 +133,48 @@ public class FederationAuthenticationFilter extends AbstractProcessingFilter {
         return this.getAuthenticationManager().authenticate(authRequest);
     }
     
+    @Override
+    public void onUnsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
+                                             AuthenticationException authException) {
+        if (authException instanceof ExpiredTokenException) {
+            String redirectUrl = null;
+            try {
+                FedizContext fedContext = federationConfig.getFedizContext();
+                FedizProcessor wfProc = 
+                    FedizProcessorFactory.newFedizProcessor(fedContext.getProtocol());
+                RedirectionResponse redirectionResponse =
+                    wfProc.createSignInRequest(request, fedContext);
+                redirectUrl = redirectionResponse.getRedirectionURL();
+                
+                if (redirectUrl == null) {
+                    LOG.warn("Failed to create SignInRequest. Redirect URL null");
+                    throw new BadCredentialsException("Failed to create SignInRequest. Redirect URL null");
+                }
+                
+                Map<String, String> headers = redirectionResponse.getHeaders();
+                if (!headers.isEmpty()) {
+                    for (String headerName : headers.keySet()) {
+                        response.addHeader(headerName, headers.get(headerName));
+                    }
+                }
+                
+            } catch (ProcessingException ex) {
+                LOG.warn("Failed to create SignInRequest", ex);
+                throw new BadCredentialsException("Failed to create SignInRequest: " + ex.getMessage());
+            }
+            
+            if (LOG.isInfoEnabled()) {
+                LOG.info("Redirecting to IDP: " + redirectUrl);
+            }
+            try {
+                response.sendRedirect(redirectUrl);
+            } catch (IOException ex) {
+                throw new BadCredentialsException(ex.getMessage(), ex);
+            }
+        }
+        throw authException;
+    }
+    
     private String getResponseToken(ServletRequest request) {
         if (request.getParameter(FederationConstants.PARAM_RESULT) != null) {
             return request.getParameter(FederationConstants.PARAM_RESULT);
@@ -95,5 +190,12 @@ public class FederationAuthenticationFilter extends AbstractProcessingFilter {
         return "/j_spring_fediz_security_check";
     }
 
+    public FederationConfig getFederationConfig() {
+        return federationConfig;
+    }
+
+    public void setFederationConfig(FederationConfig fedConfig) {
+        this.federationConfig = fedConfig;
+    }
 
 }
