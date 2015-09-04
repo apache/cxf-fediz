@@ -79,7 +79,7 @@
                 <entry key="default" value="/login/default" />
             </util:map>
         </property>
-        <property name="trustedIDPs">
+        <property name="trustedIdps">
             <util:map>
                 <entry key="urn:org:apache:cxf:fediz:idp:realm-B"
                     value-ref="trusted-idp-realmB" />

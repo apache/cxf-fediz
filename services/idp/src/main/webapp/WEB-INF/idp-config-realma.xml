@@ -83,7 +83,7 @@
                        value="federation/clientcert" />
             </util:map>
         </property>
-        <property name="trustedIDPs">
+        <property name="trustedIdps">
             <util:map>
                 <entry key="urn:org:apache:cxf:fediz:idp:realm-B"
                     value-ref="trusted-idp-realmB" />
