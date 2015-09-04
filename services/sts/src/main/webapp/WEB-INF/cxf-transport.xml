@@ -132,8 +132,8 @@
 
     <bean id="conditionsProvider"
         class="org.apache.cxf.sts.token.provider.DefaultConditionsProvider">
-        <property name="lifetime" value="5" />
-        <property name="acceptClientLifetime" value="false" />
+        <property name="lifetime" value="1200" />
+        <property name="acceptClientLifetime" value="true" />
     </bean>
 
     <util:list id="attributeStatementProvidersList">
