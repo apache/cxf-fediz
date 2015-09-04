@@ -58,7 +58,8 @@ public final class HTTPTestUtils {
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
 
         final HtmlPage rpPage = button.click();
-        Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
+        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
+                            || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
 
         return rpPage.getBody().getTextContent();
     }
@@ -94,7 +95,8 @@ public final class HTTPTestUtils {
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
 
         final HtmlPage rpPage = button.click();
-        Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
+        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
+                          || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
 
         return rpPage.getBody().getTextContent();
     }
