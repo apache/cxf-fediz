@@ -83,65 +83,6 @@ public class FederationAuthenticationEntryPoint implements AuthenticationEntryPo
         Assert.notNull(this.federationConfig, "FederationConfig cannot be null.");
     }
 
-    public final void commence(final HttpServletRequest servletRequest, final HttpServletResponse response,
-            final AuthenticationException authenticationException) throws IOException, ServletException {
-
-        FedizContext fedContext = federationConfig.getFedizContext();
-        LOG.debug("Federation context: {}", fedContext);
-        
-        if (servletRequest.getRequestURL().indexOf(FederationConstants.METADATA_PATH_URI) != -1
-            || servletRequest.getRequestURL().indexOf(getMetadataURI(fedContext)) != -1) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Metadata document requested");
-            }
-            response.setContentType("text/xml");
-            PrintWriter out = response.getWriter();
-            
-            FedizProcessor wfProc = 
-                FedizProcessorFactory.newFedizProcessor(fedContext.getProtocol());
-            try {
-                Document metadata = wfProc.getMetaData(servletRequest, fedContext);
-                out.write(DOM2Writer.nodeToString(metadata));
-                return;
-            } catch (Exception ex) {
-                LOG.warn("Failed to get metadata document: " + ex.getMessage());
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                return;
-            }            
-        }
-        
-        String redirectUrl = null;
-        try {
-            FedizProcessor wfProc = 
-                FedizProcessorFactory.newFedizProcessor(fedContext.getProtocol());
-            RedirectionResponse redirectionResponse =
-                wfProc.createSignInRequest(servletRequest, fedContext);
-            redirectUrl = redirectionResponse.getRedirectionURL();
-            
-            if (redirectUrl == null) {
-                LOG.warn("Failed to create SignInRequest. Redirect URL null");
-                throw new ServletException("Failed to create SignInRequest. Redirect URL null");
-            }
-            
-            Map<String, String> headers = redirectionResponse.getHeaders();
-            if (!headers.isEmpty()) {
-                for (String headerName : headers.keySet()) {
-                    response.addHeader(headerName, headers.get(headerName));
-                }
-            }
-            
-        } catch (ProcessingException ex) {
-            LOG.warn("Failed to create SignInRequest", ex);
-            throw new ServletException("Failed to create SignInRequest: " + ex.getMessage());
-        }
-        
-        preCommence(servletRequest, response);
-        if (LOG.isInfoEnabled()) {
-            LOG.info("Redirecting to IDP: " + redirectUrl);
-        }
-        response.sendRedirect(redirectUrl);
-    }
-
     private String getMetadataURI(FedizContext fedConfig) {
         if (fedConfig.getProtocol().getMetadataURI() != null) {
             return fedConfig.getProtocol().getMetadataURI();
@@ -235,15 +176,5 @@ public class FederationAuthenticationEntryPoint implements AuthenticationEntryPo
         hresponse.sendRedirect(redirectUrl);
         
     }
-
-    /*
-    public void setServletContext(String servletContext) {
-        this.servletContext = servletContext;
-    }
-
-    public String getServletContext() {
-        return servletContext;
-    }
-    */
 
 }
