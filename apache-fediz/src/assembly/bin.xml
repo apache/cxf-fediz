@@ -133,7 +133,7 @@
             <excludes>
                 <exclude>org.apache.cxf.fediz:fediz-idp</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-idp-sts</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-tomcat</exclude>
+                <exclude>org.apache.cxf.fediz:fediz-tomcat7</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-cxf</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-spring</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-spring2</exclude>
@@ -147,7 +147,7 @@
             <excludes>
                 <exclude>org.apache.cxf.fediz:fediz-idp</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-idp-sts</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-tomcat</exclude>
+                <exclude>org.apache.cxf.fediz:fediz-tomcat7</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-jetty</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-cxf</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-spring2</exclude>
@@ -161,7 +161,7 @@
             <excludes>
                 <exclude>org.apache.cxf.fediz:fediz-idp</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-idp-sts</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-tomcat</exclude>
+                <exclude>org.apache.cxf.fediz:fediz-tomcat7</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-jetty</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-cxf</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-spring:jar</exclude>
@@ -175,7 +175,7 @@
             <excludes>
                 <exclude>org.apache.cxf.fediz:fediz-idp</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-idp-sts</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-tomcat</exclude>
+                <exclude>org.apache.cxf.fediz:fediz-tomcat7</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-jetty</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-spring</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-spring2</exclude>
