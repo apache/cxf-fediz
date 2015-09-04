@@ -56,7 +56,7 @@ public abstract class AbstractClientCertTests {
 
     @org.junit.Test
     public void testClientAuthentication() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
         
         final WebClient webClient = new WebClient();
         webClient.getOptions().setUseInsecureSSL(true);
@@ -85,7 +85,8 @@ public abstract class AbstractClientCertTests {
             && wresult.contains("urn:oasis:names:tc:SAML:2.0:cm:holder-of-key"));
 
         final HtmlPage rpPage = button.click();
-        Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
+        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
+                          || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
 
         final String bodyTextContent = rpPage.getBody().getTextContent();
         String user = "alice";
@@ -112,7 +113,7 @@ public abstract class AbstractClientCertTests {
     @org.junit.Test
     public void testDifferentClientCertificate() throws Exception {
         // Get the initial wresult from the IdP
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
         
         CookieManager cookieManager = new CookieManager();
         final WebClient webClient = new WebClient();

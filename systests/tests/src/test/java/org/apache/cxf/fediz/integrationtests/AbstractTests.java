@@ -62,7 +62,8 @@ public abstract class AbstractTests {
 
     @Test
     public void testAlice() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+            + "/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
         
@@ -92,7 +93,8 @@ public abstract class AbstractTests {
     
     @Test
     public void testAliceUser() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/user/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+            + "/secure/user/fedservlet";
         String user = "alice";
         String password = "ecila";
         
@@ -111,7 +113,8 @@ public abstract class AbstractTests {
     
     @Test
     public void testAliceAdminNoAccess() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/admin/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+            + "/secure/admin/fedservlet";
         String user = "alice";
         String password = "ecila";
         
@@ -125,7 +128,8 @@ public abstract class AbstractTests {
     
     @Test
     public void testAliceManagerNoAccess() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/manager/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+            + "/secure/manager/fedservlet";
         String user = "alice";
         String password = "ecila";
         
@@ -139,7 +143,8 @@ public abstract class AbstractTests {
 
     @Test
     public void testAliceWrongPasswordNoAccess() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+            + "/secure/fedservlet";
         String user = "alice";
         String password = "alice";
         
@@ -153,7 +158,8 @@ public abstract class AbstractTests {
 
     @Test
     public void testBob() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+            + "/secure/fedservlet";
         String user = "bob";
         String password = "bob";
         
@@ -182,7 +188,8 @@ public abstract class AbstractTests {
     
     @Test
     public void testBobUser() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/user/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+            + "/secure/user/fedservlet";
         String user = "bob";
         String password = "bob";
         
@@ -201,7 +208,8 @@ public abstract class AbstractTests {
     
     @Test
     public void testBobManager() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/manager/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+            + "/secure/manager/fedservlet";
         String user = "bob";
         String password = "bob";
         
@@ -220,7 +228,8 @@ public abstract class AbstractTests {
     
     @Test
     public void testBobAdmin() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/admin/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+            + "/secure/admin/fedservlet";
         String user = "bob";
         String password = "bob";
         
@@ -239,7 +248,8 @@ public abstract class AbstractTests {
 
     @Test
     public void testTed() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+            + "/secure/fedservlet";
         String user = "ted";
         String password = "det";
         
@@ -268,7 +278,8 @@ public abstract class AbstractTests {
     
     @Test
     public void testTedUserNoAccess() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/user/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+            + "/secure/user/fedservlet";
         String user = "ted";
         String password = "det";
         
@@ -282,7 +293,8 @@ public abstract class AbstractTests {
 
     @Test
     public void testTedAdminNoAccess() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/admin/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+            + "/secure/admin/fedservlet";
         String user = "ted";
         String password = "det";
         
@@ -296,7 +308,8 @@ public abstract class AbstractTests {
     
     @Test
     public void testTedManagerNoAccess() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/manager/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+            + "/secure/manager/fedservlet";
         String user = "ted";
         String password = "det";
         
@@ -311,7 +324,7 @@ public abstract class AbstractTests {
     @Test
     public void testRPMetadata() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() 
-            + "/fedizhelloworld/FederationMetadata/2007-06/FederationMetadata.xml";
+            + "/" + getServletContextName() + "/FederationMetadata/2007-06/FederationMetadata.xml";
 
         final WebClient webClient = new WebClient();
         webClient.getOptions().setUseInsecureSSL(true);
@@ -404,7 +417,8 @@ public abstract class AbstractTests {
     @Test
     public void testRPLogout() throws Exception {
 
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+            + "/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
 
@@ -419,16 +433,19 @@ public abstract class AbstractTests {
         webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);
         final HtmlPage rpPage = webClient.getPage(url);
-        Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
+        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
+                          || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
 
         // 3. now we logout from RP
-        String rpLogoutUrl = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/logout";
+        String rpLogoutUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+            + "/secure/logout";
 
         HTTPTestUtils.logout(rpLogoutUrl, cookieManager);
 
         // 4. now we try to access the RP and idp without authentication but with the existing cookies
         // to see if we are really logged out
-        String rpUrl = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String rpUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+            + "/secure/fedservlet";
 
         webClient = new WebClient();
         webClient.setCookieManager(cookieManager);
@@ -442,7 +459,8 @@ public abstract class AbstractTests {
     @Test
     public void testIdPLogout() throws Exception {
 
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+            + "/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
 
@@ -457,7 +475,8 @@ public abstract class AbstractTests {
         webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);
         final HtmlPage rpPage = webClient.getPage(url);
-        Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
+        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
+                          || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
         
         // 3. now we logout from IdP
         String idpLogoutUrl = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?wa="
@@ -467,7 +486,8 @@ public abstract class AbstractTests {
 
         // 4. now we try to access the RP and idp without authentication but with the existing cookies
         // to see if we are really logged out
-        String rpUrl = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String rpUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+            + "/secure/fedservlet";
 
         webClient = new WebClient();
         webClient.setCookieManager(cookieManager);
@@ -481,7 +501,8 @@ public abstract class AbstractTests {
     @Test
     public void testIdPLogoutCleanup() throws Exception {
 
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+            + "/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
 
@@ -496,7 +517,8 @@ public abstract class AbstractTests {
         webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);
         final HtmlPage rpPage = webClient.getPage(url);
-        Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
+        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
+                          || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
         
         // 3. now we logout from IdP
         String idpLogoutUrl = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?wa="
@@ -506,7 +528,8 @@ public abstract class AbstractTests {
 
         // 4. now we try to access the RP and idp without authentication but with the existing cookies
         // to see if we are really logged out
-        String rpUrl = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String rpUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+            + "/secure/fedservlet";
 
         webClient = new WebClient();
         webClient.setCookieManager(cookieManager);
@@ -519,7 +542,8 @@ public abstract class AbstractTests {
     
     @Test
     public void testAliceModifiedSignature() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+            + "/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
         
@@ -569,8 +593,8 @@ public abstract class AbstractTests {
     @Test
     public void testConcurrentRequests() throws Exception {
         
-        String url1 = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
-        String url2 = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/test.html";
+        String url1 = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
+        String url2 = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/test.html";
         String user = "bob";
         String password = "bob";
         
@@ -594,7 +618,9 @@ public abstract class AbstractTests {
         final HtmlForm form = idpPage1.getFormByName("signinresponseform");
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
         final HtmlPage rpPage1 = button.click();
-        Assert.assertEquals("WS Federation Systests Examples", rpPage1.getTitleText());
+        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage1.getTitleText())
+                          || "WS Federation Systests Spring Examples".equals(rpPage1.getTitleText()));
+        
         String bodyTextContent1 = rpPage1.getBody().getTextContent();
 
         Assert.assertTrue("Principal not " + user,
