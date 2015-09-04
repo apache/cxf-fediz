@@ -21,11 +21,10 @@ package org.apache.cxf.fediz.jetty8;
 
 import org.w3c.dom.Element;
 import org.apache.cxf.fediz.core.ClaimCollection;
-import org.apache.cxf.fediz.core.FederationPrincipal;
+import org.apache.cxf.fediz.core.FedizPrincipal;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
 
-@SuppressWarnings("deprecation")
-public class FederationUserPrincipal implements FederationPrincipal {
+public class FederationUserPrincipal implements FedizPrincipal {
     private String name;
     private ClaimCollection claims;
     private FedizResponse response;

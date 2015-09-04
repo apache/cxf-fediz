@@ -40,7 +40,7 @@ and can be accessed only if the browser user is authenticated. The purpose of
 the FederationServlet is to illustrate the usage of the Spring Security 2 API and
 Configuration to get the authenticated user and to check the roles he has. Further, 
 the FederationServlet shows how to access claims data (user data) which were 
-stored in the SAML token by using the Fediz interface FederationPrincipal.
+stored in the SAML token by using the Fediz interface FedizPrincipal.
 Beyond that, the FederationServlet illustrates how to access the SAML token
 if required. The classes SecurityTokenThreadLocal.java and FederationFilter.java
 can be used to achieve that. You could get this information directly from the

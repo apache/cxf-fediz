@@ -41,7 +41,7 @@ import org.w3c.dom.Element;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimCollection;
-import org.apache.cxf.fediz.core.FederationPrincipal;
+import org.apache.cxf.fediz.core.FedizPrincipal;
 import org.apache.cxf.fediz.core.SecurityTokenThreadLocal;
 import org.apache.hello_world_soap_http.Greeter;
 
@@ -79,8 +79,8 @@ public class FederationServlet extends HttpServlet {
             out.println("Has role '" + item + "': " + ((request.isUserInRole(item)) ? "<b>yes</b>" : "no") + "<p>");
         }
 
-        if (p instanceof FederationPrincipal) {
-            FederationPrincipal fp = (FederationPrincipal)p;
+        if (p instanceof FedizPrincipal) {
+            FedizPrincipal fp = (FedizPrincipal)p;
 
             out.println("<br><b>Claims</b><p>");
             ClaimCollection claims = fp.getClaims();
@@ -88,7 +88,7 @@ public class FederationServlet extends HttpServlet {
                 out.println(c.getClaimType().toString() + ": " + c.getValue() + "<p>");
             }
         } else {
-            out.println("Principal is not instance of FederationPrincipal");
+            out.println("Principal is not instance of FedizPrincipal");
         }
 
         Element el = SecurityTokenThreadLocal.getToken();
@@ -142,8 +142,8 @@ public class FederationServlet extends HttpServlet {
             out.println("Has role '" + item + "': " + ((request.isUserInRole(item)) ? "<b>yes</b>" : "no") + "<p>");
         }
 
-        if (p instanceof FederationPrincipal) {
-            FederationPrincipal fp = (FederationPrincipal)p;
+        if (p instanceof FedizPrincipal) {
+            FedizPrincipal fp = (FedizPrincipal)p;
 
             out.println("<br><b>Claims</b><p>");
             ClaimCollection claims = fp.getClaims();
@@ -151,7 +151,7 @@ public class FederationServlet extends HttpServlet {
                 out.println(c.getClaimType().toString() + ": " + c.getValue() + "<p>");
             }
         } else {
-            out.println("Principal is not instance of FederationPrincipalImpl");
+            out.println("Principal is not instance of FedizPrincipalImpl");
         }
 
         Greeter service = (Greeter)ApplicationContextProvider.getContext().getBean("HelloServiceClient");

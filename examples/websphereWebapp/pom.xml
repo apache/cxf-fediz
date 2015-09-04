@@ -42,7 +42,7 @@
             <version>${servlet.version}</version>
             <scope>provided</scope>
         </dependency>
-        <!-- Required to cast Principal to FederationPrincipal -->
+        <!-- Required to cast Principal to FedizPrincipal -->
         <dependency>
             <groupId>org.apache.cxf.fediz</groupId>
             <artifactId>fediz-core</artifactId>

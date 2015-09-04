@@ -23,7 +23,7 @@ import java.io.Serializable;
 
 import org.w3c.dom.Element;
 import org.apache.cxf.fediz.core.ClaimCollection;
-import org.apache.cxf.fediz.core.FederationPrincipal;
+import org.apache.cxf.fediz.core.FedizPrincipal;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.springframework.security.GrantedAuthority;
 import org.springframework.security.providers.AbstractAuthenticationToken;
@@ -32,9 +32,8 @@ import org.springframework.security.userdetails.UserDetails;
 /**
  * Represents a successful WS-Federation based authentication.
  */
-@SuppressWarnings("deprecation")
 public class FederationAuthenticationToken extends AbstractAuthenticationToken
-    implements Serializable, FederationPrincipal {
+    implements Serializable, FedizPrincipal {
 
     private static final long serialVersionUID = 1L;
 
