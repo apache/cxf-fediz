@@ -81,28 +81,21 @@ public class Spring2Test extends AbstractTests {
     }
     
     @Test
-    @Ignore("This tests is currently failing on Spring")
-    @Override
-    public void testAliceModifiedSignature() throws Exception {
-        
-    }
-    
-    @Test
-    @Ignore("This tests is currently failing on Spring")
+    @Ignore("Logout not supported with Spring2")
     @Override
     public void testIdPLogout() throws Exception {
         
     }
     
     @Test
-    @Ignore("This tests is currently failing on Spring")
+    @Ignore("Logout not supported with Spring2")
     @Override
     public void testIdPLogoutCleanup() throws Exception {
         
     }
     
     @Test
-    @Ignore("This tests is currently failing on Spring")
+    @Ignore("Logout not supported with Spring2")
     @Override
     public void testRPLogout() throws Exception {
         

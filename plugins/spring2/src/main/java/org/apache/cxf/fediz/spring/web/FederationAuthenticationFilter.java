@@ -172,7 +172,12 @@ public class FederationAuthenticationFilter extends AbstractProcessingFilter {
                 throw new BadCredentialsException(ex.getMessage(), ex);
             }
         }
-        throw authException;
+        
+        try {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+        } catch (IOException e) {
+            throw authException;
+        }
     }
     
     private String getResponseToken(ServletRequest request) {
