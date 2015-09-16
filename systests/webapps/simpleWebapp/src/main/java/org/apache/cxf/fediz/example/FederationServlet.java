@@ -21,6 +21,7 @@ package org.apache.cxf.fediz.example;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
@@ -29,9 +30,15 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Element;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.FedizPrincipal;
@@ -84,8 +91,23 @@ public class FederationServlet extends HttpServlet {
             el = SecurityTokenThreadLocal.getToken();
             if (el != null) {
                 out.println("loginToken=FOUND{SecurityTokenThreadLocal}<p>");
+                String token = null;
+                try {
+                    TransformerFactory transFactory = TransformerFactory.newInstance();
+                    Transformer transformer = transFactory.newTransformer();
+                    StringWriter buffer = new StringWriter();
+                    transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+                    transformer.transform(new DOMSource(el),
+                                      new StreamResult(buffer));
+                    token = buffer.toString();
+                    out.println("<p>" + StringEscapeUtils.escapeXml(token));
+                } catch (Exception ex) {
+                    out.println("<p>Failed to transform cached element to string: " + ex.toString());
+                }
+            } else {
+                out.println("<p>Bootstrap token not cached in thread local storage");
             }
-            
+
         }
         
         out.println("</body>");

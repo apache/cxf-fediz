@@ -156,6 +156,7 @@
             <evaluate expression="logoutAction.submit(flowRequestContext)" />
         </on-entry>
         <output name="wctx" value="flowScope.wctx" />
+        <output name="whr" value="flowScope.whr" />
     </end-state>
 
     <action-state id="cacheTokenForWauth">

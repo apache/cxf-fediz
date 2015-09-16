@@ -242,7 +242,9 @@
                 +'&amp;wreply='+flowScope.wreply
                 +'&amp;wtrealm='+flowScope.wtrealm
                 +(flowScope.wctx != null ? '&amp;wctx='+flowScope.wctx : '')
-                +(flowScope.wfresh != null ? '&amp;wfresh='+flowScope.wfresh : '')">
+                +(flowScope.wfresh != null ? '&amp;wfresh='+flowScope.wfresh : '')
+                +(flowScope.whr != null ? '&amp;whr='+flowScope.whr : '')
+                +(flowScope.wreq != null ? '&amp;wreq='+flowScope.wreq : '')">
             </set>
         </on-entry>
     </end-state>
