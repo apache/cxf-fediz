@@ -35,6 +35,7 @@
       <module>tomcat7</module>
       <module>tomcat8</module>
       <module>jetty8</module>
+      <module>jetty9</module>
       <module>spring</module>
       <module>spring2</module>
       <module>cxf</module>

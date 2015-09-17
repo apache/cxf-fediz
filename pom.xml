@@ -54,6 +54,7 @@
         <javax.validation.version>1.1.0.Final</javax.validation.version>
         <jericho.version>3.3</jericho.version>
         <jetty8.version>8.1.12.v20130726</jetty8.version>
+        <jetty9.version>9.3.3.v20150827</jetty9.version>
         <junit.version>4.12</junit.version>
         <log4j.version>1.2.17</log4j.version>
         <ognl.version>3.0.8</ognl.version>
