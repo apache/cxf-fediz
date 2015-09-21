@@ -232,4 +232,30 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Skip Jetty8 tests if we are using JDK8 -->
+        <profile>
+            <id>jdk18</id>
+            <activation>
+                <jdk>1.8</jdk>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                       <plugin>
+                           <groupId>org.apache.maven.plugins</groupId>
+                           <artifactId>maven-failsafe-plugin</artifactId>
+                           <inherited>true</inherited>
+                           <configuration>
+                               <excludes>
+                                   <exclude>**/integrationtests/**</exclude>
+                               </excludes>
+                           </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+    </profiles>
 </project>
