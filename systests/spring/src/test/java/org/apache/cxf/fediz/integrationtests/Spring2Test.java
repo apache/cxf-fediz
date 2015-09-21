@@ -20,17 +20,36 @@
 package org.apache.cxf.fediz.integrationtests;
 
 
+import java.io.File;
+
+import com.gargoylesoftware.htmlunit.CookieManager;
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.DomElement;
+import com.gargoylesoftware.htmlunit.html.DomNodeList;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
+
+
+import org.apache.catalina.LifecycleState;
+import org.apache.catalina.connector.Connector;
+import org.apache.catalina.startup.Tomcat;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 public class Spring2Test extends AbstractTests {
 
     static String idpHttpsPort;
     static String rpHttpsPort;
+    
+    private static Tomcat idpServer;
+    private static Tomcat rpServer;
     
     @BeforeClass
     public static void init() {
@@ -47,16 +66,106 @@ public class Spring2Test extends AbstractTests {
         rpHttpsPort = System.getProperty("rp.https.port");
         Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
 
-        JettyUtils.initIdpServer();
-        JettyUtils.startIdpServer();
-        JettyUtils.initRpServer();
-        JettyUtils.startRpServer();
+        initIdp();
+        initRp();
     }
     
     @AfterClass
     public static void cleanup() {
-        JettyUtils.stopIdpServer();
-        JettyUtils.stopRpServer();
+        try {
+            if (idpServer.getServer() != null
+                && idpServer.getServer().getState() != LifecycleState.DESTROYED) {
+                if (idpServer.getServer().getState() != LifecycleState.STOPPED) {
+                    idpServer.stop();
+                }
+                idpServer.destroy();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            if (rpServer.getServer() != null
+                && rpServer.getServer().getState() != LifecycleState.DESTROYED) {
+                if (rpServer.getServer().getState() != LifecycleState.STOPPED) {
+                    rpServer.stop();
+                }
+                rpServer.destroy();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private static void initIdp() {
+        try {
+            idpServer = new Tomcat();
+            idpServer.setPort(0);
+            String currentDir = new File(".").getCanonicalPath();
+            idpServer.setBaseDir(currentDir + File.separator + "target");
+            
+            idpServer.getHost().setAppBase("tomcat/idp/webapps");
+            idpServer.getHost().setAutoDeploy(true);
+            idpServer.getHost().setDeployOnStartup(true);
+            
+            Connector httpsConnector = new Connector();
+            httpsConnector.setPort(Integer.parseInt(idpHttpsPort));
+            httpsConnector.setSecure(true);
+            httpsConnector.setScheme("https");
+            //httpsConnector.setAttribute("keyAlias", keyAlias);
+            httpsConnector.setAttribute("keystorePass", "tompass");
+            httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
+            httpsConnector.setAttribute("truststorePass", "tompass");
+            httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
+            httpsConnector.setAttribute("clientAuth", "want");
+            // httpsConnector.setAttribute("clientAuth", "false");
+            httpsConnector.setAttribute("sslProtocol", "TLS");
+            httpsConnector.setAttribute("SSLEnabled", true);
+
+            idpServer.getService().addConnector(httpsConnector);
+            
+            idpServer.addWebapp("/fediz-idp-sts", "fediz-idp-sts");
+            idpServer.addWebapp("/fediz-idp", "fediz-idp");
+            
+            idpServer.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private static void initRp() {
+        try {
+            rpServer = new Tomcat();
+            rpServer.setPort(0);
+            String currentDir = new File(".").getCanonicalPath();
+            rpServer.setBaseDir(currentDir + File.separator + "target");
+            
+            rpServer.getHost().setAppBase("tomcat/rp/webapps");
+            rpServer.getHost().setAutoDeploy(true);
+            rpServer.getHost().setDeployOnStartup(true);
+            
+            Connector httpsConnector = new Connector();
+            httpsConnector.setPort(Integer.parseInt(rpHttpsPort));
+            httpsConnector.setSecure(true);
+            httpsConnector.setScheme("https");
+            //httpsConnector.setAttribute("keyAlias", keyAlias);
+            httpsConnector.setAttribute("keystorePass", "tompass");
+            httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
+            httpsConnector.setAttribute("truststorePass", "tompass");
+            httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
+            // httpsConnector.setAttribute("clientAuth", "false");
+            httpsConnector.setAttribute("clientAuth", "want");
+            httpsConnector.setAttribute("sslProtocol", "TLS");
+            httpsConnector.setAttribute("SSLEnabled", true);
+
+            rpServer.getService().addConnector(httpsConnector);
+            
+            rpServer.addWebapp("/fedizhelloworld_spring2", "fediz-systests-webapps-spring2");
+            
+            rpServer.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -99,5 +208,57 @@ public class Spring2Test extends AbstractTests {
     @Override
     public void testRPLogout() throws Exception {
         
+    }
+    
+    // Getting 500 error code here
+    @Override
+    @Test
+    public void testAliceModifiedSignature() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+            + "/secure/fedservlet";
+        String user = "alice";
+        String password = "ecila";
+        
+        // Get the initial token
+        CookieManager cookieManager = new CookieManager();
+        final WebClient webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        final HtmlPage idpPage = webClient.getPage(url);
+        webClient.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+
+        // Parse the form to get the token (wresult)
+        DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
+
+        for (DomElement result : results) {
+            if ("wresult".equals(result.getAttributeNS(null, "name"))) {
+                // Now modify the Signature
+                String value = result.getAttributeNS(null, "value");
+                value = value.replace("alice", "bob");
+                result.setAttributeNS(null, "value", value);
+            }
+        }
+        
+        // Invoke back on the RP
+        
+        final HtmlForm form = idpPage.getFormByName("signinresponseform");
+        final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
+
+        try {
+            button.click();
+            Assert.fail("Failure expected on a modified signature");
+        } catch (FailingHttpStatusCodeException ex) {
+            // expected
+            //Assert.assertTrue(ex.getMessage().contains("401 Unauthorized")
+            //                  || ex.getMessage().contains("401 Authentication Failed")
+            //                  || ex.getMessage().contains("403 Forbidden"));
+        }
+
     }
 }

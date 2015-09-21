@@ -19,17 +19,23 @@
 
 package org.apache.cxf.fediz.integrationtests;
 
+import java.io.File;
 
+import org.apache.catalina.LifecycleState;
+import org.apache.catalina.connector.Connector;
+import org.apache.catalina.startup.Tomcat;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 
-
 public class SpringTest extends AbstractTests {
 
     static String idpHttpsPort;
     static String rpHttpsPort;
+    
+    private static Tomcat idpServer;
+    private static Tomcat rpServer;
     
     @BeforeClass
     public static void init() {
@@ -46,16 +52,106 @@ public class SpringTest extends AbstractTests {
         rpHttpsPort = System.getProperty("rp.https.port");
         Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
 
-        JettyUtils.initIdpServer();
-        JettyUtils.startIdpServer();
-        JettyUtils.initRpServer();
-        JettyUtils.startRpServer();
+        initIdp();
+        initRp();
     }
     
     @AfterClass
     public static void cleanup() {
-        JettyUtils.stopIdpServer();
-        JettyUtils.stopRpServer();
+        try {
+            if (idpServer.getServer() != null
+                && idpServer.getServer().getState() != LifecycleState.DESTROYED) {
+                if (idpServer.getServer().getState() != LifecycleState.STOPPED) {
+                    idpServer.stop();
+                }
+                idpServer.destroy();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            if (rpServer.getServer() != null
+                && rpServer.getServer().getState() != LifecycleState.DESTROYED) {
+                if (rpServer.getServer().getState() != LifecycleState.STOPPED) {
+                    rpServer.stop();
+                }
+                rpServer.destroy();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private static void initIdp() {
+        try {
+            idpServer = new Tomcat();
+            idpServer.setPort(0);
+            String currentDir = new File(".").getCanonicalPath();
+            idpServer.setBaseDir(currentDir + File.separator + "target");
+            
+            idpServer.getHost().setAppBase("tomcat/idp/webapps");
+            idpServer.getHost().setAutoDeploy(true);
+            idpServer.getHost().setDeployOnStartup(true);
+            
+            Connector httpsConnector = new Connector();
+            httpsConnector.setPort(Integer.parseInt(idpHttpsPort));
+            httpsConnector.setSecure(true);
+            httpsConnector.setScheme("https");
+            //httpsConnector.setAttribute("keyAlias", keyAlias);
+            httpsConnector.setAttribute("keystorePass", "tompass");
+            httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
+            httpsConnector.setAttribute("truststorePass", "tompass");
+            httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
+            httpsConnector.setAttribute("clientAuth", "want");
+            // httpsConnector.setAttribute("clientAuth", "false");
+            httpsConnector.setAttribute("sslProtocol", "TLS");
+            httpsConnector.setAttribute("SSLEnabled", true);
+
+            idpServer.getService().addConnector(httpsConnector);
+            
+            idpServer.addWebapp("/fediz-idp-sts", "fediz-idp-sts");
+            idpServer.addWebapp("/fediz-idp", "fediz-idp");
+            
+            idpServer.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private static void initRp() {
+        try {
+            rpServer = new Tomcat();
+            rpServer.setPort(0);
+            String currentDir = new File(".").getCanonicalPath();
+            rpServer.setBaseDir(currentDir + File.separator + "target");
+            
+            rpServer.getHost().setAppBase("tomcat/rp/webapps");
+            rpServer.getHost().setAutoDeploy(true);
+            rpServer.getHost().setDeployOnStartup(true);
+            
+            Connector httpsConnector = new Connector();
+            httpsConnector.setPort(Integer.parseInt(rpHttpsPort));
+            httpsConnector.setSecure(true);
+            httpsConnector.setScheme("https");
+            //httpsConnector.setAttribute("keyAlias", keyAlias);
+            httpsConnector.setAttribute("keystorePass", "tompass");
+            httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
+            httpsConnector.setAttribute("truststorePass", "tompass");
+            httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
+            // httpsConnector.setAttribute("clientAuth", "false");
+            httpsConnector.setAttribute("clientAuth", "want");
+            httpsConnector.setAttribute("sslProtocol", "TLS");
+            httpsConnector.setAttribute("SSLEnabled", true);
+
+            rpServer.getService().addConnector(httpsConnector);
+
+            rpServer.addWebapp("/fedizhelloworld", "fediz-systests-webapps-spring");
+            
+            rpServer.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
