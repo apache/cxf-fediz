@@ -20,7 +20,6 @@
 package org.apache.cxf.fediz.spring.web;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -29,20 +28,13 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.w3c.dom.Document;
-
-import org.apache.cxf.fediz.core.FederationConstants;
-import org.apache.cxf.fediz.core.SAMLSSOConstants;
-import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.config.FedizContext;
-import org.apache.cxf.fediz.core.config.SAMLProtocol;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
+import org.apache.cxf.fediz.core.metadata.MetadataDocumentHandler;
 import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
 import org.apache.cxf.fediz.core.processor.RedirectionResponse;
 import org.apache.cxf.fediz.spring.FederationConfig;
-import org.apache.wss4j.common.util.DOM2Writer;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -83,18 +75,6 @@ public class FederationAuthenticationEntryPoint implements AuthenticationEntryPo
         Assert.notNull(this.federationConfig, "FederationConfig cannot be null.");
     }
 
-    private String getMetadataURI(FedizContext fedConfig) {
-        if (fedConfig.getProtocol().getMetadataURI() != null) {
-            return fedConfig.getProtocol().getMetadataURI();
-        } else if (fedConfig.getProtocol() instanceof FederationProtocol) {
-            return FederationConstants.METADATA_PATH_URI;
-        } else if (fedConfig.getProtocol() instanceof SAMLProtocol) {
-            return SAMLSSOConstants.FEDIZ_SAML_METADATA_PATH_URI;
-        }
-        
-        return FederationConstants.METADATA_PATH_URI;
-    }
-
     /**
      * Template method for you to do your own pre-processing before the redirect occurs.
      *
@@ -119,25 +99,11 @@ public class FederationAuthenticationEntryPoint implements AuthenticationEntryPo
         FedizContext fedContext = federationConfig.getFedizContext();
         LOG.debug("Federation context: {}", fedContext);
         
-        if (hrequest.getRequestURL().indexOf(FederationConstants.METADATA_PATH_URI) != -1
-            || hrequest.getRequestURL().indexOf(getMetadataURI(fedContext)) != -1) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Metadata document requested");
-            }
-            response.setContentType("text/xml");
-            PrintWriter out = response.getWriter();
-            
-            FedizProcessor wfProc = 
-                FedizProcessorFactory.newFedizProcessor(fedContext.getProtocol());
-            try {
-                Document metadata = wfProc.getMetaData(hrequest, fedContext);
-                out.write(DOM2Writer.nodeToString(metadata));
-                return;
-            } catch (Exception ex) {
-                LOG.warn("Failed to get metadata document: " + ex.getMessage());
-                hresponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                return;
-            }            
+        // Check to see if it is a metadata request
+        MetadataDocumentHandler mdHandler = new MetadataDocumentHandler(fedContext);
+        if (mdHandler.canHandleRequest(hrequest)) {
+            mdHandler.handleRequest(hrequest, hresponse);
+            return;
         }
         
         String redirectUrl = null;
