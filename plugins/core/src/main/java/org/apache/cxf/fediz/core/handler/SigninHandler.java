@@ -52,7 +52,14 @@ public class SigninHandler<T> implements RequestHandler<T> {
 
     @Override
     public boolean canHandleRequest(HttpServletRequest request) {
-        return FederationConstants.ACTION_SIGNIN.equals(request.getParameter(FederationConstants.PARAM_ACTION));
+        if (fedizContext.getProtocol() instanceof FederationProtocol
+            && FederationConstants.ACTION_SIGNIN.equals(request.getParameter(FederationConstants.PARAM_ACTION))) {
+            return true;
+        } else if (fedizContext.getProtocol() instanceof SAMLProtocol
+                   && request.getParameter(SAMLSSOConstants.RELAY_STATE) != null) {
+            return true;
+        }
+        return false;
     }
 
     @Override

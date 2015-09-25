@@ -28,12 +28,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.catalina.Session;
 import org.apache.catalina.authenticator.Constants;
 import org.apache.catalina.connector.Request;
-import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.FedizPrincipal;
-import org.apache.cxf.fediz.core.SAMLSSOConstants;
-import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.config.FedizContext;
-import org.apache.cxf.fediz.core.config.SAMLProtocol;
 import org.apache.cxf.fediz.core.handler.SigninHandler;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.apache.cxf.fediz.tomcat8.FederationAuthenticator;
@@ -76,18 +72,6 @@ public class TomcatSigninHandler extends SigninHandler<FedizPrincipal> {
 
         LOG.debug("UserPrincipal was created successfully for {}", principal);
         return principal;
-    }
-
-    @Override
-    public boolean canHandleRequest(HttpServletRequest request) {
-        if (super.getFedizContext().getProtocol() instanceof FederationProtocol
-            && FederationConstants.ACTION_SIGNIN.equals(request.getParameter(FederationConstants.PARAM_ACTION))) {
-            return true;
-        } else if (super.getFedizContext().getProtocol() instanceof SAMLProtocol
-                   && request.getParameter(SAMLSSOConstants.RELAY_STATE) != null) {
-            return true;
-        }
-        return false;
     }
 
     public Object getLandingPage() {
