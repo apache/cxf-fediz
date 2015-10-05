@@ -71,6 +71,22 @@ public class Service {
         return doGet(uriInfo);
     }
     
+    // Just used for testing purposes...
+    @Path("/test.html")
+    @RolesAllowed({ "User", "Admin", "Manager", "Authenticated" })
+    @GET
+    @Produces("text/html")
+    public String doGetTest(@Context UriInfo uriInfo) throws Exception {
+        StringBuilder out = new StringBuilder();
+        out.append("<html>\n");
+        out.append("<head><title>WS Federation Systests Examples</title></head>\n");
+        out.append("<body>\n");
+        out.append("<P><H3>Secure Test</H3><P></P>");
+        out.append("</body>\n");
+        
+        return out.toString();
+    }
+    
     private String doGet(@Context UriInfo uriInfo) throws Exception {
        
         StringBuilder out = new StringBuilder();
