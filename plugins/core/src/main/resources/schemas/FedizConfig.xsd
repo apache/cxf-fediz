@@ -85,7 +85,7 @@
 
     <xs:element name="maximumClockSkew" type="xs:integer" default="5" />
 
-    <xs:element name="tokenExpirationValidation" type="xs:boolean" default="true" >
+    <xs:element name="tokenExpirationValidation" type="xs:boolean" default="false" >
         <xs:annotation>
             <xs:documentation>Decision whether the token validation (e.g. lifetime) shall be
                 performed on every request

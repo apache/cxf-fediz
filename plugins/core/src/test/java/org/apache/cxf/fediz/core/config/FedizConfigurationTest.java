@@ -407,7 +407,7 @@ public class FedizConfigurationTest {
         ContextConfig config = new ContextConfig();
 
         Assert.assertTrue(config.getMaximumClockSkew().intValue() == 5);
-        Assert.assertTrue(config.isTokenExpirationValidation());
+        Assert.assertFalse(config.isTokenExpirationValidation());
     }
 
 }
