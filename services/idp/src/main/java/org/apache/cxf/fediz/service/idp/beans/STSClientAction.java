@@ -293,10 +293,12 @@ public class STSClientAction {
             throw ex;
         }
 
-        String id = getIdFromToken(rpToken);
-        
-        LOG.info("[RP_TOKEN={}] successfully created for realm [{}] on behalf of [IDP_TOKEN={}]",
-                 id, wtrealm, idpToken.getId());
+        if (LOG.isInfoEnabled()) {
+            String id = getIdFromToken(rpToken);
+            
+            LOG.info("[RP_TOKEN={}] successfully created for realm [{}] on behalf of [IDP_TOKEN={}]",
+                     id, wtrealm, idpToken.getId());
+        }
         return StringEscapeUtils.escapeXml11(rpToken);
     }
     
