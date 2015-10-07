@@ -170,7 +170,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             lifeTime = processLifeTime(lifetimeElem);
         }
 
-        if (config.isDetectExpiredTokens() && lifeTime != null) {
+        if (lifeTime != null) {
             Date currentDate = new Date();
             if (currentDate.after(lifeTime.getExpires())) {
                 LOG.warn("RSTR Lifetime expired");
