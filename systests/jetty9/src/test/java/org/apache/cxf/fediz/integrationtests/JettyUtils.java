@@ -25,46 +25,11 @@ import org.eclipse.jetty.xml.XmlConfiguration;
 
 public final class JettyUtils {
 
-    private static Server idpServer;
     private static Server rpServer;
     
     private JettyUtils() {
     }
         
-    public static void initIdpServer() {
-        if (idpServer == null) {
-            try {
-                Resource testServerConfig = Resource.newSystemResource("idp-server.xml");
-                XmlConfiguration configuration = new XmlConfiguration(testServerConfig.getInputStream());
-                idpServer = (Server)configuration.configure();   
-                
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-    
-    public static void startIdpServer() {
-        if (idpServer != null && !idpServer.isStarted()) {
-            try {
-                idpServer.start();
-                
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-    
-    public static void stopIdpServer() {
-        if (idpServer != null && idpServer.isStarted()) {
-            try {
-                idpServer.stop();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-    
     public static void initRpServer() {
         initRpServer("rp-server.xml");
     }

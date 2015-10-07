@@ -19,47 +19,100 @@
 
 package org.apache.cxf.fediz.integrationtests;
 
+import java.io.File;
+
+import org.apache.catalina.LifecycleState;
+import org.apache.catalina.connector.Connector;
+import org.apache.catalina.startup.Tomcat;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.Ignore;
 
 
-public class JettyTest {// extends AbstractTests {
+public class JettyTest extends AbstractTests {
 
     static String idpHttpsPort;
     static String rpHttpsPort;
+    
+    private static Tomcat idpServer;
     
     @BeforeClass
     public static void init() {
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
         System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
-        System.setProperty("org.apache.commons.logging.simplelog.log.httpclient.wire", "info");
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.commons.httpclient", "info");
+        System.setProperty("org.apache.commons.logging.simplelog.log.httpclient.wire", "debug");
+        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.commons.httpclient", "debug");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.webflow", "info");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.security.web", "info");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.security", "info");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf.fediz", "info");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf", "info");
-
+        
         idpHttpsPort = System.getProperty("idp.https.port");
         Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
         rpHttpsPort = System.getProperty("rp.https.port");
         Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
 
-        JettyUtils.initIdpServer();
-        JettyUtils.startIdpServer();
+        initIdp();
+        
         JettyUtils.initRpServer();
         JettyUtils.startRpServer();
     }
     
     @AfterClass
     public static void cleanup() {
-        JettyUtils.stopIdpServer();
+        try {
+            if (idpServer.getServer() != null
+                && idpServer.getServer().getState() != LifecycleState.DESTROYED) {
+                if (idpServer.getServer().getState() != LifecycleState.STOPPED) {
+                    idpServer.stop();
+                }
+                idpServer.destroy();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
         JettyUtils.stopRpServer();
     }
+    
+    private static void initIdp() {
+        try {
+            idpServer = new Tomcat();
+            idpServer.setPort(0);
+            String currentDir = new File(".").getCanonicalPath();
+            idpServer.setBaseDir(currentDir + File.separator + "target");
+            
+            idpServer.getHost().setAppBase("tomcat/idp/webapps");
+            idpServer.getHost().setAutoDeploy(true);
+            idpServer.getHost().setDeployOnStartup(true);
+            
+            Connector httpsConnector = new Connector();
+            httpsConnector.setPort(Integer.parseInt(idpHttpsPort));
+            httpsConnector.setSecure(true);
+            httpsConnector.setScheme("https");
+            //httpsConnector.setAttribute("keyAlias", keyAlias);
+            httpsConnector.setAttribute("keystorePass", "tompass");
+            httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
+            httpsConnector.setAttribute("truststorePass", "tompass");
+            httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
+            httpsConnector.setAttribute("clientAuth", "want");
+            // httpsConnector.setAttribute("clientAuth", "false");
+            httpsConnector.setAttribute("sslProtocol", "TLS");
+            httpsConnector.setAttribute("SSLEnabled", true);
 
-    /*
+            idpServer.getService().addConnector(httpsConnector);
+            
+            idpServer.addWebapp("/fediz-idp-sts", "fediz-idp-sts");
+            idpServer.addWebapp("/fediz-idp", "fediz-idp");
+            
+            idpServer.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public String getIdpHttpsPort() {
         return idpHttpsPort;
@@ -80,15 +133,5 @@ public class JettyTest {// extends AbstractTests {
     public void testConcurrentRequests() throws Exception {
         // super.testConcurrentRequests();
     }
-    */
     
-    @Test
-    public void testTest() throws Exception {
-        //String url = 
-        //    "https://localhost:" + idpHttpsPort + "/fediz-idp-sts/REALMA/STSServiceTransport?wsdl";
-        String url = "https://localhost:" + rpHttpsPort + "/fedizhelloworld/secure/fedservlet";
-        System.out.println("URL: " + url);
-        
-        Thread.sleep(30 * 1000);
-    }
 }

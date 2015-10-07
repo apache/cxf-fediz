@@ -21,6 +21,11 @@ package org.apache.cxf.fediz.integrationtests;
 
 
 
+import java.io.File;
+
+import org.apache.catalina.LifecycleState;
+import org.apache.catalina.connector.Connector;
+import org.apache.catalina.startup.Tomcat;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -31,6 +36,8 @@ public class JettyPreAuthSpringTest extends AbstractTests {
 
     static String idpHttpsPort;
     static String rpHttpsPort;
+    
+    private static Tomcat idpServer;
     
     @BeforeClass
     public static void init() {
@@ -47,17 +54,65 @@ public class JettyPreAuthSpringTest extends AbstractTests {
         rpHttpsPort = System.getProperty("rp.https.port");
         Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
 
-        JettyUtils.initIdpServer();
-        JettyUtils.startIdpServer();
+        initIdp();
+        
         JettyUtils.initRpServer();
         JettyUtils.startRpServer();
     }
     
     @AfterClass
     public static void cleanup() {
-        JettyUtils.stopIdpServer();
+        try {
+            if (idpServer.getServer() != null
+                && idpServer.getServer().getState() != LifecycleState.DESTROYED) {
+                if (idpServer.getServer().getState() != LifecycleState.STOPPED) {
+                    idpServer.stop();
+                }
+                idpServer.destroy();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
         JettyUtils.stopRpServer();
     }
+    
+    private static void initIdp() {
+        try {
+            idpServer = new Tomcat();
+            idpServer.setPort(0);
+            String currentDir = new File(".").getCanonicalPath();
+            idpServer.setBaseDir(currentDir + File.separator + "target");
+            
+            idpServer.getHost().setAppBase("tomcat/idp/webapps");
+            idpServer.getHost().setAutoDeploy(true);
+            idpServer.getHost().setDeployOnStartup(true);
+            
+            Connector httpsConnector = new Connector();
+            httpsConnector.setPort(Integer.parseInt(idpHttpsPort));
+            httpsConnector.setSecure(true);
+            httpsConnector.setScheme("https");
+            //httpsConnector.setAttribute("keyAlias", keyAlias);
+            httpsConnector.setAttribute("keystorePass", "tompass");
+            httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
+            httpsConnector.setAttribute("truststorePass", "tompass");
+            httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
+            httpsConnector.setAttribute("clientAuth", "want");
+            // httpsConnector.setAttribute("clientAuth", "false");
+            httpsConnector.setAttribute("sslProtocol", "TLS");
+            httpsConnector.setAttribute("SSLEnabled", true);
+
+            idpServer.getService().addConnector(httpsConnector);
+            
+            idpServer.addWebapp("/fediz-idp-sts", "fediz-idp-sts");
+            idpServer.addWebapp("/fediz-idp", "fediz-idp");
+            
+            idpServer.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     @Override
     public String getIdpHttpsPort() {

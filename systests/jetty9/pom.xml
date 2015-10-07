@@ -63,21 +63,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>apache-jsp</artifactId>
-            <version>${jetty9.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.cxf.fediz</groupId>
-            <artifactId>fediz-jetty9</artifactId>
-            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -100,9 +88,33 @@
             <scope>test</scope>
         </dependency>        
         <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-core</artifactId>
+            <version>${tomcat7.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-logging-juli</artifactId>
+            <version>${tomcat7.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.eclipse.jdt.core.compiler</groupId>
             <artifactId>ecj</artifactId>
             <version>${ecj.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-jasper</artifactId>
+            <version>${tomcat7.version}</version>
+            <scope>test</scope>
+        </dependency>
+         <dependency>
+            <groupId>org.apache.cxf.fediz</groupId>
+            <artifactId>fediz-jetty9</artifactId>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -112,7 +124,6 @@
                 <directory>src/test/resources</directory>
                 <filtering>true</filtering>
                 <includes>
-                    <include>**/idp-server.xml</include>
                     <include>**/rp-*server.xml</include>
                     <include>**/fediz_config*.xml</include>
                 </includes>
@@ -121,7 +132,6 @@
                 <directory>src/test/resources</directory>
                 <filtering>false</filtering>
                 <excludes>
-                    <exclude>**/idp-server.xml</exclude>
                     <exclude>**/rp-*server.xml</exclude>
                     <exclude>**/fediz_config*.xml</exclude>
                 </excludes>
@@ -155,7 +165,7 @@
                         <id>copy-idp-sts</id>
                         <phase>generate-resources</phase>
                         <goals>
-                            <goal>copy</goal>
+                            <goal>unpack</goal>
                         </goals>
                         <configuration>
                             <artifactItems>
@@ -165,7 +175,7 @@
                                     <version>${project.version}</version>
                                     <type>war</type>
                                     <overWrite>true</overWrite>
-                                    <outputDirectory>target/idp/</outputDirectory>
+                                    <outputDirectory>target/tomcat/idp/webapps/fediz-idp</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz</groupId>
@@ -173,8 +183,30 @@
                                     <version>${project.version}</version>
                                     <type>war</type>
                                     <overWrite>true</overWrite>
-                                    <outputDirectory>target/idp/</outputDirectory>
+                                    <outputDirectory>target/tomcat/idp/webapps/fediz-idp-sts</outputDirectory>
                                 </artifactItem>
+                            </artifactItems>
+                            <outputAbsoluteArtifactFilename>true</outputAbsoluteArtifactFilename>
+                            <outputDirectory>target</outputDirectory>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                            <stripVersion>true</stripVersion>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-rp</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz.systests.webapps</groupId>
                                     <artifactId>fediz-systests-webapps-simple</artifactId>
@@ -182,7 +214,7 @@
                                     <type>war</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>target/rp/</outputDirectory>
-                                </artifactItem>
+                                </artifactItem>                             
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz.systests.webapps</groupId>
                                     <artifactId>fediz-systests-webapps-springPreauth</artifactId>
@@ -190,9 +222,10 @@
                                     <type>war</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>target/rp/</outputDirectory>
-                                </artifactItem>                                
+                                </artifactItem>      
                             </artifactItems>
                             <outputAbsoluteArtifactFilename>true</outputAbsoluteArtifactFilename>
+                            <outputDirectory>target</outputDirectory>
                             <overWriteSnapshots>true</overWriteSnapshots>
                             <overWriteIfNewer>true</overWriteIfNewer>
                             <stripVersion>true</stripVersion>
@@ -244,4 +277,16 @@
             </plugin>
         </plugins>
     </build>
+    
+    <profiles>
+        <profile>
+            <id>jdk17</id>
+            <activation>
+                <jdk>1.7</jdk>
+            </activation>
+            <properties>
+                <maven.test.skip>true</maven.test.skip>
+            </properties>
+        </profile>
+    </profiles>
 </project>
