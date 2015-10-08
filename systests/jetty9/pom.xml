@@ -245,6 +245,7 @@
                         </goals>
                         <configuration>
                             <skip>false</skip>
+                            <reuseForks>false</reuseForks>
                             <systemPropertyVariables>
                                 <wt.headless>true</wt.headless>
                                 <idp.https.port>${idp.https.port}</idp.https.port>
