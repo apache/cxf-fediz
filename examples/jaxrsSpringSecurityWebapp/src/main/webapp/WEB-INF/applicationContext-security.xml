@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements. See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership. The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License. You may obtain a copy of the License at
+ 
+  http://www.apache.org/licenses/LICENSE-2.0
+ 
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied. See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:sec="http://www.springframework.org/schema/security"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:jaxrs="http://cxf.apache.org/jaxrs" 
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/security
+        http://www.springframework.org/schema/security/spring-security-3.1.xsd
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util-3.0.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://cxf.apache.org/jaxrs
+        http://cxf.apache.org/schemas/jaxrs.xsd">
+
+    <!-- 
+        This is a CXF JAX-RS Spring endpoint
+        If you do not work with CXF JAX-RS:  
+        Use Jersey or RestEasy specific Spring integration mechanism to activate a JAX-RS endpoint   
+    --> 
+    <jaxrs:server address="/">
+        <jaxrs:serviceBeans>
+            <bean class="org.apache.cxf.fediz.example.FederationService"/>
+        </jaxrs:serviceBeans>
+    </jaxrs:server>
+
+    <!-- DISABLE in production as it might log confidential information about 
+        the user -->
+    <sec:debug />
+
+    <sec:http entry-point-ref="federationEntryPoint"
+        use-expressions="true">
+        <sec:intercept-url pattern="/" access="permitAll" />
+        <sec:intercept-url pattern="/fediz" access="permitAll" />
+        <sec:intercept-url pattern="/index.html" access="permitAll" />
+        <sec:intercept-url pattern="/secure/fedservlet" access="isAuthenticated()" />
+        <sec:intercept-url pattern="/secure/manager/**" access="hasRole('ROLE_MANAGER')" />
+        <sec:intercept-url pattern="/secure/admin/**" access="hasRole('ROLE_ADMIN')" />
+        <sec:intercept-url pattern="/secure/user/**" access="hasAnyRole('ROLE_USER','ROLE_ADMIN','ROLE_MANAGER')" />
+        <sec:custom-filter ref="federationFilter" after="BASIC_AUTH_FILTER" />
+        <sec:session-management session-authentication-strategy-ref="sas" />
+    </sec:http>
+
+
+    <sec:authentication-manager alias="authManager">
+        <sec:authentication-provider ref="federationAuthProvider" />
+    </sec:authentication-manager>
+
+    <bean id="fedizConfig" class="org.apache.cxf.fediz.spring.FederationConfigImpl"
+        init-method="init" p:configFile="WEB-INF/fediz_config.xml" />
+
+    <bean id="federationEntryPoint"
+        class="org.apache.cxf.fediz.spring.web.FederationAuthenticationEntryPoint"
+        p:federationConfig-ref="fedizConfig" />
+
+    <bean id="federationFilter"
+        class="org.apache.cxf.fediz.spring.web.FederationAuthenticationFilter"
+        p:authenticationManager-ref="authManager">
+
+        <property name="authenticationFailureHandler">
+            <bean
+                class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler" />
+        </property>
+    </bean>
+
+    <bean id="federationAuthProvider"
+        class="org.apache.cxf.fediz.spring.authentication.FederationAuthenticationProvider"
+        p:federationConfig-ref="fedizConfig">
+        <property name="authenticationUserDetailsService">
+            <bean
+                class="org.apache.cxf.fediz.spring.authentication.GrantedAuthoritiesUserDetailsFederationService" />
+        </property>
+    </bean>
+
+    <bean id="sas"
+        class="org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy" />
+</beans>
+

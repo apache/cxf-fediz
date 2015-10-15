@@ -37,6 +37,8 @@
         <module>springWebapp</module>
         <module>spring2Webapp</module>
         <module>springPreauthWebapp</module>
+        <module>jaxrsSimpleWebapp</module>
+        <module>jaxrsSpringSecurityWebapp</module>
     </modules>
 	
 	<profiles>
