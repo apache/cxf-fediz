@@ -37,7 +37,8 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.xml.bind.JAXBException;
 
 import org.w3c.dom.Element;
-import org.apache.cxf.common.classloader.ClassLoaderUtils;
+
+import org.apache.cxf.BusFactory;
 import org.apache.cxf.common.i18n.BundleUtils;
 import org.apache.cxf.fediz.core.SecurityTokenThreadLocal;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
@@ -48,6 +49,7 @@ import org.apache.cxf.fediz.cxf.plugin.state.ResponseState;
 import org.apache.cxf.fediz.cxf.plugin.state.SPStateManager;
 import org.apache.cxf.jaxrs.impl.HttpHeadersImpl;
 import org.apache.cxf.jaxrs.impl.UriInfoImpl;
+import org.apache.cxf.jaxrs.utils.ResourceUtils;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.security.SecurityContext;
 import org.apache.cxf.staxutils.StaxUtils;
@@ -85,15 +87,19 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
     }
     
     @PostConstruct
-    public synchronized void configure() throws JAXBException, MalformedURLException {
+    public synchronized void configure() throws JAXBException, IOException {
         if (configurator == null) {
+            String actualConfigFile = configFile;
+            if (actualConfigFile == null) {
+                actualConfigFile = "fediz_config.xml";
+            }
             try {
-                File f = new File(configFile);
+                File f = new File(actualConfigFile);
                 if (!f.exists()) {
-                    URL url = ClassLoaderUtils.getResource(configFile, 
-                                                           AbstractServiceProviderFilter.class);
+                    URL url = ResourceUtils.getResourceURL(actualConfigFile, 
+                                                        BusFactory.getThreadDefaultBus());
                     if (url == null) {
-                        url = new URL(configFile);
+                        url = new URL(actualConfigFile);
                     }
                     if (url != null) {
                         f = new File(url.getPath());
@@ -108,6 +114,9 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
             } catch (MalformedURLException e) {
                 LOG.error("Error in loading configuration file", e);
                 throw e;
+            } catch (Exception e) {
+                LOG.error("Error in loading configuration file", e);
+                throw new IOException(e);
             }
         }
         
