@@ -43,7 +43,6 @@
             <issuer>https://localhost:8443/fediz-idp/federation</issuer>
             <roleDelimiter>,</roleDelimiter>
             <roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
-            <reply>/j_spring_fediz_security_check</reply>
             <claimTypesRequested>
                 <claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role" optional="false" />
 				<claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname" optional="true" />
