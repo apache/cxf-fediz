@@ -34,7 +34,7 @@
         <property name="certificate" value="stsKeystoreB.properties" />
         <property name="certificatePassword" value="realmb" />
         <property name="stsUrl" value="https://localhost:12443/fediz-idp-sts/REALMB" />
-        <property name="idpUrl" value="https://localhost:12443/fediz-idp/federation" />
+        <property name="idpUrl" value="https://localhost:12443/fediz-idp-remote/federation" />
         <property name="supportedProtocols">
             <util:list>
                 <value>http://docs.oasis-open.org/wsfed/federation/200706
