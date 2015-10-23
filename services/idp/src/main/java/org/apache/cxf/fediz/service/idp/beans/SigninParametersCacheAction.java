@@ -37,7 +37,9 @@ public class SigninParametersCacheAction {
 
     //todo introduce constants class?
     public static final String IDP_CONFIG = "idpConfig";
+    @Deprecated
     public static final String REALM_URL_MAP = "realmUrlMap";
+    public static final String ACTIVE_APPLICATIONS = "realmConfigMap";
 
     private static final Logger LOG = LoggerFactory.getLogger(SigninParametersCacheAction.class);
 
@@ -108,6 +110,11 @@ public class SigninParametersCacheAction {
         }
     }
 
+    /**
+     * @deprecated use {@link #storeRPConfigInSession()} instead.  
+     * @param context
+     * @throws ProcessingException
+     */
     public void storeRPUrlInSession(RequestContext context) throws ProcessingException {
 
         String whr = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_HOME_REALM);
@@ -127,24 +134,12 @@ public class SigninParametersCacheAction {
         }
 
         if (url == null) {
-            url = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_REPLY);
-            try {
-                //basic check if the url is correctly formed
-                new URL(url);
-            } catch (Exception e) {
-                url = null;
-            }
-            if (url == null) {
-                url = wtrealm;
-                try {
-                    //basic check if the url is correctly formed
-                    new URL(url);
-                } catch (Exception e) {
-                    throw new ProcessingException(e.getMessage(), e, ProcessingException.TYPE.INVALID_REQUEST);
-                }
+            url = guessPassiveRequestorURL(context, wtrealm);
+            if (serviceConfig != null) {
+                serviceConfig.setPassiveRequestorEndpoint(url);
             }
         }
-
+        
         @SuppressWarnings("unchecked")
         Map<String, String> rum =
                 (Map<String, String>)WebUtils
@@ -159,5 +154,59 @@ public class SigninParametersCacheAction {
         if (val == null) {
             rum.put(wtrealm, url);
         }
+        
+        storeRPConfigInSession(context);
+    }
+    
+    public void storeRPConfigInSession(RequestContext context) throws ProcessingException {
+
+        String whr = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_HOME_REALM);
+        String wtrealm = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_TREALM);
+        Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(context, IDP_CONFIG);
+        if (whr == null || wtrealm == null || idpConfig == null) {
+            return;
+        }       
+        
+        Application serviceConfig = idpConfig.findApplication(wtrealm);
+        if (serviceConfig != null) {
+            if (serviceConfig.getPassiveRequestorEndpoint() == null) {
+                String url = guessPassiveRequestorURL(context, wtrealm);
+                serviceConfig.setPassiveRequestorEndpoint(url);
+            }
+            
+            @SuppressWarnings("unchecked")
+            Map<String, Application> realmConfigMap =
+                    (Map<String, Application>)WebUtils
+                            .getAttributeFromExternalContext(context, ACTIVE_APPLICATIONS);
+
+            if (realmConfigMap == null) {
+                realmConfigMap = new HashMap<>();
+                WebUtils.putAttributeInExternalContext(context, ACTIVE_APPLICATIONS, realmConfigMap);
+            }
+
+            if (realmConfigMap.get(wtrealm) == null) {
+                realmConfigMap.put(wtrealm, serviceConfig);
+            }
+        }
+    }
+
+    protected String guessPassiveRequestorURL(RequestContext context, String wtrealm) throws ProcessingException {
+        String url = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_REPLY);
+        try {
+            //basic check if the url is correctly formed
+            new URL(url);
+        } catch (Exception e) {
+            url = null;
+        }
+        if (url == null) {
+            url = wtrealm;
+            try {
+                //basic check if the url is correctly formed
+                new URL(url);
+            } catch (Exception e) {
+                throw new ProcessingException(e.getMessage(), e, ProcessingException.TYPE.INVALID_REQUEST);
+            }
+        }
+        return url;
     }
 }

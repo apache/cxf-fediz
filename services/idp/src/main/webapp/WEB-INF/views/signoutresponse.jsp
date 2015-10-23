@@ -1,5 +1,7 @@
+<%@page import="org.opensaml.soap.wsfed.WSFedConstants"%>
 <%@ page import="java.util.Map" %>
 <%@ page import="org.apache.cxf.fediz.service.idp.beans.SigninParametersCacheAction" %>
+<%@ page import="org.apache.cxf.fediz.service.idp.domain.Application" %>
 <%@ page import="org.apache.cxf.fediz.core.FederationConstants" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Iterator" %>
@@ -13,10 +15,11 @@
 <body>
     <%
         @SuppressWarnings("unchecked")
-        Map<String, String> rum =
-                (Map<String, String>) request.getAttribute(SigninParametersCacheAction.REALM_URL_MAP);
+        Map<String, Application> apps =
+                (Map<String, Application>) request.getAttribute(SigninParametersCacheAction.ACTIVE_APPLICATIONS);
+    	String wreply = (String) request.getAttribute("wreply");
 
-        if (rum == null) {
+        if (apps == null) {
     %>
 	        <p>You have already logged out</p>
     <%
@@ -26,21 +29,26 @@
         
             <p>
     <%
-            Iterator<Map.Entry<String, String>> iterator = rum.entrySet().iterator();
+            Iterator<Map.Entry<String, Application>> iterator = apps.entrySet().iterator();
             
             while (iterator.hasNext()) {
-                Map.Entry<String, String> next = iterator.next();
-                String rpUri = next.getValue();
-                if (rpUri != null) {
+                Application next = iterator.next().getValue();
+                if (next != null) {
     %>
-                    Logout status of RP <%= rpUri%>:
-                    <img src="<%=rpUri + "?" + FederationConstants.PARAM_ACTION + "=" + FederationConstants.ACTION_SIGNOUT_CLEANUP %>"/>
+                    <%= next.getServiceDisplayName() %> 
+                    <img src="<%=next.getPassiveRequestorEndpoint() + "?" + FederationConstants.PARAM_ACTION 
+                        + "=" + FederationConstants.ACTION_SIGNOUT_CLEANUP %>"/>
                     <br/>
     <%
                 }
             }
     %>
 	        </p>
+    <%
+        }
+        if (wreply != null && !wreply.isEmpty()) {
+    %>
+    <p><a href="<%= wreply%>">continue</a></p>
     <%
         }
     %>

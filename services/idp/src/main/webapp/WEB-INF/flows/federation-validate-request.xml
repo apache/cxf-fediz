@@ -63,11 +63,8 @@
             test="requestParameters.SAMLResponse == null or requestParameters.SAMLResponse.length() == 0"
             then="viewBadRequest" else="signinResponse" />
     </decision-state>
-
+	
     <decision-state id="selectSignOutProcess">
-        <on-entry>
-            <evaluate expression="@org.apache.cxf.fediz.service.idp.util.WebUtils@getHttpHeader(flowRequestContext, 'Referer')" result="flowScope.wreply"/>
-        </on-entry>
         <if
             test="requestParameters.wa == 'wsignout1.0' and flowScope.idpConfig.rpSingleSignOutConfirmation == true
             or requestParameters.wa == 'wsignoutcleanup1.0' and flowScope.idpConfig.rpSingleSignOutCleanupConfirmation == true"
@@ -137,7 +134,7 @@
             <evaluate expression="stsClientForRpAction.submit(flowRequestContext)"
                       result="flowScope.rpToken"/>
         </on-entry>
-        <evaluate expression="signInParamCacheAction.storeRPUrlInSession(flowRequestContext)"
+        <evaluate expression="signInParamCacheAction.storeRPConfigInSession(flowRequestContext)"
                 result="flowScope.res"/>
         <transition to="isWReplyProvided" />
         <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
@@ -206,14 +203,15 @@
     <!-- normal exit point for logout -->
     <end-state id="invalidateSessionAction" view="signoutresponse">
         <on-entry>
-            <!-- store the realmUrlMap in the request map before we invalidate the session below.
+            <!-- store the realmConfigMap in the request map before we invalidate the session below.
             Its needed in the signoutresponse.jsp page -->
-            <set name="externalContext.requestMap.realmUrlMap" value="externalContext.sessionMap.realmUrlMap"/>
+            <set name="externalContext.requestMap.realmConfigMap" 
+                value="externalContext.sessionMap.realmConfigMap"/>
+            <set name="externalContext.requestMap.wreply" value="flowScope.wreply"/>
             <!-- there is no Saml token canceller in cxf STS...
             <evaluate expression="stsClientForRpAction.cancelTokens(flowRequestContext)" />
             -->
-            <evaluate
-                expression="homeRealmReminder.removeCookie(flowRequestContext)" />
+            <evaluate expression="homeRealmReminder.removeCookie(flowRequestContext)" />
             <evaluate expression="logoutAction.submit(flowRequestContext)" />
         </on-entry>
     </end-state>

@@ -1,5 +1,6 @@
 <%@ page import="java.util.Map" %>
 <%@ page import="org.apache.cxf.fediz.service.idp.beans.SigninParametersCacheAction" %>
+<%@ page import="org.apache.cxf.fediz.service.idp.domain.Application" %>
 <%@ page import="org.apache.cxf.fediz.core.FederationConstants" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Iterator" %>
@@ -13,42 +14,49 @@
 <body>
     <%
         @SuppressWarnings("unchecked")
-        Map<String, String> rum =
-                (Map<String, String>) request.getSession().getAttribute(SigninParametersCacheAction.REALM_URL_MAP);
+        Map<String, Application> rcm =
+        (Map<String, Application>) request.getSession().getAttribute(SigninParametersCacheAction.ACTIVE_APPLICATIONS);
+    	String wreply = (String) request.getAttribute("wreply");
 
-        if (rum == null) {
+        if (rcm == null) {
     %>
 	        <p>You have already logged out</p>
     <%
         } else {
     %>
-	        <h1>Logout from the following realms?</h1>
-	   
+	        <h1>Logout from the following Applications?</h1>
+			<div>	   
     <%
-            Iterator<Map.Entry<String, String>> iterator = rum.entrySet().iterator();
+            Iterator<Map.Entry<String, Application>> iterator = rcm.entrySet().iterator();
                 
             while (iterator.hasNext()) {
-                Map.Entry<String, String> next = iterator.next();
-                String rpUri = next.getValue();
-                if (rpUri != null) {
+                Application next = iterator.next().getValue();
+                if (next != null) {
     %>
-                    <p>
-                    Will logout on RP: <%= rpUri%>
-                    </p>
+                    <%= next.getServiceDisplayName() %>
                     <br/>
     <%
                 }
             }
         }
         
-        if (rum != null && !rum.isEmpty()) {
+        if (rcm != null && !rcm.isEmpty()) {
     %>
-        <form:form method="POST" id="signoutconfirmationresponseform" name="signoutconfirmationresponseform">
-            <input type="hidden" name="wa" value="wsignout1.0" />
-            <input type="hidden" id="execution" name="execution" value="${flowExecutionKey}" />
-            <input type="submit" name="_eventId_submit" value="Logout" />
-            <input type="submit" name="_eventId_cancel" value="Cancel" />
-        </form:form>
+	    	</div>
+	    	<br/>
+	    	<br/>
+	        <form:form method="POST" id="signoutconfirmationresponseform" name="signoutconfirmationresponseform">
+	            <input type="hidden" name="wa" value="wsignout1.0" />
+	            <input type="hidden" id="execution" name="execution" value="${flowExecutionKey}" />
+	            <input type="submit" name="_eventId_submit" value="Logout" />
+			    <%     
+			        if (wreply != null && !wreply.isEmpty()) {
+			    %>        
+	            <input type="submit" name="_eventId_cancel" value="Cancel" />
+	            <%     
+			        }
+			    %>
+	        </form:form>
     <%     
         }
     %>
