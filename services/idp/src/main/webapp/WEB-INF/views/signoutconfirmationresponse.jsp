@@ -51,7 +51,8 @@
 	            <input type="submit" name="_eventId_submit" value="Logout" />
 			    <%     
 			        if (wreply != null && !wreply.isEmpty()) {
-			    %>        
+			    %>
+			    <input type="hidden" name="wreply" value="<%= wreply%>" />        
 	            <input type="submit" name="_eventId_cancel" value="Cancel" />
 	            <%     
 			        }
