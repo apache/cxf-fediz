@@ -95,6 +95,8 @@
                             <packagename>org.apache.cxf.fediz.core.config.jaxb</packagename>
                             <extensionArgs>
                                 <arg>-Xdv</arg>
+                                <arg>-encoding</arg>
+                                <arg>UTF-8</arg>
                             </extensionArgs>
                         </xsdOption>
                     </xsdOptions>

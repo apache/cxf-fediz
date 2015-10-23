@@ -684,6 +684,7 @@
                                 <target>${jdk.version}</target>
                                 <maxmem>256M</maxmem>
                                 <fork>${compiler.fork}</fork>
+								<encoding>UTF-8</encoding>
                             </configuration>
                         </plugin>
                     </plugins>
@@ -731,6 +732,7 @@
                             <showDeprecation>${fediz.compile.show.deprecation}</showDeprecation>
                             <showWarnings>true</showWarnings>
                             <compilerArgument>${fediz.compile.flags}</compilerArgument>
+							<encoding>UTF-8</encoding>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -798,6 +800,7 @@
                             <showDeprecation>${fediz.compile.show.deprecation}</showDeprecation>
                             <showWarnings>true</showWarnings>
                             <compilerArgument>${fediz.compile.flags}</compilerArgument>
+							<encoding>UTF-8</encoding>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -834,6 +837,7 @@
                             <showDeprecation>true</showDeprecation>
                             <showWarnings>true</showWarnings>
                             <compilerArgument>${fediz.compile.flags}</compilerArgument>
+							<encoding>UTF-8</encoding>
                         </configuration>
                     </plugin>
                     <plugin>
