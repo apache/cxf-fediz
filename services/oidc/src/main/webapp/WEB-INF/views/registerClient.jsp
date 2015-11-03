@@ -48,7 +48,7 @@
         <tr>
             <td><big><big><big>API Client Type:</big></big></big></td>
             <td>
-               <select name="appType" size="50">
+               <select name="appType">
 				  <option value="confidential">Confidential</option>
 				  <option value="public">Public</option>
 				</select> 
