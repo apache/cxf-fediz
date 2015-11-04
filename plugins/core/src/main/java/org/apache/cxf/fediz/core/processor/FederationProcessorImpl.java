@@ -64,9 +64,8 @@ import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.apache.wss4j.dom.WSConstants;
 import org.apache.wss4j.dom.WSDataRef;
 import org.apache.wss4j.dom.WSDocInfo;
-import org.apache.wss4j.dom.WSSConfig;
-import org.apache.wss4j.dom.WSSecurityEngine;
-import org.apache.wss4j.dom.WSSecurityEngineResult;
+import org.apache.wss4j.dom.engine.WSSConfig;
+import org.apache.wss4j.dom.engine.WSSecurityEngineResult;
 import org.apache.wss4j.dom.handler.RequestData;
 import org.apache.wss4j.dom.processor.EncryptedDataProcessor;
 import org.apache.wss4j.dom.processor.Processor;
@@ -267,8 +266,8 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
 
         // Disable WSS4J processing of the (decrypted) SAML Token
         WSSConfig wssConfig = WSSConfig.getNewInstance();
-        wssConfig.setProcessor(WSSecurityEngine.SAML_TOKEN, new NOOpProcessor());
-        wssConfig.setProcessor(WSSecurityEngine.SAML2_TOKEN, new NOOpProcessor());
+        wssConfig.setProcessor(WSConstants.SAML_TOKEN, new NOOpProcessor());
+        wssConfig.setProcessor(WSConstants.SAML2_TOKEN, new NOOpProcessor());
         data.setWssConfig(wssConfig);
 
         data.setDecCrypto(decryptionKeyManager.getCrypto());

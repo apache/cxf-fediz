@@ -35,7 +35,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
 import org.apache.cxf.fediz.core.ClaimTypes;
-import org.apache.wss4j.dom.WSSConfig;
+import org.apache.wss4j.dom.engine.WSSConfig;
 import org.junit.Assert;
 
 public abstract class AbstractClientCertTests {

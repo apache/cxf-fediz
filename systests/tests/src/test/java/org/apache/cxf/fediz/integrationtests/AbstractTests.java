@@ -38,7 +38,7 @@ import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.wss4j.dom.WSSConfig;
+import org.apache.wss4j.dom.engine.WSSConfig;
 import org.apache.xml.security.keys.KeyInfo;
 import org.apache.xml.security.signature.XMLSignature;
 import org.junit.Assert;
