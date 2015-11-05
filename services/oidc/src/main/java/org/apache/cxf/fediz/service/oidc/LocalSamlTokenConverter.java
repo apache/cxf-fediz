@@ -30,7 +30,7 @@ public class LocalSamlTokenConverter implements SamlTokenConverter {
         JwtClaims claims = new JwtClaims();
         claims.setSubject(subjectName);
         claims.setAudience(audience);
-        claims.setIssuer("accounts.sixt.com");
+        claims.setIssuer("accounts.fediz.com");
         claims.setIssuedAt(System.currentTimeMillis() / 1000);
         claims.setExpiryTime(System.currentTimeMillis() / 1000 + 60000);
         return claims;
