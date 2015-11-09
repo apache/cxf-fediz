@@ -82,7 +82,15 @@
         </jaxrs:providers>
      </jaxrs:server>
      
-    <bean id="oauthProvider" class="org.apache.cxf.fediz.service.oidc.OAuthDataManager"/>
+    <bean id="oauthProvider" class="org.apache.cxf.fediz.service.oidc.OAuthDataManager">
+        <!--
+        <property name="extraScopes">
+          <map>
+            <entry key="scopeName" value="scopeDescription" />
+	  </map>
+	</property>
+	-->
+    </bean>
     
 </beans>
 
