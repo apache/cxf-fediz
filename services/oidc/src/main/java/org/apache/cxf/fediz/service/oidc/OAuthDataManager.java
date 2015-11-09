@@ -42,15 +42,13 @@ import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 public class OAuthDataManager extends AbstractCodeDataProvider {
 
     private static final OAuthPermission OPENID_PERMISSION;
-    private static final Map<String, OAuthPermission> PERMISSION_MAP;
     
     static {
-        PERMISSION_MAP = new HashMap<String, OAuthPermission>();
         OPENID_PERMISSION = new OAuthPermission("openid", "OIDC Authentication");
         OPENID_PERMISSION.setDefault(true);
-        PERMISSION_MAP.put("openid", OPENID_PERMISSION);
     }
 
+    private Map<String, OAuthPermission> permissionMap = new HashMap<String, OAuthPermission>();
     private MessageContext messageContext;
     private SamlTokenConverter tokenConverter = new LocalSamlTokenConverter();
     private Map<String, Client> clients = new ConcurrentHashMap<String, Client>();
@@ -59,6 +57,10 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
     private Map<String, ServerAuthorizationCodeGrant> codeGrants = 
             new ConcurrentHashMap<String, ServerAuthorizationCodeGrant>();
 
+    public OAuthDataManager() {
+        permissionMap.put(OPENID_PERMISSION.getPermission(), OPENID_PERMISSION);
+    }
+    
     public void registerClient(Client c) {
         clients.put(c.getClientId(), c);
     }
@@ -135,15 +137,14 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
             throws OAuthServiceException {
         List<OAuthPermission> list = new ArrayList<OAuthPermission>();
         for (String scope : scopes) {
-            OAuthPermission permission = PERMISSION_MAP.get(scope);
+            OAuthPermission permission = permissionMap.get(scope);
             if (permission == null) {
                 throw new OAuthServiceException("Unexpected scope: " + scope);
             }
             list.add(permission);
         }
-        // Ensure the default permission is available
-        if (list.isEmpty()) {
-            list.add(OPENID_PERMISSION);
+        if (!list.contains(OPENID_PERMISSION)) {
+            throw new OAuthServiceException("Default scope is missing");
         }
         return list;
     }
@@ -154,5 +155,12 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
 
     public void setTokenConverter(SamlTokenConverter tokenConverter) {
         this.tokenConverter = tokenConverter;
+    }
+
+    public void setExtraScopes(Map<String, String> extraScopes) {
+        for (Map.Entry<String, String> entry : extraScopes.entrySet()) {
+            permissionMap.put(entry.getKey(), 
+                    new OAuthPermission(entry.getKey(), entry.getValue()));
+        }
     }
 }
