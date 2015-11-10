@@ -38,13 +38,14 @@ import org.apache.cxf.rs.security.oauth2.grants.code.ServerAuthorizationCodeGran
 import org.apache.cxf.rs.security.oauth2.provider.OAuthServiceException;
 import org.apache.cxf.rs.security.oauth2.tokens.refresh.RefreshToken;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
+import org.apache.cxf.rs.security.oidc.utils.OidcUtils;
 
 public class OAuthDataManager extends AbstractCodeDataProvider {
 
     private static final OAuthPermission OPENID_PERMISSION;
     
     static {
-        OPENID_PERMISSION = new OAuthPermission("openid", "OIDC Authentication");
+        OPENID_PERMISSION = new OAuthPermission(OidcUtils.OPENID_SCOPE, "Access the claims about the authentication");
         OPENID_PERMISSION.setDefault(true);
     }
 
@@ -157,10 +158,13 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
         this.tokenConverter = tokenConverter;
     }
 
-    public void setExtraScopes(Map<String, String> extraScopes) {
+    public void setScopes(Map<String, String> extraScopes) {
         for (Map.Entry<String, String> entry : extraScopes.entrySet()) {
-            permissionMap.put(entry.getKey(), 
-                    new OAuthPermission(entry.getKey(), entry.getValue()));
+            OAuthPermission permission = new OAuthPermission(entry.getKey(), entry.getValue());
+            if (OidcUtils.OPENID_SCOPE.equals(entry.getKey())) {
+                permission.setDefault(true);
+            }
+            permissionMap.put(entry.getKey(), permission);
         }
     }
 }
