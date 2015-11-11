@@ -23,12 +23,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.cxf.fediz.core.FedizPrincipal;
 import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.apache.cxf.rs.security.jose.jwa.AlgorithmUtils;
+import org.apache.cxf.rs.security.jose.jwa.SignatureAlgorithm;
 import org.apache.cxf.rs.security.jose.jws.JwsJwtCompactProducer;
-import org.apache.cxf.rs.security.jose.jws.NoneJwsSignatureProvider;
+import org.apache.cxf.rs.security.jose.jws.JwsSignatureProvider;
+import org.apache.cxf.rs.security.jose.jws.JwsUtils;
 import org.apache.cxf.rs.security.oauth2.common.Client;
 import org.apache.cxf.rs.security.oauth2.common.OAuthPermission;
 import org.apache.cxf.rs.security.oauth2.common.ServerAccessToken;
@@ -57,7 +61,7 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
     private Map<String, RefreshToken> refreshTokens = new ConcurrentHashMap<String, RefreshToken>();
     private Map<String, ServerAuthorizationCodeGrant> codeGrants = 
             new ConcurrentHashMap<String, ServerAuthorizationCodeGrant>();
-    
+    private boolean signIdTokenWithClientSecret;
     
     
     public OAuthDataManager() {
@@ -83,8 +87,7 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
         
         if (principal instanceof FedizPrincipal) {
             grant.getSubject().getProperties().put("id_token", 
-                    getJoseIdToken((FedizPrincipal)principal,
-                                grant.getClient().getClientId()));
+                    getJoseIdToken((FedizPrincipal)principal, grant.getClient()));
         } else {
             throw new OAuthServiceException("Unsupported principal");
         }
@@ -96,12 +99,26 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
         
     }
 
-    protected String getJoseIdToken(FedizPrincipal principal, String clientId) {
+    protected String getJoseIdToken(FedizPrincipal principal, Client client) {
         IdToken jwtClaims = tokenConverter.convertToIdToken(principal.getLoginToken().getOwnerDocument(),
                                                           principal.getName(), 
-                                                          clientId);
+                                                          client.getClientId());
         JwsJwtCompactProducer p = new JwsJwtCompactProducer(jwtClaims);
-        return p.signWith(new NoneJwsSignatureProvider());
+        return p.signWith(getJwsSignatureProvider(client));
+    }
+
+    protected JwsSignatureProvider getJwsSignatureProvider(Client client) {
+        if (signIdTokenWithClientSecret && client.isConfidential() && client.getClientSecret() != null) {
+            Properties sigProps = JwsUtils.loadSignatureOutProperties(false);
+            // HS256, HS384, HS512
+            SignatureAlgorithm sigAlgo = JwsUtils.getSignatureAlgorithm(sigProps, 
+                    SignatureAlgorithm.HS256); 
+            if (AlgorithmUtils.isHmacSign(sigAlgo.getJwaName())) {
+                return JwsUtils.getHmacSignatureProvider(client.getClientSecret(), sigAlgo);
+            }
+        } 
+        return JwsUtils.loadSignatureProvider(true);
+        
     }
 
     @Override
@@ -175,5 +192,17 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
             }
             permissionMap.put(entry.getKey(), permission);
         }
+    }
+
+    /**
+     * Enable the symmetric signature with the client secret. 
+     * This property will be ignored if a client is public 
+     */
+    public void setSignIdTokenWithClientSecret(boolean signIdTokenWithClientSecret) {
+        this.signIdTokenWithClientSecret = signIdTokenWithClientSecret;
+    }
+
+    public boolean isSignIdTokenWithClientSecret() {
+        return signIdTokenWithClientSecret;
     }
 }

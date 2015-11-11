@@ -90,6 +90,9 @@
           </map>
         </property>
     -->
+    <!--
+        <property name="signIdTokenWithClientSecret" value="true"/>
+    -->
     </bean>
     
 </beans>

@@ -50,6 +50,7 @@ public class ClientRegistrationService {
     @Context
     private SecurityContext sc;
     
+    
     @GET
     @Produces(MediaType.TEXT_HTML)
     @Path("/")
@@ -82,7 +83,9 @@ public class ClientRegistrationService {
     }
     
     protected String generateClientSecret() {
-        return Base64UrlUtility.encode(CryptoUtils.generateSecureRandomBytes(15));
+        // TODO: may need to be 384/8 or 512/8 if not a default HS256 but HS384 or HS512
+        int keySizeOctets = manager.isSignIdTokenWithClientSecret() ? 32 : 16; 
+        return Base64UrlUtility.encode(CryptoUtils.generateSecureRandomBytes(keySizeOctets));
     }
     
     private Consumers registerNewClient(Client newClient) {
