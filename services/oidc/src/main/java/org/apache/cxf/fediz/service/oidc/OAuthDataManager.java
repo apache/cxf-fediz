@@ -57,9 +57,15 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
     private Map<String, RefreshToken> refreshTokens = new ConcurrentHashMap<String, RefreshToken>();
     private Map<String, ServerAuthorizationCodeGrant> codeGrants = 
             new ConcurrentHashMap<String, ServerAuthorizationCodeGrant>();
-
+    
+    
+    
     public OAuthDataManager() {
         permissionMap.put(OPENID_PERMISSION.getPermission(), OPENID_PERMISSION);
+    }
+    
+    public OAuthDataManager(Map<String, OAuthPermission> permissionMap) {
+        this.permissionMap = permissionMap;
     }
     
     public void registerClient(Client c) {
@@ -82,12 +88,15 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
         } else {
             throw new OAuthServiceException("Unsupported principal");
         }
-        
-        codeGrants.put(grant.getCode(), grant);
-
+        doSaveCodeGrant(grant);
     }
 
-    private String getJoseIdToken(FedizPrincipal principal, String clientId) {
+    protected void doSaveCodeGrant(ServerAuthorizationCodeGrant grant) {
+        codeGrants.put(grant.getCode(), grant);
+        
+    }
+
+    protected String getJoseIdToken(FedizPrincipal principal, String clientId) {
         IdToken jwtClaims = tokenConverter.convertToIdToken(principal.getLoginToken().getOwnerDocument(),
                                                           principal.getName(), 
                                                           clientId);
@@ -158,8 +167,8 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
         this.tokenConverter = tokenConverter;
     }
 
-    public void setScopes(Map<String, String> extraScopes) {
-        for (Map.Entry<String, String> entry : extraScopes.entrySet()) {
+    public void setScopes(Map<String, String> scopes) {
+        for (Map.Entry<String, String> entry : scopes.entrySet()) {
             OAuthPermission permission = new OAuthPermission(entry.getKey(), entry.getValue());
             if (OidcUtils.OPENID_SCOPE.equals(entry.getKey())) {
                 permission.setDefault(true);
