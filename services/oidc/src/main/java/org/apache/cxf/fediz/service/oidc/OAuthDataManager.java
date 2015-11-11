@@ -86,8 +86,8 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
         Principal principal = messageContext.getSecurityContext().getUserPrincipal();
         
         if (principal instanceof FedizPrincipal) {
-            grant.getSubject().getProperties().put("id_token", 
-                    getJoseIdToken((FedizPrincipal)principal, grant.getClient()));
+            String joseIdToken = getJoseIdToken((FedizPrincipal)principal, grant.getClient());
+            grant.getSubject().getProperties().put("id_token", joseIdToken);
         } else {
             throw new OAuthServiceException("Unsupported principal");
         }
@@ -105,6 +105,7 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
                                                           client.getClientId());
         JwsJwtCompactProducer p = new JwsJwtCompactProducer(jwtClaims);
         return p.signWith(getJwsSignatureProvider(client));
+        // the JWS compact output may also need to be encrypted
     }
 
     protected JwsSignatureProvider getJwsSignatureProvider(Client client) {
@@ -113,7 +114,7 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
             // HS256, HS384, HS512
             SignatureAlgorithm sigAlgo = JwsUtils.getSignatureAlgorithm(sigProps, 
                     SignatureAlgorithm.HS256); 
-            if (AlgorithmUtils.isHmacSign(sigAlgo.getJwaName())) {
+            if (AlgorithmUtils.isHmacSign(sigAlgo)) {
                 return JwsUtils.getHmacSignatureProvider(client.getClientSecret(), sigAlgo);
             }
         } 
