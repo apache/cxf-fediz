@@ -19,21 +19,21 @@
 package org.apache.cxf.fediz.service.oidc;
 
 import org.w3c.dom.Document;
-import org.apache.cxf.rs.security.jose.jwt.JwtClaims;
+import org.apache.cxf.rs.security.oidc.common.IdToken;
+
+
 
 public class LocalSamlTokenConverter implements SamlTokenConverter {
 
     @Override
-    public JwtClaims convertToJwt(Document samlDoc, 
-                                  String subjectName,
-                                  String audience) {
-        JwtClaims claims = new JwtClaims();
-        claims.setSubject(subjectName);
-        claims.setAudience(audience);
-        claims.setIssuer("accounts.fediz.com");
-        claims.setIssuedAt(System.currentTimeMillis() / 1000);
-        claims.setExpiryTime(System.currentTimeMillis() / 1000 + 60000);
-        return claims;
+    public IdToken convertToIdToken(Document samlDoc, String subjectName, String clientId) {
+        IdToken idToken = new IdToken();
+        idToken.setSubject(subjectName);
+        idToken.setAudience(clientId);
+        idToken.setIssuer("accounts.fediz.com");
+        idToken.setIssuedAt(System.currentTimeMillis() / 1000);
+        idToken.setExpiryTime(System.currentTimeMillis() / 1000 + 60000);
+        return idToken;
     }
 
 }

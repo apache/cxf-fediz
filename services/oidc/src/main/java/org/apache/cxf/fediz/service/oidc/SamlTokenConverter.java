@@ -19,10 +19,11 @@
 package org.apache.cxf.fediz.service.oidc;
 
 import org.w3c.dom.Document;
-import org.apache.cxf.rs.security.jose.jwt.JwtClaims;
+import org.apache.cxf.rs.security.oidc.common.IdToken;
+
  
 public interface SamlTokenConverter {
-    JwtClaims convertToJwt(Document samlDoc, 
-                           String subjectName,
-                           String audience);
+    IdToken convertToIdToken(Document samlDoc, 
+                             String subjectName,
+                             String audience);
 }

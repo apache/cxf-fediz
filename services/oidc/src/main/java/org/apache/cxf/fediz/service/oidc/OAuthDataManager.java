@@ -29,7 +29,6 @@ import org.apache.cxf.fediz.core.FedizPrincipal;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.rs.security.jose.jws.JwsJwtCompactProducer;
 import org.apache.cxf.rs.security.jose.jws.NoneJwsSignatureProvider;
-import org.apache.cxf.rs.security.jose.jwt.JwtClaims;
 import org.apache.cxf.rs.security.oauth2.common.Client;
 import org.apache.cxf.rs.security.oauth2.common.OAuthPermission;
 import org.apache.cxf.rs.security.oauth2.common.ServerAccessToken;
@@ -38,6 +37,7 @@ import org.apache.cxf.rs.security.oauth2.grants.code.ServerAuthorizationCodeGran
 import org.apache.cxf.rs.security.oauth2.provider.OAuthServiceException;
 import org.apache.cxf.rs.security.oauth2.tokens.refresh.RefreshToken;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
+import org.apache.cxf.rs.security.oidc.common.IdToken;
 import org.apache.cxf.rs.security.oidc.utils.OidcUtils;
 
 public class OAuthDataManager extends AbstractCodeDataProvider {
@@ -88,7 +88,7 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
     }
 
     private String getJoseIdToken(FedizPrincipal principal, String clientId) {
-        JwtClaims jwtClaims = tokenConverter.convertToJwt(principal.getLoginToken().getOwnerDocument(),
+        IdToken jwtClaims = tokenConverter.convertToIdToken(principal.getLoginToken().getOwnerDocument(),
                                                           principal.getName(), 
                                                           clientId);
         JwsJwtCompactProducer p = new JwsJwtCompactProducer(jwtClaims);
