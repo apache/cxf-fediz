@@ -25,7 +25,7 @@
 <em></em>
 <br/>
 <table border="1">
-    <tr><th><big><big>Client Name</big></big></th><th><big><big>Client Identifier</big></big></th><th><big><big>Client Secret</big></big></th><th><big><big>PreAuthorized Token</big></big></th><th><big><big>PreAuthorized Code</big></big></th></tr> 
+    <tr><th><big><big>Client Name</big></big></th><th><big><big>Client Identifier</big></big></th><th><big><big>Client Secret</big></big></th></tr> 
     <%
        for (Consumer entry : regs.getConsumers()) {
     %>

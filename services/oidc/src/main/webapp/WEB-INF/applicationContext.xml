@@ -36,6 +36,12 @@
         <jaxrs:providers>
             <ref bean="viewProvider"/>
         </jaxrs:providers>
+        <jaxrs:properties>
+            <entry key="rs.security.signature.properties" value="rs.security.properties"/>
+            <!--
+            <entry key="rs.security.signature.key.password.provider" value-ref="keyPasswordProvider"/>
+            -->
+        </jaxrs:properties>
     </jaxrs:server>
     
     <jaxrs:server address="/client">

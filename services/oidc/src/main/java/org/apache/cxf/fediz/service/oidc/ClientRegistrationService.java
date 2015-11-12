@@ -67,11 +67,10 @@ public class ClientRegistrationService {
                                  @FormParam("appType") String appType,
                                  @FormParam("redirectURI") String redirectURI) {
         String clientId = generateClientId();
-        //String clientSecret = 
-        //    "confidential".equals(appType) ? generateClientSecret() : null;
-        String clientSecret = generateClientSecret();
-    
-        Client newClient = new Client(clientId, clientSecret, true, appName, null);
+        boolean isConfidential = "confidential".equals(appType);
+        String clientSecret = isConfidential ? generateClientSecret() : null;
+        
+        Client newClient = new Client(clientId, clientSecret, isConfidential, appName, null);
         newClient.setApplicationDescription(appDesc);
         newClient.setRedirectUris(Collections.singletonList(redirectURI));
         

@@ -27,7 +27,7 @@
            method="POST">
        <table>    
         <tr>
-            <td><big><big><big>API Client Name:</big></big></big></td>
+            <td><big><big><big>Client Name:</big></big></big></td>
             <td>
               <input type="text" name="appName" size="50" value="API Client"/>
             </td>
@@ -36,7 +36,7 @@
             <td colspan="2">&nbsp;</td>
         </tr>
         <tr>
-            <td><big><big><big>API Client Description:</big></big></big></td>
+            <td><big><big><big>Client Description:</big></big></big></td>
             <td>
               <input type="text" size="50" name="appDescription" 
                      value="API Service Client"/>
@@ -46,10 +46,10 @@
             <td colspan="2">&nbsp;</td>
         </tr>
         <tr>
-            <td><big><big><big>API Client Type:</big></big></big></td>
+            <td><big><big><big>Client Type:</big></big></big></td>
             <td>
                <select name="appType">
-				  <option value="confidential">Confidential</option>
+				  <option value="confidential" selected>Confidential</option>
 				  <option value="public">Public</option>
 				</select> 
             </td>
