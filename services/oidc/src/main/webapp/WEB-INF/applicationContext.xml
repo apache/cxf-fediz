@@ -38,11 +38,11 @@
         </jaxrs:providers>
         <jaxrs:properties>
             <entry key="rs.security.signature.properties" value="rs.security.properties"/>
-            <!--
             <entry key="rs.security.signature.key.password.provider" value-ref="keyPasswordProvider"/>
-            -->
         </jaxrs:properties>
     </jaxrs:server>
+    
+    <bean id="keyPasswordProvider" class="org.apache.cxf.fediz.service.oidc.PrivateKeyPasswordProviderImpl"/>
     
     <jaxrs:server address="/client">
         <jaxrs:serviceBeans>
