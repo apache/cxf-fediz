@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -49,10 +50,16 @@ import org.apache.cxf.fediz.core.SecurityTokenThreadLocal;
 
 @Path("/")
 public class FederationService {
-
+    @Context 
+    private UriInfo uriInfo;
+    @Context 
+    private SecurityContext securityContext;
+    @POST
+    public Response getTokenInfoFromPost() {
+        return getTokenInfo();
+    }
     @GET
-    public Response get(@Context UriInfo uriInfo,
-                        @Context SecurityContext securityContext) {
+    public Response getTokenInfo() {
 
         ResponseBuilder rb = Response.ok().type("text/html");
 
