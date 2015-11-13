@@ -18,6 +18,7 @@
  */
 package org.apache.cxf.fediz.cxf.plugin;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.security.cert.X509Certificate;
@@ -32,6 +33,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerResponseContext;
+import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
@@ -40,6 +43,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.w3c.dom.Document;
+
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.RequestState;
 import org.apache.cxf.fediz.core.SAMLSSOConstants;
@@ -65,12 +69,15 @@ import org.apache.wss4j.common.util.DOM2Writer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
+public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
+    implements ContainerResponseFilter {
     
     private static final Logger LOG = LoggerFactory.getLogger(FedizRedirectBindingFilter.class);
     
     @Context 
     private MessageContext messageContext;
+
+    private boolean redirectOnInitialSignIn;
     
     public void filter(ContainerRequestContext context) {
         Message m = JAXRSUtils.getCurrentMessage();
@@ -107,120 +114,9 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
             return;
         } else {
             if (isSignInRequired(fedConfig, params)) {
-                // Unauthenticated -> redirect
-                FedizProcessor processor = 
-                    FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
-
-                HttpServletRequest request = messageContext.getHttpServletRequest();
-                try {
-                    RedirectionResponse redirectionResponse = 
-                        processor.createSignInRequest(request, fedConfig);
-                    String redirectURL = redirectionResponse.getRedirectionURL();
-                    if (redirectURL != null) {
-                        ResponseBuilder response = Response.seeOther(new URI(redirectURL));
-                        Map<String, String> headers = redirectionResponse.getHeaders();
-                        if (!headers.isEmpty()) {
-                            for (String headerName : headers.keySet()) {
-                                response.header(headerName, headers.get(headerName));
-                            }
-                        }
-    
-                        // Save the RequestState
-                        RequestState requestState = redirectionResponse.getRequestState();
-                        if (requestState != null && requestState.getState() != null) {
-                            getStateManager().setRequestState(requestState.getState(), requestState);
-    
-                            String contextCookie = 
-                                CookieUtils.createCookie(SECURITY_CONTEXT_STATE,
-                                                         requestState.getState(),
-                                                         request.getRequestURI(),
-                                                         getWebAppDomain(),
-                                                         getStateTimeToLive());
-                            response.header("Set-Cookie", contextCookie);
-                        }
-    
-                        context.abortWith(response.build());
-                    } else {
-                        LOG.warn("Failed to create SignInRequest.");
-                        throw ExceptionUtils.toInternalServerErrorException(null, null);
-                    }
-                } catch (Exception ex) {
-                    LOG.debug(ex.getMessage(), ex);
-                    throw ExceptionUtils.toInternalServerErrorException(ex, null);
-                }
+                processSignInRequired(context, fedConfig);
             } else if (isSignInRequest(fedConfig, params)) {
-                String responseToken = getResponseToken(fedConfig, params);
-                String state = getState(fedConfig, params);
-
-                if (responseToken == null) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("SignIn request must contain a response token from the IdP");
-                    }
-                    throw ExceptionUtils.toBadRequestException(null, null);
-                } else {
-                    // processSignInRequest
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Process SignIn request");
-                        LOG.debug("token=\n" + responseToken);
-                    }
-
-                    FedizResponse wfRes = 
-                        validateSignInRequest(fedConfig, params, responseToken, state);
-
-                    // Validate AudienceRestriction
-                    List<String> audienceURIs = fedConfig.getAudienceUris();
-                    HttpServletRequest request = messageContext.getHttpServletRequest();
-                    validateAudienceRestrictions(wfRes, audienceURIs, request);
-
-                    // Set the security context
-                    String securityContextKey = UUID.randomUUID().toString();
-
-                    long currentTime = System.currentTimeMillis();
-                    Date notOnOrAfter = wfRes.getTokenExpires();
-                    long expiresAt = 0;
-                    if (notOnOrAfter != null) {
-                        expiresAt = notOnOrAfter.getTime();
-                    } else {
-                        expiresAt = currentTime + getStateTimeToLive();
-                    }
-
-                    String webAppDomain = getWebAppDomain();
-                    String token = DOM2Writer.nodeToString(wfRes.getToken());
-                    List<String> roles = wfRes.getRoles();
-                    if (roles == null || roles.size() == 0) {
-                        roles = Collections.singletonList("Authenticated");
-                    }
-
-                    String webAppContext = getWebAppContext(m);
-
-                    ResponseState responseState = 
-                        new ResponseState(token,
-                                          state, 
-                                          webAppContext,
-                                          webAppDomain,
-                                          currentTime, 
-                                          expiresAt);
-                    responseState.setClaims(wfRes.getClaims());
-                    responseState.setRoles(roles);
-                    responseState.setIssuer(wfRes.getIssuer());
-                    responseState.setSubject(wfRes.getUsername());
-                    getStateManager().setResponseState(securityContextKey, responseState);
-
-                    long stateTimeToLive = getStateTimeToLive();
-                    String contextCookie = CookieUtils.createCookie(SECURITY_CONTEXT_TOKEN,
-                                                                    securityContextKey,
-                                                                    webAppContext,
-                                                                    webAppDomain,
-                                                                    stateTimeToLive);
-
-                    // Redirect with cookie set
-                    ResponseBuilder response = 
-                        Response.seeOther(new UriInfoImpl(m).getAbsolutePath());
-                    response.header("Set-Cookie", contextCookie);
-
-                    context.abortWith(response.build());
-                }
-
+                processSignInRequest(context, fedConfig, params, m);
             } else {
                 LOG.error("SignIn parameter is incorrect or not supported");
                 throw ExceptionUtils.toBadRequestException(null, null);
@@ -228,6 +124,136 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
         }
     }
     
+    private void processSignInRequest(ContainerRequestContext context, FedizContext fedConfig,
+            MultivaluedMap<String, String> params, Message m) {
+        String responseToken = getResponseToken(fedConfig, params);
+        String state = getState(fedConfig, params);
+
+        if (responseToken == null) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("SignIn request must contain a response token from the IdP");
+            }
+            throw ExceptionUtils.toBadRequestException(null, null);
+        } else {
+            // processSignInRequest
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Process SignIn request");
+                LOG.debug("token=\n" + responseToken);
+            }
+
+            FedizResponse wfRes = 
+                validateSignInRequest(fedConfig, params, responseToken, state);
+
+            // Validate AudienceRestriction
+            List<String> audienceURIs = fedConfig.getAudienceUris();
+            HttpServletRequest request = messageContext.getHttpServletRequest();
+            validateAudienceRestrictions(wfRes, audienceURIs, request);
+
+            // Set the security context
+            String securityContextKey = UUID.randomUUID().toString();
+
+            long currentTime = System.currentTimeMillis();
+            Date notOnOrAfter = wfRes.getTokenExpires();
+            long expiresAt = 0;
+            if (notOnOrAfter != null) {
+                expiresAt = notOnOrAfter.getTime();
+            } else {
+                expiresAt = currentTime + getStateTimeToLive();
+            }
+
+            String webAppDomain = getWebAppDomain();
+            String token = DOM2Writer.nodeToString(wfRes.getToken());
+            List<String> roles = wfRes.getRoles();
+            if (roles == null || roles.size() == 0) {
+                roles = Collections.singletonList("Authenticated");
+            }
+
+            String webAppContext = getWebAppContext(m);
+
+            ResponseState responseState = 
+                new ResponseState(token,
+                                  state, 
+                                  webAppContext,
+                                  webAppDomain,
+                                  currentTime, 
+                                  expiresAt);
+            responseState.setClaims(wfRes.getClaims());
+            responseState.setRoles(roles);
+            responseState.setIssuer(wfRes.getIssuer());
+            responseState.setSubject(wfRes.getUsername());
+            getStateManager().setResponseState(securityContextKey, responseState);
+
+            long stateTimeToLive = getStateTimeToLive();
+            String contextCookie = CookieUtils.createCookie(SECURITY_CONTEXT_TOKEN,
+                                                            securityContextKey,
+                                                            webAppContext,
+                                                            webAppDomain,
+                                                            stateTimeToLive);
+
+            // Redirect with cookie set
+            if (isRedirectOnInitialSignIn()) {
+                ResponseBuilder response = 
+                    Response.seeOther(new UriInfoImpl(m).getAbsolutePath());
+                response.header(HttpHeaders.SET_COOKIE, contextCookie);
+
+                context.abortWith(response.build());
+            } else {
+                try {
+                    setSecurityContext(responseState, m, wfRes.getToken());
+                    context.setProperty(SECURITY_CONTEXT_TOKEN, contextCookie);
+                } catch (Exception ex) {
+                    reportError("INVALID_RESPONSE_STATE");
+                }
+            }
+        }
+        
+    }
+
+    private void processSignInRequired(ContainerRequestContext context, FedizContext fedConfig) {
+     // Unauthenticated -> redirect
+        FedizProcessor processor = 
+            FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
+
+        HttpServletRequest request = messageContext.getHttpServletRequest();
+        try {
+            RedirectionResponse redirectionResponse = 
+                processor.createSignInRequest(request, fedConfig);
+            String redirectURL = redirectionResponse.getRedirectionURL();
+            if (redirectURL != null) {
+                ResponseBuilder response = Response.seeOther(new URI(redirectURL));
+                Map<String, String> headers = redirectionResponse.getHeaders();
+                if (!headers.isEmpty()) {
+                    for (String headerName : headers.keySet()) {
+                        response.header(headerName, headers.get(headerName));
+                    }
+                }
+
+                // Save the RequestState
+                RequestState requestState = redirectionResponse.getRequestState();
+                if (requestState != null && requestState.getState() != null) {
+                    getStateManager().setRequestState(requestState.getState(), requestState);
+
+                    String contextCookie = 
+                        CookieUtils.createCookie(SECURITY_CONTEXT_STATE,
+                                                 requestState.getState(),
+                                                 request.getRequestURI(),
+                                                 getWebAppDomain(),
+                                                 getStateTimeToLive());
+                    response.header(HttpHeaders.SET_COOKIE, contextCookie);
+                }
+
+                context.abortWith(response.build());
+            } else {
+                LOG.warn("Failed to create SignInRequest.");
+                throw ExceptionUtils.toInternalServerErrorException(null, null);
+            }
+        } catch (Exception ex) {
+            LOG.debug(ex.getMessage(), ex);
+            throw ExceptionUtils.toInternalServerErrorException(ex, null);
+        }
+        
+    }
+
     private boolean isMetadataRequest(ContainerRequestContext context, FedizContext fedConfig) {
         String requestPath = context.getUriInfo().getPath();
         // See if it is a Metadata request
@@ -485,6 +511,24 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
                         + request.getRequestURL() + "]");
             }
         }
+    }
+
+    public boolean isRedirectOnInitialSignIn() {
+        return redirectOnInitialSignIn;
+    }
+
+    public void setRedirectOnInitialSignIn(boolean redirectOnInitialSignIn) {
+        this.redirectOnInitialSignIn = redirectOnInitialSignIn;
+    }
+
+    @Override
+    public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext)
+            throws IOException {
+        String tokenContext = (String)requestContext.getProperty(SECURITY_CONTEXT_TOKEN);
+        if (tokenContext != null) {
+            responseContext.getHeaders().add(HttpHeaders.SET_COOKIE, tokenContext);
+        }
+        
     }
     
 }

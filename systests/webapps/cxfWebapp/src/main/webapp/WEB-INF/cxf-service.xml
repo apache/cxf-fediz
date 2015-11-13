@@ -53,6 +53,7 @@
    
    <bean id="fedizFilter" class="org.apache.cxf.fediz.cxf.plugin.FedizRedirectBindingFilter">
        <property name="configFile" value="fediz_config.xml"/>
+       <property name="redirectOnInitialSignIn" value="true"/>
    </bean>
    
    <bean id="exceptionMapper" class="org.apache.cxf.fediz.example.FedizExceptionMapper" />
