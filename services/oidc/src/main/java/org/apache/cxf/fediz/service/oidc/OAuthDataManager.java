@@ -111,9 +111,9 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
     protected JwsSignatureProvider getJwsSignatureProvider(Client client) {
         if (signIdTokenWithClientSecret && client.isConfidential() && client.getClientSecret() != null) {
             Properties sigProps = JwsUtils.loadSignatureOutProperties(false);
-            // HS256, HS384, HS512
-            SignatureAlgorithm sigAlgo = JwsUtils.getSignatureAlgorithm(sigProps, 
-                    SignatureAlgorithm.HS256); 
+            SignatureAlgorithm sigAlgo = SignatureAlgorithm.getAlgorithm(
+            sigProps.getProperty(OAuthConstants.CLIENT_SECRET_SIGNATURE_ALGORITHM));
+            sigAlgo = sigAlgo != null ? sigAlgo : SignatureAlgorithm.HS256;
             if (AlgorithmUtils.isHmacSign(sigAlgo)) {
                 return JwsUtils.getHmacSignatureProvider(client.getClientSecret(), sigAlgo);
             }
