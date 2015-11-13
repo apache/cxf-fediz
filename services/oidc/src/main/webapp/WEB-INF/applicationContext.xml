@@ -31,6 +31,7 @@
            <bean id="oidcService" class="org.apache.cxf.rs.security.oidc.idp.OidcAuthorizationCodeService">
              <property name="dataProvider" ref="oauthProvider"/>
              <property name="skipAuthorizationWithOidcScope" value="true"/>
+             <property name="canSupportPublicClients" value="true"/>
            </bean>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
@@ -67,6 +68,7 @@
     <bean id="accessTokenService" class="org.apache.cxf.rs.security.oauth2.services.AccessTokenService">
         <property name="dataProvider" ref="oauthProvider"/>
         <property name="responseFilter" ref="idTokenFilter"/>
+        <property name="canSupportPublicClients" value="true"/>
     </bean>
     <bean id="fedizTokenValidator" class="org.apache.cxf.fediz.service.oidc.FedizAccessTokenValidator">
         <property name="dataProvider" ref="oauthProvider"/>
