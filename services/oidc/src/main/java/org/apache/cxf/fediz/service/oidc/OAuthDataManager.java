@@ -23,13 +23,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.cxf.fediz.core.FedizPrincipal;
 import org.apache.cxf.jaxrs.ext.MessageContext;
-import org.apache.cxf.rs.security.jose.jwa.AlgorithmUtils;
-import org.apache.cxf.rs.security.jose.jwa.SignatureAlgorithm;
 import org.apache.cxf.rs.security.jose.jws.JwsJwtCompactProducer;
 import org.apache.cxf.rs.security.jose.jws.JwsSignatureProvider;
 import org.apache.cxf.rs.security.jose.jws.JwsUtils;
@@ -41,6 +38,7 @@ import org.apache.cxf.rs.security.oauth2.grants.code.ServerAuthorizationCodeGran
 import org.apache.cxf.rs.security.oauth2.provider.OAuthServiceException;
 import org.apache.cxf.rs.security.oauth2.tokens.refresh.RefreshToken;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
+import org.apache.cxf.rs.security.oauth2.utils.OAuthUtils;
 import org.apache.cxf.rs.security.oidc.common.IdToken;
 import org.apache.cxf.rs.security.oidc.utils.OidcUtils;
 
@@ -100,23 +98,17 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
     }
 
     protected String getJoseIdToken(FedizPrincipal principal, Client client) {
-        IdToken jwtClaims = tokenConverter.convertToIdToken(principal.getLoginToken().getOwnerDocument(),
+        IdToken idToken = tokenConverter.convertToIdToken(principal.getLoginToken().getOwnerDocument(),
                                                           principal.getName(), 
                                                           client.getClientId());
-        JwsJwtCompactProducer p = new JwsJwtCompactProducer(jwtClaims);
+        JwsJwtCompactProducer p = new JwsJwtCompactProducer(idToken);
         return p.signWith(getJwsSignatureProvider(client));
         // the JWS compact output may also need to be encrypted
     }
 
     protected JwsSignatureProvider getJwsSignatureProvider(Client client) {
-        if (signIdTokenWithClientSecret && client.isConfidential() && client.getClientSecret() != null) {
-            Properties sigProps = JwsUtils.loadSignatureOutProperties(false);
-            SignatureAlgorithm sigAlgo = SignatureAlgorithm.getAlgorithm(
-            sigProps.getProperty(OAuthConstants.CLIENT_SECRET_SIGNATURE_ALGORITHM));
-            sigAlgo = sigAlgo != null ? sigAlgo : SignatureAlgorithm.HS256;
-            if (AlgorithmUtils.isHmacSign(sigAlgo)) {
-                return JwsUtils.getHmacSignatureProvider(client.getClientSecret(), sigAlgo);
-            }
+        if (signIdTokenWithClientSecret && client.isConfidential()) {
+            return OAuthUtils.getClientSecretSignatureProvider(client.getClientSecret());
         } 
         return JwsUtils.loadSignatureProvider(true);
         
