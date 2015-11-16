@@ -36,6 +36,7 @@
         </jaxrs:serviceBeans>
         <jaxrs:providers>
             <ref bean="viewProvider"/>
+            <ref bean="oauthJsonService"/>
         </jaxrs:providers>
         <jaxrs:properties>
             <entry key="rs.security.signature.properties" value="rs.security.properties"/>
@@ -80,13 +81,14 @@
         -->
         <property name="blockUnauthorizedRequests" value="false"/> 
     </bean>
+    <bean id="oauthJsonProvider" class="org.apache.cxf.rs.security.oauth2.provider.OAuthJSONProvider"/>
     <jaxrs:server address="/oauth2Token">
         <jaxrs:serviceBeans>
             <ref bean="accessTokenService"/>
             <ref bean="accessTokenValidatorService"/>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
-           <bean id="jsonProvider" class="org.apache.cxf.rs.security.oauth2.provider.OAuthJSONProvider"/>
+           <ref bean="oauthJsonService"/>
         </jaxrs:providers>
      </jaxrs:server>
      
