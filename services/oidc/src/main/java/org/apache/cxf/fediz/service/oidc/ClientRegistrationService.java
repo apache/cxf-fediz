@@ -35,6 +35,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.common.util.Base64UrlUtility;
 import org.apache.cxf.rs.security.oauth2.client.Consumer;
 import org.apache.cxf.rs.security.oauth2.client.Consumers;
@@ -72,7 +73,9 @@ public class ClientRegistrationService {
         
         Client newClient = new Client(clientId, clientSecret, isConfidential, appName, null);
         newClient.setApplicationDescription(appDesc);
-        newClient.setRedirectUris(Collections.singletonList(redirectURI));
+        if (!StringUtils.isEmpty(redirectURI)) {
+            newClient.setRedirectUris(Collections.singletonList(redirectURI));
+        }
         
         return registerNewClient(newClient);
     }
