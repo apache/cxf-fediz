@@ -85,7 +85,7 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
         
         if (principal instanceof FedizPrincipal) {
             String joseIdToken = getJoseIdToken((FedizPrincipal)principal, grant.getClient());
-            grant.getSubject().getProperties().put("id_token", joseIdToken);
+            grant.getSubject().getProperties().put(OidcUtils.ID_TOKEN, joseIdToken);
         } else {
             throw new OAuthServiceException("Unsupported principal");
         }
