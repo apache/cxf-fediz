@@ -36,7 +36,6 @@
         </jaxrs:serviceBeans>
         <jaxrs:providers>
             <ref bean="viewProvider"/>
-            <ref bean="oauthJsonService"/>
         </jaxrs:providers>
         <jaxrs:properties>
             <entry key="rs.security.signature.properties" value="rs.security.properties"/>
@@ -88,7 +87,7 @@
             <ref bean="accessTokenValidatorService"/>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
-           <ref bean="oauthJsonService"/>
+           <ref bean="oauthJsonProvider"/>
         </jaxrs:providers>
      </jaxrs:server>
      

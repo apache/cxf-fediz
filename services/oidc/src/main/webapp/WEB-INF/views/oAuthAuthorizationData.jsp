@@ -22,12 +22,24 @@
                     
                         <input type="hidden" name="client_id"
                                value="<%= data.getClientId() %>"/>
+                        <%
+                            if (data.getState() != null) {
+                        %>       
                         <input type="hidden" name="state"
                                value="<%= data.getState() %>"/>
+                        <%
+                            }
+                        %>       
                         <input type="hidden" name="scope"
                                value="<%= data.getProposedScope() %>"/>
+                        <%
+                            if (data.getRedirectUri() != null) {
+                        %>       
                         <input type="hidden" name="redirect_uri"
-                               value="<%= data.getRedirectUri() %>"/>              
+                               value="<%= data.getRedirectUri() %>"/>
+                        <%
+                            }
+                        %>                     
                         <input type="hidden"
                                name="<%= org.apache.cxf.rs.security.oauth2.utils.OAuthConstants
                                    .SESSION_AUTHENTICITY_TOKEN %>"
