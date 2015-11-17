@@ -65,6 +65,16 @@
             </td>
         </tr>
         <tr>
+            <td colspan="2">&nbsp;</td>
+        </tr>
+        <tr>
+            <td><big><big><big>Home Realm URI:</big></big></big></td>
+            <td>
+              <input type="text" size="50" name="homeRealm" 
+                     value=""/>
+            </td>
+        </tr>
+        <tr>
             <td>
               &nbsp;
             </td>

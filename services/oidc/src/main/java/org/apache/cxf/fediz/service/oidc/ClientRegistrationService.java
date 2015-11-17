@@ -66,12 +66,14 @@ public class ClientRegistrationService {
     public Consumers registerForm(@FormParam("appName") String appName,
                                  @FormParam("appDescription") String appDesc,
                                  @FormParam("appType") String appType,
-                                 @FormParam("redirectURI") String redirectURI) {
+                                 @FormParam("redirectURI") String redirectURI,
+                                 @FormParam("homeRealm") String homeRealm) {
         String clientId = generateClientId();
         boolean isConfidential = "confidential".equals(appType);
         String clientSecret = isConfidential ? generateClientSecret() : null;
         
-        Client newClient = new Client(clientId, clientSecret, isConfidential, appName, null);
+        FedizClient newClient = new FedizClient(clientId, clientSecret, isConfidential, appName, null);
+        newClient.setHomeRealm(homeRealm);
         newClient.setApplicationDescription(appDesc);
         if (!StringUtils.isEmpty(redirectURI)) {
             newClient.setRedirectUris(Collections.singletonList(redirectURI));

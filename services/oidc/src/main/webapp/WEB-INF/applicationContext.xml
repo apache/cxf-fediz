@@ -26,6 +26,8 @@
         http://cxf.apache.org/jaxrs
         http://cxf.apache.org/schemas/jaxrs.xsd">
 
+    <import resource="classpath:data-manager.xml" />
+    
     <jaxrs:server address="/idp">
         <jaxrs:serviceBeans>
            <bean id="oidcService" class="org.apache.cxf.rs.security.oidc.idp.OidcAuthorizationCodeService">
@@ -91,18 +93,5 @@
         </jaxrs:providers>
      </jaxrs:server>
      
-    <bean id="oauthProvider" class="org.apache.cxf.fediz.service.oidc.OAuthDataManager">
-    <!--
-        <property name="scopes">
-          <map>
-            <entry key="scopeName" value="scopeDescription" />
-          </map>
-        </property>
-    -->
-    <!--
-        <property name="signIdTokenWithClientSecret" value="true"/>
-    -->
-    </bean>
-    
 </beans>
 
