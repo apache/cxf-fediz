@@ -29,6 +29,14 @@
                                value="<%= data.getState() %>"/>
                         <%
                             }
+                        %>
+                        <%
+                            if (data.getClientCodeChallenge() != null) {
+                        %>       
+                        <input type="hidden" name="code_challenge"
+                               value="<%= data.getClientCodeChallenge() %>"/>
+                        <%
+                            }
                         %>       
                         <input type="hidden" name="scope"
                                value="<%= data.getProposedScope() %>"/>
