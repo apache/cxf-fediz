@@ -56,7 +56,7 @@
         <junit.version>4.12</junit.version>
         <log4j.version>1.2.17</log4j.version>
         <ognl.version>3.0.8</ognl.version>
-        <openjpa.version>2.3.0</openjpa.version>
+        <openjpa.version>2.4.0</openjpa.version>
         <servlet.version>2.5</servlet.version>
         <slf4j.version>1.7.12</slf4j.version>
         <spring.version>3.2.8.RELEASE</spring.version>
