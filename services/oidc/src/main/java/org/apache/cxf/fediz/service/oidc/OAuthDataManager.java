@@ -51,10 +51,10 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
         OPENID_PERMISSION.setDefault(true);
     }
 
+    private static Map<String, Client> clients = new ConcurrentHashMap<String, Client>();
     private Map<String, OAuthPermission> permissionMap = new HashMap<String, OAuthPermission>();
     private MessageContext messageContext;
     private SamlTokenConverter tokenConverter = new LocalSamlTokenConverter();
-    private static Map<String, Client> clients = new ConcurrentHashMap<String, Client>();
     private Map<String, ServerAccessToken> accessTokens = new ConcurrentHashMap<String, ServerAccessToken>();
     private Map<String, RefreshToken> refreshTokens = new ConcurrentHashMap<String, RefreshToken>();
     private Map<String, ServerAuthorizationCodeGrant> codeGrants = 
