@@ -66,21 +66,21 @@ public class LocalSamlTokenConverter implements SamlTokenConverter {
                 if (!(c.getValue() instanceof String)) {
                     continue;
                 }
-                if (ClaimTypes.FIRSTNAME == c.getClaimType()) {
+                if (ClaimTypes.FIRSTNAME.equals(c.getClaimType())) {
                     idToken.setGivenName((String)c.getValue());
                     firstName = (String)c.getValue();
-                } else if (ClaimTypes.LASTNAME == c.getClaimType()) {
+                } else if (ClaimTypes.LASTNAME.equals(c.getClaimType())) {
                     idToken.setFamilyName((String)c.getValue());
                     lastName = (String)c.getValue();
-                } else if (ClaimTypes.EMAILADDRESS == c.getClaimType()) {
+                } else if (ClaimTypes.EMAILADDRESS.equals(c.getClaimType())) {
                     idToken.setEmail((String)c.getValue());
-                } else if (ClaimTypes.DATEOFBIRTH == c.getClaimType()) {
+                } else if (ClaimTypes.DATEOFBIRTH.equals(c.getClaimType())) {
                     idToken.setBirthDate((String)c.getValue());
-                } else if (ClaimTypes.HOMEPHONE == c.getClaimType()) {
+                } else if (ClaimTypes.HOMEPHONE.equals(c.getClaimType())) {
                     idToken.setPhoneNumber((String)c.getValue());
-                } else if (ClaimTypes.GENDER == c.getClaimType()) {
+                } else if (ClaimTypes.GENDER.equals(c.getClaimType())) {
                     idToken.setGender((String)c.getValue());
-                } else if (ClaimTypes.WEB_PAGE == c.getClaimType()) {
+                } else if (ClaimTypes.WEB_PAGE.equals(c.getClaimType())) {
                     idToken.setWebsite((String)c.getValue());
                 }
             }
