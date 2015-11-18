@@ -1,5 +1,6 @@
-<%@ page import="javax.servlet.http.HttpServletRequest" %>
+<%@ page import="javax.servlet.http.HttpServletRequest,java.util.Map,java.util.Iterator,org.apache.cxf.fediz.service.oidc.RegisterClient" %>
 <%
+    RegisterClient reg = (RegisterClient)request.getAttribute("data");
     String basePath = request.getContextPath() + request.getServletPath();
     if (!basePath.endsWith("/")) {
         basePath += "/";
@@ -68,10 +69,30 @@
             <td colspan="2">&nbsp;</td>
         </tr>
         <tr>
-            <td><big><big><big>Home Realm URI:</big></big></big></td>
+            <td><big><big><big>Home Realm:</big></big></big></td>
             <td>
-              <input type="text" size="50" name="homeRealm" 
-                     value=""/>
+               
+               <select name="homeRealm">
+                <%
+                   if (!reg.getHomeRealms().entrySet().isEmpty()) {
+                      Iterator<Map.Entry<String, String>> it = reg.getHomeRealms().entrySet().iterator();
+                      Map.Entry<String, String> firstEntry = it.next();
+                %>
+                      <option value="<%= firstEntry.getKey() %>" selected><%= firstEntry.getValue() %></option>
+                <%      
+                      while (it.hasNext()) {
+                          Map.Entry<String, String> e = it.next();
+                %>
+                   <option value="<%= e.getKey() %>"><%= e.getValue() %></option>
+                <%
+                      }
+                   } else {
+                %>   
+                   <option value="" selected>Default</option>
+                <%
+                   }
+                %>
+                </select>
             </td>
         </tr>
         <tr>

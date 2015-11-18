@@ -47,11 +47,18 @@
     
     <bean id="keyPasswordProvider" class="org.apache.cxf.fediz.service.oidc.PrivateKeyPasswordProviderImpl"/>
     
+    <bean id="clientRegService" class="org.apache.cxf.fediz.service.oidc.ClientRegistrationService">
+       <property name="dataProvider" ref="oauthProvider"/>
+       <property name="homeRealms">
+          <map>
+            <entry key="urn:org:apache:cxf:fediz:idp:realm-A" value="IDP of Realm A" />
+            <entry key="urn:org:apache:cxf:fediz:idp:realm-B" value="IDP of Realm B" />
+          </map>
+       </property>
+    </bean>
     <jaxrs:server address="/client">
         <jaxrs:serviceBeans>
-            <bean id="clientRegService" class="org.apache.cxf.fediz.service.oidc.ClientRegistrationService">
-               <property name="dataProvider" ref="oauthProvider"/>
-             </bean>
+            <ref bean="clientRegService"/>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
             <ref bean="viewProvider"/>

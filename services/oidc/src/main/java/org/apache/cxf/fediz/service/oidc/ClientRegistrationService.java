@@ -22,6 +22,7 @@ package org.apache.cxf.fediz.service.oidc;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -47,7 +48,8 @@ public class ClientRegistrationService {
     
     private Map<String, Map<String, Consumer>> registrations = 
             new ConcurrentHashMap<String, Map<String, Consumer>>();
-    private OAuthDataManager manager;    
+    private OAuthDataManager manager;
+    private Map<String, String> homeRealms = new LinkedHashMap<String, String>();
     @Context
     private SecurityContext sc;
     
@@ -56,7 +58,7 @@ public class ClientRegistrationService {
     @Produces(MediaType.TEXT_HTML)
     @Path("/")
     public RegisterClient registerStart() {
-        return new RegisterClient();
+        return new RegisterClient(homeRealms);
     }
     
     @POST
@@ -109,6 +111,10 @@ public class ClientRegistrationService {
     
     public void setDataProvider(OAuthDataManager m) {
         this.manager = m;
+    }
+
+    public void setHomeRealms(Map<String, String> homeRealms) {
+        this.homeRealms = homeRealms;
     }
 }
 
