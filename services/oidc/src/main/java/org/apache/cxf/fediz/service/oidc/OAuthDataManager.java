@@ -98,8 +98,9 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
     }
 
     protected String getJoseIdToken(FedizPrincipal principal, Client client) {
-        IdToken idToken = tokenConverter.convertToIdToken(principal.getLoginToken().getOwnerDocument(),
+        IdToken idToken = tokenConverter.convertToIdToken(principal.getLoginToken(),
                                                           principal.getName(), 
+                                                          principal.getClaims(),
                                                           client.getClientId());
         JwsJwtCompactProducer p = new JwsJwtCompactProducer(idToken);
         return p.signWith(getJwsSignatureProvider(client));

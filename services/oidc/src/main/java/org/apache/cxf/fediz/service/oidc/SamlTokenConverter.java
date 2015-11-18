@@ -18,12 +18,14 @@
  */
 package org.apache.cxf.fediz.service.oidc;
 
-import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.rs.security.oidc.common.IdToken;
 
  
 public interface SamlTokenConverter {
-    IdToken convertToIdToken(Document samlDoc, 
+    IdToken convertToIdToken(Element samlToken, 
                              String subjectName,
+                             ClaimCollection claims,
                              String audience);
 }
