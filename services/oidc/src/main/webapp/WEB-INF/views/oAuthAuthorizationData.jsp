@@ -37,6 +37,14 @@
                                value="<%= data.getClientCodeChallenge() %>"/>
                         <%
                             }
+                        %>
+                        <%
+                            if (data.getNonce() != null) {
+                        %>       
+                        <input type="hidden" name="nonce"
+                               value="<%= data.getNonce() %>"/>
+                        <%
+                            }
                         %>       
                         <input type="hidden" name="scope"
                                value="<%= data.getProposedScope() %>"/>

@@ -27,5 +27,6 @@ public interface SamlTokenConverter {
     IdToken convertToIdToken(Element samlToken, 
                              String subjectName,
                              ClaimCollection claims,
-                             String audience);
+                             String audience, 
+                             String nonce);
 }

@@ -35,7 +35,8 @@ public class LocalSamlTokenConverter implements SamlTokenConverter {
     public IdToken convertToIdToken(Element samlToken, 
                                     String subjectName, 
                                     ClaimCollection claims,
-                                    String clientId) {
+                                    String clientId,
+                                    String nonce) {
         IdToken idToken = new IdToken();
         idToken.setSubject(subjectName);
         idToken.setAudience(clientId);
@@ -88,6 +89,10 @@ public class LocalSamlTokenConverter implements SamlTokenConverter {
             if (firstName != null && lastName != null) {
                 idToken.setName(firstName + " " + lastName);
             }
+        }
+        
+        if (nonce != null) {
+            idToken.setNonce(nonce);
         }
         
         return idToken;

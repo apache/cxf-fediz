@@ -30,11 +30,13 @@ import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.rs.security.jose.jws.JwsJwtCompactProducer;
 import org.apache.cxf.rs.security.jose.jws.JwsSignatureProvider;
 import org.apache.cxf.rs.security.jose.jws.JwsUtils;
+import org.apache.cxf.rs.security.oauth2.common.AccessTokenRegistration;
 import org.apache.cxf.rs.security.oauth2.common.Client;
 import org.apache.cxf.rs.security.oauth2.common.OAuthPermission;
 import org.apache.cxf.rs.security.oauth2.common.ServerAccessToken;
 import org.apache.cxf.rs.security.oauth2.common.UserSubject;
 import org.apache.cxf.rs.security.oauth2.grants.code.AbstractCodeDataProvider;
+import org.apache.cxf.rs.security.oauth2.grants.code.AuthorizationCodeRegistration;
 import org.apache.cxf.rs.security.oauth2.grants.code.ServerAuthorizationCodeGrant;
 import org.apache.cxf.rs.security.oauth2.provider.OAuthServiceException;
 import org.apache.cxf.rs.security.oauth2.tokens.refresh.RefreshToken;
@@ -81,17 +83,19 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
 
     // Grants
     @Override
-    protected void saveCodeGrant(ServerAuthorizationCodeGrant grant) {
-        createIdToken(grant.getClient(), grant.getSubject());
-        doSaveCodeGrant(grant);
-    }
-
-    protected void doSaveCodeGrant(ServerAuthorizationCodeGrant grant) {
-        codeGrants.put(grant.getCode(), grant);
-        
+    public ServerAuthorizationCodeGrant createCodeGrant(AuthorizationCodeRegistration reg) 
+        throws OAuthServiceException {
+        ServerAuthorizationCodeGrant grant = super.createCodeGrant(reg);
+        createIdToken(grant.getClient(), grant.getSubject(), reg.getNonce());
+        return grant;
     }
     
+    @Override
+    protected void saveCodeGrant(ServerAuthorizationCodeGrant grant) {
+        codeGrants.put(grant.getCode(), grant);
+    }
 
+    
     @Override
     public ServerAuthorizationCodeGrant removeCodeGrant(String code) throws OAuthServiceException {
         return codeGrants.remove(code);
@@ -99,15 +103,19 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
 
     // Access Tokens
     @Override
-    protected void saveAccessToken(ServerAccessToken token) {
-        createIdToken(token.getClient(), token.getSubject());
-        doSaveAccessToken(token);
+    public ServerAccessToken createAccessToken(AccessTokenRegistration reg)
+        throws OAuthServiceException {
+        ServerAccessToken token = super.createAccessToken(reg);
+        createIdToken(token.getClient(), token.getSubject(), reg.getNonce());
+        return token;
     }
     
-    protected void doSaveAccessToken(ServerAccessToken token) {
+    @Override
+    protected void saveAccessToken(ServerAccessToken token) {
         accessTokens.put(token.getTokenKey(), token);
     }
 
+    
     @Override
     protected boolean revokeAccessToken(String tokenKey) {
         return accessTokens.remove(tokenKey) != null;
@@ -166,23 +174,24 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
         }
     }
 
-    protected void createIdToken(Client client, UserSubject subject) {
+    protected void createIdToken(Client client, UserSubject subject, String nonce) {
         if (subject != null && !subject.getProperties().containsKey(OidcUtils.ID_TOKEN)) {
             Principal principal = messageContext.getSecurityContext().getUserPrincipal();
             
             if (principal instanceof FedizPrincipal) {
-                String joseIdToken = getJoseIdToken((FedizPrincipal)principal, client);
+                String joseIdToken = getJoseIdToken((FedizPrincipal)principal, client, nonce);
                 subject.getProperties().put(OidcUtils.ID_TOKEN, joseIdToken);
             }
         }
         
     }
     
-    protected String getJoseIdToken(FedizPrincipal principal, Client client) {
+    protected String getJoseIdToken(FedizPrincipal principal, Client client, String nonce) {
         IdToken idToken = tokenConverter.convertToIdToken(principal.getLoginToken(),
                                                           principal.getName(), 
                                                           principal.getClaims(),
-                                                          client.getClientId());
+                                                          client.getClientId(),
+                                                          nonce);
         JwsJwtCompactProducer p = new JwsJwtCompactProducer(idToken);
         return p.signWith(getJwsSignatureProvider(client));
         // the JWS compact output may also need to be encrypted
