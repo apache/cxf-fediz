@@ -235,7 +235,7 @@ public class FederationAuthenticator extends FormAuthenticator {
             
         } else {
             LOG.warn("The 'wctx' parameter has not been provided back with signin request. "
-                + "Trying to resume now with singin URL (without parameters)");
+                + "Trying to resume now with signin URL (without parameters)");
             originalURL = request.getRequestURI();
         }
         try {
