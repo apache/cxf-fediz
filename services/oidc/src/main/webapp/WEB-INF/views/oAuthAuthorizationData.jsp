@@ -61,9 +61,14 @@
                                    .SESSION_AUTHENTICITY_TOKEN %>"
                                value="<%= data.getAuthenticityToken() %>"/>
                         <p><big><big><big>Would you like to grant <%= data.getApplicationName() %><br/>(<%= data.getApplicationDescription() %>)</big></big></big>
-                        
+                        <%
+                            if (data.getApplicationLogoUri() != null) {
+                        %> 
                         <br/><br/> 
                         <img src="<%= data.getApplicationLogoUri() %>" alt="Application Logo" width="100" height="100">
+                        <%
+                            }
+                        %>
                         <br/></p>
                         <big><big>the following permissions:<big/></big>
                         <p/>

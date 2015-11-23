@@ -48,10 +48,14 @@ import org.apache.cxf.rs.security.oidc.utils.OidcUtils;
 public class OAuthDataManager extends AbstractCodeDataProvider {
 
     private static final OAuthPermission OPENID_PERMISSION;
+    private static final OAuthPermission REFRESH_TOKEN_PERMISSION;
     
     static {
-        OPENID_PERMISSION = new OAuthPermission(OidcUtils.OPENID_SCOPE, "Access the claims about the authentication");
+        OPENID_PERMISSION = new OAuthPermission(OidcUtils.OPENID_SCOPE, 
+            "Access the authentication claims");
         OPENID_PERMISSION.setDefault(true);
+        REFRESH_TOKEN_PERMISSION = new OAuthPermission(OAuthConstants.REFRESH_TOKEN_SCOPE, 
+            "Refresh access tokens");
     }
 
     private static Map<String, Client> clients = new ConcurrentHashMap<String, Client>();
@@ -67,6 +71,7 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
     
     public OAuthDataManager() {
         permissionMap.put(OPENID_PERMISSION.getPermission(), OPENID_PERMISSION);
+        permissionMap.put(REFRESH_TOKEN_PERMISSION.getPermission(), REFRESH_TOKEN_PERMISSION);
     }
     
     public OAuthDataManager(Map<String, OAuthPermission> permissionMap) {
@@ -221,4 +226,5 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
         this.tokenConverter = tokenConverter;
     }
 
+    
 }
