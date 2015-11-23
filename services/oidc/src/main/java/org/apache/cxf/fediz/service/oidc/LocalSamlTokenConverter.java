@@ -26,11 +26,16 @@ import org.apache.cxf.rs.security.oauth2.provider.OAuthServiceException;
 import org.apache.cxf.rs.security.oidc.common.IdToken;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
+import org.opensaml.saml.saml2.core.Assertion;
+import org.opensaml.saml.saml2.core.Issuer;
+
 
 
 
 public class LocalSamlTokenConverter implements SamlTokenConverter {
 
+    private String issuer;
+    
     @Override
     public IdToken convertToIdToken(Element samlToken, 
                                     String subjectName, 
@@ -40,19 +45,19 @@ public class LocalSamlTokenConverter implements SamlTokenConverter {
         IdToken idToken = new IdToken();
         idToken.setSubject(subjectName);
         idToken.setAudience(clientId);
-        idToken.setIssuer("accounts.fediz.com");
         
         long currentTimeInSeconds = System.currentTimeMillis() / 1000L;
         idToken.setIssuedAt(currentTimeInSeconds);
         idToken.setExpiryTime(currentTimeInSeconds + 60000L);
         
+        Assertion saml2Assertion = null;
         // Set the authInstant
         try {
             SamlAssertionWrapper wrapper = new SamlAssertionWrapper(samlToken);
-            
-            if (wrapper.getSaml2() != null && !wrapper.getSaml2().getAuthnStatements().isEmpty()) {
+            saml2Assertion = wrapper.getSaml2();
+            if (saml2Assertion != null && !saml2Assertion.getAuthnStatements().isEmpty()) {
                 long authInstant = 
-                    wrapper.getSaml2().getAuthnStatements().get(0).getAuthnInstant().getMillis();
+                    saml2Assertion.getAuthnStatements().get(0).getAuthnInstant().getMillis();
                 idToken.setAuthenticationTime(authInstant / 1000L);
             }
         } catch (WSSecurityException ex) {
@@ -94,8 +99,21 @@ public class LocalSamlTokenConverter implements SamlTokenConverter {
         if (nonce != null) {
             idToken.setNonce(nonce);
         }
+        if (issuer != null) {
+            idToken.setIssuer(issuer);
+        } else if (saml2Assertion != null) {
+            Issuer assertionIssuer = saml2Assertion.getIssuer();
+            if (assertionIssuer != null) {
+                idToken.setIssuer(assertionIssuer.getValue());
+            }
+        }
         
         return idToken;
+    }
+
+    
+    public void setIssuer(String issuer) {
+        this.issuer = issuer;
     }
 
 }

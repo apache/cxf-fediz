@@ -26,6 +26,9 @@
         http://cxf.apache.org/jaxrs
         http://cxf.apache.org/schemas/jaxrs.xsd">
 
+    <bean id="samlTokenConverter" class="org.apache.cxf.fediz.service.oidc.LocalSamlTokenConverter">
+        <property name="issuer" value="accounts.fediz.com"/>
+    </bean>
     <bean id="oauthProvider" class="org.apache.cxf.fediz.service.oidc.OAuthDataManager">
     <!--
         <property name="scopes">
@@ -37,6 +40,7 @@
     <!--
         <property name="signIdTokenWithClientSecret" value="true"/>
     -->
+        <property name="tokenConverter" ref="samlTokenConverter"/>
     </bean>
     
 </beans>
