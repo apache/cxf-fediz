@@ -95,7 +95,7 @@ public class ClientRegistrationService {
     }
     
     private Consumers registerNewClient(Client newClient) {
-        manager.registerClient(newClient);
+        manager.setClient(newClient);
         String userName = sc.getUserPrincipal().getName();
         Map<String, Consumer> userClientRegs = registrations.get(userName);
         if (userClientRegs == null) {

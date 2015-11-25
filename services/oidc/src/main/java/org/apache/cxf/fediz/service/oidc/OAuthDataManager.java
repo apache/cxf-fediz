@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.cxf.fediz.core.FedizPrincipal;
 import org.apache.cxf.jaxrs.ext.MessageContext;
@@ -35,17 +34,16 @@ import org.apache.cxf.rs.security.oauth2.common.Client;
 import org.apache.cxf.rs.security.oauth2.common.OAuthPermission;
 import org.apache.cxf.rs.security.oauth2.common.ServerAccessToken;
 import org.apache.cxf.rs.security.oauth2.common.UserSubject;
-import org.apache.cxf.rs.security.oauth2.grants.code.AbstractCodeDataProvider;
 import org.apache.cxf.rs.security.oauth2.grants.code.AuthorizationCodeRegistration;
+import org.apache.cxf.rs.security.oauth2.grants.code.DefaultEHCacheCodeDataProvider;
 import org.apache.cxf.rs.security.oauth2.grants.code.ServerAuthorizationCodeGrant;
 import org.apache.cxf.rs.security.oauth2.provider.OAuthServiceException;
-import org.apache.cxf.rs.security.oauth2.tokens.refresh.RefreshToken;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthUtils;
 import org.apache.cxf.rs.security.oidc.common.IdToken;
 import org.apache.cxf.rs.security.oidc.utils.OidcUtils;
 
-public class OAuthDataManager extends AbstractCodeDataProvider {
+public class OAuthDataManager extends DefaultEHCacheCodeDataProvider {
 
     private static final OAuthPermission OPENID_PERMISSION;
     private static final OAuthPermission REFRESH_TOKEN_PERMISSION;
@@ -58,14 +56,9 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
             "Refresh access tokens");
     }
 
-    private static Map<String, Client> clients = new ConcurrentHashMap<String, Client>();
     private Map<String, OAuthPermission> permissionMap = new HashMap<String, OAuthPermission>();
     private MessageContext messageContext;
     private SamlTokenConverter tokenConverter = new LocalSamlTokenConverter();
-    private Map<String, ServerAccessToken> accessTokens = new ConcurrentHashMap<String, ServerAccessToken>();
-    private Map<String, RefreshToken> refreshTokens = new ConcurrentHashMap<String, RefreshToken>();
-    private Map<String, ServerAuthorizationCodeGrant> codeGrants = 
-            new ConcurrentHashMap<String, ServerAuthorizationCodeGrant>();
     private boolean signIdTokenWithClientSecret;
     
     
@@ -78,14 +71,6 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
         this.permissionMap = permissionMap;
     }
     
-    public void registerClient(Client c) {
-        clients.put(c.getClientId(), c);
-    }
-
-    public Client getClient(String clientId) throws OAuthServiceException {
-        return clients.get(clientId);
-    }
-
     // Grants
     @Override
     public ServerAuthorizationCodeGrant createCodeGrant(AuthorizationCodeRegistration reg) 
@@ -95,17 +80,6 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
         return grant;
     }
     
-    @Override
-    protected void saveCodeGrant(ServerAuthorizationCodeGrant grant) {
-        codeGrants.put(grant.getCode(), grant);
-    }
-
-    
-    @Override
-    public ServerAuthorizationCodeGrant removeCodeGrant(String code) throws OAuthServiceException {
-        return codeGrants.remove(code);
-    }
-
     // Access Tokens
     @Override
     public ServerAccessToken createAccessToken(AccessTokenRegistration reg)
@@ -115,38 +89,6 @@ public class OAuthDataManager extends AbstractCodeDataProvider {
         return token;
     }
     
-    @Override
-    protected void saveAccessToken(ServerAccessToken token) {
-        accessTokens.put(token.getTokenKey(), token);
-    }
-
-    
-    @Override
-    protected boolean revokeAccessToken(String tokenKey) {
-        return accessTokens.remove(tokenKey) != null;
-    }
-
-    @Override
-    public ServerAccessToken getAccessToken(String tokenId) throws OAuthServiceException {
-        return accessTokens.get(tokenId);
-    }
-
-    // Refresh Tokens
-    @Override
-    protected void saveRefreshToken(ServerAccessToken accessToken, RefreshToken refreshToken) {
-        refreshTokens.put(refreshToken.getTokenKey(), refreshToken);
-    }
-
-    @Override
-    protected RefreshToken revokeRefreshToken(Client c, String tokenKey) {
-        return refreshTokens.remove(tokenKey);
-    }
-
-    @Override
-    protected boolean isRefreshTokenSupported(List<String> theScopes) {
-        return theScopes.contains(OAuthConstants.REFRESH_TOKEN_SCOPE);
-    }
-
     // Scope to Permission conversion
     @Override
     public List<OAuthPermission> convertScopeToPermissions(Client client, List<String> scopes)
