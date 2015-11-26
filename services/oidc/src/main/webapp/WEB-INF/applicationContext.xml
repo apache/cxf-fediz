@@ -28,16 +28,34 @@
 
     <import resource="classpath:data-manager.xml" />
     
+    <bean id="oidcAuthorizationService" class="org.apache.cxf.rs.security.oidc.idp.OidcAuthorizationCodeService">
+         <property name="dataProvider" ref="oauthProvider"/>
+         <property name="skipAuthorizationWithOidcScope" value="true"/>
+         <property name="canSupportPublicClients" value="true"/>
+    </bean>
+    <bean id="oidcKeysService" class="org.apache.cxf.rs.security.oidc.idp.OidcKeysService"/>
     <jaxrs:server address="/idp">
         <jaxrs:serviceBeans>
-           <bean id="oidcService" class="org.apache.cxf.rs.security.oidc.idp.OidcAuthorizationCodeService">
-             <property name="dataProvider" ref="oauthProvider"/>
-             <property name="skipAuthorizationWithOidcScope" value="true"/>
-             <property name="canSupportPublicClients" value="true"/>
-           </bean>
+           <ref bean="oidcAuthorizationService"/>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
             <ref bean="viewProvider"/>
+        </jaxrs:providers>
+        <jaxrs:properties>
+            <entry key="rs.security.signature.properties" value="rs.security.properties"/>
+            <entry key="rs.security.signature.key.password.provider" value-ref="keyPasswordProvider"/>
+        </jaxrs:properties>
+    </jaxrs:server>
+    <jaxrs:server address="/jwk">
+        <jaxrs:serviceBeans>
+           <!-- 
+                disable it if the client secret is used or if 
+                pre-installing public OIDC keys to clients is preferred
+           -->     
+           <ref bean="oidcKeysService"/>
+        </jaxrs:serviceBeans>
+        <jaxrs:providers>
+            <bean class="org.apache.cxf.rs.security.jose.jaxrs.JsonWebKeysProvider"/>
         </jaxrs:providers>
         <jaxrs:properties>
             <entry key="rs.security.signature.properties" value="rs.security.properties"/>
