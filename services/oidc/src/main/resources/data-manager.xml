@@ -29,7 +29,8 @@
     <bean id="samlTokenConverter" class="org.apache.cxf.fediz.service.oidc.LocalSamlTokenConverter">
         <property name="issuer" value="accounts.fediz.com"/>
     </bean>
-    <bean id="oauthProvider" class="org.apache.cxf.fediz.service.oidc.OAuthDataManager">
+    <bean id="oauthProvider" class="org.apache.cxf.fediz.service.oidc.OAuthDataManager"
+        destroy-method="close">
     <!--
         <property name="scopes">
           <map>
