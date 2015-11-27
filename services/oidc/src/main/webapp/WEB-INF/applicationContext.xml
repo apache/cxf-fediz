@@ -26,7 +26,7 @@
         http://cxf.apache.org/jaxrs
         http://cxf.apache.org/schemas/jaxrs.xsd">
 
-    <import resource="classpath:data-manager.xml" />
+    <import resource="data-manager.xml" />
     
     <bean id="oidcAuthorizationService" class="org.apache.cxf.rs.security.oidc.idp.OidcAuthorizationCodeService">
          <property name="dataProvider" ref="oauthProvider"/>

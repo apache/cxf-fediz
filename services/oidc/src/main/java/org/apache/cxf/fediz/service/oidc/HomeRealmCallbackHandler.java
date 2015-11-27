@@ -29,8 +29,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.cxf.fediz.core.spi.HomeRealmCallback;
 import org.apache.cxf.rs.security.oauth2.common.Client;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class HomeRealmCallbackHandler implements CallbackHandler {
 
@@ -39,20 +37,19 @@ public class HomeRealmCallbackHandler implements CallbackHandler {
             if (callbacks[i] instanceof HomeRealmCallback) {
                 HomeRealmCallback callback = (HomeRealmCallback) callbacks[i];
                 
-                ApplicationContext ctx = new ClassPathXmlApplicationContext("data-manager.xml");
-                OAuthDataManager dataManager = (OAuthDataManager)ctx.getBean("oauthProvider");
-                
                 HttpServletRequest request = callback.getRequest();
                 String clientId = request.getParameter("client_id");
                 
                 if (clientId != null) {
+                    ApplicationContext ctx = ApplicationContextProvider.getApplicationContext();
+                    OAuthDataManager dataManager = (OAuthDataManager)ctx.getBean("oauthProvider");
+                    
                     Client client = dataManager.getClient(clientId);
                     if (client instanceof FedizClient) {
                         callback.setHomeRealm(((FedizClient)client).getHomeRealm());
                     }
                 }
                 
-                ((AbstractApplicationContext)ctx).close();
             } else {
                 throw new UnsupportedCallbackException(callbacks[i], "Unrecognized Callback");
             }
