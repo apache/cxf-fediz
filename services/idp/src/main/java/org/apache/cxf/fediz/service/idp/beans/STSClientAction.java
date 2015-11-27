@@ -26,6 +26,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.List;
+import java.util.regex.Matcher;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.namespace.QName;
@@ -200,6 +201,9 @@ public class STSClientAction {
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
         
+        // Check wreply parameter against passive requestor endpoint constraint
+        validateApplicationEndpoint(serviceConfig, context);
+        
         // Parse wreq parameter - we only support parsing TokenType and KeyType for now
         String wreq = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_REQUEST);
         String stsTokenType = null;
@@ -300,6 +304,27 @@ public class STSClientAction {
                      id, wtrealm, idpToken.getId());
         }
         return StringEscapeUtils.escapeXml11(rpToken);
+    }
+    
+    // The wreply address must match the passive endpoint requestor constraint (if it is specified)
+    private void validateApplicationEndpoint(Application serviceConfig, RequestContext context) 
+        throws ProcessingException {
+        if (serviceConfig.getCompiledPassiveRequestorEndpointConstraint() == null) {
+            LOG.info("No passive requestor endpoint constraint is configured for the application. "
+                     + "This could lead to a malicious redirection attack");
+            return;
+        }
+        
+        String wreply = 
+            (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_REPLY);
+        if (wreply != null) {
+            Matcher matcher = serviceConfig.getCompiledPassiveRequestorEndpointConstraint().matcher(wreply);
+            if (!matcher.matches()) {
+                LOG.error("The wreply value of {} does not match any of the passive requestor values",
+                      wreply);
+                throw new ProcessingException(TYPE.BAD_REQUEST);
+            }
+        }
     }
     
     private String getIdFromToken(String token) throws IOException, XMLStreamException {

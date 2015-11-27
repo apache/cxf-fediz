@@ -19,9 +19,7 @@
 
 package org.apache.cxf.fediz.integrationtests;
 
-import java.net.URL;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -29,15 +27,12 @@ import org.w3c.dom.Node;
 
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNodeList;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 import org.apache.cxf.fediz.core.ClaimTypes;
@@ -679,43 +674,12 @@ public abstract class AbstractTests {
             new UsernamePasswordCredentials(user, password));
 
         webClient2.getOptions().setJavaScriptEnabled(false);
-        final HtmlPage idpPage = webClient2.getPage(idpUrl);
-        webClient2.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
-
-        // Check that the form is to be posted to the malicious URL
-        DomNodeList<DomElement> formResults = idpPage.getElementsByTagName("form");
-        Assert.assertTrue(formResults.size() == 1);
-        Assert.assertEquals(formResults.get(0).getAttributeNS(null, "action"), maliciousURL);
-        
-        // Parse the form to get the token (wresult)
-        DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
-        
-        String wresult = null;
-        for (DomElement result : results) {
-            if ("wresult".equals(result.getAttributeNS(null, "name"))) {
-                wresult = result.getAttributeNS(null, "value");
-            }
-        }
-        Assert.assertNotNull(wresult);
-
-        // 4. Now the malicious user has the token. Try to invoke on the endpoint
-        final WebClient webClient3 = new WebClient();
-        webClient3.getOptions().setUseInsecureSSL(true);
-        
-        WebRequest requestSettings = new WebRequest(new URL(url), HttpMethod.POST);
-
-        requestSettings.setRequestParameters(new ArrayList<NameValuePair>());
-        requestSettings.getRequestParameters().add(new NameValuePair("wa", "wsignin1.0"));
-        requestSettings.getRequestParameters().add(new NameValuePair("wresult", wresult));
-        requestSettings.getRequestParameters().add(new NameValuePair("wtrealm", 
-                                                                     "urn:org:apache:cxf:fediz:fedizhelloworld"));
-
         try {
-            rpPage = webClient3.getPage(url);
-            Assert.fail("Exception expected");
+            webClient2.getPage(idpUrl);
+            Assert.fail("Failure expected on a bad wreply address");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 401);
+            Assert.assertEquals(ex.getStatusCode(), 400);
         }
     }
+    
 }

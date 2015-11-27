@@ -81,6 +81,9 @@ public class ApplicationEntity {
     private String policyNamespace;
     
     private String passiveRequestorEndpoint;
+    
+    // A regular expression constraint on the passiveRequestorEndpoint
+    private String passiveRequestorEndpointConstraint;
 
 
     public int getId() {
@@ -177,6 +180,14 @@ public class ApplicationEntity {
 
     public void setPassiveRequestorEndpoint(String passiveRequestorEndpoint) {
         this.passiveRequestorEndpoint = passiveRequestorEndpoint;
+    }
+    
+    public String getPassiveRequestorEndpointConstraint() {
+        return passiveRequestorEndpointConstraint;
+    }
+
+    public void setPassiveRequestorEndpointConstraint(String passiveRequestorEndpointConstraint) {
+        this.passiveRequestorEndpointConstraint = passiveRequestorEndpointConstraint;
     }
 
 }
