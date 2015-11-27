@@ -71,20 +71,18 @@ public class OAuthDataManager extends DefaultEHCacheCodeDataProvider {
         this.permissionMap = permissionMap;
     }
     
-    // Grants
     @Override
-    public ServerAuthorizationCodeGrant createCodeGrant(AuthorizationCodeRegistration reg) 
+    protected ServerAuthorizationCodeGrant doCreateCodeGrant(AuthorizationCodeRegistration reg) 
         throws OAuthServiceException {
-        ServerAuthorizationCodeGrant grant = super.createCodeGrant(reg);
+        ServerAuthorizationCodeGrant grant = super.doCreateCodeGrant(reg);
         createIdToken(grant.getClient(), grant.getSubject(), reg.getNonce());
         return grant;
     }
     
-    // Access Tokens
     @Override
-    public ServerAccessToken createAccessToken(AccessTokenRegistration reg)
+    protected ServerAccessToken doCreateAccessToken(AccessTokenRegistration reg)
         throws OAuthServiceException {
-        ServerAccessToken token = super.createAccessToken(reg);
+        ServerAccessToken token = super.doCreateAccessToken(reg);
         createIdToken(token.getClient(), token.getSubject(), reg.getNonce());
         return token;
     }
