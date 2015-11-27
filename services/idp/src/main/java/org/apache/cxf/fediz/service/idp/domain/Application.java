@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElementRef;
@@ -32,7 +33,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "application", namespace = "http://org.apache.cxf.fediz/")
 @XmlType(propOrder = {"realm", "role", "serviceDisplayName", "serviceDescription", "protocol",
                       "tokenType", "lifeTime", "encryptionCertificate", "requestedClaims",
-                      "policyNamespace", "passiveRequestorEndpoint", "id" })
+                      "policyNamespace", "passiveRequestorEndpoint", "passiveRequestorEndpointConstraint", "id" })
 public class Application implements Serializable {
         
     private static final long serialVersionUID = 5644327504861846964L;
@@ -85,6 +86,10 @@ public class Application implements Serializable {
     //Could be read from Metadata, PassiveRequestorEndpoint
     //fed:ApplicationServiceType, fed:SecurityTokenServiceType
     private String passiveRequestorEndpoint;
+    
+    // A regular expression constraint on the passiveRequestorEndpoint
+    private String passiveRequestorEndpointConstraint;
+    private Pattern compiledPassiveRequestorEndpointConstraint;
     
     
     @XmlAttribute
@@ -195,4 +200,20 @@ public class Application implements Serializable {
         this.passiveRequestorEndpoint = passiveRequestorEndpoint;
     }
 
+    public String getPassiveRequestorEndpointConstraint() {
+        return passiveRequestorEndpointConstraint;
+    }
+
+    public void setPassiveRequestorEndpointConstraint(String passiveRequestorEndpointConstraint) {
+        this.passiveRequestorEndpointConstraint = passiveRequestorEndpointConstraint;
+        if (passiveRequestorEndpointConstraint != null) {
+            compiledPassiveRequestorEndpointConstraint = Pattern.compile(passiveRequestorEndpointConstraint);
+        } else {
+            compiledPassiveRequestorEndpointConstraint = null;
+        }
+    }
+    
+    public Pattern getCompiledPassiveRequestorEndpointConstraint() {
+        return compiledPassiveRequestorEndpointConstraint;
+    }
 }
