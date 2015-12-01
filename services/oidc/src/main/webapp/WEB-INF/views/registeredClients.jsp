@@ -1,6 +1,6 @@
 <%@ page import="org.apache.cxf.rs.security.oauth2.common.Client"%>
 <%@ page import="java.util.Collection"%>
-<%@ page import="javax.servlet.http.HttpServletRequest, org.apache.cxf.rs.security.oauth2.client.Consumer, org.apache.cxf.rs.security.oauth2.client.Consumers" %>
+<%@ page import="javax.servlet.http.HttpServletRequest" %>
 
 <%
 	Collection<Client> regs = (Collection<Client>)request.getAttribute("data");
