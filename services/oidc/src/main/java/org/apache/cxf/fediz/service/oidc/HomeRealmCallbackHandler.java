@@ -28,9 +28,13 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.cxf.fediz.core.spi.HomeRealmCallback;
 import org.apache.cxf.rs.security.oauth2.common.Client;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 
 public class HomeRealmCallbackHandler implements CallbackHandler {
+    
+    private static final Logger LOG = LoggerFactory.getLogger(HomeRealmCallbackHandler.class);
 
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
         for (int i = 0; i < callbacks.length; i++) {
@@ -47,6 +51,7 @@ public class HomeRealmCallbackHandler implements CallbackHandler {
                     Client client = dataManager.getClient(clientId);
                     if (client instanceof FedizClient) {
                         callback.setHomeRealm(((FedizClient)client).getHomeRealm());
+                        LOG.debug("Retrieved home realm {}", callback.getHomeRealm());
                     }
                 }
                 
