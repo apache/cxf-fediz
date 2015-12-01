@@ -19,8 +19,8 @@
 
 package org.apache.cxf.fediz.service.oidc;
 
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -38,16 +38,14 @@ import javax.ws.rs.core.SecurityContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.common.util.Base64UrlUtility;
-import org.apache.cxf.rs.security.oauth2.client.Consumer;
-import org.apache.cxf.rs.security.oauth2.client.Consumers;
 import org.apache.cxf.rs.security.oauth2.common.Client;
 import org.apache.cxf.rt.security.crypto.CryptoUtils;
 
 @Path("/")
 public class ClientRegistrationService {
     
-    private Map<String, Map<String, Consumer>> registrations = 
-            new ConcurrentHashMap<String, Map<String, Consumer>>();
+    private Map<String, Collection<Client>> registrations = 
+            new ConcurrentHashMap<String, Collection<Client>>();
     private OAuthDataManager manager;
     private Map<String, String> homeRealms = new LinkedHashMap<String, String>();
     @Context
@@ -61,11 +59,18 @@ public class ClientRegistrationService {
         return new RegisterClient(homeRealms);
     }
     
+    @GET
+    @Produces(MediaType.TEXT_HTML)
+    @Path("/register")
+    public Collection<Client> registerForm() {
+        return getClientRegistrations();
+    }
+    
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_HTML)
     @Path("/register")
-    public Consumers registerForm(@FormParam("appName") String appName,
+    public Collection<Client> registerForm(@FormParam("appName") String appName,
                                  @FormParam("appDescription") String appDesc,
                                  @FormParam("appType") String appType,
                                  @FormParam("redirectURI") String redirectURI,
@@ -94,19 +99,22 @@ public class ClientRegistrationService {
         return Base64UrlUtility.encode(CryptoUtils.generateSecureRandomBytes(keySizeOctets));
     }
     
-    private Consumers registerNewClient(Client newClient) {
+    protected Collection<Client> registerNewClient(Client newClient) {
         manager.setClient(newClient);
+        Collection<Client> clientRegistrations = getClientRegistrations();
+        clientRegistrations.add(newClient);
+        return clientRegistrations;
+        
+    }
+
+    protected Collection<Client> getClientRegistrations() {
         String userName = sc.getUserPrincipal().getName();
-        Map<String, Consumer> userClientRegs = registrations.get(userName);
+        Collection<Client> userClientRegs = registrations.get(userName);
         if (userClientRegs == null) {
-            userClientRegs = new HashMap<String, Consumer>();
+            userClientRegs = new HashSet<Client>();
             registrations.put(userName, userClientRegs);
         }
-        Consumer c = new Consumer(newClient.getClientId(), newClient.getClientSecret());
-        c.setDescription(newClient.getApplicationDescription());
-        userClientRegs.put(newClient.getClientId(), c);
-        return new Consumers(new HashSet<Consumer>(userClientRegs.values()));
-        
+        return userClientRegs;
     }
     
     public void setDataProvider(OAuthDataManager m) {
