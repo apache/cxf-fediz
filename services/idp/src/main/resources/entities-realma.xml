@@ -105,7 +105,7 @@
         <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0" />
         <property name="lifeTime" value="3600" />
         <property name="passiveRequestorEndpointConstraint" 
-                  value="https://localhost:(\d)*/(\w)*helloworld(\w)*/.*" />
+                  value="https://localhost:(\d)*/.*" />
     </bean>
     
     <bean class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationClaimEntity">
