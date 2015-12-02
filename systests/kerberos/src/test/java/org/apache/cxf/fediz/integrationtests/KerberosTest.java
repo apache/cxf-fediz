@@ -327,6 +327,8 @@ public class KerberosTest extends AbstractLdapTestUnit {
         claim = ClaimTypes.EMAILADDRESS.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
                           bodyTextContent.contains(claim + "=alice@realma.org"));
+        
+        webClient.close();
     }
     
     // To get this test to work, uncomment the "spnego" configuration in the STS's kerberos.xml
@@ -372,6 +374,8 @@ public class KerberosTest extends AbstractLdapTestUnit {
         claim = ClaimTypes.EMAILADDRESS.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
                           bodyTextContent.contains(claim + "=alice@realma.org"));
+        
+        webClient.close();
     }
     
     private String getEncodedKerberosTicket(boolean spnego) throws Exception {

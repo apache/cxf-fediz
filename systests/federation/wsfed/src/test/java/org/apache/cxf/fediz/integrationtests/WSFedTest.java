@@ -307,6 +307,7 @@ public class WSFedTest {
             }
         }
         Assert.assertTrue(wctx != null && wresult != null && wtrealm != null);
+        webClient.close();
 
         // Invoke on the IdP for "realm a"
         final WebClient webClient2 = new WebClient();
@@ -332,6 +333,7 @@ public class WSFedTest {
         final HtmlPage rpPage = button2.click();
         Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
 
+        webClient2.close();
         return rpPage.getBody().getTextContent();
     }
     

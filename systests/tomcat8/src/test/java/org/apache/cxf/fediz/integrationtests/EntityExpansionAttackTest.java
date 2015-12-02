@@ -235,13 +235,13 @@ public class EntityExpansionAttackTest {
             button.click();
             Assert.fail("Failure expected on an entity expansion attack");
         } catch (FailingHttpStatusCodeException ex) {
-            ex.printStackTrace();
             // expected
             Assert.assertTrue(ex.getMessage().contains("401 Unauthorized")
                               || ex.getMessage().contains("401 Authentication Failed")
                               || ex.getMessage().contains("403 Forbidden"));
         }
 
+        webClient.close();
     }
     
 }

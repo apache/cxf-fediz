@@ -244,6 +244,8 @@ public class HolderOfKeyTest {
         claim = ClaimTypes.EMAILADDRESS.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
                           bodyTextContent.contains(claim + "=alice@realma.org"));
+        
+        webClient.close();
     }
     
 }

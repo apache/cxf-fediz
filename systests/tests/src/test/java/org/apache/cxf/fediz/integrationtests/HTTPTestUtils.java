@@ -61,6 +61,7 @@ public final class HTTPTestUtils {
         Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
                             || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
 
+        webClient.close();
         return rpPage.getBody().getTextContent();
     }
     
@@ -74,6 +75,7 @@ public final class HTTPTestUtils {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage rpPage = webClient.getPage(url);
 
+        webClient.close();
         return rpPage.getBody().getTextContent();
     }
     
@@ -98,6 +100,7 @@ public final class HTTPTestUtils {
         Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
                           || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
 
+        webClient.close();
         return rpPage.getBody().getTextContent();
     }
     
@@ -122,6 +125,8 @@ public final class HTTPTestUtils {
             //we should get a fault if the image isn't available.
             webClient.getPage(imgSrc);
         }
+        
+        webClient.close();
     }
     
     public static void logoutCleanup(String url, CookieManager cookieManager) throws IOException {
@@ -143,6 +148,8 @@ public final class HTTPTestUtils {
             //we should get a fault if the image isn't available.
             webClient.getPage(imgSrc);
         }
+        
+        webClient.close();
     }
 
 }

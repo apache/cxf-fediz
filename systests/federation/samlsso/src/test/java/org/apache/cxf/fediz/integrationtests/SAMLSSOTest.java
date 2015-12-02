@@ -290,6 +290,7 @@ public class SAMLSSOTest {
         final HtmlPage rpPage = button.click();
         Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
 
+        webClient.close();
         return rpPage.getBody().getTextContent();
     }
     

@@ -352,6 +352,8 @@ public abstract class AbstractTests {
         Assert.assertNotNull(ki.getX509Certificate());
 
         Assert.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
+        
+        webClient.close();
     }
     
     @Test
@@ -383,6 +385,8 @@ public abstract class AbstractTests {
         Assert.assertNotNull(ki.getX509Certificate());
 
         Assert.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
+        
+        webClient.close();
     }
     
     @Test
@@ -414,6 +418,8 @@ public abstract class AbstractTests {
         Assert.assertNotNull(ki.getX509Certificate());
 
         Assert.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
+        
+        webClient.close();
     }
     
     @Test
@@ -449,6 +455,7 @@ public abstract class AbstractTests {
         String rpUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
             + "/secure/fedservlet";
 
+        webClient.close();
         webClient = new WebClient();
         webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);
@@ -456,6 +463,8 @@ public abstract class AbstractTests {
         final HtmlPage idpPage = webClient.getPage(rpUrl);
 
         Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
+        
+        webClient.close();
     }
     
     @Test
@@ -491,6 +500,7 @@ public abstract class AbstractTests {
         String rpUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
             + "/secure/fedservlet";
 
+        webClient.close();
         webClient = new WebClient();
         webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);
@@ -498,6 +508,8 @@ public abstract class AbstractTests {
         final HtmlPage idpPage = webClient.getPage(rpUrl);
 
         Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
+        
+        webClient.close();
     }
     
     @Test
@@ -533,6 +545,7 @@ public abstract class AbstractTests {
         String rpUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
             + "/secure/fedservlet";
 
+        webClient.close();
         webClient = new WebClient();
         webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);
@@ -540,6 +553,8 @@ public abstract class AbstractTests {
         final HtmlPage idpPage = webClient.getPage(rpUrl);
 
         Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
+        
+        webClient.close();
     }
     
     @Test
@@ -590,6 +605,7 @@ public abstract class AbstractTests {
                               || ex.getMessage().contains("403 Forbidden"));
         }
 
+        webClient.close();
     }
     
     @Test
@@ -636,6 +652,7 @@ public abstract class AbstractTests {
 
         Assert.assertTrue("Unexpected content of RP page", bodyTextContent2.contains("Secure Test"));
 
+        webClient.close();
     }
     
     @org.junit.Test
@@ -665,6 +682,7 @@ public abstract class AbstractTests {
         idpUrl += "?wa=wsignin1.0&wreply=" + URLEncoder.encode(maliciousURL, "UTF-8");
         idpUrl += "&wtrealm=urn%3Aorg%3Aapache%3Acxf%3Afediz%3Afedizhelloworld";
         idpUrl += "&whr=urn%3Aorg%3Aapache%3Acxf%3Afediz%3Aidp%3Arealm-A";
+        webClient.close();
         
         final WebClient webClient2 = new WebClient();
         webClient2.setCookieManager(cookieManager);
@@ -680,6 +698,7 @@ public abstract class AbstractTests {
         } catch (FailingHttpStatusCodeException ex) {
             Assert.assertEquals(ex.getStatusCode(), 400);
         }
+        webClient2.close();
     }
     
 }

@@ -249,6 +249,7 @@ public class WReqTest {
         final HtmlPage rpPage = button.click();
         Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
 
+        webClient.close();
         return rpPage.getBody().getTextContent();
     }
     
