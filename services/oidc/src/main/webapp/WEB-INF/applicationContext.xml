@@ -126,7 +126,7 @@
         <property name="blockUnauthorizedRequests" value="false"/> 
     </bean>
     <bean id="oauthJsonProvider" class="org.apache.cxf.rs.security.oauth2.provider.OAuthJSONProvider"/>
-    <jaxrs:server address="/oauth2Token">
+    <jaxrs:server address="/oauth2">
         <jaxrs:serviceBeans>
             <ref bean="accessTokenService"/>
             <ref bean="accessTokenValidatorService"/>
