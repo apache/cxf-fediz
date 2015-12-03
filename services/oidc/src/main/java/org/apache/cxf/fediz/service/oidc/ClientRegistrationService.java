@@ -39,6 +39,7 @@ import javax.ws.rs.core.SecurityContext;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.common.util.Base64UrlUtility;
 import org.apache.cxf.rs.security.oauth2.common.Client;
+import org.apache.cxf.rs.security.oauth2.common.UserSubject;
 import org.apache.cxf.rt.security.crypto.CryptoUtils;
 
 @Path("/")
@@ -85,6 +86,9 @@ public class ClientRegistrationService {
         if (!StringUtils.isEmpty(redirectURI)) {
             newClient.setRedirectUris(Collections.singletonList(redirectURI));
         }
+        String userName = sc.getUserPrincipal().getName();
+        UserSubject userSubject = new UserSubject(userName);
+        newClient.setResourceOwnerSubject(userSubject);
         
         return registerNewClient(newClient);
     }
@@ -108,7 +112,11 @@ public class ClientRegistrationService {
     }
 
     protected Collection<Client> getClientRegistrations() {
-        String userName = sc.getUserPrincipal().getName();
+        String userName = getUserName();
+        return getClientRegistrations(userName);
+    }
+    
+    protected Collection<Client> getClientRegistrations(String userName) {
         Collection<Client> userClientRegs = registrations.get(userName);
         if (userClientRegs == null) {
             userClientRegs = new HashSet<Client>();
@@ -117,12 +125,23 @@ public class ClientRegistrationService {
         return userClientRegs;
     }
     
+    private String getUserName() {
+        return sc.getUserPrincipal().getName();
+    }
+    
     public void setDataProvider(OAuthDataManager m) {
         this.manager = m;
     }
 
     public void setHomeRealms(Map<String, String> homeRealms) {
         this.homeRealms = homeRealms;
+    }
+    
+    public void init() {
+        for (Client c : manager.getClients()) {
+            String userName = c.getResourceOwnerSubject().getLogin();
+            getClientRegistrations(userName).add(c);
+        }
     }
 }
 

@@ -55,12 +55,13 @@
             <entry key="rs.security.signature.key.password.provider" value-ref="keyPasswordProvider"/>
         </jaxrs:properties>
     </jaxrs:server>
+    
+    <!-- 
+         Disable it if the client secret is used or if 
+         pre-installing public OIDC keys to clients is preferred
+    --> 
     <jaxrs:server address="/jwk">
         <jaxrs:serviceBeans>
-           <!-- 
-                disable it if the client secret is used or if 
-                pre-installing public OIDC keys to clients is preferred
-           -->     
            <ref bean="oidcKeysService"/>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
@@ -74,7 +75,7 @@
     
     <bean id="keyPasswordProvider" class="org.apache.cxf.fediz.service.oidc.PrivateKeyPasswordProviderImpl"/>
     
-    <bean id="clientRegService" class="org.apache.cxf.fediz.service.oidc.ClientRegistrationService">
+    <bean id="clientRegService" init-method="init" class="org.apache.cxf.fediz.service.oidc.ClientRegistrationService">
        <property name="dataProvider" ref="oauthProvider"/>
        <property name="homeRealms">
           <map>
