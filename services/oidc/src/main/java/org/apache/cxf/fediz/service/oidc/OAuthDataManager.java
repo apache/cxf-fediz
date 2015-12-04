@@ -54,6 +54,7 @@ public class OAuthDataManager extends DefaultEHCacheCodeDataProvider {
         OPENID_PERMISSION.setDefault(true);
         REFRESH_TOKEN_PERMISSION = new OAuthPermission(OAuthConstants.REFRESH_TOKEN_SCOPE, 
             "Refresh access tokens");
+        REFRESH_TOKEN_PERMISSION.setInvisibleToClient(true);
     }
 
     private Map<String, OAuthPermission> permissionMap = new HashMap<String, OAuthPermission>();
@@ -114,7 +115,9 @@ public class OAuthDataManager extends DefaultEHCacheCodeDataProvider {
             OAuthPermission permission = new OAuthPermission(entry.getKey(), entry.getValue());
             if (OidcUtils.OPENID_SCOPE.equals(entry.getKey())) {
                 permission.setDefault(true);
-            }
+            } else if (OAuthConstants.REFRESH_TOKEN_SCOPE.equals(entry.getKey())) {
+                permission.setInvisibleToClient(true);
+            } 
             permissionMap.put(entry.getKey(), permission);
         }
     }
