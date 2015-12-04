@@ -118,7 +118,7 @@
                         </Export-Package>
                         <Import-Package>
                             !org.apache.cxf.fediz.spring*,
-                            org.apache.cxf.fediz.core.*,
+                            org.apache.cxf.fediz.cxf.*,
                             *;resolution:=optional
                         </Import-Package>
                     </instructions>
