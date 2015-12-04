@@ -114,11 +114,11 @@
                         <Specification-Vendor>The Apache Software Foundation</Specification-Vendor>
                         <Specification-Version>${project.version}</Specification-Version>
                         <Export-Package>
-                            org.apache.cxf.fediz.spring.*;version="${project.version}"
+                            org.apache.cxf.fediz.cxf.*;version="${project.version}"
                         </Export-Package>
                         <Import-Package>
                             !org.apache.cxf.fediz.spring*,
-                            org.apache.cxf.fediz.cxf.*,
+                            org.apache.cxf.fediz.core.*,
                             *;resolution:=optional
                         </Import-Package>
                     </instructions>
