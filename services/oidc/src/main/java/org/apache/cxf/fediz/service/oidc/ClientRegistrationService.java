@@ -49,6 +49,8 @@ public class ClientRegistrationService {
             new ConcurrentHashMap<String, Collection<Client>>();
     private OAuthDataManager manager;
     private Map<String, String> homeRealms = new LinkedHashMap<String, String>();
+    private boolean protectIdTokenWithClientSecret;
+    
     @Context
     private SecurityContext sc;
     
@@ -99,7 +101,7 @@ public class ClientRegistrationService {
     
     protected String generateClientSecret() {
         // TODO: may need to be 384/8 or 512/8 if not a default HS256 but HS384 or HS512
-        int keySizeOctets = manager.isSignIdTokenWithClientSecret() ? 32 : 16; 
+        int keySizeOctets = protectIdTokenWithClientSecret ? 32 : 16; 
         return Base64UrlUtility.encode(CryptoUtils.generateSecureRandomBytes(keySizeOctets));
     }
     
@@ -142,6 +144,10 @@ public class ClientRegistrationService {
             String userName = c.getResourceOwnerSubject().getLogin();
             getClientRegistrations(userName).add(c);
         }
+    }
+    
+    public void setProtectIdTokenWithClientSecret(boolean protectIdTokenWithClientSecret) {
+        this.protectIdTokenWithClientSecret = protectIdTokenWithClientSecret;
     }
 }
 

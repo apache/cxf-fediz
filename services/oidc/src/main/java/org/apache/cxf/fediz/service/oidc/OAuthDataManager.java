@@ -41,6 +41,7 @@ import org.apache.cxf.rs.security.oauth2.provider.OAuthServiceException;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthUtils;
 import org.apache.cxf.rs.security.oidc.common.IdToken;
+import org.apache.cxf.rs.security.oidc.idp.OidcUserSubject;
 import org.apache.cxf.rs.security.oidc.utils.OidcUtils;
 
 public class OAuthDataManager extends DefaultEHCacheCodeDataProvider {
@@ -76,7 +77,12 @@ public class OAuthDataManager extends DefaultEHCacheCodeDataProvider {
     protected ServerAuthorizationCodeGrant doCreateCodeGrant(AuthorizationCodeRegistration reg) 
         throws OAuthServiceException {
         ServerAuthorizationCodeGrant grant = super.doCreateCodeGrant(reg);
-        createIdToken(grant.getClient(), grant.getSubject(), reg.getNonce());
+        OidcUserSubject oidcSub = createOidcSubject(grant.getClient(), 
+                                                    grant.getSubject(), 
+                                                    reg.getNonce());
+        if (oidcSub != null) {
+            grant.setSubject(oidcSub);
+        }
         return grant;
     }
     
@@ -84,7 +90,13 @@ public class OAuthDataManager extends DefaultEHCacheCodeDataProvider {
     protected ServerAccessToken doCreateAccessToken(AccessTokenRegistration reg)
         throws OAuthServiceException {
         ServerAccessToken token = super.doCreateAccessToken(reg);
-        createIdToken(token.getClient(), token.getSubject(), reg.getNonce());
+        OidcUserSubject oidcSub = null;
+        if (!(token.getSubject() instanceof OidcUserSubject)) {
+            oidcSub = createOidcSubject(token.getClient(), token.getSubject(), reg.getNonce());
+            if (oidcSub != null) {
+                token.setSubject(oidcSub);
+            }
+        }
         return token;
     }
     
@@ -101,7 +113,7 @@ public class OAuthDataManager extends DefaultEHCacheCodeDataProvider {
             list.add(permission);
         }
         if (!list.contains(OPENID_PERMISSION)) {
-            throw new OAuthServiceException("Default scope is missing");
+            throw new OAuthServiceException("Required scope is missing");
         }
         return list;
     }
@@ -122,27 +134,32 @@ public class OAuthDataManager extends DefaultEHCacheCodeDataProvider {
         }
     }
 
-    protected void createIdToken(Client client, UserSubject subject, String nonce) {
-        if (subject != null && !subject.getProperties().containsKey(OidcUtils.ID_TOKEN)) {
-            Principal principal = messageContext.getSecurityContext().getUserPrincipal();
-            
-            if (principal instanceof FedizPrincipal) {
-                String joseIdToken = getJoseIdToken((FedizPrincipal)principal, client, nonce);
-                subject.getProperties().put(OidcUtils.ID_TOKEN, joseIdToken);
-            }
+    protected OidcUserSubject createOidcSubject(Client client, UserSubject subject, String nonce) {
+        IdToken idToken = getIdToken(client, nonce);
+        if (idToken != null) {
+            OidcUserSubject oidcSub = new OidcUserSubject(subject);
+            oidcSub.setIdToken(idToken);
+            return oidcSub;
         }
-        
+        return null;
     }
-    
-    protected String getJoseIdToken(FedizPrincipal principal, Client client, String nonce) {
-        IdToken idToken = tokenConverter.convertToIdToken(principal.getLoginToken(),
-                                                          principal.getName(), 
-                                                          principal.getClaims(),
-                                                          client.getClientId(),
-                                                          nonce);
+    protected String getJoseIdToken(Client client, IdToken idToken) {
         JwsJwtCompactProducer p = new JwsJwtCompactProducer(idToken);
         return p.signWith(getJwsSignatureProvider(client));
         // the JWS compact output may also need to be encrypted
+    }
+    protected IdToken getIdToken(Client client, String nonce) {
+        Principal principal = messageContext.getSecurityContext().getUserPrincipal();
+        
+        if (principal instanceof FedizPrincipal) {
+            FedizPrincipal fedizPrincipal = (FedizPrincipal)principal; 
+            return tokenConverter.convertToIdToken(fedizPrincipal.getLoginToken(),
+                                                   fedizPrincipal.getName(), 
+                                                   fedizPrincipal.getClaims(),
+                                                   client.getClientId(),
+                                                   nonce);
+        }
+        return null;
     }
 
     protected JwsSignatureProvider getJwsSignatureProvider(Client client) {
@@ -151,18 +168,6 @@ public class OAuthDataManager extends DefaultEHCacheCodeDataProvider {
         } 
         return JwsUtils.loadSignatureProvider(true);
         
-    }
-    
-    /**
-     * Enable the symmetric signature with the client secret. 
-     * This property will be ignored if a client is public 
-     */
-    public void setSignIdTokenWithClientSecret(boolean signIdTokenWithClientSecret) {
-        this.signIdTokenWithClientSecret = signIdTokenWithClientSecret;
-    }
-
-    public boolean isSignIdTokenWithClientSecret() {
-        return signIdTokenWithClientSecret;
     }
     
     public void setTokenConverter(SamlTokenConverter tokenConverter) {

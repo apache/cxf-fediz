@@ -39,7 +39,6 @@
         </property>
     -->
     <!--
-        <property name="signIdTokenWithClientSecret" value="true"/>
         <property name="accessTokenLifetime" value="3600"/>
     -->
         <property name="tokenConverter" ref="samlTokenConverter"/>

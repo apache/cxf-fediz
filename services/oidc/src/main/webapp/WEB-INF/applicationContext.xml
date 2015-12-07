@@ -50,10 +50,6 @@
         <jaxrs:providers>
             <ref bean="viewProvider"/>
         </jaxrs:providers>
-        <jaxrs:properties>
-            <entry key="rs.security.signature.properties" value="rs.security.properties"/>
-            <entry key="rs.security.signature.key.password.provider" value-ref="keyPasswordProvider"/>
-        </jaxrs:properties>
     </jaxrs:server>
     
     <!-- 
@@ -105,7 +101,11 @@
        </property>
     </bean>
     
-    <bean id="idTokenFilter" class="org.apache.cxf.rs.security.oidc.idp.IdTokenResponseFilter"/>
+    <bean id="idTokenFilter" class="org.apache.cxf.rs.security.oidc.idp.IdTokenResponseFilter">
+      <!--
+        <property name="signWithClientSecret" value="true"/>
+      -->
+    </bean>
     <bean id="refreshTokenHandler" class="org.apache.cxf.rs.security.oauth2.grants.refresh.RefreshTokenGrantHandler">
         <property name="dataProvider" ref="oauthProvider"/>
     </bean>
@@ -135,6 +135,10 @@
         <jaxrs:providers>
            <ref bean="oauthJsonProvider"/>
         </jaxrs:providers>
+        <jaxrs:properties>
+            <entry key="rs.security.signature.properties" value="rs.security.properties"/>
+            <entry key="rs.security.signature.key.password.provider" value-ref="keyPasswordProvider"/>
+        </jaxrs:properties>
      </jaxrs:server>
      
 </beans>
