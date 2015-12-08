@@ -30,7 +30,7 @@
         <property name="issuer" value="accounts.fediz.com"/>
     </bean>
     <bean id="oauthProvider" class="org.apache.cxf.fediz.service.oidc.OAuthDataManager"
-          destroy-method="close">
+          init-method="init" destroy-method="close">
     <!--
         <property name="scopes">
           <map>

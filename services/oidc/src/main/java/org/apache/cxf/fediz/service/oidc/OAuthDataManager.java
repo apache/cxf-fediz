@@ -19,16 +19,10 @@
 package org.apache.cxf.fediz.service.oidc;
 
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.cxf.fediz.core.FedizPrincipal;
-import org.apache.cxf.jaxrs.ext.MessageContext;
-import org.apache.cxf.rs.security.jose.jws.JwsJwtCompactProducer;
-import org.apache.cxf.rs.security.jose.jws.JwsSignatureProvider;
-import org.apache.cxf.rs.security.jose.jws.JwsUtils;
 import org.apache.cxf.rs.security.oauth2.common.AccessTokenRegistration;
 import org.apache.cxf.rs.security.oauth2.common.Client;
 import org.apache.cxf.rs.security.oauth2.common.OAuthPermission;
@@ -39,38 +33,14 @@ import org.apache.cxf.rs.security.oauth2.grants.code.DefaultEHCacheCodeDataProvi
 import org.apache.cxf.rs.security.oauth2.grants.code.ServerAuthorizationCodeGrant;
 import org.apache.cxf.rs.security.oauth2.provider.OAuthServiceException;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
-import org.apache.cxf.rs.security.oauth2.utils.OAuthUtils;
 import org.apache.cxf.rs.security.oidc.common.IdToken;
 import org.apache.cxf.rs.security.oidc.idp.OidcUserSubject;
 import org.apache.cxf.rs.security.oidc.utils.OidcUtils;
 
 public class OAuthDataManager extends DefaultEHCacheCodeDataProvider {
-
-    private static final OAuthPermission OPENID_PERMISSION;
-    private static final OAuthPermission REFRESH_TOKEN_PERMISSION;
-    
-    static {
-        OPENID_PERMISSION = new OAuthPermission(OidcUtils.OPENID_SCOPE, 
-            "Access the authentication claims");
-        OPENID_PERMISSION.setDefault(true);
-        REFRESH_TOKEN_PERMISSION = new OAuthPermission(OAuthConstants.REFRESH_TOKEN_SCOPE, 
-            "Refresh access tokens");
-        REFRESH_TOKEN_PERMISSION.setInvisibleToClient(true);
-    }
-
-    private Map<String, OAuthPermission> permissionMap = new HashMap<String, OAuthPermission>();
-    private MessageContext messageContext;
     private SamlTokenConverter tokenConverter = new LocalSamlTokenConverter();
-    private boolean signIdTokenWithClientSecret;
-    
     
     public OAuthDataManager() {
-        permissionMap.put(OPENID_PERMISSION.getPermission(), OPENID_PERMISSION);
-        permissionMap.put(REFRESH_TOKEN_PERMISSION.getPermission(), REFRESH_TOKEN_PERMISSION);
-    }
-    
-    public OAuthDataManager(Map<String, OAuthPermission> permissionMap) {
-        this.permissionMap = permissionMap;
     }
     
     @Override
@@ -100,40 +70,14 @@ public class OAuthDataManager extends DefaultEHCacheCodeDataProvider {
         return token;
     }
     
-    // Scope to Permission conversion
     @Override
-    public List<OAuthPermission> convertScopeToPermissions(Client client, List<String> scopes)
-            throws OAuthServiceException {
-        List<OAuthPermission> list = new ArrayList<OAuthPermission>();
-        for (String scope : scopes) {
-            OAuthPermission permission = permissionMap.get(scope);
-            if (permission == null) {
-                throw new OAuthServiceException("Unexpected scope: " + scope);
-            }
-            list.add(permission);
+    public List<OAuthPermission> convertScopeToPermissions(Client client, List<String> requestedScopes) {
+        if (!requestedScopes.contains(OidcUtils.OPENID_SCOPE)) {
+            throw new OAuthServiceException("Required scope is missing");    
         }
-        if (!list.contains(OPENID_PERMISSION)) {
-            throw new OAuthServiceException("Required scope is missing");
-        }
-        return list;
+        return super.convertScopeToPermissions(client, requestedScopes);
     }
-
-    public void setMessageContext(MessageContext messageContext) {
-        this.messageContext = messageContext;
-    }
-
-    public void setScopes(Map<String, String> scopes) {
-        for (Map.Entry<String, String> entry : scopes.entrySet()) {
-            OAuthPermission permission = new OAuthPermission(entry.getKey(), entry.getValue());
-            if (OidcUtils.OPENID_SCOPE.equals(entry.getKey())) {
-                permission.setDefault(true);
-            } else if (OAuthConstants.REFRESH_TOKEN_SCOPE.equals(entry.getKey())) {
-                permission.setInvisibleToClient(true);
-            } 
-            permissionMap.put(entry.getKey(), permission);
-        }
-    }
-
+    
     protected OidcUserSubject createOidcSubject(Client client, UserSubject subject, String nonce) {
         IdToken idToken = getIdToken(client, nonce);
         if (idToken != null) {
@@ -143,13 +87,9 @@ public class OAuthDataManager extends DefaultEHCacheCodeDataProvider {
         }
         return null;
     }
-    protected String getJoseIdToken(Client client, IdToken idToken) {
-        JwsJwtCompactProducer p = new JwsJwtCompactProducer(idToken);
-        return p.signWith(getJwsSignatureProvider(client));
-        // the JWS compact output may also need to be encrypted
-    }
+    
     protected IdToken getIdToken(Client client, String nonce) {
-        Principal principal = messageContext.getSecurityContext().getUserPrincipal();
+        Principal principal = getMessageContext().getSecurityContext().getUserPrincipal();
         
         if (principal instanceof FedizPrincipal) {
             FedizPrincipal fedizPrincipal = (FedizPrincipal)principal; 
@@ -162,17 +102,25 @@ public class OAuthDataManager extends DefaultEHCacheCodeDataProvider {
         return null;
     }
 
-    protected JwsSignatureProvider getJwsSignatureProvider(Client client) {
-        if (signIdTokenWithClientSecret && client.isConfidential()) {
-            return OAuthUtils.getClientSecretSignatureProvider(client.getClientSecret());
-        } 
-        return JwsUtils.loadSignatureProvider(true);
-        
-    }
-    
     public void setTokenConverter(SamlTokenConverter tokenConverter) {
         this.tokenConverter = tokenConverter;
     }
 
-    
+    @Override 
+    public void init() {
+        super.init();
+        Map<String, OAuthPermission> perms = super.getPermissionMap();
+        if (!perms.containsKey(OidcUtils.OPENID_SCOPE)) {
+            perms.put(OidcUtils.OPENID_SCOPE,
+                new OAuthPermission(OidcUtils.OPENID_SCOPE, "Access the authentication claims"));
+        }
+        perms.get(OidcUtils.OPENID_SCOPE).setDefault(true);
+        
+        if (!perms.containsKey(OAuthConstants.REFRESH_TOKEN_SCOPE)) {
+            perms.put(OAuthConstants.REFRESH_TOKEN_SCOPE, 
+                new OAuthPermission(OAuthConstants.REFRESH_TOKEN_SCOPE, "Refresh access tokens"));
+        }
+        perms.get(OAuthConstants.REFRESH_TOKEN_SCOPE).setInvisibleToClient(true);
+        
+    }
 }
