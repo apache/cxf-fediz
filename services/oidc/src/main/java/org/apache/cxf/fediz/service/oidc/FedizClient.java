@@ -40,9 +40,8 @@ public class FedizClient extends Client {
     public FedizClient(String clientId, 
                   String clientSecret,
                   boolean isConfidential,
-                  String applicationName,
-                  String applicationWebUri) {
-        super(clientId, clientSecret, isConfidential, applicationName, applicationWebUri);
+                  String applicationName) {
+        super(clientId, clientSecret, isConfidential, applicationName);
         
     }
 

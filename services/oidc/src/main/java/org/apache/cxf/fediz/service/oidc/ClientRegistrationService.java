@@ -82,7 +82,7 @@ public class ClientRegistrationService {
         boolean isConfidential = "confidential".equals(appType);
         String clientSecret = isConfidential ? generateClientSecret() : null;
         
-        FedizClient newClient = new FedizClient(clientId, clientSecret, isConfidential, appName, null);
+        FedizClient newClient = new FedizClient(clientId, clientSecret, isConfidential, appName);
         newClient.setHomeRealm(homeRealm);
         newClient.setApplicationDescription(appDesc);
         if (!StringUtils.isEmpty(redirectURI)) {
