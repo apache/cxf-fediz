@@ -42,7 +42,6 @@
          <property name="skipAuthorizationWithOidcScope" value="true"/>
          <property name="canSupportPublicClients" value="true"/>
     </bean>
-    <bean id="oidcKeysService" class="org.apache.cxf.rs.security.oidc.idp.OidcKeysService"/>
     <jaxrs:server address="/idp">
         <jaxrs:serviceBeans>
            <ref bean="oidcAuthorizationService"/>
@@ -56,12 +55,34 @@
          Disable it if the client secret is used or if 
          pre-installing public OIDC keys to clients is preferred
     --> 
+    <bean id="oidcKeysService" class="org.apache.cxf.rs.security.oidc.idp.OidcKeysService"/>
     <jaxrs:server address="/jwk">
         <jaxrs:serviceBeans>
            <ref bean="oidcKeysService"/>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
             <bean class="org.apache.cxf.rs.security.jose.jaxrs.JsonWebKeysProvider"/>
+        </jaxrs:providers>
+        <jaxrs:properties>
+            <entry key="rs.security.signature.properties" value="rs.security.properties"/>
+            <entry key="rs.security.signature.key.password.provider" value-ref="keyPasswordProvider"/>
+        </jaxrs:properties>
+    </jaxrs:server>
+    
+    
+    <bean id="oauth2TokenValidationFilter" class="org.apache.cxf.rs.security.oauth2.filters.OAuthRequestFilter">
+         <property name="dataProvider" ref="oauthProvider"/>
+     </bean>
+    <bean id="userInfoService" class="org.apache.cxf.rs.security.oidc.idp.UserInfoService">
+        <property name="oauthDataProvider" ref="oauthProvider"/>
+    </bean>
+    <jaxrs:server address="/users">
+        <jaxrs:serviceBeans>
+           <ref bean="userInfoService"/>
+        </jaxrs:serviceBeans>
+        <jaxrs:providers>
+            <bean class="org.apache.cxf.jaxrs.provider.json.JsonMapObjectProvider"/>
+            <ref bean="oauth2TokenValidationFilter"/>
         </jaxrs:providers>
         <jaxrs:properties>
             <entry key="rs.security.signature.properties" value="rs.security.properties"/>
