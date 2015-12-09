@@ -75,6 +75,7 @@
      </bean>
     <bean id="userInfoService" class="org.apache.cxf.rs.security.oidc.idp.UserInfoService">
         <property name="oauthDataProvider" ref="oauthProvider"/>
+        <property name="jwsRequired" value="false"/>
     </bean>
     <jaxrs:server address="/users">
         <jaxrs:serviceBeans>
@@ -84,10 +85,6 @@
             <bean class="org.apache.cxf.jaxrs.provider.json.JsonMapObjectProvider"/>
             <ref bean="oauth2TokenValidationFilter"/>
         </jaxrs:providers>
-        <jaxrs:properties>
-            <entry key="rs.security.signature.properties" value="rs.security.properties"/>
-            <entry key="rs.security.signature.key.password.provider" value-ref="keyPasswordProvider"/>
-        </jaxrs:properties>
     </jaxrs:server>
     
     <bean id="keyPasswordProvider" class="org.apache.cxf.fediz.service.oidc.PrivateKeyPasswordProviderImpl"/>
