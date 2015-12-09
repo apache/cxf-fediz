@@ -50,9 +50,7 @@ public class OAuthDataManager extends DefaultEHCacheCodeDataProvider {
         OidcUserSubject oidcSub = createOidcSubject(grant.getClient(), 
                                                     grant.getSubject(), 
                                                     reg.getNonce());
-        if (oidcSub != null) {
-            grant.setSubject(oidcSub);
-        }
+        grant.setSubject(oidcSub);
         return grant;
     }
     
@@ -60,12 +58,11 @@ public class OAuthDataManager extends DefaultEHCacheCodeDataProvider {
     protected ServerAccessToken doCreateAccessToken(AccessTokenRegistration reg)
         throws OAuthServiceException {
         ServerAccessToken token = super.doCreateAccessToken(reg);
-        OidcUserSubject oidcSub = null;
-        if (!(token.getSubject() instanceof OidcUserSubject)) {
-            oidcSub = createOidcSubject(token.getClient(), token.getSubject(), reg.getNonce());
-            if (oidcSub != null) {
-                token.setSubject(oidcSub);
-            }
+        if (OAuthConstants.IMPLICIT_GRANT.equals(reg.getGrantType())) {
+            OidcUserSubject oidcSub = createOidcSubject(token.getClient(), 
+                                                        token.getSubject(), 
+                                                        reg.getNonce());
+            token.setSubject(oidcSub);
         }
         return token;
     }
@@ -98,8 +95,9 @@ public class OAuthDataManager extends DefaultEHCacheCodeDataProvider {
                                                    fedizPrincipal.getClaims(),
                                                    client.getClientId(),
                                                    nonce);
+        } else {
+            throw new OAuthServiceException("Unsupported Principal");
         }
-        return null;
     }
 
     public void setTokenConverter(SamlTokenConverter tokenConverter) {
