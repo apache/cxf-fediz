@@ -26,7 +26,7 @@
 
     <bean id="applicationContextProvider" class="org.apache.cxf.fediz.service.oidc.ApplicationContextProvider"/>
 
-    <bean id="samlTokenConverter" class="org.apache.cxf.fediz.service.oidc.LocalSamlTokenConverter">
+    <bean id="samlTokenConverter" class="org.apache.cxf.fediz.service.oidc.SamlTokenConverter">
         <property name="issuer" value="accounts.fediz.com"/>
     </bean>
     <bean id="oauthProvider" class="org.apache.cxf.fediz.service.oidc.OAuthDataManager"

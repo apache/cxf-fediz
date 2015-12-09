@@ -38,7 +38,7 @@ import org.apache.cxf.rs.security.oidc.idp.OidcUserSubject;
 import org.apache.cxf.rs.security.oidc.utils.OidcUtils;
 
 public class OAuthDataManager extends DefaultEHCacheCodeDataProvider {
-    private SamlTokenConverter tokenConverter = new LocalSamlTokenConverter();
+    private SamlTokenConverter tokenConverter = new SamlTokenConverter();
     
     public OAuthDataManager() {
     }
@@ -76,30 +76,26 @@ public class OAuthDataManager extends DefaultEHCacheCodeDataProvider {
     }
     
     protected OidcUserSubject createOidcSubject(Client client, UserSubject subject, String nonce) {
-        IdToken idToken = getIdToken(client, nonce);
-        if (idToken != null) {
-            OidcUserSubject oidcSub = new OidcUserSubject(subject);
-            oidcSub.setIdToken(idToken);
-            return oidcSub;
-        }
-        return null;
-    }
-    
-    protected IdToken getIdToken(Client client, String nonce) {
         Principal principal = getMessageContext().getSecurityContext().getUserPrincipal();
         
-        if (principal instanceof FedizPrincipal) {
-            FedizPrincipal fedizPrincipal = (FedizPrincipal)principal; 
-            return tokenConverter.convertToIdToken(fedizPrincipal.getLoginToken(),
-                                                   fedizPrincipal.getName(), 
-                                                   fedizPrincipal.getClaims(),
-                                                   client.getClientId(),
-                                                   nonce);
-        } else {
+        if (!(principal instanceof FedizPrincipal)) {
             throw new OAuthServiceException("Unsupported Principal");
         }
+        FedizPrincipal fedizPrincipal = (FedizPrincipal)principal; 
+        IdToken idToken = tokenConverter.convertToIdToken(fedizPrincipal.getLoginToken(),
+                                               fedizPrincipal.getName(), 
+                                               fedizPrincipal.getClaims(),
+                                               client.getClientId(),
+                                               nonce);
+        
+        //TODO: Consider populating UserInfo at this point too, with UserInfo having few more claims
+        // from the claims collection, and setting it on OidcUserSubject
+        
+        OidcUserSubject oidcSub = new OidcUserSubject(subject);
+        oidcSub.setIdToken(idToken);
+        return oidcSub;
     }
-
+    
     public void setTokenConverter(SamlTokenConverter tokenConverter) {
         this.tokenConverter = tokenConverter;
     }
