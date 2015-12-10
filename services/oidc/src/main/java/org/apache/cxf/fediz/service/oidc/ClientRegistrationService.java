@@ -44,44 +44,42 @@ import org.apache.cxf.rt.security.crypto.CryptoUtils;
 
 @Path("/")
 public class ClientRegistrationService {
-    
-    private Map<String, Collection<Client>> registrations = 
-            new ConcurrentHashMap<String, Collection<Client>>();
+
+    private Map<String, Collection<Client>> registrations = new ConcurrentHashMap<String, Collection<Client>>();
     private OAuthDataManager manager;
     private Map<String, String> homeRealms = new LinkedHashMap<String, String>();
     private boolean protectIdTokenWithClientSecret;
-    
+
     @Context
     private SecurityContext sc;
-    
-    
+
     @GET
     @Produces(MediaType.TEXT_HTML)
-    @Path("/")
+    @Path("/register")
     public RegisterClient registerStart() {
         return new RegisterClient(homeRealms);
     }
-    
+
     @GET
     @Produces(MediaType.TEXT_HTML)
-    @Path("/register")
-    public Collection<Client> registerForm() {
+    @Path("/")
+    public Collection<Client> getClients() {
         return getClientRegistrations();
     }
-    
+
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_HTML)
-    @Path("/register")
+    @Path("/")
     public Collection<Client> registerForm(@FormParam("appName") String appName,
-                                 @FormParam("appDescription") String appDesc,
-                                 @FormParam("appType") String appType,
-                                 @FormParam("redirectURI") String redirectURI,
-                                 @FormParam("homeRealm") String homeRealm) {
+        @FormParam("appDescription") String appDesc, @FormParam("appType") String appType,
+        @FormParam("redirectURI") String redirectURI, @FormParam("homeRealm") String homeRealm) {
         String clientId = generateClientId();
         boolean isConfidential = "confidential".equals(appType);
-        String clientSecret = isConfidential ? generateClientSecret() : null;
-        
+        String clientSecret = isConfidential
+            ? generateClientSecret()
+            : null;
+
         FedizClient newClient = new FedizClient(clientId, clientSecret, isConfidential, appName);
         newClient.setHomeRealm(homeRealm);
         newClient.setApplicationDescription(appDesc);
@@ -91,33 +89,34 @@ public class ClientRegistrationService {
         String userName = sc.getUserPrincipal().getName();
         UserSubject userSubject = new UserSubject(userName);
         newClient.setResourceOwnerSubject(userSubject);
-        
+
         return registerNewClient(newClient);
     }
-    
+
     protected String generateClientId() {
         return Base64UrlUtility.encode(CryptoUtils.generateSecureRandomBytes(10));
     }
-    
+
     protected String generateClientSecret() {
         // TODO: may need to be 384/8 or 512/8 if not a default HS256 but HS384 or HS512
-        int keySizeOctets = protectIdTokenWithClientSecret ? 32 : 16; 
+        int keySizeOctets = protectIdTokenWithClientSecret
+            ? 32
+            : 16;
         return Base64UrlUtility.encode(CryptoUtils.generateSecureRandomBytes(keySizeOctets));
     }
-    
+
     protected Collection<Client> registerNewClient(Client newClient) {
         manager.setClient(newClient);
         Collection<Client> clientRegistrations = getClientRegistrations();
         clientRegistrations.add(newClient);
         return clientRegistrations;
-        
     }
 
     protected Collection<Client> getClientRegistrations() {
         String userName = getUserName();
         return getClientRegistrations(userName);
     }
-    
+
     protected Collection<Client> getClientRegistrations(String userName) {
         Collection<Client> userClientRegs = registrations.get(userName);
         if (userClientRegs == null) {
@@ -126,11 +125,14 @@ public class ClientRegistrationService {
         }
         return userClientRegs;
     }
-    
+
     private String getUserName() {
+        if (sc == null || sc.getUserPrincipal() == null) {
+            return null;
+        }
         return sc.getUserPrincipal().getName();
     }
-    
+
     public void setDataProvider(OAuthDataManager m) {
         this.manager = m;
     }
@@ -138,16 +140,15 @@ public class ClientRegistrationService {
     public void setHomeRealms(Map<String, String> homeRealms) {
         this.homeRealms = homeRealms;
     }
-    
+
     public void init() {
         for (Client c : manager.getClients()) {
             String userName = c.getResourceOwnerSubject().getLogin();
             getClientRegistrations(userName).add(c);
         }
     }
-    
+
     public void setProtectIdTokenWithClientSecret(boolean protectIdTokenWithClientSecret) {
         this.protectIdTokenWithClientSecret = protectIdTokenWithClientSecret;
     }
 }
-

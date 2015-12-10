@@ -75,7 +75,7 @@
 <br/>
 <br/>
 <p>
-Back to <a href="<%= basePath %>client">Client Registration page</a>
+<a href="<%= basePath + "clients/register" %>">Register a new client</a>
 </p>
 </div>
 </body>

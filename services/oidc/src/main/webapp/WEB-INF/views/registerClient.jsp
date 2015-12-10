@@ -24,7 +24,7 @@
 <br/>
 <div class="padded">  
        
-     <form action="/fediz-oidc/client/register"
+     <form action="/fediz-oidc/clients"
            method="POST">
        <table>    
         <tr>
@@ -112,7 +112,7 @@
 <br/>
 <big><big>
 <p>
-Back to your account <a href="<%= basePath %>"> page</a>
+Return to <a href="<%= basePath %>clients">registered Clients</a>
 </p>
 </big></big> 
 </div>

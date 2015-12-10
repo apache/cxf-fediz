@@ -98,7 +98,7 @@
           </map>
        </property>
     </bean>
-    <jaxrs:server address="/client">
+    <jaxrs:server address="/clients">
         <jaxrs:serviceBeans>
             <ref bean="clientRegService"/>
         </jaxrs:serviceBeans>
@@ -114,7 +114,7 @@
        <property name="dispatcherName" value="jsp"/>
        <property name="resourcePaths">
             <map>
-              <entry key="/client/register" value="/WEB-INF/views/registeredClients.jsp"/>
+              <entry key="/clients" value="/WEB-INF/views/registeredClients.jsp"/>
             </map>
        </property>
     </bean>
