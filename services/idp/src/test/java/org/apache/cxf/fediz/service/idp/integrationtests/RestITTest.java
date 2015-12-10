@@ -114,7 +114,7 @@ public class RestITTest {
         Assert.assertEquals("Number of TokenTypesOffered doesn't match",
                             2, idp.getTokenTypesOffered().size());
         Assert.assertEquals("Number of applications doesn't match",
-                            1, idp.getApplications().size());
+                            2, idp.getApplications().size());
         Assert.assertEquals("Number of trusted IDPs doesn't match",
                             1, idp.getTrustedIdps().size());
         Assert.assertEquals("Number of claims doesn't match",

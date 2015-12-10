@@ -69,8 +69,7 @@ public class IdpDAOJPATest {
     
     @Test
     public void testReadExistingIdpEmbeddedAll() throws MalformedURLException {
-        Idp idp = idpDAO.getIdp("urn:org:apache:cxf:fediz:idp:realm-A",
-                                                                Arrays.asList("all"));
+        Idp idp = idpDAO.getIdp("urn:org:apache:cxf:fediz:idp:realm-A", Arrays.asList("all"));
         
         Assert.isTrue("stsKeystoreA.properties".equals(idp.getCertificate()),
                       "Certificate doesn't match");
@@ -98,7 +97,7 @@ public class IdpDAOJPATest {
                       "Number of SupportedProtocols doesn't match");
         Assert.isTrue(2 == idp.getTokenTypesOffered().size(),
                       "Number of TokenTypesOffered doesn't match");
-        Assert.isTrue(1 == idp.getApplications().size(),
+        Assert.isTrue(2 == idp.getApplications().size(),
                       "Number of applications doesn't match");
         Assert.isTrue(1 == idp.getTrustedIdps().size(),
                       "Number of trusted IDPs doesn't match");
@@ -126,11 +125,9 @@ public class IdpDAOJPATest {
     
     @Test
     public void testReadExistingIdpEmbeddedApplications() {
-        Idp idp = idpDAO.getIdp("urn:org:apache:cxf:fediz:idp:realm-A",
-                                                                Arrays.asList("applications"));
+        Idp idp = idpDAO.getIdp("urn:org:apache:cxf:fediz:idp:realm-A", Arrays.asList("applications"));
         
-        Assert.isTrue(1 == idp.getApplications().size(),
-                      "Number of applications doesn't match");
+        Assert.isTrue(2 == idp.getApplications().size(), "Number of applications doesn't match");
     }
     
     @Test
