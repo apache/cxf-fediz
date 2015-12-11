@@ -1,4 +1,5 @@
-<%@ page import="javax.servlet.http.HttpServletRequest,java.util.Map,java.util.Iterator,org.apache.cxf.fediz.service.oidc.RegisterClient" %>
+<%@ page
+	import="javax.servlet.http.HttpServletRequest,java.util.Map,java.util.Iterator,org.apache.cxf.fediz.service.oidc.RegisterClient"%>
 <%
     RegisterClient reg = (RegisterClient)request.getAttribute("data");
     String basePath = request.getContextPath() + request.getServletPath();
@@ -8,114 +9,112 @@
 %>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title>Client Registration Form</title>
-    <STYLE TYPE="text/css">
-	<!--
-	  input {font-family:verdana, arial, helvetica, sans-serif;font-size:20px;line-height:40px;}
-	  H1 { text-align: center}
-	  div.padded {  
-         padding-left: 5em;  
-      }   
-	-->
-</STYLE>
+<title>Client Registration Form</title>
+<style TYPE="text/css">
+<!--
+h2 {
+	font-size: 1.5em;
+	font-family: verdana, arial, helvetica, sans-serif;
+	margin: 0;
+	text-align: center;
+}
+
+.header-text {
+	border-bottom: 1px solid gray;
+	padding: 24px 0;
+	margin: 12px 36px 12px;
+}
+
+label {
+	font-weight: bold;
+	margin-bottom: 9px;
+	display: block;
+	white-space: normal;
+}
+
+.form {
+	max-width: 425px;
+	margin-bottom: 25px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.form-line {
+	margin: 6 0 6 0;
+	padding: 12 36 12 36;
+}
+
+.form-required {
+	color: red;
+	margin-left: 5px;
+}
+
+input, select, button {
+	width: 100%;
+}
+
+.form-submit-button {
+	padding: 4px;
+	text-align: center;
+}
+-->
+</style>
 </head>
 <body>
-<H1>API Client Registration Form</H1>
-<br/>
-<div class="padded">  
-       
-     <form action="/fediz-oidc/clients"
-           method="POST">
-       <table>    
-        <tr>
-            <td><big><big><big>Client Name:</big></big></big></td>
-            <td>
-              <input type="text" name="appName" size="50" value="API Client"/>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">&nbsp;</td>
-        </tr>
-        <tr>
-            <td><big><big><big>Client Description:</big></big></big></td>
-            <td>
-              <input type="text" size="50" name="appDescription" 
-                     value="API Service Client"/>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">&nbsp;</td>
-        </tr>
-        <tr>
-            <td><big><big><big>Client Type:</big></big></big></td>
-            <td>
-               <select name="appType">
-				  <option value="confidential" selected>Confidential</option>
-				  <option value="public">Public</option>
-				</select> 
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">&nbsp;</td>
-        </tr>
-        <tr>
-            <td><big><big><big>Redirect URI:</big></big></big></td>
-            <td>
-              <input type="text" size="50" name="redirectURI" 
-                     value=""/>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">&nbsp;</td>
-        </tr>
-        <tr>
-            <td><big><big><big>Home Realm:</big></big></big></td>
-            <td>
-               
-               <select name="homeRealm">
-                <%
-                   if (!reg.getHomeRealms().entrySet().isEmpty()) {
-                      Iterator<Map.Entry<String, String>> it = reg.getHomeRealms().entrySet().iterator();
-                      Map.Entry<String, String> firstEntry = it.next();
-                %>
-                      <option value="<%= firstEntry.getKey() %>" selected><%= firstEntry.getValue() %></option>
-                <%      
-                      while (it.hasNext()) {
-                          Map.Entry<String, String> e = it.next();
-                %>
-                   <option value="<%= e.getKey() %>"><%= e.getValue() %></option>
-                <%
-                      }
-                   } else {
-                %>   
-                   <option value="" selected>Default</option>
-                <%
-                   }
-                %>
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              &nbsp;
-            </td>
-        </tr>
-        </table>
-        <table align="center">
-        <tr>
-            <td colspan="2">
-                <input type="submit" value="    Register API Client    "/>
-            </td>
-        </tr>
-        </table>
-  </form>
-<br/>
-<big><big>
-<p>
-Return to <a href="<%= basePath %>clients">registered Clients</a>
-</p>
-</big></big> 
-</div>
-          
+	<form action="/fediz-oidc/clients" method="POST">
+		<div class="form">
+			<div class="header-text">
+				<h2>OIDC Client Registration</h2>
+			</div>
+			<div class="form-line">
+				<label for="client_name" id="label_name" class="form-label"> Name <span class="form-required"> * </span></label>
+				<input placeholder="OIDC Client Name" type="text" value=""
+					size="40" name="client_name" id="input_name" data-type="input-textbox" />
+			</div>
+			<div class="form-line">
+				<label for="client_description" id="label_description" class="form-label"> Description </label>
+				<input placeholder="OIDC Client Description" type="text"
+					value="" size="40" name="client_description" id="input_description" data-type="input-textbox" />
+			</div>
+			<div class="form-line">
+				<label for="client_type" id="label_type" class="form-label"> Type <span class="form-required"> * </span></label>
+				<select name="client_type" id="input_type">
+					<option value="confidential" selected="selected">Confidential</option>
+					<option value="public">Public</option>
+				</select>
+			</div>
+			<div class="form-line">
+				<label for="client_redirectURI" id="label_redirect" class="form-label"> Redirect URI <span class="form-required"> * </span></label>
+				<input type="text" value="" size="40" name="client_redirectURI"
+					placeholder="URL of the client to consume OIDC service response"
+					id="input_6" data-type="input-textbox" />
+			</div>
+			<div class="form-line">
+				<label for="client_homeRealm" id="label_homeRealm" class="form-label"> Home Realm </label>
+				<select name="client_homeRealm" id="input_homeRealm">
+					<option value="" selected>Default - User selection at login</option>
+					<%
+					    if (!reg.getHomeRealms().entrySet().isEmpty()) {
+							Iterator<Map.Entry<String, String>> it = reg.getHomeRealms().entrySet().iterator();
+							Map.Entry<String, String> firstEntry = it.next();
+					%>
+					<option value="<%=firstEntry.getKey()%>" selected><%=firstEntry.getValue()%></option>
+					<%
+					    	while (it.hasNext()) {
+								Map.Entry<String, String> e = it.next();
+					%>
+					<option value="<%=e.getKey()%>"><%=e.getValue()%></option>
+					<%
+					    	}
+						}
+					%>
+				</select>
+			</div>
+			<div data-type="control_button" class="form-line">
+				<button class="form-submit-button" type="submit">Register API Client</button>
+			</div>
+		</div>
+	</form>
+	<p>Return to <a href="<%=basePath%>clients">registered Clients</a></p>
 </body>
 </html>

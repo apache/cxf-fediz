@@ -71,9 +71,11 @@ public class ClientRegistrationService {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_HTML)
     @Path("/")
-    public Collection<Client> registerForm(@FormParam("appName") String appName,
-        @FormParam("appDescription") String appDesc, @FormParam("appType") String appType,
-        @FormParam("redirectURI") String redirectURI, @FormParam("homeRealm") String homeRealm) {
+    public Collection<Client> registerForm(@FormParam("client_name") String appName,
+        @FormParam("client_description") String appDesc, @FormParam("client_type") String appType,
+        @FormParam("client_redirectURI") String redirectURI, @FormParam("client_homeRealm") String homeRealm) {
+        //TODO Check for mandatory parameters
+        
         String clientId = generateClientId();
         boolean isConfidential = "confidential".equals(appType);
         String clientSecret = isConfidential
