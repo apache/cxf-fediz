@@ -13,7 +13,7 @@
 </STYLE>
 </head>
 <body>
-<title align="center">Third Party Authorization Form</title>
+<h1 align="center">Third Party Authorization Form</h1>
 <table align="center">
        <tr align="center">
                 <td>
@@ -60,18 +60,16 @@
                                name="<%= org.apache.cxf.rs.security.oauth2.utils.OAuthConstants
                                    .SESSION_AUTHENTICITY_TOKEN %>"
                                value="<%= data.getAuthenticityToken() %>"/>
-                        <p><big><big><big>Would you like to grant <%= data.getApplicationName() %><br/>(<%= data.getApplicationDescription() %>)</big></big></big>
-                        <%
+						<%
                             if (data.getApplicationLogoUri() != null) {
-                        %> 
-                        <br/><br/> 
+                        %>                        
                         <img src="<%= data.getApplicationLogoUri() %>" alt="Application Logo" width="100" height="100">
                         <%
                             }
                         %>
-                        <br/></p>
-                        <big><big>the following permissions:<big/></big>
-                        <p/>
+
+                        <h2>Would you like to grant <%= data.getApplicationName() %><br />the following permissions:</h2>
+
                         <table> 
                             <%
                                for (Permission perm : data.getPermissions()) {
@@ -118,7 +116,6 @@
                                     .AUTHORIZATION_DECISION_DENY %>">
                             No,thanks
                         </button>
-                        
                     </form>
                 </td>
             </tr>

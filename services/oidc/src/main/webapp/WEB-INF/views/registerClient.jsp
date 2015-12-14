@@ -72,11 +72,6 @@ input, select, button {
 					size="40" name="client_name" id="input_name" data-type="input-textbox" />
 			</div>
 			<div class="form-line">
-				<label for="client_description" id="label_description" class="form-label"> Description </label>
-				<input placeholder="OIDC Client Description" type="text"
-					value="" size="40" name="client_description" id="input_description" data-type="input-textbox" />
-			</div>
-			<div class="form-line">
 				<label for="client_type" id="label_type" class="form-label"> Type <span class="form-required"> * </span></label>
 				<select name="client_type" id="input_type">
 					<option value="confidential" selected="selected">Confidential</option>

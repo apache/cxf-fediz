@@ -72,8 +72,8 @@ public class ClientRegistrationService {
     @Produces(MediaType.TEXT_HTML)
     @Path("/")
     public Collection<Client> registerForm(@FormParam("client_name") String appName,
-        @FormParam("client_description") String appDesc, @FormParam("client_type") String appType,
-        @FormParam("client_redirectURI") String redirectURI, @FormParam("client_homeRealm") String homeRealm) {
+        @FormParam("client_type") String appType, @FormParam("client_redirectURI") String redirectURI,
+        @FormParam("client_homeRealm") String homeRealm) {
         //TODO Check for mandatory parameters
         
         String clientId = generateClientId();
@@ -84,7 +84,6 @@ public class ClientRegistrationService {
 
         FedizClient newClient = new FedizClient(clientId, clientSecret, isConfidential, appName);
         newClient.setHomeRealm(homeRealm);
-        newClient.setApplicationDescription(appDesc);
         if (!StringUtils.isEmpty(redirectURI)) {
             newClient.setRedirectUris(Collections.singletonList(redirectURI));
         }
