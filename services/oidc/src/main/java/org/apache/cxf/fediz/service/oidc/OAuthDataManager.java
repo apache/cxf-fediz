@@ -48,8 +48,7 @@ public class OAuthDataManager extends DefaultEHCacheCodeDataProvider {
         throws OAuthServiceException {
         ServerAuthorizationCodeGrant grant = super.doCreateCodeGrant(reg);
         OidcUserSubject oidcSub = createOidcSubject(grant.getClient(), 
-                                                    grant.getSubject(), 
-                                                    reg.getNonce());
+                                                    grant.getSubject());
         grant.setSubject(oidcSub);
         return grant;
     }
@@ -60,8 +59,7 @@ public class OAuthDataManager extends DefaultEHCacheCodeDataProvider {
         ServerAccessToken token = super.doCreateAccessToken(reg);
         if (OAuthConstants.IMPLICIT_GRANT.equals(reg.getGrantType())) {
             OidcUserSubject oidcSub = createOidcSubject(token.getClient(), 
-                                                        token.getSubject(), 
-                                                        reg.getNonce());
+                                                        token.getSubject());
             token.setSubject(oidcSub);
         }
         return token;
@@ -75,7 +73,7 @@ public class OAuthDataManager extends DefaultEHCacheCodeDataProvider {
         return super.convertScopeToPermissions(client, requestedScopes);
     }
     
-    protected OidcUserSubject createOidcSubject(Client client, UserSubject subject, String nonce) {
+    protected OidcUserSubject createOidcSubject(Client client, UserSubject subject) {
         Principal principal = getMessageContext().getSecurityContext().getUserPrincipal();
         
         if (!(principal instanceof FedizPrincipal)) {
@@ -85,8 +83,7 @@ public class OAuthDataManager extends DefaultEHCacheCodeDataProvider {
         IdToken idToken = tokenConverter.convertToIdToken(fedizPrincipal.getLoginToken(),
                                                fedizPrincipal.getName(), 
                                                fedizPrincipal.getClaims(),
-                                               client.getClientId(),
-                                               nonce);
+                                               client.getClientId());
         
         //TODO: Consider populating UserInfo at this point too, with UserInfo having few more claims
         // from the claims collection, and setting it on OidcUserSubject

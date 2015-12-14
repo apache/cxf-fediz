@@ -19,6 +19,7 @@
 package org.apache.cxf.fediz.service.oidc;
 
 import org.w3c.dom.Element;
+
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.ClaimTypes;
@@ -29,6 +30,7 @@ import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.saml.saml2.core.Issuer;
 
+
 public class SamlTokenConverter {
 
     private String issuer;
@@ -36,8 +38,7 @@ public class SamlTokenConverter {
     public IdToken convertToIdToken(Element samlToken, 
                                     String subjectName, 
                                     ClaimCollection claims,
-                                    String clientId,
-                                    String nonce) {
+                                    String clientId) {
         IdToken idToken = new IdToken();
         idToken.setSubject(subjectName);
         idToken.setAudience(clientId);
@@ -92,9 +93,6 @@ public class SamlTokenConverter {
             }
         }
         
-        if (nonce != null) {
-            idToken.setNonce(nonce);
-        }
         if (issuer != null) {
             idToken.setIssuer(issuer);
         } else if (saml2Assertion != null) {
