@@ -154,50 +154,6 @@ public abstract class AbstractAttackTests {
         Assert.assertTrue("Unexpected content of RP page", bodyTextContent2.contains("Secure Test"));
     }
     
-    @org.junit.Test
-    public void testMaliciousRedirect() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
-        String user = "alice";
-        String password = "ecila";
-        
-        CookieManager cookieManager = new CookieManager();
-        
-        // 1. Login
-        HTTPTestUtils.loginWithCookieManager(url, user, password, getIdpHttpsPort(), cookieManager);
-        
-        // 2. Now we should have a cookie from the RP and IdP and should be able to do
-        // subsequent requests without authenticate again. Lets test this first.
-        WebClient webClient = new WebClient();
-        webClient.setCookieManager(cookieManager);
-        webClient.getOptions().setUseInsecureSSL(true);
-        HtmlPage rpPage = webClient.getPage(url);
-        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
-                          || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
-        
-        // 3. Now a malicious user sends the client a URL with a bad "wreply" address to the IdP
-        String maliciousURL = "https://www.apache.org/attack";
-        String idpUrl
-         = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation";
-        idpUrl += "?wa=wsignin1.0&wreply=" + URLEncoder.encode(maliciousURL, "UTF-8");
-        idpUrl += "&wtrealm=urn%3Aorg%3Aapache%3Acxf%3Afediz%3Afedizhelloworld";
-        idpUrl += "&whr=urn%3Aorg%3Aapache%3Acxf%3Afediz%3Aidp%3Arealm-A";
-        
-        final WebClient webClient2 = new WebClient();
-        webClient2.setCookieManager(cookieManager);
-        webClient2.getOptions().setUseInsecureSSL(true);
-        webClient2.getCredentialsProvider().setCredentials(
-            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
-            new UsernamePasswordCredentials(user, password));
-
-        webClient2.getOptions().setJavaScriptEnabled(false);
-        try {
-            webClient2.getPage(idpUrl);
-            Assert.fail("Failure expected on a bad wreply address");
-        } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
-        }
-    }
-    
     // Send an unknown wreq value
     @org.junit.Test
     public void testBadWReq() throws Exception {
