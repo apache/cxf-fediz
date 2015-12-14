@@ -19,8 +19,6 @@
 
 package org.apache.cxf.fediz.integrationtests;
 
-import java.net.URLEncoder;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -35,22 +33,18 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-
 import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.wss4j.dom.WSSConfig;
+import org.apache.wss4j.dom.engine.WSSConfig;
 import org.apache.xml.security.keys.KeyInfo;
 import org.apache.xml.security.signature.XMLSignature;
 import org.junit.Assert;
 import org.junit.Test;
 
-public abstract class AbstractTests {
+public abstract class AbstractTests extends AbstractAttackTests {
     
     static final String TEST_WREQ = 
         "<RequestSecurityToken xmlns=\"http://docs.oasis-open.org/ws-sx/ws-trust/200512\">"
@@ -488,18 +482,20 @@ public abstract class AbstractTests {
 
         Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
     }
-
-    @Test
-    public void testAliceModifiedSignature() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
-            + "/secure/fedservlet";
+    
+    @org.junit.Test
+    public void testSuccessfulInvokeOnIdP() throws Exception {
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
+        url += "wa=wsignin1.0";
+        url += "&whr=urn:org:apache:cxf:fediz:idp:realm-A";
+        url += "&wtrealm=urn:org:apache:cxf:fediz:fedizhelloworld";
+        String wreply = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
+        url += "&wreply=" + wreply;
+        
         String user = "alice";
         String password = "ecila";
         
-        // Get the initial token
-        CookieManager cookieManager = new CookieManager();
         final WebClient webClient = new WebClient();
-        webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);
         webClient.getCredentialsProvider().setCredentials(
             new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
@@ -509,21 +505,8 @@ public abstract class AbstractTests {
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
-
-        // Parse the form to get the token (wresult)
-        DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
-
-        for (DomElement result : results) {
-            if ("wresult".equals(result.getAttributeNS(null, "name"))) {
-                // Now modify the Signature
-                String value = result.getAttributeNS(null, "value");
-                value = value.replace("alice", "bob");
-                result.setAttributeNS(null, "value", value);
-            }
-        }
         
         // Invoke back on the RP
-        
         final HtmlForm form = idpPage.getFormByName("signinresponseform");
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
 
@@ -535,95 +518,6 @@ public abstract class AbstractTests {
             Assert.assertTrue(ex.getMessage().contains("401 Unauthorized")
                               || ex.getMessage().contains("401 Authentication Failed")
                               || ex.getMessage().contains("403 Forbidden"));
-        }
-    }
-    
-    @Test
-    public void testConcurrentRequests() throws Exception {
-        
-        String url1 = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
-        String url2 = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/test.html";
-        String user = "bob";
-        String password = "bob";
-        
-        // Get the initial token
-        CookieManager cookieManager = new CookieManager();
-        final WebClient webClient = new WebClient();
-        webClient.setCookieManager(cookieManager);
-        webClient.getOptions().setUseInsecureSSL(true);
-        webClient.getCredentialsProvider().setCredentials(
-            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
-            new UsernamePasswordCredentials(user, password));
-
-        webClient.getOptions().setJavaScriptEnabled(false);
-        final HtmlPage idpPage1 = webClient.getPage(url1);
-        final HtmlPage idpPage2 = webClient.getPage(url2);
-        webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage1.getTitleText());
-        Assert.assertEquals("IDP SignIn Response Form", idpPage2.getTitleText());
-        
-        // Invoke back on the page1 RP
-        final HtmlForm form = idpPage1.getFormByName("signinresponseform");
-        final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
-        final HtmlPage rpPage1 = button.click();
-        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage1.getTitleText())
-                          || "WS Federation Systests Spring Examples".equals(rpPage1.getTitleText()));
-        
-        String bodyTextContent1 = rpPage1.getBody().getTextContent();
-
-        Assert.assertTrue("Principal not " + user,
-                          bodyTextContent1.contains("userPrincipal=" + user));
-
-        // Invoke back on the page2 RP
-        final HtmlForm form2 = idpPage2.getFormByName("signinresponseform");
-        final HtmlSubmitInput button2 = form2.getInputByName("_eventId_submit");
-        final HtmlPage rpPage2 = button2.click();
-        String bodyTextContent2 = rpPage2.getBody().getTextContent();
-
-        Assert.assertTrue("Unexpected content of RP page", bodyTextContent2.contains("Secure Test"));
-    }
-    
-    @org.junit.Test
-    public void testMaliciousRedirect() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
-        String user = "alice";
-        String password = "ecila";
-        
-        CookieManager cookieManager = new CookieManager();
-        
-        // 1. Login
-        HTTPTestUtils.loginWithCookieManager(url, user, password, getIdpHttpsPort(), cookieManager);
-        
-        // 2. Now we should have a cookie from the RP and IdP and should be able to do
-        // subsequent requests without authenticate again. Lets test this first.
-        WebClient webClient = new WebClient();
-        webClient.setCookieManager(cookieManager);
-        webClient.getOptions().setUseInsecureSSL(true);
-        HtmlPage rpPage = webClient.getPage(url);
-        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
-                          || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
-        
-        // 3. Now a malicious user sends the client a URL with a bad "wreply" address to the IdP
-        String maliciousURL = "https://www.apache.org/attack";
-        String idpUrl
-         = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation";
-        idpUrl += "?wa=wsignin1.0&wreply=" + URLEncoder.encode(maliciousURL, "UTF-8");
-        idpUrl += "&wtrealm=urn%3Aorg%3Aapache%3Acxf%3Afediz%3Afedizhelloworld";
-        idpUrl += "&whr=urn%3Aorg%3Aapache%3Acxf%3Afediz%3Aidp%3Arealm-A";
-        
-        final WebClient webClient2 = new WebClient();
-        webClient2.setCookieManager(cookieManager);
-        webClient2.getOptions().setUseInsecureSSL(true);
-        webClient2.getCredentialsProvider().setCredentials(
-            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
-            new UsernamePasswordCredentials(user, password));
-
-        webClient2.getOptions().setJavaScriptEnabled(false);
-        try {
-            webClient2.getPage(idpUrl);
-            Assert.fail("Failure expected on a bad wreply address");
-        } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
         }
     }
     
