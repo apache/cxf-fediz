@@ -89,10 +89,7 @@ public final class StringUtils {
         if (list == null || list.size() == 0) {
             return true;
         }
-        if (list.size() == 1 && isEmpty(list.get(0))) {
-            return true;
-        }
-        return false;
+        return list.size() == 1 && isEmpty(list.get(0));
     }
 
     public static boolean isEqualUri(String uri1, String uri2) {
