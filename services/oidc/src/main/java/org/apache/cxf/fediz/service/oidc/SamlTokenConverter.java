@@ -53,11 +53,6 @@ public class SamlTokenConverter {
         
         Assertion saml2Assertion = getSaml2Assertion(samlToken);
         if (saml2Assertion != null) {
-            // Issuer
-            Issuer assertionIssuer = saml2Assertion.getIssuer();
-            if (assertionIssuer != null) {
-                idToken.setIssuer(assertionIssuer.getValue());
-            }
             // issueInstant
             DateTime issueInstant = saml2Assertion.getIssueInstant();
             if (issueInstant != null) {
