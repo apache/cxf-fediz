@@ -71,20 +71,14 @@ public class SAMLTokenValidator implements TokenValidator {
 
     @Override
     public boolean canHandleTokenType(String tokenType) {
-        if (WSConstants.WSS_SAML2_TOKEN_TYPE.equals(tokenType) || WSConstants.SAML2_NS.equals(tokenType)
-            || WSConstants.WSS_SAML_TOKEN_TYPE.equals(tokenType) || WSConstants.SAML_NS.equals(tokenType)) {
-            return true;
-        }
-        return false;
+        return WSConstants.WSS_SAML2_TOKEN_TYPE.equals(tokenType) || WSConstants.SAML2_NS.equals(tokenType)
+            || WSConstants.WSS_SAML_TOKEN_TYPE.equals(tokenType) || WSConstants.SAML_NS.equals(tokenType);
     }
 
     @Override
     public boolean canHandleToken(Element token) {
         String ns = token.getNamespaceURI();
-        if (WSConstants.SAML2_NS.equals(ns) || WSConstants.SAML_NS.equals(ns)) {
-            return true;
-        }
-        return false;
+        return WSConstants.SAML2_NS.equals(ns) || WSConstants.SAML_NS.equals(ns);
     }
     
     public TokenValidatorResponse validateAndProcessToken(TokenValidatorRequest request,

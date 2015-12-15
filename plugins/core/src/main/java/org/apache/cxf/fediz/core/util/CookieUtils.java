@@ -80,11 +80,7 @@ public final class CookieUtils  {
             return true;
         }
         
-        if (detectExpiredTokens && expiresAt > 0 && currentTime.after(new Date(expiresAt))) {
-            return true;
-        }
-        
-        return false;
+        return detectExpiredTokens && expiresAt > 0 && currentTime.after(new Date(expiresAt));
     }
     
 }

@@ -44,11 +44,7 @@ public class ApplicationIdpProtocolSupportValidator
     public boolean isValid(String object, ConstraintValidatorContext constraintContext) {
         
         List<String> protocols = applicationProtocolHandlers.getProtocols();
-        if (protocols.contains(object)) {
-            return true;
-        }
-        
-        return false;
+        return protocols.contains(object);
     }
 
     @Override

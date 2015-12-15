@@ -44,11 +44,7 @@ public class TrustedIdpProtocolSupportValidator implements ConstraintValidator<T
     public boolean isValid(String object, ConstraintValidatorContext constraintContext) {
         
         List<String> protocols = trustedIdpProtocolHandlers.getProtocols();
-        if (protocols.contains(object)) {
-            return true;
-        }
-        
-        return false;
+        return protocols.contains(object);
     }
 
     @Override
