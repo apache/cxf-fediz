@@ -28,8 +28,12 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNodeList;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
+
+import java.net.URLEncoder;
 
 import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.core.FederationConstants;
@@ -42,13 +46,13 @@ import org.apache.xml.security.signature.XMLSignature;
 import org.junit.Assert;
 import org.junit.Test;
 
-public abstract class AbstractTests extends AbstractAttackTests {
-    
-    static final String TEST_WREQ = 
+public abstract class AbstractTests {
+
+    static final String TEST_WREQ =
         "<RequestSecurityToken xmlns=\"http://docs.oasis-open.org/ws-sx/ws-trust/200512\">"
         + "<TokenType>http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV3.0</TokenType>"
         + "</RequestSecurityToken>";
-    
+
     static {
         WSSConfig.init();
     }
@@ -58,21 +62,21 @@ public abstract class AbstractTests extends AbstractAttackTests {
     }
 
     public abstract String getServletContextName();
-    
+
     public abstract String getIdpHttpsPort();
 
     public abstract String getRpHttpsPort();
 
     @Test
     public void testAlice() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
-        
-        final String bodyTextContent = 
+
+        final String bodyTextContent =
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
-        
+
         Assert.assertTrue("Principal not " + user,
                           bodyTextContent.contains("userPrincipal=" + user));
         Assert.assertTrue("User " + user + " does not have role Admin",
@@ -81,7 +85,7 @@ public abstract class AbstractTests extends AbstractAttackTests {
                           bodyTextContent.contains("role:Manager=false"));
         Assert.assertTrue("User " + user + " must have role User",
                           bodyTextContent.contains("role:User=true"));
-         
+
         String claim = ClaimTypes.FIRSTNAME.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
                           bodyTextContent.contains(claim + "=Alice"));
@@ -93,15 +97,15 @@ public abstract class AbstractTests extends AbstractAttackTests {
                           bodyTextContent.contains(claim + "=alice@realma.org"));
 
     }
-    
+
     @Test
     public void testAliceUser() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/user/fedservlet";
         String user = "alice";
         String password = "ecila";
-        
-        final String bodyTextContent = 
+
+        final String bodyTextContent =
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
 
         Assert.assertTrue("Principal not " + user,
@@ -113,14 +117,14 @@ public abstract class AbstractTests extends AbstractAttackTests {
         Assert.assertTrue("User " + user + " must have role User",
                           bodyTextContent.contains("role:User=true"));
     }
-    
+
     @Test
     public void testAliceAdminNoAccess() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/admin/fedservlet";
         String user = "alice";
         String password = "ecila";
-        
+
         try {
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
             Assert.fail("Exception expected");
@@ -128,14 +132,14 @@ public abstract class AbstractTests extends AbstractAttackTests {
             Assert.assertEquals(ex.getStatusCode(), 403);
         }
     }
-    
+
     @Test
     public void testAliceManagerNoAccess() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/manager/fedservlet";
         String user = "alice";
         String password = "ecila";
-        
+
         try {
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
             Assert.fail("Exception expected");
@@ -146,11 +150,11 @@ public abstract class AbstractTests extends AbstractAttackTests {
 
     @Test
     public void testAliceWrongPasswordNoAccess() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/fedservlet";
         String user = "alice";
         String password = "alice";
-        
+
         try {
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
             Assert.fail("Exception expected");
@@ -161,12 +165,12 @@ public abstract class AbstractTests extends AbstractAttackTests {
 
     @Test
     public void testBob() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/fedservlet";
         String user = "bob";
         String password = "bob";
-        
-        final String bodyTextContent = 
+
+        final String bodyTextContent =
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
 
         Assert.assertTrue("Principal not " + user,
@@ -188,15 +192,15 @@ public abstract class AbstractTests extends AbstractAttackTests {
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'bobwindsor@realma.org'",
                           bodyTextContent.contains(claim + "=bobwindsor@realma.org"));
     }
-    
+
     @Test
     public void testBobUser() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/user/fedservlet";
         String user = "bob";
         String password = "bob";
-        
-        final String bodyTextContent = 
+
+        final String bodyTextContent =
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
 
         Assert.assertTrue("Principal not " + user,
@@ -208,15 +212,15 @@ public abstract class AbstractTests extends AbstractAttackTests {
         Assert.assertTrue("User " + user + " must have role User",
                           bodyTextContent.contains("role:User=true"));
     }
-    
+
     @Test
     public void testBobManager() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/manager/fedservlet";
         String user = "bob";
         String password = "bob";
-        
-        final String bodyTextContent = 
+
+        final String bodyTextContent =
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
 
         Assert.assertTrue("Principal not " + user,
@@ -228,15 +232,15 @@ public abstract class AbstractTests extends AbstractAttackTests {
         Assert.assertTrue("User " + user + " must have role User",
                           bodyTextContent.contains("role:User=true"));
     }
-    
+
     @Test
     public void testBobAdmin() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/admin/fedservlet";
         String user = "bob";
         String password = "bob";
-        
-        final String bodyTextContent = 
+
+        final String bodyTextContent =
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
 
         Assert.assertTrue("Principal not " + user,
@@ -251,12 +255,12 @@ public abstract class AbstractTests extends AbstractAttackTests {
 
     @Test
     public void testTed() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/fedservlet";
         String user = "ted";
         String password = "det";
-        
-        final String bodyTextContent = 
+
+        final String bodyTextContent =
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
 
         Assert.assertTrue("Principal not " + user,
@@ -278,14 +282,14 @@ public abstract class AbstractTests extends AbstractAttackTests {
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'tcooper@realma.org'",
                           bodyTextContent.contains(claim + "=tcooper@realma.org"));
     }
-    
+
     @Test
     public void testTedUserNoAccess() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/user/fedservlet";
         String user = "ted";
         String password = "det";
-        
+
         try {
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
             Assert.fail("Exception expected");
@@ -296,11 +300,11 @@ public abstract class AbstractTests extends AbstractAttackTests {
 
     @Test
     public void testTedAdminNoAccess() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/admin/fedservlet";
         String user = "ted";
         String password = "det";
-        
+
         try {
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
             Assert.fail("Exception expected");
@@ -308,14 +312,14 @@ public abstract class AbstractTests extends AbstractAttackTests {
             Assert.assertEquals(ex.getStatusCode(), 403);
         }
     }
-    
+
     @Test
     public void testTedManagerNoAccess() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/manager/fedservlet";
         String user = "ted";
         String password = "det";
-        
+
         try {
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
             Assert.fail("Exception expected");
@@ -326,7 +330,7 @@ public abstract class AbstractTests extends AbstractAttackTests {
 
     @Test
     public void testRPMetadata() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() 
+        String url = "https://localhost:" + getRpHttpsPort()
             + "/" + getServletContextName() + "/FederationMetadata/2007-06/FederationMetadata.xml";
 
         final WebClient webClient = new WebClient();
@@ -337,105 +341,39 @@ public abstract class AbstractTests extends AbstractAttackTests {
         final XmlPage rpPage = webClient.getPage(url);
         final String xmlContent = rpPage.asXml();
         Assert.assertTrue(xmlContent.startsWith("<md:EntityDescriptor"));
-        
+
         // Now validate the Signature
         Document doc = rpPage.getXmlDocument();
-        
+
         doc.getDocumentElement().setIdAttributeNS(null, "ID", true);
-        
-        Node signatureNode = 
+
+        Node signatureNode =
             DOMUtils.getChild(doc.getDocumentElement(), "Signature");
         Assert.assertNotNull(signatureNode);
-        
+
         XMLSignature signature = new XMLSignature((Element)signatureNode, "");
         KeyInfo ki = signature.getKeyInfo();
         Assert.assertNotNull(ki);
         Assert.assertNotNull(ki.getX509Certificate());
 
         Assert.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
-        
+
         webClient.close();
     }
-    
-    @Test
-    public void testIdPMetadata() throws Exception {
-        String url = "https://localhost:" + getIdpHttpsPort() 
-            + "/fediz-idp/FederationMetadata/2007-06/FederationMetadata.xml";
 
-        final WebClient webClient = new WebClient();
-        webClient.getOptions().setUseInsecureSSL(true);
-        webClient.getOptions().setSSLClientCertificate(
-            this.getClass().getClassLoader().getResource("client.jks"), "storepass", "jks");
-
-        final XmlPage rpPage = webClient.getPage(url);
-        final String xmlContent = rpPage.asXml();
-        Assert.assertTrue(xmlContent.startsWith("<md:EntityDescriptor"));
-        
-        // Now validate the Signature
-        Document doc = rpPage.getXmlDocument();
-        
-        doc.getDocumentElement().setIdAttributeNS(null, "ID", true);
-        
-        Node signatureNode = 
-            DOMUtils.getChild(doc.getDocumentElement(), "Signature");
-        Assert.assertNotNull(signatureNode);
-        
-        XMLSignature signature = new XMLSignature((Element)signatureNode, "");
-        KeyInfo ki = signature.getKeyInfo();
-        Assert.assertNotNull(ki);
-        Assert.assertNotNull(ki.getX509Certificate());
-
-        Assert.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
-        
-        webClient.close();
-    }
-    
-    @Test
-    public void testIdPServiceMetadata() throws Exception {
-        String url = "https://localhost:" + getIdpHttpsPort() 
-            + "/fediz-idp/metadata/urn:org:apache:cxf:fediz:idp:realm-B";
-
-        final WebClient webClient = new WebClient();
-        webClient.getOptions().setUseInsecureSSL(true);
-        webClient.getOptions().setSSLClientCertificate(
-            this.getClass().getClassLoader().getResource("client.jks"), "storepass", "jks");
-
-        final XmlPage rpPage = webClient.getPage(url);
-        final String xmlContent = rpPage.asXml();
-        Assert.assertTrue(xmlContent.startsWith("<md:EntityDescriptor"));
-        
-        // Now validate the Signature
-        Document doc = rpPage.getXmlDocument();
-        
-        doc.getDocumentElement().setIdAttributeNS(null, "ID", true);
-        
-        Node signatureNode = 
-            DOMUtils.getChild(doc.getDocumentElement(), "Signature");
-        Assert.assertNotNull(signatureNode);
-        
-        XMLSignature signature = new XMLSignature((Element)signatureNode, "");
-        KeyInfo ki = signature.getKeyInfo();
-        Assert.assertNotNull(ki);
-        Assert.assertNotNull(ki.getX509Certificate());
-
-        Assert.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
-        
-        webClient.close();
-    }
-    
     @Test
     public void testRPLogout() throws Exception {
 
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
 
         CookieManager cookieManager = new CookieManager();
-        
+
         // 1. Login
         HTTPTestUtils.loginWithCookieManager(url, user, password, getIdpHttpsPort(), cookieManager);
-        
+
         // 2. Now we should have a cookie from the RP and IdP and should be able to do
         // subsequent requests without authenticate again. Lets test this first.
         WebClient webClient = new WebClient();
@@ -446,14 +384,14 @@ public abstract class AbstractTests extends AbstractAttackTests {
                           || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
 
         // 3. now we logout from RP
-        String rpLogoutUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+        String rpLogoutUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/logout";
 
         HTTPTestUtils.logout(rpLogoutUrl, cookieManager);
 
         // 4. now we try to access the RP and idp without authentication but with the existing cookies
         // to see if we are really logged out
-        String rpUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+        String rpUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/fedservlet";
 
         webClient.close();
@@ -464,23 +402,23 @@ public abstract class AbstractTests extends AbstractAttackTests {
         final HtmlPage idpPage = webClient.getPage(rpUrl);
 
         Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
-        
+
         webClient.close();
     }
-    
+
     @Test
     public void testIdPLogout() throws Exception {
 
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
 
         CookieManager cookieManager = new CookieManager();
-        
+
         // 1. Login
         HTTPTestUtils.loginWithCookieManager(url, user, password, getIdpHttpsPort(), cookieManager);
-       
+
         // 2. Now we should have a cookie from the RP and IdP and should be able to do
         // subsequent requests without authenticate again. Lets test this first.
         WebClient webClient = new WebClient();
@@ -489,7 +427,7 @@ public abstract class AbstractTests extends AbstractAttackTests {
         final HtmlPage rpPage = webClient.getPage(url);
         Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
                           || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
-        
+
         // 3. now we logout from IdP
         String idpLogoutUrl = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?wa="
             + FederationConstants.ACTION_SIGNOUT; //todo logout url on idp?!?
@@ -498,7 +436,7 @@ public abstract class AbstractTests extends AbstractAttackTests {
 
         // 4. now we try to access the RP and idp without authentication but with the existing cookies
         // to see if we are really logged out
-        String rpUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+        String rpUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/fedservlet";
 
         webClient.close();
@@ -509,23 +447,23 @@ public abstract class AbstractTests extends AbstractAttackTests {
         final HtmlPage idpPage = webClient.getPage(rpUrl);
 
         Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
-        
+
         webClient.close();
     }
-    
+
     @Test
     public void testIdPLogoutCleanup() throws Exception {
 
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
 
         CookieManager cookieManager = new CookieManager();
-        
+
         // 1. Login
         HTTPTestUtils.loginWithCookieManager(url, user, password, getIdpHttpsPort(), cookieManager);
-       
+
         // 2. Now we should have a cookie from the RP and IdP and should be able to do
         // subsequent requests without authenticate again. Lets test this first.
         WebClient webClient = new WebClient();
@@ -534,7 +472,7 @@ public abstract class AbstractTests extends AbstractAttackTests {
         final HtmlPage rpPage = webClient.getPage(url);
         Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
                           || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
-        
+
         // 3. now we logout from IdP
         String idpLogoutUrl = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?wa="
             + FederationConstants.ACTION_SIGNOUT_CLEANUP;
@@ -543,7 +481,7 @@ public abstract class AbstractTests extends AbstractAttackTests {
 
         // 4. now we try to access the RP and idp without authentication but with the existing cookies
         // to see if we are really logged out
-        String rpUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+        String rpUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/fedservlet";
 
         webClient.close();
@@ -554,23 +492,21 @@ public abstract class AbstractTests extends AbstractAttackTests {
         final HtmlPage idpPage = webClient.getPage(rpUrl);
 
         Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
-        
+
         webClient.close();
     }
-    
-    @org.junit.Test
-    public void testSuccessfulInvokeOnIdP() throws Exception {
-        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
-        url += "wa=wsignin1.0";
-        url += "&whr=urn:org:apache:cxf:fediz:idp:realm-A";
-        url += "&wtrealm=urn:org:apache:cxf:fediz:fedizhelloworld";
-        String wreply = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
-        url += "&wreply=" + wreply;
-        
+
+    @Test
+    public void testAliceModifiedSignature() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
+            + "/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
-        
+
+        // Get the initial token
+        CookieManager cookieManager = new CookieManager();
         final WebClient webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);
         webClient.getCredentialsProvider().setCredentials(
             new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
@@ -580,21 +516,127 @@ public abstract class AbstractTests extends AbstractAttackTests {
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
-        
+
         // Parse the form to get the token (wresult)
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
 
-        String wresult = null;
         for (DomElement result : results) {
             if ("wresult".equals(result.getAttributeNS(null, "name"))) {
-                wresult = result.getAttributeNS(null, "value");
-                break;
+                // Now modify the Signature
+                String value = result.getAttributeNS(null, "value");
+                value = value.replace("alice", "bob");
+                result.setAttributeNS(null, "value", value);
             }
         }
-        
-        Assert.assertNotNull(wresult);
-        
+
+        // Invoke back on the RP
+
+        final HtmlForm form = idpPage.getFormByName("signinresponseform");
+        final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
+
+        try {
+            button.click();
+            Assert.fail("Failure expected on a modified signature");
+        } catch (FailingHttpStatusCodeException ex) {
+            // expected
+            Assert.assertTrue(ex.getMessage().contains("401 Unauthorized")
+                              || ex.getMessage().contains("401 Authentication Failed")
+                              || ex.getMessage().contains("403 Forbidden"));
+        }
+
         webClient.close();
     }
-    
+
+    @Test
+    public void testConcurrentRequests() throws Exception {
+
+        String url1 = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
+        String url2 = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/test.html";
+        String user = "bob";
+        String password = "bob";
+
+        // Get the initial token
+        CookieManager cookieManager = new CookieManager();
+        final WebClient webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        final HtmlPage idpPage1 = webClient.getPage(url1);
+        final HtmlPage idpPage2 = webClient.getPage(url2);
+        webClient.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage1.getTitleText());
+        Assert.assertEquals("IDP SignIn Response Form", idpPage2.getTitleText());
+
+        // Invoke back on the page1 RP
+        final HtmlForm form = idpPage1.getFormByName("signinresponseform");
+        final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
+        final HtmlPage rpPage1 = button.click();
+        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage1.getTitleText())
+                          || "WS Federation Systests Spring Examples".equals(rpPage1.getTitleText()));
+
+        String bodyTextContent1 = rpPage1.getBody().getTextContent();
+
+        Assert.assertTrue("Principal not " + user,
+                          bodyTextContent1.contains("userPrincipal=" + user));
+
+        // Invoke back on the page2 RP
+        final HtmlForm form2 = idpPage2.getFormByName("signinresponseform");
+        final HtmlSubmitInput button2 = form2.getInputByName("_eventId_submit");
+        final HtmlPage rpPage2 = button2.click();
+        String bodyTextContent2 = rpPage2.getBody().getTextContent();
+
+        Assert.assertTrue("Unexpected content of RP page", bodyTextContent2.contains("Secure Test"));
+
+        webClient.close();
+    }
+
+    @org.junit.Test
+    public void testMaliciousRedirect() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
+        String user = "alice";
+        String password = "ecila";
+
+        CookieManager cookieManager = new CookieManager();
+
+        // 1. Login
+        HTTPTestUtils.loginWithCookieManager(url, user, password, getIdpHttpsPort(), cookieManager);
+
+        // 2. Now we should have a cookie from the RP and IdP and should be able to do
+        // subsequent requests without authenticate again. Lets test this first.
+        WebClient webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        HtmlPage rpPage = webClient.getPage(url);
+        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
+                          || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
+
+        // 3. Now a malicious user sends the client a URL with a bad "wreply" address to the IdP
+        String maliciousURL = "https://www.apache.org/attack";
+        String idpUrl
+         = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation";
+        idpUrl += "?wa=wsignin1.0&wreply=" + URLEncoder.encode(maliciousURL, "UTF-8");
+        idpUrl += "&wtrealm=urn%3Aorg%3Aapache%3Acxf%3Afediz%3Afedizhelloworld";
+        idpUrl += "&whr=urn%3Aorg%3Aapache%3Acxf%3Afediz%3Aidp%3Arealm-A";
+        webClient.close();
+
+        final WebClient webClient2 = new WebClient();
+        webClient2.setCookieManager(cookieManager);
+        webClient2.getOptions().setUseInsecureSSL(true);
+        webClient2.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient2.getOptions().setJavaScriptEnabled(false);
+        try {
+            webClient2.getPage(idpUrl);
+            Assert.fail("Failure expected on a bad wreply address");
+        } catch (FailingHttpStatusCodeException ex) {
+            Assert.assertEquals(ex.getStatusCode(), 400);
+        }
+        webClient2.close();
+    }
 }
