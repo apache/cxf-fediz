@@ -140,6 +140,27 @@
         <property name="optional" value="false" />
     </bean>
     
+    <bean class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationClaimEntity">
+        <property name="application" ref="srv-oidc" />
+        <property name="claim" ref="claim_role" />
+        <property name="optional" value="false" />
+    </bean>
+    <bean class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationClaimEntity">
+        <property name="application" ref="srv-oidc" />
+        <property name="claim" ref="claim_givenname" />
+        <property name="optional" value="false" />
+    </bean>
+    <bean class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationClaimEntity">
+        <property name="application" ref="srv-oidc" />
+        <property name="claim" ref="claim_surname" />
+        <property name="optional" value="false" />
+    </bean>
+    <bean class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationClaimEntity">
+        <property name="application" ref="srv-oidc" />
+        <property name="claim" ref="claim_email" />
+        <property name="optional" value="false" />
+    </bean>
+    
     <bean id="claim_role"
         class="org.apache.cxf.fediz.service.idp.service.jpa.ClaimEntity">
         <property name="claimType"
