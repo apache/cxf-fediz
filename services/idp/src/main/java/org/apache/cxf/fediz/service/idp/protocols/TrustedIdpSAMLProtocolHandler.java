@@ -394,7 +394,7 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
         try {
             SAMLProtocolResponseValidator protocolValidator = new SAMLProtocolResponseValidator();
             protocolValidator.setKeyInfoMustBeAvailable(
-                isPropertyConfigured(trustedIdp, REQUIRE_KNOWN_ISSUER, true));
+                isPropertyConfigured(trustedIdp, REQUIRE_KEYINFO, true));
             protocolValidator.validateSamlResponse(samlResponse, crypto, null);
         } catch (WSSecurityException ex) {
             LOG.debug(ex.getMessage(), ex);
