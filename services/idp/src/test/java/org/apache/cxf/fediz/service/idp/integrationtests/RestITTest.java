@@ -119,7 +119,7 @@ public class RestITTest {
             Assert.assertEquals("Number of TokenTypesOffered doesn't match",
                                 2, idp.getTokenTypesOffered().size());
             Assert.assertEquals("Number of applications doesn't match",
-                                2, idp.getApplications().size());
+                                1, idp.getApplications().size());
             Assert.assertEquals("Number of trusted IDPs doesn't match",
                                 1, idp.getTrustedIdps().size());
             Assert.assertEquals("Number of claims doesn't match",
@@ -136,7 +136,7 @@ public class RestITTest {
             Assert.assertEquals("ServiceDisplayName doesn't match",
                                 "REALM B", idp.getServiceDisplayName());
             Assert.assertEquals("IdpUrl doesn't match",
-                                new URL("https://localhost:12443/fediz-idp-remote/federation"), idp.getIdpUrl());
+                                new URL("https://localhost:12443/fediz-idp/federation"), idp.getIdpUrl());
             Assert.assertEquals("StsUrl doesn't match",
                                 new URL("https://localhost:12443/fediz-idp-sts/REALMB"), idp.getStsUrl());
             Assert.assertEquals("Uri doesn't match",
