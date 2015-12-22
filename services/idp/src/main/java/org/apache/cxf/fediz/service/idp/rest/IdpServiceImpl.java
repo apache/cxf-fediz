@@ -75,6 +75,7 @@ public class IdpServiceImpl implements IdpService {
     public Idp getIdp(String realm, List<String> expand) {
         Idp idp = idpDAO.getIdp(realm, expand);
         if (idp == null) {
+            LOG.warn("IdP not found for realm {}", realm);
             throw new NotFoundException();
         } else {
             return idp;
