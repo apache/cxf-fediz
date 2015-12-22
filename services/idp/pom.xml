@@ -471,6 +471,7 @@
             </activation>
             <properties>
                 <jpa.url>jdbc:hsqldb:target/db/realma/myDB;shutdown=true</jpa.url>
+                <realm>realm-a</realm>
             </properties>
             <build>
                 <filters>
