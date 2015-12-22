@@ -345,8 +345,6 @@ public class IdpTest {
         } catch (FailingHttpStatusCodeException ex) {
             Assert.assertEquals(ex.getStatusCode(), 400);
         }
-
-        webClient.close();
     }
     
     // Send an unknown wa value
@@ -375,8 +373,6 @@ public class IdpTest {
         } catch (FailingHttpStatusCodeException ex) {
             Assert.assertEquals(ex.getStatusCode(), 400);
         }
-
-        webClient.close();
     }
     
     // Send an unknown whr value
@@ -405,8 +401,6 @@ public class IdpTest {
         } catch (FailingHttpStatusCodeException ex) {
             Assert.assertEquals(ex.getStatusCode(), 500);
         }
-
-        webClient.close();
     }
     
     // Send an unknown wtrealm value
@@ -435,8 +429,6 @@ public class IdpTest {
         } catch (FailingHttpStatusCodeException ex) {
             Assert.assertEquals(ex.getStatusCode(), 400);
         }
-
-        webClient.close();
     }
     
     // Send an malformed wreply value
@@ -465,7 +457,5 @@ public class IdpTest {
         } catch (FailingHttpStatusCodeException ex) {
             Assert.assertEquals(ex.getStatusCode(), 400);
         }
-
-        webClient.close();
     }
 }
