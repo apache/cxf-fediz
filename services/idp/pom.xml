@@ -430,6 +430,7 @@
                             <skip>false</skip>
                             <systemPropertyVariables>
                                 <idp.https.port>${idp.https.port}</idp.https.port>
+                                <realm>${realm}</realm>
                                 <catalina.base>target</catalina.base>
                             </systemPropertyVariables>
                             <includes>
@@ -483,6 +484,7 @@
                 <jpa.url>jdbc:hsqldb:target/db/realma/myDB;shutdown=true</jpa.url>
                 <idp.https.port>9443</idp.https.port>
                 <idp.http.port>9080</idp.http.port>
+                <realm>realm-a</realm>
             </properties>
             <build>
                 <filters>
@@ -510,6 +512,7 @@
                 <jpa.url>jdbc:hsqldb:target/db/realmb/myDB;shutdown=true</jpa.url>
                 <idp.https.port>12346</idp.https.port>
                 <idp.http.port>12345</idp.http.port>
+                <realm>realm-b</realm>
             </properties>
             <build>
                 <filters>
