@@ -143,7 +143,7 @@ public class ClientRegistrationService {
     }
 
     public void init() {
-        for (Client c : manager.getClients()) {
+        for (Client c : manager.getClients(null)) {
             String userName = c.getResourceOwnerSubject().getLogin();
             getClientRegistrations(userName).add(c);
         }
