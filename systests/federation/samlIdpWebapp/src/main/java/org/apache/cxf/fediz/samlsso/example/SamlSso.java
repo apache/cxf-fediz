@@ -23,24 +23,34 @@ package org.apache.cxf.fediz.samlsso.example;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.Collections;
+import java.util.zip.DataFormatException;
 
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.stream.XMLStreamException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
+import org.apache.cxf.common.util.Base64Exception;
 import org.apache.cxf.common.util.Base64Utility;
+import org.apache.cxf.helpers.IOUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.rs.security.saml.DeflateEncoderDecoder;
 import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.crypto.CryptoFactory;
+import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.OpenSAMLUtil;
 import org.apache.wss4j.common.saml.SAMLCallback;
 import org.apache.wss4j.common.saml.SAMLUtil;
@@ -72,17 +82,18 @@ public class SamlSso {
         docBuilderFactory.setNamespaceAware(true);
     }
     
+    @POST
+    public javax.ws.rs.core.Response login(@FormParam("SAMLRequest") String samlRequest,
+        @FormParam("RelayState") String relayState) throws Exception {
+        
+        return login(samlRequest, relayState, "POST");
+    }
+    
     @GET
     public javax.ws.rs.core.Response login(@QueryParam("SAMLRequest") String samlRequest,
-            @QueryParam("RelayState") String relayState) throws Exception {
+            @QueryParam("RelayState") String relayState, @QueryParam("binding") String binding) throws Exception {
         
-        byte[] deflatedToken = Base64Utility.decode(samlRequest);
-        InputStream tokenStream = new DeflateEncoderDecoder().inflateToken(deflatedToken);
-        
-        Document responseDoc = StaxUtils.read(new InputStreamReader(tokenStream, "UTF-8"));
-        AuthnRequest request = 
-            (AuthnRequest)OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
-        System.out.println(DOM2Writer.nodeToString(responseDoc));
+        AuthnRequest request = extractRequest(samlRequest);
 
         String racs = request.getAssertionConsumerServiceURL();
         String requestIssuer = request.getIssuer().getValue();
@@ -91,20 +102,19 @@ public class SamlSso {
         Element response = createResponse(request.getID(), racs, requestIssuer);
         String responseStr = encodeResponse(response);
         
-        // Perform Redirect to RACS
-        UriBuilder ub = UriBuilder.fromUri(racs);
-        ub.queryParam("SAMLResponse", responseStr);
-        ub.queryParam("RelayState", relayState);
-        
-        return javax.ws.rs.core.Response.seeOther(ub.build()).build();
+        if ("REDIRECT".equals(binding)) {
+            return redirectResponse(relayState, racs, responseStr);
+        } else {
+            return postBindingResponse(relayState, racs, responseStr);
+        }
     }
-    
+
     @Context 
     public void setMessageContext(MessageContext mc) {
         this.messageContext = mc;
     }
-
-    private Element createResponse(String requestID, String racs, String requestIssuer) throws Exception {
+    
+    protected Element createResponse(String requestID, String racs, String requestIssuer) throws Exception {
         DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
         Document doc = docBuilder.newDocument();
         
@@ -153,8 +163,8 @@ public class SamlSso {
         
         return policyElement;
     }
-    
-    private String encodeResponse(Element response) throws IOException {
+
+    protected String encodeResponse(Element response) throws IOException {
         String responseMessage = DOM2Writer.nodeToString(response);
         System.out.println("RESP: " + responseMessage);
 
@@ -162,6 +172,41 @@ public class SamlSso {
         byte[] deflatedBytes = encoder.deflateToken(responseMessage.getBytes("UTF-8"));
 
         return Base64Utility.encode(deflatedBytes);
+    }
+    
+    protected AuthnRequest extractRequest(String samlRequest) throws Base64Exception, DataFormatException,
+        XMLStreamException, UnsupportedEncodingException, WSSecurityException {
+        byte[] deflatedToken = Base64Utility.decode(samlRequest);
+        InputStream tokenStream = new DeflateEncoderDecoder().inflateToken(deflatedToken);
+        
+        Document responseDoc = StaxUtils.read(new InputStreamReader(tokenStream, "UTF-8"));
+        AuthnRequest request = 
+            (AuthnRequest)OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
+        System.out.println(DOM2Writer.nodeToString(responseDoc));
+        return request;
+    }
+
+    protected javax.ws.rs.core.Response postBindingResponse(String relayState, String racs, String responseStr)
+        throws IOException {
+        InputStream inputStream = this.getClass().getResourceAsStream("/TemplateSAMLResponse.xml");
+        String responseTemplate = IOUtils.toString(inputStream, "UTF-8");
+        inputStream.close();        
+        
+        // Perform Redirect to RACS
+        responseTemplate = responseTemplate.replace("%RESPONSE_URL%", racs);
+        responseTemplate = responseTemplate.replace("%SAMLResponse%", responseStr);
+        responseTemplate = responseTemplate.replace("%RelayState%", relayState);
+        
+        return javax.ws.rs.core.Response.ok(responseTemplate).type(MediaType.TEXT_HTML).build();
+    }
+    
+    protected javax.ws.rs.core.Response redirectResponse(String relayState, String racs, String responseStr) {
+        // Perform Redirect to RACS
+        UriBuilder ub = UriBuilder.fromUri(racs);
+        ub.queryParam("SAMLResponse", responseStr);
+        ub.queryParam("RelayState", relayState);
+        
+        return javax.ws.rs.core.Response.seeOther(ub.build()).build();
     }
 
 }

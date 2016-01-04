@@ -178,6 +178,14 @@
                                     <overWrite>true</overWrite>
                                     <outputDirectory>target/tomcat/rp/webapps/simpleWebapp</outputDirectory>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.cxf.fediz.systests.webapps</groupId>
+                                    <artifactId>fediz-systests-webapps-simple</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>war</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target/tomcat/rp/webapps/simpleWebapp2</outputDirectory>
+                                </artifactItem>
                             </artifactItems>
                             <outputAbsoluteArtifactFilename>true</outputAbsoluteArtifactFilename>
                             <overWriteSnapshots>true</overWriteSnapshots>

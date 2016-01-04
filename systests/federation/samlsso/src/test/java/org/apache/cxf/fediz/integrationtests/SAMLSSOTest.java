@@ -186,6 +186,8 @@ public class SAMLSSOTest {
                              + "test-classes" + File.separator + "fediz_config_saml_sso.xml");
             cxt.getPipeline().addValve(fa);
             
+            cxt = rpServer.addWebapp("/fedizhelloworld-post-binding", "simpleWebapp2");
+            cxt.getPipeline().addValve(fa);
             
             rpServer.start();
         } catch (Exception e) {
@@ -241,7 +243,38 @@ public class SAMLSSOTest {
         String password = "ECILA";
         
         final String bodyTextContent = 
-            login(url, user, password, idpSamlSSOHttpsPort, idpHttpsPort);
+            login(url, user, password, idpSamlSSOHttpsPort, idpHttpsPort, false);
+        
+        Assert.assertTrue("Principal not alice",
+                          bodyTextContent.contains("userPrincipal=alice"));
+        Assert.assertTrue("User " + user + " does not have role Admin",
+                          bodyTextContent.contains("role:Admin=false"));
+        Assert.assertTrue("User " + user + " does not have role Manager",
+                          bodyTextContent.contains("role:Manager=false"));
+        Assert.assertTrue("User " + user + " must have role User",
+                          bodyTextContent.contains("role:User=true"));
+
+        String claim = ClaimTypes.FIRSTNAME.toString();
+        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
+                          bodyTextContent.contains(claim + "=Alice"));
+        claim = ClaimTypes.LASTNAME.toString();
+        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
+                          bodyTextContent.contains(claim + "=Smith"));
+        claim = ClaimTypes.EMAILADDRESS.toString();
+        Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
+                          bodyTextContent.contains(claim + "=alice@realma.org"));
+    }
+    
+    @org.junit.Test
+    public void testSAMLSSOPostBinding() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld-post-binding/secure/fedservlet";
+        // System.out.println("URL: " + url);
+        // Thread.sleep(60 * 2 * 1000);
+        String user = "ALICE";  // realm b credentials
+        String password = "ECILA";
+        
+        final String bodyTextContent = 
+            login(url, user, password, idpSamlSSOHttpsPort, idpHttpsPort, true);
         
         Assert.assertTrue("Principal not alice",
                           bodyTextContent.contains("userPrincipal=alice"));
@@ -264,7 +297,7 @@ public class SAMLSSOTest {
     }
     
     private static String login(String url, String user, String password, 
-                                String idpPort, String rpIdpPort) throws IOException {
+                                String idpPort, String rpIdpPort, boolean postBinding) throws IOException {
         //
         // Access the RP + get redirected to the IdP for "realm a". Then get redirected to the IdP for
         // "realm b".
@@ -278,8 +311,15 @@ public class SAMLSSOTest {
             new UsernamePasswordCredentials(user, password));
 
         webClient.getOptions().setJavaScriptEnabled(false);
-        final HtmlPage idpPage = webClient.getPage(url);
-        webClient.getOptions().setJavaScriptEnabled(true);
+        HtmlPage idpPage = webClient.getPage(url);
+        
+        if (postBinding) {
+            Assert.assertEquals("SAML IDP Response Form", idpPage.getTitleText());
+            final HtmlForm form = idpPage.getFormByName("signinresponseform");
+            final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
+            idpPage = button.click();
+        }
+        
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // Now redirect back to the RP
