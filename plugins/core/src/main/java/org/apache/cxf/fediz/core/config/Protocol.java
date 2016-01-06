@@ -170,18 +170,28 @@ public abstract class Protocol {
         if (cbt.getType() == null || cbt.getType().equals(ArgumentType.STRING)) {
             return new String(cbt.getValue());
         } else if (cbt.getType().equals(ArgumentType.CLASS)) {
-            try {
-                if (getClassloader() == null) {
-                    return ClassLoaderUtils.loadClass(cbt.getValue(), this.getClass()).newInstance();
-                } else {
-                    return getClassloader().loadClass(cbt.getValue()).newInstance();
+            List<Object> handler = new ArrayList<Object>();
+            String[] cbtHandler = cbt.getValue().split(",");
+            for (String cbh : cbtHandler) {
+                try {
+                    if (getClassloader() == null) {
+                        handler.add(ClassLoaderUtils.loadClass(cbh, this.getClass()).newInstance());
+                    } else {
+                        handler.add(getClassloader().loadClass(cbh).newInstance());
+                    }
+                } catch (Exception e) {
+                    LOG.error("Failed to create instance of " + cbh, e);
+                    //throw new IllegalStateException("Failed to create instance of " + cbt.getValue());
                 }
-            } catch (Exception e) {
-                LOG.error("Failed to create instance of " + cbt.getValue(), e);
-                throw new IllegalStateException("Failed to create instance of " + cbt.getValue());
-            }            
+            }
+            if (handler.size() == 1) {
+                // Backward compatible return handler directly if only one is configured
+                return handler.get(0);
+            } else {
+                return handler;
+            }
         } else {
-            LOG.error("Only String and Class are supported for '" + name + "'");
+            LOG.error("Only String and Class are supported for '{}'", name);
             throw new IllegalStateException("Only String and Class are supported for '" + name + "'");
         }
     }

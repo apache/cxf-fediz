@@ -548,26 +548,49 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         return freshness;
     }
 
-    private String resolveHomeRealm(HttpServletRequest request, FedizContext config) throws IOException,
-        UnsupportedCallbackException {
+    private String resolveHomeRealm(HttpServletRequest request, FedizContext config) {
         // Check if whr parameter was provided in request
         String homeRealm = request.getParameter(FederationConstants.PARAM_HOME_REALM);
-        
-        if (homeRealm == null || homeRealm.isEmpty()) {
+
+        if (homeRealm != null && !homeRealm.isEmpty()) {
+            LOG.debug("HomeRealm was defined as 'whr' request parameter and will be used for IDP redirect");
+        } else {
             // Check if home realm is set in configuration
             Object homeRealmObj = ((FederationProtocol)config.getProtocol()).getHomeRealm();
             if (homeRealmObj != null) {
                 if (homeRealmObj instanceof String) {
                     homeRealm = (String)homeRealmObj;
                 } else if (homeRealmObj instanceof CallbackHandler) {
-                    CallbackHandler hrCB = (CallbackHandler)homeRealmObj;
-                    HomeRealmCallback callback = new HomeRealmCallback(request);
-                    hrCB.handle(new Callback[] {callback});
-                    homeRealm = callback.getHomeRealm();
+                    homeRealm = resolveHomeRealm(homeRealmObj, request);
+                } else if (homeRealmObj instanceof List<?>) {
+                    for (Object cbh : (List<?>)homeRealmObj) {
+                        homeRealm = resolveHomeRealm(cbh, request);
+                        if (homeRealm != null) {
+                            LOG.debug("Home realm was found by {}", cbh.getClass());
+                            break;
+                        }
+                    }
                 }
             }
         }
+        LOG.debug("Users home realm will be set to {}", homeRealm);
         return homeRealm;
+    }
+    
+    private String resolveHomeRealm(Object cbh, HttpServletRequest request) {
+        if (cbh instanceof CallbackHandler) {
+            CallbackHandler hrCBH = (CallbackHandler)cbh;
+            HomeRealmCallback callback = new HomeRealmCallback(request);
+            try {
+                hrCBH.handle(new Callback[] {callback});
+            } catch (IOException | UnsupportedCallbackException e) {
+                LOG.warn("Home Realm Callbackhandler caused an exception", e);
+            }
+            return callback.getHomeRealm();
+        } else {
+            LOG.warn("Callback Handler was not an instanceof CallbackHandler: {}", cbh);
+            return null;
+        }
     }
 
     private String resolveAuthenticationType(HttpServletRequest request, FedizContext config) throws IOException,

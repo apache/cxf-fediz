@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.cxf.fediz.service.oidc;
+package org.apache.cxf.fediz.service.oidc.handler.hrd;
 
 import java.io.IOException;
 
@@ -27,14 +27,17 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.cxf.fediz.core.spi.HomeRealmCallback;
+import org.apache.cxf.fediz.service.oidc.ApplicationContextProvider;
+import org.apache.cxf.fediz.service.oidc.FedizClient;
+import org.apache.cxf.fediz.service.oidc.OAuthDataManager;
 import org.apache.cxf.rs.security.oauth2.common.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 
-public class HomeRealmCallbackHandler implements CallbackHandler {
+public class ClientIdHomeRealmDiscovery implements CallbackHandler {
     
-    private static final Logger LOG = LoggerFactory.getLogger(HomeRealmCallbackHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ClientIdHomeRealmDiscovery.class);
 
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
         for (int i = 0; i < callbacks.length; i++) {
@@ -56,7 +59,7 @@ public class HomeRealmCallbackHandler implements CallbackHandler {
                 }
                 
             } else {
-                throw new UnsupportedCallbackException(callbacks[i], "Unrecognized Callback");
+                LOG.warn("Callback is not an inctance of HomeRealmCallback: {}", callbacks[i]);
             }
         }
     }
