@@ -149,17 +149,11 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             }
             el = DOMUtils.getNextElement(el);
         }
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("RST: " + ((rst != null)
-                ? rst.toString()
-                : "null"));
-            LOG.debug("Lifetime: " + ((lifetimeElem != null)
-                ? lifetimeElem.toString()
-                : "null"));
-            LOG.debug("Tokentype: " + ((tt != null)
-                ? tt.toString()
-                : "null"));
-        }
+        
+        LOG.debug("RST: {}", rst);
+        LOG.debug("Lifetime: {}", lifetimeElem);
+        LOG.debug("Tokentype: {}", tt);
+        
         if (rst == null) {
             LOG.warn("RequestedSecurityToken element not found in wresult");
             throw new ProcessingException(TYPE.BAD_REQUEST);
@@ -304,7 +298,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             return new LifeTime(created, expires);
 
         } catch (ParseException e) {
-            LOG.error("Failed to parse lifetime element in wresult: " + e.getMessage());
+            LOG.error("Failed to parse lifetime element in wresult: {}", e.getMessage());
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
     }
@@ -342,25 +336,25 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             }
 
             String issuerURL = resolveIssuer(request, config);
-            LOG.debug("Issuer url: " + issuerURL);
+            LOG.debug("Issuer url: {}", issuerURL);
             if (issuerURL != null && issuerURL.length() > 0) {
                 redirectURL = issuerURL;
             }
 
             String wAuth = resolveAuthenticationType(request, config);
-            LOG.debug("WAuth: " + wAuth);
+            LOG.debug("WAuth: {}", wAuth);
 
             String wReq = resolveRequest(request, config);
-            LOG.debug("WReq: " + wReq);
+            LOG.debug("WReq: {}", wReq);
 
             String homeRealm = resolveHomeRealm(request, config);
-            LOG.debug("HomeRealm: " + homeRealm);
+            LOG.debug("HomeRealm: {}", homeRealm);
 
             String freshness = resolveFreshness(request, config);
-            LOG.debug("Freshness: " + freshness);
+            LOG.debug("Freshness: {}", freshness);
 
             String signInQuery = resolveSignInQuery(request, config);
-            LOG.debug("SignIn Query: " + signInQuery);
+            LOG.debug("SignIn Query: {}", signInQuery);
 
             String wctx = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
             StringBuffer requestURL = request.getRequestURL();
@@ -393,12 +387,12 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                 }
             }
 
-            LOG.debug("wreply=" + reply);
+            LOG.debug("wreply={}", reply);
             sb.append('&').append(FederationConstants.PARAM_REPLY).append('=');
             sb.append(URLEncoder.encode(reply, "UTF-8"));
 
             String realm = resolveWTRealm(request, config);
-            LOG.debug("wtrealm=" + realm);
+            LOG.debug("wtrealm={}", realm);
 
             // add wtrealm parameter
             sb.append('&').append(FederationConstants.PARAM_TREALM).append('=').append(URLEncoder
@@ -438,7 +432,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             sb.append('&').append(FederationConstants.PARAM_CURRENT_TIME).append('=')
                 .append(URLEncoder.encode(wct, "UTF-8"));
 
-            LOG.debug("wctx=" + wctx);
+            LOG.debug("wctx={}", wctx);
             sb.append('&').append(FederationConstants.PARAM_CONTEXT).append('=');
             sb.append(URLEncoder.encode(wctx, "UTF-8"));
 
@@ -471,7 +465,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             }
 
             String issuerURL = resolveIssuer(request, config);
-            LOG.debug("Issuer url: " + issuerURL);
+            LOG.debug("Issuer url: {}", issuerURL);
             if (issuerURL != null && issuerURL.length() > 0) {
                 redirectURL = issuerURL;
             }
@@ -491,7 +485,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                     logoutRedirectTo = extractFullContextPath(request).concat(logoutRedirectTo);
                 }
 
-                LOG.debug("wreply=" + logoutRedirectTo);
+                LOG.debug("wreply={}", logoutRedirectTo);
                 sb.append('&').append(FederationConstants.PARAM_REPLY).append('=');
                 sb.append(URLEncoder.encode(logoutRedirectTo, "UTF-8"));
             }
