@@ -26,13 +26,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
  * This class is responsible to cache IDP token.
  */
-
+@Component
 public class CacheTokenForWauthAction {
 
     private static final String IDP_CONFIG = "idpConfig";

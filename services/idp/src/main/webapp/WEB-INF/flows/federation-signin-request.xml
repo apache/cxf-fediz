@@ -182,7 +182,7 @@
     <!-- redirects to requestor idp -->
     <end-state id="redirectToTrustedIDP">
         <on-entry>
-            <evaluate expression="signInParamCacheAction.store(flowRequestContext)" />
+            <evaluate expression="signinParametersCacheAction.store(flowRequestContext)" />
         </on-entry>
         <output name="whr" value="flowScope.whr" />
         <output name="wctx" value="flowScope.wctx" />

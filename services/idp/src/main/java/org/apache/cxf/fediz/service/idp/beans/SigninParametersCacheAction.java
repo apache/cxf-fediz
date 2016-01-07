@@ -31,8 +31,10 @@ import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import org.springframework.webflow.execution.RequestContext;
 
+@Component
 public class SigninParametersCacheAction {
 
     //todo introduce constants class?

@@ -24,12 +24,13 @@ import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
  * This class is responsible to clear security context and invalidate IDP session.
  */
-
+@Component
 public class LogoutAction {
 
     private static final Logger LOG = LoggerFactory.getLogger(LogoutAction.class);

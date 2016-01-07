@@ -22,17 +22,17 @@ import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
  * This class is responsible to process Home Realm Discovery Service Expression.
  */
-
+@Component
 public class ProcessHRDSExpressionAction {
 
     private static final String IDP_CONFIG = "idpConfig";
-    private static final Logger LOG = LoggerFactory
-            .getLogger(ProcessHRDSExpressionAction.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ProcessHRDSExpressionAction.class);
 
     public String submit(RequestContext context) {
         Idp idpConfig = (Idp)WebUtils.getAttributeFromFlowScope(context, IDP_CONFIG);

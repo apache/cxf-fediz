@@ -26,24 +26,22 @@ import org.apache.cxf.fediz.service.idp.protocols.ProtocolController;
 import org.apache.cxf.fediz.service.idp.spi.TrustedIdpProtocolHandler;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
  * This class is responsible to clear security context and invalidate IDP session.
  */
-
+@Component
 public class TrustedIdpProtocolAction {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrustedIdpProtocolAction.class);
     
     private static final String IDP_CONFIG = "idpConfig";
-
     
     @Autowired
     // Qualifier workaround. See http://www.jayway.com/2013/11/03/spring-and-autowiring-of-generic-types/

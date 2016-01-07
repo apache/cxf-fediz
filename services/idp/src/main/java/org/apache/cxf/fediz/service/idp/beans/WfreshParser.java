@@ -24,12 +24,13 @@ import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
  * This class is responsible to parse 'wfresh' parameter 
  */
-
+@Component
 public class WfreshParser {
 
     private static final Logger LOG = LoggerFactory

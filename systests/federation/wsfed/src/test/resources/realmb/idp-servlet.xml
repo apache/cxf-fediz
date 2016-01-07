@@ -113,23 +113,4 @@
             value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0" />
     </bean>
 
-    <bean id="signInParamCacheAction"
-        class="org.apache.cxf.fediz.service.idp.beans.SigninParametersCacheAction" />
-
-    <bean id="logoutAction" class="org.apache.cxf.fediz.service.idp.beans.LogoutAction" />
-
-    <bean id="wfreshParser" class="org.apache.cxf.fediz.service.idp.beans.WfreshParser" />
-
-    <bean id="cacheTokenForWauthAction"
-        class="org.apache.cxf.fediz.service.idp.beans.CacheTokenForWauthAction" />
-
-    <bean id="processHRDSExpressionAction"
-        class="org.apache.cxf.fediz.service.idp.beans.ProcessHRDSExpressionAction" />
-
-    <bean id="homeRealmReminder"
-        class="org.apache.cxf.fediz.service.idp.beans.HomeRealmReminder" />
-        
-    <bean id="trustedIdpProtocolAction"
-        class="org.apache.cxf.fediz.service.idp.beans.TrustedIdpProtocolAction" />
-
 </beans>

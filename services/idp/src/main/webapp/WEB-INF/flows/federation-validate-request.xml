@@ -134,7 +134,7 @@
             <evaluate expression="stsClientForRpAction.submit(flowRequestContext)"
                       result="flowScope.rpToken"/>
         </on-entry>
-        <evaluate expression="signInParamCacheAction.storeRPConfigInSession(flowRequestContext)"
+        <evaluate expression="signinParametersCacheAction.storeRPConfigInSession(flowRequestContext)"
                 result="flowScope.res"/>
         <transition to="isWReplyProvided" />
         <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />

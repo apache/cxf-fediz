@@ -32,7 +32,7 @@
 
     <on-start>
         <!-- restore 'wreply','wtrealm','whr' for current 'wctx' -->
-        <evaluate expression="signInParamCacheAction.restore(flowRequestContext)" />
+        <evaluate expression="signinParametersCacheAction.restore(flowRequestContext)" />
     </on-start>
 
     <!-- validate token issued by requestor IDP ('wresult') given its 'whr' -->
