@@ -24,8 +24,8 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
+import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.spi.HomeRealmCallback;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,11 +39,11 @@ public class HomeRealmCallbackHandler implements CallbackHandler {
         for (int i = 0; i < callbacks.length; i++) {
             if (callbacks[i] instanceof HomeRealmCallback) {
                 HomeRealmCallback callback = (HomeRealmCallback) callbacks[i];
-                String homeRealm = (String)callback.getRequest().getAttribute("whr");
+                String homeRealm = (String)callback.getRequest().getParameter(FederationConstants.PARAM_HOME_REALM);
                 if (homeRealm == null || homeRealm.length() == 0) {
                     LOG.debug("No home realm found in request");
                 } else {
-                    LOG.info("Home realm '" + homeRealm + "' found in request");
+                    LOG.info("Home realm '{}' found in request", homeRealm);
                     callback.setHomeRealm(homeRealm);
                 }
 
