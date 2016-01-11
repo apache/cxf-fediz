@@ -1572,6 +1572,41 @@ public class FederationResponseTest {
         }
     }
     
+    @org.junit.Test
+    public void testUnableToFindTruststore() throws Exception {
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        ConditionsBean cp = new ConditionsBean();
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
+        callbackHandler.setConditions(cp);
+        
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
+        String rstr = createSamlToken(assertion, "mystskey", true);
+        
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
+        
+        configurator = null;
+        FedizContext config = getFederationConfigurator().getFedizContext("BAD_KEYSTORE");
+        
+        FedizProcessor wfProc = new FederationProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            fail("Failure expected on being unable to find the truststore");
+        } catch (ProcessingException ex) {
+            ex.printStackTrace();
+            // expected
+        }
+    }
+    
     private String encryptAndSignToken(
         SamlAssertionWrapper assertion
     ) throws Exception {
