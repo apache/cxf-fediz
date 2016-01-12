@@ -41,7 +41,7 @@
 </head>
 <body>
 <div class="padded">
-<h1>Refresh Tokens issued to <%= client.getApplicationName() + "(" + client.getClientId() + ")"%>"</h1>
+<h1>Refresh Tokens issued to <%= client.getApplicationName() + "(" + client.getClientId() + ")"%></h1>
 <br/>
 <table border="1">
     <tr><th>Identifier</th><th>Issue Date</th><th>Expiry Date</th></tr> 
@@ -55,15 +55,15 @@
            <td><input type="text" name="tokenId" size="15" readonly="readonly" value="<%= token.getTokenKey() %>" /></td>
            <td>
            <% 
-               Date date = new Date(token.getIssuedAt() * 1000);
-               String issued = dateFormat.format(date);
+               Date issuedDate = new Date(token.getIssuedAt() * 1000);
+               String issued = dateFormat.format(issuedDate);
 		   %>
            <%=    issued %><br/>
            </td>
            <td>
            <% 
-               Date date = new Date((token.getIssuedAt() + token.getExpiresIn()) * 1000);
-               String expires = dateFormat.format(date);
+               Date expiresDate = new Date((token.getIssuedAt() + token.getExpiresIn()) * 1000);
+               String expires = dateFormat.format(expiresDate);
 		   %>
            <%=    expires %><br/>
            </td>
@@ -77,7 +77,7 @@
 <br/>
 <br/>
 <p>
-<a href="<%= basePath + "clients/" + client.getId() %>">Return</a>
+<a href="<%= basePath + "clients/" + client.getClientId() %>">Return</a>
 </p>
 </div>
 </body>
