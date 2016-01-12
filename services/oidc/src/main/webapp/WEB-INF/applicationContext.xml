@@ -115,6 +115,7 @@
        <property name="resourcePaths">
             <map>
               <entry key="/clients" value="/WEB-INF/views/registeredClients.jsp"/>
+              <entry key="/remove" value="/WEB-INF/views/registeredClients.jsp"/>
             </map>
        </property>
     </bean>

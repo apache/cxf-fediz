@@ -1,13 +1,16 @@
 <%@ page import="org.apache.cxf.rs.security.oauth2.common.Client"%>
+<%@ page import="org.apache.cxf.rs.security.oauth2.tokens.refresh.RefreshToken"%>
 <%@ page import="java.text.SimpleDateFormat"%>
-<%@ page import="java.util.Collection"%>
 <%@ page import="java.util.Date"%>
+<%@ page import="java.util.List"%>
 <%@ page import="java.util.Locale"%>
 <%@ page import="java.util.TimeZone"%>
 <%@ page import="javax.servlet.http.HttpServletRequest" %>
+<%@ page import="org.apache.cxf.fediz.service.oidc.ClientRefreshTokens" %>
 
 <%
-	Collection<Client> regs = (Collection<Client>)request.getAttribute("data");
+	ClientRefreshTokens tokens = (ClientRefreshTokens)request.getAttribute("data");
+	Client client = tokens.getClient();
     String basePath = request.getContextPath() + request.getServletPath();
     if (!basePath.endsWith("/")) {
         basePath += "/";
@@ -15,7 +18,7 @@
 %>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title>API Client Registration Confirmation</title>
+    <title>Client Refresh Tokens</title>
     <STYLE TYPE="text/css">
     	table {
 		    border-collapse: collapse;
@@ -38,33 +41,31 @@
 </head>
 <body>
 <div class="padded">
-<h1>Registered API Clients</h1>
+<h1>Refresh Tokens issued to <%= client.getApplicationName() + "(" + client.getClientId() + ")"%>"</h1>
 <br/>
 <table border="1">
-    <tr><th>Name</th><th>Identifier</th><th>Creation Date</th><th>Redirect URIs</th></tr> 
+    <tr><th>Identifier</th><th>Issue Date</th><th>Expiry Date</th></tr> 
     <%
-       SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.US);
+       SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss", Locale.US);
        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
                
-       for (Client client : regs) {
+       for (RefreshToken token : tokens.getRefreshTokens()) {
     %>
        <tr>
-           <td><a href="<%= basePath + "clients/" + client.getClientId() %>"><%= client.getApplicationName() %></a></td>
-           <td><input type="text" name="clientId" size="15" readonly="readonly" value="<%= client.getClientId() %>" /></td>
+           <td><input type="text" name="tokenId" size="15" readonly="readonly" value="<%= token.getTokenKey() %>" /></td>
            <td>
            <% 
-               Date date = new Date(client.getRegisteredAt() * 1000);
-               String created = dateFormat.format(date);
+               Date date = new Date(token.getIssuedAt() * 1000);
+               String issued = dateFormat.format(date);
 		   %>
-           <%=    created %><br/>
+           <%=    issued %><br/>
            </td>
            <td>
-           <% if(client.getRedirectUris() != null) {
-                for (String redirectURI : client.getRedirectUris()) {
+           <% 
+               Date date = new Date((token.getIssuedAt() + token.getExpiresIn()) * 1000);
+               String expires = dateFormat.format(date);
 		   %>
-           <%=    redirectURI %><br/>
-           <%   }
-              } %>
+           <%=    expires %><br/>
            </td>
        </tr>
     <%   
@@ -76,7 +77,7 @@
 <br/>
 <br/>
 <p>
-<a href="<%= basePath + "clients/register" %>">Register a new client</a>
+<a href="<%= basePath + "clients/" + client.getId() %>">Return</a>
 </p>
 </div>
 </body>

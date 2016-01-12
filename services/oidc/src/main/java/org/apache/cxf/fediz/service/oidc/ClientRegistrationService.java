@@ -22,6 +22,7 @@ package org.apache.cxf.fediz.service.oidc;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,6 +32,7 @@ import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -67,6 +69,73 @@ public class ClientRegistrationService {
         return getClientRegistrations();
     }
 
+    @GET
+    @Produces(MediaType.TEXT_HTML)
+    @Path("/{id}")
+    public Client getRegisteredClient(@PathParam("id") String id) {
+        for (Client c : getClientRegistrations()) {
+            if (c.getClientId().equals(id)) {
+                return c;
+            }
+        }
+        return null;
+    }
+    
+    
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.TEXT_HTML)
+    @Path("/{id}/remove")
+    public Collection<Client> removeClient(@PathParam("id") String id) {
+        Collection<Client> clients = getClientRegistrations(); 
+        for (Iterator<Client> it = clients.iterator(); it.hasNext();) {
+            Client c = it.next();
+            if (c.getClientId().equals(id)) {
+                it.remove();
+                manager.removeClient(id);
+                break;
+            }
+        }
+        return clients;
+    }
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.TEXT_HTML)
+    @Path("/{id}/reset")
+    public Client resetClient(@PathParam("id") String id) {
+        Client c = getRegisteredClient(id);
+        if (c.isConfidential()) {
+            c.setClientSecret(generateClientSecret());
+        }
+        manager.setClient(c);
+        return c;
+    }
+    
+    @GET
+    @Produces(MediaType.TEXT_HTML)
+    @Path("/{id}/at")
+    public ClientAccessTokens getClientAccessTokens(@PathParam("id") String id) {
+        Client c = getRegisteredClient(id);
+        return new ClientAccessTokens(c, manager.getAccessTokens(c));
+    }
+    
+    @GET
+    @Produces(MediaType.TEXT_HTML)
+    @Path("/{id}/rt")
+    public ClientRefreshTokens getClientRefreshTokens(@PathParam("id") String id) {
+        Client c = getRegisteredClient(id);
+        return new ClientRefreshTokens(c, manager.getRefreshTokens(c));
+    }
+    
+    @GET
+    @Produces(MediaType.TEXT_HTML)
+    @Path("/{id}/codes")
+    public ClientCodeGrants getClientCodeGrants(@PathParam("id") String id) {
+        Client c = getRegisteredClient(id);
+        return new ClientCodeGrants(c, manager.getCodeGrants(c));
+    }
+    
+    
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_HTML)
@@ -91,6 +160,8 @@ public class ClientRegistrationService {
         UserSubject userSubject = new UserSubject(userName);
         newClient.setResourceOwnerSubject(userSubject);
 
+        newClient.setRegisteredAt(System.currentTimeMillis() / 1000);
+        
         return registerNewClient(newClient);
     }
 
