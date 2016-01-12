@@ -34,13 +34,14 @@ public class WfreshParser {
 
     private static final Logger LOG = LoggerFactory
             .getLogger(WfreshParser.class);
+    private boolean tokenExpirationValidation = true;
 
     public boolean authenticationRequired(String wfresh, String whr, RequestContext context)
         throws Exception {
         
         SecurityToken idpToken = 
             (SecurityToken) WebUtils.getAttributeFromExternalContext(context, whr);
-        if (idpToken.isExpired()) {
+        if (tokenExpirationValidation && idpToken.isExpired()) {
             LOG.info("[IDP_TOKEN=" + idpToken.getId() + "] is expired.");
             return true;
         }
@@ -78,6 +79,20 @@ public class WfreshParser {
             LOG.info("ttl value '" + ttl + "' is negative.");
         }
         return false;
+    }
+
+    public boolean isTokenExpirationValidation() {
+        return tokenExpirationValidation;
+    }
+
+    /**
+     * Set whether the token validation (e.g. lifetime) shall be performed on every request (true) or only 
+     * once at initial authentication (false). The default is "true" (note that the plugins default for this
+     * configuration option is "true").
+     * @param tokenExpirationValidation Whether to perform token expiration validation per request
+     */
+    public void setTokenExpirationValidation(boolean tokenExpirationValidation) {
+        this.tokenExpirationValidation = tokenExpirationValidation;
     }
 
 }

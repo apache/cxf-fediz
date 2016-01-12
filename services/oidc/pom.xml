@@ -28,9 +28,6 @@
     <artifactId>fediz-oidc</artifactId>
     <name>Apache Fediz OIDC</name>
     <packaging>war</packaging>
-    <properties>
-        <cxf.version>3.1.5-SNAPSHOT</cxf.version>
-    </properties>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
