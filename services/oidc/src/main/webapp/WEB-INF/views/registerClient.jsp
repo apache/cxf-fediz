@@ -106,7 +106,7 @@ input, select, button {
 				</select>
 			</div>
 			<div data-type="control_button" class="form-line">
-				<button class="form-submit-button" type="submit">Register API Client</button>
+				<button name="submit_button" class="form-submit-button" type="submit">Register API Client</button>
 			</div>
 		</div>
 	</form>

@@ -56,7 +56,7 @@ public class LoginHintHomeRealmDiscovery implements CallbackHandler {
                     }
                 }
             } else {
-                LOG.warn("Callback is not an inctance of HomeRealmCallback: {}", callbacks[i]);
+                LOG.warn("Callback is not an instance of HomeRealmCallback: {}", callbacks[i]);
             }
         }
     }

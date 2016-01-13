@@ -33,6 +33,6 @@
    <modules>
       <module>sts</module>
       <module>idp</module>
-	  <module>oidc</module>
+      <module>oidc</module>
    </modules>
 </project>
