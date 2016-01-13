@@ -92,8 +92,8 @@ public class ClientRegistrationService {
         for (Iterator<Client> it = clients.iterator(); it.hasNext();) {
             Client c = it.next();
             if (c.getClientId().equals(id)) {
-                it.remove();
                 manager.removeClient(id);
+                it.remove();
                 break;
             }
         }
