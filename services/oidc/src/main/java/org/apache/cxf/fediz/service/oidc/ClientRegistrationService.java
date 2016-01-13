@@ -42,6 +42,7 @@ import org.apache.cxf.common.util.Base64UrlUtility;
 import org.apache.cxf.common.util.StringUtils;
 import org.apache.cxf.rs.security.oauth2.common.Client;
 import org.apache.cxf.rs.security.oauth2.common.UserSubject;
+import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 import org.apache.cxf.rt.security.crypto.CryptoUtils;
 
 @Path("/")
@@ -118,12 +119,33 @@ public class ClientRegistrationService {
         Client c = getRegisteredClient(id);
         return new ClientAccessTokens(c, manager.getAccessTokens(c));
     }
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.TEXT_HTML)
+    @Path("/{id}/at/{tokenId}/revoke")
+    public ClientAccessTokens revokeClientAccessToken(@PathParam("id") String id,
+                                                      @PathParam("tokenId") String tokenId) {
+        Client c = getRegisteredClient(id);
+        manager.revokeToken(c, tokenId, OAuthConstants.ACCESS_TOKEN);
+        return new ClientAccessTokens(c, manager.getAccessTokens(c));
+    }
     
     @GET
     @Produces(MediaType.TEXT_HTML)
     @Path("/{id}/rt")
     public ClientRefreshTokens getClientRefreshTokens(@PathParam("id") String id) {
         Client c = getRegisteredClient(id);
+        return new ClientRefreshTokens(c, manager.getRefreshTokens(c));
+    }
+    
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.TEXT_HTML)
+    @Path("/{id}/rt/{tokenId}/revoke")
+    public ClientRefreshTokens revokeClientRefreshToken(@PathParam("id") String id,
+                                                      @PathParam("tokenId") String tokenId) {
+        Client c = getRegisteredClient(id);
+        manager.revokeToken(c, tokenId, OAuthConstants.REFRESH_TOKEN);
         return new ClientRefreshTokens(c, manager.getRefreshTokens(c));
     }
     
@@ -135,6 +157,15 @@ public class ClientRegistrationService {
         return new ClientCodeGrants(c, manager.getCodeGrants(c));
     }
     
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.TEXT_HTML)
+    @Path("/{id}/codes/{code}/revoke")
+    public ClientCodeGrants revokeClientCodeGrant(@PathParam("id") String id,
+                                                  @PathParam("code") String code) {
+        manager.removeCodeGrant(code);
+        return getClientCodeGrants(id);
+    }
     
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)

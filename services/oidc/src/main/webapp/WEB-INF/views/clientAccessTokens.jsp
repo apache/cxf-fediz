@@ -67,6 +67,13 @@
 		   %>
            <%=    expires %><br/>
            </td>
+           <td>
+               <form action="/fediz-oidc/clients/<%= client.getClientId() + "/at/" + token.getTokenKey() + "/revoke"%>" method="POST">
+		         <div data-type="control_button" class="form-line">
+				   <button class="form-submit-button" type="submit">Delete</button>
+		         </div>
+               </form>
+           </td>
        </tr>
     <%   
        }
