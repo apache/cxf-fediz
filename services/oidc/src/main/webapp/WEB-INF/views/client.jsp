@@ -69,7 +69,7 @@
 <div class="padded">
 <h1><%= client.getApplicationName() %></h1>
 <br/>
-<table border="1">
+<table border="1" id=client>
     <%
        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm", Locale.US);
        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -117,9 +117,9 @@
     if (client.getClientSecret() != null) {
 %>
 <td class="td_no_border">
-<form action="/fediz-oidc/clients/<%= client.getClientId() + "/reset"%>" method="POST">
+<form name="resetSecretForm" action="/fediz-oidc/clients/<%= client.getClientId() + "/reset"%>" method="POST">
 		<div data-type="control_button" class="form-line">
-				<button class="form-submit-button" type="submit">Reset Secret</button>
+				<button name="submit_reset_button" class="form-submit-button" type="submit">Reset Secret</button>
 		</div>
 </form>
 </td>
@@ -127,9 +127,9 @@
     }
 %>
 <td class="td_no_border">
-<form action="/fediz-oidc/clients/<%= client.getClientId() + "/remove"%>" method="POST">
+<form name="deleteForm" action="/fediz-oidc/clients/<%= client.getClientId() + "/remove"%>" method="POST">
 		<div data-type="control_button" class="form-line">
-				<button class="form-submit-button" type="submit">Delete Client</button>
+				<button name="submit_delete_button" class="form-submit-button" type="submit">Delete Client</button>
 		</div>
 </form>
 </td>
