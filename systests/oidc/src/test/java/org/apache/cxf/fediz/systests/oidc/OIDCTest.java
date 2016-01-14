@@ -22,6 +22,11 @@ package org.apache.cxf.fediz.systests.oidc;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebRequest;
@@ -32,6 +37,9 @@ import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
+import com.gargoylesoftware.htmlunit.html.HtmlTable;
+import com.gargoylesoftware.htmlunit.html.HtmlTableCell;
+import com.gargoylesoftware.htmlunit.html.HtmlTableRow;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import com.gargoylesoftware.htmlunit.util.WebConnectionWrapper;
 
@@ -58,7 +66,7 @@ public class OIDCTest {
     private static Tomcat rpServer;
     
     @BeforeClass
-    public static void init() {
+    public static void init() throws Exception {
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
         System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
         System.setProperty("org.apache.commons.logging.simplelog.log.httpclient.wire", "info");
@@ -75,6 +83,8 @@ public class OIDCTest {
 
         initIdp();
         initOidc();
+        
+        loginToClientsPage(rpHttpsPort, idpHttpsPort);
     }
     
     private static void initIdp() {
@@ -193,16 +203,16 @@ public class OIDCTest {
     }
     
     // Login to the OIDC Clients page + create a new client
-    @org.junit.Test
-    public void testLoginToClientsPage() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/clients";
+    private static void loginToClientsPage(String rpPort, String idpPort) throws Exception {
+        String url = "https://localhost:" + rpPort + "/fediz-oidc/clients";
         String user = "alice";
         String password = "ecila";
         
         // Login to the client page successfully
-        WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
-        final String bodyTextContent = login(url, webClient);
-        Assert.assertTrue(bodyTextContent.contains("Registered API Clients"));
+        WebClient webClient = setupWebClient(user, password, idpPort);
+        HtmlPage loginPage = login(url, webClient);
+        final String bodyTextContent = loginPage.getBody().getTextContent();
+        Assert.assertTrue(bodyTextContent.contains("Registered Clients"));
         
         // Now try to register a new client
         HtmlPage registerPage = webClient.getPage(url + "/register");
@@ -219,12 +229,52 @@ public class OIDCTest {
         final HtmlPage rpPage = button.click();
 
         String registeredClientPage = rpPage.getBody().getTextContent();
-        Assert.assertTrue(registeredClientPage.contains("Registered API Clients"));
+        Assert.assertTrue(registeredClientPage.contains("Registered Clients"));
         Assert.assertTrue(registeredClientPage.contains("new-client"));
         Assert.assertTrue(registeredClientPage.contains("http://127.0.0.1"));
         
         webClient.close();
     }
+    
+    // Test that we managed to create a new Client ok
+    @org.junit.Test
+    public void testClientCreated() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/clients";
+        String user = "alice";
+        String password = "ecila";
+        
+        // Login to the client page successfully
+        WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
+        HtmlPage loginPage = login(url, webClient);
+        final String bodyTextContent = loginPage.getBody().getTextContent();
+        Assert.assertTrue(bodyTextContent.contains("Registered Clients"));
+        
+        // Get the new client identifier
+        HtmlTable table = loginPage.getHtmlElementById("registered_clients");
+        String clientId = table.getCellAt(1, 1).asText().trim();
+        Assert.assertNotNull(clientId);
+        
+        // Check the Date
+        String date = table.getCellAt(1, 2).asText().trim();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.US);
+        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+        Assert.assertEquals(dateFormat.format(new Date()), date);
+        
+        // Check the redirect URI
+        String redirectURI = table.getCellAt(1, 3).asText().trim();
+        Assert.assertEquals("http://127.0.0.1", redirectURI);
+        
+        Assert.assertEquals(table.getRows().size(), 2);
+    }
+    
+    /*
+    @org.junit.Test
+    public void testTemp() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/clients";
+        System.out.println("URL: " + url);
+        Thread.sleep(60 * 1000);
+    }
+    */
     
     @org.junit.Test
     @org.junit.Ignore
@@ -259,12 +309,12 @@ public class OIDCTest {
         return webClient;
     }
     
-    private static String login(String url, WebClient webClient) throws IOException {
+    private static HtmlPage login(String url, WebClient webClient) throws IOException {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
-        
+
         // Test the SAML Version here
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
 
@@ -281,9 +331,7 @@ public class OIDCTest {
         final HtmlForm form = idpPage.getFormByName("signinresponseform");
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
 
-        final HtmlPage rpPage = button.click();
-
-        return rpPage.getBody().getTextContent();
+        return button.click();
     }
     
     private static String loginAndGetAuthorizationCode(

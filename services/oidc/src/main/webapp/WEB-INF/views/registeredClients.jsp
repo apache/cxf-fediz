@@ -40,7 +40,7 @@
 <div class="padded">
 <h1>Registered Clients</h1>
 <br/>
-<table border="1">
+<table border="1" id=registered_clients>
     <tr><th>Name</th><th>ID</th><th>Creation Date</th><th>Redirect URI</th></tr> 
     <%
        SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.US);

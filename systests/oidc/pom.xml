@@ -234,6 +234,7 @@
                                 <wt.headless>true</wt.headless>
                                 <idp.https.port>${idp.https.port}</idp.https.port>
                                 <rp.https.port>${rp.https.port}</rp.https.port>
+                                <java.io.tmpdir>${basedir}/target</java.io.tmpdir>
                             </systemPropertyVariables>
                             <includes>
                                 <include>**/systests/**</include>
