@@ -15,7 +15,7 @@
 %>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title>API Client Registration Confirmation</title>
+    <title>Registered Clients</title>
     <STYLE TYPE="text/css">
     	table {
 		    border-collapse: collapse;
@@ -38,10 +38,10 @@
 </head>
 <body>
 <div class="padded">
-<h1>Registered API Clients</h1>
+<h1>Registered Clients</h1>
 <br/>
 <table border="1">
-    <tr><th>Name</th><th>Identifier</th><th>Creation Date</th><th>Redirect URIs</th></tr> 
+    <tr><th>Name</th><th>ID</th><th>Creation Date</th><th>Redirect URI</th></tr> 
     <%
        SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.US);
        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -50,7 +50,9 @@
     %>
        <tr>
            <td><a href="<%= basePath + "clients/" + client.getClientId() %>"><%= client.getApplicationName() %></a></td>
-           <td><input type="text" name="clientId" size="15" readonly="readonly" value="<%= client.getClientId() %>" /></td>
+           <td>
+              <%= client.getClientId() %>
+           </td>
            <td>
            <% 
                Date date = new Date(client.getRegisteredAt() * 1000);

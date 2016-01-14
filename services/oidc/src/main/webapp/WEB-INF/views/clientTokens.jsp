@@ -46,17 +46,25 @@
 <body>
 <h1>Tokens issued to <%= client.getApplicationName() + "(" + client.getClientId() + ")"%></h1>
 <br/>
-<br/>
 <div class="padded">
 <h2>Access Tokens</h2>
 <br/>
 <table border="1">
-    <tr><th>Identifier</th><th>Issue Date</th><th>Expiry Date</th></tr> 
+    <tr>
+       <th>ID</th><th>Issue Date</th><th>Expiry Date</th>
+       <%
+          if (!tokens.getRefreshTokens().isEmpty()) {
+       %>
+          <th>Refresh Token</th>
+       <%
+          }
+       %>
+    </tr> 
     <%
        for (ServerAccessToken token : tokens.getAccessTokens()) {
     %>
        <tr>
-           <td><input type="text" name="tokenId" size="15" readonly="readonly" value="<%= token.getTokenKey() %>" /></td>
+           <td><input type="text" name="tokenId" readonly="readonly" value="<%= token.getTokenKey() %>" /></td>
            <td>
            <% 
                Date issuedDate = new Date(token.getIssuedAt() * 1000);
@@ -71,6 +79,15 @@
 		   %>
            <%=    expires %><br/>
            </td>
+           <%
+	          if (token.getRefreshToken() != null) {
+	       %>
+	         <td>
+	           <%=    token.getRefreshToken() %>
+	         <td>  
+	       <%
+	          }
+	       %>
            <td>
                <form action="/fediz-oidc/clients/<%= client.getClientId() + "/at/" + token.getTokenKey() + "/revoke"%>" method="POST">
 		         <div data-type="control_button" class="form-line">
@@ -88,12 +105,12 @@
 <h2>Refresh Tokens</h2>
 <br/>
 <table border="1">
-    <tr><th>Identifier</th><th>Issue Date</th><th>Expiry Date</th></tr> 
+    <tr><th>ID</th><th>Issue Date</th><th>Expiry Date</th><th>Access Token</th></tr> 
     <%
        for (RefreshToken token : tokens.getRefreshTokens()) {
     %>
        <tr>
-           <td><input type="text" name="tokenId" size="15" readonly="readonly" value="<%= token.getTokenKey() %>" /></td>
+           <td><input type="text" name="tokenId" readonly="readonly" value="<%= token.getTokenKey() %>" /></td>
            <td>
            <% 
                Date issuedDate = new Date(token.getIssuedAt() * 1000);
@@ -108,6 +125,16 @@
 		   %>
            <%=    expires %><br/>
            </td>
+           <td>
+           <%
+	          for (String at : token.getAccessTokens()) {
+	       %>
+	           <%=    at %><br/>
+	       <%
+	          }
+	       %>
+           </td>    
+	       
            <td>
                <form action="/fediz-oidc/clients/<%= client.getClientId() + "/rt/" + token.getTokenKey() + "/revoke"%>" method="POST">
 		         <div data-type="control_button" class="form-line">

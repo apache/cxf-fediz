@@ -62,14 +62,15 @@
        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm", Locale.US);
        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     %>
-    <tr><th>Identifier</th><th>Secret</th><th>Creation Date</th><th>Redirect URIs</th></tr> 
+    <tr><th>ID</th><th>Secret</th><th>Creation Date</th><th>Redirect URI</th></tr> 
        <tr>
-           <td><input type="text" name="clientId" size="15" readonly="readonly" value="<%= client.getClientId() %>" /></td>
+           <td>
+               <%= client.getClientId() %>
            <td>
            <%
               if (client.getClientSecret() != null) {
            %>
-              <input type="text" name="clientSecret" size="25" readonly="readonly" value="<%= client.getClientSecret() %>" />
+              <%= client.getClientSecret() %>
            <%
               } else {
            %>
