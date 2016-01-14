@@ -44,7 +44,7 @@
 <h1>Code Grants issued to <%= client.getApplicationName() + "(" + client.getClientId() + ")"%></h1>
 <br/>
 <table border="1">
-    <tr><th>Identifier</th><th>Issue Date</th><th>Expiry Date</th></tr> 
+    <tr><th>ID</th><th>Issue Date</th><th>Expiry Date</th></tr> 
     <%
        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss", Locale.US);
        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -52,7 +52,7 @@
        for (ServerAuthorizationCodeGrant token : tokens.getCodeGrants()) {
     %>
        <tr>
-           <td><input type="text" name="tokenId" size="15" readonly="readonly" value="<%= token.getCode() %>" /></td>
+           <td><%= token.getCode() %></td>
            <td>
            <% 
                Date issuedDate = new Date(token.getIssuedAt() * 1000);

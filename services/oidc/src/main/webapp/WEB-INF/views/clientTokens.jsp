@@ -59,12 +59,20 @@
        <%
           }
        %>
+       <%
+          if (!tokens.getAccessTokens().isEmpty()) {
+       %>
+          <th>Action</th>
+       <%
+          }
+       %>   
+          
     </tr> 
     <%
        for (ServerAccessToken token : tokens.getAccessTokens()) {
     %>
        <tr>
-           <td><input type="text" name="tokenId" readonly="readonly" value="<%= token.getTokenKey() %>" /></td>
+           <td><%= token.getTokenKey() %></td>
            <td>
            <% 
                Date issuedDate = new Date(token.getIssuedAt() * 1000);
@@ -84,15 +92,13 @@
 	       %>
 	         <td>
 	           <%=    token.getRefreshToken() %>
-	         <td>  
+	         </td>  
 	       <%
 	          }
 	       %>
            <td>
                <form action="/fediz-oidc/clients/<%= client.getClientId() + "/at/" + token.getTokenKey() + "/revoke"%>" method="POST">
-		         <div data-type="control_button" class="form-line">
-				   <button class="form-submit-button" type="submit">Delete</button>
-		         </div>
+		           <input type="submit" value="Delete"/>  
                </form>
            </td>
        </tr>
@@ -105,12 +111,20 @@
 <h2>Refresh Tokens</h2>
 <br/>
 <table border="1">
-    <tr><th>ID</th><th>Issue Date</th><th>Expiry Date</th><th>Access Token</th></tr> 
+    <tr><th>ID</th><th>Issue Date</th><th>Expiry Date</th><th>Access Token</th> 
+       <%
+          if (!tokens.getRefreshTokens().isEmpty()) {
+       %>
+          <th>Action</th>
+       <%
+          }
+       %>
+    </tr>   
     <%
        for (RefreshToken token : tokens.getRefreshTokens()) {
     %>
        <tr>
-           <td><input type="text" name="tokenId" readonly="readonly" value="<%= token.getTokenKey() %>" /></td>
+           <td><%= token.getTokenKey() %></td>
            <td>
            <% 
                Date issuedDate = new Date(token.getIssuedAt() * 1000);
@@ -137,9 +151,7 @@
 	       
            <td>
                <form action="/fediz-oidc/clients/<%= client.getClientId() + "/rt/" + token.getTokenKey() + "/revoke"%>" method="POST">
-		         <div data-type="control_button" class="form-line">
-				   <button class="form-submit-button" type="submit">Delete</button>
-		         </div>
+		         <input type="submit" value="Delete"/>
                </form>
            </td>
        </tr>

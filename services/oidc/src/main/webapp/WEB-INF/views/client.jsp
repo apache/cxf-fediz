@@ -33,6 +33,18 @@
 		    border-width: 1px;
 		    padding: 3px 4px;
 		}
+
+
+
+.table_no_border {
+    border-collapse: collapse;
+}
+.table_no_border .td_no_border {
+    padding: 0;
+    border-width: 0px;
+}
+
+
 		
 .form {
 	max-width: 425px;
@@ -99,12 +111,12 @@
      
 </table>
 <br/>
-<table border="0">
+<table class="table_no_border">
 <tr>
 <%
     if (client.getClientSecret() != null) {
 %>
-<td>
+<td class="td_no_border">
 <form action="/fediz-oidc/clients/<%= client.getClientId() + "/reset"%>" method="POST">
 		<div data-type="control_button" class="form-line">
 				<button class="form-submit-button" type="submit">Reset Secret</button>
@@ -114,7 +126,7 @@
 <%
     }
 %>
-<td>
+<td class="td_no_border">
 <form action="/fediz-oidc/clients/<%= client.getClientId() + "/remove"%>" method="POST">
 		<div data-type="control_button" class="form-line">
 				<button class="form-submit-button" type="submit">Delete Client</button>
