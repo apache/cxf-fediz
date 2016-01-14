@@ -114,39 +114,41 @@ public class ClientRegistrationService {
     
     @GET
     @Produces(MediaType.TEXT_HTML)
-    @Path("/{id}/at")
-    public ClientAccessTokens getClientAccessTokens(@PathParam("id") String id) {
+    @Path("/{id}/tokens")
+    public ClientTokens getClientIssuedTokens(@PathParam("id") String id) {
         Client c = getRegisteredClient(id);
-        return new ClientAccessTokens(c, manager.getAccessTokens(c));
+        return doGetClientIssuedTokens(c);
+    }
+    
+    protected ClientTokens doGetClientIssuedTokens(Client c) {
+        return new ClientTokens(c, 
+                                      manager.getAccessTokens(c),
+                                      manager.getRefreshTokens(c));
     }
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_HTML)
     @Path("/{id}/at/{tokenId}/revoke")
-    public ClientAccessTokens revokeClientAccessToken(@PathParam("id") String id,
+    public ClientTokens revokeClientAccessToken(@PathParam("id") String clientId,
                                                       @PathParam("tokenId") String tokenId) {
-        Client c = getRegisteredClient(id);
-        manager.revokeToken(c, tokenId, OAuthConstants.ACCESS_TOKEN);
-        return new ClientAccessTokens(c, manager.getAccessTokens(c));
-    }
-    
-    @GET
-    @Produces(MediaType.TEXT_HTML)
-    @Path("/{id}/rt")
-    public ClientRefreshTokens getClientRefreshTokens(@PathParam("id") String id) {
-        Client c = getRegisteredClient(id);
-        return new ClientRefreshTokens(c, manager.getRefreshTokens(c));
+        return doRevokeClientToken(clientId, tokenId, OAuthConstants.ACCESS_TOKEN);
     }
     
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_HTML)
     @Path("/{id}/rt/{tokenId}/revoke")
-    public ClientRefreshTokens revokeClientRefreshToken(@PathParam("id") String id,
+    public ClientTokens revokeClientRefreshToken(@PathParam("id") String clientId,
                                                       @PathParam("tokenId") String tokenId) {
-        Client c = getRegisteredClient(id);
-        manager.revokeToken(c, tokenId, OAuthConstants.REFRESH_TOKEN);
-        return new ClientRefreshTokens(c, manager.getRefreshTokens(c));
+        return doRevokeClientToken(clientId, tokenId, OAuthConstants.REFRESH_TOKEN);
+    }
+    
+    protected ClientTokens doRevokeClientToken(String clientId,
+                                                     String tokenId,
+                                                     String tokenType) {
+        Client c = getRegisteredClient(clientId);
+        manager.revokeToken(c, tokenId, tokenType);
+        return doGetClientIssuedTokens(c);
     }
     
     @GET

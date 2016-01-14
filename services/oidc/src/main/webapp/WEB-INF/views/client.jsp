@@ -124,13 +124,10 @@
 </table>
 <br/>
 <p>
-<p><a href="<%= basePath + "clients/" + client.getClientId() + "/at" %>">Current Access Tokens</a></p>
+<p><a href="<%= basePath + "clients/" + client.getClientId() + "/tokens" %>">Issued Tokens</a></p>
 </p>
 <p>
-<p><a href="<%= basePath + "clients/" + client.getClientId() + "/rt" %>">Current Refresh Tokens</a></p>
-</p>
-<p>
-<p><a href="<%= basePath + "clients/" + client.getClientId() + "/codes" %>">Current Code Grants</a></p>
+<p><a href="<%= basePath + "clients/" + client.getClientId() + "/codes" %>">Issued Code Grants</a></p>
 </p>
 <br/>
 <p>
