@@ -207,7 +207,7 @@ public class OIDCTest {
         return "fedizhelloworld";
     }
     
-    // Runs as BeforeClass: Login to the OIDC Clients page + create a new client
+    // Runs as BeforeClass: Login to the OIDC Clients page + create two new clients
     private static void loginToClientsPage(String rpPort, String idpPort) throws Exception {
         String url = "https://localhost:" + rpPort + "/fediz-oidc/clients";
         String user = "alice";
@@ -220,28 +220,43 @@ public class OIDCTest {
         Assert.assertTrue(bodyTextContent.contains("Registered Clients"));
         
         // Now try to register a new client
+        String registeredClientPage = 
+            registerNewClient(webClient, url, "new-client", "http://127.0.0.1");
+        Assert.assertTrue(registeredClientPage.contains("Registered Clients"));
+        Assert.assertTrue(registeredClientPage.contains("new-client"));
+        Assert.assertTrue(registeredClientPage.contains("http://127.0.0.1"));
+        
+        // Try to register another new client
+        registeredClientPage = 
+            registerNewClient(webClient, url, "new-client2", "http://127.0.1.1");
+        Assert.assertTrue(registeredClientPage.contains("Registered Clients"));
+        Assert.assertTrue(registeredClientPage.contains("new-client"));
+        Assert.assertTrue(registeredClientPage.contains("http://127.0.0.1"));
+        Assert.assertTrue(registeredClientPage.contains("new-client2"));
+        Assert.assertTrue(registeredClientPage.contains("http://127.0.1.1"));
+        
+        webClient.close();
+    }
+    
+    private static String registerNewClient(WebClient webClient, String url,
+                                            String clientName, String redirectURI) throws Exception {
         HtmlPage registerPage = webClient.getPage(url + "/register");
         
         final HtmlForm form = registerPage.getForms().get(0);
         
         // Set new client values
         final HtmlTextInput clientNameInput = form.getInputByName("client_name");
-        clientNameInput.setValueAttribute("new-client");
+        clientNameInput.setValueAttribute(clientName);
         final HtmlTextInput redirectURIInput = form.getInputByName("client_redirectURI");
-        redirectURIInput.setValueAttribute("http://127.0.0.1");
+        redirectURIInput.setValueAttribute(redirectURI);
 
         final HtmlButton button = form.getButtonByName("submit_button");
         final HtmlPage rpPage = button.click();
-
-        String registeredClientPage = rpPage.getBody().getTextContent();
-        Assert.assertTrue(registeredClientPage.contains("Registered Clients"));
-        Assert.assertTrue(registeredClientPage.contains("new-client"));
-        Assert.assertTrue(registeredClientPage.contains("http://127.0.0.1"));
         
-        webClient.close();
+        return rpPage.getBody().getTextContent();
     }
     
-    // Runs as AfterClass: Login to the OIDC Clients page + delete the created client!
+    // Runs as AfterClass: Login to the OIDC Clients page + delete the created clients!
     private static void loginToClientsPageAndDeleteClient(String rpPort, String idpPort) throws Exception {
         String url = "https://localhost:" + rpPort + "/fediz-oidc/clients";
         String user = "alice";
@@ -257,17 +272,19 @@ public class OIDCTest {
         HtmlTable table = loginPage.getHtmlElementById("registered_clients");
         String clientId = table.getCellAt(1, 1).asText().trim();
         Assert.assertNotNull(clientId);
+        String clientId2 = table.getCellAt(2, 1).asText().trim();
+        Assert.assertNotNull(clientId2);
         
         // Now go to the specific client page
-        HtmlPage clientPage = webClient.getPage(url + "/" + clientId);
+        HtmlPage registeredClientsPage = deleteClient(webClient, url, clientId);
+
+        // Check we have one more registered clients
+        table = registeredClientsPage.getHtmlElementById("registered_clients");
+        Assert.assertEquals(2, table.getRowCount());
         
-        final HtmlForm deleteForm = clientPage.getFormByName("deleteForm");
-        Assert.assertNotNull(deleteForm);
-        
-        // Delete the client
-        final HtmlButton button = deleteForm.getButtonByName("submit_delete_button");
-        final HtmlPage registeredClientsPage = button.click();
-        
+        // Now delete the other client
+        registeredClientsPage = deleteClient(webClient, url, clientId2);
+
         // Check we have no more registered clients
         table = registeredClientsPage.getHtmlElementById("registered_clients");
         Assert.assertEquals(1, table.getRowCount());
@@ -275,9 +292,20 @@ public class OIDCTest {
         webClient.close();
     }
     
-    // Test that we managed to create a new Client ok
+    private static HtmlPage deleteClient(WebClient webClient, String url, String clientId) throws Exception {
+        HtmlPage clientPage = webClient.getPage(url + "/" + clientId);
+        
+        final HtmlForm deleteForm = clientPage.getFormByName("deleteForm");
+        Assert.assertNotNull(deleteForm);
+        
+        // Delete the client
+        final HtmlButton button = deleteForm.getButtonByName("submit_delete_button");
+        return button.click();
+    }
+    
+    // Test that we managed to create the clients ok
     @org.junit.Test
-    public void testClientCreated() throws Exception {
+    public void testCreatedClients() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/clients";
         String user = "alice";
         String password = "ecila";
@@ -290,6 +318,11 @@ public class OIDCTest {
         
         // Get the new client identifier
         HtmlTable table = loginPage.getHtmlElementById("registered_clients");
+        
+        // 2 clients
+        Assert.assertEquals(table.getRows().size(), 3);
+        
+        // Now check the first client
         String clientId = table.getCellAt(1, 1).asText().trim();
         Assert.assertNotNull(clientId);
         
@@ -301,9 +334,7 @@ public class OIDCTest {
         
         // Check the redirect URI
         String redirectURI = table.getCellAt(1, 3).asText().trim();
-        Assert.assertEquals("http://127.0.0.1", redirectURI);
-        
-        Assert.assertEquals(table.getRows().size(), 2);
+        Assert.assertEquals("http://127.0.1.1", redirectURI);
         
         // Now check the specific client page
         HtmlPage clientPage = webClient.getPage(url + "/" + clientId);
