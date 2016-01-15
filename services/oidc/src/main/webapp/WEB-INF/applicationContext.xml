@@ -135,21 +135,15 @@
         <property name="grantHandler" ref="refreshTokenHandler"/>
         <property name="canSupportPublicClients" value="true"/>
     </bean>
-    <bean id="fedizTokenValidator" class="org.apache.cxf.fediz.service.oidc.FedizAccessTokenValidator">
+    <bean id="accessTokenIntrospectionService" class="org.apache.cxf.rs.security.oauth2.services.TokenIntrospectionService">
         <property name="dataProvider" ref="oauthProvider"/>
-    </bean>
-    <bean id="accessTokenValidatorService" class="org.apache.cxf.rs.security.oauth2.services.AccessTokenValidatorService">
-        <property name="tokenValidator" ref="fedizTokenValidator"/>
-        <!-- Setting this property allows RS to avoid authenticating with AS when RS 
-             requests a token validation, should be avoided in the production
-        -->
         <property name="blockUnauthorizedRequests" value="false"/> 
     </bean>
     <bean id="oauthJsonProvider" class="org.apache.cxf.rs.security.oauth2.provider.OAuthJSONProvider"/>
     <jaxrs:server address="/oauth2">
         <jaxrs:serviceBeans>
             <ref bean="accessTokenService"/>
-            <ref bean="accessTokenValidatorService"/>
+            <ref bean="accessTokenIntrospectionService"/>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
            <ref bean="oauthJsonProvider"/>
