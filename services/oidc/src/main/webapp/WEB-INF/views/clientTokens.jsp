@@ -80,13 +80,19 @@
 		   %>
            <%=    issued %><br/>
            </td>
-           <td>
-           <% 
-               Date expiresDate = new Date((token.getIssuedAt() + token.getExpiresIn()) * 1000);
-               String expires = dateFormat.format(expiresDate);
+           <%
+		       if (token.getExpiresIn() > 0) {
+		           Date expiresDate = new Date((token.getIssuedAt() + token.getExpiresIn()) * 1000);
+                   String expires = dateFormat.format(expiresDate);
 		   %>
-           <%=    expires %><br/>
-           </td>
+           <td><%=    expires %></td>
+           <%
+		       } else {
+		   %>
+		   <td>Never</td>   
+		   <%
+		       }
+		   %>
            <%
 	          if (token.getRefreshToken() != null) {
 	       %>
@@ -132,13 +138,19 @@
 		   %>
            <%=    issued %><br/>
            </td>
-           <td>
-           <% 
-               Date expiresDate = new Date((token.getIssuedAt() + token.getExpiresIn()) * 1000);
-               String expires = dateFormat.format(expiresDate);
+           <%
+		       if (token.getExpiresIn() > 0) {
+		           Date expiresDate = new Date((token.getIssuedAt() + token.getExpiresIn()) * 1000);
+                   String expires = dateFormat.format(expiresDate);
 		   %>
-           <%=    expires %><br/>
-           </td>
+           <td><%=    expires %></td>
+           <%
+		       } else {
+		   %>
+		   <td>Never</td>   
+		   <%
+		       }
+		   %>
            <td>
            <%
 	          for (String at : token.getAccessTokens()) {

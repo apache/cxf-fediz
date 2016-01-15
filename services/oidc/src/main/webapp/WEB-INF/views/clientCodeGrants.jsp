@@ -44,7 +44,7 @@
 <h1>Code Grants issued to <%= client.getApplicationName() + "(" + client.getClientId() + ")"%></h1>
 <br/>
 <table border="1">
-    <tr><th>ID</th><th>Issue Date</th><th>Expiry Date</th></tr> 
+    <tr><th>ID</th><th>Issue Date</th><th>Expiry Date</th><th>Action</th></tr> 
     <%
        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss", Locale.US);
        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -60,18 +60,22 @@
 		   %>
            <%=    issued %><br/>
            </td>
-           <td>
-           <% 
-               Date expiresDate = new Date((token.getIssuedAt() + token.getExpiresIn()) * 1000);
-               String expires = dateFormat.format(expiresDate);
+           <%
+		       if (token.getExpiresIn() > 0) {
+		           Date expiresDate = new Date((token.getIssuedAt() + token.getExpiresIn()) * 1000);
+                   String expires = dateFormat.format(expiresDate);
 		   %>
-           <%=    expires %><br/>
-           </td>
+           <td><%=    expires %></td>
+           <%
+		       } else {
+		   %>
+		   <td>Never</td>   
+		   <%
+		       }
+		   %>
            <td>
-               <form action="/fediz-oidc/clients/<%= client.getClientId() + "/codes/" + token.getTokenKey() + "/revoke"%>" method="POST">
-		         <div data-type="control_button" class="form-line">
-				   <button class="form-submit-button" type="submit">Delete</button>
-		         </div>
+               <form action="/fediz-oidc/clients/<%= client.getClientId() + "/codes/" + token.getCode() + "/revoke"%>" method="POST">
+		         <input type="submit" value="Delete"/>
                </form>
            </td>
        </tr>
