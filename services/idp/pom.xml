@@ -237,6 +237,17 @@
             <artifactId>el-api</artifactId>
             <version>${javax.el.version}</version>
         </dependency>
+        <dependency>
+        	<groupId>io.swagger</groupId>
+        	<artifactId>swagger-jaxrs</artifactId>
+        	<version>1.5.6</version>
+        </dependency>
+        <dependency>
+           <groupId>org.webjars</groupId>
+           <artifactId>swagger-ui</artifactId>
+           <version>2.1.0</version>
+           <scope>provided</scope>
+       </dependency>
     </dependencies>
     <build>
         <resources>
@@ -247,6 +258,7 @@
                     <include>**/realm.properties</include>
                     <include>**/persistence.properties</include>
                     <include>**/web.xml</include>
+                    <include>**/restContext.xml</include>
                 </includes>
             </resource>
             <resource>
@@ -256,6 +268,7 @@
                     <exclude>**/realm.properties</exclude>
                     <exclude>**/persistence.properties</exclude>
                     <exclude>**/web.xml</exclude>
+                    <exclude>**/restContext.xml</exclude>
                 </excludes>
             </resource>
         </resources>
@@ -308,6 +321,7 @@
                             <includes>
                                 <include>**/applicationContext.xml</include>
                                 <include>**/web.xml</include>
+								<include>**/restContext.xml</include>
                             </includes>
                         </resource>
                         <resource>
@@ -316,6 +330,7 @@
                             <excludes>
                                 <exclude>**/applicationContext.xml</exclude>
                                 <exclude>**/web.xml</exclude>
+								<exclude>**/restContext.xml</exclude>
                             </excludes>
                         </resource>
                     </webResources>

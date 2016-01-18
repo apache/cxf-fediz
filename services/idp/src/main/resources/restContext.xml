@@ -29,13 +29,11 @@
         http://cxf.apache.org/schemas/jaxrs.xsd">
 
 <!-- 
-<context:component-scan base-package="org.apache.cxf.fediz.service.idp.protocols" />
+    <context:component-scan base-package="org.apache.cxf.fediz.service.idp.protocols" />
     
-    
-    <bean
-        class="org.apache.cxf.fediz.service.idp.protocols.TrustedIdpProtocolHandlerImpl" />
-      -->   
+    <bean class="org.apache.cxf.fediz.service.idp.protocols.TrustedIdpProtocolHandlerImpl" />  
     <context:property-placeholder location="classpath:realm.properties"/>
+--> 
     
     <bean id="jaxbProvider" class="org.apache.cxf.jaxrs.provider.JAXBElementProvider">
         <property name="depthProperties">
@@ -56,7 +54,22 @@
         class="org.apache.cxf.fediz.service.idp.rest.RestServiceExceptionMapper" />
 
     <bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider" />
+    
+     <!-- CXF Swagger2Feature -->
+    <bean id="swagger2Feature" class="org.apache.cxf.jaxrs.swagger.Swagger2Feature">
+        <property name="title" value="Apache Fediz IDP" />
+        <property name="version" value="${project.version}" />
+        <property name="description" value="Apache Fediz IDP ${project.version}" />
+        <property name="contact" value="dev@cxf.apache.org" />
 
+        <property name="resourcePackage" value="org.apache.cxf.fediz.service.idp.rest" />
+        <property name="scanAllResources" value="true" />
+
+        <property name="dynamicBasePath" value="true" />
+        <property name="replaceTags" value="true" />
+        <property name="prettyPrint" value="true" />
+    </bean>
+    
     <jaxrs:server id="idpService" address="/rs">
         <jaxrs:serviceBeans>
             <ref bean="idpServiceImpl" />
@@ -72,6 +85,9 @@
             <ref bean="jsonProvider" />
             <ref bean="exceptionMapper" />
         </jaxrs:providers>
+        <jaxrs:features>
+            <ref bean="swagger2Feature" />
+        </jaxrs:features>
         <jaxrs:extensionMappings>
             <entry key="json" value="application/json;charset=UTF-8" />
             <entry key="xml" value="application/xml;charset=UTF-8" />
