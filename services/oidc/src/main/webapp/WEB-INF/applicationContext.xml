@@ -40,6 +40,9 @@
     <bean id="oidcAuthorizationService" class="org.apache.cxf.rs.security.oidc.idp.OidcAuthorizationCodeService">
          <property name="dataProvider" ref="oauthProvider"/>
          <property name="skipAuthorizationWithOidcScope" value="true"/>
+         <!--
+         <property name="useAllClientScopes" value="true"/>
+         -->
          <property name="canSupportPublicClients" value="true"/>
     </bean>
     <jaxrs:server address="/idp">
@@ -91,6 +94,9 @@
     
     <bean id="clientRegService" init-method="init" class="org.apache.cxf.fediz.service.oidc.ClientRegistrationService">
        <property name="dataProvider" ref="oauthProvider"/>
+       <!-- 
+           <property name="clientScopes" ref="acceptedScopes"/>
+       -->
        <property name="homeRealms">
           <map>
             <entry key="urn:org:apache:cxf:fediz:idp:realm-A" value="IDP of Realm A" />

@@ -19,9 +19,12 @@
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:util="http://www.springframework.org/schema/util"
     xsi:schemaLocation="
         http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util.xsd
         ">
 
     <bean id="applicationContextProvider" class="org.apache.cxf.fediz.service.oidc.ApplicationContextProvider"/>
@@ -29,15 +32,13 @@
     <bean id="samlTokenConverter" class="org.apache.cxf.fediz.service.oidc.SamlTokenConverter">
         <property name="issuer" value="accounts.fediz.com"/>
     </bean>
+    <util:map id="acceptedScopes">
+        <entry key="openid" value="Access the authentication claims" />
+        <entry key="refreshToken" value="Refresh access tokens" />
+    </util:map>
     <bean id="oauthProvider" class="org.apache.cxf.fediz.service.oidc.OAuthDataManager"
           init-method="init" destroy-method="close">
-    <!--
-        <property name="scopes">
-          <map>
-            <entry key="scopeName" value="scopeDescription" />
-          </map>
-        </property>
-    -->
+        <property name="scopes" ref="acceptedScopes"/>
     <!--
         <property name="accessTokenLifetime" value="3600"/>
     -->

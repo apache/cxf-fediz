@@ -19,6 +19,7 @@
 
 package org.apache.cxf.fediz.service.oidc;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -52,7 +53,8 @@ public class ClientRegistrationService {
     private OAuthDataManager manager;
     private Map<String, String> homeRealms = new LinkedHashMap<String, String>();
     private boolean protectIdTokenWithClientSecret;
-
+    private Map<String, String> clientScopes;
+    
     @Context
     private SecurityContext sc;
 
@@ -195,6 +197,10 @@ public class ClientRegistrationService {
 
         newClient.setRegisteredAt(System.currentTimeMillis() / 1000);
         
+        if (clientScopes != null && !clientScopes.isEmpty()) {
+            newClient.setRegisteredScopes(new ArrayList<String>(clientScopes.keySet()));
+        }
+        
         return registerNewClient(newClient);
     }
 
@@ -255,5 +261,9 @@ public class ClientRegistrationService {
 
     public void setProtectIdTokenWithClientSecret(boolean protectIdTokenWithClientSecret) {
         this.protectIdTokenWithClientSecret = protectIdTokenWithClientSecret;
+    }
+
+    public void setClientScopes(Map<String, String> clientScopes) {
+        this.clientScopes = clientScopes;
     }
 }
