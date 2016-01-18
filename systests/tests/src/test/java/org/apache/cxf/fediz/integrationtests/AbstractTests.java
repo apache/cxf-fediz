@@ -49,11 +49,6 @@ import org.junit.Test;
 
 public abstract class AbstractTests {
 
-    static final String TEST_WREQ =
-        "<RequestSecurityToken xmlns=\"http://docs.oasis-open.org/ws-sx/ws-trust/200512\">"
-        + "<TokenType>http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV3.0</TokenType>"
-        + "</RequestSecurityToken>";
-
     static {
         WSSConfig.init();
     }
@@ -643,7 +638,7 @@ public abstract class AbstractTests {
     
     @Test
     public void testEntityExpansionAttack() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
         
