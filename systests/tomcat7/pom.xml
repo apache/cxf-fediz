@@ -76,6 +76,7 @@
             <version>${project.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
+            <classifier>tests</classifier>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

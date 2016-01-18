@@ -210,7 +210,6 @@ public class Spring2Test extends AbstractTests {
         
     }
     
-    // Getting 500 error code here
     @Override
     @Test
     public void testAliceModifiedSignature() throws Exception {
@@ -259,6 +258,13 @@ public class Spring2Test extends AbstractTests {
             //                  || ex.getMessage().contains("401 Authentication Failed")
             //                  || ex.getMessage().contains("403 Forbidden"));
         }
+
+    }
+    
+    @Override
+    @Test
+    @Ignore
+    public void testEntityExpansionAttack() throws Exception {
 
     }
 }
