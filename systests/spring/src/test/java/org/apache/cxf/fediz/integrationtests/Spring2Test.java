@@ -107,4 +107,11 @@ public class Spring2Test extends AbstractTests {
     public void testRPLogout() throws Exception {
         
     }
+    
+    @Override
+    @Test
+    @Ignore
+    public void testEntityExpansionAttack() throws Exception {
+
+    }
 }

@@ -35,6 +35,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.util.DOMUtils;
@@ -620,6 +621,59 @@ public abstract class AbstractTests {
             Assert.fail("Failure expected on a bad wreply address");
         } catch (FailingHttpStatusCodeException ex) {
             Assert.assertEquals(ex.getStatusCode(), 400);
+        }
+    }
+    
+    @Test
+    public void testEntityExpansionAttack() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String user = "alice";
+        String password = "ecila";
+        
+        // Get the initial token
+        CookieManager cookieManager = new CookieManager();
+        final WebClient webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        final HtmlPage idpPage = webClient.getPage(url);
+        webClient.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+
+        // Parse the form to get the token (wresult)
+        DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
+
+        String entity = IOUtils.toString(this.getClass().getClassLoader().getResource("entity.xml").openStream());
+        String reference = "&m;";
+        
+        for (DomElement result : results) {
+            if ("wresult".equals(result.getAttributeNS(null, "name"))) {
+                // Now modify the Signature
+                String value = result.getAttributeNS(null, "value");
+                value = entity + value;
+                value = value.replace("alice", reference);
+                result.setAttributeNS(null, "value", value);
+            }
+        }
+        
+        // Invoke back on the RP
+        
+        final HtmlForm form = idpPage.getFormByName("signinresponseform");
+        final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
+
+        try {
+            button.click();
+            Assert.fail("Failure expected on an entity expansion attack");
+        } catch (FailingHttpStatusCodeException ex) {
+            ex.printStackTrace();
+            // expected
+            Assert.assertTrue(ex.getMessage().contains("401 Unauthorized")
+                              || ex.getMessage().contains("401 Authentication Failed")
+                              || ex.getMessage().contains("403 Forbidden"));
         }
     }
     
