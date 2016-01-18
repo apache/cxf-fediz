@@ -310,7 +310,7 @@ public class STSClientAction {
     private void validateApplicationEndpoint(Application serviceConfig, RequestContext context) 
         throws ProcessingException {
         if (serviceConfig.getCompiledPassiveRequestorEndpointConstraint() == null) {
-            LOG.info("No passive requestor endpoint constraint is configured for the application. "
+            LOG.warn("No passive requestor endpoint constraint is configured for the application. "
                      + "This could lead to a malicious redirection attack");
             return;
         }
