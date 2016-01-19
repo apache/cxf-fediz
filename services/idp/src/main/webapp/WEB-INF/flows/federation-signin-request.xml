@@ -32,49 +32,27 @@
     <input name="whr" />
 
     <decision-state id="checkHRDSEnabled">
-        <if test="true" then="checkWhrInSigninRequest" else="checkDefaultToThisIDP" />
-    </decision-state>
-
-    <decision-state id="checkWhrInSigninRequest">
-        <if test="flowScope.whr == null or flowScope.whr.trim().isEmpty()"
-            then="checkHomeRealm" else="checkIsThisIDP" />
-    </decision-state>
-
-    <decision-state id="checkHomeRealm">
-        <if test="homeRealmReminder.readCookie(flowRequestContext) == null"
-            then="processHRDSExpression" else="restoreHomeRealm" />
-    </decision-state>
-
-    <action-state id="restoreHomeRealm">
-        <evaluate
-            expression="homeRealmReminder.readCookie(flowRequestContext).value"
-            result="flowScope.whr" />
-        <transition to="checkIsThisIDP" />
-    </action-state>
-
-    <action-state id="processHRDSExpression">
-        <!-- TODO -->
-        <evaluate
-            expression="processHRDSExpressionAction.submit(flowRequestContext)"
-            result="flowScope.whr" />
-        <transition on="" to="provideIDPListForUser" />
-        <transition to="checkIsThisIDP">
-            <evaluate
-                expression="homeRealmReminder.addCookie(flowRequestContext, flowScope.whr)" />
-        </transition>
-    </action-state>
-
-    <decision-state id="provideIDPListForUser">
-        <if
-            test="flowScope.idpConfig.trustedIdps == null or idpConfig.trustedIdps.isEmpty()"
-            then="checkDefaultToThisIDP" />
-        <if test="flowScope.idpConfig.isProvideIdpList() == false"
-            then="checkDefaultToThisIDP" else="showIDPList" />
+        <if test="true" then="processHRDSExpression" else="checkDefaultToThisIDP" />
     </decision-state>
 
     <decision-state id="checkDefaultToThisIDP">
         <if test="flowScope.idpConfig.isUseCurrentIdp()" then="checkWauthTypeSupported"
             else="viewBadRequest" />
+    </decision-state>
+
+    <decision-state id="processHRDSExpression">
+        <on-entry>
+            <evaluate expression="processHRDSExpressionAction.submit(flowRequestContext)" result="flowScope.whr" />
+        </on-entry>
+        <if test="flowScope.whr == null or flowScope.whr.trim().isEmpty()"
+            then="provideIDPListForUser" else="checkIsThisIDP" />
+    </decision-state>
+
+    <decision-state id="provideIDPListForUser">
+        <if test="flowScope.idpConfig.trustedIdps == null or idpConfig.trustedIdps.isEmpty()"
+            then="checkDefaultToThisIDP" />
+        <if test="flowScope.idpConfig.isProvideIdpList() == false"
+            then="checkDefaultToThisIDP" else="showIDPList" />
     </decision-state>
 
     <view-state id="showIDPList" view="idplist" model="trustedIDPSelection">
