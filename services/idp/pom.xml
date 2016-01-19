@@ -31,6 +31,7 @@
     
     <properties>
         <swagger-ui.version>2.1.0</swagger-ui.version>
+        <spring.security.version>3.1.7.RELEASE</spring.security.version>
     </properties>
     
     <dependencyManagement>
