@@ -95,7 +95,7 @@
     <bean id="clientRegService" init-method="init" class="org.apache.cxf.fediz.service.oidc.ClientRegistrationService">
        <property name="dataProvider" ref="oauthProvider"/>
        <!-- 
-           <property name="clientScopes" ref="acceptedScopes"/>
+           <property name="clientScopes" ref="supportedScopes"/>
        -->
        <property name="homeRealms">
           <map>

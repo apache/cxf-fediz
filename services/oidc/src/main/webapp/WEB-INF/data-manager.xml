@@ -32,13 +32,22 @@
     <bean id="samlTokenConverter" class="org.apache.cxf.fediz.service.oidc.SamlTokenConverter">
         <property name="issuer" value="accounts.fediz.com"/>
     </bean>
-    <util:map id="acceptedScopes">
+    <util:map id="supportedScopes">
         <entry key="openid" value="Access the authentication claims" />
         <entry key="refreshToken" value="Refresh access tokens" />
     </util:map>
+    <util:list id="coreScopes">
+        <value>openid</value>
+    </util:list>
+    <util:list id="invisibleToClientScopes">
+        <value>refreshToken</value>
+    </util:list>
     <bean id="oauthProvider" class="org.apache.cxf.fediz.service.oidc.OAuthDataManager"
           init-method="init" destroy-method="close">
-        <property name="scopes" ref="acceptedScopes"/>
+        <property name="supportedScopes" ref="supportedScopes"/>
+        <property name="requiredScopes" ref="coreScopes"/>
+        <property name="defaultScopes" ref="coreScopes"/>
+        <property name="invisibleToClientScopes" ref="invisibleToClientScopes"/>
     <!--
         <property name="accessTokenLifetime" value="3600"/>
     -->
