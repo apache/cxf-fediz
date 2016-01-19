@@ -57,10 +57,12 @@ import org.apache.cxf.jaxrs.utils.ExceptionUtils;
 import org.apache.cxf.rs.security.saml.DeflateEncoderDecoder;
 import org.apache.cxf.rs.security.saml.sso.AuthnRequestBuilder;
 import org.apache.cxf.rs.security.saml.sso.DefaultAuthnRequestBuilder;
+import org.apache.cxf.rs.security.saml.sso.EHCacheTokenReplayCache;
 import org.apache.cxf.rs.security.saml.sso.SAMLProtocolResponseValidator;
 import org.apache.cxf.rs.security.saml.sso.SAMLSSOResponseValidator;
 import org.apache.cxf.rs.security.saml.sso.SSOConstants;
 import org.apache.cxf.rs.security.saml.sso.SSOValidatorResponse;
+import org.apache.cxf.rs.security.saml.sso.TokenReplayCache;
 import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.wss4j.common.crypto.CertificateStore;
@@ -116,6 +118,7 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
     private static final String SAML_SSO_REQUEST_ID = "saml-sso-request-id";
 
     private AuthnRequestBuilder authnRequestBuilder = new DefaultAuthnRequestBuilder();
+    private TokenReplayCache<String> replayCache;
 
     static {
         OpenSAMLUtil.initSamlEngine();
@@ -430,14 +433,20 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
                 isPropertyConfigured(trustedIdp, REQUIRE_SIGNED_ASSERTIONS, true));
             ssoResponseValidator.setEnforceKnownIssuer(
                 isPropertyConfigured(trustedIdp, REQUIRE_KNOWN_ISSUER, true));
+            
+            HttpServletRequest httpServletRequest = WebUtils.getHttpServletRequest(requestContext);
+            boolean post = "POST".equals(httpServletRequest.getMethod());
+            if (post) {
+                ssoResponseValidator.setReplayCache(getReplayCache());
+            }
 
-            return ssoResponseValidator.validateSamlResponse(samlResponse, false);
+            return ssoResponseValidator.validateSamlResponse(samlResponse, post);
         } catch (WSSecurityException ex) {
             LOG.debug(ex.getMessage(), ex);
             throw ExceptionUtils.toBadRequestException(ex, null);
         }
     }
-
+    
     // Is a property configured. Defaults to "true" if not
     private boolean isPropertyConfigured(TrustedIdp trustedIdp, String property, boolean defaultValue) {
         Map<String, String> parameters = trustedIdp.getParameters();
@@ -447,5 +456,16 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
         }
         
         return defaultValue;
+    }
+    
+    public void setReplayCache(TokenReplayCache<String> replayCache) {
+        this.replayCache = replayCache;
+    }
+    
+    public TokenReplayCache<String> getReplayCache() {
+        if (replayCache == null) {
+            replayCache = new EHCacheTokenReplayCache();
+        }
+        return replayCache;
     }
 }
