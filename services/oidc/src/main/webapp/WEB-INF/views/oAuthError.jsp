@@ -26,7 +26,7 @@ Authorization error: <%= error.getError() %>
 </h1>
 <br/>
 <p>
-Back to <a href="<%= basePath %>client">Client Registration page</a>
+Back to <a href="<%= basePath %>clients">Client Registration page</a>
 </p>
 </big></big>
 </div>
