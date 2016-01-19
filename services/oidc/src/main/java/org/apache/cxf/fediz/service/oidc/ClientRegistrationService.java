@@ -43,6 +43,9 @@ import org.apache.cxf.common.util.Base64UrlUtility;
 import org.apache.cxf.common.util.StringUtils;
 import org.apache.cxf.rs.security.oauth2.common.Client;
 import org.apache.cxf.rs.security.oauth2.common.UserSubject;
+import org.apache.cxf.rs.security.oauth2.grants.code.AuthorizationCodeDataProvider;
+import org.apache.cxf.rs.security.oauth2.provider.ClientRegistrationProvider;
+import org.apache.cxf.rs.security.oauth2.provider.OAuthDataProvider;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 import org.apache.cxf.rt.security.crypto.CryptoUtils;
 
@@ -50,7 +53,8 @@ import org.apache.cxf.rt.security.crypto.CryptoUtils;
 public class ClientRegistrationService {
 
     private Map<String, Collection<Client>> registrations = new ConcurrentHashMap<String, Collection<Client>>();
-    private OAuthDataManager manager;
+    private OAuthDataProvider dataProvider;
+    private ClientRegistrationProvider clientProvider;
     private Map<String, String> homeRealms = new LinkedHashMap<String, String>();
     private boolean protectIdTokenWithClientSecret;
     private Map<String, String> clientScopes;
@@ -94,7 +98,7 @@ public class ClientRegistrationService {
         for (Iterator<Client> it = clients.iterator(); it.hasNext();) {
             Client c = it.next();
             if (c.getClientId().equals(id)) {
-                manager.removeClient(id);
+                clientProvider.removeClient(id);
                 it.remove();
                 break;
             }
@@ -110,7 +114,7 @@ public class ClientRegistrationService {
         if (c.isConfidential()) {
             c.setClientSecret(generateClientSecret());
         }
-        manager.setClient(c);
+        clientProvider.setClient(c);
         return c;
     }
     
@@ -124,8 +128,8 @@ public class ClientRegistrationService {
     
     protected ClientTokens doGetClientIssuedTokens(Client c) {
         return new ClientTokens(c, 
-                                      manager.getAccessTokens(c),
-                                      manager.getRefreshTokens(c));
+                                      dataProvider.getAccessTokens(c),
+                                      dataProvider.getRefreshTokens(c));
     }
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -149,7 +153,7 @@ public class ClientRegistrationService {
                                                      String tokenId,
                                                      String tokenType) {
         Client c = getRegisteredClient(clientId);
-        manager.revokeToken(c, tokenId, tokenType);
+        dataProvider.revokeToken(c, tokenId, tokenType);
         return doGetClientIssuedTokens(c);
     }
     
@@ -157,8 +161,11 @@ public class ClientRegistrationService {
     @Produces(MediaType.TEXT_HTML)
     @Path("/{id}/codes")
     public ClientCodeGrants getClientCodeGrants(@PathParam("id") String id) {
-        Client c = getRegisteredClient(id);
-        return new ClientCodeGrants(c, manager.getCodeGrants(c));
+        if (dataProvider instanceof AuthorizationCodeDataProvider) {
+            Client c = getRegisteredClient(id);
+            return new ClientCodeGrants(c, ((AuthorizationCodeDataProvider)dataProvider).getCodeGrants(c));
+        }
+        return null;
     }
     
     @POST
@@ -167,8 +174,11 @@ public class ClientRegistrationService {
     @Path("/{id}/codes/{code}/revoke")
     public ClientCodeGrants revokeClientCodeGrant(@PathParam("id") String id,
                                                   @PathParam("code") String code) {
-        manager.removeCodeGrant(code);
-        return getClientCodeGrants(id);
+        if (dataProvider instanceof AuthorizationCodeDataProvider) {
+            ((AuthorizationCodeDataProvider)dataProvider).removeCodeGrant(code);
+            return getClientCodeGrants(id);
+        }
+        return null;
     }
     
     @POST
@@ -217,7 +227,7 @@ public class ClientRegistrationService {
     }
 
     protected Collection<Client> registerNewClient(Client newClient) {
-        manager.setClient(newClient);
+        clientProvider.setClient(newClient);
         Collection<Client> clientRegistrations = getClientRegistrations();
         clientRegistrations.add(newClient);
         return clientRegistrations;
@@ -244,16 +254,12 @@ public class ClientRegistrationService {
         return sc.getUserPrincipal().getName();
     }
 
-    public void setDataProvider(OAuthDataManager m) {
-        this.manager = m;
-    }
-
     public void setHomeRealms(Map<String, String> homeRealms) {
         this.homeRealms = homeRealms;
     }
 
     public void init() {
-        for (Client c : manager.getClients(null)) {
+        for (Client c : clientProvider.getClients(null)) {
             String userName = c.getResourceOwnerSubject().getLogin();
             getClientRegistrations(userName).add(c);
         }
@@ -265,5 +271,17 @@ public class ClientRegistrationService {
 
     public void setClientScopes(Map<String, String> clientScopes) {
         this.clientScopes = clientScopes;
+    }
+
+    public OAuthDataProvider getDataProvider() {
+        return dataProvider;
+    }
+
+    public void setDataProvider(OAuthDataProvider dataProvider) {
+        this.dataProvider = dataProvider;
+    }
+
+    public void setClientProvider(ClientRegistrationProvider clientProvider) {
+        this.clientProvider = clientProvider;
     }
 }
