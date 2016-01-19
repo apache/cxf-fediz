@@ -18,31 +18,57 @@
  */
 package org.apache.cxf.fediz.service.idp.beans;
 
+import javax.servlet.http.Cookie;
+
+import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.expression.Expression;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.stereotype.Component;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
  * This class is responsible to process Home Realm Discovery Service Expression.
  */
-
+@Component
 public class ProcessHRDSExpressionAction {
 
     private static final String IDP_CONFIG = "idpConfig";
-    private static final Logger LOG = LoggerFactory
-            .getLogger(ProcessHRDSExpressionAction.class);
+
+    private static final Logger LOG = LoggerFactory.getLogger(ProcessHRDSExpressionAction.class);
+
+    @Autowired
+    private HomeRealmReminder homeRealmReminder;
 
     public String submit(RequestContext context) {
+        // Check if home realm is known already
+        Cookie whrCookie = homeRealmReminder.readCookie(context);
+        if (whrCookie != null) {
+            LOG.debug("WHR Cookie set: {}", whrCookie);
+            return whrCookie.getValue();
+        }
+
+        // Check if custom HRDS is defined
         Idp idpConfig = (Idp)WebUtils.getAttributeFromFlowScope(context, IDP_CONFIG);
         String hrds = idpConfig.getHrds();
-        //TODO
-        if (hrds == null) {
-            LOG.info("HRDS is null (Mock).");
-            return "";
+
+        if (hrds != null) {
+            LOG.debug("HomeRealmDiscoveryService EL: {}", hrds);
+            ExpressionParser parser = new SpelExpressionParser();
+            Expression exp = parser.parseExpression(hrds);
+            String result = exp.getValue(context, String.class);
+            LOG.info("Realm resolved by HomeRealmDiscoveryService: {}", result);
+            return result;
         }
-        LOG.info("HRDS is not null (Mock).");
-        return "some-whr-value";
+
+        // Return whr parameter unchanged
+        String whr = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_HOME_REALM);
+        LOG.debug("No custom homeRealm handling, using whr parameter as provided in request: {}", whr);
+        return whr;
     }
 }

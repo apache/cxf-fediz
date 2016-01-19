@@ -38,10 +38,8 @@
         <property name="rpSingleSignOutConfirmation" value="true"/>
         <property name="supportedProtocols">
             <util:list>
-                <value>http://docs.oasis-open.org/wsfed/federation/200706
-                </value>
-                <value>http://docs.oasis-open.org/ws-sx/ws-trust/200512
-                </value>
+                <value>http://docs.oasis-open.org/wsfed/federation/200706</value>
+                <value>http://docs.oasis-open.org/ws-sx/ws-trust/200512</value>
             </util:list>
         </property>
         <property name="tokenTypesOffered">
@@ -52,7 +50,8 @@
         </property>
         <property name="authenticationURIs">
             <util:map>
-                <entry key="default" value="federation/up" />
+                <entry key="default"
+                       value="federation/up" />
                 <entry key="http://docs.oasis-open.org/wsfed/authorization/200706/authntypes/SslAndKey" 
                        value="federation/krb" />
                 <entry key="http://docs.oasis-open.org/wsfed/authorization/200706/authntypes/default"
