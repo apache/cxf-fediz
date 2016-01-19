@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 public class FederationLogoutFilter extends LogoutFilter {
 
@@ -51,15 +52,10 @@ public class FederationLogoutFilter extends LogoutFilter {
             this.logoutUrl = federationConfig.getFedizContext(contextName).getLogoutURL();
         }
         if (this.logoutUrl != null && !this.logoutUrl.isEmpty()) {
-            super.setFilterProcessesUrl(this.logoutUrl);
+            super.setLogoutRequestMatcher(new AntPathRequestMatcher(logoutUrl));
             return super.requiresLogout(request, response);
         }
         return false;
-    }
-
-    public void setFilterProcessesUrl(String filterProcessesUrl) {
-        throw new UnsupportedOperationException(
-                "setFilterProcessesUrl() unsupported. Use fediz config to configure logout url");
     }
 
     protected String getFilterProcessesUrl() {
