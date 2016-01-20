@@ -484,8 +484,6 @@ public class IdpTest {
         } catch (FailingHttpStatusCodeException ex) {
             Assert.assertEquals(ex.getStatusCode(), 400);
         }
-
-        webClient.close();
     }
     
 }
