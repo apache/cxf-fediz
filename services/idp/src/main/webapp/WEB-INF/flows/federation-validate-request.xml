@@ -38,35 +38,28 @@
                 result="flowScope.wauth" />
             <set name="flowScope.idpConfig" value="config.getIDP(null)" />
         </on-entry>
-        <if
-            test="requestParameters.wa == 'wsignout1.0' or requestParameters.wa == 'wsignoutcleanup1.0'"
+        <if test="requestParameters.wa == 'wsignout1.0' or requestParameters.wa == 'wsignoutcleanup1.0'"
             then="selectSignOutProcess" />
-        <if
-            test="requestParameters.wa == 'wsignin1.0'" then="selectWsFedProcess" 
+        <if test="requestParameters.wa == 'wsignin1.0'" then="selectWsFedProcess" 
             else="selectSAMLProcess" /> 
     </decision-state>
 
     <decision-state id="selectWsFedProcess">
-        <if
-            test="requestParameters.wtrealm == null or requestParameters.wtrealm.length() == 0"
-            then="viewBadRequest" />
-        <if
-            test="requestParameters.wresult == null or requestParameters.wresult.isEmpty()"
-            then="signinRequest" else="signinResponse" />
+        <if test="requestParameters.wresult != null and !requestParameters.wresult.isEmpty()"
+            then="signinResponse" />
+        <if test="requestParameters.wtrealm != null and !requestParameters.wtrealm.isEmpty()"
+            then="signinRequest" else="viewBadRequest" />
     </decision-state>
     
     <decision-state id="selectSAMLProcess">
-        <if
-            test="requestParameters.RelayState == null or requestParameters.RelayState.length() == 0"
+        <if test="requestParameters.RelayState == null or requestParameters.RelayState.length() == 0"
             then="viewBadRequest" />
-        <if
-            test="requestParameters.SAMLResponse == null or requestParameters.SAMLResponse.length() == 0"
+        <if test="requestParameters.SAMLResponse == null or requestParameters.SAMLResponse.length() == 0"
             then="viewBadRequest" else="signinResponse" />
     </decision-state>
 	
     <decision-state id="selectSignOutProcess">
-        <if
-            test="requestParameters.wa == 'wsignout1.0' and flowScope.idpConfig.rpSingleSignOutConfirmation == true
+        <if test="requestParameters.wa == 'wsignout1.0' and flowScope.idpConfig.rpSingleSignOutConfirmation == true
             or requestParameters.wa == 'wsignoutcleanup1.0' and flowScope.idpConfig.rpSingleSignOutCleanupConfirmation == true"
             then="viewSignoutConfirmation" else="invalidateSessionAction" />
     </decision-state>
