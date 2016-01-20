@@ -21,8 +21,6 @@ package org.apache.cxf.fediz.service.sts.realms;
 
 import java.security.cert.X509Certificate;
 
-import javax.security.auth.x500.X500Principal;
-
 import org.apache.cxf.sts.token.realm.SAMLRealmCodec;
 import org.apache.wss4j.common.saml.SAMLKeyInfo;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
@@ -33,15 +31,33 @@ public class SamlRealmCodec implements SAMLRealmCodec {
 
     private static final Logger LOG = LoggerFactory.getLogger(SamlRealmCodec.class);
 
+    private boolean uppercase = true;
+    
     @Override
     public String getRealmFromToken(SamlAssertionWrapper assertion) {
         SAMLKeyInfo ki = assertion.getSignatureKeyInfo();
         X509Certificate[] certs = ki.getCerts();
-        X500Principal subject = certs[0].getSubjectX500Principal();
-        String name = subject.getName();
-        String realm = name.substring(name.indexOf("CN=") + 3);
+        String realm = parseCNValue(certs[0].getSubjectX500Principal().getName());
         LOG.info("Realm parsed in certificate: " + realm);
-        return realm.toUpperCase();
+        return realm;
+    }
+
+    protected String parseCNValue(String name) {
+        int len = name.indexOf(",") > 0 ? name.indexOf(",") : name.length();
+        String realm = name.substring(name.indexOf("CN=") + 3, len);
+        
+        if (uppercase) {
+            realm = realm.toUpperCase();
+        }
+        return realm;
+    }
+
+    public boolean isUppercase() {
+        return uppercase;
+    }
+
+    public void setUppercase(boolean uppercase) {
+        this.uppercase = uppercase;
     }
 
 }
