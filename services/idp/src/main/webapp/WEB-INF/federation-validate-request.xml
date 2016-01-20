@@ -47,12 +47,10 @@
     </decision-state>
 
     <decision-state id="selectWsFedProcess">
-        <if
-            test="requestParameters.wtrealm == null or requestParameters.wtrealm.length() == 0"
-            then="viewBadRequest" />
-        <if
-            test="requestParameters.wresult == null or requestParameters.wresult.isEmpty()"
-            then="signinRequest" else="signinResponse" />
+        <if test="requestParameters.wresult != null and !requestParameters.wresult.isEmpty()"
+            then="signinResponse" />
+        <if test="requestParameters.wtrealm != null and !requestParameters.wtrealm.isEmpty()"
+            then="signinRequest" else="viewBadRequest" />
     </decision-state>
     
     <decision-state id="selectSAMLProcess">
@@ -63,7 +61,7 @@
             test="requestParameters.SAMLResponse == null or requestParameters.SAMLResponse.length() == 0"
             then="viewBadRequest" else="signinResponse" />
     </decision-state>
-
+	
     <decision-state id="selectSignOutProcess">
         <on-entry>
             <evaluate expression="@org.apache.cxf.fediz.service.idp.util.WebUtils@getHttpHeader(flowRequestContext, 'Referer')" result="flowScope.wreply"/>
