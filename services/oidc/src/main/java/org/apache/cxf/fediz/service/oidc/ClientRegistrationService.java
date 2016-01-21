@@ -19,12 +19,15 @@
 
 package org.apache.cxf.fediz.service.oidc;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -186,8 +189,10 @@ public class ClientRegistrationService {
     @Produces(MediaType.TEXT_HTML)
     @Path("/")
     public Collection<Client> registerForm(@FormParam("client_name") String appName,
-        @FormParam("client_type") String appType, @FormParam("client_redirectURI") String redirectURI,
-        @FormParam("client_homeRealm") String homeRealm) {
+                                           @FormParam("client_type") String appType, 
+                                           @FormParam("client_audience") String audience,
+                                           @FormParam("client_redirectURI") String redirectURI,
+                                           @FormParam("client_homeRealm") String homeRealm) {
         //TODO Check for mandatory parameters
         
         String clientId = generateClientId();
@@ -209,6 +214,19 @@ public class ClientRegistrationService {
         
         if (clientScopes != null && !clientScopes.isEmpty()) {
             newClient.setRegisteredScopes(new ArrayList<String>(clientScopes.keySet()));
+        }
+        
+        if (!StringUtils.isEmpty(audience)) {
+            String[] auds = audience.trim().split(" ");
+            List<String> registeredAuds = new LinkedList<String>();
+            for (String aud : auds) {
+                // make sure it is a proper URI
+                String theAud = URI.create(aud.trim()).toString();
+                registeredAuds.add(theAud);
+            }
+            if (!registeredAuds.isEmpty()) {
+                newClient.setRegisteredAudiences(registeredAuds);
+            }
         }
         
         return registerNewClient(newClient);

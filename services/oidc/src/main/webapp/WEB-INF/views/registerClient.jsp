@@ -79,10 +79,16 @@ input, select, button {
 				</select>
 			</div>
 			<div class="form-line">
-				<label for="client_redirectURI" id="label_redirect" class="form-label"> Redirect URI </label>
+				<label for="client_redirectURI" id="label_redirect" class="form-label"> Redirect URL </label>
 				<input type="text" value="" size="40" name="client_redirectURI"
 					placeholder="URL of the client to consume OIDC service response"
 					id="input_6" data-type="input-textbox" />
+			</div>
+			<div class="form-line">
+				<label for="client_audience" id="label_redirect" class="form-label"> Audience URL </label>
+				<input type="text" value="" size="40" name="client_audience"
+					placeholder="URL of the server the tokens will be restricted to"
+					id="input_7" data-type="input-textbox" />
 			</div>
 			<div class="form-line">
 				<label for="client_homeRealm" id="label_homeRealm" class="form-label"> Home Realm </label>
