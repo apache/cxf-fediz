@@ -13,14 +13,13 @@
 	<i>Where are you from? Please, select one Identity Provider in the list which is able to authenticate you. </i>
 	<form:form method="POST" id="idplist" name="idplist">
 		<br />
-        <%
-            Idp idpConfig = (Idp)request.getAttribute("idpConfig");
-        %>
+        <% Idp idp = (Idp)request.getAttribute("idpConfig");
+        List<TrustedIdp> trustedIDPs = idp.getTrustedIdps(); %>
       <select name="whr">
-        <option value="<%=idpConfig.getRealm()%>" selected="selected" ><%=idpConfig.getServiceDescription()%></option>
-        <%
-            for (TrustedIdp trustedIDP : idpConfig.getTrustedIdps()) {
-        %>
+        <% if (idp.isUseCurrentIdp()) { %>
+        <option value="<%=idp.getRealm()%>" selected="selected" ><%=idp.getServiceDescription()%></option>
+        <% } 
+           for (TrustedIdp trustedIDP : trustedIDPs) { %>
         <option value="<%=trustedIDP.getRealm()%>"><%=trustedIDP.getDescription()%></option>
         <% } %>
       </select>
