@@ -39,14 +39,7 @@ public class WfreshParser {
     public boolean authenticationRequired(String wfresh, String whr, RequestContext context)
         throws Exception {
         
-        SecurityToken idpToken = 
-            (SecurityToken) WebUtils.getAttributeFromExternalContext(context, whr);
-        if (idpToken == null) {
-            return true;
-        }
-        
-        if (tokenExpirationValidation && idpToken.isExpired()) {
-            LOG.info("[IDP_TOKEN=" + idpToken.getId() + "] is expired.");
+        if (checkIsIdpTokenExpired(whr, context)) {
             return true;
         }
 
@@ -68,6 +61,8 @@ public class WfreshParser {
         long ttlMs = ttl * 60L * 1000L;
         if (ttlMs > 0) {
 
+            SecurityToken idpToken = 
+                (SecurityToken) WebUtils.getAttributeFromExternalContext(context, whr);
             Date createdDate = idpToken.getCreated();
             if (createdDate != null) {
                 Date expiryDate = new Date();
@@ -85,6 +80,21 @@ public class WfreshParser {
         } else {
             LOG.info("ttl value '" + ttl + "' is negative or is too large.");
         }
+        return false;
+    }
+    
+    private boolean checkIsIdpTokenExpired(String whr, RequestContext context) {
+        SecurityToken idpToken = 
+            (SecurityToken) WebUtils.getAttributeFromExternalContext(context, whr);
+        if (idpToken == null) {
+            return true;
+        }
+        
+        if (tokenExpirationValidation && idpToken.isExpired()) {
+            LOG.info("[IDP_TOKEN=" + idpToken.getId() + "] is expired.");
+            return true;
+        }
+
         return false;
     }
 
