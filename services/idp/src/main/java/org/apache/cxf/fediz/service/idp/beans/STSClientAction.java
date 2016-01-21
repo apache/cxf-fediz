@@ -36,6 +36,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.binding.soap.SoapFault;
@@ -200,7 +201,7 @@ public class STSClientAction {
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
         
-        // Check wreply parameter against passive requestor endpoint constraint
+        // Check that the wreply parameter is valid
         validateApplicationEndpoint(serviceConfig, context);
         
         // Parse wreq parameter - we only support parsing TokenType and KeyType for now
@@ -304,16 +305,27 @@ public class STSClientAction {
     }
     
     // The wreply address must match the passive endpoint requestor constraint (if it is specified)
-    private void validateApplicationEndpoint(Application serviceConfig, RequestContext context) 
+    // Also, it must be a valid URL + start with https
+    protected void validateApplicationEndpoint(Application serviceConfig, RequestContext context) 
         throws ProcessingException {
+        
+        String wreply = 
+            (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_REPLY);
+        
+        // Validate it first using commons-validator
+        String[] schemes = {"https"};
+        UrlValidator urlValidator = new UrlValidator(schemes);
+        if (!urlValidator.isValid(wreply)) {
+            LOG.warn("The given wreply parameter {} is not a valid URL", wreply);
+            throw new ProcessingException(TYPE.BAD_REQUEST);
+        }
+        
         if (serviceConfig.getCompiledPassiveRequestorEndpointConstraint() == null) {
             LOG.warn("No passive requestor endpoint constraint is configured for the application. "
                      + "This could lead to a malicious redirection attack");
             return;
         }
         
-        String wreply = 
-            (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_REPLY);
         if (wreply != null) {
             Matcher matcher = serviceConfig.getCompiledPassiveRequestorEndpointConstraint().matcher(wreply);
             if (!matcher.matches()) {
