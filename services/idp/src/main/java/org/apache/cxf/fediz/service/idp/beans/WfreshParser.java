@@ -42,6 +42,10 @@ public class WfreshParser {
         
         SecurityToken idpToken = 
             (SecurityToken) WebUtils.getAttributeFromExternalContext(context, whr);
+        if (idpToken == null) {
+            return true;
+        }
+        
         if (tokenExpirationValidation && idpToken.isExpired()) {
             LOG.info("[IDP_TOKEN=" + idpToken.getId() + "] is expired.");
             return true;
@@ -60,12 +64,15 @@ public class WfreshParser {
         }
         if (ttl == 0) {
             return true;
-        } else if (ttl > 0) {
+        }
+        
+        long ttlMs = ttl * 60L * 1000L;
+        if (ttlMs > 0) {
 
             Date createdDate = idpToken.getCreated();
             if (createdDate != null) {
                 Date expiryDate = new Date();
-                expiryDate.setTime(createdDate.getTime() + (ttl * 60L * 1000L));
+                expiryDate.setTime(createdDate.getTime() + ttlMs);
                 if (expiryDate.before(new Date())) {
                     LOG.info("[IDP_TOKEN="
                             + idpToken.getId()
@@ -77,7 +84,7 @@ public class WfreshParser {
                 LOG.info("token creation date not set. Unable to check wfresh is outdated.");
             }
         } else {
-            LOG.info("ttl value '" + ttl + "' is negative.");
+            LOG.info("ttl value '" + ttl + "' is negative or is too large.");
         }
         return false;
     }
