@@ -16,8 +16,10 @@
         <% Idp idp = (Idp)request.getAttribute("idpConfig");
         List<TrustedIdp> trustedIDPs = idp.getTrustedIdps(); %>
       <select name="whr">
+        <% if (idp.isUseCurrentIdp()) { %>
         <option value="<%=idp.getRealm()%>" selected="selected" ><%=idp.getServiceDescription()%></option>
-        <% for (TrustedIdp trustedIDP : trustedIDPs) { %>
+        <% } 
+           for (TrustedIdp trustedIDP : trustedIDPs) { %>
         <option value="<%=trustedIDP.getRealm()%>"><%=trustedIDP.getDescription()%></option>
         <% } %>
       </select>
