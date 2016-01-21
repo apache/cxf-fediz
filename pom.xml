@@ -40,6 +40,7 @@
         <apacheds.version>2.0.0-M21</apacheds.version>
         <commons.lang.version>3.4</commons.lang.version>
         <commons.logging.version>1.2</commons.logging.version>
+        <commons.validator.version>1.5.0</commons.validator.version>
         <cxf.version>3.1.5-SNAPSHOT</cxf.version>
         <cxf.build-utils.version>3.1.0</cxf.build-utils.version>
         <easymock.version>3.4</easymock.version>
