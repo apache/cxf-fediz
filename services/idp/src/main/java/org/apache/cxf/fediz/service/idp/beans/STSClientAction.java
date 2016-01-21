@@ -314,7 +314,7 @@ public class STSClientAction {
         
         // Validate it first using commons-validator
         String[] schemes = {"https"};
-        UrlValidator urlValidator = new UrlValidator(schemes);
+        UrlValidator urlValidator = new UrlValidator(schemes, UrlValidator.ALLOW_LOCAL_URLS);
         if (!urlValidator.isValid(wreply)) {
             LOG.warn("The given wreply parameter {} is not a valid URL", wreply);
             throw new ProcessingException(TYPE.BAD_REQUEST);
