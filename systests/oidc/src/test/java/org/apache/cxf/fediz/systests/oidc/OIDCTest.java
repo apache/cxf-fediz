@@ -40,6 +40,7 @@ import com.gargoylesoftware.htmlunit.html.DomNodeList;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlSelect;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.html.HtmlTable;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
@@ -230,11 +231,11 @@ public class OIDCTest {
         
         // Now try to register a new client
         HtmlPage registeredClientPage = 
-            registerNewClient(webClient, url, "new-client", "http://127.0.0.1");
+            registerNewClient(webClient, url, "new-client", "https://127.0.0.1");
         String registeredClientPageBody = registeredClientPage.getBody().getTextContent();
         Assert.assertTrue(registeredClientPageBody.contains("Registered Clients"));
         Assert.assertTrue(registeredClientPageBody.contains("new-client"));
-        Assert.assertTrue(registeredClientPageBody.contains("http://127.0.0.1"));
+        Assert.assertTrue(registeredClientPageBody.contains("https://127.0.0.1"));
         
         HtmlTable table = registeredClientPage.getHtmlElementById("registered_clients");
         storedClientId = table.getCellAt(1, 1).asText().trim();
@@ -242,13 +243,13 @@ public class OIDCTest {
         
         // Try to register another new client
         registeredClientPage = 
-            registerNewClient(webClient, url, "new-client2", "http://127.0.1.1");
+            registerNewClient(webClient, url, "new-client2", "https://127.0.1.1");
         registeredClientPageBody = registeredClientPage.getBody().getTextContent();
         Assert.assertTrue(registeredClientPageBody.contains("Registered Clients"));
         Assert.assertTrue(registeredClientPageBody.contains("new-client"));
-        Assert.assertTrue(registeredClientPageBody.contains("http://127.0.0.1"));
+        Assert.assertTrue(registeredClientPageBody.contains("https://127.0.0.1"));
         Assert.assertTrue(registeredClientPageBody.contains("new-client2"));
-        Assert.assertTrue(registeredClientPageBody.contains("http://127.0.1.1"));
+        Assert.assertTrue(registeredClientPageBody.contains("https://127.0.1.1"));
         
         table = registeredClientPage.getHtmlElementById("registered_clients");
         storedClient2Id = table.getCellAt(2, 1).asText().trim();
@@ -269,6 +270,8 @@ public class OIDCTest {
         // Set new client values
         final HtmlTextInput clientNameInput = form.getInputByName("client_name");
         clientNameInput.setValueAttribute(clientName);
+        final HtmlSelect clientTypeSelect = form.getSelectByName("client_type");
+        clientTypeSelect.setSelectedAttribute("confidential", true);
         final HtmlTextInput redirectURIInput = form.getInputByName("client_redirectURI");
         redirectURIInput.setValueAttribute(redirectURI);
 
@@ -354,8 +357,8 @@ public class OIDCTest {
         
         // Check the redirect URI
         String redirectURI = table.getCellAt(1, 3).asText().trim();
-        Assert.assertTrue("http://127.0.0.1".equals(redirectURI)
-                          || "http://127.0.1.1".equals(redirectURI));
+        Assert.assertTrue("https://127.0.0.1".equals(redirectURI)
+                          || "https://127.0.1.1".equals(redirectURI));
         
         // Now check the specific client page
         HtmlPage clientPage = webClient.getPage(url + "/" + clientId);
@@ -468,6 +471,45 @@ public class OIDCTest {
         }
     }
     
+    @org.junit.Test
+    public void testBadClientId() throws Exception {
+        
+        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/idp/authorize?";
+        url += "client_id=" + storedClientId + 2;
+        url += "&response_type=code";
+        url += "&scope=openid";
+        String user = "alice";
+        String password = "ecila";
+        
+        // Login to the OIDC token endpoint + get the authorization code
+        WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
+        
+        String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
+        Assert.assertNull(authorizationCode);
+        
+        webClient.close();
+    }
+    
+    @org.junit.Test
+    public void testIncorrectRedirectURI() throws Exception {
+        
+        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/idp/authorize?";
+        url += "client_id=" + storedClientId;
+        url += "&response_type=code";
+        url += "&scope=openid";
+        url += "&redirect_uri=https://127.0.0.5";
+        String user = "alice";
+        String password = "ecila";
+        
+        // Login to the OIDC token endpoint + get the authorization code
+        WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
+        
+        String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
+        Assert.assertNull(authorizationCode);
+        
+        webClient.close();
+    }
+    
     private static WebClient setupWebClient(String user, String password, String idpPort) {
         final WebClient webClient = new WebClient();
         webClient.getOptions().setUseInsecureSSL(true);
@@ -529,7 +571,7 @@ public class OIDCTest {
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
 
         // Bit of a hack here to get the authorization code - necessary as HtmlUnit tries
-        // to follow the server redirect to "http://127.0.0.1" - the redirect URI
+        // to follow the server redirect to "https://127.0.0.1" - the redirect URI
         CodeWebConnectionWrapper wrapper = new CodeWebConnectionWrapper(webClient);
         
         try {
@@ -553,7 +595,7 @@ public class OIDCTest {
         public WebResponse getResponse(WebRequest request) throws IOException {
             WebResponse response = super.getResponse(request);
             String location = response.getResponseHeaderValue("Location");
-            if (location != null && location.contains("code")) {
+            if (location != null && location.contains("code=")) {
                 code = getSubstring(location, "code");
             }
             

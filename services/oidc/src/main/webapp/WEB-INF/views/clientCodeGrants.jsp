@@ -41,7 +41,7 @@
 </head>
 <body>
 <div class="padded">
-<h1>Code Grants issued to <%= client.getApplicationName() + "(" + client.getClientId() + ")"%></h1>
+<h1>Code Grants issued to <%= client.getApplicationName() + " (" + client.getClientId() + ")"%></h1>
 <br/>
 <table border="1">
     <tr><th>ID</th><th>Issue Date</th><th>Expiry Date</th><th>Action</th></tr> 

@@ -42,6 +42,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 
+import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.cxf.common.util.Base64UrlUtility;
 import org.apache.cxf.common.util.StringUtils;
 import org.apache.cxf.rs.security.oauth2.common.Client;
@@ -192,8 +193,26 @@ public class ClientRegistrationService {
                                            @FormParam("client_type") String appType, 
                                            @FormParam("client_audience") String audience,
                                            @FormParam("client_redirectURI") String redirectURI,
-                                           @FormParam("client_homeRealm") String homeRealm) {
-        //TODO Check for mandatory parameters
+                                           @FormParam("client_homeRealm") String homeRealm
+    ) throws InvalidRegistrationException {
+        
+        // Check parameters
+        if (appName == null || "".equals(appName)) {
+            throw new InvalidRegistrationException("The client id must not be empty");
+        }
+        if (appType == null) {
+            throw new InvalidRegistrationException("The client type must not be empty");
+        }
+        if (!("confidential".equals(appType) || "public".equals(appType))) {
+            throw new InvalidRegistrationException("An invalid client type was specified: " + appType);
+        }
+        if (redirectURI != null) {
+            String[] schemes = {"https"};
+            UrlValidator urlValidator = new UrlValidator(schemes, UrlValidator.ALLOW_LOCAL_URLS);
+            if (!urlValidator.isValid(redirectURI)) {
+                throw new InvalidRegistrationException("An invalid redirect URI was specified: " + redirectURI);
+            }
+        }
         
         String clientId = generateClientId();
         boolean isConfidential = "confidential".equals(appType);
