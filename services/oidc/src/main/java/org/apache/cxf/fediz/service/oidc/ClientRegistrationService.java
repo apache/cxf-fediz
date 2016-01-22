@@ -210,9 +210,6 @@ public class ClientRegistrationService {
         if (redirectURI != null && !"".equals(redirectURI) && !isValidURI(redirectURI, false)) {
             throw new InvalidRegistrationException("An invalid redirect URI was specified: " + redirectURI);
         }
-        if (audience != null && !"".equals(audience) && !isValidURI(audience, true)) {
-            throw new InvalidRegistrationException("An invalid audience URI was specified: " + audience);
-        }
         
         String clientId = generateClientId();
         boolean isConfidential = "confidential".equals(appType);
@@ -240,8 +237,10 @@ public class ClientRegistrationService {
             List<String> registeredAuds = new LinkedList<String>();
             for (String aud : auds) {
                 // make sure it is a proper URI
-                String theAud = URI.create(aud.trim()).toString();
-                registeredAuds.add(theAud);
+                if (audience != null && !"".equals(audience) && !isValidURI(audience, true)) {
+                    throw new InvalidRegistrationException("An invalid audience URI was specified: " + audience);
+                }
+                registeredAuds.add(aud);
             }
             if (!registeredAuds.isEmpty()) {
                 newClient.setRegisteredAudiences(registeredAuds);
