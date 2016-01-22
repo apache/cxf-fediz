@@ -313,8 +313,8 @@ public class STSClientAction {
             (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_REPLY);
         
         // Validate it first using commons-validator
-        String[] schemes = {"https"};
-        UrlValidator urlValidator = new UrlValidator(schemes, UrlValidator.ALLOW_LOCAL_URLS);
+        UrlValidator urlValidator = new UrlValidator(UrlValidator.ALLOW_LOCAL_URLS
+                                                     + UrlValidator.ALLOW_ALL_SCHEMES);
         if (!urlValidator.isValid(wreply)) {
             LOG.warn("The given wreply parameter {} is not a valid URL", wreply);
             throw new ProcessingException(TYPE.BAD_REQUEST);
