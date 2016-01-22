@@ -20,6 +20,7 @@
 package org.apache.cxf.fediz.service.oidc;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -206,12 +207,11 @@ public class ClientRegistrationService {
         if (!("confidential".equals(appType) || "public".equals(appType))) {
             throw new InvalidRegistrationException("An invalid client type was specified: " + appType);
         }
-        if (redirectURI != null) {
-            String[] schemes = {"https"};
-            UrlValidator urlValidator = new UrlValidator(schemes, UrlValidator.ALLOW_LOCAL_URLS);
-            if (!urlValidator.isValid(redirectURI)) {
-                throw new InvalidRegistrationException("An invalid redirect URI was specified: " + redirectURI);
-            }
+        if (redirectURI != null && !"".equals(redirectURI) && !isValidURI(redirectURI, false)) {
+            throw new InvalidRegistrationException("An invalid redirect URI was specified: " + redirectURI);
+        }
+        if (audience != null && !"".equals(audience) && !isValidURI(audience, true)) {
+            throw new InvalidRegistrationException("An invalid audience URI was specified: " + audience);
         }
         
         String clientId = generateClientId();
@@ -249,6 +249,36 @@ public class ClientRegistrationService {
         }
         
         return registerNewClient(newClient);
+    }
+    
+    private boolean isValidURI(String uri, boolean requireHttps) {
+        
+        UrlValidator urlValidator = null;
+        
+        if (requireHttps) {
+            String[] schemes = {"https"};
+            urlValidator = new UrlValidator(schemes, UrlValidator.ALLOW_LOCAL_URLS);
+        } else {
+            urlValidator = new UrlValidator(UrlValidator.ALLOW_LOCAL_URLS
+                                                     + UrlValidator.ALLOW_ALL_SCHEMES);
+        }
+        
+        if (!urlValidator.isValid(uri)) {
+            return false;
+        }
+        
+        // Do additional checks on the URI
+        try {
+            URI parsedURI = new URI(uri);
+            // The URI can't have a fragment according to the OAuth 2.0 spec (+ audience spec)
+            if (parsedURI.getFragment() != null) {
+                return false;
+            }
+        } catch (URISyntaxException ex) {
+            return false;
+        }
+        
+        return true;
     }
 
     protected String generateClientId() {

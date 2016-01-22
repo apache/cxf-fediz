@@ -231,7 +231,8 @@ public class OIDCTest {
         
         // Now try to register a new client
         HtmlPage registeredClientPage = 
-            registerNewClient(webClient, url, "new-client", "https://127.0.0.1");
+            registerNewClient(webClient, url, "new-client", "https://127.0.0.1",
+                              "https://cxf.apache.org");
         String registeredClientPageBody = registeredClientPage.getBody().getTextContent();
         Assert.assertTrue(registeredClientPageBody.contains("Registered Clients"));
         Assert.assertTrue(registeredClientPageBody.contains("new-client"));
@@ -243,7 +244,8 @@ public class OIDCTest {
         
         // Try to register another new client
         registeredClientPage = 
-            registerNewClient(webClient, url, "new-client2", "https://127.0.1.1");
+            registerNewClient(webClient, url, "new-client2", "https://127.0.1.1",
+                              "https://ws.apache.org");
         registeredClientPageBody = registeredClientPage.getBody().getTextContent();
         Assert.assertTrue(registeredClientPageBody.contains("Registered Clients"));
         Assert.assertTrue(registeredClientPageBody.contains("new-client"));
@@ -262,7 +264,8 @@ public class OIDCTest {
     }
     
     private static HtmlPage registerNewClient(WebClient webClient, String url,
-                                            String clientName, String redirectURI) throws Exception {
+                                            String clientName, String redirectURI,
+                                            String clientAudience) throws Exception {
         HtmlPage registerPage = webClient.getPage(url + "/register");
         
         final HtmlForm form = registerPage.getForms().get(0);
@@ -274,6 +277,8 @@ public class OIDCTest {
         clientTypeSelect.setSelectedAttribute("confidential", true);
         final HtmlTextInput redirectURIInput = form.getInputByName("client_redirectURI");
         redirectURIInput.setValueAttribute(redirectURI);
+        final HtmlTextInput clientAudienceURIInput = form.getInputByName("client_audience");
+        clientAudienceURIInput.setValueAttribute(clientAudience);
 
         final HtmlButton button = form.getButtonByName("submit_button");
         return button.click();
@@ -506,6 +511,102 @@ public class OIDCTest {
         
         String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
         Assert.assertNull(authorizationCode);
+        
+        webClient.close();
+    }
+    
+    @org.junit.Test
+    public void testCreateClientWithInvalidRegistrationURI() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/clients";
+        String user = "alice";
+        String password = "ecila";
+        
+        // Login to the client page successfully
+        WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
+        HtmlPage loginPage = login(url, webClient);
+        final String bodyTextContent = loginPage.getBody().getTextContent();
+        Assert.assertTrue(bodyTextContent.contains("Registered Clients"));
+        
+        // Now try to register a new client
+        try {
+            registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1//",
+                              "https://cxf.apache.org");
+            Assert.fail("Failure expected on an invalid registration URI");
+        } catch (Exception ex) {
+            // expected
+        }
+        
+        webClient.close();
+    }
+    
+    @org.junit.Test
+    public void testCreateClientWithRegistrationURIFragment() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/clients";
+        String user = "alice";
+        String password = "ecila";
+        
+        // Login to the client page successfully
+        WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
+        HtmlPage loginPage = login(url, webClient);
+        final String bodyTextContent = loginPage.getBody().getTextContent();
+        Assert.assertTrue(bodyTextContent.contains("Registered Clients"));
+        
+        // Now try to register a new client
+        try {
+            registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1#fragment",
+                              "https://cxf.apache.org");
+            Assert.fail("Failure expected on an invalid registration URI");
+        } catch (Exception ex) {
+            // expected
+        }
+        
+        webClient.close();
+    }
+    
+    @org.junit.Test
+    public void testCreateClientWithInvalidAudienceURI() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/clients";
+        String user = "alice";
+        String password = "ecila";
+        
+        // Login to the client page successfully
+        WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
+        HtmlPage loginPage = login(url, webClient);
+        final String bodyTextContent = loginPage.getBody().getTextContent();
+        Assert.assertTrue(bodyTextContent.contains("Registered Clients"));
+        
+        // Now try to register a new client
+        try {
+            registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1/",
+                              "https://cxf.apache.org//");
+            Assert.fail("Failure expected on an invalid audience URI");
+        } catch (Exception ex) {
+            // expected
+        }
+        
+        webClient.close();
+    }
+    
+    @org.junit.Test
+    public void testCreateClientWithAudienceURIFragment() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/clients";
+        String user = "alice";
+        String password = "ecila";
+        
+        // Login to the client page successfully
+        WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
+        HtmlPage loginPage = login(url, webClient);
+        final String bodyTextContent = loginPage.getBody().getTextContent();
+        Assert.assertTrue(bodyTextContent.contains("Registered Clients"));
+        
+        // Now try to register a new client
+        try {
+            registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1",
+                              "https://cxf.apache.org#fragment");
+            Assert.fail("Failure expected on an invalid audience URI");
+        } catch (Exception ex) {
+            // expected
+        }
         
         webClient.close();
     }
