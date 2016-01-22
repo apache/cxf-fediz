@@ -44,7 +44,7 @@
 	</STYLE>
 </head>
 <body>
-<h1>Tokens issued to <%= client.getApplicationName() + "(" + client.getClientId() + ")"%></h1>
+<h1>Tokens issued to <%= client.getApplicationName() + " (" + client.getClientId() + ")"%></h1>
 <br/>
 <div class="padded">
 <h2>Access Tokens</h2>
