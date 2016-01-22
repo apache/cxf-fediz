@@ -207,7 +207,7 @@ public class ClientRegistrationService {
         if (!("confidential".equals(appType) || "public".equals(appType))) {
             throw new InvalidRegistrationException("An invalid client type was specified: " + appType);
         }
-        
+        //TODO: support multiple redirect URIs
         if (redirectURI != null && !"".equals(redirectURI) && !isValidURI(redirectURI, false)) {
             throw new InvalidRegistrationException("An invalid redirect URI was specified: " + redirectURI);
         }
