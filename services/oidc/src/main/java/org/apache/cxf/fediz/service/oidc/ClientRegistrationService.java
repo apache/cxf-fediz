@@ -133,8 +133,8 @@ public class ClientRegistrationService {
     
     protected ClientTokens doGetClientIssuedTokens(Client c) {
         return new ClientTokens(c, 
-                                      dataProvider.getAccessTokens(c),
-                                      dataProvider.getRefreshTokens(c));
+                                dataProvider.getAccessTokens(c, null),
+                                dataProvider.getRefreshTokens(c, null));
     }
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -168,7 +168,8 @@ public class ClientRegistrationService {
     public ClientCodeGrants getClientCodeGrants(@PathParam("id") String id) {
         if (dataProvider instanceof AuthorizationCodeDataProvider) {
             Client c = getRegisteredClient(id);
-            return new ClientCodeGrants(c, ((AuthorizationCodeDataProvider)dataProvider).getCodeGrants(c));
+            return new ClientCodeGrants(c, 
+                    ((AuthorizationCodeDataProvider)dataProvider).getCodeGrants(c, null));
         }
         return null;
     }
