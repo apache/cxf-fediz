@@ -132,6 +132,9 @@ public class ClientRegistrationService {
     }
     
     protected ClientTokens doGetClientIssuedTokens(Client c) {
+        // Right now the user who is registering the clients 
+        // is the one who is working with them, i.e, client registrations 
+        // are user specific, so passing null is OK
         return new ClientTokens(c, 
                                 dataProvider.getAccessTokens(c, null),
                                 dataProvider.getRefreshTokens(c, null));
