@@ -64,7 +64,7 @@ public class ServiceMetadataWriter {
             writer.writeAttribute("ID", referenceID);
             
             String serviceURL = config.getIdpUrl().toString();
-            writer.writeAttribute("entityID", serviceURL);
+            writer.writeAttribute("entityID", config.getRealm());
             
             writer.writeNamespace("md", SAML2_METADATA_NS);
             writer.writeNamespace("fed", WS_FEDERATION_NS);
