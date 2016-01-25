@@ -39,8 +39,8 @@ import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.cxf.fediz.core.ClaimTypes;
-import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
 import org.apache.cxf.fediz.core.util.DOMUtils;
+import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.xml.security.keys.KeyInfo;
@@ -301,8 +301,6 @@ public class SAMLSSOTest {
         Assert.assertNotNull(ki.getX509Certificate());
 
         Assert.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
-
-        webClient.close();
     }
     
     private static String login(String url, String user, String password, 
