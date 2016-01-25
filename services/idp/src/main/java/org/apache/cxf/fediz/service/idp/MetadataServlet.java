@@ -72,7 +72,8 @@ public class MetadataServlet extends HttpServlet {
                 TrustedIdp trustedIdp = idpConfig.findTrustedIdp(serviceRealm);
                 if (trustedIdp == null) {
                     LOG.error("No TrustedIdp found for desired realm: " + serviceRealm);
-                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    return;
                 }
                 ServiceMetadataWriter mw = new ServiceMetadataWriter();
                 Document metadata = mw.getMetaData(idpConfig, trustedIdp);

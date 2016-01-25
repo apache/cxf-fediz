@@ -23,11 +23,16 @@ package org.apache.cxf.fediz.integrationtests;
 import java.io.File;
 import java.io.IOException;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
+import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleState;
@@ -35,11 +40,15 @@ import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
+import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.xml.security.keys.KeyInfo;
+import org.apache.xml.security.signature.XMLSignature;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * This is a test for federation in the IdP. The RP application is configured to use a home realm of "realm b". The
@@ -261,6 +270,39 @@ public class SAMLSSOTest {
         claim = ClaimTypes.EMAILADDRESS.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
                           bodyTextContent.contains(claim + "=alice@realma.org"));
+    }
+    
+    @Test
+    public void testIdPServiceMetadata() throws Exception {
+        String url = "https://localhost:" + getIdpHttpsPort()
+            + "/fediz-idp/metadata/urn:org:apache:cxf:fediz:idp:realm-B";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getOptions().setSSLClientCertificate(
+            this.getClass().getClassLoader().getResource("client.jks"), "storepass", "jks");
+
+        final XmlPage rpPage = webClient.getPage(url);
+        final String xmlContent = rpPage.asXml();
+        Assert.assertTrue(xmlContent.startsWith("<md:EntityDescriptor"));
+
+        // Now validate the Signature
+        Document doc = rpPage.getXmlDocument();
+
+        doc.getDocumentElement().setIdAttributeNS(null, "ID", true);
+
+        Node signatureNode =
+            DOMUtils.getChild(doc.getDocumentElement(), "Signature");
+        Assert.assertNotNull(signatureNode);
+
+        XMLSignature signature = new XMLSignature((Element)signatureNode, "");
+        KeyInfo ki = signature.getKeyInfo();
+        Assert.assertNotNull(ki);
+        Assert.assertNotNull(ki.getX509Certificate());
+
+        Assert.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
+
+        webClient.close();
     }
     
     private static String login(String url, String user, String password, 
