@@ -78,13 +78,11 @@ public class GrantedAuthorityEntitlements extends GenericFilterBean {
                         authorities.add(new SimpleGrantedAuthority(e.getName()));
                     }
                 } catch (Exception ex) {
-                    LOG.error("Role '" + roleName + "' not found");
+                    LOG.error("Role '{}' not found", roleName);
                 }
             }
+            LOG.debug("Granted Authorities: {}", authorities);
             
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(authorities.toString());
-            }
             UsernamePasswordAuthenticationToken enrichedAuthentication = new UsernamePasswordAuthenticationToken(
                 currentAuth.getName(), currentAuth.getCredentials(), authorities);
             enrichedAuthentication.setDetails(currentAuth.getDetails());
