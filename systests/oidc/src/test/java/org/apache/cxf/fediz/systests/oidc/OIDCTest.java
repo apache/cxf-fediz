@@ -511,6 +511,25 @@ public class OIDCTest {
     }
     
     @org.junit.Test
+    public void testEmptyCClientId() throws Exception {
+        
+        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/idp/authorize?";
+        url += "client_id=";
+        url += "&response_type=code";
+        url += "&scope=openid";
+        String user = "alice";
+        String password = "ecila";
+        
+        // Login to the OIDC token endpoint + get the authorization code
+        WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
+        
+        String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
+        Assert.assertNull(authorizationCode);
+        
+        webClient.close();
+    }
+    
+    @org.junit.Test
     public void testIncorrectRedirectURI() throws Exception {
         
         String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/idp/authorize?";
