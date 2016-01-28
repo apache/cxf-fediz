@@ -511,7 +511,7 @@ public class OIDCTest {
     }
     
     @org.junit.Test
-    public void testEmptyCClientId() throws Exception {
+    public void testEmptyClientId() throws Exception {
         
         String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/idp/authorize?";
         url += "client_id=";
