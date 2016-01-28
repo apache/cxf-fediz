@@ -97,10 +97,6 @@ input, select, button {
 					<%
 					    if (!reg.getHomeRealms().entrySet().isEmpty()) {
 							Iterator<Map.Entry<String, String>> it = reg.getHomeRealms().entrySet().iterator();
-							Map.Entry<String, String> firstEntry = it.next();
-					%>
-					<option value="<%=firstEntry.getKey()%>" selected><%=firstEntry.getValue()%></option>
-					<%
 					    	while (it.hasNext()) {
 								Map.Entry<String, String> e = it.next();
 					%>
