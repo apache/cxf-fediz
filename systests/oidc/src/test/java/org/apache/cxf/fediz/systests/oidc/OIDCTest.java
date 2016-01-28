@@ -23,6 +23,12 @@ package org.apache.cxf.fediz.systests.oidc;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -52,8 +58,13 @@ import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.cxf.fediz.tomcat7.FederationAuthenticator;
+import org.apache.cxf.rs.security.jose.jwa.SignatureAlgorithm;
+import org.apache.cxf.rs.security.jose.jws.JwsJwtCompactConsumer;
+import org.apache.cxf.rs.security.jose.jwt.JwtConstants;
+import org.apache.cxf.rs.security.jose.jwt.JwtToken;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.wss4j.common.util.Loader;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -403,7 +414,9 @@ public class OIDCTest {
         String response = responsePage.getWebResponse().getContentAsString();
 
         // Check the IdToken
-        Assert.assertTrue(response.contains("id_token"));
+        String idToken = getIdToken(response);
+        Assert.assertNotNull(idToken);
+        validateIdToken(idToken, storedClientId);
         
         webClient.close();
     }
@@ -438,7 +451,9 @@ public class OIDCTest {
         String response = responsePage.getWebResponse().getContentAsString();
 
         // Check the IdToken
-        Assert.assertTrue(response.contains("id_token"));
+        String idToken = getIdToken(response);
+        Assert.assertNotNull(idToken);
+        validateIdToken(idToken, storedClient2Id);
         
         webClient.close();
     }
@@ -683,6 +698,38 @@ public class OIDCTest {
 
         wrapper.close();
         return wrapper.getCode();
+    }
+    
+    private String getIdToken(String parentString) {
+        String foundString =
+            parentString.substring(parentString.indexOf("id_token") 
+                                   + ("id_token" + "\":\"").length());
+        int ampersandIndex = foundString.indexOf('\"');
+        if (ampersandIndex < 1) {
+            ampersandIndex = foundString.length();
+        }
+        return foundString.substring(0, ampersandIndex);
+    }
+    
+    private void validateIdToken(String idToken, String audience)
+        throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+        JwsJwtCompactConsumer jwtConsumer = new JwsJwtCompactConsumer(idToken);
+        JwtToken jwt = jwtConsumer.getJwtToken();
+
+        // Validate claims
+        Assert.assertEquals("alice", jwt.getClaim(JwtConstants.CLAIM_SUBJECT));
+        Assert.assertEquals("accounts.fediz.com", jwt.getClaim(JwtConstants.CLAIM_ISSUER));
+        Assert.assertEquals(audience, jwt.getClaim(JwtConstants.CLAIM_AUDIENCE));
+        Assert.assertNotNull(jwt.getClaim(JwtConstants.CLAIM_EXPIRY));
+        Assert.assertNotNull(jwt.getClaim(JwtConstants.CLAIM_ISSUED_AT));
+
+        KeyStore keystore = KeyStore.getInstance("JKS");
+        keystore.load(Loader.getResource("oidc.jks").openStream(), "password".toCharArray());
+        Certificate cert = keystore.getCertificate("alice");
+        Assert.assertNotNull(cert);
+
+        Assert.assertTrue(jwtConsumer.verifySignatureWith((X509Certificate)cert, 
+                                                          SignatureAlgorithm.RS256));
     }
     
     private static class CodeWebConnectionWrapper extends WebConnectionWrapper {
