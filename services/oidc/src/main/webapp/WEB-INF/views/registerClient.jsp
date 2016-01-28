@@ -61,7 +61,7 @@ input, select, button {
 </style>
 </head>
 <body>
-	<form action="/fediz-oidc/clients" method="POST">
+	<form action="<%=basePath%>clients" method="POST">
 		<div class="form">
 			<div class="header-text">
 				<h2>OIDC Client Registration</h2>

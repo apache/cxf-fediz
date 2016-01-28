@@ -117,7 +117,7 @@
     if (client.getClientSecret() != null) {
 %>
 <td class="td_no_border">
-<form name="resetSecretForm" action="/fediz-oidc/clients/<%= client.getClientId() + "/reset"%>" method="POST">
+<form name="resetSecretForm" action="<%=basePath%>clients/<%= client.getClientId() + "/reset"%>" method="POST">
 		<div data-type="control_button" class="form-line">
 				<button name="submit_reset_button" class="form-submit-button" type="submit">Reset Secret</button>
 		</div>
@@ -127,7 +127,7 @@
     }
 %>
 <td class="td_no_border">
-<form name="deleteForm" action="/fediz-oidc/clients/<%= client.getClientId() + "/remove"%>" method="POST">
+<form name="deleteForm" action="<%=basePath%>clients/<%= client.getClientId() + "/remove"%>" method="POST">
 		<div data-type="control_button" class="form-line">
 				<button name="submit_delete_button" class="form-submit-button" type="submit">Delete Client</button>
 		</div>
