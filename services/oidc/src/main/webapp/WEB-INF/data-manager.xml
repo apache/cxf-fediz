@@ -49,7 +49,7 @@
         <property name="defaultScopes" ref="coreScopes"/>
         <property name="invisibleToClientScopes" ref="invisibleToClientScopes"/>
         <!--
-            <property name="supportPreauthorizedTokens" value="true"/>
+        <property name="supportPreauthorizedTokens" value="true"/>
         -->
         <!--
         <property name="accessTokenLifetime" value="3600"/>

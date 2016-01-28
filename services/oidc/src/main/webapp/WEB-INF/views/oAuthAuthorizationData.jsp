@@ -1,7 +1,12 @@
-<%@ page import="javax.servlet.http.HttpServletRequest,org.apache.cxf.rs.security.oauth2.common.OAuthAuthorizationData,org.apache.cxf.rs.security.oauth2.common.Permission" %>
+<%@ page import="javax.servlet.http.HttpServletRequest" %>
+<%@ page import="java.util.List" %>
+<%@ page import="org.apache.cxf.rs.security.oauth2.common.OAuthAuthorizationData" %>
+<%@ page import="org.apache.cxf.rs.security.oauth2.common.OAuthPermission" %>
+
 
 <%
     OAuthAuthorizationData data = (OAuthAuthorizationData)request.getAttribute("data");
+    List<String> authorizedScopes = data.getAlreadyAuthorizedPermissionsAsStrings();
 %>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -72,13 +77,13 @@
 
                         <table> 
                             <%
-                               for (Permission perm : data.getPermissions()) {
+                               for (OAuthPermission perm : data.getAllPermissions()) {
                             %>
                                <tr>
                                 <td>
                                   <input type="checkbox" 
                                     <%
-                                      if (perm.isDefault()) {
+                                      if (perm.isDefault() || authorizedScopes.contains(perm.getPermission())) {
                                     %>
                                     disabled="disabled"
                                     <%
