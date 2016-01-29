@@ -563,9 +563,9 @@ public class OIDCTest {
         
         // Now try to register a new client
         try {
-            registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1//",
+            HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1//",
                               "https://cxf.apache.org");
-            Assert.fail("Failure expected on an invalid registration URI");
+            Assert.assertTrue(errorPage.asText().contains("Invalid Client Registration"));
         } catch (Exception ex) {
             // expected
         }
@@ -587,9 +587,9 @@ public class OIDCTest {
         
         // Now try to register a new client
         try {
-            registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1#fragment",
+            HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1#fragment",
                               "https://cxf.apache.org");
-            Assert.fail("Failure expected on an invalid registration URI");
+            Assert.assertTrue(errorPage.asText().contains("Invalid Client Registration"));
         } catch (Exception ex) {
             // expected
         }
@@ -611,9 +611,9 @@ public class OIDCTest {
         
         // Now try to register a new client
         try {
-            registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1/",
+            HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1/",
                               "https://cxf.apache.org//");
-            Assert.fail("Failure expected on an invalid audience URI");
+            Assert.assertTrue(errorPage.asText().contains("Invalid Client Registration"));
         } catch (Exception ex) {
             // expected
         }
@@ -635,9 +635,9 @@ public class OIDCTest {
         
         // Now try to register a new client
         try {
-            registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1",
+            HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1",
                               "https://cxf.apache.org#fragment");
-            Assert.fail("Failure expected on an invalid audience URI");
+            Assert.assertTrue(errorPage.asText().contains("Invalid Client Registration"));
         } catch (Exception ex) {
             // expected
         }
