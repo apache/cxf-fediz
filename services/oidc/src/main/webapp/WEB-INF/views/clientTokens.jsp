@@ -94,11 +94,17 @@
 		       }
 		   %>
            <%
-	          if (token.getRefreshToken() != null) {
+	          if (!tokens.getRefreshTokens().isEmpty()) {
 	       %>
 	         <td>
+	          <%
+	          if (token.getRefreshToken() != null) {
+	          %>
 	           <%=    token.getRefreshToken() %>
-	         </td>  
+	          <%
+	            }
+	          %> 
+	         </td>
 	       <%
 	          }
 	       %>
