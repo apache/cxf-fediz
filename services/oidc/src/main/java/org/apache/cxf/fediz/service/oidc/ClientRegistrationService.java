@@ -40,6 +40,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
 import org.apache.commons.validator.routines.UrlValidator;
@@ -76,8 +77,8 @@ public class ClientRegistrationService {
     @GET
     @Produces(MediaType.TEXT_HTML)
     @Path("/")
-    public Collection<Client> getClients() {
-        return getClientRegistrations();
+    public RegisteredClients getClients() {
+        return new RegisteredClients(getClientRegistrations());
     }
 
     @GET
@@ -97,7 +98,7 @@ public class ClientRegistrationService {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_HTML)
     @Path("/{id}/remove")
-    public Collection<Client> removeClient(@PathParam("id") String id) {
+    public RegisteredClients removeClient(@PathParam("id") String id) {
         Collection<Client> clients = getClientRegistrations(); 
         for (Iterator<Client> it = clients.iterator(); it.hasNext();) {
             Client c = it.next();
@@ -107,7 +108,7 @@ public class ClientRegistrationService {
                 break;
             }
         }
-        return clients;
+        return new RegisteredClients(clients);
     }
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -193,62 +194,68 @@ public class ClientRegistrationService {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_HTML)
     @Path("/")
-    public Collection<Client> registerForm(@FormParam("client_name") String appName,
+    public Response registerForm(@FormParam("client_name") String appName,
                                            @FormParam("client_type") String appType, 
                                            @FormParam("client_audience") String audience,
                                            @FormParam("client_redirectURI") String redirectURI,
                                            @FormParam("client_homeRealm") String homeRealm
-    ) throws InvalidRegistrationException {
+    ) {
         
-        // Check parameters
-        if (appName == null || "".equals(appName)) {
-            throw new InvalidRegistrationException("The client id must not be empty");
+        // Client Name
+        if (StringUtils.isEmpty(appName)) {
+            return invalidRegistrationResponse("The client name must not be empty");
         }
-        if (appType == null) {
-            throw new InvalidRegistrationException("The client type must not be empty");
+        // Client Type
+        if (StringUtils.isEmpty(appType)) {
+            return invalidRegistrationResponse("The client type must not be empty");
         }
         if (!("confidential".equals(appType) || "public".equals(appType))) {
-            throw new InvalidRegistrationException("An invalid client type was specified: " + appType);
+            return invalidRegistrationResponse("An invalid client type was specified: " + appType);
         }
-        
+        // Client ID
         String clientId = generateClientId();
         boolean isConfidential = "confidential".equals(appType);
+        // Client Secret
         String clientSecret = isConfidential
             ? generateClientSecret()
             : null;
 
         FedizClient newClient = new FedizClient(clientId, clientSecret, isConfidential, appName);
+        
+        // User who registered this client
+        String userName = sc.getUserPrincipal().getName();
+        UserSubject userSubject = new UserSubject(userName);
+        newClient.setResourceOwnerSubject(userSubject);
+
+        // Client Registration Time
+        newClient.setRegisteredAt(System.currentTimeMillis() / 1000);
+        
+        // Client Realm
         newClient.setHomeRealm(homeRealm);
+        
+        // Client Redirect URIs
         if (!StringUtils.isEmpty(redirectURI)) {
             String[] allUris = redirectURI.trim().split(" ");
             List<String> redirectUris = new LinkedList<String>();
             for (String uri : allUris) {
                 if (!StringUtils.isEmpty(uri)) {
                     if (!isValidURI(uri, false)) {
-                        throw new InvalidRegistrationException("An invalid redirect URI was specified: " + uri);
+                        return invalidRegistrationResponse("An invalid redirect URI was specified: " + uri);
                     }
                     redirectUris.add(uri);
                 }
             }
             newClient.setRedirectUris(redirectUris);
         }
-        String userName = sc.getUserPrincipal().getName();
-        UserSubject userSubject = new UserSubject(userName);
-        newClient.setResourceOwnerSubject(userSubject);
-
-        newClient.setRegisteredAt(System.currentTimeMillis() / 1000);
         
-        if (clientScopes != null && !clientScopes.isEmpty()) {
-            newClient.setRegisteredScopes(new ArrayList<String>(clientScopes.keySet()));
-        }
-        
+        // Client Audience URIs
         if (!StringUtils.isEmpty(audience)) {
             String[] auds = audience.trim().split(" ");
             List<String> registeredAuds = new LinkedList<String>();
             for (String aud : auds) {
                 if (!StringUtils.isEmpty(aud)) {
                     if (!isValidURI(aud, true)) {
-                        throw new InvalidRegistrationException("An invalid audience URI was specified: " + aud);
+                        return invalidRegistrationResponse("An invalid audience URI was specified: " + aud);
                     }
                     registeredAuds.add(aud);
                 }
@@ -256,9 +263,18 @@ public class ClientRegistrationService {
             newClient.setRegisteredAudiences(registeredAuds);
         }
         
-        return registerNewClient(newClient);
+        // Client Scopes
+        if (clientScopes != null && !clientScopes.isEmpty()) {
+            newClient.setRegisteredScopes(new ArrayList<String>(clientScopes.keySet()));
+        }
+        
+        return Response.ok(registerNewClient(newClient)).build();
     }
     
+    private Response invalidRegistrationResponse(String error) {
+        return Response.ok(new InvalidRegistration(error)).build();
+    }
+
     private boolean isValidURI(String uri, boolean requireHttps) {
         
         UrlValidator urlValidator = null;
@@ -301,11 +317,11 @@ public class ClientRegistrationService {
         return Base64UrlUtility.encode(CryptoUtils.generateSecureRandomBytes(keySizeOctets));
     }
 
-    protected Collection<Client> registerNewClient(Client newClient) {
+    protected RegisteredClients registerNewClient(Client newClient) {
         clientProvider.setClient(newClient);
         Collection<Client> clientRegistrations = getClientRegistrations();
         clientRegistrations.add(newClient);
-        return clientRegistrations;
+        return new RegisteredClients(clientRegistrations);
     }
 
     protected Collection<Client> getClientRegistrations() {

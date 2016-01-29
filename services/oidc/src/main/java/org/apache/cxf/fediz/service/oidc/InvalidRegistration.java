@@ -19,14 +19,13 @@
 
 package org.apache.cxf.fediz.service.oidc;
 
-public class InvalidRegistrationException extends Exception {
-    
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 6251451448320551293L;
-
-    public InvalidRegistrationException(String message) {
-        super(message);
+public class InvalidRegistration {
+    private String message;
+    public InvalidRegistration(String message) {
+        this.message = message;
     }
+    public String getMessage() {
+        return message;
+    }
+    
 }

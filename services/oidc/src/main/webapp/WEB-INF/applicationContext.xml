@@ -122,10 +122,15 @@
        <property name="dispatcherName" value="jsp"/>
        <property name="resourcePaths">
             <map>
-              <entry key="/clients" value="/WEB-INF/views/registeredClients.jsp"/>
               <entry key="/remove" value="/WEB-INF/views/registeredClients.jsp"/>
             </map>
        </property>
+       <property name="classResources">
+            <map>
+              <entry key="org.apache.cxf.fediz.service.oidc.InvalidRegistration" value="/WEB-INF/views/invalidRegistration.jsp"/>
+            </map>
+       </property>
+       
     </bean>
     
     <bean id="idTokenFilter" class="org.apache.cxf.rs.security.oidc.idp.IdTokenResponseFilter">
