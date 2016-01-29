@@ -23,7 +23,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -211,10 +210,6 @@ public class ClientRegistrationService {
         if (!("confidential".equals(appType) || "public".equals(appType))) {
             throw new InvalidRegistrationException("An invalid client type was specified: " + appType);
         }
-        //TODO: support multiple redirect URIs
-        if (redirectURI != null && !"".equals(redirectURI) && !isValidURI(redirectURI, false)) {
-            throw new InvalidRegistrationException("An invalid redirect URI was specified: " + redirectURI);
-        }
         
         String clientId = generateClientId();
         boolean isConfidential = "confidential".equals(appType);
@@ -225,7 +220,17 @@ public class ClientRegistrationService {
         FedizClient newClient = new FedizClient(clientId, clientSecret, isConfidential, appName);
         newClient.setHomeRealm(homeRealm);
         if (!StringUtils.isEmpty(redirectURI)) {
-            newClient.setRedirectUris(Collections.singletonList(redirectURI));
+            String[] allUris = redirectURI.trim().split(" ");
+            List<String> redirectUris = new LinkedList<String>();
+            for (String uri : allUris) {
+                if (!StringUtils.isEmpty(uri)) {
+                    if (!isValidURI(uri, false)) {
+                        throw new InvalidRegistrationException("An invalid redirect URI was specified: " + uri);
+                    }
+                    redirectUris.add(uri);
+                }
+            }
+            newClient.setRedirectUris(redirectUris);
         }
         String userName = sc.getUserPrincipal().getName();
         UserSubject userSubject = new UserSubject(userName);
@@ -241,15 +246,14 @@ public class ClientRegistrationService {
             String[] auds = audience.trim().split(" ");
             List<String> registeredAuds = new LinkedList<String>();
             for (String aud : auds) {
-                // make sure it is a proper URI
-                if (!"".equals(aud) && !isValidURI(aud, true)) {
-                    throw new InvalidRegistrationException("An invalid audience URI was specified: " + aud);
+                if (!StringUtils.isEmpty(aud)) {
+                    if (!isValidURI(aud, true)) {
+                        throw new InvalidRegistrationException("An invalid audience URI was specified: " + aud);
+                    }
+                    registeredAuds.add(aud);
                 }
-                registeredAuds.add(aud);
             }
-            if (!registeredAuds.isEmpty()) {
-                newClient.setRegisteredAudiences(registeredAuds);
-            }
+            newClient.setRegisteredAudiences(registeredAuds);
         }
         
         return registerNewClient(newClient);
