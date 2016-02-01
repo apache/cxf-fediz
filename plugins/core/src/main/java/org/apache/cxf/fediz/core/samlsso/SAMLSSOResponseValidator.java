@@ -46,12 +46,14 @@ public class SAMLSSOResponseValidator {
     private String clientAddress;
     private String requestId;
     private String spIdentifier;
+    private boolean enforceResponseSigned;
     private boolean enforceAssertionsSigned = true;
     private boolean enforceKnownIssuer = true;
     private ReplayCache replayCache;
     
     /**
-     * Enforce that Assertions must be signed if the POST binding was used. The default is true.
+     * Enforce that Assertions contained in the Response must be signed (if the Response itself is not
+     * signed). The default is true.
      */
     public void setEnforceAssertionsSigned(boolean enforceAssertionsSigned) {
         this.enforceAssertionsSigned = enforceAssertionsSigned;
@@ -93,6 +95,11 @@ public class SAMLSSOResponseValidator {
             throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
         }
         
+        if (enforceResponseSigned && !samlResponse.isSigned()) {
+            LOG.debug("The Response must be signed!");
+            throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
+        }
+        
         // Validate Assertions
         org.opensaml.saml2.core.Assertion validAssertion = null;
         Date sessionNotOnOrAfter = null;
@@ -104,9 +111,8 @@ public class SAMLSSOResponseValidator {
             }
             validateIssuer(assertion.getIssuer());
             
-            if (enforceAssertionsSigned && postBinding && assertion.getSignature() == null) {
-                LOG.debug("If the HTTP Post binding is used to deliver the Response, "
-                         + "the enclosed assertions must be signed");
+            if (!samlResponse.isSigned() && enforceAssertionsSigned && assertion.getSignature() == null) {
+                LOG.debug("The enclosed assertions in the SAML Response must be signed");
                 throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
             }
             
@@ -334,4 +340,14 @@ public class SAMLSSOResponseValidator {
         this.replayCache = replayCache;
     }
     
+    public boolean isEnforceResponseSigned() {
+        return enforceResponseSigned;
+    }
+
+    /**
+     * Enforce whether a SAML Response must be signed.
+     */
+    public void setEnforceResponseSigned(boolean enforceResponseSigned) {
+        this.enforceResponseSigned = enforceResponseSigned;
+    }
 }
