@@ -93,7 +93,8 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
     public static final String REQUIRE_KEYINFO = "require.keyinfo";
     
     /**
-     * Whether the assertions contained in the Response must be signed or not. The default is "true".
+     * Whether the assertions contained in the Response must be signed or not (if the response itself
+     * is not signed). The default is "true".
      */
     public static final String REQUIRE_SIGNED_ASSERTIONS = "require.signed.assertions";
     
@@ -214,7 +215,6 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
                 new SecurityToken(id, validatorResponse.getCreated(), validatorResponse.getSessionNotOnOrAfter());
 
             idpToken.setToken(validatorResponse.getAssertionElement());
-            
             String whr = (String) WebUtils.getAttributeFromFlowScope(context,
                                                                      FederationConstants.PARAM_HOME_REALM);
             LOG.info("[IDP_TOKEN={}] created from [RP_TOKEN={}] issued by home realm [{}]",
@@ -401,7 +401,6 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
             protocolValidator.validateSamlResponse(samlResponse, crypto, null);
         } catch (WSSecurityException ex) {
             LOG.debug(ex.getMessage(), ex);
-            ex.printStackTrace();
             throw ExceptionUtils.toBadRequestException(null, null);
         }
     }
