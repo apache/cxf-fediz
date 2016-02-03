@@ -24,6 +24,10 @@ under the License.
 
 	<description>Fediz IDP</description>
 	<display-name>Fediz IDP</display-name>
+	
+	<session-config>
+		<tracking-mode>COOKIE</tracking-mode>
+	</session-config>
 
 	<context-param>
 		<param-name>contextConfigLocation</param-name>

@@ -23,7 +23,11 @@
 
     <description>WS Federation Spring Example</description>
     <display-name>WS Federation Spring Example</display-name>
-
+	
+	<session-config>
+		<tracking-mode>COOKIE</tracking-mode>
+	</session-config>
+	
     <!-- Optional: Cache the security token in Thread Local Storage -->
     <filter>
         <filter-name>FederationFilter</filter-name>
