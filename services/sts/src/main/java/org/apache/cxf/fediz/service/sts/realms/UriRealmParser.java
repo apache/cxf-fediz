@@ -22,8 +22,6 @@ package org.apache.cxf.fediz.service.sts.realms;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import javax.xml.ws.WebServiceContext;
-
 import org.apache.cxf.sts.RealmParser;
 import org.apache.cxf.ws.security.sts.provider.STSException;
 import org.slf4j.Logger;
@@ -36,8 +34,8 @@ public class UriRealmParser implements RealmParser {
     private Map<String, Object> realmMap;
 
     @Override
-    public String parseRealm(WebServiceContext context) throws STSException {
-        String url = (String)context.getMessageContext().get("org.apache.cxf.request.url");
+    public String parseRealm(Map<String, Object> messageContext) throws STSException {
+        String url = (String)messageContext.get("org.apache.cxf.request.url");
 
         // Get the realm of the request url
         // Example: https://localhost:9443/fediz-idp-sts/REALMA/STSServiceTransport
