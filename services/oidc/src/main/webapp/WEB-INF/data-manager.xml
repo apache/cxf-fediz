@@ -53,12 +53,8 @@
         -->
     </bean>
     
-    <bean id="samlTokenConverter" class="org.apache.cxf.fediz.service.oidc.SamlTokenConverter">
-        <property name="issuer" value="accounts.fediz.com"/>
-    </bean>
-    
     <bean id="subjectCreator" class="org.apache.cxf.fediz.service.oidc.FedizSubjectCreator">
-        <property name="tokenConverter" ref="samlTokenConverter"/>
+        <property name="idTokenIssuer" value="accounts.fediz.com"/>
     </bean>
          
 </beans>
