@@ -21,13 +21,16 @@
 	xmlns:cxf="http://cxf.apache.org/core"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:jaxrs="http://cxf.apache.org/jaxrs" 
+    xmlns:util="http://www.springframework.org/schema/util"
     xsi:schemaLocation="
         http://cxf.apache.org/core
         http://cxf.apache.org/schemas/core.xsd
 		http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
         http://cxf.apache.org/jaxrs
-        http://cxf.apache.org/schemas/jaxrs.xsd">
+        http://cxf.apache.org/schemas/jaxrs.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util.xsd">
 
 	<cxf:bus>
         <cxf:features>
@@ -50,10 +53,19 @@
          <property name="skipAuthorizationWithOidcScope" value="true"/>
          <property name="responseFilter" ref="idTokenFilter"/>
     </bean>
+    
+    <util:list id="oidcServices">
+        <ref bean="oidcAuthorizationService"/>
+        <ref bean="oidcImplicitService"/>
+    </util:list>
+    
+    <bean id="authorizationService" class="org.apache.cxf.rs.security.oauth2.services.AuthorizationService">
+         <property name="services" ref="oidcServices"/>
+    </bean>
+    
     <jaxrs:server address="/idp">
         <jaxrs:serviceBeans>
-           <ref bean="oidcAuthorizationService"/>
-           <ref bean="oidcImplicitService"/>
+           <ref bean="authorizationService"/>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
             <ref bean="viewProvider"/>
