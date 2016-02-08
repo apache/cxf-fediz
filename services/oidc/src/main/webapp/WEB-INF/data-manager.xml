@@ -29,9 +29,6 @@
 
     <bean id="applicationContextProvider" class="org.apache.cxf.fediz.service.oidc.ApplicationContextProvider"/>
 
-    <bean id="samlTokenConverter" class="org.apache.cxf.fediz.service.oidc.SamlTokenConverter">
-        <property name="issuer" value="accounts.fediz.com"/>
-    </bean>
     <util:map id="supportedScopes">
         <entry key="openid" value="Access the authentication claims" />
         <entry key="refreshToken" value="Refresh access tokens" />
@@ -54,6 +51,13 @@
         <!--
         <property name="accessTokenLifetime" value="3600"/>
         -->
+    </bean>
+    
+    <bean id="samlTokenConverter" class="org.apache.cxf.fediz.service.oidc.SamlTokenConverter">
+        <property name="issuer" value="accounts.fediz.com"/>
+    </bean>
+    
+    <bean id="subjectCreator" class="org.apache.cxf.fediz.service.oidc.FedizSubjectCreator">
         <property name="tokenConverter" ref="samlTokenConverter"/>
     </bean>
          

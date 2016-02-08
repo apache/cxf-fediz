@@ -42,6 +42,7 @@
     
     <bean id="oidcAuthorizationService" class="org.apache.cxf.rs.security.oidc.idp.OidcAuthorizationCodeService">
          <property name="dataProvider" ref="oauthProvider"/>
+         <property name="subjectCreator" ref="subjectCreator"/>
          <property name="skipAuthorizationWithOidcScope" value="true"/>
          <!--
          <property name="useAllClientScopes" value="true"/>
@@ -50,6 +51,7 @@
     </bean>
     <bean id="oidcImplicitService" class="org.apache.cxf.rs.security.oidc.idp.OidcImplicitService">
          <property name="dataProvider" ref="oauthProvider"/>
+         <property name="subjectCreator" ref="subjectCreator"/>
          <property name="skipAuthorizationWithOidcScope" value="true"/>
          <property name="responseFilter" ref="idTokenFilter"/>
     </bean>
