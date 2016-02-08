@@ -27,7 +27,6 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.cxf.fediz.core.spi.HomeRealmCallback;
-import org.apache.cxf.fediz.service.oidc.FedizClient;
 import org.apache.cxf.fediz.service.oidc.OAuthDataManager;
 import org.apache.cxf.rs.security.oauth2.common.Client;
 import org.slf4j.Logger;
@@ -51,10 +50,9 @@ public class ClientIdHomeRealmDiscovery implements CallbackHandler {
                     OAuthDataManager dataManager = (OAuthDataManager)ctx.getBean("oauthProvider");
                     
                     Client client = dataManager.getClient(clientId);
-                    if (client instanceof FedizClient) {
-                        callback.setHomeRealm(((FedizClient)client).getHomeRealm());
-                        LOG.debug("Retrieved home realm {}", callback.getHomeRealm());
-                    }
+                    callback.setHomeRealm(client.getHomeRealm());
+                    LOG.debug("Retrieved home realm {}", callback.getHomeRealm());
+                    
                 }
                 
             } else {

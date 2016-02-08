@@ -220,7 +220,7 @@ public class ClientRegistrationService {
             ? generateClientSecret()
             : null;
 
-        FedizClient newClient = new FedizClient(clientId, clientSecret, isConfidential, appName);
+        Client newClient = new Client(clientId, clientSecret, isConfidential, appName);
         
         // User who registered this client
         String userName = sc.getUserPrincipal().getName();
