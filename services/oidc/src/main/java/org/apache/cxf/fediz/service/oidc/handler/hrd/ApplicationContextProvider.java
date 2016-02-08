@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.cxf.fediz.service.oidc;
+package org.apache.cxf.fediz.service.oidc.handler.hrd;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;

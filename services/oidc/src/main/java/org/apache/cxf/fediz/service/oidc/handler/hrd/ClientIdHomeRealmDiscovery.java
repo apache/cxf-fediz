@@ -27,7 +27,6 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.cxf.fediz.core.spi.HomeRealmCallback;
-import org.apache.cxf.fediz.service.oidc.ApplicationContextProvider;
 import org.apache.cxf.fediz.service.oidc.FedizClient;
 import org.apache.cxf.fediz.service.oidc.OAuthDataManager;
 import org.apache.cxf.rs.security.oauth2.common.Client;

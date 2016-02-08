@@ -27,7 +27,7 @@
         http://www.springframework.org/schema/util/spring-util.xsd
         ">
 
-    <bean id="applicationContextProvider" class="org.apache.cxf.fediz.service.oidc.ApplicationContextProvider"/>
+    <bean id="applicationContextProvider" class="org.apache.cxf.fediz.service.oidc.handler.hrd.ApplicationContextProvider"/>
 
     <util:map id="supportedScopes">
         <entry key="openid" value="Access the authentication claims" />
