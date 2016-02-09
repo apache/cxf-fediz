@@ -20,6 +20,8 @@ package org.apache.cxf.fediz.service.oidc;
 
 import java.security.Principal;
 
+import javax.ws.rs.core.MultivaluedMap;
+
 import org.w3c.dom.Element;
 
 import org.apache.cxf.fediz.core.Claim;
@@ -47,7 +49,9 @@ public class FedizSubjectCreator implements SubjectCreator {
     
     
     @Override
-    public UserSubject createUserSubject(MessageContext mc, Client client) throws OAuthServiceException {
+    public UserSubject createUserSubject(MessageContext mc, 
+                                         Client client,
+                                         MultivaluedMap<String, String> params) throws OAuthServiceException {
         Principal principal = mc.getSecurityContext().getUserPrincipal();
         
         if (!(principal instanceof FedizPrincipal)) {
