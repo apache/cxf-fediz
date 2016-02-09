@@ -16,16 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.cxf.fediz.service.oidc.clients;
 
-package org.apache.cxf.fediz.service.oidc;
+import java.util.Collection;
 
-public class InvalidRegistration {
-    private String message;
-    public InvalidRegistration(String message) {
-        this.message = message;
+import org.apache.cxf.rs.security.oauth2.common.Client;
+
+public class RegisteredClients {
+    private Collection<Client> clients;
+    public RegisteredClients(Collection<Client> clients) {
+        this.clients = clients;
     }
-    public String getMessage() {
-        return message;
+    public Collection<Client> getClients() {
+        return clients;
     }
     
+
 }

@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.cxf.fediz.service.oidc;
+package org.apache.cxf.fediz.service.oidc.clients;
 
 import java.net.URI;
 import java.net.URISyntaxException;

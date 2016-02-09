@@ -1,5 +1,5 @@
 <%@ page import="javax.servlet.http.HttpServletRequest" %>
-<%@ page import="org.apache.cxf.fediz.service.oidc.InvalidRegistration" %>
+<%@ page import="org.apache.cxf.fediz.service.oidc.clients.InvalidRegistration" %>
 
 <%
 	InvalidRegistration invalidReg = (InvalidRegistration)request.getAttribute("data");

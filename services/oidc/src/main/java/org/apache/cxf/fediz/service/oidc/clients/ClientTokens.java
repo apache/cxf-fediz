@@ -16,33 +16,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.cxf.fediz.service.oidc;
+package org.apache.cxf.fediz.service.oidc.clients;
 
 import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.cxf.rs.security.oauth2.common.Client;
-import org.apache.cxf.rs.security.oauth2.grants.code.ServerAuthorizationCodeGrant;
+import org.apache.cxf.rs.security.oauth2.common.ServerAccessToken;
+import org.apache.cxf.rs.security.oauth2.tokens.refresh.RefreshToken;
 
-public class ClientCodeGrants {
+public class ClientTokens {
     private Client client;
-    private List<ServerAuthorizationCodeGrant> codeGrants = new LinkedList<ServerAuthorizationCodeGrant>();
-    public ClientCodeGrants(Client c, List<ServerAuthorizationCodeGrant> codeGrants) {
+    private List<ServerAccessToken> accessTokens = new LinkedList<ServerAccessToken>();
+    private List<RefreshToken> refreshTokens = new LinkedList<RefreshToken>();
+    public ClientTokens(Client c, 
+                              List<ServerAccessToken> accessTokens,
+                              List<RefreshToken> refreshTokens) {
         this.client = c;
-        this.setCodeGrants(codeGrants);
+        this.accessTokens = accessTokens;
+        this.refreshTokens = refreshTokens;
     }
     public Client getClient() {
         return client;
     }
-    public void setClient(Client client) {
-        this.client = client;
+    public List<ServerAccessToken> getAccessTokens() {
+        return accessTokens;
     }
-    public List<ServerAuthorizationCodeGrant> getCodeGrants() {
-        return codeGrants;
+    public List<RefreshToken> getRefreshTokens() {
+        return refreshTokens;
     }
-    public void setCodeGrants(List<ServerAuthorizationCodeGrant> codeGrants) {
-        this.codeGrants = codeGrants;
-    }
-    
-
 }

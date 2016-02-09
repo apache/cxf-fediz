@@ -6,7 +6,7 @@
 <%@ page import="java.util.Locale"%>
 <%@ page import="java.util.TimeZone"%>
 <%@ page import="javax.servlet.http.HttpServletRequest" %>
-<%@ page import="org.apache.cxf.fediz.service.oidc.ClientCodeGrants" %>
+<%@ page import="org.apache.cxf.fediz.service.oidc.clients.ClientCodeGrants" %>
 
 <%
 	ClientCodeGrants tokens = (ClientCodeGrants)request.getAttribute("data");

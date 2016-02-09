@@ -117,7 +117,8 @@
     
     <bean id="keyPasswordProvider" class="org.apache.cxf.fediz.service.oidc.PrivateKeyPasswordProviderImpl"/>
     
-    <bean id="clientRegService" init-method="init" class="org.apache.cxf.fediz.service.oidc.ClientRegistrationService">
+    <bean id="clientRegService" init-method="init" 
+       class="org.apache.cxf.fediz.service.oidc.clients.ClientRegistrationService">
        <property name="dataProvider" ref="oauthProvider"/>
        <property name="clientProvider" ref="oauthProvider"/>
        <!-- 
@@ -151,7 +152,7 @@
        </property>
        <property name="classResources">
             <map>
-              <entry key="org.apache.cxf.fediz.service.oidc.InvalidRegistration" value="/WEB-INF/views/invalidRegistration.jsp"/>
+              <entry key="org.apache.cxf.fediz.service.oidc.clients.InvalidRegistration" value="/WEB-INF/views/invalidRegistration.jsp"/>
             </map>
        </property>
        

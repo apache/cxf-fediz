@@ -1,5 +1,5 @@
 <%@ page
-	import="javax.servlet.http.HttpServletRequest,java.util.Map,java.util.Iterator,org.apache.cxf.fediz.service.oidc.RegisterClient"%>
+	import="javax.servlet.http.HttpServletRequest,java.util.Map,java.util.Iterator,org.apache.cxf.fediz.service.oidc.clients.RegisterClient"%>
 <%
     RegisterClient reg = (RegisterClient)request.getAttribute("data");
     String basePath = request.getContextPath() + request.getServletPath();
