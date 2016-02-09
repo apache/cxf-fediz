@@ -29,7 +29,6 @@ import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.core.FedizPrincipal;
 import org.apache.cxf.jaxrs.ext.MessageContext;
-import org.apache.cxf.rs.security.oauth2.common.Client;
 import org.apache.cxf.rs.security.oauth2.common.UserSubject;
 import org.apache.cxf.rs.security.oauth2.provider.OAuthServiceException;
 import org.apache.cxf.rs.security.oauth2.provider.SubjectCreator;
@@ -50,7 +49,6 @@ public class FedizSubjectCreator implements SubjectCreator {
     
     @Override
     public UserSubject createUserSubject(MessageContext mc, 
-                                         Client client,
                                          MultivaluedMap<String, String> params) throws OAuthServiceException {
         Principal principal = mc.getSecurityContext().getUserPrincipal();
         
@@ -64,8 +62,7 @@ public class FedizSubjectCreator implements SubjectCreator {
         
         IdToken idToken = convertToIdToken(fedizPrincipal.getLoginToken(),
                                            fedizPrincipal.getName(), 
-                                           fedizPrincipal.getClaims(),
-                                           client.getClientId());
+                                           fedizPrincipal.getClaims());
         
         OidcUserSubject oidcSub = new OidcUserSubject();
         oidcSub.setLogin(fedizPrincipal.getName());
@@ -77,8 +74,7 @@ public class FedizSubjectCreator implements SubjectCreator {
     
     public IdToken convertToIdToken(Element samlToken, 
             String subjectName, 
-            ClaimCollection claims,
-            String clientId) {
+            ClaimCollection claims) {
         // The current SAML Assertion represents anauthentication record.
         // It has to be translated into IdToken (JWT) so that it can be returned 
         // to client applications participating in various OIDC flows.
@@ -86,8 +82,6 @@ public class FedizSubjectCreator implements SubjectCreator {
         IdToken idToken = new IdToken();
         // Subject name is provided by FedizPrincipal which is initialized from the current SAML token 
         idToken.setSubject(subjectName);
-        // SAML assertion audiences might be added if needed given that JWT can hold an array of audiences
-        idToken.setAudience(clientId);
         
         Assertion saml2Assertion = getSaml2Assertion(samlToken);
         if (saml2Assertion != null) {
