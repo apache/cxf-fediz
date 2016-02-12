@@ -23,13 +23,16 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
@@ -57,7 +60,8 @@ import org.apache.cxf.rt.security.crypto.CryptoUtils;
 @Path("/")
 public class ClientRegistrationService {
 
-    private Map<String, Collection<Client>> registrations = new ConcurrentHashMap<String, Collection<Client>>();
+    private Map<String, Collection<Client>> registrations = new HashMap<String, Collection<Client>>();
+    private Map<String, Set<String>> clientNames = new HashMap<String, Set<String>>();
     private OAuthDataProvider dataProvider;
     private ClientRegistrationProvider clientProvider;
     private Map<String, String> homeRealms = new LinkedHashMap<String, String>();
@@ -231,7 +235,12 @@ public class ClientRegistrationService {
         newClient.setRegisteredAt(System.currentTimeMillis() / 1000);
         
         // Client Realm
-        newClient.setHomeRealm(homeRealm);
+        if (homeRealm != null) {
+            newClient.setHomeRealm(homeRealm);
+            if (homeRealms.containsKey(homeRealm)) {
+                newClient.getProperties().put("homeRealmAlias", homeRealms.get(homeRealm));
+            }
+        }
         
         // Client Redirect URIs
         if (!StringUtils.isEmpty(redirectURI)) {
@@ -318,6 +327,28 @@ public class ClientRegistrationService {
     }
 
     protected RegisteredClients registerNewClient(Client newClient) {
+        String userName = newClient.getResourceOwnerSubject().getLogin();
+        Set<String> names = clientNames.get(userName);
+        if (names == null) {
+            names = new HashSet<String>();
+            clientNames.put(userName, names);
+        } else if (names.contains(newClient.getApplicationName())) {
+            String newName = newClient.getApplicationName();
+            SortedSet<Integer> numbers = new TreeSet<Integer>();
+            for (String name : names) {
+                if (name.startsWith(newName) && !name.equals(newName)) {
+                    try {
+                        numbers.add(Integer.valueOf(name.substring(newName.length())));
+                    } catch (Exception ex) {
+                        // can be characters, continue;
+                    }
+                }
+            }
+            int nextNumber = numbers.isEmpty() ? 2 : numbers.last() + 1;
+            newClient.setApplicationName(newName + nextNumber);
+        }
+        names.add(newClient.getApplicationName());
+        
         clientProvider.setClient(newClient);
         Collection<Client> clientRegistrations = getClientRegistrations();
         clientRegistrations.add(newClient);
@@ -353,6 +384,12 @@ public class ClientRegistrationService {
         for (Client c : clientProvider.getClients(null)) {
             String userName = c.getResourceOwnerSubject().getLogin();
             getClientRegistrations(userName).add(c);
+            Set<String> names = clientNames.get(userName);
+            if (names == null) {
+                names = new HashSet<String>();
+                clientNames.put(userName, names);
+            }
+            names.add(c.getApplicationName());
         }
     }
 

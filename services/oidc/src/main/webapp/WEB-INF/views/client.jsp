@@ -7,6 +7,11 @@
 
 <%
 	Client client = (Client)request.getAttribute("data");
+	String clientType = client.isConfidential() ? "Confidential" : "Public";
+	String homeRealmAlias = client.getProperties().get("homeRealmAlias");
+	if (homeRealmAlias == null || homeRealmAlias.trim().isEmpty()) {
+	    homeRealmAlias = "Default - User selection at login";
+	} 
     String basePath = request.getContextPath() + request.getServletPath();
     if (!basePath.endsWith("/")) {
         basePath += "/";
@@ -24,14 +29,14 @@
 		    border-color: #ccc;
 		    border-style: solid;
 		    border-width: 1px;
-		    padding: 3px 4px;
+                    padding: 3px 4px;
 		    text-align: center;
 		}
 		table td {
 		    border-color: #ccc;
 		    border-style: solid;
-		    border-width: 1px;
-		    padding: 3px 4px;
+                    border-width: 1px;
+                    padding: 3px 4px;
 		}
 
 
@@ -55,7 +60,7 @@
 
 .form-line {
 	margin: 6 0 6 0;
-	padding: 12 36 12 36;
+	padding: 12 12 12 12;
 }
 
 .form-submit-button {
@@ -74,10 +79,14 @@
        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm", Locale.US);
        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     %>
-    <tr><th>ID</th><th>Secret</th><th>Creation Date</th><th>Redirect URI</th></tr> 
+    <tr><th>ID</th><th>Type</th><th>Secret</th><th>Creation Date</th></tr> 
        <tr>
            <td>
                <%= client.getClientId() %>
+           </td>
+           <td>
+               <%= clientType %>
+           </td> 
            <td>
            <%
               if (client.getClientSecret() != null) {
@@ -86,7 +95,7 @@
            <%
               } else {
            %>
-              <i>Unavailable for public client</i>
+              <i>Unavailable</i>
            <%
               } 
            %>
@@ -99,39 +108,46 @@
            <%=    created %><br/>
            
            </td>
-           <td>
-           <% if(client.getRedirectUris() != null) {
+           
+       </tr>
+     
+</table>
+<br/>
+<h2>Restrictions:</h2>
+<p/>
+<table>
+<tr>
+<td>
+<b>Home Realm</b>
+</td>
+<td>
+    <%=  homeRealmAlias %>
+</td>
+</tr>
+<tr>
+<td>
+<b>Redirect URL</b>
+</td>
+<td>
+<% if(client.getRedirectUris() != null) {
                 for (String redirectURI : client.getRedirectUris()) {
 		   %>
            <%=    redirectURI %><br/>
            <%   }
               } %>
-           </td>
-       </tr>
-     
-</table>
-<br/>
-<table class="table_no_border">
-<tr>
-<%
-    if (client.getClientSecret() != null) {
-%>
-<td class="td_no_border">
-<form name="resetSecretForm" action="<%=basePath%>clients/<%= client.getClientId() + "/reset"%>" method="POST">
-		<div data-type="control_button" class="form-line">
-				<button name="submit_reset_button" class="form-submit-button" type="submit">Reset Secret</button>
-		</div>
-</form>
 </td>
-<%
-    }
-%>
-<td class="td_no_border">
-<form name="deleteForm" action="<%=basePath%>clients/<%= client.getClientId() + "/remove"%>" method="POST">
-		<div data-type="control_button" class="form-line">
-				<button name="submit_delete_button" class="form-submit-button" type="submit">Delete Client</button>
-		</div>
-</form>
+</tr>
+<tr>
+<td>
+<b>Audience URL</b>
+</td>
+<td>
+<% if(client.getRegisteredAudiences() != null) {
+                for (String audURI : client.getRegisteredAudiences()) {
+		   %>
+           <%=    audURI %><br/>
+           <%   }
+              } %>
 </td>
 </tr>
 </table>
@@ -142,7 +158,34 @@
 <p>
 <p><a href="<%= basePath + "clients/" + client.getClientId() + "/codes" %>">Issued Code Grants</a></p>
 </p>
+
 <br/>
+<table class="table_no_border">
+<tr>
+<%
+    if (client.getClientSecret() != null) {
+%>
+<td class="td_no_border">
+<form name="resetSecretForm" action="<%=basePath%>clients/<%= client.getClientId() + "/reset"%>" method="POST">
+     <div data-type="control_button" class="form-line">
+	<button name="submit_reset_button" class="form-submit-button" type="submit">Reset Client Secret</button>
+</form>
+     </div> 
+</td>
+<%
+    }
+%>
+<td class="td_no_border">
+<form name="deleteForm" action="<%=basePath%>clients/<%= client.getClientId() + "/remove"%>" method="POST">
+        <div data-type="control_button" class="form-line">
+	<button name="submit_delete_button" class="form-submit-button" type="submit">Delete Client</button>
+        </div>
+</form>
+</td>
+</tr>
+</table>
+<br/>
+
 <p>
 <p>Return to <a href="<%=basePath%>clients">registered Clients</a></p>
 </p>
