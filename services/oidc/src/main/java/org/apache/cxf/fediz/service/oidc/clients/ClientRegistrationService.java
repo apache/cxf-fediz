@@ -23,6 +23,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,10 +52,13 @@ import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.cxf.common.util.Base64UrlUtility;
 import org.apache.cxf.common.util.StringUtils;
 import org.apache.cxf.rs.security.oauth2.common.Client;
+import org.apache.cxf.rs.security.oauth2.common.ServerAccessToken;
 import org.apache.cxf.rs.security.oauth2.common.UserSubject;
 import org.apache.cxf.rs.security.oauth2.grants.code.AuthorizationCodeDataProvider;
+import org.apache.cxf.rs.security.oauth2.grants.code.ServerAuthorizationCodeGrant;
 import org.apache.cxf.rs.security.oauth2.provider.ClientRegistrationProvider;
 import org.apache.cxf.rs.security.oauth2.provider.OAuthDataProvider;
+import org.apache.cxf.rs.security.oauth2.tokens.refresh.RefreshToken;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 import org.apache.cxf.rt.security.crypto.CryptoUtils;
 
@@ -140,9 +144,14 @@ public class ClientRegistrationService {
         // Right now the user who is registering the clients 
         // is the one who is working with them, i.e, client registrations 
         // are user specific, so passing null is OK
-        return new ClientTokens(c, 
-                                dataProvider.getAccessTokens(c, null),
-                                dataProvider.getRefreshTokens(c, null));
+        Comparator<ServerAccessToken> tokenComp = new TokenComparator();
+        List<ServerAccessToken> accessTokens = 
+            new ArrayList<ServerAccessToken>(dataProvider.getAccessTokens(c, null));
+        Collections.sort(accessTokens, tokenComp);
+        List<RefreshToken> refreshTokens = 
+                new ArrayList<RefreshToken>(dataProvider.getRefreshTokens(c, null));
+        Collections.sort(refreshTokens, tokenComp);
+        return new ClientTokens(c, accessTokens, refreshTokens);
     }
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -176,8 +185,10 @@ public class ClientRegistrationService {
     public ClientCodeGrants getClientCodeGrants(@PathParam("id") String id) {
         if (dataProvider instanceof AuthorizationCodeDataProvider) {
             Client c = getRegisteredClient(id);
-            return new ClientCodeGrants(c, 
-                    ((AuthorizationCodeDataProvider)dataProvider).getCodeGrants(c, null));
+            List<ServerAuthorizationCodeGrant> codeGrants = new ArrayList<ServerAuthorizationCodeGrant>(
+               ((AuthorizationCodeDataProvider)dataProvider).getCodeGrants(c, null));
+            Collections.sort(codeGrants, new CodeGrantComparator());
+            return new ClientCodeGrants(c, codeGrants);
         }
         return null;
     }
@@ -421,6 +432,22 @@ public class ClientRegistrationService {
             // or the registration date comparison - this can be driven from UI
             // example, Sort Clients By Name/Date/etc
             return c1.getApplicationName().compareTo(c2.getApplicationName());
+        }
+        
+    }
+    private static class TokenComparator implements Comparator<ServerAccessToken> {
+
+        @Override
+        public int compare(ServerAccessToken t1, ServerAccessToken t2) {
+            return Long.valueOf(t1.getIssuedAt()).compareTo(t2.getIssuedAt());
+        }
+        
+    }
+    private static class CodeGrantComparator implements Comparator<ServerAuthorizationCodeGrant> {
+
+        @Override
+        public int compare(ServerAuthorizationCodeGrant g1, ServerAuthorizationCodeGrant g2) {
+            return Long.valueOf(g1.getIssuedAt()).compareTo(g2.getIssuedAt());
         }
         
     }
