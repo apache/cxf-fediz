@@ -23,6 +23,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -363,7 +364,7 @@ public class ClientRegistrationService {
     protected Collection<Client> getClientRegistrations(String userName) {
         Collection<Client> userClientRegs = registrations.get(userName);
         if (userClientRegs == null) {
-            userClientRegs = new HashSet<Client>();
+            userClientRegs = new TreeSet<Client>(new ClientComparator());
             registrations.put(userName, userClientRegs);
         }
         return userClientRegs;
@@ -411,5 +412,16 @@ public class ClientRegistrationService {
 
     public void setClientProvider(ClientRegistrationProvider clientProvider) {
         this.clientProvider = clientProvider;
+    }
+    
+    private static class ClientComparator implements Comparator<Client> {
+
+        @Override
+        public int compare(Client c1, Client c2) {
+            // or the registration date comparison - this can be driven from UI
+            // example, Sort Clients By Name/Date/etc
+            return c1.getApplicationName().compareTo(c2.getApplicationName());
+        }
+        
     }
 }
