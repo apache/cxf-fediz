@@ -1,4 +1,4 @@
-Apache CXF Fediz 1.2.1 Release Notes
+Apache CXF Fediz 1.2.2 Release Notes
 ------------------------------------
 
 1. Overview
@@ -62,6 +62,39 @@ N.A.
 
 
 8. Specific issues, features, and improvements fixed in this version
+
+Release Notes - CXF-Fediz - Version 1.2.2
+
+Sub-task
+
+    [FEDIZ-106] - Spring plugin support for configurable token validation
+    [FEDIZ-107] - CXF plugin support for configurable token validation
+    [FEDIZ-108] - Jetty plugin support for configurable token validation
+    [FEDIZ-110] - Update Plugin Configuration Documentation
+
+Bug
+
+    [FEDIZ-117] - Race condition in CXF plugin related to request restoration after redirect
+    [FEDIZ-125] - Logout is not working in Fediz websphere plugin and cookie name is not configurable
+    [FEDIZ-128] - Parent POM dependencies wrong in Websphere artifacts
+    [FEDIZ-129] - Default values in the schema are not actually used
+    [FEDIZ-139] - cxf-fediz plugin osgi export
+    [FEDIZ-140] - IDP caches outdated SAML Tokens
+    [FEDIZ-142] - TrustedIdpSAMLProtocolHandler.REQUIRE_KEYINFO does not work
+    [FEDIZ-146] - wtrealm should not be mandatory for 3rd party signin response
+    [FEDIZ-147] - IDP will be listed in HomeRealm Selection view, even if it should not be used directly
+    [FEDIZ-151] - Session Conflict with Cookies
+
+Improvement
+
+    [FEDIZ-104] - Configurable (fediz_config.xml) token expiration validation
+    [FEDIZ-152] - Disable URL rewrites with SessionID to avoid session hijacking
+
+New Feature
+
+    [FEDIZ-126] - Systests for websphere plugin
+    [FEDIZ-127] - Webshere example application doesn't fit to systemtests and is not buildable as ear file
+    [FEDIZ-144] - HomeRealm Discovery Service based on Spring EL
 
 Release Notes - CXF-Fediz - Version 1.2.1
 
