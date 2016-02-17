@@ -53,6 +53,9 @@
                         %>       
                         <input type="hidden" name="scope"
                                value="<%= data.getProposedScope() %>"/>
+                        <input type="hidden" name="response_type"
+                               value="<%= data.getResponseType() %>"/>
+                        
                         <%
                             if (data.getRedirectUri() != null) {
                         %>       
