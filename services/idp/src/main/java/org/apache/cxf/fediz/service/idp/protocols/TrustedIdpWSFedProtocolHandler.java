@@ -82,7 +82,7 @@ public class TrustedIdpWSFedProtocolHandler implements TrustedIdpProtocolHandler
     public String getProtocol() {
         return PROTOCOL;
     }
-
+    
     @Override
     public URL mapSignInRequest(RequestContext context, Idp idp, TrustedIdp trustedIdp) {
         
@@ -115,6 +115,11 @@ public class TrustedIdpWSFedProtocolHandler implements TrustedIdpProtocolHandler
             LOG.error("Invalid Redirect URL for Trusted Idp", ex);
             throw new IllegalStateException("Invalid Redirect URL for Trusted Idp");
         }
+    }
+    
+    @Override
+    public URL processSignInResponse(RequestContext context, Idp idp, TrustedIdp trustedIdp) {
+        return null;
     }
 
     @Override

@@ -34,6 +34,9 @@ public interface TrustedIdpProtocolHandler extends ProtocolHandler {
     // Only supports HTTP GET SignIn Requests
     URL mapSignInRequest(RequestContext context, Idp idp, TrustedIdp trustedIdp);
     
+    // Allow for processing of the Response + redirect again (required by some protocols)
+    URL processSignInResponse(RequestContext context, Idp idp, TrustedIdp trustedIdp);
+    
     //Hook in <action-state id="validateToken"> of federation-signin-response.xml
     SecurityToken mapSignInResponse(RequestContext context, Idp idp, TrustedIdp trustedIdp);
 
