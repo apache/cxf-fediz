@@ -29,6 +29,8 @@
     <input name="wresult" />
     <input name="RelayState" />
     <input name="SAMLResponse" />
+    <input name="state" />
+    <input name="code" />
 
     <on-start>
         <!-- restore 'wreply','wtrealm','whr' for current 'wctx' -->
@@ -78,5 +80,7 @@
 
     <!-- abnormal exit point : Http 500 Internal Server Error -->
     <end-state id="scInternalServerError" />
+    
+    <end-state id="redirectToTrustedIDP" />
 
 </flow>

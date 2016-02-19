@@ -29,6 +29,7 @@ import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.service.idp.domain.Application;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
+import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -79,6 +80,9 @@ public class SigninParametersCacheAction {
         // TODO Abstract the concept of a context to cater for either protocol
         if (uuidKey == null) {
             uuidKey = (String)WebUtils.getAttributeFromFlowScope(context, SAMLSSOConstants.RELAY_STATE);
+        }
+        if (uuidKey == null) {
+            uuidKey = (String)WebUtils.getAttributeFromFlowScope(context, OAuthConstants.STATE);
         }
         @SuppressWarnings("unchecked")
         Map<String, Object> signinParams =

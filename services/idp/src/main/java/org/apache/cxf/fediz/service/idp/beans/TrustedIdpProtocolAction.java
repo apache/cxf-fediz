@@ -93,9 +93,11 @@ public class TrustedIdpProtocolAction {
             throw new IllegalStateException("No ProtocolHandler found for '" + protocol + "'");
         }
         URL redirectUrl = protocolHandler.processSignInResponse(requestContext, idpConfig, trustedIdp);
-        LOG.info("Redirect required?", (redirectUrl != null));
+        LOG.info("Redirect required? {}", (redirectUrl != null));
         if (redirectUrl != null) {
-            return redirectUrl.toString();
+            String redirectUrlStr = redirectUrl.toString();
+            LOG.info("Redirect URL: {}", redirectUrlStr);
+            return redirectUrlStr;
         }
         return null;
     }
