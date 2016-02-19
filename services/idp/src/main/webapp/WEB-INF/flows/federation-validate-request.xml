@@ -247,13 +247,4 @@
         </on-entry>
     </end-state>
 
-    <end-state id="formResponseView" view="signinresponseform">
-        <on-entry>
-            <evaluate expression="flowScope.signinResponseUrl" result="requestScope.fedAction" />
-            <evaluate expression="flowScope.wtrealm" result="requestScope.fedWTrealm" />
-            <evaluate expression="flowScope.wctx" result="requestScope.fedWCtx" />
-            <evaluate expression="flowScope.rpToken" result="requestScope.fedWResult" />
-        </on-entry>
-    </end-state>
-    
 </flow>
