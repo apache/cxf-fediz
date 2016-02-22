@@ -29,11 +29,18 @@ import java.net.URLEncoder;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Form;
+import javax.ws.rs.core.Response;
 
 import org.w3c.dom.Element;
+
+import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.config.TrustManager;
@@ -55,6 +62,11 @@ import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 import org.apache.cxf.fediz.service.idp.spi.TrustedIdpProtocolHandler;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
+import org.apache.cxf.interceptor.LoggingInInterceptor;
+import org.apache.cxf.interceptor.LoggingOutInterceptor;
+import org.apache.cxf.jaxrs.client.ClientConfiguration;
+import org.apache.cxf.jaxrs.client.WebClient;
+import org.apache.cxf.rs.security.oauth2.common.ClientAccessToken;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.wss4j.common.crypto.CertificateStore;
@@ -128,6 +140,7 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
     
     @Override
     public URL processSignInResponse(RequestContext context, Idp idp, TrustedIdp trustedIdp) {
+        /*
         String code = (String) WebUtils.getAttributeFromFlowScope(context,
                                                                  OAuthConstants.CODE_RESPONSE_TYPE);
         if (code == null) {
@@ -165,11 +178,44 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
             LOG.error("Invalid Redirect URL for Trusted Idp", ex);
             throw new IllegalStateException("Invalid Redirect URL for Trusted Idp");
         }
+        */
+        return null;
     }
 
     @Override
     public SecurityToken mapSignInResponse(RequestContext context, Idp idp, TrustedIdp trustedIdp) {
 
+        String code = (String) WebUtils.getAttributeFromFlowScope(context,
+                                                                  OAuthConstants.CODE_RESPONSE_TYPE);
+        if (code != null) {
+            // Here we need to get the IdToken using the authorization code
+            String address = "http://localhost:8080/auth/realms/realmb/protocol/openid-connect/token";
+            
+            List<Object> providers = new ArrayList<Object>();
+            providers.add(new JacksonJsonProvider());
+            
+            WebClient client = 
+                WebClient.create(address, providers, "consumer-id", "90d5da25-e900-443f-a5d5-feb3bb060800", null);
+            
+            ClientConfiguration config = WebClient.getConfig(client);
+
+            config.getOutInterceptors().add(new LoggingOutInterceptor());
+            config.getInInterceptors().add(new LoggingInInterceptor());
+            
+            client.type("application/x-www-form-urlencoded").accept("application/json");
+
+            Form form = new Form();
+            form.param("grant_type", "authorization_code");
+            form.param("code", code);
+            form.param("client_id", "consumer-id");
+            form.param("redirect_uri", idp.getIdpUrl().toString());
+            Response response = client.post(form);
+
+            ClientAccessToken accessToken = response.readEntity(ClientAccessToken.class);
+            System.out.println("AT: " + accessToken.getTokenKey());
+
+        }
+        
         try {
             String whr = (String) WebUtils.getAttributeFromFlowScope(context,
                                                                      FederationConstants.PARAM_HOME_REALM);
