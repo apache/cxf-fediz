@@ -84,32 +84,37 @@ public class SigninParametersCacheAction {
         if (uuidKey == null) {
             uuidKey = (String)WebUtils.getAttributeFromFlowScope(context, OAuthConstants.STATE);
         }
-        @SuppressWarnings("unchecked")
-        Map<String, Object> signinParams =
-            (Map<String, Object>)WebUtils.getAttributeFromExternalContext(context, uuidKey);
         
-        if (signinParams != null) {
-            String value = (String)signinParams.get(FederationConstants.PARAM_REPLY);
-            if (value != null) {
-                WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_REPLY, value);
-            }
-            value = (String)signinParams.get(FederationConstants.PARAM_TREALM);
-            if (value != null) {
-                WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_TREALM, value);
-            }
-            value = (String)signinParams.get(FederationConstants.PARAM_HOME_REALM);
-            if (value != null) {
-                WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_HOME_REALM, value);
-            }
+        if (uuidKey != null) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> signinParams =
+                (Map<String, Object>)WebUtils.getAttributeFromExternalContext(context, uuidKey);
             
-            LOG.debug("SignIn parameters restored: {}", signinParams.toString());
-            WebUtils.removeAttributeFromFlowScope(context, FederationConstants.PARAM_CONTEXT);
-            LOG.info("SignIn parameters restored and " + FederationConstants.PARAM_CONTEXT + "[" 
-                + uuidKey + "] cleared.");
-            
-            value = (String)signinParams.get(FederationConstants.PARAM_CONTEXT);
-            if (value != null) {
-                WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_CONTEXT, value);
+            if (signinParams != null) {
+                String value = (String)signinParams.get(FederationConstants.PARAM_REPLY);
+                if (value != null) {
+                    WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_REPLY, value);
+                }
+                value = (String)signinParams.get(FederationConstants.PARAM_TREALM);
+                if (value != null) {
+                    WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_TREALM, value);
+                }
+                value = (String)signinParams.get(FederationConstants.PARAM_HOME_REALM);
+                if (value != null) {
+                    WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_HOME_REALM, value);
+                }
+                
+                LOG.debug("SignIn parameters restored: {}", signinParams.toString());
+                WebUtils.removeAttributeFromFlowScope(context, FederationConstants.PARAM_CONTEXT);
+                LOG.info("SignIn parameters restored and " + FederationConstants.PARAM_CONTEXT + "[" 
+                    + uuidKey + "] cleared.");
+                
+                value = (String)signinParams.get(FederationConstants.PARAM_CONTEXT);
+                if (value != null) {
+                    WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_CONTEXT, value);
+                }
+            }  else {
+                LOG.debug("Error in restoring security context");
             }
         } else {
             LOG.debug("Error in restoring security context");

@@ -115,11 +115,6 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
                 sb.append("&").append(FederationConstants.PARAM_FRESHNESS).append('=');
                 sb.append(URLEncoder.encode(wfresh, "UTF-8"));
             }
-            String wctx = context.getFlowScope().getString(FederationConstants.PARAM_CONTEXT);
-            if (wctx != null) {
-                sb.append("&").append(FederationConstants.PARAM_CONTEXT).append('=');
-                sb.append(wctx);
-            }
              */
             return new URL(sb.toString());
         } catch (MalformedURLException ex) {

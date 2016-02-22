@@ -44,7 +44,7 @@
             then="selectSignOutProcess" />
         <if test="requestParameters.wa == 'wsignin1.0'" then="selectWsFedProcess" />
         <if test="requestParameters.SAMLResponse != null" then="selectSAMLProcess"
-            else="signinResponse"
+            else="selectOIDCAuthorizationCodeFlowProcess"
         /> 
     </decision-state>
 
@@ -59,6 +59,13 @@
         <if test="requestParameters.RelayState == null or requestParameters.RelayState.length() == 0"
             then="viewBadRequest" />
         <if test="requestParameters.SAMLResponse == null or requestParameters.SAMLResponse.length() == 0"
+            then="viewBadRequest" else="signinResponse" />
+    </decision-state>
+    
+    <decision-state id="selectOIDCAuthorizationCodeFlowProcess">
+        <if test="requestParameters.code == null or requestParameters.code.length() == 0"
+            then="viewBadRequest" />
+        <if test="requestParameters.state == null or requestParameters.state.length() == 0"
             then="viewBadRequest" else="signinResponse" />
     </decision-state>
 	
