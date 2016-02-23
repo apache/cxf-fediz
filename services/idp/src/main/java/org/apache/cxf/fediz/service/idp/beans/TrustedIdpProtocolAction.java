@@ -73,35 +73,6 @@ public class TrustedIdpProtocolAction {
         return redirectUrl.toString();
     }
     
-    public String processSignInResponse(RequestContext requestContext) {
-        String trustedIdpRealm = requestContext.getFlowScope().getString("whr");
-        
-        Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(requestContext, IDP_CONFIG);
-        
-        TrustedIdp trustedIdp = idpConfig.findTrustedIdp(trustedIdpRealm);
-        if (trustedIdp == null) {
-            LOG.error("TrustedIdp '{}' not configured", trustedIdpRealm);
-            throw new IllegalStateException("TrustedIdp '" + trustedIdpRealm + "'");
-        }
-        
-        String protocol = trustedIdp.getProtocol();
-        LOG.debug("TrustedIdp '{}' supports protocol {}", trustedIdpRealm, protocol);
-        
-        TrustedIdpProtocolHandler protocolHandler = trustedIdpProtocolHandlers.getProtocolHandler(protocol);
-        if (protocolHandler == null) {
-            LOG.error("No ProtocolHandler found for {}", protocol);
-            throw new IllegalStateException("No ProtocolHandler found for '" + protocol + "'");
-        }
-        URL redirectUrl = protocolHandler.processSignInResponse(requestContext, idpConfig, trustedIdp);
-        LOG.info("Redirect required? {}", redirectUrl != null);
-        if (redirectUrl != null) {
-            String redirectUrlStr = redirectUrl.toString();
-            LOG.info("Redirect URL: {}", redirectUrlStr);
-            return redirectUrlStr;
-        }
-        return null;
-    }
-    
     public SecurityToken mapSignInResponse(RequestContext requestContext) {
         String trustedIdpRealm = requestContext.getFlowScope().getString("whr");
         LOG.info("Prepare validate SignInResponse of Trusted IDP '{}'", trustedIdpRealm);

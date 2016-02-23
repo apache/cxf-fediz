@@ -118,11 +118,6 @@ public class TrustedIdpWSFedProtocolHandler implements TrustedIdpProtocolHandler
     }
     
     @Override
-    public URL processSignInResponse(RequestContext context, Idp idp, TrustedIdp trustedIdp) {
-        return null;
-    }
-
-    @Override
     public SecurityToken mapSignInResponse(RequestContext context, Idp idp, TrustedIdp trustedIdp) {
 
         try {

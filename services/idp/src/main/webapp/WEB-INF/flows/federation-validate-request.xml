@@ -132,7 +132,6 @@
         </transition>
         <transition on="viewBadRequest" to="viewBadRequest" />
         <transition on="scInternalServerError" to="scInternalServerError" />
-        <transition on="redirectToTrustedIDP" to="redirectToTrustedIDP" />
     </subflow-state>
 
     <!-- produce RP security token (as String type) -->

@@ -74,7 +74,6 @@ import org.apache.wss4j.common.saml.bean.ConditionsBean;
 import org.apache.wss4j.common.saml.bean.SubjectBean;
 import org.apache.wss4j.common.saml.bean.Version;
 import org.apache.wss4j.common.saml.builder.SAML2Constants;
-import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.xml.security.exceptions.Base64DecodingException;
 import org.apache.xml.security.utils.Base64;
 import org.joda.time.DateTime;
@@ -144,50 +143,6 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
     }
     
     @Override
-    public URL processSignInResponse(RequestContext context, Idp idp, TrustedIdp trustedIdp) {
-        /*
-        String code = (String) WebUtils.getAttributeFromFlowScope(context,
-                                                                 OAuthConstants.CODE_RESPONSE_TYPE);
-        if (code == null) {
-            return null;
-        }
-        
-        try {
-            StringBuilder sb = new StringBuilder();
-            // sb.append(trustedIdp.getUrl());
-            sb.append("http://localhost:8080/auth/realms/realmb/protocol/openid-connect/token"); // TODO
-            sb.append("?");
-            sb.append("grant_type").append('=');
-            sb.append("authorization_code");
-            sb.append("&");
-            sb.append("code").append('=');
-            sb.append(code);
-            sb.append("&");
-            sb.append("redirect_uri").append('=');
-            sb.append(URLEncoder.encode(idp.getIdpUrl().toString(), "UTF-8"));
-            sb.append("&");
-            sb.append("client_id").append('=');
-            sb.append("consumer-id"); //TODO
-            // sb.append("&");
-            
-            // TODOString state = (String) WebUtils.getAttributeFromFlowScope(context,
-            //                                                          OAuthConstants.STATE);
-            // sb.append("state").append('=');
-            // sb.append(state);
-            
-            return new URL(sb.toString());
-        } catch (MalformedURLException ex) {
-            LOG.error("Invalid Redirect URL for Trusted Idp", ex);
-            throw new IllegalStateException("Invalid Redirect URL for Trusted Idp");
-        } catch (UnsupportedEncodingException ex) {
-            LOG.error("Invalid Redirect URL for Trusted Idp", ex);
-            throw new IllegalStateException("Invalid Redirect URL for Trusted Idp");
-        }
-        */
-        return null;
-    }
-
-    @Override
     public SecurityToken mapSignInResponse(RequestContext context, Idp idp, TrustedIdp trustedIdp) {
 
         String code = (String) WebUtils.getAttributeFromFlowScope(context,
@@ -230,27 +185,16 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
                     return null;
                 }
                 
-                /*String whr = (String) WebUtils.getAttributeFromFlowScope(context,
+                String whr = (String) WebUtils.getAttributeFromFlowScope(context,
                                                                          FederationConstants.PARAM_HOME_REALM);
                 if (whr == null) {
                     LOG.warn("Home realm is null");
                     throw new IllegalStateException("Home realm is null");
                 }
         
-                String wresult = (String) WebUtils.getAttributeFromFlowScope(context,
-                                                                             FederationConstants.PARAM_RESULT);
-                if (wresult == null) {
-                    LOG.warn("Parameter wresult not found");
-                    throw new IllegalStateException("No security token issued");
-                }*/
-        
                 // Parse the received Token
                 JwsJwtCompactConsumer jwtConsumer = new JwsJwtCompactConsumer(idToken);
                 JwtToken jwt = jwtConsumer.getJwtToken();
-                
-                for (String claim : jwt.getClaims().asMap().keySet()) {
-                    System.out.println("CLAIM: " + claim + " " + jwt.getClaim(claim));
-                }
                 
                 if (!jwtConsumer.verifySignatureWith(validatingCert, SignatureAlgorithm.RS256)) {
                     LOG.warn("Signature does not validate");
@@ -261,30 +205,28 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
                 if (jwt.getClaim(JwtConstants.CLAIM_ISSUED_AT) != null) {
                     created = new Date((long)jwt.getClaim(JwtConstants.CLAIM_ISSUED_AT) * 1000L);
                 }
+                if (jwt.getClaim(JwtConstants.CLAIM_EXPIRY) == null) {
+                    LOG.warn("No expiry in the token");
+                    return null;
+                }
                 Date expires = new Date((long)jwt.getClaim(JwtConstants.CLAIM_EXPIRY) * 1000L);
-                System.out.println("IAT: " + created);
-                System.out.println("EXP: " + expires);
                 
                 // Convert into a SAML Token
                 SamlAssertionWrapper assertion = createSamlAssertion(idp, jwt, created, expires);
                 Document doc = DOMUtils.createDocument();
                 Element token = assertion.toDOM(doc);
-                System.out.println("TOK: " + DOM2Writer.nodeToString(token));
         
                 // Create new Security token with new id. 
                 // Parameters for freshness computation are copied from original IDP_TOKEN
                 SecurityToken idpToken = new SecurityToken(assertion.getId(), created, expires);
                 idpToken.setToken(token);
         
-                // idpToken.setToken(e);
-                // LOG.info("[IDP_TOKEN={}] for user '{}' created from [RP_TOKEN={}] issued by home realm [{}/{}]",
-                //         id, wfResp.getUsername(), wfResp.getUniqueTokenId(), whr, wfResp.getIssuer());
+                LOG.info("[IDP_TOKEN={}] for user '{}' created from [RP_TOKEN={}] issued by home realm [{}/{}]",
+                         assertion.getId(), assertion.getSaml2().getSubject().getNameID().getValue(), 
+                         jwt.getClaim(JwtConstants.CLAIM_JWT_ID), whr, jwt.getClaim(JwtConstants.CLAIM_ISSUER));
                 LOG.debug("Created date={}", created);
                 LOG.debug("Expired date={}", expires);
-                if (LOG.isDebugEnabled()) {
-                    //LOG.debug("Validated 'wresult' : "
-                    //    + System.getProperty("line.separator") + wresult);
-                }
+                
                 return idpToken;
             } catch (IllegalStateException ex) {
                 throw ex;

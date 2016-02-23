@@ -37,16 +37,6 @@
         <evaluate expression="signinParametersCacheAction.restore(flowRequestContext)" />
     </on-start>
     
-    <!-- See whether a further sign in request is required after processing -->
-    <action-state id="isFurtherSignInRedirectRequired">
-        <evaluate expression="trustedIdpProtocolAction.processSignInResponse(flowRequestContext)" 
-                      result="flowScope.remoteIdpUrl"/>
-        <evaluate expression="flowScope.remoteIdpUrl != null" />
-        <transition on="yes" to="redirectToTrustedIDP" />
-        <transition on="no" to="validateToken" />
-        <transition on-exception="java.lang.Throwable" to="scInternalServerError" />
-    </action-state>
-    
     <!-- validate token issued by requestor IDP ('wresult') given its 'whr' -->
     <action-state id="validateToken">
         <evaluate expression="trustedIdpProtocolAction.mapSignInResponse(flowRequestContext)"
@@ -81,6 +71,4 @@
     <!-- abnormal exit point : Http 500 Internal Server Error -->
     <end-state id="scInternalServerError" />
     
-    <end-state id="redirectToTrustedIDP" />
-
 </flow>
