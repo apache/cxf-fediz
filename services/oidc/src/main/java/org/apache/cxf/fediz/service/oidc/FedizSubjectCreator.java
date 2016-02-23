@@ -75,7 +75,7 @@ public class FedizSubjectCreator implements SubjectCreator {
     public IdToken convertToIdToken(Element samlToken, 
             String subjectName, 
             ClaimCollection claims) {
-        // The current SAML Assertion represents anauthentication record.
+        // The current SAML Assertion represents an authentication record.
         // It has to be translated into IdToken (JWT) so that it can be returned 
         // to client applications participating in various OIDC flows.
         
