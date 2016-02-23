@@ -38,8 +38,10 @@
 
     <properties>
         <apacheds.version>2.0.0-M19</apacheds.version>
+        <bcprov.version>1.54</bcprov.version>
         <commons.lang.version>3.4</commons.lang.version>
         <commons.logging.version>1.2</commons.logging.version>
+        <commons.io.version>2.4</commons.io.version>
         <commons.validator.version>1.5.0</commons.validator.version>
         <cxf.version>3.0.8</cxf.version>
         <cxf.build-utils.version>3.0.0</cxf.build-utils.version>
@@ -64,7 +66,7 @@
         <slf4j.version>1.7.14</slf4j.version>
         <spring.version>3.2.8.RELEASE</spring.version>
         <spring.security.version>3.1.7.RELEASE</spring.security.version>
-        <tomcat.version>7.0.65</tomcat.version>
+        <tomcat.version>7.0.68</tomcat.version>
         <wss4j.version>2.0.6</wss4j.version>
         <xalan.version>2.7.2</xalan.version>
         <bval.version>0.5</bval.version>
