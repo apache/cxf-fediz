@@ -736,7 +736,7 @@ public class OIDCTest {
         JwtToken jwt = jwtConsumer.getJwtToken();
 
         // Validate claims
-        Assert.assertEquals("alice", jwt.getClaim(JwtConstants.CLAIM_SUBJECT));
+        Assert.assertEquals("alice", jwt.getClaim("preferred_username"));
         Assert.assertEquals("accounts.fediz.com", jwt.getClaim(JwtConstants.CLAIM_ISSUER));
         Assert.assertEquals(audience, jwt.getClaim(JwtConstants.CLAIM_AUDIENCE));
         Assert.assertNotNull(jwt.getClaim(JwtConstants.CLAIM_EXPIRY));
