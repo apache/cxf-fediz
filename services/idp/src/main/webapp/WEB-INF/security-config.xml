@@ -71,7 +71,7 @@
     
     <!-- Redirects to a dedicated http config -->
     <bean id="federationEntryPoint" class="org.apache.cxf.fediz.service.idp.FederationEntryPoint">
-        <property name="realm" value="urn:org:apache:cxf:fediz:idp:realm-A" />
+        <property name="realm" value="${realm-uri}" />
         <property name="configService" ref="config" />
     </bean>
     
