@@ -95,6 +95,8 @@ public class TrustedIdpWSFedProtocolHandler implements TrustedIdpProtocolHandler
             sb.append(URLEncoder.encode(idp.getRealm(), "UTF-8"));
             sb.append("&").append(FederationConstants.PARAM_REPLY).append('=');
             sb.append(URLEncoder.encode(idp.getIdpUrl().toString(), "UTF-8"));
+            sb.append("&").append(FederationConstants.PARAM_HOME_REALM).append('=');
+            sb.append(trustedIdp.getRealm());
             
             String wfresh = context.getFlowScope().getString(FederationConstants.PARAM_FRESHNESS);
             if (wfresh != null) {
