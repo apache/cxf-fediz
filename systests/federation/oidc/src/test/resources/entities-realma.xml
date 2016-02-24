@@ -100,6 +100,7 @@
         <property name="parameters">
             <util:map>
                 <entry key="client.id" value="consumer-id"/>
+                <entry key="client.secret" value="90d5da25-e900-443f-a5d5-feb3bb060800"/>
                 <entry key="token.endpoint" value="http://localhost:8080/auth/realms/realmb/protocol/openid-connect/token"/>
             </util:map>
         </property>

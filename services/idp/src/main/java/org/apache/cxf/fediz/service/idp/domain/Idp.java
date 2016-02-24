@@ -210,7 +210,7 @@ public class Idp implements Serializable {
 
     public Application findApplication(String realmApplication) {
         for (Application item : applications) {
-            if (realmApplication.equals(item.getRealm())) {
+            if (item.getRealm().equals(realmApplication)) {
                 return item;
             }
         }
@@ -229,7 +229,7 @@ public class Idp implements Serializable {
 
     public TrustedIdp findTrustedIdp(String realmTrustedIdp) {
         for (TrustedIdp item : trustedIdpList) {
-            if (realmTrustedIdp.equals(item.getRealm())) {
+            if (item.getRealm().equals(realmTrustedIdp)) {
                 return item;
             }
         }
