@@ -30,8 +30,8 @@ import java.net.URLEncoder;
 import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Collections;
 import java.util.Map;
 import java.util.zip.DataFormatException;
 
@@ -67,7 +67,6 @@ import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.wss4j.common.crypto.CertificateStore;
 import org.apache.wss4j.common.crypto.Crypto;
-import org.apache.wss4j.common.crypto.Merlin;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.OpenSAMLUtil;
 import org.apache.wss4j.common.util.DOM2Writer;
@@ -308,34 +307,29 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
             return null;
         }
         
-        // First see if it's a certificate file
-        InputStream is = null;
-        try {
-            is = Merlin.loadInputStream(Thread.currentThread().getContextClassLoader(), certificate);
-        
-            CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
-            X509Certificate cert = (X509Certificate) certFactory.generateCertificate(is);
-            return new CertificateStore(new X509Certificate[]{cert});
-        } catch (WSSecurityException ex) {
-            LOG.error("Failed to load keystore " + certificate, ex);
-            throw new RuntimeException("Failed to load keystore " + certificate);
-        } catch (IOException ex) {
-            LOG.error("Failed to read keystore", ex);
-            throw new RuntimeException("Failed to read keystore");
-        } catch (CertificateException ex) {
-            // This is ok as it could be a WSS4J properties file
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    // Do nothing
+        boolean isCertificateLocation = !certificate.startsWith("-----BEGIN CERTIFICATE");
+        if (isCertificateLocation) {
+            try {
+                X509Certificate cert = CertsUtils.getX509Certificate(certificate);
+                if (cert == null) {
+                    return null;
                 }
+                return new CertificateStore(new X509Certificate[]{cert});
+            } catch (CertificateException ex) {
+                // Maybe it's a WSS4J properties file...
+                return CertsUtils.createCrypto(certificate);
             }
-        }
+        } 
         
-        // Maybe it's a WSS4J properties file...
-        return CertsUtils.createCrypto(certificate);
+        // Here the certificate is encoded in the configuration file
+        X509Certificate cert;
+        try {
+            cert = CertsUtils.parseCertificate(certificate);
+        } catch (Exception ex) {
+            LOG.error("Failed to parse trusted certificate", ex);
+            throw new ProcessingException("Failed to parse trusted certificate");
+        }
+        return new CertificateStore(Collections.singletonList(cert).toArray(new X509Certificate[0]));
     }
     
     private org.opensaml.saml.saml2.core.Response readSAMLResponse(String samlResponse, TrustedIdp trustedIdp) {

@@ -20,9 +20,11 @@
 package org.apache.cxf.fediz.core.util;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Properties;
@@ -32,6 +34,8 @@ import org.apache.wss4j.common.crypto.CryptoFactory;
 import org.apache.wss4j.common.crypto.CryptoType;
 import org.apache.wss4j.common.crypto.Merlin;
 import org.apache.wss4j.common.ext.WSSecurityException;
+import org.apache.xml.security.exceptions.Base64DecodingException;
+import org.apache.xml.security.utils.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,12 +47,17 @@ public final class CertsUtils {
         super();
     }
     
-    public static X509Certificate getX509Certificate(String filename) {
+    public static X509Certificate getX509Certificate(String filename) throws CertificateException {
         return getX509Certificate(filename,
                                   Thread.currentThread().getContextClassLoader());
     }
     
-    public static X509Certificate getX509Certificate(String filename, ClassLoader classLoader) {
+    public static X509Certificate getX509Certificate(String filename, ClassLoader classLoader) 
+        throws CertificateException {
+        if (filename == null) {
+            return null;
+        }
+        
         ClassLoader cl = classLoader;
         if (cl == null) {
             cl = Thread.currentThread().getContextClassLoader();
@@ -74,9 +83,12 @@ public final class CertsUtils {
                 LOG.error("No bytes can be read in certificate file " + filename);
                 throw new RuntimeException("No bytes can be read in certificate file " + filename);
             }
-        } catch (Exception ex) {
+        } catch (WSSecurityException ex) {
             LOG.error("Failed to read certificate file " + filename, ex);
             throw new RuntimeException("Failed to read certificate file " + filename, ex);
+        } catch (IOException ex) {
+            LOG.error("Failed to read keystore", ex);
+            throw new RuntimeException("Failed to read keystore");
         }
     }
     
@@ -112,5 +124,17 @@ public final class CertsUtils {
                             + keyAlias);
         }
         return issuerCerts[0];
+    }
+    
+    public static X509Certificate parseCertificate(String certificate)
+        throws CertificateException, Base64DecodingException, IOException {
+        
+        //before decoding we need to get rod off the prefix and suffix
+        byte[] decoded = Base64.decode(certificate.replaceAll("-----BEGIN CERTIFICATE-----", "").
+                                        replaceAll("-----END CERTIFICATE-----", ""));
+
+        try (InputStream is = new ByteArrayInputStream(decoded)) {
+            return (X509Certificate)CertificateFactory.getInstance("X.509").generateCertificate(is);
+        }
     }
 }

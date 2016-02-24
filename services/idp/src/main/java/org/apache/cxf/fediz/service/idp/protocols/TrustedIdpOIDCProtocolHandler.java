@@ -19,17 +19,15 @@
 
 package org.apache.cxf.fediz.service.idp.protocols;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -65,7 +63,6 @@ import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.wss4j.common.crypto.CertificateStore;
 import org.apache.wss4j.common.crypto.Crypto;
-import org.apache.wss4j.common.crypto.Merlin;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.SAMLCallback;
 import org.apache.wss4j.common.saml.SAMLUtil;
@@ -75,7 +72,6 @@ import org.apache.wss4j.common.saml.bean.SubjectBean;
 import org.apache.wss4j.common.saml.bean.Version;
 import org.apache.wss4j.common.saml.builder.SAML2Constants;
 import org.apache.xml.security.exceptions.Base64DecodingException;
-import org.apache.xml.security.utils.Base64;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -179,7 +175,7 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
             }
             
             try {
-                X509Certificate validatingCert = getCertificate(trustedIdp);
+                X509Certificate validatingCert = getCertificate(trustedIdp.getCertificate());
                 if (validatingCert == null) {
                     LOG.warn("No X.509 Certificate configured for signature validation");
                     return null;
@@ -238,53 +234,61 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
         return null;
     }
     
-    
-    private X509Certificate getCertificate(TrustedIdp trustedIdp) 
-        throws CertificateException, Base64DecodingException, IOException {
-        String certificate = trustedIdp.getCertificate();
-        if (certificate != null) {
-            boolean isCertificateLocation = !certificate.startsWith("-----BEGIN CERTIFICATE");
-            if (isCertificateLocation) {
-                InputStream is = null;
-                try {
-                    is = Merlin.loadInputStream(Thread.currentThread().getContextClassLoader(), certificate);
-                
-                    CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
-                    return (X509Certificate) certFactory.generateCertificate(is);
-                } catch (WSSecurityException ex) {
-                    LOG.error("Failed to load keystore " + certificate, ex);
-                    throw new RuntimeException("Failed to load keystore " + certificate);
-                } catch (IOException ex) {
-                    LOG.error("Failed to read keystore", ex);
-                    throw new RuntimeException("Failed to read keystore");
-                } catch (CertificateException ex) {
-                    // This is ok as it could be a WSS4J properties file
-                } finally {
-                    if (is != null) {
-                        try {
-                            is.close();
-                        } catch (IOException e) {
-                            // Do nothing
-                        }
-                    }
+    private Crypto getCrypto(String certificate) throws ProcessingException {
+        if (certificate == null) {
+            return null;
+        }
+        
+        boolean isCertificateLocation = !certificate.startsWith("-----BEGIN CERTIFICATE");
+        if (isCertificateLocation) {
+            try {
+                X509Certificate cert = CertsUtils.getX509Certificate(certificate);
+                if (cert == null) {
+                    return null;
                 }
-            } else {
-                return parseCertificate(certificate);
+                return new CertificateStore(new X509Certificate[]{cert});
+            } catch (CertificateException ex) {
+                // Maybe it's a WSS4J properties file...
+                return CertsUtils.createCrypto(certificate);
             }
         } 
         
-        return null;
+        // Here the certificate is encoded in the configuration file
+        X509Certificate cert;
+        try {
+            cert = CertsUtils.parseCertificate(certificate);
+        } catch (Exception ex) {
+            LOG.error("Failed to parse trusted certificate", ex);
+            throw new ProcessingException("Failed to parse trusted certificate");
+        }
+        return new CertificateStore(Collections.singletonList(cert).toArray(new X509Certificate[0]));
     }
     
-    private X509Certificate parseCertificate(String certificate)
-        throws CertificateException, Base64DecodingException, IOException {
+    private X509Certificate getCertificate(String certificate) 
+        throws CertificateException, WSSecurityException, ProcessingException, Base64DecodingException, IOException {
+        if (certificate == null) {
+            return null;
+        }
         
-        //before decoding we need to get rod off the prefix and suffix
-        byte [] decoded = Base64.decode(certificate.replaceAll("-----BEGIN CERTIFICATE-----", "").
-                                        replaceAll("-----END CERTIFICATE-----", ""));
-
-        try (InputStream is = new ByteArrayInputStream(decoded)) {
-            return (X509Certificate)CertificateFactory.getInstance("X.509").generateCertificate(is);
+        boolean isCertificateLocation = !certificate.startsWith("-----BEGIN CERTIFICATE");
+        if (isCertificateLocation) {
+            try {
+                return CertsUtils.getX509Certificate(certificate);
+            } catch (CertificateException ex) {
+                // Maybe it's a WSS4J properties file...
+                Crypto crypto = CertsUtils.createCrypto(certificate);
+                if (crypto != null) {
+                    return CertsUtils.getX509Certificate(crypto, null);
+                }
+            }
+        } 
+        
+        // Here the certificate is encoded in the configuration file
+        try {
+            return CertsUtils.parseCertificate(certificate);
+        } catch (Exception ex) {
+            LOG.error("Failed to parse trusted certificate", ex);
+            throw new ProcessingException("Failed to parse trusted certificate");
         }
     }
     
@@ -325,41 +329,6 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
         return assertion;
     }
     
-    private Crypto getCrypto(String certificate) throws ProcessingException {
-        if (certificate == null) {
-            return null;
-        }
-        
-        // First see if it's a certificate file
-        InputStream is = null;
-        try {
-            is = Merlin.loadInputStream(Thread.currentThread().getContextClassLoader(), certificate);
-        
-            CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
-            X509Certificate cert = (X509Certificate) certFactory.generateCertificate(is);
-            return new CertificateStore(new X509Certificate[]{cert});
-        } catch (WSSecurityException ex) {
-            LOG.error("Failed to load keystore " + certificate, ex);
-            throw new RuntimeException("Failed to load keystore " + certificate);
-        } catch (IOException ex) {
-            LOG.error("Failed to read keystore", ex);
-            throw new RuntimeException("Failed to read keystore");
-        } catch (CertificateException ex) {
-            // This is ok as it could be a WSS4J properties file
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    // Do nothing
-                }
-            }
-        }
-        
-        // Maybe it's a WSS4J properties file...
-        return CertsUtils.createCrypto(certificate);
-    }
-
     private static class SamlCallbackHandler implements CallbackHandler {
         private ConditionsBean conditionsBean;
         private SubjectBean subjectBean;

@@ -19,15 +19,10 @@
 
 package org.apache.cxf.fediz.service.idp.protocols;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
 
@@ -51,15 +46,14 @@ import org.apache.cxf.fediz.core.processor.FederationProcessorImpl;
 import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
+import org.apache.cxf.fediz.core.util.CertsUtils;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 import org.apache.cxf.fediz.service.idp.spi.TrustedIdpProtocolHandler;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.wss4j.common.crypto.CertificateStore;
-import org.apache.xml.security.exceptions.Base64DecodingException;
 import org.apache.xml.security.stax.impl.util.IDGenerator;
-import org.apache.xml.security.utils.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -222,7 +216,7 @@ public class TrustedIdpWSFedProtocolHandler implements TrustedIdpProtocolHandler
             
             X509Certificate cert;
             try {
-                cert = parseCertificate(trustedIdpConfig.getCertificate());
+                cert = CertsUtils.parseCertificate(trustedIdpConfig.getCertificate());
             } catch (Exception ex) {
                 LOG.error("Failed to parse trusted certificate", ex);
                 throw new ProcessingException("Failed to parse trusted certificate");
@@ -237,17 +231,4 @@ public class TrustedIdpWSFedProtocolHandler implements TrustedIdpProtocolHandler
         return fedContext;
     }
     
-    private X509Certificate parseCertificate(String certificate)
-        throws CertificateException, Base64DecodingException, IOException {
-        
-        //before decoding we need to get rod off the prefix and suffix
-        byte [] decoded = Base64.decode(certificate.replaceAll("-----BEGIN CERTIFICATE-----", "").
-                                        replaceAll("-----END CERTIFICATE-----", ""));
-
-        try (InputStream is = new ByteArrayInputStream(decoded)) {
-            return (X509Certificate)CertificateFactory.getInstance("X.509").generateCertificate(is);
-        }
-    }
-    
-
 }

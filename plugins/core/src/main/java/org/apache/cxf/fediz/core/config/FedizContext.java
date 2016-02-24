@@ -23,6 +23,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
@@ -120,6 +121,9 @@ public class FedizContext implements Closeable {
             } catch (WSSecurityException e) {
                 LOG.error("Failed to load keystore '" + tm.getName() + "'", e);
                 throw new IllegalConfigurationException("Failed to load keystore '" + tm.getName() + "'");
+            } catch (CertificateException ex) {
+                LOG.error("Failed to read keystore", ex);
+                throw new RuntimeException("Failed to read keystore");
             }
         }
         return certificateStores; 
