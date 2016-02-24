@@ -24,6 +24,7 @@ import javax.ws.rs.core.MultivaluedMap;
 
 import org.w3c.dom.Element;
 
+import org.apache.cxf.common.util.Base64UrlUtility;
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.ClaimTypes;
@@ -34,6 +35,7 @@ import org.apache.cxf.rs.security.oauth2.provider.OAuthServiceException;
 import org.apache.cxf.rs.security.oauth2.provider.SubjectCreator;
 import org.apache.cxf.rs.security.oidc.common.IdToken;
 import org.apache.cxf.rs.security.oidc.idp.OidcUserSubject;
+import org.apache.cxf.rt.security.crypto.CryptoUtils;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.joda.time.DateTime;
@@ -58,30 +60,40 @@ public class FedizSubjectCreator implements SubjectCreator {
         FedizPrincipal fedizPrincipal = (FedizPrincipal)principal; 
         
         // In the future FedizPrincipal will likely have JWT claims already prepared,
-        // with IdToken being initialized here from those claims + client id 
-        
-        IdToken idToken = convertToIdToken(fedizPrincipal.getLoginToken(),
-                                           fedizPrincipal.getName(), 
-                                           fedizPrincipal.getClaims());
-        
+        // with IdToken being initialized here from those claims 
         OidcUserSubject oidcSub = new OidcUserSubject();
         oidcSub.setLogin(fedizPrincipal.getName());
+     
+        // Subject ID - a locally unique and never reassigned identifier allocated to the end user
+        // REVISIT: 
+        // Can it be allocated on per-session basis or is it something that is supposed to be created
+        // by the authentication system (IDP/STS) once and reported every time a given user signs in ?
+        oidcSub.setId(Base64UrlUtility.encode(CryptoUtils.generateSecureRandomBytes(16)));
+        
+        IdToken idToken = convertToIdToken(fedizPrincipal.getLoginToken(),
+                                           oidcSub.getLogin(),
+                                           oidcSub.getId(),
+                                           fedizPrincipal.getClaims());
         oidcSub.setIdToken(idToken);
         // UserInfo can be populated and set on OidcUserSubject too.
+        // UserInfoService will create it otherwise.
         
         return oidcSub;
     }
     
     public IdToken convertToIdToken(Element samlToken, 
-            String subjectName, 
+            String subjectName,
+            String subjectId,
             ClaimCollection claims) {
-        // The current SAML Assertion represents anauthentication record.
+        // The current SAML Assertion represents an authentication record.
         // It has to be translated into IdToken (JWT) so that it can be returned 
         // to client applications participating in various OIDC flows.
         
         IdToken idToken = new IdToken();
-        // Subject name is provided by FedizPrincipal which is initialized from the current SAML token 
-        idToken.setSubject(subjectName);
+        
+        //TODO: make the mapping between the subject name and IdToken claim configurable
+        idToken.setPreferredUserName(subjectName);
+        idToken.setSubject(subjectId);
         
         Assertion saml2Assertion = getSaml2Assertion(samlToken);
         if (saml2Assertion != null) {
