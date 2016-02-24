@@ -73,7 +73,6 @@
         <property name="trustedIdps">
             <util:list>
                 <ref bean="trusted-idp-realmB" />
-                <ref bean="trusted-idp-realmC" />
             </util:list>
         </property>
         <property name="claimTypesOffered">
@@ -100,25 +99,8 @@
         <property name="description" value="Realm B description" />
         <property name="parameters">
             <util:map>
-            </util:map>
-        </property>
-    </bean>
-    
-    <bean id="trusted-idp-realmC"
-        class="org.apache.cxf.fediz.service.idp.service.jpa.TrustedIdpEntity">
-        <property name="realm" value="urn:org:apache:cxf:fediz:idp:realm-C" />
-        <property name="cacheTokens" value="true" />
-        <property name="url" value="https://localhost:${idp.samlsso.https.port}/idp/samlsso" />
-        <property name="certificate" value="realmb.cert" />
-        <property name="trustType" value="PEER_TRUST" />
-        <property name="protocol" value="urn:oasis:names:tc:SAML:2.0:profiles:SSO:browser" />
-        <property name="federationType" value="FEDERATE_IDENTITY" />
-        <property name="name" value="Realm C" />
-        <property name="description" value="SAML Web Profile - Response POST Binding" />
-        <property name="parameters">
-            <util:map>
-                <entry key="sign.request" value="true" />
-                <entry key="support.deflate.encoding" value="true" />
+                <entry key="client.id" value="consumer-id"/>
+                <entry key="token.endpoint" value="http://localhost:8080/auth/realms/realmb/protocol/openid-connect/token"/>
             </util:map>
         </property>
     </bean>

@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -57,6 +58,7 @@ import org.apache.cxf.rs.security.jose.jwa.SignatureAlgorithm;
 import org.apache.cxf.rs.security.jose.jws.JwsJwtCompactConsumer;
 import org.apache.cxf.rs.security.jose.jwt.JwtConstants;
 import org.apache.cxf.rs.security.jose.jwt.JwtToken;
+import org.apache.cxf.rs.security.jose.jwt.JwtUtils;
 import org.apache.cxf.rs.security.oauth2.common.ClientAccessToken;
 import org.apache.cxf.rs.security.oauth2.provider.OAuthJSONProvider;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
@@ -81,6 +83,32 @@ import org.springframework.webflow.execution.RequestContext;
 @Component
 public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler {
     
+    /**
+     * The client_id value to send to the OIDC IdP.
+     */
+    public static final String CLIENT_ID = "client.id";
+    
+    /**
+     * The secret associated with the client to authenticate to the OIDC IdP.
+     */
+    public static final String CLIENT_SECRET = "client.secret";
+    
+    /**
+     * The Token endpoint. The authorization endpoint is specified by TrustedIdp.url.
+     */
+    public static final String TOKEN_ENDPOINT = "token.endpoint";
+    
+    /**
+     * The signature algorithm to use in verifying the IdToken. The default is "RS256".
+     */
+    public static final String SIGNATURE_ALGORITHM = "signature.algorithm";
+    
+    /**
+     * The Claim in which to extract the Subject username to insert into the generated SAML token. 
+     * It defaults to "preferred_username", otherwise it falls back to the "sub" claim.
+     */
+    public static final String SUBJECT_CLAIM = "subject.claim";
+    
     public static final String PROTOCOL = "openid-connect-1.0";
 
     private static final Logger LOG = LoggerFactory.getLogger(TrustedIdpOIDCProtocolHandler.class);
@@ -99,15 +127,21 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
     @Override
     public URL mapSignInRequest(RequestContext context, Idp idp, TrustedIdp trustedIdp) {
         
+        String clientId = getProperty(trustedIdp, CLIENT_ID);
+        if (clientId == null || clientId.isEmpty()) {
+            LOG.warn("A CLIENT_ID must be configured to use the OIDCProtocolHandler");
+            throw new IllegalStateException("No CLIENT_ID specified");
+        }
+        
         try {
             StringBuilder sb = new StringBuilder();
             sb.append(trustedIdp.getUrl());
             sb.append("?");
             sb.append("response_type").append('=');
-            sb.append("code"); //TODO
+            sb.append("code");
             sb.append("&");
             sb.append("client_id").append('=');
-            sb.append("consumer-id"); //TODO
+            sb.append(clientId);
             sb.append("&");
             sb.append("redirect_uri").append('=');
             sb.append(URLEncoder.encode(idp.getIdpUrl().toString(), "UTF-8"));
@@ -121,13 +155,6 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
                 sb.append(wctx);
             }
             
-            /*
-            String wfresh = context.getFlowScope().getString(FederationConstants.PARAM_FRESHNESS);
-            if (wfresh != null) {
-                sb.append("&").append(FederationConstants.PARAM_FRESHNESS).append('=');
-                sb.append(URLEncoder.encode(wfresh, "UTF-8"));
-            }
-             */
             return new URL(sb.toString());
         } catch (MalformedURLException ex) {
             LOG.error("Invalid Redirect URL for Trusted Idp", ex);
@@ -143,27 +170,41 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
 
         String code = (String) WebUtils.getAttributeFromFlowScope(context,
                                                                   OAuthConstants.CODE_RESPONSE_TYPE);
-        if (code != null) {
-            // Here we need to get the IdToken using the authorization code
-            String address = "http://localhost:8080/auth/realms/realmb/protocol/openid-connect/token";
+        if (code != null && !code.isEmpty()) {
             
+            String tokenEndpoint = getProperty(trustedIdp, TOKEN_ENDPOINT);
+            if (tokenEndpoint == null || tokenEndpoint.isEmpty()) {
+                LOG.warn("A TOKEN_ENDPOINT must be configured to use the OIDCProtocolHandler");
+                throw new IllegalStateException("No TOKEN_ENDPOINT specified");
+            }
+            
+            String clientId = getProperty(trustedIdp, CLIENT_ID);
+            String clientSecret = getProperty(trustedIdp, CLIENT_SECRET);
+            if (clientSecret == null || clientSecret.isEmpty()) {
+                LOG.warn("A CLIENT_SECRET must be configured to use the OIDCProtocolHandler");
+                throw new IllegalStateException("No CLIENT_SECRET specified");
+            }
+            
+            // Here we need to get the IdToken using the authorization code
             List<Object> providers = new ArrayList<Object>();
             providers.add(new OAuthJSONProvider());
             
             WebClient client = 
-                WebClient.create(address, providers, "consumer-id", "90d5da25-e900-443f-a5d5-feb3bb060800", null);
+                WebClient.create(tokenEndpoint, providers, clientId, clientSecret, null);
             
             ClientConfiguration config = WebClient.getConfig(client);
 
-            config.getOutInterceptors().add(new LoggingOutInterceptor());
-            config.getInInterceptors().add(new LoggingInInterceptor());
+            if (LOG.isDebugEnabled()) {
+                config.getOutInterceptors().add(new LoggingOutInterceptor());
+                config.getInInterceptors().add(new LoggingInInterceptor());
+            }
             
             client.type("application/x-www-form-urlencoded").accept("application/json");
 
             Form form = new Form();
             form.param("grant_type", "authorization_code");
             form.param("code", code);
-            form.param("client_id", "consumer-id");
+            form.param("client_id", clientId);
             form.param("redirect_uri", idp.getIdpUrl().toString());
             Response response = client.post(form);
 
@@ -192,23 +233,24 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
                 JwsJwtCompactConsumer jwtConsumer = new JwsJwtCompactConsumer(idToken);
                 JwtToken jwt = jwtConsumer.getJwtToken();
                 
-                if (!jwtConsumer.verifySignatureWith(validatingCert, SignatureAlgorithm.RS256)) {
+                // Validate the Signature
+                String sigAlgo = getProperty(trustedIdp, SIGNATURE_ALGORITHM);
+                if (sigAlgo == null || sigAlgo.isEmpty()) {
+                    sigAlgo = "RS256";
+                }
+                if (!jwtConsumer.verifySignatureWith(validatingCert, SignatureAlgorithm.getAlgorithm(sigAlgo))) {
                     LOG.warn("Signature does not validate");
                     return null;
                 }
                 
-                Date created = new Date();
-                if (jwt.getClaim(JwtConstants.CLAIM_ISSUED_AT) != null) {
-                    created = new Date((long)jwt.getClaim(JwtConstants.CLAIM_ISSUED_AT) * 1000L);
-                }
-                if (jwt.getClaim(JwtConstants.CLAIM_EXPIRY) == null) {
-                    LOG.warn("No expiry in the token");
-                    return null;
-                }
+                // Make sure the received token is valid according to the spec
+                validateToken(jwt, clientId);
+                
+                Date created = new Date((long)jwt.getClaim(JwtConstants.CLAIM_ISSUED_AT) * 1000L);
                 Date expires = new Date((long)jwt.getClaim(JwtConstants.CLAIM_EXPIRY) * 1000L);
                 
                 // Convert into a SAML Token
-                SamlAssertionWrapper assertion = createSamlAssertion(idp, jwt, created, expires);
+                SamlAssertionWrapper assertion = createSamlAssertion(idp, trustedIdp, jwt, created, expires);
                 Document doc = DOMUtils.createDocument();
                 Element token = assertion.toDOM(doc);
         
@@ -232,6 +274,33 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
             }
         }
         return null;
+    }
+    
+    protected void validateToken(JwtToken jwt, String clientId) {
+        // We must have the following claims
+        if (jwt.getClaim(JwtConstants.CLAIM_ISSUER) == null
+            || jwt.getClaim(JwtConstants.CLAIM_SUBJECT) == null
+            || jwt.getClaim(JwtConstants.CLAIM_AUDIENCE) == null
+            || jwt.getClaim(JwtConstants.CLAIM_EXPIRY) == null
+            || jwt.getClaim(JwtConstants.CLAIM_ISSUED_AT) == null) {
+            LOG.warn("The IdToken is missing a required claim");
+            throw new IllegalStateException("The IdToken is missing a required claim");
+        }
+        
+        // The audience must match the client_id of this client
+        boolean match = false;
+        for (String audience : jwt.getClaims().getAudiences()) {
+            if (clientId.equals(audience)) {
+                match = true;
+                break;
+            }
+        }
+        if (!match) {
+            LOG.warn("The audience of the token does not match this client");
+            throw new IllegalStateException("The audience of the token does not match this client");
+        }
+        
+        JwtUtils.validateTokenClaims(jwt.getClaims(), 300, 0, false);
     }
     
     private Crypto getCrypto(String certificate) throws ProcessingException {
@@ -292,16 +361,29 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
         }
     }
     
-    private SamlAssertionWrapper createSamlAssertion(Idp idp, JwtToken token,
+    protected SamlAssertionWrapper createSamlAssertion(Idp idp, TrustedIdp trustedIdp, JwtToken token,
                                                      Date created,
                                                      Date expires) throws Exception {
         SamlCallbackHandler callbackHandler = new SamlCallbackHandler();
-        callbackHandler.setIssuer(idp.getServiceDisplayName());
+        String issuer = idp.getServiceDisplayName();
+        if (issuer == null) {
+            issuer = idp.getRealm();
+        }
+        if (issuer != null) {
+            callbackHandler.setIssuer(issuer);
+        }
         
         // Subject
-        // TODO
+        String subjectName = getProperty(trustedIdp, SUBJECT_CLAIM);
+        if (subjectName == null || token.getClaim(subjectName) == null) {
+            subjectName = "preferred_username";
+            if (subjectName == null || token.getClaim(subjectName) == null) {
+                subjectName = JwtConstants.CLAIM_SUBJECT;
+            }
+        }
+        
         SubjectBean subjectBean =
-            new SubjectBean((String)token.getClaim("preferred_username"), 
+            new SubjectBean((String)token.getClaim(subjectName), 
                             SAML2Constants.NAMEID_FORMAT_UNSPECIFIED, 
                             SAML2Constants.CONF_BEARER);
         callbackHandler.setSubjectBean(subjectBean);
@@ -327,6 +409,16 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
                                 crypto, false);
         
         return assertion;
+    }
+    
+    private String getProperty(TrustedIdp trustedIdp, String property) {
+        Map<String, String> parameters = trustedIdp.getParameters();
+        
+        if (parameters != null && parameters.containsKey(property)) {
+            return parameters.get(property);
+        }
+        
+        return null;
     }
     
     private static class SamlCallbackHandler implements CallbackHandler {
