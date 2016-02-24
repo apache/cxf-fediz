@@ -190,7 +190,6 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
         }
     }
 
-
     @Override
     public SecurityToken mapSignInResponse(RequestContext context, Idp idp, TrustedIdp trustedIdp) {
 

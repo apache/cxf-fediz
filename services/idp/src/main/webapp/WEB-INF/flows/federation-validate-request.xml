@@ -34,14 +34,18 @@
             <set name="flowScope.wreq" value="requestParameters.wreq" />
             <set name="flowScope.RelayState" value="requestParameters.RelayState" />
             <set name="flowScope.SAMLResponse" value="requestParameters.SAMLResponse" />
+            <set name="flowScope.state" value="requestParameters.state" />
+            <set name="flowScope.code" value="requestParameters.code" />
             <evaluate expression="requestScope.getString('wauth','default')"
                 result="flowScope.wauth" />
             <set name="flowScope.idpConfig" value="config.getIDP(null)" />
         </on-entry>
         <if test="requestParameters.wa == 'wsignout1.0' or requestParameters.wa == 'wsignoutcleanup1.0'"
             then="selectSignOutProcess" />
-        <if test="requestParameters.wa == 'wsignin1.0'" then="selectWsFedProcess" 
-            else="selectSAMLProcess" /> 
+        <if test="requestParameters.wa == 'wsignin1.0'" then="selectWsFedProcess" />
+        <if test="requestParameters.SAMLResponse != null" then="selectSAMLProcess"
+            else="selectOIDCAuthorizationCodeFlowProcess"
+        /> 
     </decision-state>
 
     <decision-state id="selectWsFedProcess">
@@ -55,6 +59,13 @@
         <if test="requestParameters.RelayState == null or requestParameters.RelayState.length() == 0"
             then="viewBadRequest" />
         <if test="requestParameters.SAMLResponse == null or requestParameters.SAMLResponse.length() == 0"
+            then="viewBadRequest" else="signinResponse" />
+    </decision-state>
+    
+    <decision-state id="selectOIDCAuthorizationCodeFlowProcess">
+        <if test="requestParameters.code == null or requestParameters.code.length() == 0"
+            then="viewBadRequest" />
+        <if test="requestParameters.state == null or requestParameters.state.length() == 0"
             then="viewBadRequest" else="signinResponse" />
     </decision-state>
 	
@@ -103,6 +114,8 @@
         <input name="wresult" value="flowScope.wresult" />
         <input name="RelayState" value="flowScope.RelayState" />
         <input name="SAMLResponse" value="flowScope.SAMLResponse" />
+        <input name="state" value="flowScope.state" />
+        <input name="code" value="flowScope.code" />
 
         <output name="wtrealm" />
         <output name="wreply" />

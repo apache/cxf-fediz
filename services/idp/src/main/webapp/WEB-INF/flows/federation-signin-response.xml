@@ -29,12 +29,14 @@
     <input name="wresult" />
     <input name="RelayState" />
     <input name="SAMLResponse" />
+    <input name="state" />
+    <input name="code" />
 
     <on-start>
         <!-- restore 'wreply','wtrealm','whr' for current 'wctx' -->
         <evaluate expression="signinParametersCacheAction.restore(flowRequestContext)" />
     </on-start>
-
+    
     <!-- validate token issued by requestor IDP ('wresult') given its 'whr' -->
     <action-state id="validateToken">
         <evaluate expression="trustedIdpProtocolAction.mapSignInResponse(flowRequestContext)"
@@ -68,5 +70,5 @@
 
     <!-- abnormal exit point : Http 500 Internal Server Error -->
     <end-state id="scInternalServerError" />
-
+    
 </flow>

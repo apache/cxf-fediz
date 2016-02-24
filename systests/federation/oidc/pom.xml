@@ -20,14 +20,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.apache.cxf.fediz</groupId>
-        <artifactId>fediz-systests</artifactId>
+        <groupId>org.apache.cxf.fediz.systests</groupId>
+        <artifactId>fediz-systests-federation</artifactId>
         <version>1.3.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.apache.cxf.fediz.systests</groupId>
-    <artifactId>fediz-systests-kerberos</artifactId>
-    <name>Apache Fediz Kerberos Systests</name>
+    <groupId>org.apache.cxf.fediz.systests.federation</groupId>
+    <artifactId>fediz-systests-federation-oidc</artifactId>
+    <name>Apache Fediz Federation Systests Tomcat 7 OIDC</name>
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -95,95 +95,6 @@
             <version>${hsqldb.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.directory.server</groupId>
-            <artifactId>apacheds-core-annotations</artifactId>
-            <version>${apacheds.version}</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>bouncycastle</groupId>
-                    <artifactId>bcprov-jdk15</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.directory.server</groupId>
-            <artifactId>apacheds-core-integ</artifactId>
-            <version>${apacheds.version}</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>bouncycastle</groupId>
-                    <artifactId>bcprov-jdk15</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.directory.server</groupId>
-            <artifactId>apacheds-protocol-shared</artifactId>
-            <version>${apacheds.version}</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>bouncycastle</groupId>
-                    <artifactId>bcprov-jdk15</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.directory.server</groupId>
-            <artifactId>apacheds-protocol-kerberos</artifactId>
-            <version>${apacheds.version}</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>net.sf.ehcache</groupId>
-                    <artifactId>ehcache-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>bouncycastle</groupId>
-                    <artifactId>bcprov-jdk15</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.directory.server</groupId>
-            <artifactId>apacheds-interceptor-kerberos</artifactId>
-            <version>${apacheds.version}</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>bouncycastle</groupId>
-                    <artifactId>bcprov-jdk15</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.directory.server</groupId>
-            <artifactId>apacheds-kerberos-codec</artifactId>
-            <version>${apacheds.version}</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>bouncycastle</groupId>
-                    <artifactId>bcprov-jdk15</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>${commons.io.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
-            <scope>test</scope>
-            <version>${bcprov.version}</version>
-        </dependency>
-
     </dependencies>
     <build>
         <testResources>
@@ -216,6 +127,7 @@
                         <configuration>
                             <portNames>
                                 <portName>idp.https.port</portName>
+                                <portName>idp.samlsso.https.port</portName>
                                 <portName>rp.https.port</portName>
                             </portNames>
                         </configuration>
@@ -251,12 +163,28 @@
                                     <outputDirectory>target/tomcat/idp/webapps/fediz-idp-sts</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
+                                    <groupId>org.apache.cxf.fediz.systests.federation</groupId>
+                                    <artifactId>fediz-systests-federation-samlIdpWebapp</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>war</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target/tomcat/idpsamlsso/webapps/idpsaml</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
                                     <groupId>org.apache.cxf.fediz.systests.webapps</groupId>
                                     <artifactId>fediz-systests-webapps-simple</artifactId>
                                     <version>${project.version}</version>
                                     <type>war</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>target/tomcat/rp/webapps/simpleWebapp</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.cxf.fediz.systests.webapps</groupId>
+                                    <artifactId>fediz-systests-webapps-simple</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>war</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target/tomcat/rp/webapps/simpleWebapp2</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
                             <outputAbsoluteArtifactFilename>true</outputAbsoluteArtifactFilename>
@@ -289,20 +217,19 @@
                 <version>2.7</version>
                 <executions>
                     <execution>
-                        <id>copy-entities-to-sts</id>
+                        <id>copy-entities-to-idp</id>
                         <phase>generate-test-sources</phase>
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${basedir}/target/tomcat/idp/webapps/fediz-idp-sts/WEB-INF</outputDirectory>
+                            <outputDirectory>${basedir}/target/tomcat/idp/webapps/fediz-idp/WEB-INF/classes</outputDirectory>
                             <resources>          
                                 <resource>
-                                    <directory>${basedir}/src/test/resources/sts</directory>
+                                    <directory>${basedir}/src/test/resources</directory>
                                     <includes>
-                                        <include>cxf-transport.xml</include>
-                                        <include>kerberos.xml</include>
-                                        <include>userClaimsKerberos.xml</include>
+                                        <include>entities-realma.xml</include>
+                                        <include>realmb.cert</include>
                                     </includes>
                                     <filtering>true</filtering>
                                 </resource>
@@ -326,8 +253,8 @@
                             <systemPropertyVariables>
                                 <wt.headless>true</wt.headless>
                                 <idp.https.port>${idp.https.port}</idp.https.port>
+                                <idp.samlsso.https.port>${idp.samlsso.https.port}</idp.samlsso.https.port>
                                 <rp.https.port>${rp.https.port}</rp.https.port>
-                                <java.security.krb5.conf>src/test/resources/krb5.conf</java.security.krb5.conf>
                             </systemPropertyVariables>
                             <includes>
                                 <include>**/integrationtests/**</include>
