@@ -155,7 +155,7 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
             providers.add(new OAuthJSONProvider());
             
             WebClient client = 
-                WebClient.create(address, providers, "consumer-id", "7c220ee6-77e2-43d3-b531-6ede8a581698", null);
+                WebClient.create(address, providers, "consumer-id", "90d5da25-e900-443f-a5d5-feb3bb060800", null);
             
             ClientConfiguration config = WebClient.getConfig(client);
 
