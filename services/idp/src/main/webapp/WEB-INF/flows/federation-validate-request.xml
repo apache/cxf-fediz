@@ -86,8 +86,8 @@
 
         <output name="whr" />
         <output name="wctx" />
-        <output name="RelayState" />
         <output name="idpToken" />
+        <output name="trusted_idp_context" />
 
         <transition on="requestRpToken" to="requestRpToken">
             <set name="flowScope.whr" value="currentEvent.attributes.whr" />
@@ -98,8 +98,7 @@
         <transition on="scInternalServerError" to="scInternalServerError" />
         <transition on="redirectToTrustedIDP" to="processTrustedIdpProtocol">
             <set name="flowScope.whr" value="currentEvent.attributes.whr" />
-            <set name="flowScope.wctx" value="currentEvent.attributes.wctx" />
-            <set name="flowScope.RelayState" value="currentEvent.attributes.RelayState" />
+            <set name="flowScope.trusted_idp_context" value="currentEvent.attributes.trusted_idp_context"/>
         </transition>
         <transition on="redirectToLocalIDP" to="redirectToLocalIDP">
             <set name="flowScope.wctx" value="currentEvent.attributes.wctx" />

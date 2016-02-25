@@ -46,6 +46,7 @@ import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.util.CertsUtils;
 import org.apache.cxf.fediz.core.util.DOMUtils;
+import org.apache.cxf.fediz.service.idp.IdpConstants;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 import org.apache.cxf.fediz.service.idp.spi.TrustedIdpProtocolHandler;
@@ -149,11 +150,9 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
             sb.append("scope").append('=');
             sb.append("openid");
             
-            String wctx = context.getFlowScope().getString(FederationConstants.PARAM_CONTEXT);
-            if (wctx != null) {
-                sb.append("&").append("state").append('=');
-                sb.append(wctx);
-            }
+            String state = context.getFlowScope().getString(IdpConstants.TRUSTED_IDP_CONTEXT);
+            sb.append("&").append("state").append('=');
+            sb.append(state);
             
             return new URL(sb.toString());
         } catch (MalformedURLException ex) {

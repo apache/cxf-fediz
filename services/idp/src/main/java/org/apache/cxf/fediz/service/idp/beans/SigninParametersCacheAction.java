@@ -26,6 +26,7 @@ import java.util.UUID;
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.SAMLSSOConstants;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
+import org.apache.cxf.fediz.service.idp.IdpConstants;
 import org.apache.cxf.fediz.service.idp.domain.Application;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
@@ -38,8 +39,6 @@ import org.springframework.webflow.execution.RequestContext;
 @Component
 public class SigninParametersCacheAction {
 
-    //todo introduce constants class?
-    public static final String IDP_CONFIG = "idpConfig";
     @Deprecated
     public static final String REALM_URL_MAP = "realmUrlMap";
     public static final String ACTIVE_APPLICATIONS = "realmConfigMap";
@@ -69,15 +68,14 @@ public class SigninParametersCacheAction {
         WebUtils.putAttributeInExternalContext(context, uuidKey, signinParams);
         
         LOG.debug("SignIn parameters cached: {}", signinParams.toString());
-        WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_CONTEXT, uuidKey);
-        LOG.info("SignIn parameters cached and " + FederationConstants.PARAM_CONTEXT + " set to [" + uuidKey + "].");
+        WebUtils.putAttributeInFlowScope(context, IdpConstants.TRUSTED_IDP_CONTEXT, uuidKey);
+        LOG.info("SignIn parameters cached and context set to [" + uuidKey + "].");
     }
     
     public void restore(RequestContext context) {
         
         String uuidKey = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_CONTEXT);
         
-        // TODO Abstract the concept of a context to cater for either protocol
         if (uuidKey == null) {
             uuidKey = (String)WebUtils.getAttributeFromFlowScope(context, SAMLSSOConstants.RELAY_STATE);
         }
@@ -135,7 +133,7 @@ public class SigninParametersCacheAction {
 
         String wtrealm = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_TREALM);
         
-        Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(context, IDP_CONFIG);
+        Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(context, IdpConstants.IDP_CONFIG);
         
         String url = null;
 
@@ -173,7 +171,7 @@ public class SigninParametersCacheAction {
 
         String whr = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_HOME_REALM);
         String wtrealm = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_TREALM);
-        Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(context, IDP_CONFIG);
+        Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(context, IdpConstants.IDP_CONFIG);
         if (whr == null || wtrealm == null || idpConfig == null) {
             return;
         }       

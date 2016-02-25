@@ -49,6 +49,7 @@ import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.util.CertsUtils;
 import org.apache.cxf.fediz.core.util.DOMUtils;
+import org.apache.cxf.fediz.service.idp.IdpConstants;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 import org.apache.cxf.fediz.service.idp.spi.TrustedIdpProtocolHandler;
@@ -160,10 +161,8 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
 
             ub.queryParam(SSOConstants.SAML_REQUEST, urlEncodedRequest);
             
-            String wctx = context.getFlowScope().getString(FederationConstants.PARAM_CONTEXT);
-            if (wctx != null) {
-                ub.queryParam(SSOConstants.RELAY_STATE, wctx);
-            }
+            String wctx = context.getFlowScope().getString(IdpConstants.TRUSTED_IDP_CONTEXT);
+            ub.queryParam(SSOConstants.RELAY_STATE, wctx);
             if (signRequest) {
                 signRequest(urlEncodedRequest, wctx, idp, ub);
             }

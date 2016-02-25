@@ -47,6 +47,7 @@ import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.apache.cxf.fediz.core.util.CertsUtils;
+import org.apache.cxf.fediz.service.idp.IdpConstants;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 import org.apache.cxf.fediz.service.idp.spi.TrustedIdpProtocolHandler;
@@ -97,11 +98,9 @@ public class TrustedIdpWSFedProtocolHandler implements TrustedIdpProtocolHandler
                 sb.append("&").append(FederationConstants.PARAM_FRESHNESS).append('=');
                 sb.append(URLEncoder.encode(wfresh, "UTF-8"));
             }
-            String wctx = context.getFlowScope().getString(FederationConstants.PARAM_CONTEXT);
-            if (wctx != null) {
-                sb.append("&").append(FederationConstants.PARAM_CONTEXT).append('=');
-                sb.append(wctx);
-            }
+            String wctx = context.getFlowScope().getString(IdpConstants.TRUSTED_IDP_CONTEXT);
+            sb.append("&").append(FederationConstants.PARAM_CONTEXT).append('=');
+            sb.append(wctx);
         
             return new URL(sb.toString());
         } catch (MalformedURLException ex) {

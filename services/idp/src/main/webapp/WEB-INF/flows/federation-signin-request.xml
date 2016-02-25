@@ -163,8 +163,7 @@
             <evaluate expression="signinParametersCacheAction.store(flowRequestContext)" />
         </on-entry>
         <output name="whr" value="flowScope.whr" />
-        <output name="wctx" value="flowScope.wctx" />
-        <output name="RelayState" value="flowScope.RelayState" />
+        <output name="trusted_idp_context" value="flowScope.trusted_idp_context" />
     </end-state>
 
 </flow>
