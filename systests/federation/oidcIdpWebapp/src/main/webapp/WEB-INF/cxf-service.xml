@@ -77,7 +77,7 @@
        </property>
    </bean>
    
-   <bean id="oauthProvider" class="org.apache.cxf.fediz.oidc.idp.example.EHCacheRefreshTokenProvider">
+   <bean id="oauthProvider" class="org.apache.cxf.fediz.oidc.idp.example.EHCacheOIDCTokenProvider">
       <property name="client" ref="client"/>
    </bean>
    
@@ -96,22 +96,31 @@
       <property name="responseFilter" ref="idTokenFilter"/>
    </bean>
    
-   <bean id="jackson" class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider"/>
+   <bean id="oauthJSONProvider" class="org.apache.cxf.rs.security.oauth2.provider.OAuthJSONProvider"/>
    
+   <bean id="viewProvider" class="org.apache.cxf.jaxrs.provider.RequestDispatcherProvider">
+       <property name="useClassNames" value="true"/>
+       <property name="locationPrefix" value="/WEB-INF/views/"/>
+       <property name="beanName" value="data"/>
+       <property name="dispatcherName" value="jsp"/>
+   </bean>
+    
    <jaxrs:server address="/services">
        <jaxrs:serviceBeans>
            <ref bean="authorizationService"/>
            <ref bean="tokenService"/>
        </jaxrs:serviceBeans>
        <jaxrs:providers>
-           <ref bean="jackson"/>
+           <ref bean="oauthJSONProvider"/>
            <ref bean="basicAuthFilter"/>
+           <ref bean="viewProvider"/>
        </jaxrs:providers>
        <jaxrs:properties>
            <entry key="rs.security.keystore.type" value="jks" />
            <entry key="rs.security.keystore.alias" value="realmb"/>
            <entry key="rs.security.key.password" value="realmb"/>
-           <entry key="rs.security.keystore.file" value="stsKeystoreB.properties" />
+           <entry key="rs.security.keystore.password" value="storepass"/>
+           <entry key="rs.security.keystore.file" value="stsrealm_b.jks" />
            <entry key="rs.security.signature.algorithm" value="RS256" />
        </jaxrs:properties>
    </jaxrs:server>

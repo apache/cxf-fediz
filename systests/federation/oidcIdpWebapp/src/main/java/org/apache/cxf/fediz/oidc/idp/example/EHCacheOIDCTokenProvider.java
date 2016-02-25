@@ -30,7 +30,7 @@ import org.apache.cxf.rs.security.oauth2.provider.OAuthServiceException;
 /**
  * Extend the DefaultEHCacheCodeDataProvider to allow OpenId
  */
-public class EHCacheRefreshTokenProvider extends DefaultEHCacheCodeDataProvider {
+public class EHCacheOIDCTokenProvider extends DefaultEHCacheCodeDataProvider {
     
     @Override
     public List<OAuthPermission> convertScopeToPermissions(Client client, List<String> requestedScopes) {

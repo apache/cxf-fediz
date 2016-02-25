@@ -42,6 +42,7 @@ public class BasicAuthFilter extends WSS4JBasicAuthValidator implements Containe
         if (policy == null || policy.getUserName() == null || policy.getPassword() == null) {
             requestContext.abortWith(
                 Response.status(401).header("WWW-Authenticate", "Basic realm=\"IdP\"").build());
+            return;
         }
 
         try {

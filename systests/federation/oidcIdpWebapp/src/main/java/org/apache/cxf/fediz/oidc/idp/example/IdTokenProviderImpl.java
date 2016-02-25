@@ -21,6 +21,7 @@ package org.apache.cxf.fediz.oidc.idp.example;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.cxf.rs.security.oauth2.common.UserSubject;
 import org.apache.cxf.rs.security.oidc.common.IdToken;
@@ -41,7 +42,9 @@ public class IdTokenProviderImpl implements IdTokenProvider {
         token.setExpiryTime(cal.getTimeInMillis() / 1000L);
         token.setIssuedAt(new Date().getTime() / 1000L);
         token.setAudience(clientId);
-        token.setSubject(authenticatedUser.getLogin());
+        token.setTokenId(UUID.randomUUID().toString());
+        token.setSubject(authenticatedUser.getLogin().toLowerCase());
+        token.setClaim("preferred_username", authenticatedUser.getLogin().toLowerCase());
         token.setIssuer("OIDC IdP");
         
         return token;
