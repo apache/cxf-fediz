@@ -60,11 +60,11 @@ import org.junit.Test;
 public class OIDCTest {
 
     static String idpHttpsPort;
-    static String idpSamlSSOHttpsPort;
+    static String idpOIDCHttpsPort;
     static String rpHttpsPort;
     
     private static Tomcat idpServer;
-    private static Tomcat idpSamlSSOServer;
+    private static Tomcat idpOIDCServer;
     private static Tomcat rpServer;
     
     @BeforeClass
@@ -79,15 +79,14 @@ public class OIDCTest {
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf", "info");  
         
         idpHttpsPort = System.getProperty("idp.https.port");
-        idpHttpsPort = "12111";
         Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
-        idpSamlSSOHttpsPort = System.getProperty("idp.samlsso.https.port");
-        Assert.assertNotNull("Property 'idp.samlsso.https.port' null", idpSamlSSOHttpsPort);
+        idpOIDCHttpsPort = System.getProperty("idp.oidc.https.port");
+        Assert.assertNotNull("Property 'idp.oidc.https.port' null", idpOIDCHttpsPort);
         rpHttpsPort = System.getProperty("rp.https.port");
         Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
 
         initIdp();
-        initSamlSSOIdp();
+        initOIDCIdp();
         initRp();
     }
     
@@ -127,19 +126,19 @@ public class OIDCTest {
         }
     }
     
-    private static void initSamlSSOIdp() {
+    private static void initOIDCIdp() {
         try {
-            idpSamlSSOServer = new Tomcat();
-            idpSamlSSOServer.setPort(0);
+            idpOIDCServer = new Tomcat();
+            idpOIDCServer.setPort(0);
             String currentDir = new File(".").getCanonicalPath();
-            idpSamlSSOServer.setBaseDir(currentDir + File.separator + "target");
+            idpOIDCServer.setBaseDir(currentDir + File.separator + "target");
             
-            idpSamlSSOServer.getHost().setAppBase("tomcat/idpsamlsso/webapps");
-            idpSamlSSOServer.getHost().setAutoDeploy(true);
-            idpSamlSSOServer.getHost().setDeployOnStartup(true);
+            idpOIDCServer.getHost().setAppBase("tomcat/idpoidc/webapps");
+            idpOIDCServer.getHost().setAutoDeploy(true);
+            idpOIDCServer.getHost().setDeployOnStartup(true);
             
             Connector httpsConnector = new Connector();
-            httpsConnector.setPort(Integer.parseInt(idpSamlSSOHttpsPort));
+            httpsConnector.setPort(Integer.parseInt(idpOIDCHttpsPort));
             httpsConnector.setSecure(true);
             httpsConnector.setScheme("https");
             //httpsConnector.setAttribute("keyAlias", keyAlias);
@@ -152,11 +151,11 @@ public class OIDCTest {
             httpsConnector.setAttribute("sslProtocol", "TLS");
             httpsConnector.setAttribute("SSLEnabled", true);
 
-            idpSamlSSOServer.getService().addConnector(httpsConnector);
+            idpOIDCServer.getService().addConnector(httpsConnector);
             
-            idpSamlSSOServer.addWebapp("/idp", "idpsaml");
+            idpOIDCServer.addWebapp("/idp", "idpoidc");
             
-            idpSamlSSOServer.start();
+            idpOIDCServer.start();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -258,7 +257,7 @@ public class OIDCTest {
         String password = "ECILA";
         
         final String bodyTextContent = 
-            login(url, user, password, idpSamlSSOHttpsPort, idpHttpsPort, false);
+            login(url, user, password, idpOIDCHttpsPort, idpHttpsPort, false);
         
         Assert.assertTrue("Principal not alice",
                           bodyTextContent.contains("userPrincipal=alice"));

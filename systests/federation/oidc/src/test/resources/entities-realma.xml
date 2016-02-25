@@ -33,10 +33,8 @@
         <property name="useCurrentIdp" value="true" />
         <property name="certificate" value="stsKeystoreA.properties" />
         <property name="certificatePassword" value="realma" />
-        <!-- <property name="stsUrl" value="https://localhost:${idp.https.port}/fediz-idp-sts/REALMA" />
-        <property name="idpUrl" value="https://localhost:${idp.https.port}/fediz-idp/federation" />-->
-        <property name="stsUrl" value="https://localhost:12111/fediz-idp-sts/REALMA" />
-        <property name="idpUrl" value="https://localhost:12111/fediz-idp/federation" />
+        <property name="stsUrl" value="https://localhost:${idp.https.port}/fediz-idp-sts/REALMA" />
+        <property name="idpUrl" value="https://localhost:${idp.https.port}/fediz-idp/federation" />
         <property name="rpSingleSignOutConfirmation" value="true"/>
         <property name="supportedProtocols">
             <util:list>
@@ -89,8 +87,7 @@
         class="org.apache.cxf.fediz.service.idp.service.jpa.TrustedIdpEntity">
         <property name="realm" value="urn:org:apache:cxf:fediz:idp:realm-B" />
         <property name="cacheTokens" value="true" />
-        <!-- <property name="url" value="https://localhost:${idp.samlsso.https.port}/idp/samlsso?binding=REDIRECT" />-->
-        <property name="url" value="http://localhost:8080/auth/realms/realmb/protocol/openid-connect/auth" />
+        <property name="url" value="https://localhost:${idp.oidc.https.port}/idp/services/authorize" />
         <property name="certificate" value="realmb.cert" />
         <property name="trustType" value="PEER_TRUST" />
         <property name="protocol" value="openid-connect-1.0" />
@@ -100,8 +97,8 @@
         <property name="parameters">
             <util:map>
                 <entry key="client.id" value="consumer-id"/>
-                <entry key="client.secret" value="90d5da25-e900-443f-a5d5-feb3bb060800"/>
-                <entry key="token.endpoint" value="http://localhost:8080/auth/realms/realmb/protocol/openid-connect/token"/>
+                <entry key="client.secret" value="this-is-a-secret"/>
+                <entry key="token.endpoint" value="https://localhost:${idp.oidc.https.port}/idp/services/token"/>
             </util:map>
         </property>
     </bean>
