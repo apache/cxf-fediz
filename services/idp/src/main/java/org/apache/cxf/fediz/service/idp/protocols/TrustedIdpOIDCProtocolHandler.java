@@ -232,6 +232,13 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
                 JwsJwtCompactConsumer jwtConsumer = new JwsJwtCompactConsumer(idToken);
                 JwtToken jwt = jwtConsumer.getJwtToken();
                 
+                if (jwt != null && jwt.getClaims() != null && LOG.isDebugEnabled()) {
+                    LOG.debug("Received Claims:");
+                    for (Map.Entry<String, Object> claim : jwt.getClaims().asMap().entrySet()) {
+                        LOG.debug(claim.getKey() + ": " + claim.getValue());
+                    }
+                }
+                
                 // Validate the Signature
                 String sigAlgo = getProperty(trustedIdp, SIGNATURE_ALGORITHM);
                 if (sigAlgo == null || sigAlgo.isEmpty()) {
