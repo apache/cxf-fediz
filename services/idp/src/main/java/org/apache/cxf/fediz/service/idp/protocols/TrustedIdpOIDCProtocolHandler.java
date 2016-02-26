@@ -189,7 +189,7 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
             providers.add(new OAuthJSONProvider());
             
             WebClient client = 
-                WebClient.create(tokenEndpoint, providers, clientId, clientSecret, null);
+                WebClient.create(tokenEndpoint, providers, clientId, clientSecret, "cxf-tls.xml");
             
             ClientConfiguration config = WebClient.getConfig(client);
 
