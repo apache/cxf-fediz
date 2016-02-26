@@ -34,6 +34,7 @@
         <module>samlIdpWebapp</module>
         <module>oidcIdpWebapp</module>
         <module>samlsso</module>
+        <module>oidc</module>
         <module>wsfed</module>
     </modules>
 

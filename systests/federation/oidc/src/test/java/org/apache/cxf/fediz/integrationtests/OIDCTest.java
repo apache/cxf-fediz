@@ -22,16 +22,18 @@ package org.apache.cxf.fediz.integrationtests;
 
 import java.io.File;
 import java.io.IOException;
-
-import org.w3c.dom.Document;
+import java.net.URL;
+import java.util.ArrayList;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 import com.gargoylesoftware.htmlunit.CookieManager;
+import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
+import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 import org.apache.catalina.Context;
@@ -39,23 +41,19 @@ import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.cxf.fediz.core.ClaimTypes;
-import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.cxf.fediz.tomcat7.FederationAuthenticator;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.xml.security.keys.KeyInfo;
-import org.apache.xml.security.signature.XMLSignature;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
  * This is a test for federation in the IdP. The RP application is configured to use a home realm of "realm b". The
  * client gets redirected to the IdP for "realm a", which in turn redirects to the IdP for "realm b", which is a 
- * SAML SSO IdP. The IdP for "realm a" will convert the signin request to a SAML SSO sign in request. The IdP for 
- * realm b authenticates the user, who is then redirected back to the IdP for "realm a" to get a SAML token from 
- * the STS + then back to the application.
+ * OIDC IdP. The IdP for "realm a" will convert the signin request to a OIDC authorization code flow request. The 
+ * IdP for realm b authenticates the user, who is then redirected back to the IdP for "realm a" to get a SAML token 
+ * from the STS + then back to the application.
  */
 public class OIDCTest {
 
@@ -240,7 +238,7 @@ public class OIDCTest {
     }
     
     @org.junit.Test
-    // @org.junit.Ignore
+    @org.junit.Ignore
     public void testBrowser() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         System.out.println("URL: " + url);
@@ -248,16 +246,13 @@ public class OIDCTest {
     }
     
     @org.junit.Test
-    @org.junit.Ignore
-    public void testSAMLSSO() throws Exception {
+    public void testOIDC() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
-        // System.out.println("URL: " + url);
-        // Thread.sleep(60 * 2 * 1000);
         String user = "ALICE";  // realm b credentials
         String password = "ECILA";
         
         final String bodyTextContent = 
-            login(url, user, password, idpOIDCHttpsPort, idpHttpsPort, false);
+            login(url, user, password, idpOIDCHttpsPort, idpHttpsPort);
         
         Assert.assertTrue("Principal not alice",
                           bodyTextContent.contains("userPrincipal=alice"));
@@ -280,7 +275,7 @@ public class OIDCTest {
     }
     
     private static String login(String url, String user, String password, 
-                                String idpPort, String rpIdpPort, boolean postBinding) throws IOException {
+                                String idpPort, String rpIdpPort) throws IOException {
         //
         // Access the RP + get redirected to the IdP for "realm a". Then get redirected to the IdP for
         // "realm b".
@@ -294,14 +289,29 @@ public class OIDCTest {
             new UsernamePasswordCredentials(user, password));
 
         webClient.getOptions().setJavaScriptEnabled(false);
-        HtmlPage idpPage = webClient.getPage(url);
         
-        if (postBinding) {
-            Assert.assertEquals("SAML IDP Response Form", idpPage.getTitleText());
-            final HtmlForm form = idpPage.getFormByName("signinresponseform");
-            final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
-            idpPage = button.click();
-        }
+        // The decision page is returned as XML for some reason. So parse it and send a form response back.
+        XmlPage oidcIdpConfirmationPage = webClient.getPage(url);
+        
+        Element clientId = (Element)oidcIdpConfirmationPage.getByXPath("//clientId").get(0);
+        Element redirectUri = (Element)oidcIdpConfirmationPage.getByXPath("//redirectUri").get(0);
+        Element scope = (Element)oidcIdpConfirmationPage.getByXPath("//proposedScope").get(0);
+        Element state = (Element)oidcIdpConfirmationPage.getByXPath("//state").get(0);
+        Element authenticityToken = (Element)oidcIdpConfirmationPage.getByXPath("//authenticityToken").get(0);
+        Element replyTo = (Element)oidcIdpConfirmationPage.getByXPath("//replyTo").get(0);
+        
+        WebRequest request = new WebRequest(new URL(replyTo.getTextContent()), HttpMethod.POST);
+
+        request.setRequestParameters(new ArrayList<NameValuePair>());
+        request.getRequestParameters().add(new NameValuePair("client_id", clientId.getTextContent()));
+        request.getRequestParameters().add(new NameValuePair("redirect_uri", redirectUri.getTextContent()));
+        request.getRequestParameters().add(new NameValuePair("scope", scope.getTextContent()));
+        request.getRequestParameters().add(new NameValuePair("state", state.getTextContent()));
+        request.getRequestParameters().add(new NameValuePair("session_authenticity_token", 
+                                                             authenticityToken.getTextContent()));
+        request.getRequestParameters().add(new NameValuePair("oauthDecision", "allow"));
+
+        HtmlPage idpPage = webClient.getPage(request);
         
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 

@@ -60,6 +60,7 @@
        <constructor-arg><value>consumer-id</value></constructor-arg>
        <constructor-arg><value>this-is-a-secret</value></constructor-arg>
        <constructor-arg><value>true</value></constructor-arg>
+       <constructor-arg><value>Fediz IdP</value></constructor-arg>
        <property name="redirectUris">
            <util:list value-type="java.lang.String">
                <value>https://localhost:${idp.https.port}/fediz-idp/federation</value>
