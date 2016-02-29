@@ -258,6 +258,13 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
                     }
                 }
                 
+                if (jwt != null && jwt.getJwsHeaders() != null && LOG.isDebugEnabled()) {
+                    LOG.debug("Received JWS Headers:");
+                    for (Map.Entry<String, Object> header : jwt.getJwsHeaders().asMap().entrySet()) {
+                        LOG.debug(header.getKey() + ": " + header.getValue());
+                    }
+                }
+                
                 // Validate the Signature
                 String sigAlgo = getProperty(trustedIdp, SIGNATURE_ALGORITHM);
                 if (sigAlgo == null || sigAlgo.isEmpty()) {
