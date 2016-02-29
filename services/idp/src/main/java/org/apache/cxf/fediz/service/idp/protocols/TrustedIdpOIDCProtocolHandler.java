@@ -55,7 +55,11 @@ import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.apache.cxf.jaxrs.client.ClientConfiguration;
 import org.apache.cxf.jaxrs.client.WebClient;
+import org.apache.cxf.rs.security.jose.common.JoseConstants;
+import org.apache.cxf.rs.security.jose.jaxrs.JsonWebKeysProvider;
 import org.apache.cxf.rs.security.jose.jwa.SignatureAlgorithm;
+import org.apache.cxf.rs.security.jose.jwk.JsonWebKey;
+import org.apache.cxf.rs.security.jose.jwk.JsonWebKeys;
 import org.apache.cxf.rs.security.jose.jws.JwsJwtCompactConsumer;
 import org.apache.cxf.rs.security.jose.jwt.JwtConstants;
 import org.apache.cxf.rs.security.jose.jwt.JwtToken;
@@ -116,6 +120,11 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
      */
     public static final String SCOPE = "scope";
     
+    /**
+     * The URI from which to retrieve the JSON Web Keys to validate the signed IdToken.
+     */
+    public static final String JWKS_URI = "jwks.uri";
+    
     public static final String PROTOCOL = "openid-connect-1.0";
 
     private static final Logger LOG = LoggerFactory.getLogger(TrustedIdpOIDCProtocolHandler.class);
@@ -143,7 +152,7 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
         String scope = getProperty(trustedIdp, SCOPE);
         if (scope != null) {
             scope = scope.trim();
-            if (!scope.startsWith("openid")) {
+            if (!scope.contains("openid")) {
                 scope = "openid " + scope;
             }
         }
@@ -234,12 +243,6 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
             }
             
             try {
-                X509Certificate validatingCert = getCertificate(trustedIdp.getCertificate());
-                if (validatingCert == null) {
-                    LOG.warn("No X.509 Certificate configured for signature validation");
-                    return null;
-                }
-                
                 String whr = (String) WebUtils.getAttributeFromFlowScope(context,
                                                                          FederationConstants.PARAM_HOME_REALM);
                 if (whr == null) {
@@ -265,12 +268,7 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
                     }
                 }
                 
-                // Validate the Signature
-                String sigAlgo = getProperty(trustedIdp, SIGNATURE_ALGORITHM);
-                if (sigAlgo == null || sigAlgo.isEmpty()) {
-                    sigAlgo = "RS256";
-                }
-                if (!jwtConsumer.verifySignatureWith(validatingCert, SignatureAlgorithm.getAlgorithm(sigAlgo))) {
+                if (!validateSignature(trustedIdp, jwtConsumer)) {
                     LOG.warn("Signature does not validate");
                     return null;
                 }
@@ -333,6 +331,57 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
         }
         
         JwtUtils.validateTokenClaims(jwt.getClaims(), 300, 0, false);
+    }
+    
+    private boolean validateSignature(TrustedIdp trustedIdp, JwsJwtCompactConsumer jwtConsumer) 
+        throws CertificateException, WSSecurityException, Base64DecodingException, 
+            ProcessingException, IOException {
+        
+        // Validate the Signature
+        String sigAlgo = getProperty(trustedIdp, SIGNATURE_ALGORITHM);
+        if (sigAlgo == null || sigAlgo.isEmpty()) {
+            sigAlgo = "RS256";
+        }
+        
+        JwtToken jwt = jwtConsumer.getJwtToken();
+        String jwksUri = getProperty(trustedIdp, JWKS_URI);
+        JsonWebKey verifyingKey = null;
+        
+        if (jwksUri != null && jwt.getJwsHeaders() != null 
+            && jwt.getJwsHeaders().containsHeader(JoseConstants.HEADER_KEY_ID)) {
+            String kid = (String)jwt.getJwsHeaders().getHeader(JoseConstants.HEADER_KEY_ID);
+            LOG.debug("Attemping to retrieve key id {} from uri {}", kid, jwksUri);
+            List<Object> jsonKeyProviders = new ArrayList<Object>();
+            jsonKeyProviders.add(new JsonWebKeysProvider());
+            
+            WebClient client = 
+                WebClient.create(jwksUri, jsonKeyProviders, "cxf-tls.xml");
+            client.accept("application/json");
+            
+            ClientConfiguration config = WebClient.getConfig(client);
+            if (LOG.isDebugEnabled()) {
+                config.getOutInterceptors().add(new LoggingOutInterceptor());
+                config.getInInterceptors().add(new LoggingInInterceptor());
+            }
+            
+            Response response = client.get();
+            JsonWebKeys jsonWebKeys = response.readEntity(JsonWebKeys.class);
+            if (jsonWebKeys != null) {
+                verifyingKey = jsonWebKeys.getKey(kid);
+            }
+        }
+        
+        if (verifyingKey != null) {
+            return jwtConsumer.verifySignatureWith(verifyingKey, SignatureAlgorithm.getAlgorithm(sigAlgo));
+        }
+        
+        X509Certificate validatingCert = getCertificate(trustedIdp.getCertificate());
+        if (validatingCert != null) {
+            return jwtConsumer.verifySignatureWith(validatingCert, SignatureAlgorithm.getAlgorithm(sigAlgo));
+        }
+        
+        LOG.warn("No key supplied to verify the signature of the IdToken");
+        return false;
     }
     
     private Crypto getCrypto(String certificate) throws ProcessingException {
