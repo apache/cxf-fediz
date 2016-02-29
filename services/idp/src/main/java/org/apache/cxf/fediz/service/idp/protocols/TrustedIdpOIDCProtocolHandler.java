@@ -110,6 +110,12 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
      */
     public static final String SUBJECT_CLAIM = "subject.claim";
     
+    /**
+     * Additional (space-separated) parameters to be sent in the "scope" to the authorization endpoint.
+     * Fediz will automatically use "openid" for this value. 
+     */
+    public static final String SCOPE = "scope";
+    
     public static final String PROTOCOL = "openid-connect-1.0";
 
     private static final Logger LOG = LoggerFactory.getLogger(TrustedIdpOIDCProtocolHandler.class);
@@ -134,6 +140,19 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
             throw new IllegalStateException("No CLIENT_ID specified");
         }
         
+        String scope = getProperty(trustedIdp, SCOPE);
+        if (scope != null) {
+            scope = scope.trim();
+            if (!scope.startsWith("openid")) {
+                scope = "openid " + scope;
+            }
+        }
+        
+        if (scope == null || scope.isEmpty()) {
+            scope = "openid";
+        }
+        LOG.debug("Using scope: {}", scope);
+        
         try {
             StringBuilder sb = new StringBuilder();
             sb.append(trustedIdp.getUrl());
@@ -148,7 +167,7 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
             sb.append(URLEncoder.encode(idp.getIdpUrl().toString(), "UTF-8"));
             sb.append("&");
             sb.append("scope").append('=');
-            sb.append("openid");
+            sb.append(URLEncoder.encode(scope, "UTF-8"));
             
             String state = context.getFlowScope().getString(IdpConstants.TRUSTED_IDP_CONTEXT);
             sb.append("&").append("state").append('=');
