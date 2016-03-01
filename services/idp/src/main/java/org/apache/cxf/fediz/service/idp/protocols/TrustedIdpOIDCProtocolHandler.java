@@ -456,10 +456,15 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
         
         // Subject
         String subjectName = getProperty(trustedIdp, SUBJECT_CLAIM);
+        LOG.debug("Trying to extract subject name using the claim name {}", subjectName);
         if (subjectName == null || token.getClaim(subjectName) == null) {
+            LOG.debug("No claim available in the token for {}", subjectName);
             subjectName = "preferred_username";
+            LOG.debug("Falling back to use subject claim name {}", subjectName);
             if (subjectName == null || token.getClaim(subjectName) == null) {
                 subjectName = JwtConstants.CLAIM_SUBJECT;
+                LOG.debug("No claim available in the token for preferred_username. "
+                          + "Falling back to use {}", subjectName);
             }
         }
         
