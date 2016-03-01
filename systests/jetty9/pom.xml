@@ -194,12 +194,6 @@
                             <stripVersion>true</stripVersion>
                         </configuration>
                     </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
                     <execution>
                         <id>copy-rp</id>
                         <phase>generate-resources</phase>
