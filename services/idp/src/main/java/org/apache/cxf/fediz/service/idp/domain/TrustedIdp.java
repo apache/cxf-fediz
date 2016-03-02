@@ -27,7 +27,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlRootElement(name = "trustedIdp", namespace = "http://org.apache.cxf.fediz/")
-@XmlType(propOrder = {"realm", "url", "name", "description", "protocol", "trustType",
+@XmlType(propOrder = {"realm", "issuer", "url", "name", "description", "protocol", "trustType",
                       "certificate", "federationType", "cacheTokens", "logo", "id", "parameters" })
 //@XmlAttribute on Id must be set on getter, not on attribute, otherwise error
 public class TrustedIdp implements Serializable {
@@ -39,6 +39,9 @@ public class TrustedIdp implements Serializable {
 
     //@Column(name = "REALM", nullable = true, length = FIELD_LENGTH)
     protected String realm;  //wtrealm, whr
+    
+    //@Column(name = "Issuer", nullable = true, length = FIELD_LENGTH)
+    protected String issuer;  //SAMLResponse issuer name
 
     // Should tokens be cached from trusted IDPs
     // to avoid redirection to the trusted IDP again for next SignIn request
@@ -82,6 +85,14 @@ public class TrustedIdp implements Serializable {
 
     public void setId(int id) {
         this.id = id;
+    }
+    
+    public String getIssuer() {
+        return issuer;
+    }
+    
+    public void setIssuer(String issuer) {
+        this.issuer = issuer;
     }
     
     public String getRealm() {

@@ -127,6 +127,7 @@ public class TrustedIdpDAOJPAImpl implements TrustedIdpDAO {
         entity.setName(trustedIDP.getName());
         entity.setProtocol(trustedIDP.getProtocol());
         entity.setRealm(trustedIDP.getRealm());
+        entity.setIssuer(trustedIDP.getIssuer());
         entity.setTrustType(trustedIDP.getTrustType());
         entity.setUrl(trustedIDP.getUrl());
         entity.setParameters(trustedIDP.getParameters());
@@ -143,6 +144,7 @@ public class TrustedIdpDAOJPAImpl implements TrustedIdpDAO {
         trustedIDP.setName(entity.getName());
         trustedIDP.setProtocol(entity.getProtocol());
         trustedIDP.setRealm(entity.getRealm());
+        trustedIDP.setIssuer(entity.getIssuer());
         trustedIDP.setTrustType(entity.getTrustType());
         trustedIDP.setUrl(entity.getUrl());
         trustedIDP.setParameters(entity.getParameters());

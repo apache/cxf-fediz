@@ -413,7 +413,14 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
             HttpServletRequest servletRequest = WebUtils.getHttpServletRequest(requestContext);
             ssoResponseValidator.setClientAddress(servletRequest.getRemoteAddr());
 
-            ssoResponseValidator.setIssuerIDP(trustedIdp.getUrl());
+            String issuer = trustedIdp.getIssuer();
+            if (issuer == null || issuer.isEmpty()) {
+                LOG.debug("Issuer name is not defined in trusted 3rd party configuration. "
+                    + "Using URL instead for issuer validation");
+                issuer = trustedIdp.getUrl();
+            }
+            LOG.debug("Using {} for issuer validation", issuer);
+            ssoResponseValidator.setIssuerIDP(issuer);
             
             // Get the stored request ID
             String requestId = 

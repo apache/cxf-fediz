@@ -47,6 +47,8 @@ public class TrustedIdpEntity {
     @Index
     @NotNull
     private String realm;  //wtrealm, whr
+    
+    private String issuer;  //Validation of issuer name in SAMLResponse
 
     // Should tokens be cached from trusted IDPs
     // to avoid redirection to the trusted IDP again for next SignIn request
@@ -100,6 +102,14 @@ public class TrustedIdpEntity {
         this.id = id;
     }
 
+    public String getIssuer() {
+        return issuer;
+    }
+
+    public void setIssuer(String issuer) {
+        this.issuer = issuer;
+    }
+    
     public String getRealm() {
         return realm;
     }
