@@ -68,6 +68,12 @@
         <webflow:flow-location path="/WEB-INF/flows/federation-validate-request.xml" id="federation/clientcert" />
         <webflow:flow-location path="/WEB-INF/flows/federation-signin-request.xml" id="signinRequest" />
         <webflow:flow-location path="/WEB-INF/flows/federation-signin-response.xml" id="signinResponse" />
+        
+        <webflow:flow-location path="/WEB-INF/flows/saml-validate-request.xml" id="saml" />
+        <webflow:flow-location path="/WEB-INF/flows/saml-validate-request.xml" id="saml/up" />
+        <webflow:flow-location path="/WEB-INF/flows/saml-validate-request.xml" id="saml/krb" />
+        <webflow:flow-location path="/WEB-INF/flows/saml-validate-request.xml" id="saml/clientcert" />
+        <webflow:flow-location path="/WEB-INF/flows/saml-signin-request.xml" id="signinSAMLRequest" />
     </webflow:flow-registry>
 
     <bean class="org.springframework.webflow.mvc.servlet.FlowHandlerMapping" p:flowRegistry-ref="flowRegistry"

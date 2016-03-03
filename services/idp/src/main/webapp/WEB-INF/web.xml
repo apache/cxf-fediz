@@ -81,6 +81,10 @@ under the License.
 		<url-pattern>/federation/up</url-pattern>
 		<url-pattern>/federation/krb</url-pattern>
 		<url-pattern>/federation/clientcert</url-pattern>
+		<url-pattern>/saml</url-pattern>
+		<url-pattern>/saml/up</url-pattern>
+		<url-pattern>/saml/krb</url-pattern>
+		<url-pattern>/saml/clientcert</url-pattern>
 	</servlet-mapping>
 
 	<servlet>

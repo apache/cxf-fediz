@@ -315,21 +315,21 @@ public class STSClientAction {
         String wreply = 
             (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_REPLY);
         
-        // Validate it first using commons-validator
-        UrlValidator urlValidator = new UrlValidator(UrlValidator.ALLOW_LOCAL_URLS
-                                                     + UrlValidator.ALLOW_ALL_SCHEMES);
-        if (!urlValidator.isValid(wreply)) {
-            LOG.warn("The given wreply parameter {} is not a valid URL", wreply);
-            throw new ProcessingException(TYPE.BAD_REQUEST);
-        }
-        
-        if (serviceConfig.getCompiledPassiveRequestorEndpointConstraint() == null) {
-            LOG.warn("No passive requestor endpoint constraint is configured for the application. "
-                     + "This could lead to a malicious redirection attack");
-            return;
-        }
-        
         if (wreply != null) {
+            // Validate it first using commons-validator
+            UrlValidator urlValidator = new UrlValidator(UrlValidator.ALLOW_LOCAL_URLS
+                                                         + UrlValidator.ALLOW_ALL_SCHEMES);
+            if (!urlValidator.isValid(wreply)) {
+                LOG.warn("The given wreply parameter {} is not a valid URL", wreply);
+                throw new ProcessingException(TYPE.BAD_REQUEST);
+            }
+
+            if (serviceConfig.getCompiledPassiveRequestorEndpointConstraint() == null) {
+                LOG.warn("No passive requestor endpoint constraint is configured for the application. "
+                    + "This could lead to a malicious redirection attack");
+                return;
+            }
+        
             Matcher matcher = serviceConfig.getCompiledPassiveRequestorEndpointConstraint().matcher(wreply);
             if (!matcher.matches()) {
                 LOG.error("The wreply value of {} does not match any of the passive requestor values",

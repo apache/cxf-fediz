@@ -43,6 +43,7 @@
       <module>federation</module>
       <module>kerberos</module>
       <module>oidc</module>
+      <module>samlsso</module>
    </modules>
    
    <profiles>

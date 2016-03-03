@@ -139,8 +139,7 @@
             <evaluate expression="stsClientForRpAction.submit(flowRequestContext)"
                       result="flowScope.rpToken"/>
         </on-entry>
-        <evaluate expression="signinParametersCacheAction.storeRPConfigInSession(flowRequestContext)"
-                result="flowScope.res"/>
+        <evaluate expression="signinParametersCacheAction.storeRPConfigInSession(flowRequestContext)" />
         <transition to="isWReplyProvided" />
         <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
         <transition on-exception="java.lang.Throwable" to="scInternalServerError" />

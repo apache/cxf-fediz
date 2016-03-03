@@ -75,6 +75,15 @@
         <property name="configService" ref="config" />
     </bean>
     
+    <!-- Kerberos entry point -->
+    <bean id="kerberosEntryPoint"
+          class="org.apache.cxf.fediz.service.idp.kerberos.KerberosEntryPoint" />
+    
+    <bean id="kerberosAuthenticationProcessingFilter"
+          class="org.apache.cxf.fediz.service.idp.kerberos.KerberosAuthenticationProcessingFilter">
+          <property name="authenticationManager" ref="authenticationManagers" />
+    </bean>
+    
     <!-- Main entry point -->
     <security:http pattern="/federation" use-expressions="true" entry-point-ref="federationEntryPoint">
         <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
@@ -102,15 +111,6 @@
 			/>
     </security:http>
     
-    <!-- Kerberos entry point -->
-    <bean id="kerberosEntryPoint"
-          class="org.apache.cxf.fediz.service.idp.kerberos.KerberosEntryPoint" />
-    
-    <bean id="kerberosAuthenticationProcessingFilter"
-          class="org.apache.cxf.fediz.service.idp.kerberos.KerberosAuthenticationProcessingFilter">
-          <property name="authenticationManager" ref="authenticationManagers" />
-    </bean>
-    
     <security:http pattern="/federation/krb" use-expressions="true" entry-point-ref="kerberosEntryPoint">
         <security:custom-filter after="CHANNEL_FILTER" ref="stsKrbPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
@@ -121,6 +121,50 @@
     
     <!-- SSL Client Cert entry point -->
     <security:http pattern="/federation/clientcert" use-expressions="true">
+        <security:custom-filter after="CHANNEL_FILTER" ref="stsClientCertPortFilter" />
+        <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
+
+        <security:x509 />
+        <security:logout delete-cookies="FEDIZ_HOME_REALM" invalidate-session="true" />
+    </security:http>
+    
+    <!-- Main entry point -->
+    <security:http pattern="/saml" use-expressions="true" entry-point-ref="federationEntryPoint">
+        <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
+        <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
+    </security:http>
+    
+    <!-- HTTP/BA entry point -->
+    <security:http pattern="/saml/up/**" use-expressions="true">
+		<security:intercept-url requires-channel="https" pattern="/saml/up/login*" access="isAnonymous() or isAuthenticated()" />
+        <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
+        <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
+
+        <security:http-basic />
+		<!--security:form-login login-page='/federation/up/login'
+			login-processing-url="/federation/up/login.do"
+			authentication-failure-url="/federation/up/login?error" 
+			default-target-url="/"
+			username-parameter="username" 
+			password-parameter="password"
+			/-->
+		<security:logout logout-url="/saml/up/logout" 
+			logout-success-url="/saml/up/login?out" 
+			delete-cookies="FEDIZ_HOME_REALM,JSESSIONID" 
+			invalidate-session="true" 
+			/>
+    </security:http>
+    
+    <security:http pattern="/saml/krb" use-expressions="true" entry-point-ref="kerberosEntryPoint">
+        <security:custom-filter after="CHANNEL_FILTER" ref="stsKrbPortFilter" />
+        <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
+
+        <security:custom-filter ref="kerberosAuthenticationProcessingFilter" position="BASIC_AUTH_FILTER" />
+        <security:logout delete-cookies="FEDIZ_HOME_REALM" invalidate-session="true" />
+    </security:http>
+    
+    <!-- SSL Client Cert entry point -->
+    <security:http pattern="/saml/clientcert" use-expressions="true">
         <security:custom-filter after="CHANNEL_FILTER" ref="stsClientCertPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
 

@@ -119,54 +119,6 @@ public class SigninParametersCacheAction {
         }
     }
 
-    /**
-     * @deprecated use {@link #storeRPConfigInSession()} instead.  
-     * @param context
-     * @throws ProcessingException
-     */
-    public void storeRPUrlInSession(RequestContext context) throws ProcessingException {
-
-        String whr = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_HOME_REALM);
-        if (whr == null) {
-            return;
-        }
-
-        String wtrealm = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_TREALM);
-        
-        Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(context, IdpConstants.IDP_CONFIG);
-        
-        String url = null;
-
-        Application serviceConfig = idpConfig.findApplication(wtrealm);
-        if (serviceConfig != null) {
-            url = serviceConfig.getPassiveRequestorEndpoint();
-        }
-
-        if (url == null) {
-            url = guessPassiveRequestorURL(context, wtrealm);
-            if (serviceConfig != null) {
-                serviceConfig.setPassiveRequestorEndpoint(url);
-            }
-        }
-        
-        @SuppressWarnings("unchecked")
-        Map<String, String> rum =
-                (Map<String, String>)WebUtils
-                        .getAttributeFromExternalContext(context, REALM_URL_MAP);
-
-        if (rum == null) {
-            rum = new HashMap<>();
-            WebUtils.putAttributeInExternalContext(context, REALM_URL_MAP, rum);
-        }
-
-        String val = rum.get(wtrealm);
-        if (val == null) {
-            rum.put(wtrealm, url);
-        }
-        
-        storeRPConfigInSession(context);
-    }
-    
     public void storeRPConfigInSession(RequestContext context) throws ProcessingException {
 
         String whr = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_HOME_REALM);
