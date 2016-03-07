@@ -40,6 +40,7 @@
 		
     <import resource="data-manager.xml" />
     
+    <!-- Supports OIDC code flow -->
     <bean id="oidcAuthorizationService" class="org.apache.cxf.rs.security.oidc.idp.OidcAuthorizationCodeService">
          <property name="dataProvider" ref="oauthProvider"/>
          <property name="subjectCreator" ref="subjectCreator"/>
@@ -49,16 +50,18 @@
          -->
          <property name="canSupportPublicClients" value="true"/>
     </bean>
-    <bean id="oidcImplicitService" class="org.apache.cxf.rs.security.oidc.idp.OidcImplicitService">
+    <!-- Supports OIDC implicit and hybrid flows -->
+    <bean id="oidcHybridService" class="org.apache.cxf.rs.security.oidc.idp.OidcHybridService">
          <property name="dataProvider" ref="oauthProvider"/>
          <property name="subjectCreator" ref="subjectCreator"/>
          <property name="skipAuthorizationWithOidcScope" value="true"/>
          <property name="responseFilter" ref="idTokenFilter"/>
+         <property name="codeService" ref="oidcAuthorizationService"/>
     </bean>
     
     <util:list id="oidcServices">
         <ref bean="oidcAuthorizationService"/>
-        <ref bean="oidcImplicitService"/>
+        <ref bean="oidcHybridService"/>
     </util:list>
     
     <bean id="authorizationService" class="org.apache.cxf.rs.security.oauth2.services.AuthorizationService">
