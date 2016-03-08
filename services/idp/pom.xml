@@ -459,7 +459,7 @@
             <plugin>
                 <groupId>org.mortbay.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <version>${jetty8.version}</version>
+                <version>8.1.16.v20140903</version>
                 <configuration>
                     <stopPort>${idp.stop.port}</stopPort>
                     <stopKey>STOP</stopKey>
