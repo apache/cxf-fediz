@@ -635,7 +635,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
 
         private final String password;
 
-        public DecryptionCallbackHandler(String password) {
+        DecryptionCallbackHandler(String password) {
             this.password = password;
         }
 

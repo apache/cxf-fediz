@@ -28,7 +28,7 @@ public enum FederationType {
 
     private String name;
 
-    private FederationType(final String name) {
+    FederationType(final String name) {
         this.name = name;
     }
 

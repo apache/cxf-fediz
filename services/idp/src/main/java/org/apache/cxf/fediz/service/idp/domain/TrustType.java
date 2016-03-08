@@ -28,7 +28,7 @@ public enum TrustType {
 
     private String name;
 
-    private TrustType(final String name) {
+    TrustType(final String name) {
         this.name = name;
     }
 

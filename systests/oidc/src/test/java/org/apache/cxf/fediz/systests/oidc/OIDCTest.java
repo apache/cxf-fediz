@@ -755,7 +755,7 @@ public class OIDCTest {
 
         private String code;
         
-        public CodeWebConnectionWrapper(WebClient webClient) throws IllegalArgumentException {
+        CodeWebConnectionWrapper(WebClient webClient) throws IllegalArgumentException {
             super(webClient);
         }
         

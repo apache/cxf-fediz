@@ -426,7 +426,7 @@ public final class DOMUtils {
     
     private static DocumentBuilderFactory createDocumentBuilderFactory() throws ParserConfigurationException {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING , true);
+        dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 
         dbf.setValidating(false);
         dbf.setIgnoringComments(false);
@@ -466,7 +466,7 @@ public final class DOMUtils {
 
     public static void writeXml(Node n, OutputStream os) throws TransformerException {
         TransformerFactory tf = TransformerFactory.newInstance();
-        tf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING , true);
+        tf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
         // identity
         Transformer t = tf.newTransformer();
         t.setOutputProperty(OutputKeys.INDENT, "yes");
