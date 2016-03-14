@@ -27,7 +27,6 @@ import java.net.URLEncoder;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +34,6 @@ import java.util.Map;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.Response;
 
@@ -44,12 +42,10 @@ import org.w3c.dom.Element;
 
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
-import org.apache.cxf.fediz.core.util.CertsUtils;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.cxf.fediz.service.idp.IdpConstants;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
-import org.apache.cxf.fediz.service.idp.spi.TrustedIdpProtocolHandler;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
@@ -68,7 +64,6 @@ import org.apache.cxf.rs.security.oauth2.common.ClientAccessToken;
 import org.apache.cxf.rs.security.oauth2.provider.OAuthJSONProvider;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
-import org.apache.wss4j.common.crypto.CertificateStore;
 import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.SAMLCallback;
@@ -86,7 +81,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.webflow.execution.RequestContext;
 
 @Component
-public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler {
+public class TrustedIdpOIDCProtocolHandler extends AbstractTrustedIdpProtocolHandler {
     
     /**
      * The client_id value to send to the OIDC IdP.
@@ -128,12 +123,6 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
     public static final String PROTOCOL = "openid-connect-1.0";
 
     private static final Logger LOG = LoggerFactory.getLogger(TrustedIdpOIDCProtocolHandler.class);
-
-    @Override
-    public boolean canHandleRequest(HttpServletRequest request) {
-        // TODO Auto-generated method stub
-        return false;
-    }
 
     @Override
     public String getProtocol() {
@@ -384,64 +373,6 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
         return false;
     }
     
-    private Crypto getCrypto(String certificate) throws ProcessingException {
-        if (certificate == null) {
-            return null;
-        }
-        
-        boolean isCertificateLocation = !certificate.startsWith("-----BEGIN CERTIFICATE");
-        if (isCertificateLocation) {
-            try {
-                X509Certificate cert = CertsUtils.getX509Certificate(certificate);
-                if (cert == null) {
-                    return null;
-                }
-                return new CertificateStore(new X509Certificate[]{cert});
-            } catch (CertificateException ex) {
-                // Maybe it's a WSS4J properties file...
-                return CertsUtils.createCrypto(certificate);
-            }
-        } 
-        
-        // Here the certificate is encoded in the configuration file
-        X509Certificate cert;
-        try {
-            cert = CertsUtils.parseCertificate(certificate);
-        } catch (Exception ex) {
-            LOG.error("Failed to parse trusted certificate", ex);
-            throw new ProcessingException("Failed to parse trusted certificate");
-        }
-        return new CertificateStore(Collections.singletonList(cert).toArray(new X509Certificate[0]));
-    }
-    
-    private X509Certificate getCertificate(String certificate) 
-        throws CertificateException, WSSecurityException, ProcessingException, Base64DecodingException, IOException {
-        if (certificate == null) {
-            return null;
-        }
-        
-        boolean isCertificateLocation = !certificate.startsWith("-----BEGIN CERTIFICATE");
-        if (isCertificateLocation) {
-            try {
-                return CertsUtils.getX509Certificate(certificate);
-            } catch (CertificateException ex) {
-                // Maybe it's a WSS4J properties file...
-                Crypto crypto = CertsUtils.createCrypto(certificate);
-                if (crypto != null) {
-                    return CertsUtils.getX509Certificate(crypto, null);
-                }
-            }
-        } 
-        
-        // Here the certificate is encoded in the configuration file
-        try {
-            return CertsUtils.parseCertificate(certificate);
-        } catch (Exception ex) {
-            LOG.error("Failed to parse trusted certificate", ex);
-            throw new ProcessingException("Failed to parse trusted certificate");
-        }
-    }
-    
     protected SamlAssertionWrapper createSamlAssertion(Idp idp, TrustedIdp trustedIdp, JwtToken token,
                                                      Date created,
                                                      Date expires) throws Exception {
@@ -495,16 +426,6 @@ public class TrustedIdpOIDCProtocolHandler implements TrustedIdpProtocolHandler 
                                 crypto, false);
         
         return assertion;
-    }
-    
-    private String getProperty(TrustedIdp trustedIdp, String property) {
-        Map<String, String> parameters = trustedIdp.getParameters();
-        
-        if (parameters != null && parameters.containsKey(property)) {
-            return parameters.get(property);
-        }
-        
-        return null;
     }
     
     private static class SamlCallbackHandler implements CallbackHandler {
