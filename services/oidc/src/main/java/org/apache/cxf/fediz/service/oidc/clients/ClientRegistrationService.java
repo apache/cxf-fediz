@@ -141,15 +141,13 @@ public class ClientRegistrationService {
     }
     
     protected ClientTokens doGetClientIssuedTokens(Client c) {
-        // Right now the user who is registering the clients 
-        // is the one who is working with them, i.e, client registrations 
-        // are user specific, so passing null is OK
         Comparator<ServerAccessToken> tokenComp = new TokenComparator();
+        UserSubject subject = new UserSubject(getUserName());
         List<ServerAccessToken> accessTokens = 
-            new ArrayList<ServerAccessToken>(dataProvider.getAccessTokens(c, null));
+            new ArrayList<ServerAccessToken>(dataProvider.getAccessTokens(c, subject));
         Collections.sort(accessTokens, tokenComp);
         List<RefreshToken> refreshTokens = 
-                new ArrayList<RefreshToken>(dataProvider.getRefreshTokens(c, null));
+                new ArrayList<RefreshToken>(dataProvider.getRefreshTokens(c, subject));
         Collections.sort(refreshTokens, tokenComp);
         return new ClientTokens(c, accessTokens, refreshTokens);
     }
