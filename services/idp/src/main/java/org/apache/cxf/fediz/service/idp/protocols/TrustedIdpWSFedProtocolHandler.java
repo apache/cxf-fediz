@@ -29,8 +29,6 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.w3c.dom.Element;
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.config.FedizContext;
@@ -51,7 +49,6 @@ import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
-import org.apache.cxf.fediz.service.idp.spi.TrustedIdpProtocolHandler;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.wss4j.common.crypto.CertificateStore;
@@ -64,17 +61,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.webflow.execution.RequestContext;
 
 @Component
-public class TrustedIdpWSFedProtocolHandler implements TrustedIdpProtocolHandler {
+public class TrustedIdpWSFedProtocolHandler extends AbstractTrustedIdpProtocolHandler {
+    
+    /**
+     * Whether to add the home realm parameter to the URL for redirection or not. The default is "true".
+     */
+    public static final String ENABLE_HOME_REALM = "enable.home.realm";
     
     public static final String PROTOCOL = "http://docs.oasis-open.org/wsfed/federation/200706";
 
     private static final Logger LOG = LoggerFactory.getLogger(TrustedIdpWSFedProtocolHandler.class);
-
-    @Override
-    public boolean canHandleRequest(HttpServletRequest request) {
-        // TODO Auto-generated method stub
-        return false;
-    }
 
     @Override
     public String getProtocol() {
@@ -93,8 +89,11 @@ public class TrustedIdpWSFedProtocolHandler implements TrustedIdpProtocolHandler
             sb.append(URLEncoder.encode(idp.getRealm(), "UTF-8"));
             sb.append("&").append(FederationConstants.PARAM_REPLY).append('=');
             sb.append(URLEncoder.encode(idp.getIdpUrl().toString(), "UTF-8"));
-            sb.append("&").append(FederationConstants.PARAM_HOME_REALM).append('=');
-            sb.append(trustedIdp.getRealm());
+            
+            if (isBooleanPropertyConfigured(trustedIdp, ENABLE_HOME_REALM, true)) {
+                sb.append("&").append(FederationConstants.PARAM_HOME_REALM).append('=');
+                sb.append(trustedIdp.getRealm());
+            }
             
             String wfresh = context.getFlowScope().getString(FederationConstants.PARAM_FRESHNESS);
             if (wfresh != null) {

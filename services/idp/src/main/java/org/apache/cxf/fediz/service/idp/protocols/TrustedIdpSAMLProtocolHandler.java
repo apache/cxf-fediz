@@ -32,7 +32,6 @@ import java.security.Signature;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.Map;
 import java.util.zip.DataFormatException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -51,7 +50,6 @@ import org.apache.cxf.fediz.core.util.CertsUtils;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
-import org.apache.cxf.fediz.service.idp.spi.TrustedIdpProtocolHandler;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.jaxrs.utils.ExceptionUtils;
 import org.apache.cxf.rs.security.saml.DeflateEncoderDecoder;
@@ -81,7 +79,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.webflow.execution.RequestContext;
 
 @Component
-public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler {
+public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHandler {
     /**
      * Whether to sign the request or not. The default is "true".
      */
@@ -126,12 +124,6 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
     }
 
     @Override
-    public boolean canHandleRequest(HttpServletRequest request) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
     public String getProtocol() {
         return PROTOCOL;
     }
@@ -148,7 +140,7 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
                     null, idp.getRealm(), idp.getIdpUrl().toString()
                 );
             
-            boolean signRequest = isPropertyConfigured(trustedIdp, SIGN_REQUEST, true);
+            boolean signRequest = isBooleanPropertyConfigured(trustedIdp, SIGN_REQUEST, true);
             if (signRequest) {
                 authnRequest.setDestination(trustedIdp.getUrl());
             }
@@ -347,10 +339,10 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
         String samlResponseDecoded = samlResponse;
         
         InputStream tokenStream = null;
-        if (isPropertyConfigured(trustedIdp, SUPPORT_BASE64_ENCODING, true)) {
+        if (isBooleanPropertyConfigured(trustedIdp, SUPPORT_BASE64_ENCODING, true)) {
             try {
                 byte[] deflatedToken = Base64Utility.decode(samlResponseDecoded);
-                tokenStream = isPropertyConfigured(trustedIdp, SUPPORT_DEFLATE_ENCODING, false)
+                tokenStream = isBooleanPropertyConfigured(trustedIdp, SUPPORT_DEFLATE_ENCODING, false)
                     ? new DeflateEncoderDecoder().inflateToken(deflatedToken)
                     : new ByteArrayInputStream(deflatedToken); 
             } catch (Base64Exception ex) {
@@ -397,7 +389,7 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
         try {
             SAMLProtocolResponseValidator protocolValidator = new SAMLProtocolResponseValidator();
             protocolValidator.setKeyInfoMustBeAvailable(
-                isPropertyConfigured(trustedIdp, REQUIRE_KEYINFO, true));
+                isBooleanPropertyConfigured(trustedIdp, REQUIRE_KEYINFO, true));
             protocolValidator.validateSamlResponse(samlResponse, crypto, null);
         } catch (WSSecurityException ex) {
             LOG.debug(ex.getMessage(), ex);
@@ -429,9 +421,9 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
             ssoResponseValidator.setRequestId(requestId);
             ssoResponseValidator.setSpIdentifier(idp.getRealm());
             ssoResponseValidator.setEnforceAssertionsSigned(
-                isPropertyConfigured(trustedIdp, REQUIRE_SIGNED_ASSERTIONS, true));
+                isBooleanPropertyConfigured(trustedIdp, REQUIRE_SIGNED_ASSERTIONS, true));
             ssoResponseValidator.setEnforceKnownIssuer(
-                isPropertyConfigured(trustedIdp, REQUIRE_KNOWN_ISSUER, true));
+                isBooleanPropertyConfigured(trustedIdp, REQUIRE_KNOWN_ISSUER, true));
             
             HttpServletRequest httpServletRequest = WebUtils.getHttpServletRequest(requestContext);
             boolean post = "POST".equals(httpServletRequest.getMethod());
@@ -444,17 +436,6 @@ public class TrustedIdpSAMLProtocolHandler implements TrustedIdpProtocolHandler 
             LOG.debug(ex.getMessage(), ex);
             throw ExceptionUtils.toBadRequestException(ex, null);
         }
-    }
-    
-    // Is a property configured. Defaults to "true" if not
-    private boolean isPropertyConfigured(TrustedIdp trustedIdp, String property, boolean defaultValue) {
-        Map<String, String> parameters = trustedIdp.getParameters();
-        
-        if (parameters != null && parameters.containsKey(property)) {
-            return Boolean.parseBoolean(parameters.get(property));
-        }
-        
-        return defaultValue;
     }
     
     public void setReplayCache(TokenReplayCache<String> replayCache) {
