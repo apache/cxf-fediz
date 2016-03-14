@@ -66,7 +66,7 @@ public class TrustedIdpWSFedProtocolHandler extends AbstractTrustedIdpProtocolHa
     /**
      * Whether to add the home realm parameter to the URL for redirection or not. The default is "true".
      */
-    public static final String ENABLE_HOME_REALM = "enable.home.realm";
+    public static final String HOME_REALM_PROPAGATION = "home.realm.propagation";
     
     public static final String PROTOCOL = "http://docs.oasis-open.org/wsfed/federation/200706";
 
@@ -90,7 +90,7 @@ public class TrustedIdpWSFedProtocolHandler extends AbstractTrustedIdpProtocolHa
             sb.append("&").append(FederationConstants.PARAM_REPLY).append('=');
             sb.append(URLEncoder.encode(idp.getIdpUrl().toString(), "UTF-8"));
             
-            if (isBooleanPropertyConfigured(trustedIdp, ENABLE_HOME_REALM, true)) {
+            if (isBooleanPropertyConfigured(trustedIdp, HOME_REALM_PROPAGATION, true)) {
                 sb.append("&").append(FederationConstants.PARAM_HOME_REALM).append('=');
                 sb.append(trustedIdp.getRealm());
             }
