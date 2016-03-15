@@ -114,7 +114,7 @@
     <decision-state id="checkIdpTokenWauth">
         <!-- check presence of cached IDP token for THIS realm -->
         <if test="externalContext.sessionMap[flowScope.whr] == null"
-            then="cacheTokenForWauth" else="wfreshParserAction" />
+            then="cacheSecurityToken" else="wfreshParserAction" />
     </decision-state>
 
     <!-- parse wfresh parameter, provided by resource RP, overriding ttl 
@@ -137,9 +137,9 @@
         <output name="whr" value="flowScope.whr" />
     </end-state>
 
-    <action-state id="cacheTokenForWauth">
+    <action-state id="cacheSecurityToken">
         <secured attributes="IS_AUTHENTICATED_FULLY" />
-        <evaluate expression="cacheTokenForWauthAction.submit(flowRequestContext)" />
+        <evaluate expression="cacheSecurityToken.submit(flowRequestContext)" />
         <transition to="requestRpToken">
             <set name="flowScope.idpToken" value="externalContext.sessionMap[whr]" />
         </transition>

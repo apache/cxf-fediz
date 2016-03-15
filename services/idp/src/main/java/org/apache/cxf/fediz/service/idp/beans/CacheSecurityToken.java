@@ -34,11 +34,10 @@ import org.springframework.webflow.execution.RequestContext;
  * This class is responsible to cache IDP token.
  */
 @Component
-public class CacheTokenForWauthAction {
+public class CacheSecurityToken {
 
     private static final String IDP_CONFIG = "idpConfig";
-    private static final Logger LOG = LoggerFactory.getLogger(CacheTokenForWauthAction.class);
-
+    private static final Logger LOG = LoggerFactory.getLogger(CacheSecurityToken.class);
 
     public void submit(RequestContext context) {
 
