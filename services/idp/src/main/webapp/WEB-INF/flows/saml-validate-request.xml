@@ -32,8 +32,13 @@
         <if test="requestParameters.RelayState == null or requestParameters.RelayState.length() == 0"
             then="viewBadRequest" />
         <if test="requestParameters.SAMLRequest != null and !requestParameters.SAMLRequest.isEmpty()"
-            then="signinSAMLRequest" else="viewBadRequest" />
+            then="parseSAMLRequest" else="viewBadRequest" />
     </decision-state>
+    
+    <action-state id="parseSAMLRequest">
+        <evaluate expression="authnRequestParser.parseSAMLRequest(flowRequestContext)" />
+        <transition to="signinSAMLRequest"/>
+    </action-state>
 
     <subflow-state id="signinSAMLRequest" subflow="signinSAMLRequest">
         <input name="idpConfig" value="flowScope.idpConfig" />
@@ -58,15 +63,15 @@
     <!-- produce RP security token (as String type) -->
     <action-state id="requestRpToken">
         <on-entry>
-            <evaluate expression="authnRequestRealmParser.retrieveRealm(flowRequestContext)" 
+            <evaluate expression="authnRequestParser.retrieveRealm(flowRequestContext)" 
                       result="flowScope.realm"/>
             <evaluate expression="stsClientForRpAction.submit(flowScope.realm, flowRequestContext)"
                       result="flowScope.rpToken"/>
+            <evaluate expression="authnRequestParser.retrieveConsumerURL(flowRequestContext)" 
+                      result="flowScope.consumerURL"/>
         </on-entry>
         <evaluate expression="signinParametersCacheAction.storeRPConfigInSession(flowRequestContext)"/>
-        <transition to="formResponseView" >
-            <set name="flowScope.signinResponseUrl" value="flowScope.wreply" />
-        </transition>
+        <transition to="formResponseView" />
         <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
         <transition on-exception="java.lang.Throwable" to="scInternalServerError" />
     </action-state>
@@ -75,7 +80,7 @@
     <!-- browser redirection (self-submitted form 'samlsigninresponseform.jsp') -->
     <end-state id="formResponseView" view="samlsigninresponseform">
         <on-entry>
-            <evaluate expression="flowScope.signinResponseUrl" result="requestScope.samlAction" />
+            <evaluate expression="flowScope.consumerURL" result="requestScope.samlAction" />
             <evaluate expression="flowScope.RelayState" result="requestScope.relayState" />
             <evaluate expression="flowScope.rpToken" result="requestScope.samlResponse" />
         </on-entry>
@@ -104,30 +109,6 @@
         </on-entry>
     </end-state>
     
-    <!-- normal exit point for logout -->
-    <view-state id="viewSignoutConfirmation" view="signoutconfirmationresponse">
-        <transition on="submit" to="invalidateSessionAction"/>
-        <transition on="cancel" to="redirect" />
-    </view-state>
-
-    <view-state id="redirect" view="externalRedirect:${flowScope.wreply}" />
-
-    <!-- normal exit point for logout -->
-    <end-state id="invalidateSessionAction" view="signoutresponse">
-        <on-entry>
-            <!-- store the realmConfigMap in the request map before we invalidate the session below.
-            Its needed in the signoutresponse.jsp page -->
-            <set name="externalContext.requestMap.realmConfigMap" 
-                value="externalContext.sessionMap.realmConfigMap"/>
-            <set name="externalContext.requestMap.wreply" value="flowScope.wreply"/>
-            <!-- there is no Saml token canceller in cxf STS...
-            <evaluate expression="stsClientForRpAction.cancelTokens(flowRequestContext)" />
-            -->
-            <evaluate expression="homeRealmReminder.removeCookie(flowRequestContext)" />
-            <evaluate expression="logoutAction.submit(flowRequestContext)" />
-        </on-entry>
-    </end-state>
-
     <end-state id="redirectToLocalIDP" view="externalRedirect:${flowScope.localIdpUrl}">
         <on-entry>
             <set name="flowScope.localIdpUrl"

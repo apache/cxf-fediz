@@ -24,6 +24,8 @@ import java.io.InputStreamReader;
 import org.w3c.dom.Document;
 
 import org.apache.cxf.common.util.Base64Utility;
+import org.apache.cxf.fediz.service.idp.IdpConstants;
+import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.rs.security.saml.DeflateEncoderDecoder;
 import org.apache.cxf.rs.security.saml.sso.SSOConstants;
 import org.apache.cxf.staxutils.StaxUtils;
@@ -36,33 +38,54 @@ import org.springframework.stereotype.Component;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
- * Parse the received AuthnRequest and extract the home realm of the request from the Issuer
- * value.
+ * Parse the received SAMLRequest into an OpenSAML AuthnRequest
  */
 @Component
-public class AuthnRequestRealmParser {
+public class AuthnRequestParser {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AuthnRequestRealmParser.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AuthnRequestParser.class);
 
-    public String retrieveRealm(RequestContext context) {
+    public void parseSAMLRequest(RequestContext context) {
         String samlRequest = context.getFlowScope().getString(SSOConstants.SAML_REQUEST);
         LOG.debug("Received SAML Request: {}", samlRequest);
 
-        if (samlRequest != null) {
+        if (samlRequest == null) {
+            WebUtils.removeAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
+        } else {
             try {
                 AuthnRequest parsedRequest = extractRequest(samlRequest);
-                if (parsedRequest.getIssuer() != null) {
-                    String issuer = parsedRequest.getIssuer().getValue();
-                    LOG.debug("Parsed SAML AuthnRequest Issuer: {}", issuer);
-                    return issuer;
-                }
+                WebUtils.putAttributeInFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST, parsedRequest);
+                LOG.debug("SAML Request with id '{}' successfully parsed", parsedRequest.getID());
             } catch (Exception ex) {
                 LOG.warn("Error parsing request: {}", ex.getMessage());
-                return null;
             }
         }
+    }
+    
+    public String retrieveRealm(RequestContext context) {
+        AuthnRequest authnRequest = 
+            (AuthnRequest)WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
+        if (authnRequest != null && authnRequest.getIssuer() != null) {
+            String issuer = authnRequest.getIssuer().getValue();
+            LOG.debug("Parsed SAML AuthnRequest Issuer: {}", issuer);
+            return issuer;
+        }
         
-        LOG.debug("No SamlRequest available to be parsed");
+        LOG.debug("No AuthnRequest available to be parsed");
+        return null;
+    }
+    
+    public String retrieveConsumerURL(RequestContext context) {
+        AuthnRequest authnRequest = 
+            (AuthnRequest)WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
+
+        if (authnRequest != null && authnRequest.getAssertionConsumerServiceURL() != null) {
+            String consumerURL = authnRequest.getAssertionConsumerServiceURL();
+            LOG.debug("Parsed SAML AuthnRequest Consumer URL: {}", consumerURL);
+            return consumerURL;
+        }
+        
+        LOG.debug("No AuthnRequest available to be parsed");
         return null;
     }
     

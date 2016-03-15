@@ -28,6 +28,11 @@ public final class IdpConstants {
      */
     public static final String TRUSTED_IDP_CONTEXT = "trusted_idp_context";
     
+    /**
+     * A key used to store a parsed SAMLRequest as an OpenSAML AuthnRequest Object
+     */
+    public static final String SAML_AUTHN_REQUEST = "saml_authn_request";
+    
     private IdpConstants() {
         // complete
     }

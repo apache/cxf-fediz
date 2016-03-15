@@ -153,9 +153,10 @@ public class IdpTest {
         Document doc = DOMUtils.createDocument();
         doc.appendChild(doc.createElement("root"));
         // Create the AuthnRequest
+        String consumerURL = "https://localhost/acsa";
         AuthnRequest authnRequest = 
             new DefaultAuthnRequestBuilder().createAuthnRequest(
-                null, "urn:org:apache:cxf:fediz:fedizhelloworld", "https://localhost/acsa"
+                null, "urn:org:apache:cxf:fediz:fedizhelloworld", consumerURL
             );
         
         Element authnRequestElement = OpenSAMLUtil.toDom(authnRequest, doc);
@@ -198,6 +199,15 @@ public class IdpTest {
 
         Assert.assertNotNull(samlResponse);
         Assert.assertTrue(foundRelayState);
+        
+        // Check the "action"
+        DomNodeList<DomElement> formResults = idpPage.getElementsByTagName("form");
+        Assert.assertFalse(formResults.isEmpty());
+        
+        DomElement formResult = formResults.get(0);
+        String action = formResult.getAttributeNS(null, "action");
+        Assert.assertTrue(action.equals(consumerURL));
+        
         /*
         // Decode response
         byte[] deflatedToken = Base64Utility.decode(samlResponse);
