@@ -119,11 +119,6 @@
                 <ref bean="srv-fedizhelloworld" />
             </util:list>
         </property>
-        <property name="trustedIdps">
-            <util:list>
-                <ref bean="trusted-idp-realmB" />
-            </util:list>
-        </property>
         <property name="claimTypesOffered">
             <util:list>
                 <ref bean="claim_role" />

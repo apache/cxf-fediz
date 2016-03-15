@@ -27,6 +27,7 @@ import java.util.UUID;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNodeList;
@@ -145,7 +146,6 @@ public class IdpTest {
     }
     
     @org.junit.Test
-    @org.junit.Ignore
     public void testSuccessfulInvokeOnIdP() throws Exception {
         OpenSAMLUtil.initSamlEngine();
         
@@ -155,7 +155,7 @@ public class IdpTest {
         // Create the AuthnRequest
         AuthnRequest authnRequest = 
             new DefaultAuthnRequestBuilder().createAuthnRequest(
-                null, "local-issuer", "https://localhost/acsa"
+                null, "urn:org:apache:cxf:fediz:fedizhelloworld", "https://localhost/acsa"
             );
         
         Element authnRequestElement = OpenSAMLUtil.toDom(authnRequest, doc);
@@ -211,6 +211,49 @@ public class IdpTest {
         webClient.close();
     }
     
+    @org.junit.Test
+    public void testBadIssuer() throws Exception {
+        OpenSAMLUtil.initSamlEngine();
+        
+        // Create SAML AuthnRequest
+        Document doc = DOMUtils.createDocument();
+        doc.appendChild(doc.createElement("root"));
+        // Create the AuthnRequest
+        AuthnRequest authnRequest = 
+            new DefaultAuthnRequestBuilder().createAuthnRequest(
+                null, "urn:org:apache:cxf:fediz:fedizhelloworld-xyz", "https://localhost/acsa"
+            );
+        
+        Element authnRequestElement = OpenSAMLUtil.toDom(authnRequest, doc);
+        String authnRequestEncoded = encodeAuthnRequest(authnRequestElement);
+
+        String urlEncodedRequest = URLEncoder.encode(authnRequestEncoded, "UTF-8");
+
+        String relayState = UUID.randomUUID().toString();
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml?";
+        url += SSOConstants.RELAY_STATE + "=" + relayState;
+        url += "&" + SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
+
+        String user = "alice";
+        String password = "ecila";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        try {
+            webClient.getPage(url);
+            Assert.fail("Failure expected on a bad issuer value");
+        } catch (FailingHttpStatusCodeException ex) {
+            Assert.assertEquals(ex.getStatusCode(), 400);
+        }
+        
+        webClient.close();
+    }
+        
     private String encodeAuthnRequest(Element authnRequest) throws IOException {
         String requestMessage = DOM2Writer.nodeToString(authnRequest);
         

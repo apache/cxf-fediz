@@ -177,16 +177,14 @@ public class STSClientAction {
     }
     
     /**
-     * @param context
-     *            the webflow request context
+     * @param realm The client/application realm
+     * @param context the webflow request context
      * @return a serialized RP security token
      * @throws Exception
      */
-    public String submit(RequestContext context)
+    public String submit(String realm, RequestContext context)
         throws Exception {
         
-        String wtrealm = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_TREALM);
-
         SecurityToken idpToken = getSecurityToken(context);
 
         Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(context, IDP_CONFIG);
@@ -196,9 +194,9 @@ public class STSClientAction {
         IdpSTSClient sts = new IdpSTSClient(cxfBus);
         sts.setAddressingNamespace(HTTP_WWW_W3_ORG_2005_08_ADDRESSING);
         
-        Application serviceConfig = idpConfig.findApplication(wtrealm);
+        Application serviceConfig = idpConfig.findApplication(realm);
         if (serviceConfig == null) {
-            LOG.warn("No service config found for " + wtrealm);
+            LOG.warn("No service config found for " + realm);
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
         
@@ -245,7 +243,7 @@ public class STSClientAction {
             sts.setWspNamespace(serviceConfig.getPolicyNamespace());
         }
         
-        LOG.debug("TokenType {} set for realm {}", sts.getTokenType(), wtrealm);
+        LOG.debug("TokenType {} set for realm {}", sts.getTokenType(), realm);
         
         sts.setKeyType(stsKeyType);
         if (HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_PUBLICKEY.equals(stsKeyType)) {
@@ -273,22 +271,22 @@ public class STSClientAction {
 
         if (serviceConfig.getRequestedClaims() != null && serviceConfig.getRequestedClaims().size() > 0) {
             addClaims(sts, serviceConfig.getRequestedClaims());
-            LOG.debug("Requested claims set for {}", wtrealm);
+            LOG.debug("Requested claims set for {}", realm);
         }
         
         sts.setEnableLifetime(true);
-        setLifetime(sts, serviceConfig, wtrealm);
+        setLifetime(sts, serviceConfig, realm);
         
         sts.setOnBehalfOf(idpToken.getToken());
         if (!(serviceConfig.getProtocol() == null
             || FederationConstants.WS_FEDERATION_NS.equals(serviceConfig.getProtocol()))) {
-            LOG.error("Protocol {} not supported for realm {} ", serviceConfig.getProtocol(), wtrealm);
+            LOG.error("Protocol {} not supported for realm {} ", serviceConfig.getProtocol(), realm);
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
         
         String rpToken = null;
         try {
-            rpToken = sts.requestSecurityTokenResponse(wtrealm);
+            rpToken = sts.requestSecurityTokenResponse(realm);
         } catch (SoapFault ex) {
             LOG.error("Error in retrieving a token", ex.getMessage());
             if (ex.getFaultCode() != null 
@@ -302,7 +300,7 @@ public class STSClientAction {
             String id = getIdFromToken(rpToken);
             
             LOG.info("[RP_TOKEN={}] successfully created for realm [{}] on behalf of [IDP_TOKEN={}]",
-                     id, wtrealm, idpToken.getId());
+                     id, realm, idpToken.getId());
         }
         return StringEscapeUtils.escapeXml11(rpToken);
     }

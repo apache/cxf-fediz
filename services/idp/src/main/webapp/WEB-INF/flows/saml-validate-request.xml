@@ -37,8 +37,8 @@
 
     <subflow-state id="signinSAMLRequest" subflow="signinSAMLRequest">
         <input name="idpConfig" value="flowScope.idpConfig" />
-        <input name="wauth" value="flowScope.wauth" />
-        <input name="whr" value="flowScope.whr" />
+        <input name="SAMLRequest" value="flowScope.SAMLRequest" />
+        <input name="RelayState" value="flowScope.RelayState" />
 
         <output name="whr" />
         <output name="idpToken" />
@@ -58,7 +58,9 @@
     <!-- produce RP security token (as String type) -->
     <action-state id="requestRpToken">
         <on-entry>
-            <evaluate expression="stsClientForRpAction.submit(flowRequestContext)"
+            <evaluate expression="authnRequestRealmParser.retrieveRealm(flowRequestContext)" 
+                      result="flowScope.realm"/>
+            <evaluate expression="stsClientForRpAction.submit(flowScope.realm, flowRequestContext)"
                       result="flowScope.rpToken"/>
         </on-entry>
         <evaluate expression="signinParametersCacheAction.storeRPConfigInSession(flowRequestContext)"/>
