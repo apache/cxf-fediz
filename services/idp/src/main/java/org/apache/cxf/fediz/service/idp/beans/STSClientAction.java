@@ -178,10 +178,10 @@ public class STSClientAction {
      * @return a serialized RP security token
      * @throws Exception
      */
-    public String submit(RequestContext context, String realm)
+    public String submit(RequestContext context, String realm, String homeRealm)
         throws Exception {
         
-        SecurityToken idpToken = getSecurityToken(context);
+        SecurityToken idpToken = getSecurityToken(context, homeRealm);
 
         Bus cxfBus = getBus();
         Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(context, "idpConfig");
@@ -320,14 +320,12 @@ public class STSClientAction {
         return "";
     }
 
-    private SecurityToken getSecurityToken(RequestContext context) throws ProcessingException {
-        String whr = (String) WebUtils.
-            getAttributeFromFlowScope(context, FederationConstants.PARAM_HOME_REALM);
+    private SecurityToken getSecurityToken(RequestContext context, String homeRealm) throws ProcessingException {
 
         SecurityToken idpToken = (SecurityToken) WebUtils.getAttributeFromFlowScope(context, "idpToken");
         if (idpToken != null) {
             LOG.debug("[IDP_TOKEN={} successfully retrieved from cache for home realm [{}]",
-                          idpToken.getId(), whr);
+                          idpToken.getId(), homeRealm);
         } else {
             LOG.error("IDP_TOKEN not found");
             throw new ProcessingException(TYPE.BAD_REQUEST);

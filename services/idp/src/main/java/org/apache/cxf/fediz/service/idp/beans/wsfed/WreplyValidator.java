@@ -21,8 +21,6 @@ package org.apache.cxf.fediz.service.idp.beans.wsfed;
 import java.util.regex.Matcher;
 
 import org.apache.commons.validator.routines.UrlValidator;
-import org.apache.cxf.fediz.core.exception.ProcessingException;
-import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.service.idp.domain.Application;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
@@ -42,7 +40,7 @@ public class WreplyValidator {
     public boolean isValid(RequestContext context, String wreply, String realm)
         throws Exception {
         if (wreply == null) {
-           return true;
+            return true;
         }
         
         Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(context, "idpConfig");

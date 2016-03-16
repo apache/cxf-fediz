@@ -137,7 +137,7 @@
     <!-- produce RP security token (as String type) -->
     <action-state id="requestRpToken">
         <on-entry>
-            <evaluate expression="stsClientForRpAction.submit(flowRequestContext, flowScope.wtrealm)"
+            <evaluate expression="stsClientForRpAction.submit(flowRequestContext, flowScope.wtrealm, flowScope.whr)"
                       result="flowScope.rpToken"/>
         </on-entry>
         <evaluate expression="signinParametersCacheAction.storeRPConfigInSession(flowRequestContext)" />
