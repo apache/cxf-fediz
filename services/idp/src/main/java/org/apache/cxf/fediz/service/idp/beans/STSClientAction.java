@@ -26,7 +26,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.List;
-import java.util.regex.Matcher;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.namespace.QName;
@@ -37,7 +36,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.binding.soap.SoapFault;
@@ -65,8 +63,6 @@ import org.springframework.webflow.execution.RequestContext;
  */
 
 public class STSClientAction {
-
-    private static final String IDP_CONFIG = "idpConfig";
 
     private static final String HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_05_IDENTITY = 
             "http://schemas.xmlsoap.org/ws/2005/05/identity";
@@ -177,19 +173,18 @@ public class STSClientAction {
     }
     
     /**
-     * @param realm The client/application realm
      * @param context the webflow request context
+     * @param realm The client/application realm
      * @return a serialized RP security token
      * @throws Exception
      */
-    public String submit(String realm, RequestContext context)
+    public String submit(RequestContext context, String realm)
         throws Exception {
         
         SecurityToken idpToken = getSecurityToken(context);
 
-        Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(context, IDP_CONFIG);
-
         Bus cxfBus = getBus();
+        Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(context, "idpConfig");
 
         IdpSTSClient sts = new IdpSTSClient(cxfBus);
         sts.setAddressingNamespace(HTTP_WWW_W3_ORG_2005_08_ADDRESSING);
@@ -199,9 +194,6 @@ public class STSClientAction {
             LOG.warn("No service config found for " + realm);
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
-        
-        // Check that the wreply parameter is valid
-        validateApplicationEndpoint(serviceConfig, context);
         
         // Parse wreq parameter - we only support parsing TokenType and KeyType for now
         String wreq = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_REQUEST);
@@ -303,38 +295,6 @@ public class STSClientAction {
                      id, realm, idpToken.getId());
         }
         return StringEscapeUtils.escapeXml11(rpToken);
-    }
-    
-    // The wreply address must match the passive endpoint requestor constraint (if it is specified)
-    // Also, it must be a valid URL + start with https
-    protected void validateApplicationEndpoint(Application serviceConfig, RequestContext context) 
-        throws ProcessingException {
-        
-        String wreply = 
-            (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_REPLY);
-        
-        if (wreply != null) {
-            // Validate it first using commons-validator
-            UrlValidator urlValidator = new UrlValidator(UrlValidator.ALLOW_LOCAL_URLS
-                                                         + UrlValidator.ALLOW_ALL_SCHEMES);
-            if (!urlValidator.isValid(wreply)) {
-                LOG.warn("The given wreply parameter {} is not a valid URL", wreply);
-                throw new ProcessingException(TYPE.BAD_REQUEST);
-            }
-
-            if (serviceConfig.getCompiledPassiveRequestorEndpointConstraint() == null) {
-                LOG.warn("No passive requestor endpoint constraint is configured for the application. "
-                    + "This could lead to a malicious redirection attack");
-                return;
-            }
-        
-            Matcher matcher = serviceConfig.getCompiledPassiveRequestorEndpointConstraint().matcher(wreply);
-            if (!matcher.matches()) {
-                LOG.error("The wreply value of {} does not match any of the passive requestor values",
-                      wreply);
-                throw new ProcessingException(TYPE.BAD_REQUEST);
-            }
-        }
     }
     
     private String getIdFromToken(String token) throws IOException, XMLStreamException {

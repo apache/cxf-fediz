@@ -65,7 +65,7 @@
         <on-entry>
             <evaluate expression="authnRequestParser.retrieveRealm(flowRequestContext)" 
                       result="flowScope.realm"/>
-            <evaluate expression="stsClientForRpAction.submit(flowScope.realm, flowRequestContext)"
+            <evaluate expression="stsClientForRpAction.submit(flowRequestContext, flowScope.realm)"
                       result="flowScope.rpToken"/>
             <evaluate expression="authnRequestParser.retrieveConsumerURL(flowRequestContext)" 
                       result="flowScope.consumerURL"/>

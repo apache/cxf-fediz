@@ -95,10 +95,16 @@
             expression="idpTokenExpiredAction.isTokenExpired(flowScope.whr, flowRequestContext) or
                         wfreshParser.authenticationRequired(flowScope.wfresh, flowScope.whr, flowRequestContext)" />
         <transition on="yes" to="redirectToTrustedIDP" />
-        <transition on="no" to="requestRpToken" >
+        <transition on="no" to="validateWReply" >
             <set name="flowScope.idpToken" value="externalContext.sessionMap[whr]" />
         </transition>
         <transition on-exception="java.lang.Throwable" to="viewBadRequest" />
+    </action-state>
+    
+    <action-state id="validateWReply">
+        <evaluate expression="wreplyValidator.isValid(flowRequestContext, flowScope.wreply, flowScope.wtrealm)"/>
+        <transition on="yes" to="requestRpToken" />
+        <transition on="no" to="viewBadRequest" />
     </action-state>
 
     <decision-state id="checkWauthTypeSupported">
@@ -126,7 +132,7 @@
             expression="idpTokenExpiredAction.isTokenExpired(flowScope.whr, flowRequestContext) or
                         wfreshParser.authenticationRequired(flowScope.wfresh, flowScope.whr, flowRequestContext)" />
         <transition on="yes" to="redirectToLocalIDP" />
-        <transition on="no" to="requestRpToken">
+        <transition on="no" to="validateWReply">
             <set name="flowScope.idpToken" value="externalContext.sessionMap[whr]" />
         </transition>
         <transition on-exception="java.lang.Throwable" to="viewBadRequest" />
@@ -143,7 +149,7 @@
     <action-state id="cacheSecurityToken">
         <secured attributes="IS_AUTHENTICATED_FULLY" />
         <evaluate expression="cacheSecurityToken.submit(flowRequestContext)" />
-        <transition to="requestRpToken">
+        <transition to="validateWReply">
             <set name="flowScope.idpToken" value="externalContext.sessionMap[whr]" />
         </transition>
     </action-state>

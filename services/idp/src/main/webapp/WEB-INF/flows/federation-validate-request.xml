@@ -133,11 +133,11 @@
         <transition on="viewBadRequest" to="viewBadRequest" />
         <transition on="scInternalServerError" to="scInternalServerError" />
     </subflow-state>
-
+    
     <!-- produce RP security token (as String type) -->
     <action-state id="requestRpToken">
         <on-entry>
-            <evaluate expression="stsClientForRpAction.submit(flowScope.wtrealm, flowRequestContext)"
+            <evaluate expression="stsClientForRpAction.submit(flowRequestContext, flowScope.wtrealm)"
                       result="flowScope.rpToken"/>
         </on-entry>
         <evaluate expression="signinParametersCacheAction.storeRPConfigInSession(flowRequestContext)" />
