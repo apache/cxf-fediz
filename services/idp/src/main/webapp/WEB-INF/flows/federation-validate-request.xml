@@ -115,6 +115,7 @@
         <input name="SAMLResponse" value="flowScope.SAMLResponse" />
         <input name="state" value="flowScope.state" />
         <input name="code" value="flowScope.code" />
+        <input name="whr" value="flowScope.whr" />
 
         <output name="wtrealm" />
         <output name="wreply" />
@@ -146,7 +147,7 @@
     </action-state>
     
     <action-state id="processTrustedIdpProtocol">
-        <evaluate expression="trustedIdpProtocolAction.mapSignInRequest(flowRequestContext)"
+        <evaluate expression="trustedIdpProtocolAction.mapSignInRequest(flowRequestContext, flowScope.whr)"
                       result="flowScope.remoteIdpUrl"/>
         <transition to="redirectToTrustedIDP" />
         <transition on-exception="java.lang.Throwable" to="scInternalServerError" />

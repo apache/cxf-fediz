@@ -121,10 +121,9 @@ public class SigninParametersCacheAction {
 
     public void storeRPConfigInSession(RequestContext context) throws ProcessingException {
 
-        String whr = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_HOME_REALM);
         String wtrealm = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_TREALM);
         Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(context, IdpConstants.IDP_CONFIG);
-        if (whr == null || wtrealm == null || idpConfig == null) {
+        if (wtrealm == null || idpConfig == null) {
             return;
         }       
         

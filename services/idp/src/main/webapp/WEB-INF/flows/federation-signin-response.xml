@@ -31,6 +31,7 @@
     <input name="SAMLResponse" />
     <input name="state" />
     <input name="code" />
+    <input name="whr" />
 
     <on-start>
         <!-- restore 'wreply','wtrealm','whr' for current 'wctx' -->
@@ -39,7 +40,7 @@
     
     <!-- validate token issued by requestor IDP ('wresult') given its 'whr' -->
     <action-state id="validateToken">
-        <evaluate expression="trustedIdpProtocolAction.mapSignInResponse(flowRequestContext)"
+        <evaluate expression="trustedIdpProtocolAction.mapSignInResponse(flowRequestContext, whr)"
             result="flowScope.idpToken" result-type="org.apache.cxf.ws.security.tokenstore.SecurityToken" />
         <transition to="checkCacheTrustedIdpToken" />
         <transition

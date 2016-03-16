@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
- * This class is responsible to clear security context and invalidate IDP session.
+ * This class is responsible to clear security context and invalidate the IDP session.
  */
 @Component
 public class LogoutAction {

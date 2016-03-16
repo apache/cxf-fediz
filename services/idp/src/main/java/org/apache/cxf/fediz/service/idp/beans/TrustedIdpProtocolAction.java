@@ -20,7 +20,6 @@ package org.apache.cxf.fediz.service.idp.beans;
 
 import java.net.URL;
 
-import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 import org.apache.cxf.fediz.service.idp.protocols.ProtocolController;
@@ -35,7 +34,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
- * This class is responsible to clear security context and invalidate IDP session.
+ * This class is responsible to map the sign in request/response when calling a trusted third party IdP
  */
 @Component
 public class TrustedIdpProtocolAction {
@@ -49,9 +48,7 @@ public class TrustedIdpProtocolAction {
     @Qualifier("trustedIdpProtocolControllerImpl")
     private ProtocolController<TrustedIdpProtocolHandler> trustedIdpProtocolHandlers;
     
-    public String mapSignInRequest(RequestContext requestContext) {
-        String trustedIdpRealm = 
-            requestContext.getFlowScope().getString(FederationConstants.PARAM_HOME_REALM);
+    public String mapSignInRequest(RequestContext requestContext, String trustedIdpRealm) {
         LOG.info("Prepare redirect to Trusted IDP '{}'", trustedIdpRealm);
         
         Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(requestContext, IDP_CONFIG);
@@ -75,9 +72,7 @@ public class TrustedIdpProtocolAction {
         return redirectUrl.toString();
     }
     
-    public SecurityToken mapSignInResponse(RequestContext requestContext) {
-        String trustedIdpRealm = 
-            requestContext.getFlowScope().getString(FederationConstants.PARAM_HOME_REALM);
+    public SecurityToken mapSignInResponse(RequestContext requestContext, String trustedIdpRealm) {
         LOG.info("Prepare validate SignInResponse of Trusted IDP '{}'", trustedIdpRealm);
         
         Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(requestContext, IDP_CONFIG);

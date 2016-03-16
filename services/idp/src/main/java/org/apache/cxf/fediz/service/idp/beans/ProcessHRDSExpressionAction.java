@@ -20,7 +20,6 @@ package org.apache.cxf.fediz.service.idp.beans;
 
 import javax.servlet.http.Cookie;
 
-import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.slf4j.Logger;
@@ -45,12 +44,12 @@ public class ProcessHRDSExpressionAction {
     @Autowired
     private HomeRealmReminder homeRealmReminder;
 
-    public String submit(RequestContext context) {
+    public String submit(RequestContext context, String homeRealm) {
         // Check if home realm is known already
-        Cookie whrCookie = homeRealmReminder.readCookie(context);
-        if (whrCookie != null) {
-            LOG.debug("WHR Cookie set: {}", whrCookie);
-            return whrCookie.getValue();
+        Cookie homeRealmCookie = homeRealmReminder.readCookie(context);
+        if (homeRealmCookie != null) {
+            LOG.debug("Home Realm Cookie set: {}", homeRealmCookie);
+            return homeRealmCookie.getValue();
         }
 
         // Check if custom HRDS is defined
@@ -66,9 +65,8 @@ public class ProcessHRDSExpressionAction {
             return result;
         }
 
-        // Return whr parameter unchanged
-        String whr = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_HOME_REALM);
-        LOG.debug("No custom homeRealm handling, using whr parameter as provided in request: {}", whr);
-        return whr;
+        // Return home realm parameter unchanged
+        LOG.debug("No custom homeRealm handling, using home realm parameter as provided in request: {}", homeRealm);
+        return homeRealm;
     }
 }

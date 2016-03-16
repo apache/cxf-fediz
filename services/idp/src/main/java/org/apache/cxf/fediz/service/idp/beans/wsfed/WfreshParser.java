@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.cxf.fediz.service.idp.beans;
+package org.apache.cxf.fediz.service.idp.beans.wsfed;
 
 import java.util.Date;
 
@@ -28,22 +28,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
- * This class is responsible to parse 'wfresh' parameter 
+ * This class is responsible to parse the 'wfresh' parameter 
  */
 @Component
 public class WfreshParser {
 
-    private static final Logger LOG = LoggerFactory
-            .getLogger(WfreshParser.class);
-    private boolean tokenExpirationValidation = true;
+    private static final Logger LOG = LoggerFactory.getLogger(WfreshParser.class);
 
     public boolean authenticationRequired(String wfresh, String whr, RequestContext context)
         throws Exception {
         
-        if (checkIsIdpTokenExpired(whr, context)) {
-            return true;
-        }
-
         if (wfresh == null || wfresh.trim().isEmpty()) {
             return false;
         }
@@ -84,33 +78,4 @@ public class WfreshParser {
         return false;
     }
     
-    private boolean checkIsIdpTokenExpired(String whr, RequestContext context) {
-        SecurityToken idpToken = 
-            (SecurityToken) WebUtils.getAttributeFromExternalContext(context, whr);
-        if (idpToken == null) {
-            return true;
-        }
-        
-        if (tokenExpirationValidation && idpToken.isExpired()) {
-            LOG.info("[IDP_TOKEN=" + idpToken.getId() + "] is expired.");
-            return true;
-        }
-
-        return false;
-    }
-
-    public boolean isTokenExpirationValidation() {
-        return tokenExpirationValidation;
-    }
-
-    /**
-     * Set whether the token validation (e.g. lifetime) shall be performed on every request (true) or only 
-     * once at initial authentication (false). The default is "true" (note that the plugins default for this
-     * configuration option is "true").
-     * @param tokenExpirationValidation Whether to perform token expiration validation per request
-     */
-    public void setTokenExpirationValidation(boolean tokenExpirationValidation) {
-        this.tokenExpirationValidation = tokenExpirationValidation;
-    }
-
 }

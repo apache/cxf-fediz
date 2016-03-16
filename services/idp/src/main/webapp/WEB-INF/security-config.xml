@@ -70,7 +70,7 @@
     </security:authentication-manager>
     
     <!-- Redirects to a dedicated http config -->
-    <bean id="federationEntryPoint" class="org.apache.cxf.fediz.service.idp.FederationEntryPoint">
+    <bean id="fedizEntryPoint" class="org.apache.cxf.fediz.service.idp.FedizEntryPoint">
         <property name="realm" value="${realm-uri}" />
         <property name="configService" ref="config" />
     </bean>
@@ -85,7 +85,7 @@
     </bean>
     
     <!-- Main entry point -->
-    <security:http pattern="/federation" use-expressions="true" entry-point-ref="federationEntryPoint">
+    <security:http pattern="/federation" use-expressions="true" entry-point-ref="fedizEntryPoint">
         <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
     </security:http>
@@ -129,7 +129,7 @@
     </security:http>
     
     <!-- Main entry point -->
-    <security:http pattern="/saml" use-expressions="true" entry-point-ref="federationEntryPoint">
+    <security:http pattern="/saml" use-expressions="true" entry-point-ref="fedizEntryPoint">
         <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
     </security:http>

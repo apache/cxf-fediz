@@ -42,7 +42,8 @@
 
     <decision-state id="processHRDSExpression">
         <on-entry>
-            <evaluate expression="processHRDSExpressionAction.submit(flowRequestContext)" result="flowScope.whr" />
+            <evaluate expression="processHRDSExpressionAction.submit(flowRequestContext, flowScope.whr)" 
+                      result="flowScope.whr" />
         </on-entry>
         <if test="flowScope.whr == null or flowScope.whr.trim().isEmpty()"
             then="provideIDPListForUser" else="checkIsThisIDP" />
@@ -91,7 +92,8 @@
 
     <action-state id="wfreshParserRemoteAction">
         <evaluate
-            expression="wfreshParser.authenticationRequired(flowScope.wfresh, flowScope.whr, flowRequestContext)" />
+            expression="idpTokenExpiredAction.isTokenExpired(flowScope.whr, flowRequestContext) or
+                        wfreshParser.authenticationRequired(flowScope.wfresh, flowScope.whr, flowRequestContext)" />
         <transition on="yes" to="redirectToTrustedIDP" />
         <transition on="no" to="requestRpToken" >
             <set name="flowScope.idpToken" value="externalContext.sessionMap[whr]" />
@@ -121,7 +123,8 @@
         from 'IDP_TOKEN' -->
     <action-state id="wfreshParserAction">
         <evaluate
-            expression="wfreshParser.authenticationRequired(flowScope.wfresh, flowScope.whr, flowRequestContext)" />
+            expression="idpTokenExpiredAction.isTokenExpired(flowScope.whr, flowRequestContext) or
+                        wfreshParser.authenticationRequired(flowScope.wfresh, flowScope.whr, flowRequestContext)" />
         <transition on="yes" to="redirectToLocalIDP" />
         <transition on="no" to="requestRpToken">
             <set name="flowScope.idpToken" value="externalContext.sessionMap[whr]" />

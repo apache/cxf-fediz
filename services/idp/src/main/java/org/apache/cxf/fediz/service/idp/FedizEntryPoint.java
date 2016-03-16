@@ -43,16 +43,15 @@ import org.springframework.util.Assert;
 
 
 /**
- * Used by the <code>ExceptionTranslationFilter</code> to commence authentication via the
- * WS-Federation protocol.
+ * Used by the <code>ExceptionTranslationFilter</code> to commence authentication
  * <p>
  * The user's browser will be redirected to the IDP.
  *
  */
-public class FederationEntryPoint implements AuthenticationEntryPoint,
+public class FedizEntryPoint implements AuthenticationEntryPoint,
     InitializingBean, ApplicationContextAware {
     
-    private static final Logger LOG = LoggerFactory.getLogger(FederationEntryPoint.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FedizEntryPoint.class);
     
     private ApplicationContext appContext;
     private ConfigService configService;
