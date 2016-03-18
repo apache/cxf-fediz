@@ -89,6 +89,34 @@ public class AuthnRequestParser {
         return null;
     }
     
+    public String retrieveRequestId(RequestContext context) {
+        AuthnRequest authnRequest = 
+            (AuthnRequest)WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
+
+        if (authnRequest != null && authnRequest.getID() != null) {
+            String id = authnRequest.getID();
+            LOG.debug("Parsed SAML AuthnRequest Id: {}", id);
+            return id;
+        }
+        
+        LOG.debug("No AuthnRequest available to be parsed");
+        return null;
+    }
+    
+    public String retrieveRequestIssuer(RequestContext context) {
+        AuthnRequest authnRequest = 
+            (AuthnRequest)WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
+
+        if (authnRequest != null && authnRequest.getIssuer() != null) {
+            String issuer = authnRequest.getIssuer().getValue();
+            LOG.debug("Parsed SAML AuthnRequest Issuer: {}", issuer);
+            return issuer;
+        }
+        
+        LOG.debug("No AuthnRequest available to be parsed");
+        return null;
+    }
+    
     private AuthnRequest extractRequest(String samlRequest) throws Exception {
         byte[] deflatedToken = Base64Utility.decode(samlRequest);
         InputStream tokenStream = new DeflateEncoderDecoder().inflateToken(deflatedToken);

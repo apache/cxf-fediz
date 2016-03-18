@@ -19,8 +19,11 @@
 
 package org.apache.cxf.fediz.systests.idp;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URLEncoder;
 import java.util.UUID;
 
@@ -41,6 +44,7 @@ import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.cxf.rs.security.saml.DeflateEncoderDecoder;
 import org.apache.cxf.rs.security.saml.sso.DefaultAuthnRequestBuilder;
 import org.apache.cxf.rs.security.saml.sso.SSOConstants;
+import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.wss4j.common.saml.OpenSAMLUtil;
@@ -49,6 +53,7 @@ import org.apache.wss4j.dom.engine.WSSConfig;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.opensaml.core.xml.XMLObject;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 
 /**
@@ -182,7 +187,7 @@ public class IdpTest {
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
-
+        
         // Parse the form to get the token (SAMLResponse)
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
 
@@ -208,8 +213,7 @@ public class IdpTest {
         String action = formResult.getAttributeNS(null, "action");
         Assert.assertTrue(action.equals(consumerURL));
         
-        /*
-        // Decode response
+        // Decode + verify response
         byte[] deflatedToken = Base64Utility.decode(samlResponse);
         InputStream inputStream = new ByteArrayInputStream(deflatedToken);
         
@@ -217,7 +221,11 @@ public class IdpTest {
         
         XMLObject responseObject = OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
         Assert.assertTrue((responseObject instanceof org.opensaml.saml.saml2.core.Response));
-*/
+        
+        org.opensaml.saml.saml2.core.Response samlResponseObject = 
+            (org.opensaml.saml.saml2.core.Response)responseObject;
+        Assert.assertTrue(authnRequest.getID().equals(samlResponseObject.getInResponseTo()));
+
         webClient.close();
     }
     

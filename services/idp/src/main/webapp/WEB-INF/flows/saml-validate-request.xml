@@ -71,9 +71,22 @@
                       result="flowScope.consumerURL"/>
         </on-entry>
         <evaluate expression="signinParametersCacheAction.storeRPConfigInSession(flowRequestContext)"/>
-        <transition to="formResponseView" />
+        <transition to="produceSAMLResponse" />
         <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
         <transition on-exception="java.lang.Throwable" to="scInternalServerError" />
+    </action-state>
+    
+    <action-state id="produceSAMLResponse">
+        <on-entry>
+            <evaluate expression="authnRequestParser.retrieveRequestId(flowRequestContext)" 
+                      result="flowScope.requestId"/>
+           <evaluate expression="authnRequestParser.retrieveRequestIssuer(flowRequestContext)" 
+                      result="flowScope.requestIssuer"/>
+        </on-entry>
+        <evaluate expression="samlResponseCreator.createSAMLResponse(flowRequestContext, flowScope.idpConfig, flowScope.rpTokenElement,
+                                                                     flowScope.consumerURL, flowScope.requestId, flowScope.requestIssuer)"
+                      result="flowScope.rpResponse"/>                                               
+        <transition to="formResponseView" />
     </action-state>
     
     <!-- normal exit point for login -->
@@ -82,7 +95,7 @@
         <on-entry>
             <evaluate expression="flowScope.consumerURL" result="requestScope.samlAction" />
             <evaluate expression="flowScope.RelayState" result="requestScope.relayState" />
-            <evaluate expression="flowScope.rpToken" result="requestScope.samlResponse" />
+            <evaluate expression="flowScope.rpResponse" result="requestScope.samlResponse" />
         </on-entry>
     </end-state>
 
