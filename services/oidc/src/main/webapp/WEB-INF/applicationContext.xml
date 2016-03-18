@@ -143,6 +143,16 @@
         </jaxrs:providers> 
     </jaxrs:server>
     
+    <bean id="accountService" class="org.apache.cxf.fediz.service.oidc.account.UserAccountService"/>
+    <jaxrs:server address="/home">
+        <jaxrs:serviceBeans>
+            <ref bean="accountService"/>
+        </jaxrs:serviceBeans>
+        <jaxrs:providers>
+            <ref bean="viewProvider"/>
+        </jaxrs:providers> 
+    </jaxrs:server>
+    
     <bean id="viewProvider" class="org.apache.cxf.jaxrs.provider.RequestDispatcherProvider">
        <property name="useClassNames" value="true"/>
        <property name="locationPrefix" value="/WEB-INF/views/"/>

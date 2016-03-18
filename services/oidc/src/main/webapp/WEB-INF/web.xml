@@ -42,6 +42,10 @@
         <filter-name>FederationFilter</filter-name>
         <url-pattern>/clients/*</url-pattern>
     </filter-mapping>
+    <filter-mapping>
+        <filter-name>FederationFilter</filter-name>
+        <url-pattern>/home/*</url-pattern>
+    </filter-mapping>
 
     <context-param>
         <param-name>contextConfigLocation</param-name>
@@ -86,6 +90,15 @@
         <web-resource-collection>
             <web-resource-name>User Protected Area</web-resource-name>
             <url-pattern>/idp/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>*</role-name>
+        </auth-constraint>
+    </security-constraint>
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>OIDC Account Protected Area</web-resource-name>
+            <url-pattern>/home/*</url-pattern>
         </web-resource-collection>
         <auth-constraint>
             <role-name>*</role-name>
