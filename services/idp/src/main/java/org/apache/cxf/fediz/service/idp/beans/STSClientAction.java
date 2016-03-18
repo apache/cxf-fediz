@@ -18,9 +18,7 @@
  */
 package org.apache.cxf.fediz.service.idp.beans;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -35,7 +33,6 @@ import javax.xml.stream.XMLStreamException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.binding.soap.SoapFault;
@@ -48,7 +45,6 @@ import org.apache.cxf.fediz.service.idp.domain.Application;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.RequestClaim;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
-import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.cxf.staxutils.W3CDOMStreamWriter;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.cxf.ws.security.trust.STSClient;
@@ -175,10 +171,10 @@ public class STSClientAction {
     /**
      * @param context the webflow request context
      * @param realm The client/application realm
-     * @return a serialized RP security token
+     * @return a RP security token
      * @throws Exception
      */
-    public String submit(RequestContext context, String realm, String homeRealm)
+    public Element submit(RequestContext context, String realm, String homeRealm)
         throws Exception {
         
         SecurityToken idpToken = getSecurityToken(context, homeRealm);
@@ -276,7 +272,7 @@ public class STSClientAction {
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
         
-        String rpToken = null;
+        Element rpToken = null;
         try {
             rpToken = sts.requestSecurityTokenResponse(realm);
         } catch (SoapFault ex) {
@@ -294,26 +290,24 @@ public class STSClientAction {
             LOG.info("[RP_TOKEN={}] successfully created for realm [{}] on behalf of [IDP_TOKEN={}]",
                      id, realm, idpToken.getId());
         }
-        return StringEscapeUtils.escapeXml11(rpToken);
+        return rpToken;
     }
     
-    private String getIdFromToken(String token) throws IOException, XMLStreamException {
-        Document doc = null;
-        try (InputStream is = new ByteArrayInputStream(token.getBytes())) {
-            doc = StaxUtils.read(is);
-        }
-        NodeList nd = doc.getElementsByTagNameNS(WSConstants.SAML2_NS, "Assertion");
-        
-        String identifier = "ID";
-        if (nd.getLength() == 0) {
-            nd = doc.getElementsByTagNameNS(WSConstants.SAML_NS, "Assertion");
-            identifier = "AssertionID";
-        }
-        
-        if (nd.getLength() > 0) {
-            Element e = (Element) nd.item(0);
-            if (e.hasAttributeNS(null, identifier)) {
-                return e.getAttributeNS(null, identifier);
+    private String getIdFromToken(Element token) throws IOException, XMLStreamException {
+        if (token != null) {
+            NodeList nd = token.getElementsByTagNameNS(WSConstants.SAML2_NS, "Assertion");
+            
+            String identifier = "ID";
+            if (nd.getLength() == 0) {
+                nd = token.getElementsByTagNameNS(WSConstants.SAML_NS, "Assertion");
+                identifier = "AssertionID";
+            }
+            
+            if (nd.getLength() > 0) {
+                Element e = (Element) nd.item(0);
+                if (e.hasAttributeNS(null, identifier)) {
+                    return e.getAttributeNS(null, identifier);
+                }
             }
         }
         

@@ -64,6 +64,8 @@
             <evaluate expression="authnRequestParser.retrieveRealm(flowRequestContext)" 
                       result="flowScope.realm"/>
             <evaluate expression="stsClientForRpAction.submit(flowRequestContext, flowScope.realm, flowScope.homerealm)"
+                      result="flowScope.rpTokenElement"/>
+            <evaluate expression="tokenSerializer.serialize(flowRequestContext, flowScope.rpTokenElement)"
                       result="flowScope.rpToken"/>
             <evaluate expression="authnRequestParser.retrieveConsumerURL(flowRequestContext)" 
                       result="flowScope.consumerURL"/>

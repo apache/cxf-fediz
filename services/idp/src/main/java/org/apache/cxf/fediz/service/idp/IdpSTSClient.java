@@ -18,33 +18,23 @@
  */
 package org.apache.cxf.fediz.service.idp;
 
-import java.io.StringWriter;
-
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
+import org.w3c.dom.Element;
 
 import org.apache.cxf.Bus;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.cxf.ws.security.trust.STSClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class IdpSTSClient extends STSClient {
-
-    private static final Logger LOG = LoggerFactory.getLogger(IdpSTSClient.class);
 
     public IdpSTSClient(Bus b) {
         super(b);
     }
 
-    public String requestSecurityTokenResponse() throws Exception {
+    public Element requestSecurityTokenResponse() throws Exception {
         return requestSecurityTokenResponse(null);
     }
 
-    public String requestSecurityTokenResponse(String appliesTo) throws Exception {
+    public Element requestSecurityTokenResponse(String appliesTo) throws Exception {
         String action = null;
         if (isSecureConv) {
             action = namespace + "/RST/SCT";
@@ -52,20 +42,11 @@ public class IdpSTSClient extends STSClient {
         return requestSecurityTokenResponse(appliesTo, action, "/Issue", null);
     }
 
-    public String requestSecurityTokenResponse(String appliesTo, String action,
+    public Element requestSecurityTokenResponse(String appliesTo, String action,
             String requestType, SecurityToken target) throws Exception {
         STSResponse response = issue(appliesTo, null, "/Issue", null);
 
-        StringWriter sw = new StringWriter();
-        try {
-            Transformer t = TransformerFactory.newInstance().newTransformer();
-            t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            t.transform(response.getResponse(), new StreamResult(sw));
-        } catch (TransformerException te) {
-            LOG.warn("nodeToString Transformer Exception");
-        }
-        return sw.toString();
-
+        return getDocumentElement(response.getResponse());
     }
 
 }

@@ -138,6 +138,8 @@
     <action-state id="requestRpToken">
         <on-entry>
             <evaluate expression="stsClientForRpAction.submit(flowRequestContext, flowScope.wtrealm, flowScope.whr)"
+                      result="flowScope.rpTokenElement"/>
+            <evaluate expression="tokenSerializer.serialize(flowRequestContext, flowScope.rpTokenElement)"
                       result="flowScope.rpToken"/>
         </on-entry>
         <evaluate expression="signinParametersCacheAction.storeRPConfigInSession(flowRequestContext)" />
