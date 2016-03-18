@@ -220,7 +220,7 @@ public class IdpTest {
         Document responseDoc = StaxUtils.read(new InputStreamReader(inputStream, "UTF-8"));
         
         XMLObject responseObject = OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
-        Assert.assertTrue((responseObject instanceof org.opensaml.saml.saml2.core.Response));
+        Assert.assertTrue(responseObject instanceof org.opensaml.saml.saml2.core.Response);
         
         org.opensaml.saml.saml2.core.Response samlResponseObject = 
             (org.opensaml.saml.saml2.core.Response)responseObject;
