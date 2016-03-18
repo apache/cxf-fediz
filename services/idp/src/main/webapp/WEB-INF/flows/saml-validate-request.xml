@@ -45,19 +45,17 @@
         <input name="SAMLRequest" value="flowScope.SAMLRequest" />
         <input name="RelayState" value="flowScope.RelayState" />
 
-        <output name="whr" />
+        <output name="homerealm" />
         <output name="idpToken" />
         <output name="trusted_idp_context" />
 
         <transition on="requestRpToken" to="requestRpToken">
-            <set name="flowScope.whr" value="currentEvent.attributes.whr" />
+            <set name="flowScope.homerealm" value="currentEvent.attributes.homerealm" />
             <set name="flowScope.idpToken" value="currentEvent.attributes.idpToken" />
         </transition>
         <transition on="viewBadRequest" to="viewBadRequest" />
         <transition on="scInternalServerError" to="scInternalServerError" />
-        <transition on="redirectToLocalIDP" to="redirectToLocalIDP">
-            <set name="flowScope.wctx" value="currentEvent.attributes.wctx" />
-        </transition>
+        <transition on="redirectToLocalIDP" to="redirectToLocalIDP" />
     </subflow-state>
     
     <!-- produce RP security token (as String type) -->
@@ -65,7 +63,7 @@
         <on-entry>
             <evaluate expression="authnRequestParser.retrieveRealm(flowRequestContext)" 
                       result="flowScope.realm"/>
-            <evaluate expression="stsClientForRpAction.submit(flowRequestContext, flowScope.realm, flowScope.whr)"
+            <evaluate expression="stsClientForRpAction.submit(flowRequestContext, flowScope.realm, flowScope.homerealm)"
                       result="flowScope.rpToken"/>
             <evaluate expression="authnRequestParser.retrieveConsumerURL(flowRequestContext)" 
                       result="flowScope.consumerURL"/>
