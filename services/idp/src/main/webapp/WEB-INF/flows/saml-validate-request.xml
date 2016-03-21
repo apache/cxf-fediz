@@ -65,10 +65,6 @@
                       result="flowScope.realm"/>
             <evaluate expression="stsClientForRpAction.submit(flowRequestContext, flowScope.realm, flowScope.homerealm)"
                       result="flowScope.rpTokenElement"/>
-            <evaluate expression="tokenSerializer.serialize(flowRequestContext, flowScope.rpTokenElement)"
-                      result="flowScope.rpToken"/>
-            <evaluate expression="authnRequestParser.retrieveConsumerURL(flowRequestContext)" 
-                      result="flowScope.consumerURL"/>
         </on-entry>
         <evaluate expression="signinParametersCacheAction.storeRPConfigInSession(flowRequestContext)"/>
         <transition to="produceSAMLResponse" />
@@ -80,12 +76,14 @@
         <on-entry>
             <evaluate expression="authnRequestParser.retrieveRequestId(flowRequestContext)" 
                       result="flowScope.requestId"/>
-           <evaluate expression="authnRequestParser.retrieveRequestIssuer(flowRequestContext)" 
+            <evaluate expression="authnRequestParser.retrieveRequestIssuer(flowRequestContext)" 
                       result="flowScope.requestIssuer"/>
+            <evaluate expression="authnRequestParser.retrieveConsumerURL(flowRequestContext)" 
+                      result="flowScope.consumerURL"/>
         </on-entry>
         <evaluate expression="samlResponseCreator.createSAMLResponse(flowRequestContext, flowScope.idpConfig, flowScope.rpTokenElement,
                                                                      flowScope.consumerURL, flowScope.requestId, flowScope.requestIssuer)"
-                      result="flowScope.rpResponse"/>                                               
+                  result="flowScope.rpResponse"/>                                               
         <transition to="formResponseView" />
     </action-state>
     

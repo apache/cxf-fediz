@@ -22,9 +22,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -49,10 +46,9 @@ import org.apache.wss4j.common.saml.bean.SubjectConfirmationDataBean;
 import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.wss4j.dom.WSConstants;
 import org.joda.time.DateTime;
-import org.opensaml.saml.saml2.core.AttributeStatement;
+import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.saml.saml2.core.Response;
 import org.opensaml.saml.saml2.core.Status;
-import org.opensaml.saml.saml2.core.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -78,11 +74,15 @@ public class SamlResponseCreator {
         
         try {
             SamlAssertionWrapper wrapper = new SamlAssertionWrapper(samlTokens.get(0));
-            Subject subject = wrapper.getSaml2().getSubject();
-            List<AttributeStatement> attributeStatements = wrapper.getSaml2().getAttributeStatements();
+            if (wrapper.getSaml2() == null) {
+                throw new ProcessingException(TYPE.BAD_REQUEST);
+            }
             
-            Element response = createResponse(context, idp, requestId, consumerURL, requestIssuer,
-                                              subject, attributeStatements);
+            String remoteAddr = WebUtils.getHttpServletRequest(context).getRemoteAddr();
+            Assertion saml2Assertion = 
+                createSAML2Assertion(idp, wrapper, requestId, requestIssuer, remoteAddr, consumerURL);
+            
+            Element response = createResponse(idp, requestId, saml2Assertion);
             return encodeResponse(response);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -91,32 +91,17 @@ public class SamlResponseCreator {
         }
     }
     
-    protected Element createResponse(RequestContext context, Idp idp, String requestID, 
-                                     String racs, String requestIssuer,
-                                     Subject subject,
-                                     List<AttributeStatement> attributeStatements) throws Exception {
-        DocumentBuilderFactory docBuilderFactory;
-        docBuilderFactory = DocumentBuilderFactory.newInstance();
-        docBuilderFactory.setNamespaceAware(true);
-        
-        DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-        Document doc = docBuilder.newDocument();
-        
-        Status status = 
-            SAML2PResponseComponentBuilder.createStatus(
-                "urn:oasis:names:tc:SAML:2.0:status:Success", null
-            );
-        Response response = 
-            SAML2PResponseComponentBuilder.createSAMLResponse(requestID, idp.getRealm(), status);
-        
+    private Assertion createSAML2Assertion(Idp idp, SamlAssertionWrapper receivedToken,
+                                           String requestID, String requestIssuer, 
+                                           String remoteAddr, String racs) throws Exception {
         // Create an AuthenticationAssertion
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setIssuer(idp.getRealm());
-        callbackHandler.setSubject(subject);
+        callbackHandler.setSubject(receivedToken.getSaml2().getSubject());
         
         // Subject Confirmation Data
         SubjectConfirmationDataBean subjectConfirmationData = new SubjectConfirmationDataBean();
-        subjectConfirmationData.setAddress(WebUtils.getHttpServletRequest(context).getRemoteAddr());
+        subjectConfirmationData.setAddress(remoteAddr);
         subjectConfirmationData.setInResponseTo(requestID);
         subjectConfirmationData.setNotAfter(new DateTime().plusMinutes(5));
         subjectConfirmationData.setRecipient(racs);
@@ -131,6 +116,9 @@ public class SamlResponseCreator {
         conditions.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(conditions);
         
+        // Attributes
+        callbackHandler.setAttributeStatements(receivedToken.getSaml2().getAttributeStatements());
+        
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
@@ -139,7 +127,20 @@ public class SamlResponseCreator {
         assertion.signAssertion(issuerCrypto.getDefaultX509Identifier(), idp.getCertificatePassword(), 
                                 issuerCrypto, false);
         
-        response.getAssertions().add(assertion.getSaml2());
+        return assertion.getSaml2();
+    }
+    
+    protected Element createResponse(Idp idp, String requestID, Assertion assertion) throws Exception {
+        Document doc = DOMUtils.newDocument();
+        
+        Status status = 
+            SAML2PResponseComponentBuilder.createStatus(
+                "urn:oasis:names:tc:SAML:2.0:status:Success", null
+            );
+        Response response = 
+            SAML2PResponseComponentBuilder.createSAMLResponse(requestID, idp.getRealm(), status);
+        
+        response.getAssertions().add(assertion);
         
         Element policyElement = OpenSAMLUtil.toDom(response, doc);
         doc.appendChild(policyElement);

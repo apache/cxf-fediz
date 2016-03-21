@@ -40,6 +40,7 @@ import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.cxf.common.util.Base64Utility;
+import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.cxf.rs.security.saml.DeflateEncoderDecoder;
 import org.apache.cxf.rs.security.saml.sso.DefaultAuthnRequestBuilder;
@@ -225,6 +226,15 @@ public class IdpTest {
         org.opensaml.saml.saml2.core.Response samlResponseObject = 
             (org.opensaml.saml.saml2.core.Response)responseObject;
         Assert.assertTrue(authnRequest.getID().equals(samlResponseObject.getInResponseTo()));
+        
+        // Check claims
+        String parsedResponse = DOM2Writer.nodeToString(responseDoc);
+        String claim = ClaimTypes.FIRSTNAME.toString();
+        Assert.assertTrue(parsedResponse.contains(claim));
+        claim = ClaimTypes.LASTNAME.toString();
+        Assert.assertTrue(parsedResponse.contains(claim));
+        claim = ClaimTypes.EMAILADDRESS.toString();
+        Assert.assertTrue(parsedResponse.contains(claim));
 
         webClient.close();
     }
@@ -271,7 +281,7 @@ public class IdpTest {
         
         webClient.close();
     }
-        
+    
     private String encodeAuthnRequest(Element authnRequest) throws IOException {
         String requestMessage = DOM2Writer.nodeToString(authnRequest);
         

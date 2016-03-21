@@ -37,12 +37,15 @@ import org.apache.wss4j.common.saml.bean.SubjectBean;
 import org.apache.wss4j.common.saml.bean.SubjectConfirmationDataBean;
 import org.apache.wss4j.common.saml.bean.Version;
 import org.apache.wss4j.common.saml.builder.SAML2Constants;
+import org.opensaml.core.xml.XMLObject;
+import org.opensaml.saml.saml2.core.Attribute;
+import org.opensaml.saml.saml2.core.AttributeStatement;
 import org.opensaml.saml.saml2.core.Subject;
 
 /**
  * A Callback Handler implementation for a SAML 2 assertion. By default it creates a SAML 2.0 Assertion with
- * an AuthenticationStatement. If a list of roles are also supplied, it will insert them as part of an 
- * AttributeStatement.
+ * an AuthenticationStatement. If a list of AttributeStatements are also supplied it will insert them into the
+ * Assertion.
  */
 public class SAML2CallbackHandler implements CallbackHandler {
     
@@ -51,22 +54,35 @@ public class SAML2CallbackHandler implements CallbackHandler {
     private String issuer;
     private ConditionsBean conditions;
     private SubjectConfirmationDataBean subjectConfirmationData;
-    private List<Object> roles = new ArrayList<>();
+    private List<AttributeStatement> attributeStatements;
     
     private void createAndSetStatement(SAMLCallback callback) {
         AuthenticationStatementBean authBean = new AuthenticationStatementBean();
         authBean.setAuthenticationMethod("Password");
         callback.setAuthenticationStatementData(Collections.singletonList(authBean));
 
-        if (!roles.isEmpty()) {
-            AttributeStatementBean attrBean = new AttributeStatementBean();
-            AttributeBean attributeBean = new AttributeBean();
-            attributeBean.setQualifiedName("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role");
-            attributeBean.setNameFormat(SAML2Constants.ATTRNAME_FORMAT_UNSPECIFIED);
-            attributeBean.setAttributeValues(roles);
+        if (attributeStatements != null && !attributeStatements.isEmpty()) {
+            List<AttributeStatementBean> attrStatementBeans = new ArrayList<>();
+            
+            for (AttributeStatement attrStatement : attributeStatements) {
+                AttributeStatementBean attrStatementBean = new AttributeStatementBean();
+                List<AttributeBean> attrBeans = new ArrayList<>();
                 
-            attrBean.setSamlAttributes(Collections.singletonList(attributeBean));
-            callback.setAttributeStatementData(Collections.singletonList(attrBean));
+                for (Attribute attribute : attrStatement.getAttributes()) {
+                    AttributeBean attributeBean = new AttributeBean();
+                    attributeBean.setQualifiedName(attribute.getName());
+                    attributeBean.setNameFormat(attribute.getNameFormat());
+                    List<Object> attributeValues = new ArrayList<>();
+                    for (XMLObject attrVal : attribute.getAttributeValues()) {
+                        attributeValues.add(attrVal.getDOM().getTextContent());
+                    }
+                    attributeBean.setAttributeValues(attributeValues);
+                    attrBeans.add(attributeBean);
+                }
+                attrStatementBean.setSamlAttributes(attrBeans);
+                attrStatementBeans.add(attrStatementBean);
+            }
+            callback.setAttributeStatementData(attrStatementBeans);
         }
     }
     
@@ -118,6 +134,14 @@ public class SAML2CallbackHandler implements CallbackHandler {
 
     public void setSubject(Subject subject) {
         this.subject = subject;
+    }
+
+    public List<AttributeStatement> getAttributeStatements() {
+        return attributeStatements;
+    }
+
+    public void setAttributeStatements(List<AttributeStatement> attributeStatements) {
+        this.attributeStatements = attributeStatements;
     }
     
     
