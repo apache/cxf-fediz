@@ -187,7 +187,7 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
             org.opensaml.saml.saml2.core.Response samlResponse = 
                 readSAMLResponse(encodedSAMLResponse, trustedIdp);
             
-            Crypto crypto = getCrypto(trustedIdp.getCertificate());
+            Crypto crypto = CertsUtils.getCryptoFromCertificate(trustedIdp.getCertificate());
             validateSamlResponseProtocol(samlResponse, crypto, trustedIdp);
             // Validate the Response
             SSOValidatorResponse validatorResponse = 
@@ -241,14 +241,14 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
         Idp config,
         UriBuilder ub
     ) throws Exception {
-        Crypto crypto = getCrypto(config.getCertificate());
+        Crypto crypto = CertsUtils.getCryptoFromCertificate(config.getCertificate());
         if (crypto == null) {
             LOG.error("No crypto instance of properties file configured for signature");
             throw new IllegalStateException("Invalid IdP configuration");
         }
         
         String alias = crypto.getDefaultX509Identifier();
-        X509Certificate cert = CertsUtils.getX509Certificate(crypto, alias);
+        X509Certificate cert = CertsUtils.getX509CertificateFromCrypto(crypto, alias);
         if (cert == null) {
             LOG.error("No cert was found to sign the request using alias: " + alias);
             throw new IllegalStateException("Invalid IdP configuration");

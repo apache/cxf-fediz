@@ -60,7 +60,7 @@ public final class SignatureUtils {
         if (keyAlias == null || "".equals(keyAlias)) {
             keyAlias = crypto.getDefaultX509Identifier();
         }
-        X509Certificate cert = CertsUtils.getX509Certificate(crypto, keyAlias);
+        X509Certificate cert = CertsUtils.getX509CertificateFromCrypto(crypto, keyAlias);
 //    }
     
 /*    public static ByteArrayOutputStream signMetaInfo(FederationContext config, InputStream metaInfo,

@@ -295,7 +295,7 @@ public class MetadataWriter {
                 keyAlias = config.getSigningKey().getCrypto().getDefaultX509Identifier();
             }
             X509Certificate cert = 
-                CertsUtils.getX509Certificate(config.getSigningKey().getCrypto(), keyAlias);
+                CertsUtils.getX509CertificateFromCrypto(config.getSigningKey().getCrypto(), keyAlias);
             if (cert == null) {
                 throw new ProcessingException(
                     "No signing certs were found to insert into the metadata using name: " 

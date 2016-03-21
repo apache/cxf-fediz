@@ -42,6 +42,7 @@ import org.w3c.dom.Element;
 
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
+import org.apache.cxf.fediz.core.util.CertsUtils;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.cxf.fediz.service.idp.IdpConstants;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
@@ -364,7 +365,7 @@ public class TrustedIdpOIDCProtocolHandler extends AbstractTrustedIdpProtocolHan
             return jwtConsumer.verifySignatureWith(verifyingKey, SignatureAlgorithm.getAlgorithm(sigAlgo));
         }
         
-        X509Certificate validatingCert = getCertificate(trustedIdp.getCertificate());
+        X509Certificate validatingCert = CertsUtils.parseX509Certificate(trustedIdp.getCertificate());
         if (validatingCert != null) {
             return jwtConsumer.verifySignatureWith(validatingCert, SignatureAlgorithm.getAlgorithm(sigAlgo));
         }
@@ -421,7 +422,7 @@ public class TrustedIdpOIDCProtocolHandler extends AbstractTrustedIdpProtocolHan
         
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         
-        Crypto crypto = getCrypto(idp.getCertificate());
+        Crypto crypto = CertsUtils.getCryptoFromCertificate(idp.getCertificate());
         assertion.signAssertion(crypto.getDefaultX509Identifier(), idp.getCertificatePassword(), 
                                 crypto, false);
         

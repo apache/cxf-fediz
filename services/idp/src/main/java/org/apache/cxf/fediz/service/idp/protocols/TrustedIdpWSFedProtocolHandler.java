@@ -214,7 +214,7 @@ public class TrustedIdpWSFedProtocolHandler extends AbstractTrustedIdpProtocolHa
             
             X509Certificate cert;
             try {
-                cert = CertsUtils.parseCertificate(trustedIdpConfig.getCertificate());
+                cert = CertsUtils.parseX509Certificate(trustedIdpConfig.getCertificate());
             } catch (Exception ex) {
                 LOG.error("Failed to parse trusted certificate", ex);
                 throw new ProcessingException("Failed to parse trusted certificate");

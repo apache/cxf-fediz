@@ -50,7 +50,7 @@ public class IdpMetadataWriter {
     public Document getMetaData(Idp config) throws RuntimeException {
         try {
             //Return as text/xml
-            Crypto crypto = CertsUtils.createCrypto(config.getCertificate());
+            Crypto crypto = CertsUtils.getCryptoFromFile(config.getCertificate());
 
             W3CDOMStreamWriter writer = new W3CDOMStreamWriter();
 
@@ -123,7 +123,7 @@ public class IdpMetadataWriter {
 
         try {
             String keyAlias = crypto.getDefaultX509Identifier();
-            X509Certificate cert = CertsUtils.getX509Certificate(crypto, keyAlias);
+            X509Certificate cert = CertsUtils.getX509CertificateFromCrypto(crypto, keyAlias);
             writer.writeCharacters(Base64.encode(cert.getEncoded()));
         } catch (Exception ex) {
             LOG.error("Failed to add certificate information to metadata. Metadata incomplete", ex);

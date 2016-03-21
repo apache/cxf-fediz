@@ -53,7 +53,7 @@ public class ServiceMetadataWriter {
     public Document getMetaData(Idp config, TrustedIdp serviceConfig) throws ProcessingException {
 
         try {
-            Crypto crypto = CertsUtils.createCrypto(config.getCertificate());
+            Crypto crypto = CertsUtils.getCryptoFromFile(config.getCertificate());
             
             W3CDOMStreamWriter writer = new W3CDOMStreamWriter();
 
@@ -180,7 +180,7 @@ public class ServiceMetadataWriter {
             // Write the Base-64 encoded certificate
             
             String keyAlias = crypto.getDefaultX509Identifier();
-            X509Certificate cert = CertsUtils.getX509Certificate(crypto, keyAlias);
+            X509Certificate cert = CertsUtils.getX509CertificateFromCrypto(crypto, keyAlias);
             
             if (cert == null) {
                 throw new ProcessingException(

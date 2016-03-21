@@ -19,8 +19,6 @@
 package org.apache.cxf.fediz.service.idp.beans.samlsso;
 
 import java.io.IOException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.List;
 
@@ -40,7 +38,6 @@ import org.apache.cxf.fediz.service.idp.samlsso.SAML2PResponseComponentBuilder;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.rs.security.saml.DeflateEncoderDecoder;
-import org.apache.wss4j.common.crypto.CertificateStore;
 import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.saml.OpenSAMLUtil;
 import org.apache.wss4j.common.saml.SAMLCallback;
@@ -138,7 +135,7 @@ public class SamlResponseCreator {
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         
-        Crypto issuerCrypto = getCrypto(idp.getCertificate());
+        Crypto issuerCrypto = CertsUtils.getCryptoFromCertificate(idp.getCertificate());
         assertion.signAssertion(issuerCrypto.getDefaultX509Identifier(), idp.getCertificatePassword(), 
                                 issuerCrypto, false);
         
@@ -164,36 +161,6 @@ public class SamlResponseCreator {
         return Base64Utility.encode(responseMessage.getBytes());
     }
     
-    private Crypto getCrypto(String certificate) throws ProcessingException {
-        if (certificate == null) {
-            return null;
-        }
-        
-        boolean isCertificateLocation = !certificate.startsWith("-----BEGIN CERTIFICATE");
-        if (isCertificateLocation) {
-            try {
-                X509Certificate cert = CertsUtils.getX509Certificate(certificate);
-                if (cert == null) {
-                    return null;
-                }
-                return new CertificateStore(new X509Certificate[]{cert});
-            } catch (CertificateException ex) {
-                // Maybe it's a WSS4J properties file...
-                return CertsUtils.createCrypto(certificate);
-            }
-        } 
-        
-        // Here the certificate is encoded in the configuration file
-        X509Certificate cert;
-        try {
-            cert = CertsUtils.parseCertificate(certificate);
-        } catch (Exception ex) {
-            LOG.error("Failed to parse trusted certificate", ex);
-            throw new ProcessingException("Failed to parse trusted certificate");
-        }
-        return new CertificateStore(Collections.singletonList(cert).toArray(new X509Certificate[0]));
-    }
-
     public boolean isSupportDeflateEncoding() {
         return supportDeflateEncoding;
     }
