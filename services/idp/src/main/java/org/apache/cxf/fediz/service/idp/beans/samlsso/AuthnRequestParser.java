@@ -24,7 +24,11 @@ import java.io.InputStreamReader;
 import org.w3c.dom.Document;
 
 import org.apache.cxf.common.util.Base64Utility;
+import org.apache.cxf.fediz.core.exception.ProcessingException;
+import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.service.idp.IdpConstants;
+import org.apache.cxf.fediz.service.idp.domain.Idp;
+import org.apache.cxf.fediz.service.idp.samlsso.AuthnRequestValidator;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.rs.security.saml.DeflateEncoderDecoder;
 import org.apache.cxf.rs.security.saml.sso.SSOConstants;
@@ -45,19 +49,30 @@ public class AuthnRequestParser {
 
     private static final Logger LOG = LoggerFactory.getLogger(AuthnRequestParser.class);
 
-    public void parseSAMLRequest(RequestContext context) {
+    public void parseSAMLRequest(RequestContext context, Idp idp) throws ProcessingException {
         String samlRequest = context.getFlowScope().getString(SSOConstants.SAML_REQUEST);
         LOG.debug("Received SAML Request: {}", samlRequest);
 
+        AuthnRequest parsedRequest = null;
         if (samlRequest == null) {
             WebUtils.removeAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
         } else {
             try {
-                AuthnRequest parsedRequest = extractRequest(samlRequest);
+                parsedRequest = extractRequest(samlRequest);
                 WebUtils.putAttributeInFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST, parsedRequest);
                 LOG.debug("SAML Request with id '{}' successfully parsed", parsedRequest.getID());
             } catch (Exception ex) {
                 LOG.warn("Error parsing request: {}", ex.getMessage());
+            }
+        }
+        
+        if (parsedRequest != null) {
+            try {
+                AuthnRequestValidator validator = new AuthnRequestValidator();
+                validator.validateAuthnRequest(context, parsedRequest, idp);
+            } catch (Exception ex) {
+                LOG.warn("Error validating request {}", ex.getMessage(), ex);
+                throw new ProcessingException(TYPE.BAD_REQUEST);
             }
         }
     }

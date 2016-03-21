@@ -32,12 +32,13 @@
         <if test="requestParameters.RelayState == null or requestParameters.RelayState.length() == 0"
             then="viewBadRequest" />
         <if test="requestParameters.SAMLRequest != null and !requestParameters.SAMLRequest.isEmpty()"
-            then="parseSAMLRequest" else="viewBadRequest" />
+            then="parseAndValidateSAMLRequest" else="viewBadRequest" />
     </decision-state>
     
-    <action-state id="parseSAMLRequest">
-        <evaluate expression="authnRequestParser.parseSAMLRequest(flowRequestContext)" />
+    <action-state id="parseAndValidateSAMLRequest">
+        <evaluate expression="authnRequestParser.parseSAMLRequest(flowRequestContext, flowScope.idpConfig)" />
         <transition to="signinSAMLRequest"/>
+        <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
     </action-state>
 
     <subflow-state id="signinSAMLRequest" subflow="signinSAMLRequest">

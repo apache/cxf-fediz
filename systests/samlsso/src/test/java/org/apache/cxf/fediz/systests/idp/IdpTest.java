@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URLEncoder;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
 import java.util.UUID;
 
 import org.w3c.dom.Document;
@@ -48,6 +50,9 @@ import org.apache.cxf.rs.security.saml.sso.SSOConstants;
 import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.wss4j.common.crypto.Crypto;
+import org.apache.wss4j.common.crypto.CryptoFactory;
+import org.apache.wss4j.common.crypto.CryptoType;
 import org.apache.wss4j.common.saml.OpenSAMLUtil;
 import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.wss4j.dom.engine.WSSConfig;
@@ -55,7 +60,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.opensaml.core.xml.XMLObject;
+import org.opensaml.saml.common.SignableSAMLObject;
 import org.opensaml.saml.saml2.core.AuthnRequest;
+import org.opensaml.security.x509.BasicX509Credential;
+import org.opensaml.xmlsec.keyinfo.impl.X509KeyInfoGeneratorFactory;
+import org.opensaml.xmlsec.signature.KeyInfo;
+import org.opensaml.xmlsec.signature.Signature;
+import org.opensaml.xmlsec.signature.support.SignatureConstants;
 
 /**
  * Some tests invoking directly on the IdP for SAML SSO
@@ -164,6 +175,8 @@ public class IdpTest {
             new DefaultAuthnRequestBuilder().createAuthnRequest(
                 null, "urn:org:apache:cxf:fediz:fedizhelloworld", consumerURL
             );
+        authnRequest.setDestination("https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml");
+        signAuthnRequest(authnRequest);
         
         Element authnRequestElement = OpenSAMLUtil.toDom(authnRequest, doc);
         String authnRequestEncoded = encodeAuthnRequest(authnRequestElement);
@@ -251,6 +264,8 @@ public class IdpTest {
             new DefaultAuthnRequestBuilder().createAuthnRequest(
                 null, "urn:org:apache:cxf:fediz:fedizhelloworld-xyz", "https://localhost/acsa"
             );
+        authnRequest.setDestination("https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml");
+        signAuthnRequest(authnRequest);
         
         Element authnRequestElement = OpenSAMLUtil.toDom(authnRequest, doc);
         String authnRequestEncoded = encodeAuthnRequest(authnRequestElement);
@@ -282,6 +297,94 @@ public class IdpTest {
         webClient.close();
     }
     
+    @org.junit.Test
+    public void testMissingDestination() throws Exception {
+        OpenSAMLUtil.initSamlEngine();
+        
+        // Create SAML AuthnRequest
+        Document doc = DOMUtils.createDocument();
+        doc.appendChild(doc.createElement("root"));
+        // Create the AuthnRequest
+        AuthnRequest authnRequest = 
+            new DefaultAuthnRequestBuilder().createAuthnRequest(
+                null, "urn:org:apache:cxf:fediz:fedizhelloworld", "https://localhost/acsa"
+            );
+        signAuthnRequest(authnRequest);
+        
+        Element authnRequestElement = OpenSAMLUtil.toDom(authnRequest, doc);
+        String authnRequestEncoded = encodeAuthnRequest(authnRequestElement);
+
+        String urlEncodedRequest = URLEncoder.encode(authnRequestEncoded, "UTF-8");
+
+        String relayState = UUID.randomUUID().toString();
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml?";
+        url += SSOConstants.RELAY_STATE + "=" + relayState;
+        url += "&" + SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
+
+        String user = "alice";
+        String password = "ecila";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        try {
+            webClient.getPage(url);
+            Assert.fail("Failure expected on no destination value");
+        } catch (FailingHttpStatusCodeException ex) {
+            Assert.assertEquals(ex.getStatusCode(), 400);
+        }
+        
+        webClient.close();
+    }
+    
+    @org.junit.Test
+    public void testUnsignedRequest() throws Exception {
+        OpenSAMLUtil.initSamlEngine();
+        
+        // Create SAML AuthnRequest
+        Document doc = DOMUtils.createDocument();
+        doc.appendChild(doc.createElement("root"));
+        // Create the AuthnRequest
+        AuthnRequest authnRequest = 
+            new DefaultAuthnRequestBuilder().createAuthnRequest(
+                null, "urn:org:apache:cxf:fediz:fedizhelloworld", "https://localhost/acsa"
+            );
+        authnRequest.setDestination("https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml");
+        
+        Element authnRequestElement = OpenSAMLUtil.toDom(authnRequest, doc);
+        String authnRequestEncoded = encodeAuthnRequest(authnRequestElement);
+
+        String urlEncodedRequest = URLEncoder.encode(authnRequestEncoded, "UTF-8");
+
+        String relayState = UUID.randomUUID().toString();
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml?";
+        url += SSOConstants.RELAY_STATE + "=" + relayState;
+        url += "&" + SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
+
+        String user = "alice";
+        String password = "ecila";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        try {
+            webClient.getPage(url);
+            Assert.fail("Failure expected on an unsigned request");
+        } catch (FailingHttpStatusCodeException ex) {
+            Assert.assertEquals(ex.getStatusCode(), 400);
+        }
+        
+        webClient.close();
+    }
+    
     private String encodeAuthnRequest(Element authnRequest) throws IOException {
         String requestMessage = DOM2Writer.nodeToString(authnRequest);
         
@@ -289,5 +392,44 @@ public class IdpTest {
         byte[] deflatedBytes = encoder.deflateToken(requestMessage.getBytes("UTF-8"));
 
         return Base64Utility.encode(deflatedBytes);
+    }
+    
+    private void signAuthnRequest(AuthnRequest authnRequest) throws Exception {
+        Crypto crypto = CryptoFactory.getInstance("stsKeystoreA.properties");
+        
+        CryptoType cryptoType = new CryptoType(CryptoType.TYPE.ALIAS);
+        cryptoType.setAlias("realma");
+        X509Certificate[] issuerCerts = crypto.getX509Certificates(cryptoType);
+
+        String sigAlgo = SSOConstants.RSA_SHA1;
+        
+        // Get the private key
+        PrivateKey privateKey = crypto.getPrivateKey("realma", "realma");
+        
+        // Create the signature
+        Signature signature = OpenSAMLUtil.buildSignature();
+        signature.setCanonicalizationAlgorithm(SignatureConstants.ALGO_ID_C14N_EXCL_OMIT_COMMENTS);
+        signature.setSignatureAlgorithm(sigAlgo);
+        
+        BasicX509Credential signingCredential = new BasicX509Credential(issuerCerts[0], privateKey);
+
+        signature.setSigningCredential(signingCredential);
+
+        X509KeyInfoGeneratorFactory kiFactory = new X509KeyInfoGeneratorFactory();
+        kiFactory.setEmitEntityCertificate(true);
+        
+        try {
+            KeyInfo keyInfo = kiFactory.newInstance().generate(signingCredential);
+            signature.setKeyInfo(keyInfo);
+        } catch (org.opensaml.security.SecurityException ex) {
+            throw new Exception(
+                    "Error generating KeyInfo from signing credential", ex);
+        }
+        
+        SignableSAMLObject signableObject = (SignableSAMLObject) authnRequest;
+        signableObject.setSignature(signature);
+        signableObject.releaseDOM();
+        signableObject.releaseChildrenDOM(true);
+        
     }
 }
