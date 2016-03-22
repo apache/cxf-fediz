@@ -1635,7 +1635,7 @@ public class FederationResponseTest {
         
         builder.setKeyIdentifierType(WSConstants.ISSUER_SERIAL);
         builder.setSymmetricEncAlgorithm(WSConstants.AES_128);
-        builder.setKeyEncAlgo(WSConstants.KEYTRANSPORT_RSAOEP);
+        builder.setKeyEncAlgo(WSConstants.KEYTRANSPORT_RSAOAEP);
         builder.setEmbedEncryptedKey(true);
         
         WSEncryptionPart encryptionPart = new WSEncryptionPart(assertion.getId(), "Element");

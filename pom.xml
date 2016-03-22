@@ -68,7 +68,7 @@
         <spring.security.version>3.2.9.RELEASE</spring.security.version>
         <tomcat7.version>7.0.68</tomcat7.version>
         <tomcat8.version>8.0.32</tomcat8.version>
-        <wss4j.version>2.1.4</wss4j.version>
+        <wss4j.version>2.1.5</wss4j.version>
         <xalan.version>2.7.2</xalan.version>
 
         <tomcat.url>http://localhost:8080/manager/text</tomcat.url>
