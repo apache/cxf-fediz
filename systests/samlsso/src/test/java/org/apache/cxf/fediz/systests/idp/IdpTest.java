@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.UUID;
@@ -56,6 +57,7 @@ import org.apache.wss4j.common.crypto.CryptoType;
 import org.apache.wss4j.common.saml.OpenSAMLUtil;
 import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.wss4j.dom.engine.WSSConfig;
+import org.apache.xml.security.utils.Base64;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -382,6 +384,121 @@ public class IdpTest {
             Assert.assertEquals(ex.getStatusCode(), 400);
         }
         
+        webClient.close();
+    }
+    
+    @org.junit.Test
+    @org.junit.Ignore
+    public void testSeparateSignature() throws Exception {
+        OpenSAMLUtil.initSamlEngine();
+        
+        // Create SAML AuthnRequest
+        Document doc = DOMUtils.createDocument();
+        doc.appendChild(doc.createElement("root"));
+        // Create the AuthnRequest
+        String consumerURL = "https://localhost/acsa";
+        AuthnRequest authnRequest = 
+            new DefaultAuthnRequestBuilder().createAuthnRequest(
+                null, "urn:org:apache:cxf:fediz:fedizhelloworld", consumerURL
+            );
+        authnRequest.setDestination("https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml");
+        
+        Element authnRequestElement = OpenSAMLUtil.toDom(authnRequest, doc);
+        String authnRequestEncoded = encodeAuthnRequest(authnRequestElement);
+
+        String urlEncodedRequest = URLEncoder.encode(authnRequestEncoded, "UTF-8");
+
+        String relayState = UUID.randomUUID().toString();
+        
+        // Sign request
+        Crypto crypto = CryptoFactory.getInstance("stsKeystoreA.properties");
+        
+        CryptoType cryptoType = new CryptoType(CryptoType.TYPE.ALIAS);
+        cryptoType.setAlias("realma");
+
+        // Get the private key
+        PrivateKey privateKey = crypto.getPrivateKey("realma", "realma");
+        
+        java.security.Signature signature = java.security.Signature.getInstance("SHA1withRSA");
+        signature.initSign(privateKey);
+       
+        String requestToSign = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml?";
+        requestToSign += SSOConstants.RELAY_STATE + "=" + relayState;
+        requestToSign += "&" + SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
+        requestToSign += "&" + SSOConstants.SIG_ALG + "=" 
+            + URLEncoder.encode(SSOConstants.RSA_SHA1, StandardCharsets.UTF_8.name());
+        
+        signature.update(requestToSign.getBytes(StandardCharsets.UTF_8));
+        byte[] signBytes = signature.sign();
+        
+        String encodedSignature = Base64.encode(signBytes);
+        
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml?";
+        url += SSOConstants.RELAY_STATE + "=" + relayState;
+        url += "&" + SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
+        url += "&" + SSOConstants.SIGNATURE + "=" + URLEncoder.encode(encodedSignature, StandardCharsets.UTF_8.name());
+
+        String user = "alice";
+        String password = "ecila";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        final HtmlPage idpPage = webClient.getPage(url);
+        webClient.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        
+        // Parse the form to get the token (SAMLResponse)
+        DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
+
+        String samlResponse = null;
+        boolean foundRelayState = false;
+        for (DomElement result : results) {
+            if ("SAMLResponse".equals(result.getAttributeNS(null, "name"))) {
+                samlResponse = result.getAttributeNS(null, "value");
+            } else if ("RelayState".equals(result.getAttributeNS(null, "name"))) {
+                foundRelayState = true;
+                Assert.assertEquals(result.getAttributeNS(null, "value"), relayState);
+            }
+        }
+
+        Assert.assertNotNull(samlResponse);
+        Assert.assertTrue(foundRelayState);
+        
+        // Check the "action"
+        DomNodeList<DomElement> formResults = idpPage.getElementsByTagName("form");
+        Assert.assertFalse(formResults.isEmpty());
+        
+        DomElement formResult = formResults.get(0);
+        String action = formResult.getAttributeNS(null, "action");
+        Assert.assertTrue(action.equals(consumerURL));
+        
+        // Decode + verify response
+        byte[] deflatedToken = Base64Utility.decode(samlResponse);
+        InputStream inputStream = new ByteArrayInputStream(deflatedToken);
+        
+        Document responseDoc = StaxUtils.read(new InputStreamReader(inputStream, "UTF-8"));
+        
+        XMLObject responseObject = OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
+        Assert.assertTrue(responseObject instanceof org.opensaml.saml.saml2.core.Response);
+        
+        org.opensaml.saml.saml2.core.Response samlResponseObject = 
+            (org.opensaml.saml.saml2.core.Response)responseObject;
+        Assert.assertTrue(authnRequest.getID().equals(samlResponseObject.getInResponseTo()));
+        
+        // Check claims
+        String parsedResponse = DOM2Writer.nodeToString(responseDoc);
+        String claim = ClaimTypes.FIRSTNAME.toString();
+        Assert.assertTrue(parsedResponse.contains(claim));
+        claim = ClaimTypes.LASTNAME.toString();
+        Assert.assertTrue(parsedResponse.contains(claim));
+        claim = ClaimTypes.EMAILADDRESS.toString();
+        Assert.assertTrue(parsedResponse.contains(claim));
+
         webClient.close();
     }
     

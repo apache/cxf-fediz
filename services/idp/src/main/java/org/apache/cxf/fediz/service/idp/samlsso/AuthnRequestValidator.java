@@ -18,6 +18,10 @@
  */
 package org.apache.cxf.fediz.service.idp.samlsso;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.security.cert.X509Certificate;
+
 import org.w3c.dom.Document;
 
 import org.apache.cxf.fediz.core.exception.ProcessingException;
@@ -25,6 +29,7 @@ import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.core.util.CertsUtils;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
+import org.apache.cxf.rs.security.saml.sso.SSOConstants;
 import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.SAMLKeyInfo;
@@ -55,24 +60,53 @@ public class AuthnRequestValidator {
 
     private static final Logger LOG = LoggerFactory.getLogger(AuthnRequestValidator.class);
 
-    public void validateAuthnRequest(RequestContext context, AuthnRequest authnRequest, Idp idp) 
-        throws ProcessingException, WSSecurityException {
+    public void validateAuthnRequest(RequestContext context, AuthnRequest authnRequest, Idp idp, String signature,
+                                     String relayState, String samlRequest) 
+        throws Exception {
         if (authnRequest.isSigned()) {
             // Check destination
-            String destination = authnRequest.getDestination();
-            LOG.debug("Validating destination: {}", destination);
-            
-            String localAddr = WebUtils.getHttpServletRequest(context).getRequestURL().toString();
-            if (!localAddr.startsWith(destination)) {
-                LOG.debug("The destination {} does not match the local address {}", destination, localAddr);
-                throw new ProcessingException(TYPE.BAD_REQUEST);
-            }
+            checkDestination(context, authnRequest);
             
             // Check signature
             Crypto issuerCrypto = CertsUtils.getCryptoFromCertificate(idp.getCertificate());
             validateAuthnRequestSignature(authnRequest.getSignature(), issuerCrypto);
+        } else if (signature != null) {
+            // Check destination
+            checkDestination(context, authnRequest);
+            
+            // Check signature
+            X509Certificate validatingCert = CertsUtils.parseX509Certificate(idp.getCertificate());
+            
+            java.security.Signature sig = java.security.Signature.getInstance("SHA1withRSA");
+            sig.initVerify(validatingCert);
+            
+            // Recreate request to sign
+            String requestToSign = WebUtils.getHttpServletRequest(context).getRequestURL().toString() + "?";
+            requestToSign += SSOConstants.RELAY_STATE + "=" + relayState;
+            requestToSign += "&" + SSOConstants.SAML_REQUEST + "=" + URLEncoder.encode(samlRequest, "UTF-8");
+            requestToSign += "&" + SSOConstants.SIG_ALG + "=" 
+                + URLEncoder.encode(SSOConstants.RSA_SHA1, StandardCharsets.UTF_8.name());
+            
+            sig.update(requestToSign.getBytes(StandardCharsets.UTF_8));
+            
+            if (!sig.verify(signature.getBytes())) {
+                LOG.debug("Signature validation failed");
+                throw new ProcessingException(TYPE.BAD_REQUEST);
+            }
         } else {
             LOG.debug("No signature is present, therefore the request is rejected");
+            throw new ProcessingException(TYPE.BAD_REQUEST);
+        }
+    }
+    
+    private void checkDestination(RequestContext context, AuthnRequest authnRequest) throws ProcessingException {
+        // Check destination
+        String destination = authnRequest.getDestination();
+        LOG.debug("Validating destination: {}", destination);
+        
+        String localAddr = WebUtils.getHttpServletRequest(context).getRequestURL().toString();
+        if (!localAddr.startsWith(destination)) {
+            LOG.debug("The destination {} does not match the local address {}", destination, localAddr);
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
     }

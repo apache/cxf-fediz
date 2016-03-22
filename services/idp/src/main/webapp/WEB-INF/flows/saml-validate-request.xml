@@ -27,6 +27,7 @@
         <on-entry>
             <set name="flowScope.RelayState" value="requestParameters.RelayState" />
             <set name="flowScope.SAMLRequest" value="requestParameters.SAMLRequest" />
+            <set name="flowScope.Signature" value="requestParameters.Signature" />
             <set name="flowScope.idpConfig" value="config.getIDP(null)" />
         </on-entry>
         <if test="requestParameters.RelayState == null or requestParameters.RelayState.length() == 0"
@@ -36,7 +37,9 @@
     </decision-state>
     
     <action-state id="parseAndValidateSAMLRequest">
-        <evaluate expression="authnRequestParser.parseSAMLRequest(flowRequestContext, flowScope.idpConfig)" />
+        <evaluate expression="authnRequestParser.parseSAMLRequest(flowRequestContext, flowScope.idpConfig,
+        														  flowScope.Signature, flowScope.RelayState,
+        														  flowScope.SAMLRequest)" />
         <transition to="signinSAMLRequest"/>
         <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
     </action-state>

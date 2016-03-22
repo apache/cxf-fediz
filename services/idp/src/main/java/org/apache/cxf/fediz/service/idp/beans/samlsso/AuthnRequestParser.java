@@ -31,7 +31,6 @@ import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.samlsso.AuthnRequestValidator;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.rs.security.saml.DeflateEncoderDecoder;
-import org.apache.cxf.rs.security.saml.sso.SSOConstants;
 import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.wss4j.common.saml.OpenSAMLUtil;
 import org.apache.wss4j.common.util.DOM2Writer;
@@ -49,8 +48,8 @@ public class AuthnRequestParser {
 
     private static final Logger LOG = LoggerFactory.getLogger(AuthnRequestParser.class);
 
-    public void parseSAMLRequest(RequestContext context, Idp idp) throws ProcessingException {
-        String samlRequest = context.getFlowScope().getString(SSOConstants.SAML_REQUEST);
+    public void parseSAMLRequest(RequestContext context, Idp idp, String signature, 
+                                 String relayState, String samlRequest) throws ProcessingException {
         LOG.debug("Received SAML Request: {}", samlRequest);
 
         AuthnRequest parsedRequest = null;
@@ -69,7 +68,7 @@ public class AuthnRequestParser {
         if (parsedRequest != null) {
             try {
                 AuthnRequestValidator validator = new AuthnRequestValidator();
-                validator.validateAuthnRequest(context, parsedRequest, idp);
+                validator.validateAuthnRequest(context, parsedRequest, idp, signature, relayState, samlRequest);
             } catch (Exception ex) {
                 LOG.warn("Error validating request {}", ex.getMessage(), ex);
                 throw new ProcessingException(TYPE.BAD_REQUEST);
