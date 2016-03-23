@@ -43,7 +43,7 @@
         <evaluate
             expression="idpTokenExpiredAction.isTokenExpired(flowScope.homerealm, flowRequestContext)" />
         <transition on="yes" to="redirectToLocalIDP" />
-        <transition on="no" to="requestRpToken">
+        <transition on="no" to="parseAndValidateSAMLRequest">
             <set name="flowScope.idpToken" value="externalContext.sessionMap[flowScope.homerealm]" />
         </transition>
         <transition on-exception="java.lang.Throwable" to="viewBadRequest" />
@@ -59,7 +59,7 @@
     <action-state id="cacheSecurityToken">
         <secured attributes="IS_AUTHENTICATED_FULLY" />
         <evaluate expression="cacheSecurityToken.submit(flowRequestContext)" />
-        <transition to="requestRpToken">
+        <transition to="parseAndValidateSAMLRequest">
             <set name="flowScope.idpToken" value="externalContext.sessionMap[flowScope.homerealm]" />
         </transition>
     </action-state>
@@ -67,7 +67,7 @@
     <!-- ============================================================================================================= -->
 
     <!-- normal exit point -->
-    <end-state id="requestRpToken">
+    <end-state id="parseAndValidateSAMLRequest">
         <output name="homerealm" value="flowScope.homerealm" />
         <output name="idpToken" value="flowScope.idpToken" />
     </end-state>

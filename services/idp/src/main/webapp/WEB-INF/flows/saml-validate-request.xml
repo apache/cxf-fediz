@@ -33,17 +33,9 @@
         <if test="requestParameters.RelayState == null or requestParameters.RelayState.length() == 0"
             then="viewBadRequest" />
         <if test="requestParameters.SAMLRequest != null and !requestParameters.SAMLRequest.isEmpty()"
-            then="parseAndValidateSAMLRequest" else="viewBadRequest" />
+            then="signinSAMLRequest" else="viewBadRequest" />
     </decision-state>
     
-    <action-state id="parseAndValidateSAMLRequest">
-        <evaluate expression="authnRequestParser.parseSAMLRequest(flowRequestContext, flowScope.idpConfig,
-        														  flowScope.Signature, flowScope.RelayState,
-        														  flowScope.SAMLRequest)" />
-        <transition to="signinSAMLRequest"/>
-        <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
-    </action-state>
-
     <subflow-state id="signinSAMLRequest" subflow="signinSAMLRequest">
         <input name="idpConfig" value="flowScope.idpConfig" />
         <input name="SAMLRequest" value="flowScope.SAMLRequest" />
@@ -53,7 +45,7 @@
         <output name="idpToken" />
         <output name="trusted_idp_context" />
 
-        <transition on="requestRpToken" to="requestRpToken">
+        <transition on="parseAndValidateSAMLRequest" to="parseAndValidateSAMLRequest">
             <set name="flowScope.homerealm" value="currentEvent.attributes.homerealm" />
             <set name="flowScope.idpToken" value="currentEvent.attributes.idpToken" />
         </transition>
@@ -61,6 +53,14 @@
         <transition on="scInternalServerError" to="scInternalServerError" />
         <transition on="redirectToLocalIDP" to="redirectToLocalIDP" />
     </subflow-state>
+    
+    <action-state id="parseAndValidateSAMLRequest">
+        <evaluate expression="authnRequestParser.parseSAMLRequest(flowRequestContext, flowScope.idpConfig,
+                                                                  flowScope.Signature, flowScope.RelayState,
+                                                                  flowScope.SAMLRequest)" />
+        <transition to="requestRpToken"/>
+        <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
+    </action-state>
     
     <!-- produce RP security token (as String type) -->
     <action-state id="requestRpToken">

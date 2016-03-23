@@ -388,7 +388,6 @@ public class IdpTest {
     }
     
     @org.junit.Test
-    @org.junit.Ignore
     public void testSeparateSignature() throws Exception {
         OpenSAMLUtil.initSamlEngine();
         
@@ -422,7 +421,7 @@ public class IdpTest {
         java.security.Signature signature = java.security.Signature.getInstance("SHA1withRSA");
         signature.initSign(privateKey);
        
-        String requestToSign = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml?";
+        String requestToSign = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml/up?";
         requestToSign += SSOConstants.RELAY_STATE + "=" + relayState;
         requestToSign += "&" + SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
         requestToSign += "&" + SSOConstants.SIG_ALG + "=" 
@@ -433,7 +432,7 @@ public class IdpTest {
         
         String encodedSignature = Base64.encode(signBytes);
         
-        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml?";
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml/up?";
         url += SSOConstants.RELAY_STATE + "=" + relayState;
         url += "&" + SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
         url += "&" + SSOConstants.SIGNATURE + "=" + URLEncoder.encode(encodedSignature, StandardCharsets.UTF_8.name());

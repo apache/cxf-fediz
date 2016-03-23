@@ -41,6 +41,7 @@ import org.apache.wss4j.dom.saml.WSSSAMLKeyInfoProcessor;
 import org.apache.wss4j.dom.validate.Credential;
 import org.apache.wss4j.dom.validate.SignatureTrustValidator;
 import org.apache.wss4j.dom.validate.Validator;
+import org.apache.xml.security.utils.Base64;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.security.impl.SAMLSignatureProfileValidator;
 import org.opensaml.security.credential.BasicCredential;
@@ -89,7 +90,7 @@ public class AuthnRequestValidator {
             
             sig.update(requestToSign.getBytes(StandardCharsets.UTF_8));
             
-            if (!sig.verify(signature.getBytes())) {
+            if (!sig.verify(Base64.decode(signature))) {
                 LOG.debug("Signature validation failed");
                 throw new ProcessingException(TYPE.BAD_REQUEST);
             }
