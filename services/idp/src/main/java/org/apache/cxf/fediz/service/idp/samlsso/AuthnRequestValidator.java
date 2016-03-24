@@ -98,6 +98,11 @@ public class AuthnRequestValidator {
             LOG.debug("No signature is present, therefore the request is rejected");
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
+        
+        if (authnRequest.getIssuer() == null) {
+            LOG.debug("No Issuer is present in the AuthnRequest");
+            throw new ProcessingException(TYPE.BAD_REQUEST);
+        }
     }
     
     private void checkDestination(RequestContext context, AuthnRequest authnRequest) throws ProcessingException {
