@@ -103,6 +103,13 @@ public class AuthnRequestValidator {
             LOG.debug("No Issuer is present in the AuthnRequest");
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
+        
+        String format = authnRequest.getIssuer().getFormat();
+        if (format != null
+            && !"urn:oasis:names:tc:SAML:2.0:nameid-format:entity".equals(format)) {
+            LOG.debug("An invalid Format attribute was received: {}", format);
+            throw new ProcessingException(TYPE.BAD_REQUEST);
+        }
     }
     
     private void checkDestination(RequestContext context, AuthnRequest authnRequest) throws ProcessingException {
