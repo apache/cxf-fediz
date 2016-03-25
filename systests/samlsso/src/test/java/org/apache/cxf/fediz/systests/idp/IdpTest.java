@@ -337,7 +337,7 @@ public class IdpTest {
             webClient.getPage(url);
             Assert.fail("Failure expected on no destination value");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
+            // expected
         }
         
         webClient.close();

@@ -52,6 +52,9 @@ public class ApplicationEntity {
     // Could be read from Metadata, md:KeyDescriptor, use="encryption"
     private String encryptionCertificate;
     
+    // Certificate for Signature verification
+    private String validatingCertificate;
+    
     // Could be read from Metadata, fed:ClaimTypesRequested
     @OneToMany(mappedBy = "application", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ApplicationClaimEntity> requestedClaims = new ArrayList<>();
@@ -190,4 +193,11 @@ public class ApplicationEntity {
         this.passiveRequestorEndpointConstraint = passiveRequestorEndpointConstraint;
     }
 
+    public String getValidatingCertificate() {
+        return validatingCertificate;
+    }
+
+    public void setValidatingCertificate(String validatingCertificate) {
+        this.validatingCertificate = validatingCertificate;
+    }
 }

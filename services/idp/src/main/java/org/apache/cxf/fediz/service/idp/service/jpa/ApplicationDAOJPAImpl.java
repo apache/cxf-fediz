@@ -191,6 +191,7 @@ public class ApplicationDAOJPAImpl implements ApplicationDAO {
         }
         
         entity.setEncryptionCertificate(application.getEncryptionCertificate());
+        entity.setValidatingCertificate(application.getValidatingCertificate());
         entity.setLifeTime(application.getLifeTime());
         entity.setProtocol(application.getProtocol());
         entity.setRealm(application.getRealm());
@@ -207,6 +208,7 @@ public class ApplicationDAOJPAImpl implements ApplicationDAO {
         Application application = new Application();
         application.setId(entity.getId());
         application.setEncryptionCertificate(entity.getEncryptionCertificate());
+        application.setValidatingCertificate(entity.getValidatingCertificate());
         application.setLifeTime(entity.getLifeTime());
         application.setProtocol(entity.getProtocol());
         application.setRealm(entity.getRealm());

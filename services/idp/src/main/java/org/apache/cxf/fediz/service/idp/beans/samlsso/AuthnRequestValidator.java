@@ -16,20 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.cxf.fediz.service.idp.samlsso;
+package org.apache.cxf.fediz.service.idp.beans.samlsso;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
+import java.util.Collections;
 
 import org.w3c.dom.Document;
 
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.core.util.CertsUtils;
+import org.apache.cxf.fediz.service.idp.IdpConstants;
+import org.apache.cxf.fediz.service.idp.domain.Application;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.rs.security.saml.sso.SSOConstants;
+import org.apache.wss4j.common.crypto.CertificateStore;
 import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.SAMLKeyInfo;
@@ -52,31 +56,37 @@ import org.opensaml.xmlsec.signature.support.SignatureException;
 import org.opensaml.xmlsec.signature.support.SignatureValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
  * Validate the received AuthnRequest
  */
+@Component
 public class AuthnRequestValidator {
 
     private static final Logger LOG = LoggerFactory.getLogger(AuthnRequestValidator.class);
 
-    public void validateAuthnRequest(RequestContext context, AuthnRequest authnRequest, Idp idp, String signature,
-                                     String relayState, String samlRequest) 
+    public void validateAuthnRequest(RequestContext context, Idp idp, String signature,
+                                     String relayState, String samlRequest, String realm) 
         throws Exception {
+        AuthnRequest authnRequest = 
+            (AuthnRequest)WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
         if (authnRequest.isSigned()) {
             // Check destination
             checkDestination(context, authnRequest);
             
             // Check signature
-            Crypto issuerCrypto = CertsUtils.getCryptoFromCertificate(idp.getCertificate());
+            X509Certificate validatingCert = getValidatingCertificate(idp, realm);
+            Crypto issuerCrypto = 
+                new CertificateStore(Collections.singletonList(validatingCert).toArray(new X509Certificate[0]));
             validateAuthnRequestSignature(authnRequest.getSignature(), issuerCrypto);
         } else if (signature != null) {
             // Check destination
             checkDestination(context, authnRequest);
             
             // Check signature
-            X509Certificate validatingCert = CertsUtils.parseX509Certificate(idp.getCertificate());
+            X509Certificate validatingCert = getValidatingCertificate(idp, realm);
             
             java.security.Signature sig = java.security.Signature.getInstance("SHA1withRSA");
             sig.initVerify(validatingCert);
@@ -110,6 +120,17 @@ public class AuthnRequestValidator {
             LOG.debug("An invalid Format attribute was received: {}", format);
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
+    }
+    
+    private X509Certificate getValidatingCertificate(Idp idp, String realm) 
+        throws Exception {
+        Application serviceConfig = idp.findApplication(realm);
+        if (serviceConfig == null || serviceConfig.getValidatingCertificate() == null) {
+            LOG.debug("No validating certificate found for realm {}", realm);
+            throw new ProcessingException(TYPE.ISSUER_NOT_TRUSTED);
+        }
+        
+        return CertsUtils.parseX509Certificate(serviceConfig.getValidatingCertificate());
     }
     
     private void checkDestination(RequestContext context, AuthnRequest authnRequest) throws ProcessingException {

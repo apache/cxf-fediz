@@ -25,10 +25,8 @@ import org.w3c.dom.Document;
 
 import org.apache.cxf.common.util.Base64Utility;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
-import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.service.idp.IdpConstants;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
-import org.apache.cxf.fediz.service.idp.samlsso.AuthnRequestValidator;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.rs.security.saml.DeflateEncoderDecoder;
 import org.apache.cxf.staxutils.StaxUtils;
@@ -48,8 +46,7 @@ public class AuthnRequestParser {
 
     private static final Logger LOG = LoggerFactory.getLogger(AuthnRequestParser.class);
 
-    public void parseSAMLRequest(RequestContext context, Idp idp, String signature, 
-                                 String relayState, String samlRequest) throws ProcessingException {
+    public void parseSAMLRequest(RequestContext context, Idp idp, String samlRequest) throws ProcessingException {
         LOG.debug("Received SAML Request: {}", samlRequest);
 
         AuthnRequest parsedRequest = null;
@@ -62,16 +59,6 @@ public class AuthnRequestParser {
                 LOG.debug("SAML Request with id '{}' successfully parsed", parsedRequest.getID());
             } catch (Exception ex) {
                 LOG.warn("Error parsing request: {}", ex.getMessage());
-            }
-        }
-        
-        if (parsedRequest != null) {
-            try {
-                AuthnRequestValidator validator = new AuthnRequestValidator();
-                validator.validateAuthnRequest(context, parsedRequest, idp, signature, relayState, samlRequest);
-            } catch (Exception ex) {
-                LOG.warn("Error validating request {}", ex.getMessage(), ex);
-                throw new ProcessingException(TYPE.BAD_REQUEST);
             }
         }
     }

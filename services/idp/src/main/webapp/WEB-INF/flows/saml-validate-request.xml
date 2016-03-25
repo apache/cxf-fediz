@@ -55,9 +55,15 @@
     </subflow-state>
     
     <action-state id="parseAndValidateSAMLRequest">
-        <evaluate expression="authnRequestParser.parseSAMLRequest(flowRequestContext, flowScope.idpConfig,
-                                                                  flowScope.Signature, flowScope.RelayState,
+        <on-entry>
+            <evaluate expression="authnRequestParser.parseSAMLRequest(flowRequestContext, flowScope.idpConfig,
                                                                   flowScope.SAMLRequest)" />
+            <evaluate expression="authnRequestParser.retrieveRealm(flowRequestContext)" 
+                          result="flowScope.realm"/>
+        </on-entry>
+        <evaluate expression="authnRequestValidator.validateAuthnRequest(flowRequestContext, flowScope.idpConfig,
+                                                                  flowScope.Signature, flowScope.RelayState,
+                                                                  flowScope.SAMLRequest, flowScope.realm)" />
         <transition to="requestRpToken"/>
         <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
     </action-state>

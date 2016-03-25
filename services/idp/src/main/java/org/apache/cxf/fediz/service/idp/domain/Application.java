@@ -33,7 +33,8 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "application", namespace = "http://org.apache.cxf.fediz/")
 @XmlType(propOrder = {"realm", "role", "serviceDisplayName", "serviceDescription", "protocol",
                       "tokenType", "lifeTime", "encryptionCertificate", "requestedClaims",
-                      "policyNamespace", "passiveRequestorEndpoint", "passiveRequestorEndpointConstraint", "id" })
+                      "policyNamespace", "passiveRequestorEndpoint", "passiveRequestorEndpointConstraint", "id",
+                      "validatingCertificate"})
 public class Application implements Serializable {
         
     private static final long serialVersionUID = 5644327504861846964L;
@@ -56,6 +57,9 @@ public class Application implements Serializable {
     // Public key only
     // Could be read from Metadata, md:KeyDescriptor, use="encryption"
     protected String encryptionCertificate;
+    
+    // Certificate for Signature verification
+    protected String validatingCertificate;
     
     // Could be read from Metadata, fed:ClaimTypesRequested
     protected List<RequestClaim> requestedClaims = new ArrayList<>();
@@ -215,5 +219,13 @@ public class Application implements Serializable {
     
     public Pattern getCompiledPassiveRequestorEndpointConstraint() {
         return compiledPassiveRequestorEndpointConstraint;
+    }
+    
+    public String getValidatingCertificate() {
+        return validatingCertificate;
+    }
+
+    public void setValidatingCertificate(String validatingCertificate) {
+        this.validatingCertificate = validatingCertificate;
     }
 }
