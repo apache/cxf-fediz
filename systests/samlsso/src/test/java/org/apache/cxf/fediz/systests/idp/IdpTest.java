@@ -421,9 +421,8 @@ public class IdpTest {
         java.security.Signature signature = java.security.Signature.getInstance("SHA1withRSA");
         signature.initSign(privateKey);
        
-        String requestToSign = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml/up?";
-        requestToSign += SSOConstants.RELAY_STATE + "=" + relayState;
-        requestToSign += "&" + SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
+        String requestToSign = SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
+        requestToSign += "&" + SSOConstants.RELAY_STATE + "=" + relayState;
         requestToSign += "&" + SSOConstants.SIG_ALG + "=" 
             + URLEncoder.encode(SSOConstants.RSA_SHA1, StandardCharsets.UTF_8.name());
         

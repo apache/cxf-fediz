@@ -92,11 +92,9 @@ public class AuthnRequestValidator {
             sig.initVerify(validatingCert);
             
             // Recreate request to sign
-            String requestToSign = WebUtils.getHttpServletRequest(context).getRequestURL().toString() + "?";
-            requestToSign += SSOConstants.RELAY_STATE + "=" + relayState;
-            requestToSign += "&" + SSOConstants.SAML_REQUEST + "=" + URLEncoder.encode(samlRequest, "UTF-8");
-            requestToSign += "&" + SSOConstants.SIG_ALG + "=" 
-                + URLEncoder.encode(SSOConstants.RSA_SHA1, StandardCharsets.UTF_8.name());
+            String requestToSign = SSOConstants.SAML_REQUEST + "=" + URLEncoder.encode(samlRequest, "UTF-8")
+                 + "&" + SSOConstants.RELAY_STATE + "=" + relayState + "&" + SSOConstants.SIG_ALG 
+                 + "=" + URLEncoder.encode(SSOConstants.RSA_SHA1, StandardCharsets.UTF_8.name());
             
             sig.update(requestToSign.getBytes(StandardCharsets.UTF_8));
             
