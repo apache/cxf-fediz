@@ -53,12 +53,16 @@ public class AuthnRequestParser {
         if (samlRequest == null) {
             WebUtils.removeAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
         } else {
-            try {
-                parsedRequest = extractRequest(samlRequest);
-                WebUtils.putAttributeInFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST, parsedRequest);
-                LOG.debug("SAML Request with id '{}' successfully parsed", parsedRequest.getID());
-            } catch (Exception ex) {
-                LOG.warn("Error parsing request: {}", ex.getMessage());
+            parsedRequest = 
+                (AuthnRequest)WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
+            if (parsedRequest == null) {
+                try {
+                    parsedRequest = extractRequest(samlRequest);
+                    WebUtils.putAttributeInFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST, parsedRequest);
+                    LOG.debug("SAML Request with id '{}' successfully parsed", parsedRequest.getID());
+                } catch (Exception ex) {
+                    LOG.warn("Error parsing request: {}", ex.getMessage());
+                }
             }
         }
     }
@@ -118,6 +122,17 @@ public class AuthnRequestParser {
         return null;
     }
     
+    public boolean isForceAuthentication(RequestContext context) {
+        AuthnRequest authnRequest = 
+            (AuthnRequest)WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
+        if (authnRequest != null) {
+            return authnRequest.isForceAuthn().booleanValue();
+        }
+        
+        LOG.debug("No AuthnRequest available to be parsed");
+        return false;
+    }
+    
     private AuthnRequest extractRequest(String samlRequest) throws Exception {
         byte[] deflatedToken = Base64Utility.decode(samlRequest);
         InputStream tokenStream = new DeflateEncoderDecoder().inflateToken(deflatedToken);
@@ -130,4 +145,5 @@ public class AuthnRequestParser {
         }
         return request;
     }
+    
 }

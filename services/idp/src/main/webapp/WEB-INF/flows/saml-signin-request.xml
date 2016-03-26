@@ -41,8 +41,13 @@
     </decision-state>
 
     <action-state id="checkTokenExpiry">
+        <on-entry>
+            <evaluate expression="authnRequestParser.parseSAMLRequest(flowRequestContext, flowScope.idpConfig,
+                                                                  flowScope.SAMLRequest)" />
+        </on-entry>
         <evaluate
-            expression="idpTokenExpiredAction.isTokenExpired(flowScope.homerealm, flowRequestContext)" />
+            expression="idpTokenExpiredAction.isTokenExpired(flowScope.homerealm, flowRequestContext)
+                        or authnRequestParser.isForceAuthentication(flowRequestContext)" />
         <transition on="yes" to="redirectToLocalIDP" />
         <transition on="no" to="parseAndValidateSAMLRequest">
             <set name="flowScope.idpToken" value="externalContext.sessionMap[flowScope.homerealm]" />
