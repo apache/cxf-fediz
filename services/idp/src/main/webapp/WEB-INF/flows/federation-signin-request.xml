@@ -102,7 +102,7 @@
     </action-state>
     
     <action-state id="validateWReply">
-        <evaluate expression="wreplyValidator.isValid(flowRequestContext, flowScope.wreply, flowScope.wtrealm)"/>
+        <evaluate expression="passiveRequestorValidator.isValid(flowRequestContext, flowScope.wreply, flowScope.wtrealm)"/>
         <transition on="yes" to="requestRpToken" />
         <transition on="no" to="viewBadRequest" />
     </action-state>

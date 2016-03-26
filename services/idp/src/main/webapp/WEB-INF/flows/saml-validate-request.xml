@@ -40,33 +40,22 @@
         <input name="idpConfig" value="flowScope.idpConfig" />
         <input name="SAMLRequest" value="flowScope.SAMLRequest" />
         <input name="RelayState" value="flowScope.RelayState" />
+        <input name="Signature" value="flowScope.Signature" />
 
         <output name="homerealm" />
         <output name="idpToken" />
         <output name="trusted_idp_context" />
+        <output name="saml_authn_request" />
 
-        <transition on="parseAndValidateSAMLRequest" to="parseAndValidateSAMLRequest">
+        <transition on="requestRpToken" to="requestRpToken">
             <set name="flowScope.homerealm" value="currentEvent.attributes.homerealm" />
             <set name="flowScope.idpToken" value="currentEvent.attributes.idpToken" />
+            <set name="flowScope.saml_authn_request" value="currentEvent.attributes.saml_authn_request" />
         </transition>
         <transition on="viewBadRequest" to="viewBadRequest" />
         <transition on="scInternalServerError" to="scInternalServerError" />
         <transition on="redirectToLocalIDP" to="redirectToLocalIDP" />
     </subflow-state>
-    
-    <action-state id="parseAndValidateSAMLRequest">
-        <on-entry>
-            <evaluate expression="authnRequestParser.parseSAMLRequest(flowRequestContext, flowScope.idpConfig,
-                                                                  flowScope.SAMLRequest)" />
-            <evaluate expression="authnRequestParser.retrieveRealm(flowRequestContext)" 
-                          result="flowScope.realm"/>
-        </on-entry>
-        <evaluate expression="authnRequestValidator.validateAuthnRequest(flowRequestContext, flowScope.idpConfig,
-                                                                  flowScope.Signature, flowScope.RelayState,
-                                                                  flowScope.SAMLRequest, flowScope.realm)" />
-        <transition to="requestRpToken"/>
-        <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
-    </action-state>
     
     <!-- produce RP security token (as String type) -->
     <action-state id="requestRpToken">
@@ -84,12 +73,12 @@
     
     <action-state id="produceSAMLResponse">
         <on-entry>
+            <evaluate expression="authnRequestParser.retrieveConsumerURL(flowRequestContext)" 
+                      result="flowScope.consumerURL"/>
             <evaluate expression="authnRequestParser.retrieveRequestId(flowRequestContext)" 
                       result="flowScope.requestId"/>
             <evaluate expression="authnRequestParser.retrieveRequestIssuer(flowRequestContext)" 
                       result="flowScope.requestIssuer"/>
-            <evaluate expression="authnRequestParser.retrieveConsumerURL(flowRequestContext)" 
-                      result="flowScope.consumerURL"/>
         </on-entry>
         <evaluate expression="samlResponseCreator.createSAMLResponse(flowRequestContext, flowScope.idpConfig, flowScope.rpTokenElement,
                                                                      flowScope.consumerURL, flowScope.requestId, flowScope.requestIssuer)"

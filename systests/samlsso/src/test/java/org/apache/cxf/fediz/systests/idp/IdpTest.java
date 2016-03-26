@@ -172,7 +172,8 @@ public class IdpTest {
         Document doc = DOMUtils.createDocument();
         doc.appendChild(doc.createElement("root"));
         // Create the AuthnRequest
-        String consumerURL = "https://localhost/acsa";
+        String consumerURL = "https://localhost:" + getRpHttpsPort() + "/" 
+            + getServletContextName() + "/secure/fedservlet";
         AuthnRequest authnRequest = 
             new DefaultAuthnRequestBuilder().createAuthnRequest(
                 null, "urn:org:apache:cxf:fediz:fedizhelloworld", consumerURL
@@ -262,9 +263,11 @@ public class IdpTest {
         Document doc = DOMUtils.createDocument();
         doc.appendChild(doc.createElement("root"));
         // Create the AuthnRequest
+        String consumerURL = "https://localhost:" + getRpHttpsPort() + "/" 
+            + getServletContextName() + "/secure/fedservlet";
         AuthnRequest authnRequest = 
             new DefaultAuthnRequestBuilder().createAuthnRequest(
-                null, "urn:org:apache:cxf:fediz:fedizhelloworld-xyz", "https://localhost/acsa"
+                null, "urn:org:apache:cxf:fediz:fedizhelloworld-xyz", consumerURL
             );
         authnRequest.setDestination("https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml");
         signAuthnRequest(authnRequest);
@@ -307,9 +310,11 @@ public class IdpTest {
         Document doc = DOMUtils.createDocument();
         doc.appendChild(doc.createElement("root"));
         // Create the AuthnRequest
+        String consumerURL = "https://localhost:" + getRpHttpsPort() + "/" 
+            + getServletContextName() + "/secure/fedservlet";
         AuthnRequest authnRequest = 
             new DefaultAuthnRequestBuilder().createAuthnRequest(
-                null, "urn:org:apache:cxf:fediz:fedizhelloworld", "https://localhost/acsa"
+                null, "urn:org:apache:cxf:fediz:fedizhelloworld", consumerURL
             );
         signAuthnRequest(authnRequest);
         
@@ -351,9 +356,11 @@ public class IdpTest {
         Document doc = DOMUtils.createDocument();
         doc.appendChild(doc.createElement("root"));
         // Create the AuthnRequest
+        String consumerURL = "https://localhost:" + getRpHttpsPort() + "/" 
+            + getServletContextName() + "/secure/fedservlet";
         AuthnRequest authnRequest = 
             new DefaultAuthnRequestBuilder().createAuthnRequest(
-                null, "urn:org:apache:cxf:fediz:fedizhelloworld", "https://localhost/acsa"
+                null, "urn:org:apache:cxf:fediz:fedizhelloworld", consumerURL
             );
         authnRequest.setDestination("https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml");
         
@@ -395,7 +402,8 @@ public class IdpTest {
         Document doc = DOMUtils.createDocument();
         doc.appendChild(doc.createElement("root"));
         // Create the AuthnRequest
-        String consumerURL = "https://localhost/acsa";
+        String consumerURL = "https://localhost:" + getRpHttpsPort() + "/" 
+            + getServletContextName() + "/secure/fedservlet";
         AuthnRequest authnRequest = 
             new DefaultAuthnRequestBuilder().createAuthnRequest(
                 null, "urn:org:apache:cxf:fediz:fedizhelloworld", consumerURL
@@ -497,6 +505,53 @@ public class IdpTest {
         claim = ClaimTypes.EMAILADDRESS.toString();
         Assert.assertTrue(parsedResponse.contains(claim));
 
+        webClient.close();
+    }
+    
+    @org.junit.Test
+    public void testUnknownRACS() throws Exception {
+        OpenSAMLUtil.initSamlEngine();
+        
+        // Create SAML AuthnRequest
+        Document doc = DOMUtils.createDocument();
+        doc.appendChild(doc.createElement("root"));
+        // Create the AuthnRequest
+        String consumerURL = "https://localhost:" + getRpHttpsPort() + "/" 
+            + getServletContextName() + "/insecure/fedservlet";
+        AuthnRequest authnRequest = 
+            new DefaultAuthnRequestBuilder().createAuthnRequest(
+                null, "urn:org:apache:cxf:fediz:fedizhelloworld", consumerURL
+            );
+        authnRequest.setDestination("https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml");
+        signAuthnRequest(authnRequest);
+        
+        Element authnRequestElement = OpenSAMLUtil.toDom(authnRequest, doc);
+        String authnRequestEncoded = encodeAuthnRequest(authnRequestElement);
+
+        String urlEncodedRequest = URLEncoder.encode(authnRequestEncoded, "UTF-8");
+
+        String relayState = UUID.randomUUID().toString();
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml?";
+        url += SSOConstants.RELAY_STATE + "=" + relayState;
+        url += "&" + SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
+
+        String user = "alice";
+        String password = "ecila";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        try {
+            webClient.getPage(url);
+            Assert.fail("Failure expected on a bad RACS URL");
+        } catch (FailingHttpStatusCodeException ex) {
+            Assert.assertEquals(ex.getStatusCode(), 400);
+        }
+        
         webClient.close();
     }
     

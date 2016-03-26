@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.cxf.fediz.service.idp.beans.wsfed;
+package org.apache.cxf.fediz.service.idp.beans;
 
 import java.util.regex.Matcher;
 
@@ -30,16 +30,17 @@ import org.springframework.stereotype.Component;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
- * This class is responsible to validate the 'wreply' parameter 
+ * This class is responsible to validate the 'wreply' parameter for WS-Federation, or else the
+ * AssertionConsumer URL address for SAML SSO, by comparing it to a regular expression.
  */
 @Component
-public class WreplyValidator {
+public class PassiveRequestorValidator {
 
-    private static final Logger LOG = LoggerFactory.getLogger(WreplyValidator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PassiveRequestorValidator.class);
 
-    public boolean isValid(RequestContext context, String wreply, String realm)
+    public boolean isValid(RequestContext context, String endpointAddress, String realm)
         throws Exception {
-        if (wreply == null) {
+        if (endpointAddress == null) {
             return true;
         }
         
@@ -50,13 +51,14 @@ public class WreplyValidator {
             return true;
         }
         
-        // The wreply address must match the passive endpoint requestor constraint (if it is specified)
+        // The endpointAddress address must match the passive endpoint requestor constraint 
+        // (if it is specified)
         // Also, it must be a valid URL + start with https
         // Validate it first using commons-validator
         UrlValidator urlValidator = new UrlValidator(UrlValidator.ALLOW_LOCAL_URLS
                                                      + UrlValidator.ALLOW_ALL_SCHEMES);
-        if (!urlValidator.isValid(wreply)) {
-            LOG.warn("The given wreply parameter {} is not a valid URL", wreply);
+        if (!urlValidator.isValid(endpointAddress)) {
+            LOG.warn("The given endpointAddress parameter {} is not a valid URL", endpointAddress);
             return false;
         }
 
@@ -66,10 +68,11 @@ public class WreplyValidator {
             return true;
         }
 
-        Matcher matcher = serviceConfig.getCompiledPassiveRequestorEndpointConstraint().matcher(wreply);
+        Matcher matcher = 
+            serviceConfig.getCompiledPassiveRequestorEndpointConstraint().matcher(endpointAddress);
         if (!matcher.matches()) {
-            LOG.error("The wreply value of {} does not match any of the passive requestor values",
-                      wreply);
+            LOG.error("The endpointAddress value of {} does not match any of the passive requestor values",
+                      endpointAddress);
             return false;
         }
         

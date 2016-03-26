@@ -26,6 +26,7 @@
     <input name="idpConfig" />
     <input name="SAMLRequest" />
     <input name="RelayState" />
+    <input name="Signature" />
 
     <decision-state id="signInEntryPoint">
         <on-entry>
@@ -63,13 +64,38 @@
             <set name="flowScope.idpToken" value="externalContext.sessionMap[flowScope.homerealm]" />
         </transition>
     </action-state>
+    
+    <action-state id="parseAndValidateSAMLRequest">
+        <on-entry>
+            <evaluate expression="authnRequestParser.parseSAMLRequest(flowRequestContext, flowScope.idpConfig,
+                                                                  flowScope.SAMLRequest)" />
+            <evaluate expression="authnRequestParser.retrieveRealm(flowRequestContext)" 
+                          result="flowScope.realm"/>
+        </on-entry>
+        <evaluate expression="authnRequestValidator.validateAuthnRequest(flowRequestContext, flowScope.idpConfig,
+                                                                  flowScope.Signature, flowScope.RelayState,
+                                                                  flowScope.SAMLRequest, flowScope.realm)" />
+        <transition to="validateEndpointAddress"/>
+        <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
+    </action-state>
+    
+    <action-state id="validateEndpointAddress">
+        <on-entry>
+            <evaluate expression="authnRequestParser.retrieveConsumerURL(flowRequestContext)" 
+                      result="flowScope.consumerURL"/>
+        </on-entry>
+        <evaluate expression="passiveRequestorValidator.isValid(flowRequestContext, flowScope.consumerURL, flowScope.realm)"/>
+        <transition on="yes" to="requestRpToken" />
+        <transition on="no" to="viewBadRequest" />
+    </action-state>
 
     <!-- ============================================================================================================= -->
 
     <!-- normal exit point -->
-    <end-state id="parseAndValidateSAMLRequest">
+    <end-state id="requestRpToken">
         <output name="homerealm" value="flowScope.homerealm" />
         <output name="idpToken" value="flowScope.idpToken" />
+        <output name="saml_authn_request" value="flowScope.saml_authn_request" />
     </end-state>
 
     <!-- abnormal exit point : Http 400 Bad Request -->
