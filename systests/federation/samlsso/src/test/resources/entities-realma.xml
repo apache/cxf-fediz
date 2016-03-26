@@ -138,7 +138,7 @@
         <property name="parameters">
             <util:map>
                 <entry key="sign.request" value="true" />
-                <entry key="support.deflate.encoding" value="false" />
+                <entry key="support.deflate.encoding" value="true" />
             </util:map>
         </property>
     </bean>

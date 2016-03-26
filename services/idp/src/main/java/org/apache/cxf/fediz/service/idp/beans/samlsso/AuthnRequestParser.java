@@ -18,6 +18,7 @@
  */
 package org.apache.cxf.fediz.service.idp.beans.samlsso;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
@@ -45,6 +46,7 @@ import org.springframework.webflow.execution.RequestContext;
 public class AuthnRequestParser {
 
     private static final Logger LOG = LoggerFactory.getLogger(AuthnRequestParser.class);
+    private boolean supportDeflateEncoding = true;
 
     public void parseSAMLRequest(RequestContext context, Idp idp, String samlRequest) throws ProcessingException {
         LOG.debug("Received SAML Request: {}", samlRequest);
@@ -135,7 +137,9 @@ public class AuthnRequestParser {
     
     private AuthnRequest extractRequest(String samlRequest) throws Exception {
         byte[] deflatedToken = Base64Utility.decode(samlRequest);
-        InputStream tokenStream = new DeflateEncoderDecoder().inflateToken(deflatedToken);
+        InputStream tokenStream = supportDeflateEncoding
+             ? new DeflateEncoderDecoder().inflateToken(deflatedToken) 
+                 : new ByteArrayInputStream(deflatedToken);
 
         Document responseDoc = StaxUtils.read(new InputStreamReader(tokenStream, "UTF-8"));
         AuthnRequest request = 

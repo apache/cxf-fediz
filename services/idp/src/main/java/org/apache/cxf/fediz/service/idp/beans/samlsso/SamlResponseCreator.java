@@ -61,7 +61,7 @@ import org.springframework.webflow.execution.RequestContext;
 public class SamlResponseCreator {
 
     private static final Logger LOG = LoggerFactory.getLogger(SamlResponseCreator.class);
-    private boolean supportDeflateEncoding;
+    private boolean supportDeflateEncoding = true;
 
     public String createSAMLResponse(RequestContext context, Idp idp, Element rpToken,
                                      String consumerURL, String requestId, String requestIssuer) 
