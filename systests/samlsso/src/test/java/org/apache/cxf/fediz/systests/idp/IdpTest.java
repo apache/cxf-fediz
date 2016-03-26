@@ -19,7 +19,6 @@
 
 package org.apache.cxf.fediz.systests.idp;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -232,7 +231,7 @@ public class IdpTest {
         
         // Decode + verify response
         byte[] deflatedToken = Base64Utility.decode(samlResponse);
-        InputStream inputStream = new ByteArrayInputStream(deflatedToken);
+        InputStream inputStream = new DeflateEncoderDecoder().inflateToken(deflatedToken);
         
         Document responseDoc = StaxUtils.read(new InputStreamReader(inputStream, "UTF-8"));
         
@@ -485,7 +484,7 @@ public class IdpTest {
         
         // Decode + verify response
         byte[] deflatedToken = Base64Utility.decode(samlResponse);
-        InputStream inputStream = new ByteArrayInputStream(deflatedToken);
+        InputStream inputStream = new DeflateEncoderDecoder().inflateToken(deflatedToken);
         
         Document responseDoc = StaxUtils.read(new InputStreamReader(inputStream, "UTF-8"));
         
