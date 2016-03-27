@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.apache.cxf.fediz</groupId>
         <artifactId>fediz</artifactId>
-        <version>1.3.0</version>
+        <version>1.3.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>fediz-idp</artifactId>
@@ -407,7 +407,10 @@
                         </goals>
                         <configuration>
                             <target>
-                                <replace file="${project.build.directory}/swagger-ui/META-INF/resources/webjars/swagger-ui/${swagger-ui.version}/swagger-ui.js" token="return url + requestUrl + querystring;" value="&#xA;var matrixstring = '';&#xA; for (var i = 0; i &lt; this.parameters.length; i++) {&#xA;     var param = this.parameters[i];&#xA; &#xA;     if (param.in === 'matrix') {&#xA;       matrixstring += ';' + this.encodeQueryParam(param.name) + '=' + this.encodeQueryParam(args[param.name]);&#xA;     }&#xA;   }&#xA; &#xA;   var url = this.scheme + '://' + this.host;&#xA; &#xA;   if (this.basePath !== '/') {&#xA;     url += this.basePath;&#xA;   }&#xA;   return url + requestUrl + matrixstring + querystring;" />
+                                <replace
+                                    file="${project.build.directory}/swagger-ui/META-INF/resources/webjars/swagger-ui/${swagger-ui.version}/swagger-ui.js"
+                                    token="return url + requestUrl + querystring;"
+                                    value="&#xA;var matrixstring = '';&#xA; for (var i = 0; i &lt; this.parameters.length; i++) {&#xA;     var param = this.parameters[i];&#xA; &#xA;     if (param.in === 'matrix') {&#xA;       matrixstring += ';' + this.encodeQueryParam(param.name) + '=' + this.encodeQueryParam(args[param.name]);&#xA;     }&#xA;   }&#xA; &#xA;   var url = this.scheme + '://' + this.host;&#xA; &#xA;   if (this.basePath !== '/') {&#xA;     url += this.basePath;&#xA;   }&#xA;   return url + requestUrl + matrixstring + querystring;" />
                             </target>
                         </configuration>
                     </execution>
