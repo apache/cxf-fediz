@@ -109,7 +109,7 @@
 	          }
 	       %>
            <td>
-               <form action="/fediz-oidc/clients/<%= client.getClientId() + "/at/" + token.getTokenKey() + "/revoke"%>" method="POST">
+               <form action="/fediz-oidc/home/clients/<%= client.getClientId() + "/at/" + token.getTokenKey() + "/revoke"%>" method="POST">
 		           <input type="submit" value="Delete"/>  
                </form>
            </td>
@@ -168,7 +168,7 @@
            </td>    
 	       
            <td>
-               <form action="/fediz-oidc/clients/<%= client.getClientId() + "/rt/" + token.getTokenKey() + "/revoke"%>" method="POST">
+               <form action="/fediz-oidc/home/clients/<%= client.getClientId() + "/rt/" + token.getTokenKey() + "/revoke"%>" method="POST">
 		         <input type="submit" value="Delete"/>
                </form>
            </td>
@@ -182,7 +182,7 @@
 <br/>
 <br/>
 <p>
-<a href="<%= basePath + "clients/" + client.getClientId() %>">Return</a>
+<a href="<%= basePath + "home/clients/" + client.getClientId() %>">Return</a>
 </p>
 </div>
 </body>

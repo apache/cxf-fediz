@@ -62,6 +62,6 @@ input, select, button {
 </head>
 <body>
     <h2>Welcome to Fediz OpenId Connect Console</h2>
-	<p><a href="<%=basePath%>clients">Client Registrations</a></p>
+	<p><a href="<%=basePath%>home/clients">Client Registrations</a></p>
 </body>
 </html>

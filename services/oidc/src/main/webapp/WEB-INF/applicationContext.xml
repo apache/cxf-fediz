@@ -120,6 +120,7 @@
     
     <bean id="keyPasswordProvider" class="org.apache.cxf.fediz.service.oidc.PrivateKeyPasswordProviderImpl"/>
     
+    
     <bean id="clientRegService" init-method="init" 
        class="org.apache.cxf.fediz.service.oidc.clients.ClientRegistrationService">
        <property name="dataProvider" ref="oauthProvider"/>
@@ -134,19 +135,14 @@
           </map>
        </property>
     </bean>
-    <jaxrs:server address="/clients">
-        <jaxrs:serviceBeans>
-            <ref bean="clientRegService"/>
-        </jaxrs:serviceBeans>
-        <jaxrs:providers>
-            <ref bean="viewProvider"/>
-        </jaxrs:providers> 
-    </jaxrs:server>
-    
     <bean id="accountService" class="org.apache.cxf.fediz.service.oidc.account.UserAccountService"/>
+    
+    
+    
     <jaxrs:server address="/home">
         <jaxrs:serviceBeans>
             <ref bean="accountService"/>
+            <ref bean="clientRegService"/>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
             <ref bean="viewProvider"/>

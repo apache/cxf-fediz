@@ -40,10 +40,6 @@
     </filter-mapping>
     <filter-mapping>
         <filter-name>FederationFilter</filter-name>
-        <url-pattern>/clients/*</url-pattern>
-    </filter-mapping>
-    <filter-mapping>
-        <filter-name>FederationFilter</filter-name>
         <url-pattern>/home/*</url-pattern>
     </filter-mapping>
 
@@ -77,15 +73,6 @@
     <security-role>
         <role-name>Authenticated</role-name>
     </security-role>
-    <security-constraint>
-        <web-resource-collection>
-            <web-resource-name>Client Registration Protected Area</web-resource-name>
-            <url-pattern>/clients/*</url-pattern>
-        </web-resource-collection>
-        <auth-constraint>
-            <role-name>*</role-name>
-        </auth-constraint>
-    </security-constraint>
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>User Protected Area</web-resource-name>

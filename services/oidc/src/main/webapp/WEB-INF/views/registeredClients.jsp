@@ -50,7 +50,7 @@
        for (Client client : regs) {
     %>
        <tr>
-           <td><a href="<%= basePath + "clients/" + client.getClientId() %>"><%= client.getApplicationName() %></a></td>
+           <td><a href="<%= basePath + "home/clients/" + client.getClientId() %>"><%= client.getApplicationName() %></a></td>
            <td>
               <%= client.getClientId() %>
            </td>
@@ -79,7 +79,7 @@
 <br/>
 <br/>
 <p>
-<a href="<%= basePath + "clients/register" %>">Register a new client</a>
+<a href="<%= basePath + "home/clients/register" %>">Register a new client</a>
 </p>
 </div>
 </body>

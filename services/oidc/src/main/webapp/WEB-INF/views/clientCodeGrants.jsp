@@ -74,7 +74,7 @@
 		       }
 		   %>
            <td>
-               <form action="/fediz-oidc/clients/<%= client.getClientId() + "/codes/" + token.getCode() + "/revoke"%>" method="POST">
+               <form action="/fediz-oidc/home/clients/<%= client.getClientId() + "/codes/" + token.getCode() + "/revoke"%>" method="POST">
 		         <input type="submit" value="Delete"/>
                </form>
            </td>
@@ -88,7 +88,7 @@
 <br/>
 <br/>
 <p>
-<a href="<%= basePath + "clients/" + client.getClientId() %>">Return</a>
+<a href="<%= basePath + "home/clients/" + client.getClientId() %>">Return</a>
 </p>
 </div>
 </body>
