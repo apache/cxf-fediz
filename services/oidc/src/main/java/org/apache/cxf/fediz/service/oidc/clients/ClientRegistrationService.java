@@ -62,7 +62,7 @@ import org.apache.cxf.rs.security.oauth2.tokens.refresh.RefreshToken;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 import org.apache.cxf.rt.security.crypto.CryptoUtils;
 
-@Path("/")
+@Path("/clients")
 public class ClientRegistrationService {
 
     private Map<String, Collection<Client>> registrations = new HashMap<String, Collection<Client>>();
@@ -114,6 +114,10 @@ public class ClientRegistrationService {
             if (c.getClientId().equals(id)) {
                 clientProvider.removeClient(id);
                 it.remove();
+                Set<String> names = clientNames.get(getUserName());
+                if (names != null) {
+                    names.remove(c.getApplicationName());
+                }
                 break;
             }
         }
