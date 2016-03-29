@@ -230,7 +230,7 @@ public class OIDCTest {
     
     // Runs as BeforeClass: Login to the OIDC Clients page + create two new clients
     private static void loginToClientsPage(String rpPort, String idpPort) throws Exception {
-        String url = "https://localhost:" + rpPort + "/fediz-oidc/clients";
+        String url = "https://localhost:" + rpPort + "/fediz-oidc/home/clients";
         String user = "alice";
         String password = "ecila";
         
@@ -297,7 +297,7 @@ public class OIDCTest {
     
     // Runs as AfterClass: Login to the OIDC Clients page + delete the created clients!
     private static void loginToClientsPageAndDeleteClient(String rpPort, String idpPort) throws Exception {
-        String url = "https://localhost:" + rpPort + "/fediz-oidc/clients";
+        String url = "https://localhost:" + rpPort + "/fediz-oidc/home/clients";
         String user = "alice";
         String password = "ecila";
         
@@ -345,7 +345,7 @@ public class OIDCTest {
     // Test that we managed to create the clients ok
     @org.junit.Test
     public void testCreatedClients() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/clients";
+        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/home/clients";
         String user = "alice";
         String password = "ecila";
         
@@ -551,7 +551,7 @@ public class OIDCTest {
     
     @org.junit.Test
     public void testCreateClientWithInvalidRegistrationURI() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/clients";
+        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/home/clients";
         String user = "alice";
         String password = "ecila";
         
@@ -575,7 +575,7 @@ public class OIDCTest {
     
     @org.junit.Test
     public void testCreateClientWithRegistrationURIFragment() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/clients";
+        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/home/clients";
         String user = "alice";
         String password = "ecila";
         
@@ -599,7 +599,7 @@ public class OIDCTest {
     
     @org.junit.Test
     public void testCreateClientWithInvalidAudienceURI() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/clients";
+        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/home/clients";
         String user = "alice";
         String password = "ecila";
         
@@ -623,7 +623,7 @@ public class OIDCTest {
     
     @org.junit.Test
     public void testCreateClientWithAudienceURIFragment() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/clients";
+        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/home/clients";
         String user = "alice";
         String password = "ecila";
         
