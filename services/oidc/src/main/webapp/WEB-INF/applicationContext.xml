@@ -135,14 +135,15 @@
           </map>
        </property>
     </bean>
-    <bean id="accountService" class="org.apache.cxf.fediz.service.oidc.account.UserAccountService"/>
+    <bean id="consoleService" class="org.apache.cxf.fediz.service.oidc.account.UserConsoleService">
+        <property name="clientRegService" ref="clientRegService"/>
+    </bean>
     
     
     
-    <jaxrs:server address="/home">
+    <jaxrs:server address="/console">
         <jaxrs:serviceBeans>
-            <ref bean="accountService"/>
-            <ref bean="clientRegService"/>
+            <ref bean="consoleService"/>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
             <ref bean="viewProvider"/>

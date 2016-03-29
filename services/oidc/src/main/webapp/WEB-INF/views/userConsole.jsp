@@ -1,7 +1,7 @@
 <%@ page
-	import="javax.servlet.http.HttpServletRequest,java.util.Map,java.util.Iterator,org.apache.cxf.fediz.service.oidc.account.UserAccount"%>
+	import="javax.servlet.http.HttpServletRequest,java.util.Map,java.util.Iterator,org.apache.cxf.fediz.service.oidc.account.UserConsole"%>
 <%
-    UserAccount account = (UserAccount)request.getAttribute("data");
+    UserConsole account = (UserConsole)request.getAttribute("data");
     String basePath = request.getContextPath() + request.getServletPath();
     if (!basePath.endsWith("/")) {
         basePath += "/";
@@ -62,6 +62,6 @@ input, select, button {
 </head>
 <body>
     <h2>Welcome to Fediz OpenId Connect Console</h2>
-	<p><a href="<%=basePath%>home/clients">Client Registrations</a></p>
+	<p><a href="<%=basePath%>console/clients">Client Registrations</a></p>
 </body>
 </html>

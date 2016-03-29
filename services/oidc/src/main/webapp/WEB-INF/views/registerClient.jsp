@@ -61,7 +61,7 @@ input, select, button {
 </style>
 </head>
 <body>
-	<form action="<%=basePath%>home/clients" method="POST">
+	<form action="<%=basePath%>console/clients" method="POST">
 		<div class="form">
 			<div class="header-text">
 				<h2>OIDC Client Registration</h2>
@@ -112,6 +112,6 @@ input, select, button {
 			</div>
 		</div>
 	</form>
-	<p>Return to <a href="<%=basePath%>home/clients">registered Clients</a></p>
+	<p>Return to <a href="<%=basePath%>console/clients">registered Clients</a></p>
 </body>
 </html>

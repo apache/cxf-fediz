@@ -16,29 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.cxf.fediz.service.oidc.account;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.SecurityContext;
-
-@Path("/console")
-public class UserAccountService {
-
-    @Context
-    private SecurityContext sc;
-
-    @GET
-    @Produces(MediaType.TEXT_HTML)
-    public UserAccount getAccount() {
-        return new UserAccount(getUserName()); 
+public class UserConsole {
+    private String userName;
+    public UserConsole(String userName) {
+        this.userName = userName;
     }
-    private String getUserName() {
-        return sc.getUserPrincipal().getName();
+    public String getUserName() {
+        return userName;
     }
-
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+    
 }

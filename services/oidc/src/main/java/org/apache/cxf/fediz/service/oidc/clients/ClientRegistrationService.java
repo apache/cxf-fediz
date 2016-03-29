@@ -62,7 +62,7 @@ import org.apache.cxf.rs.security.oauth2.tokens.refresh.RefreshToken;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 import org.apache.cxf.rt.security.crypto.CryptoUtils;
 
-@Path("/clients")
+@Path("/")
 public class ClientRegistrationService {
 
     private Map<String, Collection<Client>> registrations = new HashMap<String, Collection<Client>>();
@@ -73,9 +73,13 @@ public class ClientRegistrationService {
     private boolean protectIdTokenWithClientSecret;
     private Map<String, String> clientScopes;
     
-    @Context
     private SecurityContext sc;
 
+    @Context
+    public void setSecurityContext(SecurityContext securityContext) {
+        this.sc = securityContext;
+    }
+    
     @GET
     @Produces(MediaType.TEXT_HTML)
     @Path("/register")

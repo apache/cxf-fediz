@@ -153,10 +153,10 @@
 </table>
 <br/>
 <p>
-<p><a href="<%= basePath + "home/clients/" + client.getClientId() + "/tokens" %>">Issued Tokens</a></p>
+<p><a href="<%= basePath + "console/clients/" + client.getClientId() + "/tokens" %>">Issued Tokens</a></p>
 </p>
 <p>
-<p><a href="<%= basePath + "home/clients/" + client.getClientId() + "/codes" %>">Issued Code Grants</a></p>
+<p><a href="<%= basePath + "console/clients/" + client.getClientId() + "/codes" %>">Issued Code Grants</a></p>
 </p>
 
 <br/>
@@ -166,7 +166,7 @@
     if (client.getClientSecret() != null) {
 %>
 <td class="td_no_border">
-<form name="resetSecretForm" action="<%=basePath%>home/clients/<%= client.getClientId() + "/reset"%>" method="POST">
+<form name="resetSecretForm" action="<%=basePath%>console/clients/<%= client.getClientId() + "/reset"%>" method="POST">
      <div data-type="control_button" class="form-line">
 	<button name="submit_reset_button" class="form-submit-button" type="submit">Reset Client Secret</button>
 </form>
@@ -176,7 +176,7 @@
     }
 %>
 <td class="td_no_border">
-<form name="deleteForm" action="<%=basePath%>home/clients/<%= client.getClientId() + "/remove"%>" method="POST">
+<form name="deleteForm" action="<%=basePath%>console/clients/<%= client.getClientId() + "/remove"%>" method="POST">
         <div data-type="control_button" class="form-line">
 	<button name="submit_delete_button" class="form-submit-button" type="submit">Delete Client</button>
         </div>
@@ -187,7 +187,7 @@
 <br/>
 
 <p>
-<p>Return to <a href="<%=basePath%>home/clients">registered Clients</a></p>
+<p>Return to <a href="<%=basePath%>console/clients">registered Clients</a></p>
 </p>
 <br/>
 </div>

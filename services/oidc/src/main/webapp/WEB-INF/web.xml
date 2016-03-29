@@ -40,7 +40,7 @@
     </filter-mapping>
     <filter-mapping>
         <filter-name>FederationFilter</filter-name>
-        <url-pattern>/home/*</url-pattern>
+        <url-pattern>/console/*</url-pattern>
     </filter-mapping>
 
     <context-param>
@@ -85,7 +85,7 @@
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>OIDC Account Protected Area</web-resource-name>
-            <url-pattern>/home/*</url-pattern>
+            <url-pattern>/console/*</url-pattern>
         </web-resource-collection>
         <auth-constraint>
             <role-name>*</role-name>
