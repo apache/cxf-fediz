@@ -89,7 +89,6 @@ public class SamlResponseCreator {
             Element response = createResponse(idp, requestId, saml2Assertion);
             return encodeResponse(response);
         } catch (Exception ex) {
-            ex.printStackTrace();
             LOG.warn("Error marshalling SAML Token: {}", ex.getMessage());
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }

@@ -152,7 +152,7 @@ public class AuthnRequestValidator {
         LOG.debug("Validating destination: {}", destination);
         
         String localAddr = WebUtils.getHttpServletRequest(context).getRequestURL().toString();
-        if (!localAddr.startsWith(destination)) {
+        if (destination == null || !localAddr.startsWith(destination)) {
             LOG.debug("The destination {} does not match the local address {}", destination, localAddr);
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }

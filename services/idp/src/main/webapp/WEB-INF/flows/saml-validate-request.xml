@@ -52,7 +52,9 @@
             <set name="flowScope.idpToken" value="currentEvent.attributes.idpToken" />
             <set name="flowScope.saml_authn_request" value="currentEvent.attributes.saml_authn_request" />
         </transition>
-        <transition on="viewBadRequest" to="viewBadRequest" />
+        <transition on="viewBadRequest" to="viewBadRequest">
+            <set name="flowScope.saml_authn_request" value="currentEvent.attributes.saml_authn_request" />
+        </transition>
         <transition on="scInternalServerError" to="scInternalServerError" />
         <transition on="redirectToLocalIDP" to="redirectToLocalIDP" />
     </subflow-state>
@@ -96,12 +98,17 @@
         </on-entry>
     </end-state>
 
-    <!-- abnormal exit point : Http 400 Bad Request -->
-    <end-state id="viewBadRequest" view="genericerror">
+    <!-- abnormal exit point -->
+    <end-state id="viewBadRequest" view="samlsigninresponseform">
         <on-entry>
-            <evaluate
-                expression="externalContext.nativeResponse.setStatus(400,flowRequestContext.currentTransition.toString())" />
-            <!-- <set name="requestScope.reason" value="flowRequestContext.currentTransition" /> -->
+            <evaluate expression="authnRequestParser.retrieveConsumerURL(flowRequestContext)" 
+                      result="requestScope.samlAction"/>
+            <evaluate expression="authnRequestParser.retrieveRequestId(flowRequestContext)" 
+                      result="flowScope.requestId"/>
+            <evaluate expression="flowScope.RelayState" result="requestScope.relayState" />
+            <evaluate expression="samlResponseErrorCreator.createSAMLResponse(flowRequestContext, true, flowScope.idpConfig, 
+                                                                     flowScope.requestId)"
+                      result="requestScope.samlResponse"/>     
         </on-entry>
     </end-state>
 

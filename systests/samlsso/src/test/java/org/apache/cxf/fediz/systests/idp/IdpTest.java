@@ -32,7 +32,6 @@ import java.util.UUID;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNodeList;
@@ -204,46 +203,13 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(true);
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
         
-        // Parse the form to get the token (SAMLResponse)
-        DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
-
-        String samlResponse = null;
-        boolean foundRelayState = false;
-        for (DomElement result : results) {
-            if ("SAMLResponse".equals(result.getAttributeNS(null, "name"))) {
-                samlResponse = result.getAttributeNS(null, "value");
-            } else if ("RelayState".equals(result.getAttributeNS(null, "name"))) {
-                foundRelayState = true;
-                Assert.assertEquals(result.getAttributeNS(null, "value"), relayState);
-            }
-        }
-
-        Assert.assertNotNull(samlResponse);
-        Assert.assertTrue(foundRelayState);
-        
-        // Check the "action"
-        DomNodeList<DomElement> formResults = idpPage.getElementsByTagName("form");
-        Assert.assertFalse(formResults.isEmpty());
-        
-        DomElement formResult = formResults.get(0);
-        String action = formResult.getAttributeNS(null, "action");
-        Assert.assertTrue(action.equals(consumerURL));
-        
-        // Decode + verify response
-        byte[] deflatedToken = Base64Utility.decode(samlResponse);
-        InputStream inputStream = new DeflateEncoderDecoder().inflateToken(deflatedToken);
-        
-        Document responseDoc = StaxUtils.read(new InputStreamReader(inputStream, "UTF-8"));
-        
-        XMLObject responseObject = OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
-        Assert.assertTrue(responseObject instanceof org.opensaml.saml.saml2.core.Response);
-        
-        org.opensaml.saml.saml2.core.Response samlResponseObject = 
-            (org.opensaml.saml.saml2.core.Response)responseObject;
-        Assert.assertTrue(authnRequest.getID().equals(samlResponseObject.getInResponseTo()));
+        org.opensaml.saml.saml2.core.Response samlResponse = 
+            parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
+        String expected = "urn:oasis:names:tc:SAML:2.0:status:Success";
+        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
         
         // Check claims
-        String parsedResponse = DOM2Writer.nodeToString(responseDoc);
+        String parsedResponse = DOM2Writer.nodeToString(samlResponse.getDOM().getOwnerDocument());
         String claim = ClaimTypes.FIRSTNAME.toString();
         Assert.assertTrue(parsedResponse.contains(claim));
         claim = ClaimTypes.LASTNAME.toString();
@@ -291,13 +257,13 @@ public class IdpTest {
             new UsernamePasswordCredentials(user, password));
 
         webClient.getOptions().setJavaScriptEnabled(false);
-        try {
-            webClient.getPage(url);
-            Assert.fail("Failure expected on a bad issuer value");
-        } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
-        }
+        final HtmlPage idpPage = webClient.getPage(url);
         
+        org.opensaml.saml.saml2.core.Response samlResponse = 
+            parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
+        String expected = "urn:oasis:names:tc:SAML:2.0:status:Requester";
+        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+       
         webClient.close();
     }
     
@@ -337,12 +303,12 @@ public class IdpTest {
             new UsernamePasswordCredentials(user, password));
 
         webClient.getOptions().setJavaScriptEnabled(false);
-        try {
-            webClient.getPage(url);
-            Assert.fail("Failure expected on no destination value");
-        } catch (FailingHttpStatusCodeException ex) {
-            // expected
-        }
+        final HtmlPage idpPage = webClient.getPage(url);
+        
+        org.opensaml.saml.saml2.core.Response samlResponse = 
+            parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
+        String expected = "urn:oasis:names:tc:SAML:2.0:status:Requester";
+        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
         
         webClient.close();
     }
@@ -383,12 +349,12 @@ public class IdpTest {
             new UsernamePasswordCredentials(user, password));
 
         webClient.getOptions().setJavaScriptEnabled(false);
-        try {
-            webClient.getPage(url);
-            Assert.fail("Failure expected on an unsigned request");
-        } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
-        }
+        final HtmlPage idpPage = webClient.getPage(url);
+        
+        org.opensaml.saml.saml2.core.Response samlResponse = 
+            parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
+        String expected = "urn:oasis:names:tc:SAML:2.0:status:Requester";
+        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
         
         webClient.close();
     }
@@ -457,46 +423,13 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(true);
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
         
-        // Parse the form to get the token (SAMLResponse)
-        DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
-
-        String samlResponse = null;
-        boolean foundRelayState = false;
-        for (DomElement result : results) {
-            if ("SAMLResponse".equals(result.getAttributeNS(null, "name"))) {
-                samlResponse = result.getAttributeNS(null, "value");
-            } else if ("RelayState".equals(result.getAttributeNS(null, "name"))) {
-                foundRelayState = true;
-                Assert.assertEquals(result.getAttributeNS(null, "value"), relayState);
-            }
-        }
-
-        Assert.assertNotNull(samlResponse);
-        Assert.assertTrue(foundRelayState);
-        
-        // Check the "action"
-        DomNodeList<DomElement> formResults = idpPage.getElementsByTagName("form");
-        Assert.assertFalse(formResults.isEmpty());
-        
-        DomElement formResult = formResults.get(0);
-        String action = formResult.getAttributeNS(null, "action");
-        Assert.assertTrue(action.equals(consumerURL));
-        
-        // Decode + verify response
-        byte[] deflatedToken = Base64Utility.decode(samlResponse);
-        InputStream inputStream = new DeflateEncoderDecoder().inflateToken(deflatedToken);
-        
-        Document responseDoc = StaxUtils.read(new InputStreamReader(inputStream, "UTF-8"));
-        
-        XMLObject responseObject = OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
-        Assert.assertTrue(responseObject instanceof org.opensaml.saml.saml2.core.Response);
-        
-        org.opensaml.saml.saml2.core.Response samlResponseObject = 
-            (org.opensaml.saml.saml2.core.Response)responseObject;
-        Assert.assertTrue(authnRequest.getID().equals(samlResponseObject.getInResponseTo()));
+        org.opensaml.saml.saml2.core.Response samlResponse = 
+            parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
+        String expected = "urn:oasis:names:tc:SAML:2.0:status:Success";
+        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
         
         // Check claims
-        String parsedResponse = DOM2Writer.nodeToString(responseDoc);
+        String parsedResponse = DOM2Writer.nodeToString(samlResponse.getDOM().getOwnerDocument());
         String claim = ClaimTypes.FIRSTNAME.toString();
         Assert.assertTrue(parsedResponse.contains(claim));
         claim = ClaimTypes.LASTNAME.toString();
@@ -544,12 +477,12 @@ public class IdpTest {
             new UsernamePasswordCredentials(user, password));
 
         webClient.getOptions().setJavaScriptEnabled(false);
-        try {
-            webClient.getPage(url);
-            Assert.fail("Failure expected on a bad RACS URL");
-        } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
-        }
+        final HtmlPage idpPage = webClient.getPage(url);
+        
+        org.opensaml.saml.saml2.core.Response samlResponse = 
+            parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
+        String expected = "urn:oasis:names:tc:SAML:2.0:status:Requester";
+        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
         
         webClient.close();
     }
@@ -600,5 +533,53 @@ public class IdpTest {
         signableObject.releaseDOM();
         signableObject.releaseChildrenDOM(true);
         
+    }
+    
+    private org.opensaml.saml.saml2.core.Response parseSAMLResponse(HtmlPage idpPage, 
+                                                                    String relayState, 
+                                                                    String consumerURL,
+                                                                    String authnRequestId
+    ) throws Exception {
+        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        
+        // Parse the form to get the token (SAMLResponse)
+        DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
+
+        String samlResponse = null;
+        boolean foundRelayState = false;
+        for (DomElement result : results) {
+            if ("SAMLResponse".equals(result.getAttributeNS(null, "name"))) {
+                samlResponse = result.getAttributeNS(null, "value");
+            } else if ("RelayState".equals(result.getAttributeNS(null, "name"))) {
+                foundRelayState = true;
+                Assert.assertEquals(result.getAttributeNS(null, "value"), relayState);
+            }
+        }
+
+        Assert.assertNotNull(samlResponse);
+        Assert.assertTrue(foundRelayState);
+        
+        // Check the "action"
+        DomNodeList<DomElement> formResults = idpPage.getElementsByTagName("form");
+        Assert.assertFalse(formResults.isEmpty());
+        
+        DomElement formResult = formResults.get(0);
+        String action = formResult.getAttributeNS(null, "action");
+        Assert.assertTrue(action.equals(consumerURL));
+        
+        // Decode + verify response
+        byte[] deflatedToken = Base64Utility.decode(samlResponse);
+        InputStream inputStream = new DeflateEncoderDecoder().inflateToken(deflatedToken);
+        
+        Document responseDoc = StaxUtils.read(new InputStreamReader(inputStream, "UTF-8"));
+        
+        XMLObject responseObject = OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
+        Assert.assertTrue(responseObject instanceof org.opensaml.saml.saml2.core.Response);
+        
+        org.opensaml.saml.saml2.core.Response samlResponseObject = 
+            (org.opensaml.saml.saml2.core.Response)responseObject;
+        Assert.assertTrue(authnRequestId.equals(samlResponseObject.getInResponseTo()));
+        
+        return samlResponseObject;
     }
 }
