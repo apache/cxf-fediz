@@ -72,6 +72,33 @@ public class AuthnRequestValidator {
         throws Exception {
         AuthnRequest authnRequest = 
             (AuthnRequest)WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
+        
+        validateSignature(context, authnRequest, idp, signature, relayState, samlRequest, realm);
+        
+        if (authnRequest.getIssuer() == null) {
+            LOG.debug("No Issuer is present in the AuthnRequest");
+            throw new ProcessingException(TYPE.BAD_REQUEST);
+        }
+        
+        String format = authnRequest.getIssuer().getFormat();
+        if (format != null
+            && !"urn:oasis:names:tc:SAML:2.0:nameid-format:entity".equals(format)) {
+            LOG.debug("An invalid Format attribute was received: {}", format);
+            throw new ProcessingException(TYPE.BAD_REQUEST);
+        }
+        
+        // No SubjectConfirmation Elements are allowed
+        if (authnRequest.getSubject() != null 
+            && authnRequest.getSubject().getSubjectConfirmations() != null
+            && !authnRequest.getSubject().getSubjectConfirmations().isEmpty()) {
+            LOG.debug("An invalid SubjectConfirmation Element was received");
+            throw new ProcessingException(TYPE.BAD_REQUEST);
+        }
+    }
+    
+    private void validateSignature(RequestContext context, AuthnRequest authnRequest, Idp idp, 
+                                   String signature, String relayState, String samlRequest, 
+                                   String realm) throws Exception {
         if (authnRequest.isSigned()) {
             // Check destination
             checkDestination(context, authnRequest);
@@ -104,18 +131,6 @@ public class AuthnRequestValidator {
             }
         } else {
             LOG.debug("No signature is present, therefore the request is rejected");
-            throw new ProcessingException(TYPE.BAD_REQUEST);
-        }
-        
-        if (authnRequest.getIssuer() == null) {
-            LOG.debug("No Issuer is present in the AuthnRequest");
-            throw new ProcessingException(TYPE.BAD_REQUEST);
-        }
-        
-        String format = authnRequest.getIssuer().getFormat();
-        if (format != null
-            && !"urn:oasis:names:tc:SAML:2.0:nameid-format:entity".equals(format)) {
-            LOG.debug("An invalid Format attribute was received: {}", format);
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
     }

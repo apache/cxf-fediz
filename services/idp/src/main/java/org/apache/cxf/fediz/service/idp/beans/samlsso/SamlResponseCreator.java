@@ -29,6 +29,7 @@ import org.apache.cxf.common.util.Base64Utility;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.core.util.CertsUtils;
+import org.apache.cxf.fediz.service.idp.IdpConstants;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.samlsso.SAML2CallbackHandler;
 import org.apache.cxf.fediz.service.idp.samlsso.SAML2PResponseComponentBuilder;
@@ -47,6 +48,8 @@ import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.wss4j.dom.WSConstants;
 import org.joda.time.DateTime;
 import org.opensaml.saml.saml2.core.Assertion;
+import org.opensaml.saml.saml2.core.AuthnRequest;
+import org.opensaml.saml.saml2.core.NameID;
 import org.opensaml.saml.saml2.core.Response;
 import org.opensaml.saml.saml2.core.Status;
 import org.slf4j.Logger;
@@ -80,7 +83,8 @@ public class SamlResponseCreator {
             
             String remoteAddr = WebUtils.getHttpServletRequest(context).getRemoteAddr();
             Assertion saml2Assertion = 
-                createSAML2Assertion(idp, wrapper, requestId, requestIssuer, remoteAddr, consumerURL);
+                createSAML2Assertion(context, idp, wrapper, requestId, requestIssuer, 
+                                     remoteAddr, consumerURL);
             
             Element response = createResponse(idp, requestId, saml2Assertion);
             return encodeResponse(response);
@@ -91,13 +95,27 @@ public class SamlResponseCreator {
         }
     }
     
-    private Assertion createSAML2Assertion(Idp idp, SamlAssertionWrapper receivedToken,
+    private Assertion createSAML2Assertion(RequestContext context, Idp idp, SamlAssertionWrapper receivedToken,
                                            String requestID, String requestIssuer, 
                                            String remoteAddr, String racs) throws Exception {
         // Create an AuthenticationAssertion
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setIssuer(idp.getRealm());
         callbackHandler.setSubject(receivedToken.getSaml2().getSubject());
+        
+        // Test Subject against received Subject (if applicable)
+        AuthnRequest authnRequest = 
+            (AuthnRequest)WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
+        if (authnRequest.getSubject() != null && authnRequest.getSubject().getNameID() != null
+            && receivedToken.getSaml2().getSubject().getNameID() != null) {
+            NameID receivedNameId = authnRequest.getSubject().getNameID();
+            NameID issuedNameId = receivedToken.getSaml2().getSubject().getNameID();
+            if (!receivedNameId.getValue().equals(issuedNameId.getValue())) {
+                LOG.debug("Received NameID value of {} does not match issued value {}",
+                          receivedNameId.getValue(), issuedNameId.getValue());
+                throw new ProcessingException(ProcessingException.TYPE.INVALID_REQUEST);
+            }
+        }
         
         // Subject Confirmation Data
         SubjectConfirmationDataBean subjectConfirmationData = new SubjectConfirmationDataBean();
