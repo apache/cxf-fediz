@@ -161,6 +161,11 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             }
         }
         LOG.debug("Tokentype: {}", tt);
+
+        if (rst == null) {
+            LOG.warn("RequestedSecurityToken element not found in wresult");
+            throw new ProcessingException(TYPE.BAD_REQUEST);
+        }
         
         LifeTime lifeTime = null;
         if (lifetimeElem != null) {
