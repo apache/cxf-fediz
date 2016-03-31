@@ -61,6 +61,7 @@ import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.wss4j.common.ext.WSPasswordCallback;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
+import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.wss4j.dom.WSConstants;
 import org.apache.wss4j.dom.WSDataRef;
 import org.apache.wss4j.dom.WSDocInfo;
@@ -150,21 +151,13 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             }
             el = DOMUtils.getNextElement(el);
         }
+        
         if (LOG.isDebugEnabled()) {
-            LOG.debug("RST: " + ((rst != null)
-                ? rst.toString()
-                : "null"));
-            LOG.debug("Lifetime: " + ((lifetimeElem != null)
-                ? lifetimeElem.toString()
-                : "null"));
-            LOG.debug("Tokentype: " + ((tt != null)
-                ? tt.toString()
-                : "null"));
+            LOG.debug("RST: {}", DOM2Writer.nodeToString(rst));
+            LOG.debug("Lifetime: {}", DOM2Writer.nodeToString(lifetimeElem));
         }
-        if (rst == null) {
-            LOG.warn("RequestedSecurityToken element not found in wresult");
-            throw new ProcessingException(TYPE.BAD_REQUEST);
-        }
+        LOG.debug("Tokentype: {}", tt);
+        
         LifeTime lifeTime = null;
         if (lifetimeElem != null) {
             lifeTime = processLifeTime(lifetimeElem);
