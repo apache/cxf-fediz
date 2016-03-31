@@ -61,6 +61,7 @@ import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.wss4j.common.ext.WSPasswordCallback;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
+import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.wss4j.dom.WSConstants;
 import org.apache.wss4j.dom.WSDataRef;
 import org.apache.wss4j.dom.WSDocInfo;
@@ -150,8 +151,10 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             el = DOMUtils.getNextElement(el);
         }
         
-        LOG.debug("RST: {}", rst);
-        LOG.debug("Lifetime: {}", lifetimeElem);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("RST: {}", DOM2Writer.nodeToString(rst));
+            LOG.debug("Lifetime: {}", DOM2Writer.nodeToString(lifetimeElem));
+        }
         LOG.debug("Tokentype: {}", tt);
         
         if (rst == null) {
