@@ -152,8 +152,12 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         }
         
         if (LOG.isDebugEnabled()) {
-            LOG.debug("RST: {}", DOM2Writer.nodeToString(rst));
-            LOG.debug("Lifetime: {}", DOM2Writer.nodeToString(lifetimeElem));
+            if (rst != null) {
+                LOG.debug("RST: {}", DOM2Writer.nodeToString(rst));
+            }
+            if (lifetimeElem != null) {
+                LOG.debug("Lifetime: {}", DOM2Writer.nodeToString(lifetimeElem));
+            }
         }
         LOG.debug("Tokentype: {}", tt);
         
