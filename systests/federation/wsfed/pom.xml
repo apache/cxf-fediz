@@ -289,7 +289,7 @@
                             <goal>integration-test</goal>
                         </goals>
                         <configuration>
-                            <skip>false</skip>
+                            <skip>${skipTests}</skip>
                             <systemPropertyVariables>
                                 <wt.headless>true</wt.headless>
                                 <idp.https.port>${idp.https.port}</idp.https.port>

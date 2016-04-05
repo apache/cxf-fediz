@@ -239,7 +239,7 @@
                             <goal>integration-test</goal>
                         </goals>
                         <configuration>
-                            <skip>false</skip>
+                            <skip>${skipTests}</skip>
                             <reuseForks>false</reuseForks>
                             <systemPropertyVariables>
                                 <wt.headless>true</wt.headless>

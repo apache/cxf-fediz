@@ -459,6 +459,7 @@
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>8.1.16.v20140903</version>
                 <configuration>
+                    <skip>${skipTests}</skip>
                     <stopPort>${idp.stop.port}</stopPort>
                     <stopKey>STOP</stopKey>
                     <connectors>
@@ -525,7 +526,7 @@
                             <goal>integration-test</goal>
                         </goals>
                         <configuration>
-                            <skip>false</skip>
+                            <skip>${skipTests}</skip>
                             <systemPropertyVariables>
                                 <idp.https.port>${idp.https.port}</idp.https.port>
                                 <realm>${realm}</realm>

@@ -208,6 +208,7 @@
                     <stopKey>STOP</stopKey>
                     <systemProperties>
                     </systemProperties>
+                    <skip>${skipTests}</skip>
                 </configuration>
                 <executions>
                     <execution>
@@ -242,7 +243,7 @@
                             <goal>integration-test</goal>
                         </goals>
                         <configuration>
-                            <skip>false</skip>
+                            <skip>${skipTests}</skip>
                             <systemPropertyVariables>
                                 <sts.https.port>${sts.https.port}</sts.https.port>
                                 <catalina.base>target</catalina.base>
