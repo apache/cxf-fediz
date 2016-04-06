@@ -20,6 +20,7 @@
 package org.apache.cxf.fediz.jetty;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -119,6 +120,12 @@ public class FederationAuthenticator extends LoginAuthenticator {
             configurator.loadConfig(f);
             LOG.debug("Fediz configuration read from " + f.getAbsolutePath());
         } catch (JAXBException e) {
+            //[TODO] use other exception
+            throw new RuntimeException("Failed to load Fediz configuration",
+                    e);
+            //throw new ServerAuthException("Failed to load Fediz configuration",
+            //                              e);
+        } catch (FileNotFoundException e) {
             //[TODO] use other exception
             throw new RuntimeException("Failed to load Fediz configuration",
                     e);

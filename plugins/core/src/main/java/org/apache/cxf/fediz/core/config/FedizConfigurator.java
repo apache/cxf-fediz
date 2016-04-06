@@ -20,6 +20,8 @@
 package org.apache.cxf.fediz.core.config;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -39,8 +41,8 @@ public class FedizConfigurator {
     
     private List<FedizContext> fedizContextList;
 
-    public FedizConfig loadConfig(File f) throws JAXBException {
-        rootConfig = (FedizConfig) getJaxbContext().createUnmarshaller().unmarshal(f);
+    public FedizConfig loadConfig(File f) throws JAXBException, FileNotFoundException {
+        rootConfig = (FedizConfig) getJaxbContext().createUnmarshaller().unmarshal(new FileInputStream(f));
         parseFedizContextList();
         return rootConfig;
     }
