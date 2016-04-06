@@ -20,6 +20,7 @@
 package org.apache.cxf.fediz.jetty8;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -115,7 +116,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
             configurator = new FedizConfigurator();
             configurator.loadConfig(f);
             LOG.debug("Fediz configuration read from " + f.getAbsolutePath());
-        } catch (JAXBException e) {
+        } catch (JAXBException | FileNotFoundException e) {
             //[TODO] use other exception
             throw new RuntimeException("Failed to load Fediz configuration",
                     e);

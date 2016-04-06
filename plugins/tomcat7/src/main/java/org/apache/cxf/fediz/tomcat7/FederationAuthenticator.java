@@ -20,6 +20,7 @@
 package org.apache.cxf.fediz.tomcat7;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Date;
@@ -123,7 +124,7 @@ public class FederationAuthenticator extends FormAuthenticator {
             configurator = new FedizConfigurator();
             configurator.loadConfig(f);
             LOG.debug("Fediz configuration read from " + f.getAbsolutePath());
-        } catch (JAXBException e) {
+        } catch (JAXBException | FileNotFoundException e) {
             throw new LifecycleException("Failed to load Fediz configuration", e);
         }
         super.startInternal();
