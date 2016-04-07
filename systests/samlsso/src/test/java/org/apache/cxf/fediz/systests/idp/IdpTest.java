@@ -137,13 +137,17 @@ public class IdpTest {
 
     @AfterClass
     public static void cleanup() {
+        shutdownServer(idpServer);
+    }
+    
+    private static void shutdownServer(Tomcat server) {
         try {
-            if (idpServer.getServer() != null
-                && idpServer.getServer().getState() != LifecycleState.DESTROYED) {
-                if (idpServer.getServer().getState() != LifecycleState.STOPPED) {
-                    idpServer.stop();
+            if (server != null && server.getServer() != null
+                && server.getServer().getState() != LifecycleState.DESTROYED) {
+                if (server.getServer().getState() != LifecycleState.STOPPED) {
+                    server.stop();
                 }
-                idpServer.destroy();
+                server.destroy();
             }
         } catch (Exception e) {
             e.printStackTrace();
