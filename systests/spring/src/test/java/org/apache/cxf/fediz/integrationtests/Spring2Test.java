@@ -232,8 +232,6 @@ public class Spring2Test extends AbstractTests {
             //                  || ex.getMessage().contains("401 Authentication Failed")
             //                  || ex.getMessage().contains("403 Forbidden"));
         }
-
-        webClient.close();
     }
     
     @Override
