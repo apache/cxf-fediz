@@ -198,25 +198,18 @@ public class WSFedTest {
     
     @AfterClass
     public static void cleanup() {
+        shutdownServer(idpServer);
+        shutdownServer(rpServer);
+    }
+    
+    private static void shutdownServer(Tomcat server) {
         try {
-            if (idpServer.getServer() != null
-                && idpServer.getServer().getState() != LifecycleState.DESTROYED) {
-                if (idpServer.getServer().getState() != LifecycleState.STOPPED) {
-                    idpServer.stop();
+            if (server != null && server.getServer() != null
+                && server.getServer().getState() != LifecycleState.DESTROYED) {
+                if (server.getServer().getState() != LifecycleState.STOPPED) {
+                    server.stop();
                 }
-                idpServer.destroy();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try {
-            if (rpServer.getServer() != null
-                && rpServer.getServer().getState() != LifecycleState.DESTROYED) {
-                if (rpServer.getServer().getState() != LifecycleState.STOPPED) {
-                    rpServer.stop();
-                }
-                rpServer.destroy();
+                server.destroy();
             }
         } catch (Exception e) {
             e.printStackTrace();
