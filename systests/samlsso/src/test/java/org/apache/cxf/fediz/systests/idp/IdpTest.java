@@ -29,6 +29,8 @@ import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.UUID;
 
+import javax.servlet.ServletException;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -37,6 +39,7 @@ import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNodeList;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
+import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
@@ -79,7 +82,7 @@ public class IdpTest {
     private static Tomcat idpServer;
 
     @BeforeClass
-    public static void init() {
+    public static void init() throws Exception {
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
         System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
         System.setProperty("org.apache.commons.logging.simplelog.log.httpclient.wire", "info");
@@ -94,45 +97,48 @@ public class IdpTest {
         rpHttpsPort = System.getProperty("rp.https.port");
         Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
 
-        initIdp();
+        idpServer = startServer(idpHttpsPort);
 
         WSSConfig.init();
     }
 
-    private static void initIdp() {
-        try {
-            idpServer = new Tomcat();
-            idpServer.setPort(0);
-            String currentDir = new File(".").getCanonicalPath();
-            idpServer.setBaseDir(currentDir + File.separator + "target");
+    private static Tomcat startServer(String port) 
+        throws ServletException, LifecycleException, IOException {
+        Tomcat server = new Tomcat();
+        server.setPort(0);
+        String currentDir = new File(".").getCanonicalPath();
+        String baseDir = currentDir + File.separator + "target";
+        server.setBaseDir(baseDir);
 
-            idpServer.getHost().setAppBase("tomcat/idp/webapps");
-            idpServer.getHost().setAutoDeploy(true);
-            idpServer.getHost().setDeployOnStartup(true);
+        server.getHost().setAppBase("tomcat/idp/webapps");
+        server.getHost().setAutoDeploy(true);
+        server.getHost().setDeployOnStartup(true);
 
-            Connector httpsConnector = new Connector();
-            httpsConnector.setPort(Integer.parseInt(idpHttpsPort));
-            httpsConnector.setSecure(true);
-            httpsConnector.setScheme("https");
-            //httpsConnector.setAttribute("keyAlias", keyAlias);
-            httpsConnector.setAttribute("keystorePass", "tompass");
-            httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
-            httpsConnector.setAttribute("truststorePass", "tompass");
-            httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
-            httpsConnector.setAttribute("clientAuth", "want");
-            // httpsConnector.setAttribute("clientAuth", "false");
-            httpsConnector.setAttribute("sslProtocol", "TLS");
-            httpsConnector.setAttribute("SSLEnabled", true);
+        Connector httpsConnector = new Connector();
+        httpsConnector.setPort(Integer.parseInt(port));
+        httpsConnector.setSecure(true);
+        httpsConnector.setScheme("https");
+        //httpsConnector.setAttribute("keyAlias", keyAlias);
+        httpsConnector.setAttribute("keystorePass", "tompass");
+        httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
+        httpsConnector.setAttribute("truststorePass", "tompass");
+        httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
+        httpsConnector.setAttribute("clientAuth", "want");
+        // httpsConnector.setAttribute("clientAuth", "false");
+        httpsConnector.setAttribute("sslProtocol", "TLS");
+        httpsConnector.setAttribute("SSLEnabled", true);
 
-            idpServer.getService().addConnector(httpsConnector);
+        server.getService().addConnector(httpsConnector);
 
-            idpServer.addWebapp("/fediz-idp-sts", "fediz-idp-sts");
-            idpServer.addWebapp("/fediz-idp", "fediz-idp");
+        File stsWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp-sts");
+        server.addWebapp("/fediz-idp-sts", stsWebapp.getAbsolutePath());
 
-            idpServer.start();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp");
+        server.addWebapp("/fediz-idp", idpWebapp.getAbsolutePath());
+
+        server.start();
+
+        return server;
     }
 
     @AfterClass

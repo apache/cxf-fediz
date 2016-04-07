@@ -23,10 +23,12 @@ package org.apache.cxf.fediz.integrationtests;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginContext;
+import javax.servlet.ServletException;
 
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -34,6 +36,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 
 import org.apache.catalina.Context;
+import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
@@ -113,7 +116,7 @@ public class KerberosTest extends AbstractLdapTestUnit {
     private static boolean portUpdated;
     
     @BeforeClass
-    public static void init() {
+    public static void init() throws Exception {
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
         System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
         System.setProperty("org.apache.commons.logging.simplelog.log.httpclient.wire", "info");
@@ -130,8 +133,8 @@ public class KerberosTest extends AbstractLdapTestUnit {
 
         WSSConfig.init();
         
-        initIdp();
-        initRp();
+        idpServer = startServer(true, idpHttpsPort);
+        rpServer = startServer(false, rpHttpsPort);
     }
     
     @Before
@@ -162,81 +165,57 @@ public class KerberosTest extends AbstractLdapTestUnit {
         System.setProperty("java.security.auth.login.config", "src/test/resources/kerberos.jaas");
     }
     
-    private static void initIdp() {
-        try {
-            idpServer = new Tomcat();
-            idpServer.setPort(0);
-            String currentDir = new File(".").getCanonicalPath();
-            idpServer.setBaseDir(currentDir + File.separator + "target");
-            
-            idpServer.getHost().setAppBase("tomcat/idp/webapps");
-            idpServer.getHost().setAutoDeploy(true);
-            idpServer.getHost().setDeployOnStartup(true);
-            
-            Connector httpsConnector = new Connector();
-            httpsConnector.setPort(Integer.parseInt(idpHttpsPort));
-            httpsConnector.setSecure(true);
-            httpsConnector.setScheme("https");
-            //httpsConnector.setAttribute("keyAlias", keyAlias);
-            httpsConnector.setAttribute("keystorePass", "tompass");
-            httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
-            httpsConnector.setAttribute("truststorePass", "tompass");
-            httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
-            httpsConnector.setAttribute("clientAuth", "want");
-            // httpsConnector.setAttribute("clientAuth", "false");
-            httpsConnector.setAttribute("sslProtocol", "TLS");
-            httpsConnector.setAttribute("SSLEnabled", true);
+    private static Tomcat startServer(boolean idp, String port) 
+        throws ServletException, LifecycleException, IOException {
+        Tomcat server = new Tomcat();
+        server.setPort(0);
+        String currentDir = new File(".").getCanonicalPath();
+        String baseDir = currentDir + File.separator + "target";
+        server.setBaseDir(baseDir);
 
-            idpServer.getService().addConnector(httpsConnector);
-            
-            idpServer.addWebapp("/fediz-idp-sts", "fediz-idp-sts");
-            idpServer.addWebapp("/fediz-idp", "fediz-idp");
-            
-            idpServer.start();
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (idp) {
+            server.getHost().setAppBase("tomcat/idp/webapps");
+        } else {
+            server.getHost().setAppBase("tomcat/rp/webapps");
         }
-    }
-    
-    private static void initRp() {
-        try {
-            rpServer = new Tomcat();
-            rpServer.setPort(0);
-            String currentDir = new File(".").getCanonicalPath();
-            rpServer.setBaseDir(currentDir + File.separator + "target");
-            
-            rpServer.getHost().setAppBase("tomcat/rp/webapps");
-            rpServer.getHost().setAutoDeploy(true);
-            rpServer.getHost().setDeployOnStartup(true);
-            
-            Connector httpsConnector = new Connector();
-            httpsConnector.setPort(Integer.parseInt(rpHttpsPort));
-            httpsConnector.setSecure(true);
-            httpsConnector.setScheme("https");
-            //httpsConnector.setAttribute("keyAlias", keyAlias);
-            httpsConnector.setAttribute("keystorePass", "tompass");
-            httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
-            httpsConnector.setAttribute("truststorePass", "tompass");
-            httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
-            // httpsConnector.setAttribute("clientAuth", "false");
-            httpsConnector.setAttribute("clientAuth", "want");
-            httpsConnector.setAttribute("sslProtocol", "TLS");
-            httpsConnector.setAttribute("SSLEnabled", true);
+        server.getHost().setAutoDeploy(true);
+        server.getHost().setDeployOnStartup(true);
 
-            rpServer.getService().addConnector(httpsConnector);
+        Connector httpsConnector = new Connector();
+        httpsConnector.setPort(Integer.parseInt(port));
+        httpsConnector.setSecure(true);
+        httpsConnector.setScheme("https");
+        //httpsConnector.setAttribute("keyAlias", keyAlias);
+        httpsConnector.setAttribute("keystorePass", "tompass");
+        httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
+        httpsConnector.setAttribute("truststorePass", "tompass");
+        httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
+        httpsConnector.setAttribute("clientAuth", "want");
+        // httpsConnector.setAttribute("clientAuth", "false");
+        httpsConnector.setAttribute("sslProtocol", "TLS");
+        httpsConnector.setAttribute("SSLEnabled", true);
+
+        server.getService().addConnector(httpsConnector);
+
+        if (idp) {
+            File stsWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp-sts");
+            server.addWebapp("/fediz-idp-sts", stsWebapp.getAbsolutePath());
+    
+            File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp");
+            server.addWebapp("/fediz-idp", idpWebapp.getAbsolutePath());
+        } else {
+            File rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
+            Context cxt = server.addWebapp("/fedizhelloworld", rpWebapp.getAbsolutePath());
             
-            //Context ctx =
-            Context cxt = rpServer.addWebapp("/fedizhelloworld", "simpleWebapp");
             FederationAuthenticator fa = new FederationAuthenticator();
             fa.setConfigFile(currentDir + File.separator + "target" + File.separator
                              + "test-classes" + File.separator + "fediz_config.xml");
             cxt.getPipeline().addValve(fa);
-            
-            
-            rpServer.start();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
+
+        server.start();
+
+        return server;
     }
     
     @AfterClass
