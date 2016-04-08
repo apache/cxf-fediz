@@ -66,6 +66,8 @@ import org.springframework.webflow.execution.RequestContext;
 public class AuthnRequestValidator {
 
     private static final Logger LOG = LoggerFactory.getLogger(AuthnRequestValidator.class);
+    
+    private boolean requireSignature = true;
 
     public void validateAuthnRequest(RequestContext context, Idp idp, String signature,
                                      String relayState, String samlRequest, String realm) 
@@ -129,9 +131,11 @@ public class AuthnRequestValidator {
                 LOG.debug("Signature validation failed");
                 throw new ProcessingException(TYPE.BAD_REQUEST);
             }
-        } else {
+        } else if (requireSignature) {
             LOG.debug("No signature is present, therefore the request is rejected");
             throw new ProcessingException(TYPE.BAD_REQUEST);
+        } else {
+            LOG.debug("No signature is present, but this is allowed by configuration");
         }
     }
     
@@ -240,6 +244,18 @@ public class AuthnRequestValidator {
             LOG.debug("Error in validating the SAML Signature: {}", ex.getMessage(), ex);
             throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
         }
+    }
+
+    public boolean isRequireSignature() {
+        return requireSignature;
+    }
+
+    /**
+     * Whether to require a signature or not on the AuthnRequest
+     * @param requireSignature
+     */
+    public void setRequireSignature(boolean requireSignature) {
+        this.requireSignature = requireSignature;
     }
     
 }
