@@ -74,6 +74,9 @@ public class AuthnRequestValidator {
         throws Exception {
         AuthnRequest authnRequest = 
             (AuthnRequest)WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
+        if (authnRequest == null) {
+            throw new ProcessingException(TYPE.BAD_REQUEST);
+        }
         
         validateSignature(context, authnRequest, idp, signature, relayState, samlRequest, realm);
         
