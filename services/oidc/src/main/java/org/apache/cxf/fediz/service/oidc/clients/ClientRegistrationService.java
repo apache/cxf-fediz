@@ -191,8 +191,9 @@ public class ClientRegistrationService {
     public ClientCodeGrants getClientCodeGrants(@PathParam("id") String id) {
         if (dataProvider instanceof AuthorizationCodeDataProvider) {
             Client c = getRegisteredClient(id);
+            UserSubject subject = new UserSubject(getUserName());
             List<ServerAuthorizationCodeGrant> codeGrants = new ArrayList<ServerAuthorizationCodeGrant>(
-               ((AuthorizationCodeDataProvider)dataProvider).getCodeGrants(c, null));
+               ((AuthorizationCodeDataProvider)dataProvider).getCodeGrants(c, subject));
             Collections.sort(codeGrants, new CodeGrantComparator());
             return new ClientCodeGrants(c, codeGrants);
         }
