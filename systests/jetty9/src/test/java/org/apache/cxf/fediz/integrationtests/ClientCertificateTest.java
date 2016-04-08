@@ -75,7 +75,7 @@ public class ClientCertificateTest extends AbstractClientCertTests {
     @AfterClass
     public static void cleanup() {
         try {
-            if (idpServer.getServer() != null
+            if (idpServer != null && idpServer.getServer() != null
                 && idpServer.getServer().getState() != LifecycleState.DESTROYED) {
                 if (idpServer.getServer().getState() != LifecycleState.STOPPED) {
                     idpServer.stop();
@@ -100,7 +100,8 @@ public class ClientCertificateTest extends AbstractClientCertTests {
             idpServer = new Tomcat();
             idpServer.setPort(0);
             String currentDir = new File(".").getCanonicalPath();
-            idpServer.setBaseDir(currentDir + File.separator + "target");
+            String baseDir = currentDir + File.separator + "target";
+            idpServer.setBaseDir(baseDir);
             
             idpServer.getHost().setAppBase("tomcat/idp/webapps");
             idpServer.getHost().setAutoDeploy(true);
@@ -122,8 +123,11 @@ public class ClientCertificateTest extends AbstractClientCertTests {
 
             idpServer.getService().addConnector(httpsConnector);
             
-            idpServer.addWebapp("/fediz-idp-sts", "fediz-idp-sts");
-            idpServer.addWebapp("/fediz-idp", "fediz-idp");
+            File stsWebapp = new File(baseDir + File.separator + idpServer.getHost().getAppBase(), "fediz-idp-sts");
+            idpServer.addWebapp("/fediz-idp-sts", stsWebapp.getAbsolutePath());
+    
+            File idpWebapp = new File(baseDir + File.separator + idpServer.getHost().getAppBase(), "fediz-idp");
+            idpServer.addWebapp("/fediz-idp", idpWebapp.getAbsolutePath());
             
             idpServer.start();
         } catch (Exception e) {

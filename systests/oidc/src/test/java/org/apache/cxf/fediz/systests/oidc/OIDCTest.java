@@ -21,6 +21,8 @@ package org.apache.cxf.fediz.systests.oidc;
 
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.security.KeyStore;
@@ -60,6 +62,7 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
+import org.apache.commons.io.IOUtils;
 import org.apache.cxf.fediz.tomcat7.FederationAuthenticator;
 import org.apache.cxf.rs.security.jose.jwa.SignatureAlgorithm;
 import org.apache.cxf.rs.security.jose.jws.JwsJwtCompactConsumer;
@@ -149,6 +152,21 @@ public class OIDCTest {
         } else {
             File rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-oidc");
             Context cxt = server.addWebapp("/fediz-oidc", rpWebapp.getAbsolutePath());
+            
+            // Substitute the IDP port. Necessary if running the test in eclipse where port filtering doesn't seem
+            // to work
+            File f = new File(currentDir + "/src/test/resources/fediz_config.xml");
+            FileInputStream inputStream = new FileInputStream(f);
+            String content = IOUtils.toString(inputStream, "UTF-8");
+            inputStream.close();
+            if (content.contains("idp.https.port")) {
+                content = content.replaceAll("\\$\\{idp.https.port\\}", "" + idpHttpsPort);
+            
+                File f2 = new File(baseDir + "/test-classes/fediz_config.xml");
+                try (FileOutputStream outputStream = new FileOutputStream(f2)) {
+                    IOUtils.write(content, outputStream, "UTF-8");
+                }
+            }
             
             FederationAuthenticator fa = new FederationAuthenticator();
             fa.setConfigFile(currentDir + File.separator + "target" + File.separator
