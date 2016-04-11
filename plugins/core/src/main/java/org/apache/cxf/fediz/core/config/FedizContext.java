@@ -26,6 +26,7 @@ import java.math.BigInteger;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -63,7 +64,7 @@ public class FedizContext implements Closeable {
     private String relativePath;
     private ReplayCache replayCache;
     private Protocol protocol;
-    private List<TrustManager> certificateStores;
+    private List<TrustManager> certificateStores = new ArrayList<>();
     private KeyManager keyManager;
     private KeyManager decryptionKeyManager;
     private ClassLoader classloader;
@@ -97,10 +98,10 @@ public class FedizContext implements Closeable {
     }
     
     public List<TrustManager> getCertificateStores() {
-        if (certificateStores != null) {
-            return certificateStores;
+        if (!certificateStores.isEmpty()) {
+            return Collections.unmodifiableList(certificateStores);
         }
-        certificateStores = new ArrayList<>();
+        
         CertificateStores certStores = config.getCertificateStores();
         List<TrustManagersType> trustManagers = certStores.getTrustManager();
         for (TrustManagersType manager : trustManagers) {
@@ -126,7 +127,7 @@ public class FedizContext implements Closeable {
                 throw new RuntimeException("Failed to read keystore");
             }
         }
-        return certificateStores; 
+        return Collections.unmodifiableList(certificateStores); 
     }
 
     public BigInteger getMaximumClockSkew() {
