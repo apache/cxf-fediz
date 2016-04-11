@@ -48,6 +48,12 @@
         </dependency>
         <dependency>
             <groupId>org.apache.cxf.fediz</groupId>
+            <artifactId>fediz-oidc</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.cxf.fediz</groupId>
             <artifactId>fediz-core</artifactId>
             <version>${project.version}</version>
         </dependency>
