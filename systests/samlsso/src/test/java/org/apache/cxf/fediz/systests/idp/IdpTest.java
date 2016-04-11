@@ -19,6 +19,7 @@
 
 package org.apache.cxf.fediz.systests.idp;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -254,7 +255,10 @@ public class IdpTest {
         signAuthnRequest(authnRequest);
         
         Element authnRequestElement = OpenSAMLUtil.toDom(authnRequest, doc);
-        String authnRequestEncoded = encodeAuthnRequest(authnRequestElement);
+        
+        // Don't inflate the token...
+        String requestMessage = DOM2Writer.nodeToString(authnRequestElement);
+        String authnRequestEncoded = Base64Utility.encode(requestMessage.getBytes("UTF-8"));
 
         String relayState = UUID.randomUUID().toString();
         String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml/up";
@@ -587,7 +591,7 @@ public class IdpTest {
         
         // Don't inflate the token...
         String requestMessage = DOM2Writer.nodeToString(authnRequestElement);
-        String authnRequestEncoded =  Base64Utility.encode(requestMessage.getBytes("UTF-8"));
+        String authnRequestEncoded = Base64Utility.encode(requestMessage.getBytes("UTF-8"));
 
         String urlEncodedRequest = URLEncoder.encode(authnRequestEncoded, "UTF-8");
 
@@ -698,7 +702,7 @@ public class IdpTest {
         
         // Decode + verify response
         byte[] deflatedToken = Base64Utility.decode(samlResponse);
-        InputStream inputStream = new DeflateEncoderDecoder().inflateToken(deflatedToken);
+        InputStream inputStream = new ByteArrayInputStream(deflatedToken);
         
         Document responseDoc = StaxUtils.read(new InputStreamReader(inputStream, "UTF-8"));
         

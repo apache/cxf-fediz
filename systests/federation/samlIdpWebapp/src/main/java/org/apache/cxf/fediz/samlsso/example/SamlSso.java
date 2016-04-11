@@ -20,6 +20,7 @@
 package org.apache.cxf.fediz.samlsso.example;
 
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -100,9 +101,10 @@ public class SamlSso {
         
         // Create the response
         Element response = createResponse(request.getID(), racs, requestIssuer);
-        String responseStr = encodeResponse(response);
+        boolean redirect = "REDIRECT".equals(binding);
+        String responseStr = encodeResponse(response, redirect);
         
-        if ("REDIRECT".equals(binding)) {
+        if (redirect) {
             return redirectResponse(relayState, racs, responseStr);
         } else {
             return postBindingResponse(relayState, racs, responseStr);
@@ -164,19 +166,25 @@ public class SamlSso {
         return policyElement;
     }
 
-    protected String encodeResponse(Element response) throws IOException {
+    protected String encodeResponse(Element response, boolean redirect) throws IOException {
         String responseMessage = DOM2Writer.nodeToString(response);
         System.out.println("RESP: " + responseMessage);
 
-        DeflateEncoderDecoder encoder = new DeflateEncoderDecoder();
-        byte[] deflatedBytes = encoder.deflateToken(responseMessage.getBytes("UTF-8"));
+        byte[] deflatedBytes = null;
+        if (redirect) {
+            DeflateEncoderDecoder encoder = new DeflateEncoderDecoder();
+            deflatedBytes = encoder.deflateToken(responseMessage.getBytes("UTF-8"));
+        } else {
+            deflatedBytes = responseMessage.getBytes("UTF-8");
+        }
 
         return Base64Utility.encode(deflatedBytes);
     }
     
-    protected AuthnRequest extractRequest(String samlRequest) throws Base64Exception, DataFormatException,
-        XMLStreamException, UnsupportedEncodingException, WSSecurityException {
+    protected AuthnRequest extractRequest(String samlRequest) throws Base64Exception, 
+        DataFormatException, XMLStreamException, UnsupportedEncodingException, WSSecurityException {
         byte[] deflatedToken = Base64Utility.decode(samlRequest);
+        
         InputStream tokenStream = new DeflateEncoderDecoder().inflateToken(deflatedToken);
         
         Document responseDoc = StaxUtils.read(new InputStreamReader(tokenStream, "UTF-8"));

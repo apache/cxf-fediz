@@ -46,11 +46,11 @@ import org.springframework.webflow.execution.RequestContext;
 public class AuthnRequestParser {
 
     private static final Logger LOG = LoggerFactory.getLogger(AuthnRequestParser.class);
-    private boolean supportDeflateEncoding = true;
+    private boolean supportDeflateEncoding;
 
     public void parseSAMLRequest(RequestContext context, Idp idp, String samlRequest) throws ProcessingException {
         LOG.debug("Received SAML Request: {}", samlRequest);
-
+        
         AuthnRequest parsedRequest = null;
         if (samlRequest == null) {
             WebUtils.removeAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
@@ -59,7 +59,7 @@ public class AuthnRequestParser {
                 (AuthnRequest)WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
             if (parsedRequest == null) {
                 try {
-                    parsedRequest = extractRequest(samlRequest);
+                    parsedRequest = extractRequest(context, samlRequest);
                     WebUtils.putAttributeInFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST, parsedRequest);
                     LOG.debug("SAML Request with id '{}' successfully parsed", parsedRequest.getID());
                 } catch (Exception ex) {
@@ -135,10 +135,12 @@ public class AuthnRequestParser {
         return false;
     }
     
-    private AuthnRequest extractRequest(String samlRequest) throws Exception {
+    protected AuthnRequest extractRequest(RequestContext context, String samlRequest) throws Exception {
         byte[] deflatedToken = Base64Utility.decode(samlRequest);
-        InputStream tokenStream = supportDeflateEncoding
-             ? new DeflateEncoderDecoder().inflateToken(deflatedToken) 
+        String httpMethod = WebUtils.getHttpServletRequest(context).getMethod();
+        
+        InputStream tokenStream = supportDeflateEncoding || "GET".equals(httpMethod)
+             ? new DeflateEncoderDecoder().inflateToken(deflatedToken)
                  : new ByteArrayInputStream(deflatedToken);
 
         Document responseDoc = StaxUtils.read(new InputStreamReader(tokenStream, "UTF-8"));

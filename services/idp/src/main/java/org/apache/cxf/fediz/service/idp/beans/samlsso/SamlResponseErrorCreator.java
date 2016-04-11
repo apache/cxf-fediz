@@ -46,7 +46,7 @@ import org.springframework.webflow.execution.RequestContext;
 public class SamlResponseErrorCreator {
 
     private static final Logger LOG = LoggerFactory.getLogger(SamlResponseErrorCreator.class);
-    private boolean supportDeflateEncoding = true;
+    private boolean supportDeflateEncoding;
 
     public String createSAMLResponse(RequestContext context, boolean requestor,
                                      Idp idp, String requestID) throws ProcessingException { 
