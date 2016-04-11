@@ -31,9 +31,9 @@
             <set name="flowScope.idpConfig" value="config.getIDP(null)" />
         </on-entry>
         <if test="requestParameters.RelayState == null or requestParameters.RelayState.length() == 0"
-            then="viewBadRequest" />
+            then="handleBadRequestError" />
         <if test="requestParameters.SAMLRequest != null and !requestParameters.SAMLRequest.isEmpty()"
-            then="signinSAMLRequest" else="viewBadRequest" />
+            then="signinSAMLRequest" else="handleBadRequestError" />
     </decision-state>
     
     <subflow-state id="signinSAMLRequest" subflow="signinSAMLRequest">
@@ -52,7 +52,7 @@
             <set name="flowScope.idpToken" value="currentEvent.attributes.idpToken" />
             <set name="flowScope.saml_authn_request" value="currentEvent.attributes.saml_authn_request" />
         </transition>
-        <transition on="viewBadRequest" to="viewBadRequest">
+        <transition on="viewBadRequest" to="handleBadRequestError">
             <set name="flowScope.saml_authn_request" value="currentEvent.attributes.saml_authn_request" />
         </transition>
         <transition on="scInternalServerError" to="scInternalServerError" />
@@ -69,7 +69,7 @@
         </on-entry>
         <evaluate expression="signinParametersCacheAction.storeRPConfigInSession(flowRequestContext)"/>
         <transition to="produceSAMLResponse" />
-        <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
+        <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="handleBadRequestError" />
         <transition on-exception="java.lang.Throwable" to="scInternalServerError" />
     </action-state>
     
@@ -99,6 +99,16 @@
     </end-state>
 
     <!-- abnormal exit point -->
+    <decision-state id="handleBadRequestError">
+        <on-entry>
+            <evaluate expression="authnRequestParser.retrieveConsumerURL(flowRequestContext)" 
+                      result="requestScope.samlAction"/>
+        </on-entry>
+        <!-- See if we managed to at least parse the request to get the response URL -->
+        <if test="requestScope.samlAction == null or requestScope.samlAction.length() == 0"
+            then="viewBadRequestParsingError" else="viewBadRequest"/>
+    </decision-state>
+    
     <end-state id="viewBadRequest" view="samlsigninresponseform">
         <on-entry>
             <evaluate expression="authnRequestParser.retrieveConsumerURL(flowRequestContext)" 
@@ -109,6 +119,15 @@
             <evaluate expression="samlResponseErrorCreator.createSAMLResponse(flowRequestContext, true, flowScope.idpConfig, 
                                                                      flowScope.requestId)"
                       result="requestScope.samlResponse"/>     
+        </on-entry>
+    </end-state>
+    
+    <!-- abnormal exit point : Http 400 Bad Request -->
+    <end-state id="viewBadRequestParsingError" view="genericerror">
+        <on-entry>
+            <evaluate
+                expression="externalContext.nativeResponse.setStatus(400,'Error parsing SAML Request')" />
+            <set name="requestScope.reason" value="'Error parsing SAML Request'" />
         </on-entry>
     </end-state>
 

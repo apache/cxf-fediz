@@ -36,6 +36,7 @@ import javax.servlet.ServletException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebRequest;
@@ -561,6 +562,56 @@ public class IdpTest {
             parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
         String expected = "urn:oasis:names:tc:SAML:2.0:status:Requester";
         Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        
+        webClient.close();
+    }
+    
+    @org.junit.Test
+    public void testProblemWithParsingRequest() throws Exception {
+        OpenSAMLUtil.initSamlEngine();
+        
+        // Create SAML AuthnRequest
+        Document doc = DOMUtils.createDocument();
+        doc.appendChild(doc.createElement("root"));
+        // Create the AuthnRequest
+        String consumerURL = "https://localhost:" + getRpHttpsPort() + "/" 
+            + getServletContextName() + "/secure/fedservlet";
+        AuthnRequest authnRequest = 
+            new DefaultAuthnRequestBuilder().createAuthnRequest(
+                null, "urn:org:apache:cxf:fediz:fedizhelloworld-xyz", consumerURL
+            );
+        authnRequest.setDestination("https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml");
+        signAuthnRequest(authnRequest);
+        
+        Element authnRequestElement = OpenSAMLUtil.toDom(authnRequest, doc);
+        
+        // Don't inflate the token...
+        String requestMessage = DOM2Writer.nodeToString(authnRequestElement);
+        String authnRequestEncoded =  Base64Utility.encode(requestMessage.getBytes("UTF-8"));
+
+        String urlEncodedRequest = URLEncoder.encode(authnRequestEncoded, "UTF-8");
+
+        String relayState = UUID.randomUUID().toString();
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml?";
+        url += SSOConstants.RELAY_STATE + "=" + relayState;
+        url += "&" + SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
+
+        String user = "alice";
+        String password = "ecila";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        try {
+            webClient.getPage(url);
+            Assert.fail("Failure expected on parsing the request in the IdP");
+        }  catch (FailingHttpStatusCodeException ex) {
+            Assert.assertEquals(ex.getStatusCode(), 400);
+        }
         
         webClient.close();
     }
