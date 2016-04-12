@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.UUID;
 
 import javax.servlet.ServletException;
@@ -56,6 +57,7 @@ import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.cxf.rs.security.saml.DeflateEncoderDecoder;
 import org.apache.cxf.rs.security.saml.sso.DefaultAuthnRequestBuilder;
 import org.apache.cxf.rs.security.saml.sso.SSOConstants;
+import org.apache.cxf.rs.security.saml.sso.SamlpRequestComponentBuilder;
 import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -70,8 +72,14 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.opensaml.core.xml.XMLObject;
+import org.opensaml.saml.common.SAMLVersion;
 import org.opensaml.saml.common.SignableSAMLObject;
+import org.opensaml.saml.saml2.core.AuthnContextClassRef;
+import org.opensaml.saml.saml2.core.AuthnContextComparisonTypeEnumeration;
 import org.opensaml.saml.saml2.core.AuthnRequest;
+import org.opensaml.saml.saml2.core.Issuer;
+import org.opensaml.saml.saml2.core.NameIDPolicy;
+import org.opensaml.saml.saml2.core.RequestedAuthnContext;
 import org.opensaml.security.x509.BasicX509Credential;
 import org.opensaml.xmlsec.keyinfo.impl.X509KeyInfoGeneratorFactory;
 import org.opensaml.xmlsec.signature.KeyInfo;
@@ -179,6 +187,10 @@ public class IdpTest {
         return "fedizhelloworld";
     }
     
+    //
+    // Successful tests
+    //
+
     @org.junit.Test
     public void testSuccessfulInvokeOnIdP() throws Exception {
         OpenSAMLUtil.initSamlEngine();
@@ -304,6 +316,91 @@ public class IdpTest {
     }
     
     @org.junit.Test
+    public void testSeparateSignature() throws Exception {
+        OpenSAMLUtil.initSamlEngine();
+        
+        // Create SAML AuthnRequest
+        Document doc = DOMUtils.createDocument();
+        doc.appendChild(doc.createElement("root"));
+        // Create the AuthnRequest
+        String consumerURL = "https://localhost:" + getRpHttpsPort() + "/" 
+            + getServletContextName() + "/secure/fedservlet";
+        AuthnRequest authnRequest = 
+            new DefaultAuthnRequestBuilder().createAuthnRequest(
+                null, "urn:org:apache:cxf:fediz:fedizhelloworld", consumerURL
+            );
+        authnRequest.setDestination("https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml");
+        
+        Element authnRequestElement = OpenSAMLUtil.toDom(authnRequest, doc);
+        String authnRequestEncoded = encodeAuthnRequest(authnRequestElement);
+
+        String urlEncodedRequest = URLEncoder.encode(authnRequestEncoded, "UTF-8");
+
+        String relayState = UUID.randomUUID().toString();
+        
+        // Sign request
+        Crypto crypto = CryptoFactory.getInstance("stsKeystoreA.properties");
+        
+        CryptoType cryptoType = new CryptoType(CryptoType.TYPE.ALIAS);
+        cryptoType.setAlias("realma");
+
+        // Get the private key
+        PrivateKey privateKey = crypto.getPrivateKey("realma", "realma");
+        
+        java.security.Signature signature = java.security.Signature.getInstance("SHA1withRSA");
+        signature.initSign(privateKey);
+       
+        String requestToSign = SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
+        requestToSign += "&" + SSOConstants.RELAY_STATE + "=" + relayState;
+        requestToSign += "&" + SSOConstants.SIG_ALG + "=" 
+            + URLEncoder.encode(SSOConstants.RSA_SHA1, StandardCharsets.UTF_8.name());
+        
+        signature.update(requestToSign.getBytes(StandardCharsets.UTF_8));
+        byte[] signBytes = signature.sign();
+        
+        String encodedSignature = Base64.encode(signBytes);
+        
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml/up?";
+        url += SSOConstants.RELAY_STATE + "=" + relayState;
+        url += "&" + SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
+        url += "&" + SSOConstants.SIGNATURE + "=" + URLEncoder.encode(encodedSignature, StandardCharsets.UTF_8.name());
+
+        String user = "alice";
+        String password = "ecila";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        final HtmlPage idpPage = webClient.getPage(url);
+        webClient.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        
+        org.opensaml.saml.saml2.core.Response samlResponse = 
+            parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
+        String expected = "urn:oasis:names:tc:SAML:2.0:status:Success";
+        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        
+        // Check claims
+        String parsedResponse = DOM2Writer.nodeToString(samlResponse.getDOM().getOwnerDocument());
+        String claim = ClaimTypes.FIRSTNAME.toString();
+        Assert.assertTrue(parsedResponse.contains(claim));
+        claim = ClaimTypes.LASTNAME.toString();
+        Assert.assertTrue(parsedResponse.contains(claim));
+        claim = ClaimTypes.EMAILADDRESS.toString();
+        Assert.assertTrue(parsedResponse.contains(claim));
+
+        webClient.close();
+    }
+    
+    //
+    // Negative tests
+    //
+     
+    @org.junit.Test
     public void testBadIssuer() throws Exception {
         OpenSAMLUtil.initSamlEngine();
         
@@ -317,6 +414,128 @@ public class IdpTest {
             new DefaultAuthnRequestBuilder().createAuthnRequest(
                 null, "urn:org:apache:cxf:fediz:fedizhelloworld-xyz", consumerURL
             );
+        authnRequest.setDestination("https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml");
+        signAuthnRequest(authnRequest);
+        
+        Element authnRequestElement = OpenSAMLUtil.toDom(authnRequest, doc);
+        String authnRequestEncoded = encodeAuthnRequest(authnRequestElement);
+
+        String urlEncodedRequest = URLEncoder.encode(authnRequestEncoded, "UTF-8");
+
+        String relayState = UUID.randomUUID().toString();
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml?";
+        url += SSOConstants.RELAY_STATE + "=" + relayState;
+        url += "&" + SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
+
+        String user = "alice";
+        String password = "ecila";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        final HtmlPage idpPage = webClient.getPage(url);
+        
+        org.opensaml.saml.saml2.core.Response samlResponse = 
+            parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
+        String expected = "urn:oasis:names:tc:SAML:2.0:status:Requester";
+        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+       
+        webClient.close();
+    }
+    
+    @org.junit.Test
+    public void testNoIssuer() throws Exception {
+        OpenSAMLUtil.initSamlEngine();
+        
+        // Create SAML AuthnRequest
+        Document doc = DOMUtils.createDocument();
+        doc.appendChild(doc.createElement("root"));
+        // Create the AuthnRequest
+        String consumerURL = "https://localhost:" + getRpHttpsPort() + "/" 
+            + getServletContextName() + "/secure/fedservlet";
+        AuthnRequest authnRequest = 
+            new DefaultAuthnRequestBuilder().createAuthnRequest(
+                null, null, consumerURL
+            );
+        authnRequest.setDestination("https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml");
+        signAuthnRequest(authnRequest);
+        
+        Element authnRequestElement = OpenSAMLUtil.toDom(authnRequest, doc);
+        String authnRequestEncoded = encodeAuthnRequest(authnRequestElement);
+
+        String urlEncodedRequest = URLEncoder.encode(authnRequestEncoded, "UTF-8");
+
+        String relayState = UUID.randomUUID().toString();
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml?";
+        url += SSOConstants.RELAY_STATE + "=" + relayState;
+        url += "&" + SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
+
+        String user = "alice";
+        String password = "ecila";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        final HtmlPage idpPage = webClient.getPage(url);
+        
+        org.opensaml.saml.saml2.core.Response samlResponse = 
+            parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
+        String expected = "urn:oasis:names:tc:SAML:2.0:status:Requester";
+        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+       
+        webClient.close();
+    }
+    
+    @org.junit.Test
+    public void testBadIssuerFormat() throws Exception {
+        OpenSAMLUtil.initSamlEngine();
+        
+        // Create SAML AuthnRequest
+        Document doc = DOMUtils.createDocument();
+        doc.appendChild(doc.createElement("root"));
+        // Create the AuthnRequest
+        String consumerURL = "https://localhost:" + getRpHttpsPort() + "/" 
+            + getServletContextName() + "/secure/fedservlet";
+        
+        String issuerId = "urn:org:apache:cxf:fediz:fedizhelloworld";
+        Issuer issuer =
+            SamlpRequestComponentBuilder.createIssuer(issuerId);
+        issuer.setFormat("urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress");
+        
+        String nameIDFormat = "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent";
+        NameIDPolicy nameIDPolicy =
+            SamlpRequestComponentBuilder.createNameIDPolicy(true, nameIDFormat, issuerId);
+        
+        AuthnContextClassRef authnCtxClassRef =
+            SamlpRequestComponentBuilder.createAuthnCtxClassRef(
+                "urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport"
+            );
+        RequestedAuthnContext authnCtx =
+            SamlpRequestComponentBuilder.createRequestedAuthnCtxPolicy(
+                AuthnContextComparisonTypeEnumeration.EXACT,
+                Collections.singletonList(authnCtxClassRef), null
+            );
+        
+        String protocolBinding = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST";
+        AuthnRequest authnRequest = SamlpRequestComponentBuilder.createAuthnRequest(
+                consumerURL, 
+                false, 
+                false,
+                protocolBinding, 
+                SAMLVersion.VERSION_20,
+                issuer, 
+                nameIDPolicy, 
+                authnCtx
+        );
+        
         authnRequest.setDestination("https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml");
         signAuthnRequest(authnRequest);
         
@@ -397,6 +616,51 @@ public class IdpTest {
     }
     
     @org.junit.Test
+    public void testMissingRelayState() throws Exception {
+        OpenSAMLUtil.initSamlEngine();
+        
+        // Create SAML AuthnRequest
+        Document doc = DOMUtils.createDocument();
+        doc.appendChild(doc.createElement("root"));
+        // Create the AuthnRequest
+        String consumerURL = "https://localhost:" + getRpHttpsPort() + "/" 
+            + getServletContextName() + "/secure/fedservlet";
+        AuthnRequest authnRequest = 
+            new DefaultAuthnRequestBuilder().createAuthnRequest(
+                null, "urn:org:apache:cxf:fediz:fedizhelloworld", consumerURL
+            );
+        authnRequest.setDestination("https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml");
+        signAuthnRequest(authnRequest);
+        
+        Element authnRequestElement = OpenSAMLUtil.toDom(authnRequest, doc);
+        String authnRequestEncoded = encodeAuthnRequest(authnRequestElement);
+
+        String urlEncodedRequest = URLEncoder.encode(authnRequestEncoded, "UTF-8");
+
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml?";
+        url += SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
+
+        String user = "alice";
+        String password = "ecila";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        try {
+            webClient.getPage(url);
+            Assert.fail("Failure expected on not sending the RelayState");
+        }  catch (FailingHttpStatusCodeException ex) {
+            Assert.assertEquals(ex.getStatusCode(), 400);
+        }
+       
+        webClient.close();
+    }
+    
+    @org.junit.Test
     public void testUnsignedRequest() throws Exception {
         OpenSAMLUtil.initSamlEngine();
         
@@ -443,7 +707,55 @@ public class IdpTest {
     }
     
     @org.junit.Test
-    public void testSeparateSignature() throws Exception {
+    public void testEmptySeparateSignature() throws Exception {
+        OpenSAMLUtil.initSamlEngine();
+        
+        // Create SAML AuthnRequest
+        Document doc = DOMUtils.createDocument();
+        doc.appendChild(doc.createElement("root"));
+        // Create the AuthnRequest
+        String consumerURL = "https://localhost:" + getRpHttpsPort() + "/" 
+            + getServletContextName() + "/secure/fedservlet";
+        AuthnRequest authnRequest = 
+            new DefaultAuthnRequestBuilder().createAuthnRequest(
+                null, "urn:org:apache:cxf:fediz:fedizhelloworld", consumerURL
+            );
+        authnRequest.setDestination("https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml");
+        
+        Element authnRequestElement = OpenSAMLUtil.toDom(authnRequest, doc);
+        String authnRequestEncoded = encodeAuthnRequest(authnRequestElement);
+
+        String urlEncodedRequest = URLEncoder.encode(authnRequestEncoded, "UTF-8");
+
+        String relayState = UUID.randomUUID().toString();
+        
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml/up?";
+        url += SSOConstants.RELAY_STATE + "=" + relayState;
+        url += "&" + SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
+        url += "&" + SSOConstants.SIGNATURE + "=";
+
+        String user = "alice";
+        String password = "ecila";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        final HtmlPage idpPage = webClient.getPage(url);
+        
+        org.opensaml.saml.saml2.core.Response samlResponse = 
+            parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
+        String expected = "urn:oasis:names:tc:SAML:2.0:status:Requester";
+        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+
+        webClient.close();
+    }
+    
+    @org.junit.Test
+    public void testBase64DecodingErrorSeparateSignature() throws Exception {
         OpenSAMLUtil.initSamlEngine();
         
         // Create SAML AuthnRequest
@@ -491,6 +803,7 @@ public class IdpTest {
         url += SSOConstants.RELAY_STATE + "=" + relayState;
         url += "&" + SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
         url += "&" + SSOConstants.SIGNATURE + "=" + URLEncoder.encode(encodedSignature, StandardCharsets.UTF_8.name());
+        url += "-xyz";
 
         String user = "alice";
         String password = "ecila";
@@ -503,22 +816,157 @@ public class IdpTest {
 
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
-        webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
         
         org.opensaml.saml.saml2.core.Response samlResponse = 
             parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
-        String expected = "urn:oasis:names:tc:SAML:2.0:status:Success";
+        String expected = "urn:oasis:names:tc:SAML:2.0:status:Requester";
         Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+
+        webClient.close();
+    }
+    
+    @org.junit.Test
+    public void testChangedSeparateSignature() throws Exception {
+        OpenSAMLUtil.initSamlEngine();
         
-        // Check claims
-        String parsedResponse = DOM2Writer.nodeToString(samlResponse.getDOM().getOwnerDocument());
-        String claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
-        claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
-        claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        // Create SAML AuthnRequest
+        Document doc = DOMUtils.createDocument();
+        doc.appendChild(doc.createElement("root"));
+        // Create the AuthnRequest
+        String consumerURL = "https://localhost:" + getRpHttpsPort() + "/" 
+            + getServletContextName() + "/secure/fedservlet";
+        AuthnRequest authnRequest = 
+            new DefaultAuthnRequestBuilder().createAuthnRequest(
+                null, "urn:org:apache:cxf:fediz:fedizhelloworld", consumerURL
+            );
+        authnRequest.setDestination("https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml");
+        
+        Element authnRequestElement = OpenSAMLUtil.toDom(authnRequest, doc);
+        String authnRequestEncoded = encodeAuthnRequest(authnRequestElement);
+
+        String urlEncodedRequest = URLEncoder.encode(authnRequestEncoded, "UTF-8");
+
+        String relayState = UUID.randomUUID().toString();
+        
+        // Sign request
+        Crypto crypto = CryptoFactory.getInstance("stsKeystoreA.properties");
+        
+        CryptoType cryptoType = new CryptoType(CryptoType.TYPE.ALIAS);
+        cryptoType.setAlias("realma");
+
+        // Get the private key
+        PrivateKey privateKey = crypto.getPrivateKey("realma", "realma");
+        
+        java.security.Signature signature = java.security.Signature.getInstance("SHA1withRSA");
+        signature.initSign(privateKey);
+       
+        String requestToSign = SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
+        requestToSign += "&" + SSOConstants.RELAY_STATE + "=" + relayState;
+        requestToSign += "&" + SSOConstants.SIG_ALG + "=" 
+            + URLEncoder.encode(SSOConstants.RSA_SHA1, StandardCharsets.UTF_8.name());
+        
+        signature.update(requestToSign.getBytes(StandardCharsets.UTF_8));
+        byte[] signBytes = signature.sign();
+        if (signBytes[1] != (byte)1) {
+            signBytes[1] = (byte)1;
+        } else {
+            signBytes[1] = (byte)2;
+        }
+        
+        String encodedSignature = Base64.encode(signBytes);
+        
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml/up?";
+        url += SSOConstants.RELAY_STATE + "=" + relayState;
+        url += "&" + SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
+        url += "&" + SSOConstants.SIGNATURE + "=" + URLEncoder.encode(encodedSignature, StandardCharsets.UTF_8.name());
+
+        String user = "alice";
+        String password = "ecila";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        final HtmlPage idpPage = webClient.getPage(url);
+        
+        org.opensaml.saml.saml2.core.Response samlResponse = 
+            parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
+        String expected = "urn:oasis:names:tc:SAML:2.0:status:Requester";
+        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+
+        webClient.close();
+    }
+    
+    @org.junit.Test
+    public void testSeparateSignatureWrongSignedContent() throws Exception {
+        OpenSAMLUtil.initSamlEngine();
+        
+        // Create SAML AuthnRequest
+        Document doc = DOMUtils.createDocument();
+        doc.appendChild(doc.createElement("root"));
+        // Create the AuthnRequest
+        String consumerURL = "https://localhost:" + getRpHttpsPort() + "/" 
+            + getServletContextName() + "/secure/fedservlet";
+        AuthnRequest authnRequest = 
+            new DefaultAuthnRequestBuilder().createAuthnRequest(
+                null, "urn:org:apache:cxf:fediz:fedizhelloworld", consumerURL
+            );
+        authnRequest.setDestination("https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml");
+        
+        Element authnRequestElement = OpenSAMLUtil.toDom(authnRequest, doc);
+        String authnRequestEncoded = encodeAuthnRequest(authnRequestElement);
+
+        String urlEncodedRequest = URLEncoder.encode(authnRequestEncoded, "UTF-8");
+
+        String relayState = UUID.randomUUID().toString();
+        
+        // Sign request
+        Crypto crypto = CryptoFactory.getInstance("stsKeystoreA.properties");
+        
+        CryptoType cryptoType = new CryptoType(CryptoType.TYPE.ALIAS);
+        cryptoType.setAlias("realma");
+
+        // Get the private key
+        PrivateKey privateKey = crypto.getPrivateKey("realma", "realma");
+        
+        java.security.Signature signature = java.security.Signature.getInstance("SHA1withRSA");
+        signature.initSign(privateKey);
+       
+        String requestToSign = SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
+        requestToSign += "&" + SSOConstants.RELAY_STATE + "=" + relayState;
+        requestToSign += "&" + SSOConstants.SIG_ALG + "=" 
+            + URLEncoder.encode(SSOConstants.RSA_SHA1, StandardCharsets.UTF_8.name())
+            + "asf=xyz";
+        
+        signature.update(requestToSign.getBytes(StandardCharsets.UTF_8));
+        byte[] signBytes = signature.sign();
+        
+        String encodedSignature = Base64.encode(signBytes);
+        
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml/up?";
+        url += SSOConstants.RELAY_STATE + "=" + relayState;
+        url += "&" + SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
+        url += "&" + SSOConstants.SIGNATURE + "=" + URLEncoder.encode(encodedSignature, StandardCharsets.UTF_8.name());
+
+        String user = "alice";
+        String password = "ecila";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        final HtmlPage idpPage = webClient.getPage(url);
+        
+        org.opensaml.saml.saml2.core.Response samlResponse = 
+            parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
+        String expected = "urn:oasis:names:tc:SAML:2.0:status:Requester";
+        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
 
         webClient.close();
     }

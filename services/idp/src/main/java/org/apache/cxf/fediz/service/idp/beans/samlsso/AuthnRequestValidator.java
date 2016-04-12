@@ -103,42 +103,47 @@ public class AuthnRequestValidator {
     
     private void validateSignature(RequestContext context, AuthnRequest authnRequest, Idp idp, 
                                    String signature, String relayState, String samlRequest, 
-                                   String realm) throws Exception {
-        if (authnRequest.isSigned()) {
-            // Check destination
-            checkDestination(context, authnRequest);
-            
-            // Check signature
-            X509Certificate validatingCert = getValidatingCertificate(idp, realm);
-            Crypto issuerCrypto = 
-                new CertificateStore(Collections.singletonList(validatingCert).toArray(new X509Certificate[0]));
-            validateAuthnRequestSignature(authnRequest.getSignature(), issuerCrypto);
-        } else if (signature != null) {
-            // Check destination
-            checkDestination(context, authnRequest);
-            
-            // Check signature
-            X509Certificate validatingCert = getValidatingCertificate(idp, realm);
-            
-            java.security.Signature sig = java.security.Signature.getInstance("SHA1withRSA");
-            sig.initVerify(validatingCert);
-            
-            // Recreate request to sign
-            String requestToSign = SSOConstants.SAML_REQUEST + "=" + URLEncoder.encode(samlRequest, "UTF-8")
-                 + "&" + SSOConstants.RELAY_STATE + "=" + relayState + "&" + SSOConstants.SIG_ALG 
-                 + "=" + URLEncoder.encode(SSOConstants.RSA_SHA1, StandardCharsets.UTF_8.name());
-            
-            sig.update(requestToSign.getBytes(StandardCharsets.UTF_8));
-            
-            if (!sig.verify(Base64.decode(signature))) {
-                LOG.debug("Signature validation failed");
+                                   String realm) throws ProcessingException {
+        try {
+            if (authnRequest.isSigned()) {
+                // Check destination
+                checkDestination(context, authnRequest);
+                
+                // Check signature
+                X509Certificate validatingCert = getValidatingCertificate(idp, realm);
+                Crypto issuerCrypto = 
+                    new CertificateStore(Collections.singletonList(validatingCert).toArray(new X509Certificate[0]));
+                validateAuthnRequestSignature(authnRequest.getSignature(), issuerCrypto);
+            } else if (signature != null) {
+                // Check destination
+                checkDestination(context, authnRequest);
+                
+                // Check signature
+                X509Certificate validatingCert = getValidatingCertificate(idp, realm);
+                
+                java.security.Signature sig = java.security.Signature.getInstance("SHA1withRSA");
+                sig.initVerify(validatingCert);
+                
+                // Recreate request to sign
+                String requestToSign = SSOConstants.SAML_REQUEST + "=" + URLEncoder.encode(samlRequest, "UTF-8")
+                     + "&" + SSOConstants.RELAY_STATE + "=" + relayState + "&" + SSOConstants.SIG_ALG 
+                     + "=" + URLEncoder.encode(SSOConstants.RSA_SHA1, StandardCharsets.UTF_8.name());
+                
+                sig.update(requestToSign.getBytes(StandardCharsets.UTF_8));
+                
+                if (!sig.verify(Base64.decode(signature))) {
+                    LOG.debug("Signature validation failed");
+                    throw new ProcessingException(TYPE.BAD_REQUEST);
+                }
+            } else if (requireSignature) {
+                LOG.debug("No signature is present, therefore the request is rejected");
                 throw new ProcessingException(TYPE.BAD_REQUEST);
+            } else {
+                LOG.debug("No signature is present, but this is allowed by configuration");
             }
-        } else if (requireSignature) {
-            LOG.debug("No signature is present, therefore the request is rejected");
+        } catch (Exception ex) {
+            LOG.debug("Error validating SAML Signature", ex);
             throw new ProcessingException(TYPE.BAD_REQUEST);
-        } else {
-            LOG.debug("No signature is present, but this is allowed by configuration");
         }
     }
     
