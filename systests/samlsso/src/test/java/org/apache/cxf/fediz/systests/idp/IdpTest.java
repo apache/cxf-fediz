@@ -566,6 +566,114 @@ public class IdpTest {
         webClient.close();
     }
     
+    @org.junit.Test
+    public void testSuccessfulSSOInvokeOnIdPWithForceAuthnSeparateSignature() throws Exception {
+        OpenSAMLUtil.initSamlEngine();
+        
+        // Create SAML AuthnRequest
+        Document doc = DOMUtils.createDocument();
+        doc.appendChild(doc.createElement("root"));
+        // Create the AuthnRequest
+        String consumerURL = "https://localhost:" + getRpHttpsPort() + "/" 
+            + getServletContextName() + "/secure/fedservlet";
+        AuthnRequest authnRequest = 
+            new DefaultAuthnRequestBuilder().createAuthnRequest(
+                null, "urn:org:apache:cxf:fediz:fedizhelloworld", consumerURL
+            );
+        authnRequest.setForceAuthn(Boolean.TRUE);
+        authnRequest.setDestination("https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml");
+        
+        Element authnRequestElement = OpenSAMLUtil.toDom(authnRequest, doc);
+        String authnRequestEncoded = encodeAuthnRequest(authnRequestElement);
+
+        String urlEncodedRequest = URLEncoder.encode(authnRequestEncoded, "UTF-8");
+
+        String relayState = UUID.randomUUID().toString();
+        
+        // Sign request
+        Crypto crypto = CryptoFactory.getInstance("stsKeystoreA.properties");
+        
+        CryptoType cryptoType = new CryptoType(CryptoType.TYPE.ALIAS);
+        cryptoType.setAlias("realma");
+
+        // Get the private key
+        PrivateKey privateKey = crypto.getPrivateKey("realma", "realma");
+        
+        java.security.Signature signature = java.security.Signature.getInstance("SHA1withRSA");
+        signature.initSign(privateKey);
+       
+        String requestToSign = SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
+        requestToSign += "&" + SSOConstants.RELAY_STATE + "=" + relayState;
+        requestToSign += "&" + SSOConstants.SIG_ALG + "=" 
+            + URLEncoder.encode(SSOConstants.RSA_SHA1, StandardCharsets.UTF_8.name());
+        
+        signature.update(requestToSign.getBytes(StandardCharsets.UTF_8));
+        byte[] signBytes = signature.sign();
+        
+        String encodedSignature = Base64.encode(signBytes);
+        
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml/up?";
+        url += SSOConstants.RELAY_STATE + "=" + relayState;
+        url += "&" + SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
+        url += "&" + SSOConstants.SIGNATURE + "=" + URLEncoder.encode(encodedSignature, StandardCharsets.UTF_8.name());
+        
+        String user = "alice";
+        String password = "ecila";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+        
+        //
+        // First invocation
+        //
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        HtmlPage idpPage = webClient.getPage(url);
+        webClient.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        
+        org.opensaml.saml.saml2.core.Response samlResponse = 
+            parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
+        String expected = "urn:oasis:names:tc:SAML:2.0:status:Success";
+        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        
+        // Check claims
+        String parsedResponse = DOM2Writer.nodeToString(samlResponse.getDOM().getOwnerDocument());
+        String claim = ClaimTypes.FIRSTNAME.toString();
+        Assert.assertTrue(parsedResponse.contains(claim));
+        claim = ClaimTypes.LASTNAME.toString();
+        Assert.assertTrue(parsedResponse.contains(claim));
+        claim = ClaimTypes.EMAILADDRESS.toString();
+        Assert.assertTrue(parsedResponse.contains(claim));
+        
+        //
+        // Second invocation
+        //
+        
+        webClient.getOptions().setJavaScriptEnabled(false);
+        idpPage = webClient.getPage(url);
+        webClient.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        
+        samlResponse = parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
+        expected = "urn:oasis:names:tc:SAML:2.0:status:Success";
+        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        
+        // Check claims
+        parsedResponse = DOM2Writer.nodeToString(samlResponse.getDOM().getOwnerDocument());
+        claim = ClaimTypes.FIRSTNAME.toString();
+        Assert.assertTrue(parsedResponse.contains(claim));
+        claim = ClaimTypes.LASTNAME.toString();
+        Assert.assertTrue(parsedResponse.contains(claim));
+        claim = ClaimTypes.EMAILADDRESS.toString();
+        Assert.assertTrue(parsedResponse.contains(claim));
+
+        webClient.close();
+    }
+    
     //
     // Negative tests
     //
