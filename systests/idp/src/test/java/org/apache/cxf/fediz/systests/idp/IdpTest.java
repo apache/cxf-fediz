@@ -47,6 +47,7 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.wss4j.dom.WSSConfig;
 import org.apache.xml.security.keys.KeyInfo;
 import org.apache.xml.security.signature.XMLSignature;
+import org.apache.xml.security.utils.Base64;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -188,6 +189,72 @@ public class IdpTest {
         }
 
         Assert.assertNotNull(wresult);
+    }
+    
+    @org.junit.Test
+    public void testSuccessfulSSOInvokeOnIdP() throws Exception {
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
+        url += "wa=wsignin1.0";
+        url += "&whr=urn:org:apache:cxf:fediz:idp:realm-A";
+        url += "&wtrealm=urn:org:apache:cxf:fediz:fedizhelloworld";
+        String wreply = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
+        url += "&wreply=" + wreply;
+
+        String user = "alice";
+        String password = "ecila";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.addRequestHeader("Authorization", "Basic " + Base64.encode((user + ":" + password).getBytes()));
+        
+        //
+        // First invocation
+        //
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        HtmlPage idpPage = webClient.getPage(url);
+        webClient.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+
+        // Parse the form to get the token (wresult)
+        DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
+
+        String wresult = null;
+        for (DomElement result : results) {
+            if ("wresult".equals(result.getAttributeNS(null, "name"))) {
+                wresult = result.getAttributeNS(null, "value");
+                break;
+            }
+        }
+
+        Assert.assertNotNull(wresult);
+        
+        //
+        // Second invocation - change the credentials to make sure the session is set up correctly
+        // 
+
+        webClient.removeRequestHeader("Authorization");
+        webClient.addRequestHeader("Authorization", "Basic " + Base64.encode(("mallory" + ":" + password).getBytes()));
+        
+        webClient.getOptions().setJavaScriptEnabled(false);
+        idpPage = webClient.getPage(url);
+        webClient.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+
+        // Parse the form to get the token (wresult)
+        results = idpPage.getElementsByTagName("input");
+
+        wresult = null;
+        for (DomElement result : results) {
+            if ("wresult".equals(result.getAttributeNS(null, "name"))) {
+                wresult = result.getAttributeNS(null, "value");
+                break;
+            }
+        }
+
+        Assert.assertNotNull(wresult);
+        
+        webClient.close();
     }
 
     @Test
