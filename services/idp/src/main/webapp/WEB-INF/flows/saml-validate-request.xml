@@ -147,10 +147,12 @@
     
     <end-state id="redirectToLocalIDP" view="externalRedirect:${flowScope.localIdpUrl}">
         <on-entry>
+            <evaluate expression="@java.net.URLEncoder@encode(flowScope.SAMLRequest)"
+                      result="flowScope.encodedRequest"/>
             <set name="flowScope.localIdpUrl"
                 value="flowScope.idpConfig.idpUrl
                 +'?RelayState='+flowScope.RelayState
-                +'&amp;SAMLRequest='+flowScope.SAMLRequest">
+                +'&amp;SAMLRequest='+flowScope.encodedRequest">
             </set>
         </on-entry>
     </end-state>
