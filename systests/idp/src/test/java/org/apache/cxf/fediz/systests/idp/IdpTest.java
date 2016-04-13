@@ -253,8 +253,6 @@ public class IdpTest {
         }
 
         Assert.assertNotNull(wresult);
-        
-        webClient.close();
     }
 
     @Test
