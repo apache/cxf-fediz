@@ -36,7 +36,7 @@
             <set name="flowScope.SAMLResponse" value="requestParameters.SAMLResponse" />
             <evaluate expression="requestScope.getString('wauth','default')"
                 result="flowScope.wauth" />
-            <set name="flowScope.idpConfig" value="config.getIDP(null)" />
+            <set name="flowScope.idpConfig" value="config.getIDP(fedizEntryPoint.getRealm())" />
         </on-entry>
         <if
             test="requestParameters.wa == 'wsignout1.0' or requestParameters.wa == 'wsignoutcleanup1.0'"
