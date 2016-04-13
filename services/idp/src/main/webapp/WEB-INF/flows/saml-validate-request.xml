@@ -28,7 +28,7 @@
             <set name="flowScope.RelayState" value="requestParameters.RelayState" />
             <set name="flowScope.SAMLRequest" value="requestParameters.SAMLRequest" />
             <set name="flowScope.Signature" value="requestParameters.Signature" />
-            <set name="flowScope.idpConfig" value="config.getIDP(null)" />
+            <set name="flowScope.idpConfig" value="config.getIDP(fedizEntryPoint.getRealm())" />
         </on-entry>
         <if test="requestParameters.RelayState == null or requestParameters.RelayState.length() == 0"
             then="handleBadRequestError" />
