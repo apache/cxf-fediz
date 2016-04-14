@@ -152,4 +152,11 @@ public class AuthnRequestParser {
         return request;
     }
     
+    public boolean isSupportDeflateEncoding() {
+        return supportDeflateEncoding;
+    }
+
+    public void setSupportDeflateEncoding(boolean supportDeflateEncoding) {
+        this.supportDeflateEncoding = supportDeflateEncoding;
+    }
 }
