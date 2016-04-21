@@ -27,8 +27,8 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.cxf.fediz.core.spi.HomeRealmCallback;
-import org.apache.cxf.fediz.service.oidc.OAuthDataManager;
 import org.apache.cxf.rs.security.oauth2.common.Client;
+import org.apache.cxf.rs.security.oauth2.provider.OAuthDataProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -47,7 +47,7 @@ public class ClientIdHomeRealmDiscovery implements CallbackHandler {
                 
                 if (clientId != null) {
                     ApplicationContext ctx = ApplicationContextProvider.getApplicationContext();
-                    OAuthDataManager dataManager = (OAuthDataManager)ctx.getBean("oauthProvider");
+                    OAuthDataProvider dataManager = (OAuthDataProvider)ctx.getBean("oauthProvider");
                     
                     Client client = dataManager.getClient(clientId);
                     callback.setHomeRealm(client.getHomeRealm());

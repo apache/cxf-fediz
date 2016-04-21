@@ -26,7 +26,7 @@
         http://www.springframework.org/schema/util 
         http://www.springframework.org/schema/util/spring-util.xsd
         ">
-
+    <import resource="entity-manager.xml" /> 
     <bean id="applicationContextProvider" class="org.apache.cxf.fediz.service.oidc.handler.hrd.ApplicationContextProvider"/>
 
     <util:map id="supportedScopes">
@@ -39,8 +39,10 @@
     <util:list id="invisibleToClientScopes">
         <value>refreshToken</value>
     </util:list>
-    <bean id="oauthProvider" class="org.apache.cxf.fediz.service.oidc.OAuthDataManager"
+    <bean id="oauthProvider" 
+          class="org.apache.cxf.rs.security.oauth2.grants.code.JPACodeDataProvider"
           init-method="init" destroy-method="close">
+        <property name="entityManager" ref="entityManager"/>
         <property name="supportedScopes" ref="supportedScopes"/>
         <property name="requiredScopes" ref="coreScopes"/>
         <property name="defaultScopes" ref="coreScopes"/>

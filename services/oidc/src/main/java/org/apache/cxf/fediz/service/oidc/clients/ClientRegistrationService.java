@@ -60,6 +60,7 @@ import org.apache.cxf.rs.security.oauth2.provider.ClientRegistrationProvider;
 import org.apache.cxf.rs.security.oauth2.provider.OAuthDataProvider;
 import org.apache.cxf.rs.security.oauth2.tokens.refresh.RefreshToken;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
+import org.apache.cxf.rs.security.oidc.idp.OidcUserSubject;
 import org.apache.cxf.rt.security.crypto.CryptoUtils;
 
 @Path("/")
@@ -150,7 +151,7 @@ public class ClientRegistrationService {
     
     protected ClientTokens doGetClientIssuedTokens(Client c) {
         Comparator<ServerAccessToken> tokenComp = new TokenComparator();
-        UserSubject subject = new UserSubject(getUserName());
+        UserSubject subject = new OidcUserSubject(getUserName());
         List<ServerAccessToken> accessTokens = 
             new ArrayList<ServerAccessToken>(dataProvider.getAccessTokens(c, subject));
         Collections.sort(accessTokens, tokenComp);
@@ -191,7 +192,7 @@ public class ClientRegistrationService {
     public ClientCodeGrants getClientCodeGrants(@PathParam("id") String id) {
         if (dataProvider instanceof AuthorizationCodeDataProvider) {
             Client c = getRegisteredClient(id);
-            UserSubject subject = new UserSubject(getUserName());
+            UserSubject subject = new OidcUserSubject(getUserName());
             List<ServerAuthorizationCodeGrant> codeGrants = new ArrayList<ServerAuthorizationCodeGrant>(
                ((AuthorizationCodeDataProvider)dataProvider).getCodeGrants(c, subject));
             Collections.sort(codeGrants, new CodeGrantComparator());
@@ -247,7 +248,7 @@ public class ClientRegistrationService {
         
         // User who registered this client
         String userName = sc.getUserPrincipal().getName();
-        UserSubject userSubject = new UserSubject(userName);
+        UserSubject userSubject = new OidcUserSubject(userName);
         newClient.setResourceOwnerSubject(userSubject);
 
         // Client Registration Time
