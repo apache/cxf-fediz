@@ -27,8 +27,6 @@ import java.util.ArrayList;
 
 import javax.servlet.ServletException;
 
-import org.w3c.dom.Element;
-
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -37,7 +35,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
-import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
@@ -237,24 +234,22 @@ public class OIDCTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         
         // The decision page is returned as XML for some reason. So parse it and send a form response back.
-        XmlPage oidcIdpConfirmationPage = webClient.getPage(url);
+        HtmlPage oidcIdpConfirmationPage = webClient.getPage(url);
+        final HtmlForm oidcForm = oidcIdpConfirmationPage.getForms().get(0);
         
-        Element clientId = (Element)oidcIdpConfirmationPage.getByXPath("//clientId").get(0);
-        Element redirectUri = (Element)oidcIdpConfirmationPage.getByXPath("//redirectUri").get(0);
-        Element scope = (Element)oidcIdpConfirmationPage.getByXPath("//proposedScope").get(0);
-        Element state = (Element)oidcIdpConfirmationPage.getByXPath("//state").get(0);
-        Element authenticityToken = (Element)oidcIdpConfirmationPage.getByXPath("//authenticityToken").get(0);
-        Element replyTo = (Element)oidcIdpConfirmationPage.getByXPath("//replyTo").get(0);
-        
-        WebRequest request = new WebRequest(new URL(replyTo.getTextContent()), HttpMethod.POST);
+        WebRequest request = new WebRequest(new URL(oidcForm.getActionAttribute()), HttpMethod.POST);
 
         request.setRequestParameters(new ArrayList<NameValuePair>());
-        request.getRequestParameters().add(new NameValuePair("client_id", clientId.getTextContent()));
-        request.getRequestParameters().add(new NameValuePair("redirect_uri", redirectUri.getTextContent()));
-        request.getRequestParameters().add(new NameValuePair("scope", scope.getTextContent()));
-        request.getRequestParameters().add(new NameValuePair("state", state.getTextContent()));
-        request.getRequestParameters().add(new NameValuePair("session_authenticity_token", 
-                                                             authenticityToken.getTextContent()));
+        String clientId = oidcForm.getInputByName("client_id").getValueAttribute();
+        request.getRequestParameters().add(new NameValuePair("client_id", clientId));
+        String redirectUri = oidcForm.getInputByName("redirect_uri").getValueAttribute();
+        request.getRequestParameters().add(new NameValuePair("redirect_uri", redirectUri));
+        String scope = oidcForm.getInputByName("scope").getValueAttribute();
+        request.getRequestParameters().add(new NameValuePair("scope", scope));
+        String state = oidcForm.getInputByName("state").getValueAttribute();
+        request.getRequestParameters().add(new NameValuePair("state", state));
+        String authToken = oidcForm.getInputByName("session_authenticity_token").getValueAttribute();
+        request.getRequestParameters().add(new NameValuePair("session_authenticity_token", authToken));
         request.getRequestParameters().add(new NameValuePair("oauthDecision", "allow"));
 
         HtmlPage idpPage = webClient.getPage(request);
