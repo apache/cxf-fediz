@@ -2,7 +2,7 @@
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
              version="2.0">
-   <persistence-unit name="testUnitOpenJPA" transaction-type="RESOURCE_LOCAL">
+   <persistence-unit name="oidcOpenJPA" transaction-type="RESOURCE_LOCAL">
      <provider>org.apache.openjpa.persistence.PersistenceProviderImpl</provider>
      <class>org.apache.cxf.rs.security.oidc.idp.OidcUserSubject</class>
      <class>org.apache.cxf.rs.security.oauth2.common.Client</class>
@@ -25,6 +25,11 @@
         <property name="openjpa.ConnectionPassword" value=""/>
         <property name="openjpa.jdbc.SynchronizeMappings" value="buildSchema"/>
         <property name="openjpa.MetaDataRepository" value="Preload=true"/>
+        <!--
+        <property name="openjpa.Log" value="SQL=TRACE"/>
+<property name="openjpa.ConnectionFactoryProperties"
+    value="PrettyPrint=true, PrettyPrintLineLength=72"/>
+        --> 
      </properties>
     </persistence-unit>
 </persistence>
