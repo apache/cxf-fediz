@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.cxf.fediz.service.oidc.account;
+package org.apache.cxf.fediz.service.oidc.console;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

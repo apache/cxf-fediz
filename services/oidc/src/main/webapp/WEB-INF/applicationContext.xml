@@ -135,7 +135,7 @@
           </map>
        </property>
     </bean>
-    <bean id="consoleService" class="org.apache.cxf.fediz.service.oidc.account.UserConsoleService">
+    <bean id="consoleService" class="org.apache.cxf.fediz.service.oidc.console.UserConsoleService">
         <property name="clientRegService" ref="clientRegService"/>
     </bean>
     

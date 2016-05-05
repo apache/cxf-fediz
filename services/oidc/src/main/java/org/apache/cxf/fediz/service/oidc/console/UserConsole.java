@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.cxf.fediz.service.oidc.account;
+package org.apache.cxf.fediz.service.oidc.console;
 
 public class UserConsole {
     private String userName;

@@ -27,9 +27,8 @@
         http://www.springframework.org/schema/util/spring-util.xsd
         ">
     
-    <!-- Remove this import if no JPA2 is used -->
+    <!-- Remove this import if no JPA2 is used --> 
     <import resource="entity-manager.xml" /> 
-    
     
     <bean id="applicationContextProvider" class="org.apache.cxf.fediz.service.oidc.handler.hrd.ApplicationContextProvider"/>
 
@@ -46,7 +45,7 @@
     
     <!-- 
         If working with Ehcache:
-        - replace the class attribute with org.apache.cxf.rs.security.oauth2.grants.code.DefaultEhcacheCodeDataProvider
+        - replace the class attribute with org.apache.cxf.rs.security.oauth2.grants.code.DefaultEHCacheCodeDataProvider
         - remove 'entityManager' property
         
         To support the alternative data persistence strategies: either register a custom
