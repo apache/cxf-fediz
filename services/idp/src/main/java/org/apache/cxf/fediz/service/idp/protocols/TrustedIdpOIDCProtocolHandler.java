@@ -20,10 +20,6 @@
 package org.apache.cxf.fediz.service.idp.protocols;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -31,9 +27,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.Response;
 
@@ -44,7 +37,6 @@ import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.util.CertsUtils;
 import org.apache.cxf.fediz.core.util.DOMUtils;
-import org.apache.cxf.fediz.service.idp.IdpConstants;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
@@ -65,39 +57,21 @@ import org.apache.cxf.rs.security.oauth2.common.ClientAccessToken;
 import org.apache.cxf.rs.security.oauth2.provider.OAuthJSONProvider;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
-import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.ext.WSSecurityException;
-import org.apache.wss4j.common.saml.SAMLCallback;
-import org.apache.wss4j.common.saml.SAMLUtil;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
-import org.apache.wss4j.common.saml.bean.ConditionsBean;
-import org.apache.wss4j.common.saml.bean.SubjectBean;
-import org.apache.wss4j.common.saml.bean.Version;
-import org.apache.wss4j.common.saml.builder.SAML2Constants;
 import org.apache.xml.security.exceptions.Base64DecodingException;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.webflow.execution.RequestContext;
 
+/**
+ * Extension of AbstractTrustedIdpOAuth2ProtocolHandler for OpenId Connect.
+ * Default values:
+ *  - scope: openid
+ */
 @Component
-public class TrustedIdpOIDCProtocolHandler extends AbstractTrustedIdpProtocolHandler {
-    
-    /**
-     * The client_id value to send to the OIDC IdP.
-     */
-    public static final String CLIENT_ID = "client.id";
-    
-    /**
-     * The secret associated with the client to authenticate to the OIDC IdP.
-     */
-    public static final String CLIENT_SECRET = "client.secret";
-    
-    /**
-     * The Token endpoint. The authorization endpoint is specified by TrustedIdp.url.
-     */
-    public static final String TOKEN_ENDPOINT = "token.endpoint";
+public class TrustedIdpOIDCProtocolHandler extends AbstractTrustedIdpOAuth2ProtocolHandler {
     
     /**
      * The signature algorithm to use in verifying the IdToken. The default is "RS256".
@@ -130,58 +104,6 @@ public class TrustedIdpOIDCProtocolHandler extends AbstractTrustedIdpProtocolHan
         return PROTOCOL;
     }
 
-    @Override
-    public URL mapSignInRequest(RequestContext context, Idp idp, TrustedIdp trustedIdp) {
-        
-        String clientId = getProperty(trustedIdp, CLIENT_ID);
-        if (clientId == null || clientId.isEmpty()) {
-            LOG.warn("A CLIENT_ID must be configured to use the OIDCProtocolHandler");
-            throw new IllegalStateException("No CLIENT_ID specified");
-        }
-        
-        String scope = getProperty(trustedIdp, SCOPE);
-        if (scope != null) {
-            scope = scope.trim();
-            if (!scope.contains("openid")) {
-                scope = "openid " + scope;
-            }
-        }
-        
-        if (scope == null || scope.isEmpty()) {
-            scope = "openid";
-        }
-        LOG.debug("Using scope: {}", scope);
-        
-        try {
-            StringBuilder sb = new StringBuilder();
-            sb.append(trustedIdp.getUrl());
-            sb.append("?");
-            sb.append("response_type").append('=');
-            sb.append("code");
-            sb.append("&");
-            sb.append("client_id").append('=');
-            sb.append(clientId);
-            sb.append("&");
-            sb.append("redirect_uri").append('=');
-            sb.append(URLEncoder.encode(idp.getIdpUrl().toString(), "UTF-8"));
-            sb.append("&");
-            sb.append("scope").append('=');
-            sb.append(URLEncoder.encode(scope, "UTF-8"));
-            
-            String state = context.getFlowScope().getString(IdpConstants.TRUSTED_IDP_CONTEXT);
-            sb.append("&").append("state").append('=');
-            sb.append(state);
-            
-            return new URL(sb.toString());
-        } catch (MalformedURLException ex) {
-            LOG.error("Invalid Redirect URL for Trusted Idp", ex);
-            throw new IllegalStateException("Invalid Redirect URL for Trusted Idp");
-        } catch (UnsupportedEncodingException ex) {
-            LOG.error("Invalid Redirect URL for Trusted Idp", ex);
-            throw new IllegalStateException("Invalid Redirect URL for Trusted Idp");
-        }
-    }
-    
     @Override
     public SecurityToken mapSignInResponse(RequestContext context, Idp idp, TrustedIdp trustedIdp) {
 
@@ -267,10 +189,30 @@ public class TrustedIdpOIDCProtocolHandler extends AbstractTrustedIdpProtocolHan
                 validateToken(jwt, clientId);
                 
                 Date created = new Date((long)jwt.getClaim(JwtConstants.CLAIM_ISSUED_AT) * 1000L);
+                Date notBefore = null;
+                if (jwt.getClaim(JwtConstants.CLAIM_NOT_BEFORE) != null) {
+                    notBefore = new Date((long)jwt.getClaim(JwtConstants.CLAIM_NOT_BEFORE) * 1000L);
+                } 
+                
                 Date expires = new Date((long)jwt.getClaim(JwtConstants.CLAIM_EXPIRY) * 1000L);
                 
+                // Subject
+                String subjectName = getProperty(trustedIdp, SUBJECT_CLAIM);
+                LOG.debug("Trying to extract subject name using the claim name {}", subjectName);
+                if (subjectName == null || jwt.getClaim(subjectName) == null) {
+                    LOG.debug("No claim available in the token for {}", subjectName);
+                    subjectName = "preferred_username";
+                    LOG.debug("Falling back to use subject claim name {}", subjectName);
+                    if (subjectName == null || jwt.getClaim(subjectName) == null) {
+                        subjectName = JwtConstants.CLAIM_SUBJECT;
+                        LOG.debug("No claim available in the token for preferred_username. "
+                                  + "Falling back to use {}", subjectName);
+                    }
+                }
+                
                 // Convert into a SAML Token
-                SamlAssertionWrapper assertion = createSamlAssertion(idp, trustedIdp, jwt, created, expires);
+                SamlAssertionWrapper assertion = 
+                    createSamlAssertion(idp, trustedIdp, (String)jwt.getClaim(subjectName), notBefore, expires);
                 Document doc = DOMUtils.createDocument();
                 Element token = assertion.toDOM(doc);
         
@@ -374,107 +316,19 @@ public class TrustedIdpOIDCProtocolHandler extends AbstractTrustedIdpProtocolHan
         return false;
     }
     
-    protected SamlAssertionWrapper createSamlAssertion(Idp idp, TrustedIdp trustedIdp, JwtToken token,
-                                                     Date created,
-                                                     Date expires) throws Exception {
-        SamlCallbackHandler callbackHandler = new SamlCallbackHandler();
-        String issuer = idp.getServiceDisplayName();
-        if (issuer == null) {
-            issuer = idp.getRealm();
-        }
-        if (issuer != null) {
-            callbackHandler.setIssuer(issuer);
-        }
-        
-        // Subject
-        String subjectName = getProperty(trustedIdp, SUBJECT_CLAIM);
-        LOG.debug("Trying to extract subject name using the claim name {}", subjectName);
-        if (subjectName == null || token.getClaim(subjectName) == null) {
-            LOG.debug("No claim available in the token for {}", subjectName);
-            subjectName = "preferred_username";
-            LOG.debug("Falling back to use subject claim name {}", subjectName);
-            if (subjectName == null || token.getClaim(subjectName) == null) {
-                subjectName = JwtConstants.CLAIM_SUBJECT;
-                LOG.debug("No claim available in the token for preferred_username. "
-                          + "Falling back to use {}", subjectName);
+    protected String getScope(TrustedIdp trustedIdp) {
+        String scope = getProperty(trustedIdp, SCOPE);
+        if (scope != null) {
+            scope = scope.trim();
+            if (!scope.contains("openid")) {
+                scope = "openid " + scope;
             }
         }
         
-        SubjectBean subjectBean =
-            new SubjectBean((String)token.getClaim(subjectName), 
-                            SAML2Constants.NAMEID_FORMAT_UNSPECIFIED, 
-                            SAML2Constants.CONF_BEARER);
-        callbackHandler.setSubjectBean(subjectBean);
-        
-        // Conditions
-        ConditionsBean conditionsBean = new ConditionsBean();
-        conditionsBean.setNotAfter(new DateTime(expires));
-        if (token.getClaim(JwtConstants.CLAIM_NOT_BEFORE) != null) {
-            DateTime notBefore = new DateTime((long)token.getClaim(JwtConstants.CLAIM_NOT_BEFORE) * 1000L);
-            conditionsBean.setNotBefore(notBefore);
-        } else {
-            conditionsBean.setNotBefore(new DateTime());
+        if (scope == null || scope.isEmpty()) {
+            scope = "openid";
         }
-        callbackHandler.setConditionsBean(conditionsBean);
-        
-        SAMLCallback samlCallback = new SAMLCallback();
-        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
-        
-        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
-        Crypto crypto = CertsUtils.getCryptoFromCertificate(idp.getCertificate());
-        assertion.signAssertion(crypto.getDefaultX509Identifier(), idp.getCertificatePassword(), 
-                                crypto, false);
-        
-        return assertion;
-    }
-    
-    private static class SamlCallbackHandler implements CallbackHandler {
-        private ConditionsBean conditionsBean;
-        private SubjectBean subjectBean;
-        private String issuer;
-        
-        /**
-         * Set the SubjectBean
-         */
-        public void setSubjectBean(SubjectBean subjectBean) {
-            this.subjectBean = subjectBean;
-        }
-        
-        /**
-         * Set the ConditionsBean
-         */
-        public void setConditionsBean(ConditionsBean conditionsBean) {
-            this.conditionsBean = conditionsBean;
-        }
-        
-        /**
-         * Set the issuer name
-         */
-        public void setIssuer(String issuerName) {
-            this.issuer = issuerName;
-        }
-        
-        public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-            for (Callback callback : callbacks) {
-                if (callback instanceof SAMLCallback) {
-                    SAMLCallback samlCallback = (SAMLCallback) callback;
-
-                    // Set the Subject
-                    if (subjectBean != null) {
-                        samlCallback.setSubject(subjectBean);
-                    }
-                    samlCallback.setSamlVersion(Version.SAML_20);
-                    
-                    // Set the issuer
-                    samlCallback.setIssuer(issuer);
-
-                    // Set the conditions
-                    samlCallback.setConditions(conditionsBean);
-                }
-            }
-        }
-        
+        return scope;
     }
 
 }

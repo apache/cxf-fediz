@@ -20,16 +20,13 @@
 package org.apache.cxf.fediz.service.idp.protocols;
 
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.Response;
 
-import org.apache.cxf.fediz.service.idp.IdpConstants;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
@@ -48,24 +45,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.webflow.execution.RequestContext;
 
+/**
+ * Extension of AbstractTrustedIdpOAuth2ProtocolHandler for Facebook Connect.
+ * Default values:
+ *  - scope: email
+ *  - token.endpoint: https://graph.facebook.com/v2.6/oauth/access_token
+ */
 @Component
-public class TrustedIdpFacebookProtocolHandler extends AbstractTrustedIdpProtocolHandler {
-    
-    /**
-     * The client_id value to send to the Facebook IdP.
-     */
-    public static final String CLIENT_ID = "client.id";
-    
-    /**
-     * The secret associated with the client to authenticate to the Facebook IdP.
-     */
-    public static final String CLIENT_SECRET = "client.secret";
-    
-    /**
-     * The Token endpoint. The authorization endpoint is specified by TrustedIdp.url. If not 
-     * specified it defaults to "https://graph.facebook.com/v2.6/oauth/access_token".
-     */
-    public static final String TOKEN_ENDPOINT = "token.endpoint";
+public class TrustedIdpFacebookProtocolHandler extends AbstractTrustedIdpOAuth2ProtocolHandler {
     
     /**
      * The facebook API endpoint for querying claims (such as email address). If not specified
@@ -79,12 +66,6 @@ public class TrustedIdpFacebookProtocolHandler extends AbstractTrustedIdpProtoco
      */
     public static final String SUBJECT_CLAIM = "subject.claim";
     
-    /**
-     * Additional (comma-separated) parameters to be sent in the "scope" to the authorization endpoint.
-     * Fediz will automatically use "email" for this value. 
-     */
-    public static final String SCOPE = "scope";
-    
     public static final String PROTOCOL = "facebook-connect";
 
     private static final Logger LOG = LoggerFactory.getLogger(TrustedIdpFacebookProtocolHandler.class);
@@ -94,55 +75,6 @@ public class TrustedIdpFacebookProtocolHandler extends AbstractTrustedIdpProtoco
         return PROTOCOL;
     }
 
-    @Override
-    public URL mapSignInRequest(RequestContext context, Idp idp, TrustedIdp trustedIdp) {
-        
-        String clientId = getProperty(trustedIdp, CLIENT_ID);
-        if (clientId == null || clientId.isEmpty()) {
-            LOG.warn("A CLIENT_ID must be configured to use the TrustedIdpFacebookProtocolHandler");
-            throw new IllegalStateException("No CLIENT_ID specified");
-        }
-        
-        String scope = getProperty(trustedIdp, SCOPE);
-        if (scope != null) {
-            scope = scope.trim();
-        }
-        
-        if (scope == null || scope.isEmpty()) {
-            scope = "email";
-        }
-        LOG.debug("Using scope: {}", scope);
-        
-        try {
-            StringBuilder sb = new StringBuilder();
-            sb.append(trustedIdp.getUrl());
-            sb.append("?");
-            sb.append("response_type").append('=');
-            sb.append("code");
-            sb.append("&");
-            sb.append("client_id").append('=');
-            sb.append(clientId);
-            sb.append("&");
-            sb.append("redirect_uri").append('=');
-            sb.append(URLEncoder.encode(idp.getIdpUrl().toString(), "UTF-8"));
-            sb.append("&");
-            sb.append("scope").append('=');
-            sb.append(URLEncoder.encode(scope, "UTF-8"));
-            
-            String state = context.getFlowScope().getString(IdpConstants.TRUSTED_IDP_CONTEXT);
-            sb.append("&").append("state").append('=');
-            sb.append(state);
-            
-            return new URL(sb.toString());
-        } catch (MalformedURLException ex) {
-            LOG.error("Invalid Redirect URL for Trusted Idp", ex);
-            throw new IllegalStateException("Invalid Redirect URL for Trusted Idp");
-        } catch (UnsupportedEncodingException ex) {
-            LOG.error("Invalid Redirect URL for Trusted Idp", ex);
-            throw new IllegalStateException("Invalid Redirect URL for Trusted Idp");
-        }
-    }
-    
     @Override
     public SecurityToken mapSignInResponse(RequestContext context, Idp idp, TrustedIdp trustedIdp) {
 
@@ -220,7 +152,12 @@ public class TrustedIdpFacebookProtocolHandler extends AbstractTrustedIdpProtoco
             }
             client.query("fields", subjectName);
             JsonMapObject mapObject = client.get(JsonMapObject.class);
-            System.out.println("SUBJ: " + mapObject.getProperty(subjectName));
+            try {
+                System.out.println("SUBJ: " + URLDecoder.decode((String)mapObject.getProperty(subjectName), "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
             /*
             try {
                 String whr = (String) WebUtils.getAttributeFromFlowScope(context,
@@ -287,4 +224,15 @@ public class TrustedIdpFacebookProtocolHandler extends AbstractTrustedIdpProtoco
         return null;
     }
     
+    protected String getScope(TrustedIdp trustedIdp) {
+        String scope = getProperty(trustedIdp, SCOPE);
+        if (scope != null) {
+            scope = scope.trim();
+        }
+        
+        if (scope == null || scope.isEmpty()) {
+            scope = "email";
+        }
+        return scope;
+    }
 }
