@@ -19,17 +19,22 @@
 
 package org.apache.cxf.fediz.service.idp.protocols;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.Response;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
+import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.apache.cxf.jaxrs.client.ClientConfiguration;
@@ -40,6 +45,8 @@ import org.apache.cxf.rs.security.oauth2.common.ClientAccessToken;
 import org.apache.cxf.rs.security.oauth2.provider.OAuthJSONProvider;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
+import org.apache.wss4j.common.saml.SamlAssertionWrapper;
+import org.apache.xml.security.stax.impl.util.IDGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -100,31 +107,8 @@ public class TrustedIdpFacebookProtocolHandler extends AbstractTrustedIdpOAuth2P
             }
             
             // Here we need to get the AccessToken using the authorization code
-            List<Object> providers = new ArrayList<Object>();
-            providers.add(new OAuthJSONProvider());
-            
-            WebClient client = 
-                WebClient.create(tokenEndpoint, providers, "cxf-tls.xml");
-            
-            ClientConfiguration config = WebClient.getConfig(client);
-
-            if (LOG.isDebugEnabled()) {
-                config.getOutInterceptors().add(new LoggingOutInterceptor());
-                config.getInInterceptors().add(new LoggingInInterceptor());
-            }
-            
-            client.type("application/x-www-form-urlencoded");
-            client.accept("application/json");
-
-            Form form = new Form();
-            form.param("grant_type", "authorization_code");
-            form.param("code", code);
-            form.param("client_id", clientId);
-            form.param("redirect_uri", idp.getIdpUrl().toString());
-            form.param("client_secret", clientSecret);
-            Response response = client.post(form);
-
-            ClientAccessToken accessToken = response.readEntity(ClientAccessToken.class);
+            ClientAccessToken accessToken = getAccessTokenUsingCode(tokenEndpoint, code, clientId,
+                                                                    clientSecret, idp.getIdpUrl().toString());
             if (accessToken == null || accessToken.getTokenKey() == null) {
                 LOG.warn("No Access Token received from the Facebook IdP");
                 return null;
@@ -132,33 +116,7 @@ public class TrustedIdpFacebookProtocolHandler extends AbstractTrustedIdpOAuth2P
             
             // Now we need to invoke on the API endpoint using the access token to get the 
             // user's claims
-            providers.clear();
-            providers.add(new JsonMapObjectProvider());
-            client = WebClient.create(apiEndpoint, providers, "cxf-tls.xml");
-            client.path("/me");
-            config = WebClient.getConfig(client);
-
-            if (LOG.isDebugEnabled()) {
-                config.getOutInterceptors().add(new LoggingOutInterceptor());
-                config.getInInterceptors().add(new LoggingInInterceptor());
-            }
-
-            client.accept("application/json");
-            client.query("access_token", accessToken.getTokenKey());
-            
-            String subjectName = getProperty(trustedIdp, SUBJECT_CLAIM);
-            if (subjectName == null || subjectName.isEmpty()) {
-                subjectName = "email";
-            }
-            client.query("fields", subjectName);
-            JsonMapObject mapObject = client.get(JsonMapObject.class);
-            try {
-                System.out.println("SUBJ: " + URLDecoder.decode((String)mapObject.getProperty(subjectName), "UTF-8"));
-            } catch (UnsupportedEncodingException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            /*
+            String subjectName = getSubjectName(apiEndpoint, accessToken.getTokenKey(), trustedIdp);
             try {
                 String whr = (String) WebUtils.getAttributeFromFlowScope(context,
                                                                          FederationConstants.PARAM_HOME_REALM);
@@ -167,49 +125,22 @@ public class TrustedIdpFacebookProtocolHandler extends AbstractTrustedIdpOAuth2P
                     throw new IllegalStateException("Home realm is null");
                 }
         
-                // Parse the received Token
-                JwsJwtCompactConsumer jwtConsumer = new JwsJwtCompactConsumer(idToken);
-                JwtToken jwt = jwtConsumer.getJwtToken();
-                
-                if (jwt != null && jwt.getClaims() != null && LOG.isDebugEnabled()) {
-                    LOG.debug("Received Claims:");
-                    for (Map.Entry<String, Object> claim : jwt.getClaims().asMap().entrySet()) {
-                        LOG.debug(claim.getKey() + ": " + claim.getValue());
-                    }
-                }
-                
-                if (jwt != null && jwt.getJwsHeaders() != null && LOG.isDebugEnabled()) {
-                    LOG.debug("Received JWS Headers:");
-                    for (Map.Entry<String, Object> header : jwt.getJwsHeaders().asMap().entrySet()) {
-                        LOG.debug(header.getKey() + ": " + header.getValue());
-                    }
-                }
-                
-                if (!validateSignature(trustedIdp, jwtConsumer)) {
-                    LOG.warn("Signature does not validate");
-                    return null;
-                }
-                
-                // Make sure the received token is valid according to the spec
-                validateToken(jwt, clientId);
-                
-                Date created = new Date((long)jwt.getClaim(JwtConstants.CLAIM_ISSUED_AT) * 1000L);
-                Date expires = new Date((long)jwt.getClaim(JwtConstants.CLAIM_EXPIRY) * 1000L);
-                
                 // Convert into a SAML Token
-                SamlAssertionWrapper assertion = createSamlAssertion(idp, trustedIdp, jwt, created, expires);
+                Date expires = new Date();
+                expires.setTime(expires.getTime() + (accessToken.getExpiresIn() * 1000L));
+                SecurityToken idpToken = new SecurityToken(IDGenerator.generateID(null), null, expires);
+                SamlAssertionWrapper assertion = 
+                    createSamlAssertion(idp, trustedIdp, subjectName, null, expires);
                 Document doc = DOMUtils.createDocument();
                 Element token = assertion.toDOM(doc);
         
                 // Create new Security token with new id. 
                 // Parameters for freshness computation are copied from original IDP_TOKEN
-                SecurityToken idpToken = new SecurityToken(assertion.getId(), created, expires);
                 idpToken.setToken(token);
         
-                LOG.info("[IDP_TOKEN={}] for user '{}' created from [RP_TOKEN={}] issued by home realm [{}/{}]",
+                LOG.info("[IDP_TOKEN={}] for user '{}' issued by home realm [{}]",
                          assertion.getId(), assertion.getSaml2().getSubject().getNameID().getValue(), 
-                         jwt.getClaim(JwtConstants.CLAIM_JWT_ID), whr, jwt.getClaim(JwtConstants.CLAIM_ISSUER));
-                LOG.debug("Created date={}", created);
+                         whr);
                 LOG.debug("Expired date={}", expires);
                 
                 return idpToken;
@@ -219,9 +150,67 @@ public class TrustedIdpFacebookProtocolHandler extends AbstractTrustedIdpOAuth2P
                 LOG.warn("Unexpected exception occured", ex);
                 throw new IllegalStateException("Unexpected exception occured: " + ex.getMessage());
             }
-            */
         }
         return null;
+    }
+    
+    private ClientAccessToken getAccessTokenUsingCode(String tokenEndpoint, String code, String clientId,
+                                                      String clientSecret, String redirectURI) {
+        // Here we need to get the AccessToken using the authorization code
+        List<Object> providers = new ArrayList<Object>();
+        providers.add(new OAuthJSONProvider());
+        
+        WebClient client = 
+            WebClient.create(tokenEndpoint, providers, "cxf-tls.xml");
+        
+        ClientConfiguration config = WebClient.getConfig(client);
+
+        if (LOG.isDebugEnabled()) {
+            config.getOutInterceptors().add(new LoggingOutInterceptor());
+            config.getInInterceptors().add(new LoggingInInterceptor());
+        }
+        
+        client.type("application/x-www-form-urlencoded");
+        client.accept("application/json");
+
+        Form form = new Form();
+        form.param("grant_type", "authorization_code");
+        form.param("code", code);
+        form.param("client_id", clientId);
+        form.param("redirect_uri", redirectURI);
+        form.param("client_secret", clientSecret);
+        Response response = client.post(form);
+
+        return response.readEntity(ClientAccessToken.class);
+    }
+    
+    private String getSubjectName(String apiEndpoint, String accessToken, TrustedIdp trustedIdp) {
+        WebClient client = WebClient.create(apiEndpoint, 
+                                  Collections.singletonList(new JsonMapObjectProvider()), 
+                                  "cxf-tls.xml");
+        client.path("/me");
+        ClientConfiguration config = WebClient.getConfig(client);
+
+        if (LOG.isDebugEnabled()) {
+            config.getOutInterceptors().add(new LoggingOutInterceptor());
+            config.getInInterceptors().add(new LoggingInInterceptor());
+        }
+
+        client.accept("application/json");
+        client.query("access_token", accessToken);
+        
+        String subjectName = getProperty(trustedIdp, SUBJECT_CLAIM);
+        if (subjectName == null || subjectName.isEmpty()) {
+            subjectName = "email";
+        }
+        client.query("fields", subjectName);
+        JsonMapObject mapObject = client.get(JsonMapObject.class);
+        
+        String parsedSubjectName = (String)mapObject.getProperty(subjectName);
+        if (subjectName.contains("email")) {
+            parsedSubjectName = parsedSubjectName.replace("\\u0040", "@");
+        }
+        return parsedSubjectName;
     }
     
     protected String getScope(TrustedIdp trustedIdp) {
