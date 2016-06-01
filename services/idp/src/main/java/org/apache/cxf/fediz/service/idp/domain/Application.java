@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(propOrder = {"realm", "role", "serviceDisplayName", "serviceDescription", "protocol",
                       "tokenType", "lifeTime", "encryptionCertificate", "requestedClaims",
                       "policyNamespace", "passiveRequestorEndpoint", "passiveRequestorEndpointConstraint", "id",
-                      "validatingCertificate"})
+                      "validatingCertificate", "enableAppliesTo"})
 public class Application implements Serializable {
         
     private static final long serialVersionUID = 5644327504861846964L;
@@ -84,6 +84,9 @@ public class Application implements Serializable {
     
     // WS-Policy Namespace for AppliesTo element
     protected String policyNamespace;
+    
+    // Request audience restriction in token for this application (default is true)
+    private boolean enableAppliesTo = true;
     
     private URI href;
     
@@ -227,5 +230,13 @@ public class Application implements Serializable {
 
     public void setValidatingCertificate(String validatingCertificate) {
         this.validatingCertificate = validatingCertificate;
+    }
+
+    public boolean isEnableAppliesTo() {
+        return enableAppliesTo;
+    }
+
+    public void setEnableAppliesTo(boolean useAudienceRestriction) {
+        this.enableAppliesTo = useAudienceRestriction;
     }
 }

@@ -265,6 +265,8 @@ public class STSClientAction {
         sts.setEnableLifetime(true);
         setLifetime(sts, serviceConfig, realm);
         
+        sts.setEnableAppliesTo(serviceConfig.isEnableAppliesTo());
+        
         sts.setOnBehalfOf(idpToken.getToken());
         if (!(serviceConfig.getProtocol() == null
             || FederationConstants.WS_FEDERATION_NS.equals(serviceConfig.getProtocol()))) {

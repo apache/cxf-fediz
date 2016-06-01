@@ -202,6 +202,7 @@ public class ApplicationDAOJPAImpl implements ApplicationDAO {
         entity.setPolicyNamespace(application.getPolicyNamespace());
         entity.setPassiveRequestorEndpoint(application.getPassiveRequestorEndpoint());
         entity.setPassiveRequestorEndpointConstraint(application.getPassiveRequestorEndpointConstraint());
+        entity.setEnableAppliesTo(application.isEnableAppliesTo());
     }
     
     public static Application entity2domain(ApplicationEntity entity, List<String> expandList) {
@@ -219,6 +220,7 @@ public class ApplicationDAOJPAImpl implements ApplicationDAO {
         application.setPolicyNamespace(entity.getPolicyNamespace());
         application.setPassiveRequestorEndpoint(entity.getPassiveRequestorEndpoint());
         application.setPassiveRequestorEndpointConstraint(entity.getPassiveRequestorEndpointConstraint());
+        application.setEnableAppliesTo(entity.isEnableAppliesTo());
         
         if (expandList != null && (expandList.contains("all") || expandList.contains("claims"))) {
             for (ApplicationClaimEntity item : entity.getRequestedClaims()) {

@@ -80,6 +80,9 @@ public class ApplicationEntity {
     @Min(value = 1)
     private int lifeTime;
     
+    // Request audience restriction in token for this application (default is true)
+    private boolean enableAppliesTo = true;
+    
     // WS-Policy Namespace in SignIn Response
     private String policyNamespace;
     
@@ -199,5 +202,13 @@ public class ApplicationEntity {
 
     public void setValidatingCertificate(String validatingCertificate) {
         this.validatingCertificate = validatingCertificate;
+    }
+
+    public boolean isEnableAppliesTo() {
+        return enableAppliesTo;
+    }
+
+    public void setEnableAppliesTo(boolean enableAppliesTo) {
+        this.enableAppliesTo = enableAppliesTo;
     }
 }
