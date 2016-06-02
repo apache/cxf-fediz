@@ -105,7 +105,7 @@ public class SigninHandler<T> implements RequestHandler<T> {
     protected boolean validateAudienceRestrictions(String audience, String requestURL) {
         // Validate the AudienceRestriction in Security Token (e.g. SAML) 
         boolean validAudience = audience == null;
-        if (validAudience) {
+        if (!validAudience) {
             // validate against the configured list of audienceURIs
             List<String> audienceURIs = fedizContext.getAudienceUris();
             for (String a : audienceURIs) {
