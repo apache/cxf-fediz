@@ -125,8 +125,8 @@ public class SigninHandler<T> implements RequestHandler<T> {
             }
             
             if (!validAudience) {
-                LOG.warn("Token AudienceRestriction [{}] doesn't match with specified list of URIs.");
-                LOG.debug("Authenticated URIs are: {}", audience, audienceURIs);
+                LOG.warn("Token AudienceRestriction [{}] doesn't match with specified list of URIs.", audience);
+                LOG.debug("Authenticated URIs are: {}", audienceURIs);
             }
             
             if (LOG.isDebugEnabled() && requestURL != null && requestURL.indexOf(audience) == -1) {
