@@ -83,6 +83,9 @@ public class FedizContext implements Closeable {
     }
 
     public List<String> getAudienceUris() {
+        if (config.getAudienceUris() == null) {
+            return new ArrayList<String>();
+        }
         return config.getAudienceUris().getAudienceItem();
     }
 

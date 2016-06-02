@@ -13,7 +13,7 @@
     <xs:element name="contextConfig">
         <xs:complexType>
             <xs:sequence>
-                <xs:element ref="audienceUris" />
+                <xs:element ref="audienceUris" minOccurs="0" />
                 <xs:element ref="certificateValidation" />
                 <xs:element ref="certificateStores" />
                 <xs:element ref="tokenExpirationValidation" minOccurs="0" />
@@ -62,7 +62,7 @@
             </xs:documentation>
         </xs:annotation>
         <xs:complexType>
-            <xs:sequence minOccurs="1" maxOccurs="unbounded">
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
                 <xs:element ref="audienceItem" />
             </xs:sequence>
         </xs:complexType>
