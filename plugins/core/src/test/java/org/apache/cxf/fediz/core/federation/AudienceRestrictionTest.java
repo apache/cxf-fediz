@@ -50,7 +50,7 @@ import org.apache.wss4j.common.saml.bean.AudienceRestrictionBean;
 import org.apache.wss4j.common.saml.bean.ConditionsBean;
 import org.apache.wss4j.common.saml.builder.SAML2Constants;
 import org.apache.wss4j.common.util.DOM2Writer;
-import org.apache.wss4j.common.util.XMLUtils;
+import org.apache.wss4j.dom.util.WSSecurityUtil;
 import org.easymock.EasyMock;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -400,10 +400,10 @@ public class AudienceRestrictionTest {
         Document doc = STSUtil.toSOAPPart(rstr);
         Element token = assertion.toDOM(doc);
 
-        Element e = XMLUtils.findElement(doc, "RequestedSecurityToken",
+        Element e = WSSecurityUtil.findElement(doc, "RequestedSecurityToken",
                                                         FederationConstants.WS_TRUST_13_NS);
         if (e == null) {
-            e = XMLUtils.findElement(doc, "RequestedSecurityToken",
+            e = WSSecurityUtil.findElement(doc, "RequestedSecurityToken",
                                                     FederationConstants.WS_TRUST_2005_02_NS);
         }
         e.appendChild(token);
