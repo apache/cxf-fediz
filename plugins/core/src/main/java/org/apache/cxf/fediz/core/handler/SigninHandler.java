@@ -65,7 +65,10 @@ public class SigninHandler<T> implements RequestHandler<T> {
                 // process and validate the token
                 try {
                     FedizResponse federationResponse = processSigninRequest(responseToken, request, response);
-                    validateAudienceRestrictions(federationResponse.getAudience(), request.getRequestURL().toString());
+                    if (!validateAudienceRestrictions(federationResponse.getAudience(),
+                        request.getRequestURL().toString())) {
+                        return null;
+                    }
                     LOG.debug("RSTR validated successfully");
                     return createPrincipal(request, response, federationResponse);
                 } catch (ProcessingException e) {
@@ -104,7 +107,7 @@ public class SigninHandler<T> implements RequestHandler<T> {
 
     protected boolean validateAudienceRestrictions(String audience, String requestURL) {
         // Validate the AudienceRestriction in Security Token (e.g. SAML)
-     // validate against the configured list of audienceURIs
+        // validate against the configured list of audienceURIs
         List<String> audienceURIs = fedizContext.getAudienceUris();
         boolean validAudience = audienceURIs.isEmpty() && audience == null;
         if (!validAudience && audience != null) {
