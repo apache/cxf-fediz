@@ -39,7 +39,7 @@ import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.commons.io.IOUtils;
-import org.apache.cxf.fediz.tomcat7.FederationAuthenticator;
+import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.junit.AfterClass;
@@ -129,9 +129,9 @@ public class AudienceRestrictionTest {
                 content = content.replaceAll("\\$\\{idp.https.port\\}", "" + idpHttpsPort);
             
                 File f2 = new File(baseDir + "/test-classes/fediz_config_aud_restr.xml");
-                try (FileOutputStream outputStream = new FileOutputStream(f2)) {
-                    IOUtils.write(content, outputStream, "UTF-8");
-                }
+                FileOutputStream outputStream = new FileOutputStream(f2);
+                IOUtils.write(content, outputStream, "UTF-8");
+                outputStream.close();
             }
             
             FederationAuthenticator fa = new FederationAuthenticator();
@@ -203,8 +203,6 @@ public class AudienceRestrictionTest {
         } catch (FailingHttpStatusCodeException ex) {
             Assert.assertEquals(ex.getStatusCode(), 401);
         }
-
-        webClient.close();
     }
     
 }
