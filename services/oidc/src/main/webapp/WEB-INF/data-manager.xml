@@ -27,9 +27,6 @@
         http://www.springframework.org/schema/util/spring-util.xsd
         ">
     
-    <!-- Remove this import if no JPA2 is used --> 
-    <import resource="entity-manager.xml" /> 
-    
     <bean id="applicationContextProvider" class="org.apache.cxf.fediz.service.oidc.handler.hrd.ApplicationContextProvider"/>
 
     <util:map id="supportedScopes">
@@ -44,17 +41,12 @@
     </util:list>
     
     <!-- 
-        If working with Ehcache:
-        - replace the class attribute with org.apache.cxf.rs.security.oauth2.grants.code.DefaultEHCacheCodeDataProvider
-        - remove 'entityManager' property
-        
         To support the alternative data persistence strategies: either register a custom
         AbstractCodeDataProvider extension or implement AuthorizationCodeDataProvider directly
     -->     
     <bean id="oauthProvider" 
-          class="org.apache.cxf.rs.security.oauth2.grants.code.JPACodeDataProvider"
+          class="org.apache.cxf.rs.security.oauth2.grants.code.DefaultEHCacheCodeDataProvider"
           init-method="init" destroy-method="close">
-        <property name="entityManager" ref="entityManager"/>
         <property name="supportedScopes" ref="supportedScopes"/>
         <property name="requiredScopes" ref="coreScopes"/>
         <property name="defaultScopes" ref="coreScopes"/>
