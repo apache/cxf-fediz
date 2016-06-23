@@ -29,13 +29,24 @@
     
     <bean id="applicationContextProvider" class="org.apache.cxf.fediz.service.oidc.handler.hrd.ApplicationContextProvider"/>
 
+    <!-- List of accepted scopes -->
     <util:map id="supportedScopes">
         <entry key="openid" value="Access the authentication claims" />
         <entry key="refreshToken" value="Refresh access tokens" />
     </util:map>
+    
+    <!-- 
+        List of required scopes that must be available in request URIs when
+        client redirects users to OIDC
+    -->
     <util:list id="coreScopes">
         <value>openid</value>
     </util:list>
+    
+    <!-- 
+        Typically the scopes authorized by the user will be reported back to the client,
+        reporting an approved refreshToken scope is currently disabled  
+    -->
     <util:list id="invisibleToClientScopes">
         <value>refreshToken</value>
     </util:list>
@@ -47,18 +58,29 @@
     <bean id="oauthProvider" 
           class="org.apache.cxf.rs.security.oauth2.grants.code.DefaultEHCacheCodeDataProvider"
           init-method="init" destroy-method="close">
+        <!-- List of accepted scopes -->  
         <property name="supportedScopes" ref="supportedScopes"/>
+        <!-- List of required scopes -->
         <property name="requiredScopes" ref="coreScopes"/>
-        <property name="defaultScopes" ref="coreScopes"/>
-        <property name="invisibleToClientScopes" ref="invisibleToClientScopes"/>
-        <!--
-        <property name="supportPreauthorizedTokens" value="true"/>
+        <!-- 
+             List of scopes that the consent/authorization form should make 
+             selected by default. For example, asking a user to do an extra click
+             to approve an "oidc" scope is a redundant operation because this scope
+             is required anyway.
         -->
+        <property name="defaultScopes" ref="coreScopes"/>
+        
+        <property name="invisibleToClientScopes" ref="invisibleToClientScopes"/>
         <!--
         <property name="accessTokenLifetime" value="3600"/>
         -->
+        <!--
+        <property name="supportPreauthorizedTokens" value="true"/>
+        -->
+        
     </bean>
-    
+
+    <!-- Custom SubjectCreator where IdToken is created -->    
     <bean id="subjectCreator" class="org.apache.cxf.fediz.service.oidc.FedizSubjectCreator">
         <property name="idTokenIssuer" value="accounts.fediz.com"/>
     </bean>

@@ -40,7 +40,7 @@
 		
     <import resource="data-manager.xml" />
     
-    <!-- Supports OIDC code flow -->
+    <!-- Supports OIDC Authorization Code flow -->
     <bean id="oidcAuthorizationService" class="org.apache.cxf.rs.security.oidc.idp.OidcAuthorizationCodeService">
          <property name="dataProvider" ref="oauthProvider"/>
          <property name="subjectCreator" ref="subjectCreator"/>
@@ -50,7 +50,7 @@
          -->
          <property name="canSupportPublicClients" value="true"/>
     </bean>
-    <!-- Supports OIDC implicit and hybrid flows -->
+    <!-- Supports OIDC Implicit and Hybrid flows -->
     <bean id="oidcHybridService" class="org.apache.cxf.rs.security.oidc.idp.OidcHybridService">
          <property name="dataProvider" ref="oauthProvider"/>
          <property name="subjectCreator" ref="subjectCreator"/>
@@ -64,10 +64,13 @@
         <ref bean="oidcHybridService"/>
     </util:list>
     
+    <!-- Service which makes Code, Implicit and Hybrid flow available 
+         at the same relative "/authorize" address -->
     <bean id="authorizationService" class="org.apache.cxf.rs.security.oauth2.services.AuthorizationService">
          <property name="services" ref="oidcServices"/>
     </bean>
     
+    <!-- Service supporting all OIDC Core flows -->
     <jaxrs:server address="/idp">
         <jaxrs:serviceBeans>
            <ref bean="authorizationService"/>
@@ -83,7 +86,7 @@
     </jaxrs:server>
     
     <!-- 
-         Disable it if the client secret is used or if 
+         Public JWK Key Service: Disable it if the client secret is used or if 
          pre-installing public OIDC keys to clients is preferred
     --> 
     <bean id="oidcKeysService" class="org.apache.cxf.rs.security.oidc.idp.OidcKeysService"/>
@@ -104,7 +107,9 @@
     <bean id="oauth2TokenValidationFilter" class="org.apache.cxf.rs.security.oauth2.filters.OAuthRequestFilter">
          <property name="dataProvider" ref="oauthProvider"/>
          <property name="audienceIsEndpointAddress" value="false"/>
-     </bean>
+    </bean>
+     
+    <!-- User Info Service --> 
     <bean id="userInfoService" class="org.apache.cxf.rs.security.oidc.idp.UserInfoService">
         <property name="oauthDataProvider" ref="oauthProvider"/>
         <property name="jwsRequired" value="false"/>
@@ -121,7 +126,7 @@
     
     <bean id="keyPasswordProvider" class="org.apache.cxf.fediz.service.oidc.PrivateKeyPasswordProviderImpl"/>
     
-    
+    <!-- Client Registration Service -->
     <bean id="clientRegService" init-method="init" 
        class="org.apache.cxf.fediz.service.oidc.clients.ClientRegistrationService">
        <property name="dataProvider" ref="oauthProvider"/>
@@ -136,12 +141,11 @@
           </map>
        </property>
     </bean>
+    
+    <!-- Console linking to the client registration service -->
     <bean id="consoleService" class="org.apache.cxf.fediz.service.oidc.console.UserConsoleService">
         <property name="clientRegService" ref="clientRegService"/>
     </bean>
-    
-    
-    
     <jaxrs:server address="/console">
         <jaxrs:serviceBeans>
             <ref bean="consoleService"/>
@@ -166,9 +170,9 @@
               <entry key="org.apache.cxf.fediz.service.oidc.clients.InvalidRegistration" value="/WEB-INF/views/invalidRegistration.jsp"/>
             </map>
        </property>
-       
     </bean>
     
+    <!-- AccessTokenService response filter which adds IdTokens to client responses -->
     <bean id="idTokenFilter" class="org.apache.cxf.rs.security.oidc.idp.IdTokenResponseFilter">
       <!--
         <property name="signWithClientSecret" value="true"/>
@@ -177,13 +181,14 @@
     <bean id="refreshTokenHandler" class="org.apache.cxf.rs.security.oauth2.grants.refresh.RefreshTokenGrantHandler">
         <property name="dataProvider" ref="oauthProvider"/>
     </bean>
-    
+    <!-- Access Token service -->
     <bean id="accessTokenService" class="org.apache.cxf.rs.security.oauth2.services.AccessTokenService">
         <property name="dataProvider" ref="oauthProvider"/>
         <property name="responseFilter" ref="idTokenFilter"/>
         <property name="grantHandler" ref="refreshTokenHandler"/>
         <property name="canSupportPublicClients" value="true"/>
     </bean>
+    <!-- Access Token Introspection service -->
     <bean id="accessTokenIntrospectionService" class="org.apache.cxf.rs.security.oauth2.services.TokenIntrospectionService">
         <property name="dataProvider" ref="oauthProvider"/>
         <property name="blockUnauthorizedRequests" value="false"/> 
