@@ -408,7 +408,6 @@ public class OIDCTest {
         webClient.close();
     }
     
-    // TODO @Ignoring failing test for now
     @org.junit.Test
     public void testOIDCLoginForClient2() throws Exception {
         
@@ -446,7 +445,6 @@ public class OIDCTest {
         webClient.close();
     }
     
-    // TODO @Ignoring failing test for now
     @org.junit.Test
     public void testUsingCodeForOtherClient() throws Exception {
         // Get the code for the first client
