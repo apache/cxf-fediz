@@ -107,6 +107,9 @@
 	<security-role>
 		<role-name>Authenticated</role-name>
 	</security-role>				
+	<security-role>
+		<role-name>Secretary</role-name>
+	</security-role>				
 
 	<security-constraint>
 		<web-resource-collection>

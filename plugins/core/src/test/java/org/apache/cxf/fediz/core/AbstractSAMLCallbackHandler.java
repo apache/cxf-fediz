@@ -354,7 +354,13 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
                 attributeBean2.setQualifiedName(this.customClaimName);
                 attributeBean2.setNameFormat(this.getAttributeNameFormat());
             }
-            attributeBean2.addAttributeValue("CH");
+            if (customAttributeValues != null && !customAttributeValues.isEmpty()) {
+                for (Object obj : customAttributeValues) {
+                    attributeBean2.addAttributeValue(obj);
+                }
+            } else {
+                attributeBean2.addAttributeValue("CH");
+            }
             attributeList.add(attributeBean2);
             
             attrStateBean.setSamlAttributes(attributeList);

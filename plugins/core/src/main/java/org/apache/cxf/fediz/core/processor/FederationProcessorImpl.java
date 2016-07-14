@@ -203,6 +203,10 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             expires = validatorResponse.getExpires();
         }
         testForReplayAttack(validatorResponse.getUniqueTokenId(), config, expires);
+        testForMandatoryClaims(((FederationProtocol)config.getProtocol()).getRoleURI(),
+                              ((FederationProtocol)config.getProtocol()).getClaimTypesRequested(), 
+                              validatorResponse.getClaims(), 
+                              validatorResponse.getRoles() != null && !validatorResponse.getRoles().isEmpty());
 
         Date created = validatorResponse.getCreated();
         if (lifeTime != null && lifeTime.getCreated() != null) {
@@ -636,6 +640,35 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             }
         }
         return wReq;
+    }
+    
+    private void testForMandatoryClaims(String roleURI,
+                                        List<org.apache.cxf.fediz.core.config.Claim> requestedClaims, 
+                                        List<org.apache.cxf.fediz.core.Claim> receivedClaims,
+                                        boolean foundRoles
+    ) throws ProcessingException {
+        if (requestedClaims != null) {
+            for (org.apache.cxf.fediz.core.config.Claim requestedClaim : requestedClaims) {
+                if (!requestedClaim.isOptional()) {
+                    boolean found = false;
+                    for (org.apache.cxf.fediz.core.Claim receivedClaim : receivedClaims) {
+                        if (requestedClaim.getType().equals(receivedClaim.getClaimType().toString())) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found && foundRoles && roleURI != null && roleURI.equals(requestedClaim.getType())) {
+                        // Maybe the requested claim is a role, which has already been removed 
+                        // from the claims collection
+                        found = true;
+                    }
+                    if (!found) {
+                        LOG.warn("Mandatory claim {} not found in token", requestedClaim.getType());
+                        throw new ProcessingException("Mandatory claim not found in token", TYPE.INVALID_REQUEST);
+                    }
+                }
+            }
+        }
     }
 
     private static class DecryptionCallbackHandler implements CallbackHandler {
