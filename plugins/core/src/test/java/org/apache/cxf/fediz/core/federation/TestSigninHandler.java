@@ -19,6 +19,7 @@
 
 package org.apache.cxf.fediz.core.federation;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -61,12 +62,16 @@ public class TestSigninHandler extends SigninHandler<FedizPrincipal> {
         protected ClaimCollection claims;
         protected Element loginToken;
         private String username;
+        private List<String> roles = new ArrayList<>();
         
         FederationPrincipalImpl(String username, List<String> roles,
                 List<Claim> claims, Element loginToken) {
             this.claims = new ClaimCollection(claims);
             this.loginToken = loginToken;
             this.username = username;
+            if (roles != null) {
+                this.roles = roles;
+            }
         }
         
         public ClaimCollection getClaims() {
@@ -81,6 +86,10 @@ public class TestSigninHandler extends SigninHandler<FedizPrincipal> {
         @Override
         public String getName() {
             return username;
+        }
+
+        public List<String> getRoleClaims() {
+            return roles;
         }
 
     }

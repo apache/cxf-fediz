@@ -183,7 +183,8 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
         ResponseState responseState, Message m, Element token
     ) throws WSSecurityException {
         CXFFedizPrincipal principal = 
-            new CXFFedizPrincipal(responseState.getSubject(), responseState.getClaims(), token);
+            new CXFFedizPrincipal(responseState.getSubject(), responseState.getClaims(), 
+                                  responseState.getRoles(), token);
         
         SecurityTokenThreadLocal.setToken(principal.getLoginToken());
         FedizSecurityContext context = 

@@ -19,6 +19,7 @@
 
 package org.apache.cxf.fediz.tomcat7;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.w3c.dom.Element;
@@ -31,12 +32,16 @@ public class FederationPrincipalImpl extends GenericPrincipal implements FedizPr
 
     protected ClaimCollection claims;
     protected Element loginToken;
+    private List<String> roles = Collections.emptyList();
 
     public FederationPrincipalImpl(String username, List<String> roles,
             List<Claim> claims, Element loginToken) {
         super(username, null, roles);
         this.claims = new ClaimCollection(claims);
         this.loginToken = loginToken;
+        if (roles != null) {
+            this.roles = roles;
+        }
     }
 
     public ClaimCollection getClaims() {
@@ -46,6 +51,10 @@ public class FederationPrincipalImpl extends GenericPrincipal implements FedizPr
     @Override
     public Element getLoginToken() {
         return loginToken;
+    }
+    
+    public List<String> getRoleClaims() {
+        return Collections.unmodifiableList(roles);
     }
 
 }

@@ -20,6 +20,8 @@
 package org.apache.cxf.fediz.spring.authentication;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
 
 import org.w3c.dom.Element;
 import org.apache.cxf.fediz.core.ClaimCollection;
@@ -41,6 +43,7 @@ public class FederationAuthenticationToken extends AbstractAuthenticationToken
     private final Object principal;
     private final UserDetails userDetails;
     private final FedizResponse response;
+    private List<String> roles = Collections.emptyList();
 
     
     public FederationAuthenticationToken(final Object principal, final Object credentials,
@@ -58,6 +61,9 @@ public class FederationAuthenticationToken extends AbstractAuthenticationToken
         this.userDetails = userDetails;
         this.response = response;
         setAuthenticated(true);
+        if (response.getRoles() != null) {
+            this.roles = response.getRoles();
+        }
     }
 
     public Object getCredentials() {
@@ -95,4 +101,7 @@ public class FederationAuthenticationToken extends AbstractAuthenticationToken
         return response.getToken();
     }
 
+    public List<String> getRoleClaims() {
+        return Collections.unmodifiableList(roles);
+    }
 }

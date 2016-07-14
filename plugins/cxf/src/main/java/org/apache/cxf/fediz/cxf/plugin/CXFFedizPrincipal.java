@@ -18,6 +18,7 @@
  */
 package org.apache.cxf.fediz.cxf.plugin;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.w3c.dom.Element;
@@ -30,11 +31,15 @@ public class CXFFedizPrincipal implements FedizPrincipal {
     private final String subject;
     private final List<Claim> claims;
     private Element token;
+    private List<String> roles = Collections.emptyList();
     
-    public CXFFedizPrincipal(String subject, List<Claim> claims, Element token) {
+    public CXFFedizPrincipal(String subject, List<Claim> claims, List<String> roles, Element token) {
         this.subject = subject;
         this.claims = claims;
         this.token = token;
+        if (roles != null) {
+            this.roles = roles;
+        }
     }
 
     @Override
@@ -52,5 +57,7 @@ public class CXFFedizPrincipal implements FedizPrincipal {
         return token;
     }
     
-        
+    public List<String> getRoleClaims() {
+        return Collections.unmodifiableList(roles);
+    }
 }

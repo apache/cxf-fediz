@@ -19,7 +19,11 @@
 
 package org.apache.cxf.fediz.jetty8;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.w3c.dom.Element;
+
 import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.FedizPrincipal;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
@@ -28,11 +32,15 @@ public class FederationUserPrincipal implements FedizPrincipal {
     private String name;
     private ClaimCollection claims;
     private FedizResponse response;
+    private List<String> roles = Collections.emptyList();
 
     public FederationUserPrincipal(String name, FedizResponse response) {
         this.name = name;
         this.response = response;
         this.claims = new ClaimCollection(response.getClaims());
+        if (response.getRoles() != null) {
+            this.roles = response.getRoles();
+        }
     }
 
     @Override
@@ -57,5 +65,7 @@ public class FederationUserPrincipal implements FedizPrincipal {
         return response.getToken();
     }
     
-
+    public List<String> getRoleClaims() {
+        return Collections.unmodifiableList(roles);
+    }
 }

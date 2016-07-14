@@ -20,6 +20,7 @@
 package org.apache.cxf.fediz.core;
 
 import java.security.Principal;
+import java.util.List;
 
 import org.w3c.dom.Element;
 
@@ -28,5 +29,7 @@ public interface FedizPrincipal extends Principal {
     ClaimCollection getClaims();
     
     Element getLoginToken();
+    
+    List<String> getRoleClaims();
 
 }
