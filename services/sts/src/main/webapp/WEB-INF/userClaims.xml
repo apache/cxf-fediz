@@ -75,7 +75,7 @@
             value="tcooper@realma.org" />
         <entry
             key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role"
-            value="" />
+            value="Secretary" />
     </util:map>
 
     <util:map id="userClaimsREALMB">
@@ -126,7 +126,7 @@
             value="tcooper@realmb.org" />
         <entry
             key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role"
-            value="" />
+            value="Secretary" />
     </util:map>
 
     <util:list id="supportedClaims">

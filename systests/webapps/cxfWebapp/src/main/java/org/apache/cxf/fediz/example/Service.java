@@ -64,7 +64,7 @@ public class Service {
     }
     
     @Path("/fedservlet")
-    @RolesAllowed({ "User", "Admin", "Manager", "Authenticated" })
+    @RolesAllowed({ "User", "Admin", "Manager", "Authenticated", "Secretary" })
     @GET
     @Produces("text/html")
     public String doGetSecure(@Context UriInfo uriInfo) throws Exception {
