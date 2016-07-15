@@ -19,6 +19,10 @@
 package org.apache.cxf.fediz.service.oidc;
 
 import java.security.Principal;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.core.MultivaluedMap;
 
@@ -28,6 +32,7 @@ import org.apache.cxf.common.util.Base64UrlUtility;
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.ClaimTypes;
+import org.apache.cxf.fediz.core.FedizConstants;
 import org.apache.cxf.fediz.core.FedizPrincipal;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.rs.security.oauth2.common.UserSubject;
@@ -47,7 +52,7 @@ public class FedizSubjectCreator implements SubjectCreator {
 
     private String issuer;
     private long defaultTimeToLive = 3600L;
-    
+    private Map<String, String> supportedClaims = Collections.emptyMap();
     
     @Override
     public UserSubject createUserSubject(MessageContext mc, 
@@ -73,7 +78,9 @@ public class FedizSubjectCreator implements SubjectCreator {
         IdToken idToken = convertToIdToken(fedizPrincipal.getLoginToken(),
                                            oidcSub.getLogin(),
                                            oidcSub.getId(),
-                                           fedizPrincipal.getClaims());
+                                           fedizPrincipal.getClaims(),
+                                           fedizPrincipal.getRoleClaims(),
+                                           params.getFirst("claims"));
         oidcSub.setIdToken(idToken);
         // UserInfo can be populated and set on OidcUserSubject too.
         // UserInfoService will create it otherwise.
@@ -81,10 +88,12 @@ public class FedizSubjectCreator implements SubjectCreator {
         return oidcSub;
     }
     
-    public IdToken convertToIdToken(Element samlToken, 
+    private IdToken convertToIdToken(Element samlToken, 
             String subjectName,
             String subjectId,
-            ClaimCollection claims) {
+            ClaimCollection claims,
+            List<String> roles,
+            String requestedClaims) {
         // The current SAML Assertion represents an authentication record.
         // It has to be translated into IdToken (JWT) so that it can be returned 
         // to client applications participating in various OIDC flows.
@@ -136,6 +145,12 @@ public class FedizSubjectCreator implements SubjectCreator {
             idToken.setExpiryTime(currentTimeInSecs + defaultTimeToLive);
         }
         
+        // Additional claims requested
+        List<String> requestedClaimsList = Collections.emptyList();
+        if (requestedClaims != null && !supportedClaims.isEmpty()) {
+            requestedClaimsList = Arrays.asList(requestedClaims.trim().split(" "));
+        }
+        
         // Map claims
         if (claims != null) {
             String firstName = null;
@@ -160,13 +175,25 @@ public class FedizSubjectCreator implements SubjectCreator {
                     idToken.setGender((String)c.getValue());
                 } else if (ClaimTypes.WEB_PAGE.equals(c.getClaimType())) {
                     idToken.setWebsite((String)c.getValue());
+                } else if (supportedClaims.containsKey(c.getClaimType().toString())
+                    && requestedClaimsList.contains(supportedClaims.get(c.getClaimType().toString()))) {
+                    idToken.setClaim(supportedClaims.get(c.getClaimType().toString()), (String)c.getValue());
                 }
             
             }
             if (firstName != null && lastName != null) {
                 idToken.setName(firstName + " " + lastName);
             }
-            
+        }
+        
+        if (roles != null && !roles.isEmpty() 
+            && supportedClaims.containsKey(FedizConstants.DEFAULT_ROLE_URI.toString())
+            && requestedClaimsList.contains(supportedClaims.get(FedizConstants.DEFAULT_ROLE_URI.toString()))) {
+            if (roles.size() == 1) {
+                idToken.setClaim(supportedClaims.get(FedizConstants.DEFAULT_ROLE_URI.toString()), roles.get(0));
+            } else {
+                idToken.setClaim(supportedClaims.get(FedizConstants.DEFAULT_ROLE_URI.toString()), roles);
+            }
         }
     
         return idToken;
@@ -192,6 +219,17 @@ public class FedizSubjectCreator implements SubjectCreator {
     
     public void setIdTokenTimeToLive(long idTokenTimeToLive) {
         this.defaultTimeToLive = idTokenTimeToLive;
+    }
+
+    /**
+     * Set a map of supported claims. The map is from a SAML ClaimType URI String to a claim value that is
+     * sent in the claims parameter. So for example:
+     * http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role -> role
+     * If the token contains a the former, and the OpenId claims contains the latter, then the claim value
+     * will be encoded in the IdToken using the latter key.
+     */
+    public void setSupportedClaims(Map<String, String> supportedClaims) {
+        this.supportedClaims = supportedClaims;
     }
 
 }
