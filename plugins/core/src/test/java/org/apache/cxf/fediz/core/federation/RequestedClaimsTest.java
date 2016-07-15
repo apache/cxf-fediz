@@ -137,7 +137,7 @@ public class RequestedClaimsTest {
         KeyStoreType ks0 = new KeyStoreType();
         ks0.setType("JKS");
         ks0.setPassword("storepass");
-        ks0.setFile("ststrust.jks");
+        ks0.setResource("ststrust.jks");
         tm0.setKeyStore(ks0);
         
         certStores.getTrustManager().add(tm0);
