@@ -23,6 +23,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.URL;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -286,11 +287,16 @@ public class FedizContext implements Closeable {
     
     private Properties createCryptoProperties(TrustManagersType tm) {
         String trustStoreFile = null;
-        String trustStorePw = null;
         KeyStoreType ks = tm.getKeyStore();
+        String trustStorePw = ks.getPassword();
         if (ks.getFile() != null && !ks.getFile().isEmpty()) {
             trustStoreFile = ks.getFile();
-            trustStorePw = ks.getPassword();
+        } else if (ks.getResource() != null && !ks.getResource().isEmpty()) {
+            URL resource = Loader.getResource(ks.getResource());
+            if (resource != null) {
+                // WSS4J will re-load the resource anyway
+                trustStoreFile = ks.getResource();
+            }
         } else {
             throw new IllegalStateException("No certificate store configured");
         }
@@ -318,12 +324,17 @@ public class FedizContext implements Closeable {
     
     private Properties createCryptoProperties(KeyManagersType km) {
         String keyStoreFile = null;
-        String keyStorePw = null;
         String keyType = "jks";
         KeyStoreType ks = km.getKeyStore();
+        String keyStorePw = ks.getPassword();
         if (ks.getFile() != null && !ks.getFile().isEmpty()) {
             keyStoreFile = ks.getFile();
-            keyStorePw = ks.getPassword();
+        } else if (ks.getResource() != null && !ks.getResource().isEmpty()) {
+            URL resource = Loader.getResource(ks.getResource());
+            if (resource != null) {
+                // WSS4J will re-load the resource anyway
+                keyStoreFile = ks.getResource();
+            }
         } else {
             throw new IllegalStateException("No certificate store configured");
         }
