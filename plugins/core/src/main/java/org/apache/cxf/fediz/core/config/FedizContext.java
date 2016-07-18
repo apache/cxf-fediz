@@ -76,7 +76,6 @@ public class FedizContext implements Closeable {
             throw new IllegalArgumentException("ContextConfig cannot be null!");
         }
         this.config = config;
-        
     }
     
     public void init() {
@@ -372,6 +371,8 @@ public class FedizContext implements Closeable {
         this.classloader = classloader;
     }
     
-    
+    public boolean isAddAuthenticatedRole() {
+        return config.isAddAuthenticatedRole();
+    }
 
 }

@@ -17,6 +17,7 @@
                 <xs:element ref="certificateValidation" />
                 <xs:element ref="certificateStores" />
                 <xs:element ref="tokenExpirationValidation" minOccurs="0" />
+                <xs:element ref="addAuthenticatedRole" minOccurs="0" />
                 <xs:element ref="maximumClockSkew" />
                 <xs:element ref="tokenReplayCache" />
                 <xs:element ref="serviceCertificate" />
@@ -90,6 +91,17 @@
             <xs:documentation>Decision whether the token validation (e.g. lifetime) shall be
                 performed on every request
                 (true) or only once at initial authentication (false).
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    
+    <xs:element name="addAuthenticatedRole" type="xs:boolean" default="false" >
+        <xs:annotation>
+            <xs:documentation>Whether to add the "Authenticated" role to the list of roles associated
+            with the "authenticated" user. This could be useful if you don't care about authorizing 
+            the user, only about authentication. A role is required to activate authentication, and it
+            may be problematic to list all relevant roles in web.xml. Note that if the user has no
+            roles, then the "Authenticated" role is added automatically.
             </xs:documentation>
         </xs:annotation>
     </xs:element>

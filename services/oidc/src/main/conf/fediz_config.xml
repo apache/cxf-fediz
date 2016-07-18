@@ -36,6 +36,7 @@
 			<issuer certificateValidation="PeerTrust" />
 		</trustedIssuers>
 		<maximumClockSkew>1000</maximumClockSkew>
+		<addAuthenticatedRole>true</addAuthenticatedRole>
 		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 			xsi:type="federationProtocolType" version="1.0.0">
 			<realm>urn:org:apache:cxf:fediz:oidc</realm>

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -163,9 +164,13 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
 
             String webAppDomain = getWebAppDomain();
             String token = DOM2Writer.nodeToString(wfRes.getToken());
+            // Add "Authenticated" role
             List<String> roles = wfRes.getRoles();
             if (roles == null || roles.size() == 0) {
                 roles = Collections.singletonList("Authenticated");
+            } else if (fedConfig.isAddAuthenticatedRole()) {
+                roles = new ArrayList<>(roles);
+                roles.add("Authenticated");
             }
 
             String webAppContext = getWebAppContext(m);

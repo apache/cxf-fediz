@@ -19,6 +19,7 @@
 
 package org.apache.cxf.fediz.tomcat8.handler;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -50,9 +51,13 @@ public class TomcatSigninHandler extends SigninHandler<FedizPrincipal> {
     protected FedizPrincipal createPrincipal(HttpServletRequest request, HttpServletResponse response,
         FedizResponse wfRes) {
 
+        // Add "Authenticated" role
         List<String> roles = wfRes.getRoles();
         if (roles == null || roles.size() == 0) {
             roles = Collections.singletonList("Authenticated");
+        } else if (getFedizContext().isAddAuthenticatedRole()) {
+            roles = new ArrayList<>(roles);
+            roles.add("Authenticated");
         }
 
         // proceed creating the JAAS Subject
