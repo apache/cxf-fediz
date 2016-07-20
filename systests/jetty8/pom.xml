@@ -32,6 +32,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <htmlunit.jetty8.version>2.15</htmlunit.jetty8.version>
     </properties>
     <dependencies>
         <dependency>
@@ -81,6 +82,12 @@
             <type>test-jar</type>
             <scope>test</scope>
             <classifier>tests</classifier>
+            <exclusions>
+                <exclusion>
+                    <groupId>net.sourceforge.htmlunit</groupId>
+                    <artifactId>htmlunit</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -94,6 +101,11 @@
             <version>${hsqldb.version}</version>
             <scope>test</scope>
         </dependency>        
+        <dependency>
+            <groupId>net.sourceforge.htmlunit</groupId>
+            <artifactId>htmlunit</artifactId>
+            <version>${htmlunit.jetty8.version}</version>
+        </dependency>
     </dependencies>
     <build>
         <testResources>
