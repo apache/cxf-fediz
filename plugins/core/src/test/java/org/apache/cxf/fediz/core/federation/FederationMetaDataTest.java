@@ -108,10 +108,13 @@ public class FederationMetaDataTest {
         try {
             FedizContext config = loadConfig("ROOT_NO_KEY");
 
+            HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+            EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+            EasyMock.expect(req.getContextPath()).andReturn(CONTEXT_PATH);
+            EasyMock.replay(req);
+            
             FedizProcessor wfProc = new FederationProcessorImpl();
-            Document doc;
-           
-            doc = wfProc.getMetaData(null, config);
+            Document doc = wfProc.getMetaData(req, config);
             Assert.assertNull(doc);
             fail("Failure expected as signing store contains more than one certificate");
         } catch (ProcessingException ex) {
