@@ -110,6 +110,10 @@ public final class CertsUtils {
             keyAlias = crypto.getDefaultX509Identifier();
         }
         
+        if (keyAlias == null) {
+            throw new RuntimeException("No keystore alias was specified to sign the metadata");
+        }
+        
         CryptoType cryptoType = new CryptoType(CryptoType.TYPE.ALIAS);
         cryptoType.setAlias(keyAlias);
         X509Certificate[] issuerCerts = crypto.getX509Certificates(cryptoType);
