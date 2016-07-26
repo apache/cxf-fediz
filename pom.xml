@@ -66,7 +66,7 @@
         <spring.version>3.2.8.RELEASE</spring.version>
         <spring.security.version>3.1.7.RELEASE</spring.security.version>
         <tomcat.version>7.0.70</tomcat.version>
-        <wss4j.version>2.0.8</wss4j.version>
+        <wss4j.version>2.0.9</wss4j.version>
         <xalan.version>2.7.2</xalan.version>
         <bval.version>0.5</bval.version>
 
