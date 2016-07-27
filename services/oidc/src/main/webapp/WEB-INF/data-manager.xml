@@ -56,7 +56,7 @@
         AbstractCodeDataProvider extension or implement AuthorizationCodeDataProvider directly
     -->     
     <bean id="oauthProvider" 
-          class="org.apache.cxf.rs.security.oauth2.grants.code.DefaultEHCacheCodeDataProvider"
+          class="org.apache.cxf.fediz.service.oidc.OAuthDataProviderImpl"
           init-method="init" destroy-method="close">
         <!-- List of accepted scopes -->  
         <property name="supportedScopes" ref="supportedScopes"/>
