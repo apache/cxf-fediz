@@ -60,8 +60,6 @@
           init-method="init" destroy-method="close">
         <!-- List of accepted scopes -->  
         <property name="supportedScopes" ref="supportedScopes"/>
-        <!-- List of required scopes -->
-        <property name="requiredScopes" ref="coreScopes"/>
         <!-- 
              List of scopes that the consent/authorization form should make 
              selected by default. For example, asking a user to do an extra click

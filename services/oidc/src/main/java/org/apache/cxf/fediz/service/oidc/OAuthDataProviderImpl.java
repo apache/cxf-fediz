@@ -19,10 +19,15 @@
 package org.apache.cxf.fediz.service.oidc;
 
 import java.security.Principal;
+import java.util.Collections;
+import java.util.List;
 
 import org.apache.cxf.rs.security.oauth2.common.Client;
+import org.apache.cxf.rs.security.oauth2.common.OAuthPermission;
 import org.apache.cxf.rs.security.oauth2.grants.code.DefaultEHCacheCodeDataProvider;
+import org.apache.cxf.rs.security.oauth2.provider.OAuthServiceException;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
+import org.apache.cxf.rs.security.oidc.utils.OidcUtils;
 
 public class OAuthDataProviderImpl extends DefaultEHCacheCodeDataProvider {
     
@@ -30,10 +35,12 @@ public class OAuthDataProviderImpl extends DefaultEHCacheCodeDataProvider {
     
     @Override
     public Client getClient(String clientId) {
+        //TODO: push most of this code into the abstract class
         Client client = super.getClient(clientId);
         if (client != null || checkOnlyRegisteredClients) {
             return client;
         }
+        
         String grantType = (String)getMessageContext().get(OAuthConstants.GRANT_TYPE);
         if (OAuthConstants.CLIENT_CREDENTIALS_GRANT.equals(grantType)) {
             // Pre-registering the OAuth2 Client representations for 
@@ -46,15 +53,25 @@ public class OAuthDataProviderImpl extends DefaultEHCacheCodeDataProvider {
             } else {
                 Principal p = super.getMessageContext().getSecurityContext().getUserPrincipal();
                 if (clientId.equals(p.getName())) {
-                    // Client was already authenticated with Servlet Security 
-                    // or CXF (JAAS/etc) filters
-                    return new Client(clientId, null, true);
+                    Client c = new Client(clientId, null, true);
+                    c.setAllowedGrantTypes(Collections.singletonList(OAuthConstants.CLIENT_CREDENTIALS_GRANT));
+                    return c;
                 }
             }
         }
         return null;
     }
 
+    @Override
+    public List<OAuthPermission> convertScopeToPermissions(Client client, List<String> requestedScopes) {
+        //TODO: push this code into the abstract class
+        if (!client.getAllowedGrantTypes().contains(OAuthConstants.CLIENT_CREDENTIALS_GRANT)
+            && !requestedScopes.contains(OidcUtils.OPENID_SCOPE)) {
+            throw new OAuthServiceException("Required scopes are missing"); 
+        }
+        return super.convertScopeToPermissions(client, requestedScopes);
+    }
+    
     protected Client authenticateClient(String clientId, String clientSecret) {
         // If the authentication is successful: 
         // return new Client(clientId, clientSecret, true)
