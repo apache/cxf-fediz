@@ -65,6 +65,9 @@ public class OAuthDataProviderImpl extends DefaultEHCacheCodeDataProvider {
     @Override
     public List<OAuthPermission> convertScopeToPermissions(Client client, List<String> requestedScopes) {
         //TODO: push this code into the abstract class
+        //NOTE: if OIDC-registered clients will be allowed to support not only code/implicit
+        // (as it is now) but also client credentials/etc then the check below will need to be more strict
+        // with the help of getMessageContext().get(OAuthConstants.GRANT_TYPE)
         if (!client.getAllowedGrantTypes().contains(OAuthConstants.CLIENT_CREDENTIALS_GRANT)
             && !requestedScopes.contains(OidcUtils.OPENID_SCOPE)) {
             throw new OAuthServiceException("Required scopes are missing"); 
