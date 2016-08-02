@@ -102,7 +102,6 @@ public class OAuthDataProviderImpl extends DefaultEHCacheCodeDataProvider {
                 ctx.logout();
                 return client;
             } catch (LoginException ex) {
-                ex.printStackTrace();
                 String errorMessage = "Authentication failed: " + ex.getMessage();
                 LOG.log(Level.FINE, errorMessage, ex);
             }
