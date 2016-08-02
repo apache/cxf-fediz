@@ -181,11 +181,15 @@
     <bean id="refreshTokenHandler" class="org.apache.cxf.rs.security.oauth2.grants.refresh.RefreshTokenGrantHandler">
         <property name="dataProvider" ref="oauthProvider"/>
     </bean>
+    <util:list id="grantHandlers">
+        <ref bean="refreshTokenHandler"/>
+        <!-- Add more custom grant handlers as needed -->
+    </util:list>
     <!-- Access Token service -->
     <bean id="accessTokenService" class="org.apache.cxf.rs.security.oauth2.services.AccessTokenService">
         <property name="dataProvider" ref="oauthProvider"/>
         <property name="responseFilter" ref="idTokenFilter"/>
-        <property name="grantHandler" ref="refreshTokenHandler"/>
+        <property name="grantHandlers" ref="grantHandlers"/>
         <property name="canSupportPublicClients" value="true"/>
     </bean>
     <!-- Access Token Introspection service -->
