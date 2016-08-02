@@ -193,23 +193,6 @@
                             <stripVersion>true</stripVersion>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>copy-xalan-to-idp</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>xalan</groupId>
-                                    <artifactId>xalan</artifactId>
-                                    <version>${xalan.version}</version>
-                                    <outputDirectory>target/tomcat/idp/webapps/fediz-idp/WEB-INF/lib</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
             <plugin>
