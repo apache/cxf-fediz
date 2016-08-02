@@ -1,0 +1,10 @@
+
+sts {
+    org.apache.cxf.ws.security.trust.STSLoginModule required 
+    require.roles="true"
+    disable.on.behalf.of="true"
+    wsdl.location="https://localhost:${idp.https.port}/fediz-idp-sts/REALMA/STSServiceTransportUT?wsdl"
+    service.name="{http://docs.oasis-open.org/ws-sx/ws-trust/200512/}SecurityTokenService"
+    endpoint.name="{http://docs.oasis-open.org/ws-sx/ws-trust/200512/}TransportUT_Port";
+};
+

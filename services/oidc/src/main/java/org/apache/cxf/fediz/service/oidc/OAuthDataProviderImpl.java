@@ -21,7 +21,16 @@ package org.apache.cxf.fediz.service.oidc;
 import java.security.Principal;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.login.Configuration;
+import javax.security.auth.login.LoginContext;
+import javax.security.auth.login.LoginException;
+
+import org.apache.cxf.common.logging.LogUtils;
+import org.apache.cxf.interceptor.security.NamePasswordCallbackHandler;
 import org.apache.cxf.rs.security.oauth2.common.Client;
 import org.apache.cxf.rs.security.oauth2.common.OAuthPermission;
 import org.apache.cxf.rs.security.oauth2.grants.code.DefaultEHCacheCodeDataProvider;
@@ -31,7 +40,12 @@ import org.apache.cxf.rs.security.oidc.utils.OidcUtils;
 
 public class OAuthDataProviderImpl extends DefaultEHCacheCodeDataProvider {
     
+    private static final Logger LOG = LogUtils.getL7dLogger(OAuthDataProviderImpl.class);
+    
     private boolean checkOnlyRegisteredClients;
+    private String contextName;
+    private Configuration loginConfig;
+
     
     @Override
     public Client getClient(String clientId) {
@@ -76,13 +90,44 @@ public class OAuthDataProviderImpl extends DefaultEHCacheCodeDataProvider {
     }
     
     protected Client authenticateClient(String clientId, String clientSecret) {
-        // If the authentication is successful: 
-        // return new Client(clientId, clientSecret, true)
+        if (contextName != null) {
+            try {
+                // Login using JAAS
+                CallbackHandler callbackHandler = 
+                    new NamePasswordCallbackHandler(clientId, clientSecret);
+                LoginContext ctx = new LoginContext(getContextName(), null, callbackHandler, loginConfig);  
+                ctx.login();
+                Client client = new Client(clientId, clientSecret, true);
+                client.setAllowedGrantTypes(Collections.singletonList(OAuthConstants.CLIENT_CREDENTIALS_GRANT));
+                ctx.logout();
+                return client;
+            } catch (LoginException ex) {
+                ex.printStackTrace();
+                String errorMessage = "Authentication failed: " + ex.getMessage();
+                LOG.log(Level.FINE, errorMessage, ex);
+            }
+        }
         return null;
     }
 
     public void setCheckOnlyRegisteredClients(boolean checkOnlyRegisteredClients) {
         this.checkOnlyRegisteredClients = checkOnlyRegisteredClients;
+    }
+    
+    public String getContextName() {
+        return contextName;
+    }
+
+    public void setContextName(String contextName) {
+        this.contextName = contextName;
+    }
+
+    public Configuration getLoginConfig() {
+        return loginConfig;
+    }
+
+    public void setLoginConfig(Configuration loginConfig) {
+        this.loginConfig = loginConfig;
     }
 
 }

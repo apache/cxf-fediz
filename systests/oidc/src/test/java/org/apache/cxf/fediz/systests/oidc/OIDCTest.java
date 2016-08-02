@@ -632,6 +632,27 @@ public class OIDCTest {
         webClient.close();
     }
     
+    @org.junit.Test
+    public void testClientCredentialsSTS() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/oauth2/token";
+        WebRequest request = new WebRequest(new URL(url), HttpMethod.POST);
+
+        request.setRequestParameters(new ArrayList<NameValuePair>());
+        request.getRequestParameters().add(new NameValuePair("client_id", "alice"));
+        request.getRequestParameters().add(new NameValuePair("client_secret", "ecila"));
+        request.getRequestParameters().add(new NameValuePair("grant_type", "client_credentials"));
+        
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getOptions().setJavaScriptEnabled(false);
+        final UnexpectedPage responsePage = webClient.getPage(request);
+        String response = responsePage.getWebResponse().getContentAsString();
+
+        Assert.assertTrue(response.contains("access_token"));
+        
+        webClient.close();
+    }
+    
     private static WebClient setupWebClient(String user, String password, String idpPort) {
         final WebClient webClient = new WebClient();
         webClient.getOptions().setUseInsecureSSL(true);

@@ -99,6 +99,16 @@
             <version>${cxf.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+	        <groupId>org.apache.cxf</groupId>
+	        <artifactId>cxf-rt-ws-security</artifactId>
+	        <version>${cxf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-ws-policy</artifactId>
+            <version>${cxf.version}</version>
+        </dependency>
     </dependencies>
     <build>
         <testResources>
@@ -197,6 +207,17 @@
                             </artifactItems>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>copy-extra-jars-to-oidc</id>
+                        <phase>package</phase>
+                        <goals>
+                          <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/tomcat/rp/webapps/fediz-oidc/WEB-INF/lib</outputDirectory>
+                             <includeScope>compile</includeScope>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -216,6 +237,26 @@
                                     <directory>${basedir}/src/test/resources/realma</directory>
                                     <includes>
                                         <include>entities-realma.xml</include>
+                                    </includes>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>              
+                        </configuration>            
+                    </execution>
+                    <execution>
+                        <id>copy-entities-to-oidc</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/tomcat/rp/webapps/fediz-oidc/WEB-INF</outputDirectory>
+                            <resources>          
+                                <resource>
+                                    <directory>${basedir}/src/test/resources/oidc</directory>
+                                    <includes>
+                                        <include>applicationContext.xml</include>
+                                        <include>data-manager.xml</include>
                                     </includes>
                                     <filtering>true</filtering>
                                 </resource>
@@ -261,6 +302,7 @@
                                 <idp.https.port>${idp.https.port}</idp.https.port>
                                 <rp.https.port>${rp.https.port}</rp.https.port>
                                 <java.io.tmpdir>${basedir}/target</java.io.tmpdir>
+                                <java.security.auth.login.config>src/test/resources/sts.jaas</java.security.auth.login.config>
                             </systemPropertyVariables>
                             <includes>
                                 <include>**/systests/**</include>

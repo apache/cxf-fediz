@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements. See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership. The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License. You may obtain a copy of the License at
+ 
+  http://www.apache.org/licenses/LICENSE-2.0
+ 
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied. See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:cxf="http://cxf.apache.org/core"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:jaxrs="http://cxf.apache.org/jaxrs" 
+    xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:http="http://cxf.apache.org/transports/http/configuration"
+    xmlns:sec="http://cxf.apache.org/configuration/security"
+    xsi:schemaLocation="
+        http://cxf.apache.org/core
+        http://cxf.apache.org/schemas/core.xsd
+		http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://cxf.apache.org/jaxrs
+        http://cxf.apache.org/schemas/jaxrs.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util.xsd
+        http://cxf.apache.org/transports/http/configuration
+        http://cxf.apache.org/schemas/configuration/http-conf.xsd
+        http://cxf.apache.org/configuration/security
+        http://cxf.apache.org/schemas/configuration/security.xsd">
+
+	<cxf:bus>
+        <cxf:features>
+            <cxf:logging/>
+        </cxf:features>
+    </cxf:bus>
+		
+    <import resource="data-manager.xml" />
+    
+    <!-- Supports OIDC Authorization Code flow -->
+    <bean id="oidcAuthorizationService" class="org.apache.cxf.rs.security.oidc.idp.OidcAuthorizationCodeService">
+         <property name="dataProvider" ref="oauthProvider"/>
+         <property name="subjectCreator" ref="subjectCreator"/>
+         <property name="skipAuthorizationWithOidcScope" value="true"/>
+         <!--
+         <property name="useAllClientScopes" value="true"/>
+         -->
+         <property name="canSupportPublicClients" value="true"/>
+    </bean>
+    <!-- Supports OIDC Implicit and Hybrid flows -->
+    <bean id="oidcHybridService" class="org.apache.cxf.rs.security.oidc.idp.OidcHybridService">
+         <property name="dataProvider" ref="oauthProvider"/>
+         <property name="subjectCreator" ref="subjectCreator"/>
+         <property name="skipAuthorizationWithOidcScope" value="true"/>
+         <property name="responseFilter" ref="idTokenFilter"/>
+         <property name="codeService" ref="oidcAuthorizationService"/>
+    </bean>
+    
+    <util:list id="oidcServices">
+        <ref bean="oidcAuthorizationService"/>
+        <ref bean="oidcHybridService"/>
+    </util:list>
+    
+    <!-- Service which makes Code, Implicit and Hybrid flow available 
+         at the same relative "/authorize" address -->
+    <bean id="authorizationService" class="org.apache.cxf.rs.security.oauth2.services.AuthorizationService">
+         <property name="services" ref="oidcServices"/>
+    </bean>
+    
+    <!-- Service supporting all OIDC Core flows -->
+    <jaxrs:server address="/idp">
+        <jaxrs:serviceBeans>
+           <ref bean="authorizationService"/>
+        </jaxrs:serviceBeans>
+        <jaxrs:providers>
+            <ref bean="viewProvider"/>
+            <ref bean="oauthJsonProvider"/>
+        </jaxrs:providers>
+        <jaxrs:properties>
+            <entry key="rs.security.signature.properties" value="rs.security.properties"/>
+            <entry key="rs.security.signature.key.password.provider" value-ref="keyPasswordProvider"/>
+        </jaxrs:properties>
+    </jaxrs:server>
+    
+    <!-- 
+         Public JWK Key Service: Disable it if the client secret is used or if 
+         pre-installing public OIDC keys to clients is preferred
+    --> 
+    <bean id="oidcKeysService" class="org.apache.cxf.rs.security.oidc.idp.OidcKeysService"/>
+    <jaxrs:server address="/jwk">
+        <jaxrs:serviceBeans>
+           <ref bean="oidcKeysService"/>
+        </jaxrs:serviceBeans>
+        <jaxrs:providers>
+            <bean class="org.apache.cxf.rs.security.jose.jaxrs.JsonWebKeysProvider"/>
+        </jaxrs:providers>
+        <jaxrs:properties>
+            <entry key="rs.security.signature.properties" value="rs.security.properties"/>
+            <entry key="rs.security.signature.key.password.provider" value-ref="keyPasswordProvider"/>
+        </jaxrs:properties>
+    </jaxrs:server>
+    
+    
+    <bean id="oauth2TokenValidationFilter" class="org.apache.cxf.rs.security.oauth2.filters.OAuthRequestFilter">
+         <property name="dataProvider" ref="oauthProvider"/>
+         <property name="audienceIsEndpointAddress" value="false"/>
+    </bean>
+     
+    <!-- User Info Service --> 
+    <bean id="userInfoService" class="org.apache.cxf.rs.security.oidc.idp.UserInfoService">
+        <property name="oauthDataProvider" ref="oauthProvider"/>
+        <property name="jwsRequired" value="false"/>
+    </bean>
+    <jaxrs:server address="/users">
+        <jaxrs:serviceBeans>
+           <ref bean="userInfoService"/>
+        </jaxrs:serviceBeans>
+        <jaxrs:providers>
+            <bean class="org.apache.cxf.jaxrs.provider.json.JsonMapObjectProvider"/>
+            <ref bean="oauth2TokenValidationFilter"/>
+        </jaxrs:providers>
+    </jaxrs:server>
+    
+    <bean id="keyPasswordProvider" class="org.apache.cxf.fediz.service.oidc.PrivateKeyPasswordProviderImpl"/>
+    
+    <!-- Client Registration Service -->
+    <bean id="clientRegService" init-method="init" 
+       class="org.apache.cxf.fediz.service.oidc.clients.ClientRegistrationService">
+       <property name="dataProvider" ref="oauthProvider"/>
+       <property name="clientProvider" ref="oauthProvider"/>
+       <!-- 
+           <property name="clientScopes" ref="supportedScopes"/>
+       -->
+       <property name="homeRealms">
+          <map>
+            <entry key="urn:org:apache:cxf:fediz:idp:realm-A" value="IDP of Realm A" />
+            <entry key="urn:org:apache:cxf:fediz:idp:realm-B" value="IDP of Realm B" />
+          </map>
+       </property>
+    </bean>
+    
+    <!-- Console linking to the client registration service -->
+    <bean id="consoleService" class="org.apache.cxf.fediz.service.oidc.console.UserConsoleService">
+        <property name="clientRegService" ref="clientRegService"/>
+    </bean>
+    <jaxrs:server address="/console">
+        <jaxrs:serviceBeans>
+            <ref bean="consoleService"/>
+        </jaxrs:serviceBeans>
+        <jaxrs:providers>
+            <ref bean="viewProvider"/>
+        </jaxrs:providers> 
+    </jaxrs:server>
+    
+    <bean id="viewProvider" class="org.apache.cxf.jaxrs.provider.RequestDispatcherProvider">
+       <property name="useClassNames" value="true"/>
+       <property name="locationPrefix" value="/WEB-INF/views/"/>
+       <property name="beanName" value="data"/>
+       <property name="dispatcherName" value="jsp"/>
+       <property name="resourcePaths">
+            <map>
+              <entry key="/remove" value="/WEB-INF/views/registeredClients.jsp"/>
+            </map>
+       </property>
+       <property name="classResources">
+            <map>
+              <entry key="org.apache.cxf.fediz.service.oidc.clients.InvalidRegistration" value="/WEB-INF/views/invalidRegistration.jsp"/>
+            </map>
+       </property>
+    </bean>
+    
+    <!-- AccessTokenService response filter which adds IdTokens to client responses -->
+    <bean id="idTokenFilter" class="org.apache.cxf.rs.security.oidc.idp.IdTokenResponseFilter">
+      <!--
+        <property name="signWithClientSecret" value="true"/>
+      -->
+    </bean>
+    <bean id="refreshTokenHandler" class="org.apache.cxf.rs.security.oauth2.grants.refresh.RefreshTokenGrantHandler">
+        <property name="dataProvider" ref="oauthProvider"/>
+    </bean>
+     <bean id="clientCredsHandler" class="org.apache.cxf.rs.security.oauth2.grants.clientcred.ClientCredentialsGrantHandler">
+        <property name="dataProvider" ref="oauthProvider"/>
+    </bean>
+    <!-- Access Token service -->
+    <bean id="accessTokenService" class="org.apache.cxf.rs.security.oauth2.services.AccessTokenService">
+        <property name="dataProvider" ref="oauthProvider"/>
+        <property name="responseFilter" ref="idTokenFilter"/>
+        <property name="grantHandler" ref="clientCredsHandler"/>
+        <property name="canSupportPublicClients" value="true"/>
+    </bean>
+    <!-- Access Token Introspection service -->
+    <bean id="accessTokenIntrospectionService" class="org.apache.cxf.rs.security.oauth2.services.TokenIntrospectionService">
+        <property name="dataProvider" ref="oauthProvider"/>
+        <property name="blockUnauthorizedRequests" value="false"/> 
+    </bean>
+    <bean id="oauthJsonProvider" class="org.apache.cxf.rs.security.oauth2.provider.OAuthJSONProvider"/>
+    <jaxrs:server address="/oauth2">
+        <jaxrs:serviceBeans>
+            <ref bean="accessTokenService"/>
+            <ref bean="accessTokenIntrospectionService"/>
+        </jaxrs:serviceBeans>
+        <jaxrs:providers>
+           <ref bean="oauthJsonProvider"/>
+        </jaxrs:providers>
+        <jaxrs:properties>
+            <entry key="rs.security.signature.properties" value="rs.security.properties"/>
+            <entry key="rs.security.signature.key.password.provider" value-ref="keyPasswordProvider"/>
+        </jaxrs:properties>
+     </jaxrs:server>
+     
+     <http:conduit name="*.http-conduit">
+        <http:tlsClientParameters
+            disableCNCheck="true">
+            <sec:trustManagers>
+                <sec:keyStore type="jks" password="tompass" resource="server.jks" />
+            </sec:trustManagers>
+        </http:tlsClientParameters>
+    </http:conduit>
+     
+</beans>
+
