@@ -171,7 +171,7 @@ public class KerberosAuthenticationProcessingFilter extends GenericFilterBean {
      * successfully processed by the <tt>AuthenticationManager</tt>. Used, for example, to handle changing of the
      * session identifier to prevent session fixation attacks.
      *
-     * @param sessionStrategy the implementation to use. If not set a null implementation is
+     * @param sessionAuthStrategy the implementation to use. If not set a null implementation is
      * used.
      */
     public void setSessionAuthenticationStrategy(SessionAuthenticationStrategy sessionAuthStrategy) {

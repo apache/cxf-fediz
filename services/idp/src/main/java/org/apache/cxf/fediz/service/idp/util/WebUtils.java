@@ -82,7 +82,6 @@ public final class WebUtils {
      * 
      * @param context
      * @param attributeKey
-     * @return
      */
     public static void putAttribute(final RequestContext context,
             final String attributeKey, final Object attributeValue,
@@ -110,7 +109,7 @@ public final class WebUtils {
      * 
      * @param context
      * @param attributeKey
-     * @return
+     * @return the attribute from the request or session
      */
     public static Object getAttribute(final RequestContext context,
             final String attributeKey) {
@@ -137,7 +136,7 @@ public final class WebUtils {
      * 
      * @param context
      * @param attributeKey
-     * @return
+     * @return the removed attribute
      */
     public static Object removeAttribute(final RequestContext context,
             final String attributeKey) {
