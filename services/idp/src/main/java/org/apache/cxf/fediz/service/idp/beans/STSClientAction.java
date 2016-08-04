@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.namespace.QName;
@@ -92,6 +93,8 @@ public class STSClientAction {
   
     protected String tokenType = WSConstants.WSS_SAML2_TOKEN_TYPE;
     
+    protected Map<String, Object> properties;
+    
     protected boolean use200502Namespace;
     
     protected int ttl = 1800;
@@ -101,6 +104,7 @@ public class STSClientAction {
     private boolean isPortSet;
     
     private String keyType = HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER;
+
 
     public String getWsdlLocation() {
         return wsdlLocation;
@@ -273,6 +277,10 @@ public class STSClientAction {
             LOG.error("Protocol {} not supported for realm {} ", serviceConfig.getProtocol(), realm);
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
+       
+        if (properties != null) {
+            sts.setProperties(properties);
+        }
         
         Element rpToken = null;
         try {
@@ -424,5 +432,13 @@ public class STSClientAction {
                 LOG.debug("Lifetime set to {} seconds for realm {}", this.ttl, wtrealm);
             }
         }
+    }
+
+    public Map<String, Object> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(Map<String, Object> properties) {
+        this.properties = properties;
     }
 }
