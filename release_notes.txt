@@ -63,6 +63,87 @@ N.A.
 
 8. Specific issues, features, and improvements fixed in this version
 
+Release Notes - CXF-Fediz - Version 1.3.1
+
+Bug
+
+    [FEDIZ-161] - FederationConfigImpl.init() calls loadConfig(File) which fails for war files with special characters in its name
+    [FEDIZ-164] - IdP default flow doesn't support multiple realms
+    [FEDIZ-165] - SAML SSO redirection on ForceAuthn or token expiry not working
+    [FEDIZ-166] - "No message body writer" error for OAuthError in the OIDC IdP
+    [FEDIZ-169] - Enforce mandatory requested claims on the RP side
+    [FEDIZ-170] - Load keystore/truststore resources in the container plugins
+
+Improvement
+
+    [FEDIZ-160] - Replace Hibernate with Apache BVal
+    [FEDIZ-162] - Make it possible to disable the requirement for a Signature when validating a SAML SSO AuthnRequest in the IdP
+    [FEDIZ-163] - Default to disabling Deflate Encoding for the SAML SSO response
+    [FEDIZ-168] - Support SAML Token without Audience Restriction
+    [FEDIZ-171] - Add a configuration option to add the "Authenticated" role to the list of roles of the authenticated user
+    [FEDIZ-172] - OIDC DataProvider should support client_credentials clients
+
+New Feature
+
+    [FEDIZ-76] - Support Facebook Login for Trusted IDP
+
+
+Release Notes - CXF-Fediz - Version 1.3.0
+
+Sub-task
+
+    [FEDIZ-74] - Support Google Login for Trusted IDP
+
+Bug
+
+    [FEDIZ-118] - Allow securing root context applications
+    [FEDIZ-125] - Logout is not working in Fediz websphere plugin and cookie name is not configurable
+    [FEDIZ-128] - Parent POM dependencies wrong in Websphere artifacts
+    [FEDIZ-132] - Encoding Error by generated JAXB classes
+    [FEDIZ-139] - cxf-fediz plugin osgi export
+    [FEDIZ-140] - IDP caches outdated SAML Tokens
+    [FEDIZ-142] - TrustedIdpSAMLProtocolHandler.REQUIRE_KEYINFO does not work
+    [FEDIZ-146] - wtrealm should not be mandatory for 3rd party signin response
+    [FEDIZ-147] - IDP will be listed in HomeRealm Selection view, even if it should not be used directly
+    [FEDIZ-151] - Session Conflict with Cookies
+    [FEDIZ-156] - SAMLRequest ID must not start with a Number
+    [FEDIZ-157] - SAMLResponse Handler uses URL instead of Realm name for issuer validation
+
+Improvement
+
+    [FEDIZ-113] - Support SAML SSO Metadata in the IdP
+    [FEDIZ-119] - Customizable Login-Page
+    [FEDIZ-120] - IDP Encoding of SignInResponse configurable
+    [FEDIZ-121] - Upgrade to Spring 4
+    [FEDIZ-122] - Replace Apache bval with Hibernate
+    [FEDIZ-123] - Update certificates to 2048 bits
+    [FEDIZ-130] - Add a Jetty 9 plugin
+    [FEDIZ-131] - Add JAXRS based demos
+    [FEDIZ-133] - Improve logout page customizability
+    [FEDIZ-135] - CXF plugin should let the initial successful sign in request proceed
+    [FEDIZ-141] - POST Binding for SAML SSO Remote IDP
+    [FEDIZ-145] - Swagger REST API Support
+    [FEDIZ-152] - Disable URL rewrites with SessionID to avoid session hijacking
+    [FEDIZ-154] - Example 'simpleWebapp' needs proper configuration of the FederationEntryPoint in IDP realm-b
+    [FEDIZ-159] - whr propagation can be disabled
+
+New Feature
+
+    [FEDIZ-126] - Systests for websphere plugin
+    [FEDIZ-127] - Webshere example application doesn't fit to systemtests and is not buildable as ear file
+    [FEDIZ-143] - Home Realm Discovery based on OIDC login_hint
+    [FEDIZ-144] - HomeRealm Discovery Service based on Spring EL
+    [FEDIZ-153] - Support OpenId Connect bridging in the Fediz IdP
+
+Question
+
+    [FEDIZ-124] - Fediz-plugin for Tomcat 8
+
+Task
+
+    [FEDIZ-114] - Remove X509TokenValidator and DefaultSubjectProvider in the STS
+
+
 Release Notes - CXF-Fediz - Version 1.2.2
 
 Sub-task
