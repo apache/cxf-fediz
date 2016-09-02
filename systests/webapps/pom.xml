@@ -23,7 +23,7 @@
    <parent>
        <groupId>org.apache.cxf.fediz</groupId>
        <artifactId>fediz-systests</artifactId>
-       <version>1.2.3</version>
+       <version>1.2.4-SNAPSHOT</version>
    </parent>
    <groupId>org.apache.cxf.fediz.systests</groupId>
    <artifactId>fediz-systests-webapps</artifactId>
