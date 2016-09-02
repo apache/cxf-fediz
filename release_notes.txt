@@ -63,6 +63,22 @@ N.A.
 
 8. Specific issues, features, and improvements fixed in this version
 
+Release Notes - CXF-Fediz - Version 1.2.3
+
+Bug
+
+    [FEDIZ-161] - FederationConfigImpl.init() calls loadConfig(File) which fails for war files with special characters in its name
+    [FEDIZ-164] - IdP default flow doesn't support multiple realms
+    [FEDIZ-169] - Enforce mandatory requested claims on the RP side
+    [FEDIZ-170] - Load keystore/truststore resources in the container plugins
+
+Improvement
+
+    [FEDIZ-154] - Example 'simpleWebapp' needs proper configuration of the FederationEntryPoint in IDP realm-b
+    [FEDIZ-159] - whr propagation can be disabled
+    [FEDIZ-168] - Support SAML Token without Audience Restriction
+
+
 Release Notes - CXF-Fediz - Version 1.3.1
 
 Bug
