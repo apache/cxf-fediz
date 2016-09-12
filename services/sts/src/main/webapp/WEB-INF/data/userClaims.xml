@@ -25,12 +25,34 @@
         http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
         http://www.springframework.org/schema/util
         http://www.springframework.org/schema/util/spring-util-2.0.xsd">
+        
+    <util:list id="claimHandlerList">
+        <ref bean="claimsHandlerA" />
+        <ref bean="claimsHandlerB" />
+    </util:list>
+
+    <bean id="claimsHandlerA"
+        class="org.apache.cxf.fediz.service.sts.realms.RealmFileClaimsHandler">
+        <property name="userClaims" ref="userClaimsREALMA" />
+        <property name="supportedClaims" ref="supportedClaims" />
+        <property name="realm" value="REALMA" />
+    </bean>
+
+    <bean id="claimsHandlerB"
+        class="org.apache.cxf.fediz.service.sts.realms.RealmFileClaimsHandler">
+        <property name="userClaims" ref="userClaimsREALMB" />
+        <property name="supportedClaims" ref="supportedClaims" />
+        <property name="realm" value="REALMB" />
+    </bean>
 
     <util:map id="userClaimsREALMA">
         <entry key="alice" value-ref="REALMA_aliceClaims" />
         <entry key="CN=alice,OU=Unknown,O=Apache,L=Dublin,ST=Unknown,C=IE" value-ref="REALMA_aliceClaims" />
+        <entry key="alice@WS.APACHE.ORG" value-ref="REALMA_aliceClaims" />
         <entry key="bob" value-ref="REALMA_bobClaims" />
+        <entry key="bob/service.ws.apache.org@WS.APACHE.ORG" value-ref="REALMA_bobClaims" />
         <entry key="ted" value-ref="REALMA_tedClaims" />
+        <entry key="ted@WS.APACHE.ORG" value-ref="REALMA_tedClaims" />
     </util:map>
 
     <util:map id="REALMA_aliceClaims">
