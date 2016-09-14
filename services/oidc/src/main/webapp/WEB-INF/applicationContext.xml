@@ -95,6 +95,7 @@
            <ref bean="oidcKeysService"/>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
+            <ref bean="corsFilter"/>
             <bean class="org.apache.cxf.rs.security.jose.jaxrs.JsonWebKeysProvider"/>
         </jaxrs:providers>
         <jaxrs:properties>
@@ -119,6 +120,7 @@
            <ref bean="userInfoService"/>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
+            <ref bean="corsFilter"/>
             <bean class="org.apache.cxf.jaxrs.provider.json.JsonMapObjectProvider"/>
             <ref bean="oauth2TokenValidationFilter"/>
         </jaxrs:providers>
@@ -177,6 +179,13 @@
       <!--
         <property name="signWithClientSecret" value="true"/>
       -->
+    </bean>
+    <!-- Cors filter for endpoints used by implicit flow (by js clients) -->
+    <util:list id="implicitFlowAllowHeaders">
+        <value>Authorization</value>
+    </util:list>
+    <bean id="corsFilter" class="org.apache.cxf.rs.security.cors.CrossOriginResourceSharingFilter">
+        <property name="allowHeaders" ref="implicitFlowAllowHeaders"/>
     </bean>
     <bean id="refreshTokenHandler" class="org.apache.cxf.rs.security.oauth2.grants.refresh.RefreshTokenGrantHandler">
         <property name="dataProvider" ref="oauthProvider"/>
