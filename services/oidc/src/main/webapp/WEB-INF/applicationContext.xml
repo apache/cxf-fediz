@@ -201,6 +201,10 @@
         <property name="grantHandlers" ref="grantHandlers"/>
         <property name="canSupportPublicClients" value="true"/>
     </bean>
+    <!-- Access Token Revocation service -->
+    <bean id="accessTokenRevocationService" class="org.apache.cxf.rs.security.oauth2.services.TokenRevocationService">
+        <property name="dataProvider" ref="oauthProvider"/>
+    </bean>
     <!-- Access Token Introspection service -->
     <bean id="accessTokenIntrospectionService" class="org.apache.cxf.rs.security.oauth2.services.TokenIntrospectionService">
         <property name="dataProvider" ref="oauthProvider"/>
@@ -211,6 +215,7 @@
         <jaxrs:serviceBeans>
             <ref bean="accessTokenService"/>
             <ref bean="accessTokenIntrospectionService"/>
+            <ref bean="accessTokenRevocationService"/>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
            <ref bean="oauthJsonProvider"/>
