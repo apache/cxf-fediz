@@ -55,7 +55,10 @@
 
     <bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider" />
     
-     <!-- CXF Swagger2Feature -->
+    <!-- CXF Swagger2Feature -->
+    <bean id="swagger2Serializers" class="org.apache.cxf.jaxrs.swagger.DefaultSwagger2Serializers">
+        <property name="replaceTags" value="true" />
+    </bean> 
     <bean id="swagger2Feature" class="org.apache.cxf.jaxrs.swagger.Swagger2Feature">
         <property name="title" value="Apache Fediz IDP" />
         <property name="version" value="${project.version}" />
@@ -65,8 +68,7 @@
         <property name="resourcePackage" value="org.apache.cxf.fediz.service.idp.rest" />
         <property name="scanAllResources" value="true" />
 
-        <property name="dynamicBasePath" value="true" />
-        <property name="replaceTags" value="true" />
+        <property name="swagger2Serializers" ref="swagger2Serializers" />
         <property name="prettyPrint" value="true" />
     </bean>
     
