@@ -46,14 +46,4 @@
         </jaxws:properties>
     </jaxws:endpoint>
 
-    <jaxws:endpoint id="transportSTSRealmBKerberos"
-        implementor="#transportSTSProviderBean" address="/REALMB/STSServiceTransportKerberos"
-        wsdlLocation="/WEB-INF/wsdl/ws-trust-1.4-service.wsdl"
-        xmlns:ns1="http://docs.oasis-open.org/ws-sx/ws-trust/200512/"
-        serviceName="ns1:SecurityTokenService" endpointName="ns1:TransportKerberos_Port">
-        <jaxws:properties>
-            <entry key="ws-security.bst.validator" value-ref="kerberosValidator"/>
-        </jaxws:properties>
-    </jaxws:endpoint>
-
 </beans>
