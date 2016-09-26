@@ -43,6 +43,7 @@ public class OAuthDataProviderImpl extends DefaultEHCacheCodeDataProvider {
     private static final Logger LOG = LogUtils.getL7dLogger(OAuthDataProviderImpl.class);
     
     private boolean checkOnlyRegisteredClients;
+    private boolean persistUnregisteredClients = true;
     private String contextName;
     private Configuration loginConfig;
 
@@ -59,7 +60,6 @@ public class OAuthDataProviderImpl extends DefaultEHCacheCodeDataProvider {
         if (OAuthConstants.CLIENT_CREDENTIALS_GRANT.equals(grantType)) {
             // Pre-registering the OAuth2 Client representations for 
             // "client_credentials" can be difficult. 
-            
             String clientSecret = (String)getMessageContext().get(OAuthConstants.CLIENT_SECRET);
             if (clientSecret != null) {
                 // Direct authentication with the back-end storage
@@ -67,9 +67,7 @@ public class OAuthDataProviderImpl extends DefaultEHCacheCodeDataProvider {
             } else {
                 Principal p = super.getMessageContext().getSecurityContext().getUserPrincipal();
                 if (clientId.equals(p.getName())) {
-                    Client c = new Client(clientId, null, true);
-                    c.setAllowedGrantTypes(Collections.singletonList(OAuthConstants.CLIENT_CREDENTIALS_GRANT));
-                    return c;
+                    return createClientCredClient(clientId, null);
                 }
             }
         }
@@ -95,10 +93,9 @@ public class OAuthDataProviderImpl extends DefaultEHCacheCodeDataProvider {
                 // Login using JAAS
                 CallbackHandler callbackHandler = 
                     new NamePasswordCallbackHandler(clientId, clientSecret);
-                LoginContext ctx = new LoginContext(getContextName(), null, callbackHandler, loginConfig);  
+                LoginContext ctx = new LoginContext(contextName, null, callbackHandler, loginConfig);  
                 ctx.login();
-                Client client = new Client(clientId, clientSecret, true);
-                client.setAllowedGrantTypes(Collections.singletonList(OAuthConstants.CLIENT_CREDENTIALS_GRANT));
+                Client client = createClientCredClient(clientId, clientSecret);
                 ctx.logout();
                 return client;
             } catch (LoginException ex) {
@@ -113,20 +110,25 @@ public class OAuthDataProviderImpl extends DefaultEHCacheCodeDataProvider {
         this.checkOnlyRegisteredClients = checkOnlyRegisteredClients;
     }
     
-    public String getContextName() {
-        return contextName;
-    }
-
     public void setContextName(String contextName) {
         this.contextName = contextName;
-    }
-
-    public Configuration getLoginConfig() {
-        return loginConfig;
     }
 
     public void setLoginConfig(Configuration loginConfig) {
         this.loginConfig = loginConfig;
     }
 
+    public void setPersistUnregisteredClients(boolean persistUnregisteredClients) {
+        this.persistUnregisteredClients = persistUnregisteredClients;
+    }
+    
+    protected Client createClientCredClient(String clientId, String password) {
+        Client c = new Client(clientId, password, true);
+        c.setAllowedGrantTypes(Collections.singletonList(OAuthConstants.CLIENT_CREDENTIALS_GRANT));
+        if (persistUnregisteredClients) {
+            // It will enable seeing these clients and their tokens in the OIDC management console
+            super.setClient(c);
+        }
+        return c;
+    }
 }
