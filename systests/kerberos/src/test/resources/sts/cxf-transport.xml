@@ -78,7 +78,6 @@
         <property name="tokenValidators" ref="transportTokenValidators" />
         <property name="eventListener" ref="loggerListener" />
         <property name="delegationHandlers" ref="delegationHandlers" />
-        <property name="encryptIssuedToken" value="true"/>
     </bean>
 
     <bean id="transportValidateDelegate" class="org.apache.cxf.sts.operation.TokenValidateOperation">
@@ -174,7 +173,6 @@
     </bean>
 
     <util:list id="transportServices">
-        <ref bean="myEncryptionService" />
         <ref bean="transportService" />
     </util:list>
 
@@ -185,20 +183,6 @@
             </util:list>
         </property>
     </bean>
-    
-    <bean id="myEncryptionService" class="org.apache.cxf.sts.service.StaticService">
-        <property name="endpoints">
-            <util:list>
-                <value>myServiceB.*</value>
-            </util:list>
-        </property>
-        <property name="encryptionProperties">
-            <bean class="org.apache.cxf.sts.service.EncryptionProperties">
-                <property name="encryptionName" value="serviceB"/>
-                <property name="encryptionAlgorithm" value="http://www.w3.org/2001/04/xmlenc#aes128-cbc"/>
-            </bean>
-        </property>
-    </bean>
 
     <bean id="transportSTSProperties" class="org.apache.cxf.sts.StaticSTSProperties">
         <property name="callbackHandlerClass"
@@ -206,7 +190,6 @@
         <property name="issuer" value="Fediz STS" />
         <property name="realmParser" ref="customRealmParser" />
         <property name="signatureCryptoProperties" value="stsTruststore.properties" />
-        <property name="encryptionCryptoProperties" value="stsEncryption.properties"/>
         <property name="relationships" ref="relationships" />
     </bean>
 

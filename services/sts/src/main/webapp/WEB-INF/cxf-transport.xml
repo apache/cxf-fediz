@@ -78,7 +78,6 @@
         <property name="tokenValidators" ref="transportTokenValidators" />
         <property name="eventListener" ref="loggerListener" />
         <property name="delegationHandlers" ref="delegationHandlers" />
-        <property name="encryptIssuedToken" value="true"/>
     </bean>
 
     <bean id="transportValidateDelegate" class="org.apache.cxf.sts.operation.TokenValidateOperation">
@@ -163,7 +162,6 @@
         <property name="issuer" value="${issuer}" />
         <property name="realmParser" ref="customRealmParser" />
         <property name="signatureCryptoProperties" value="${signature.properties}" />
-        <property name="encryptionCryptoProperties" value="${encryption.properties}"/>
         <property name="relationships" ref="relationships" />
     </bean>
 
