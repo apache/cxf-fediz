@@ -109,8 +109,6 @@
     <bean id="samlRealmCodec"
         class="org.apache.cxf.fediz.service.sts.realms.SamlRealmCodec" />
 
-    <bean id="customRealmParser" class="org.apache.cxf.fediz.service.sts.realms.UriRealmParser" />
-
     <bean id="transportSamlTokenValidator"
         class="org.apache.cxf.sts.token.validator.SAMLTokenValidator">
         <property name="samlRealmCodec" ref="samlRealmCodec" />
@@ -128,13 +126,5 @@
         </property>
     </bean>
     
-    <bean id="transportSTSProperties" class="org.apache.cxf.sts.StaticSTSProperties">
-        <property name="callbackHandlerClass" value="${callback.handler}" />
-        <property name="issuer" value="${issuer}" />
-        <property name="realmParser" ref="customRealmParser" />
-        <property name="signatureCryptoProperties" value="${signature.properties}" />
-        <property name="relationships" ref="relationships" />
-    </bean>
-
 </beans>
 

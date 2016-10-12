@@ -31,6 +31,8 @@ public class UriRealmParser implements RealmParser {
 
     private static final Logger LOG = LoggerFactory.getLogger(UriRealmParser.class);
 
+    private Map<String, Object> realmMap;
+
     @Override
     public String parseRealm(Map<String, Object> messageContext) throws STSException {
         String url = (String)messageContext.get("org.apache.cxf.request.url");
@@ -49,9 +51,21 @@ public class UriRealmParser implements RealmParser {
             realm = st.nextToken();
         }
         realm = realm.toUpperCase();
+        if (realmMap == null || !realmMap.containsKey(realm)) {
+            LOG.warn("Unknown realm: " + realm);
+            throw new STSException("Unknown realm: " + realm);
+        }
         
         LOG.debug("URI realm parsed: " + realm);
         return realm;
+    }
+
+    public Map<String, Object> getRealmMap() {
+        return realmMap;
+    }
+
+    public void setRealmMap(Map<String, Object> realms) {
+        this.realmMap = realms;
     }
 
 }

@@ -160,6 +160,7 @@
         class="org.apache.cxf.fediz.service.sts.realms.SamlRealmCodec" />
 
     <bean id="customRealmParser" class="org.apache.cxf.fediz.service.sts.realms.UriRealmParser">
+        <property name="realmMap" ref="realms" />
     </bean>
 
     <bean id="transportSamlTokenValidator"
