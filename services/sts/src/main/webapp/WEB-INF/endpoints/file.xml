@@ -29,8 +29,8 @@
         http://cxf.apache.org/jaxws
         http://cxf.apache.org/schemas/jaxws.xsd">
 
-    <import resource="data/userClaims.xml" />
-    <import resource="data/passwords.xml" />
+    <import resource="../data/userClaims.xml" />
+    <import resource="../data/passwords.xml" />
 
     <bean id="upCallBackHandlerRealmA"
         class="org.apache.cxf.fediz.service.sts.UsernamePasswordCallbackHandler">

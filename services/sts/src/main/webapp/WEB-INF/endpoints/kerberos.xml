@@ -29,7 +29,7 @@
         http://cxf.apache.org/jaxws
         http://cxf.apache.org/schemas/jaxws.xsd">
 
-    <import resource="data/userClaims.xml" />
+    <import resource="../data/userClaims.xml" />
 
     <bean id="kerberosValidator" class="org.apache.wss4j.dom.validate.KerberosTokenValidator">
         <property name="contextName" value="bob"/>

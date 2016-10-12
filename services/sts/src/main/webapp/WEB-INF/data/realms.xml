@@ -39,6 +39,9 @@
         http://cxf.apache.org/configuration/security
         http://cxf.apache.org/schemas/configuration/security.xsd">
 
+    <bean id="identityMapper"
+        class="org.apache.cxf.fediz.service.sts.realms.IdentityMapperImpl" />
+        
     <util:list id="relationships">
         <bean class="org.apache.cxf.sts.token.realm.Relationship">
             <property name="sourceRealm" value="REALMA" />
