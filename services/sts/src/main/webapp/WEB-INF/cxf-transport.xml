@@ -56,12 +56,16 @@
         <property name="realmMap" ref="realms" />
     </bean>
     
+    <bean id="samlRealmCodec"
+        class="org.apache.cxf.fediz.service.sts.realms.SamlRealmCodec" />
+    
     <bean id="transportSTSProperties" class="org.apache.cxf.sts.StaticSTSProperties">
         <property name="callbackHandlerClass" value="${callback.handler}" />
         <property name="issuer" value="${issuer}" />
         <property name="realmParser" ref="customRealmParser" />
         <property name="signatureCryptoProperties" value="${signature.properties}" />
         <property name="relationships" ref="relationships" />
+        <property name="samlRealmCodec" ref="samlRealmCodec" />
     </bean>
     
     <jaxws:endpoint id="transportSTSRealmA" implementor="#transportSTSProviderBean"

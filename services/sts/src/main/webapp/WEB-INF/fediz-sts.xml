@@ -106,12 +106,8 @@
         <property name="claimHandlers" ref="claimHandlerList" />
     </bean>
 
-    <bean id="samlRealmCodec"
-        class="org.apache.cxf.fediz.service.sts.realms.SamlRealmCodec" />
-
     <bean id="transportSamlTokenValidator"
         class="org.apache.cxf.sts.token.validator.SAMLTokenValidator">
-        <property name="samlRealmCodec" ref="samlRealmCodec" />
     </bean>
 
     <util:list id="transportServices">
