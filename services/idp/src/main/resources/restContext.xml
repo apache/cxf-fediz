@@ -53,7 +53,7 @@
     <bean id="exceptionMapper"
         class="org.apache.cxf.fediz.service.idp.rest.RestServiceExceptionMapper" />
 
-    <bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider" />
+    <bean id="jsonProvider" class="com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider" />
     
     <!-- CXF Swagger2Feature -->
     <bean id="swagger2Serializers" class="org.apache.cxf.jaxrs.swagger.DefaultSwagger2Serializers">
