@@ -33,47 +33,32 @@
         http://www.springframework.org/schema/util/spring-util.xsd
         ">
 
-    <context:property-placeholder location="classpath:realm.properties" />
-
-    <import resource="config/security-krb-config.xml" />
-    <import resource="config/security-clientcert-config.xml" />
-    <import resource="config/security-up-config.xml" />
-    <import resource="config/security-rs-config.xml" />
-    
     <!-- DISABLE in production as it might log confidential information about the user -->
     <!-- <security:debug /> -->
 
-    <!-- Configure Spring Security -->
-    
-    <!-- If enabled, you can't access the Service layer within the Spring Webflow -->
-    <!-- The user has no role during the login phase of WS-Federation -->
-    <security:global-method-security pre-post-annotations="enabled" />
+    <security:http pattern="/services/rs/**" use-expressions="true" authentication-manager-ref="restAuthenticationManager">
+        <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
+        <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
+        <security:intercept-url pattern="/services/rs/**" access="isAuthenticated()" />
+        <security:http-basic />
+    </security:http>
 
-    <!-- Redirects to a dedicated http config -->
-    <bean id="fedizEntryPoint" class="org.apache.cxf.fediz.service.idp.FedizEntryPoint">
-        <property name="realm" value="${realm-uri}" />
-        <property name="configService" ref="config" />
-    </bean>
+    <bean id="bCryptPasswordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" />
     
-    <!-- Main entry point for WS-Federation -->
-    <security:http pattern="/federation" use-expressions="true" entry-point-ref="fedizEntryPoint">
-        <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
-        <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
-    </security:http>
+    <bean id="defaultPasswordEncoder" class="org.springframework.security.crypto.password.StandardPasswordEncoder" />
     
-    <!-- Main entry point for SAML SSO -->
-    <security:http pattern="/saml" use-expressions="true" entry-point-ref="fedizEntryPoint">
-        <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
-        <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
-    </security:http>
-    
-    <security:authentication-manager alias="authenticationManagers">
+    <security:authentication-manager id="restAuthenticationManager">
+        <security:authentication-provider>
+          <!-- <security:password-encoder ref="defaultPasswordEncoder" />-->
+          <!-- <security:password-encoder hash="sha-256" base64="true" />-->
+          <!--  
+          <security:password-encoder hash="sha-256" base64="true">
+            <security:salt-source user-property="username" />
+          </security:password-encoder>
+          -->
+          <security:user-service properties="classpath:/users.properties" />
+        </security:authentication-provider>
         <security:authentication-provider ref="stsUPAuthProvider" />
-        <security:authentication-provider ref="stsKrbAuthProvider" />
-        <security:authentication-provider ref="stsClientCertAuthProvider" />
     </security:authentication-manager>
-	
-    <bean id="entitlementsEnricher" 
-          class="org.apache.cxf.fediz.service.idp.service.security.GrantedAuthorityEntitlements" />
-	
+    
 </beans>

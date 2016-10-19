@@ -33,47 +33,43 @@
         http://www.springframework.org/schema/util/spring-util.xsd
         ">
 
-    <context:property-placeholder location="classpath:realm.properties" />
-
-    <import resource="config/security-krb-config.xml" />
-    <import resource="config/security-clientcert-config.xml" />
-    <import resource="config/security-up-config.xml" />
-    <import resource="config/security-rs-config.xml" />
-    
     <!-- DISABLE in production as it might log confidential information about the user -->
     <!-- <security:debug /> -->
 
-    <!-- Configure Spring Security -->
-    
-    <!-- If enabled, you can't access the Service layer within the Spring Webflow -->
-    <!-- The user has no role during the login phase of WS-Federation -->
-    <security:global-method-security pre-post-annotations="enabled" />
+    <!-- SSL Client Cert entry point for WS-Federation -->
+    <security:http pattern="/federation/clientcert" use-expressions="true">
+        <security:custom-filter after="CHANNEL_FILTER" ref="stsClientCertPortFilter" />
+        <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
 
-    <!-- Redirects to a dedicated http config -->
-    <bean id="fedizEntryPoint" class="org.apache.cxf.fediz.service.idp.FedizEntryPoint">
-        <property name="realm" value="${realm-uri}" />
-        <property name="configService" ref="config" />
+        <security:x509 />
+        <security:logout delete-cookies="FEDIZ_HOME_REALM" invalidate-session="true" />
+    </security:http>
+    
+    <!-- SSL Client Cert entry point for SAML SSO -->
+    <security:http pattern="/saml/clientcert" use-expressions="true">
+        <security:custom-filter after="CHANNEL_FILTER" ref="stsClientCertPortFilter" />
+        <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
+
+        <security:x509 />
+        <security:logout delete-cookies="FEDIZ_HOME_REALM" invalidate-session="true" />
+    </security:http>
+
+    <bean id="stsClientCertPortFilter" class="org.apache.cxf.fediz.service.idp.STSPortFilter">
+        <property name="authenticationProvider" ref="stsClientCertAuthProvider" />
     </bean>
     
-    <!-- Main entry point for WS-Federation -->
-    <security:http pattern="/federation" use-expressions="true" entry-point-ref="fedizEntryPoint">
-        <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
-        <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
-    </security:http>
+    <util:map id="securityProperties">
+        <entry key="ws-security.username" value="idp-user" />
+        <entry key="ws-security.password" value="idp-pass" />
+    </util:map>
     
-    <!-- Main entry point for SAML SSO -->
-    <security:http pattern="/saml" use-expressions="true" entry-point-ref="fedizEntryPoint">
-        <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
-        <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
-    </security:http>
+    <bean id="stsClientCertAuthProvider" class="org.apache.cxf.fediz.service.idp.STSPreAuthAuthenticationProvider">
+        <property name="wsdlLocation" value="https://localhost:0/fediz-idp-sts/${realm.STS_URI}/STSServiceTransportUT?wsdl" />
+        <property name="wsdlEndpoint" value="TransportUT_Port" />
+        <property name="wsdlService" value="SecurityTokenService" />
+        <property name="appliesTo" value="urn:fediz:idp" />
+        <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0" />
+        <property name="properties" ref="securityProperties" />
+    </bean>
     
-    <security:authentication-manager alias="authenticationManagers">
-        <security:authentication-provider ref="stsUPAuthProvider" />
-        <security:authentication-provider ref="stsKrbAuthProvider" />
-        <security:authentication-provider ref="stsClientCertAuthProvider" />
-    </security:authentication-manager>
-	
-    <bean id="entitlementsEnricher" 
-          class="org.apache.cxf.fediz.service.idp.service.security.GrantedAuthorityEntitlements" />
-	
 </beans>
