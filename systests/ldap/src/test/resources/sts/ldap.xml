@@ -36,7 +36,7 @@
 
     <bean id="contextSource"
         class="org.springframework.ldap.core.support.LdapContextSource">
-        <property name="url" value="ldap://localhost:389/" />
+        <property name="url" value="ldap://localhost:portno/" />
         <property name="userDn" value="uid=admin,dc=fediz,dc=org" />
         <property name="password" value="ldap_su" />
     </bean>

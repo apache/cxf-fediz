@@ -1,0 +1,69 @@
+dn: dc=fediz,dc=org
+dc: fediz
+objectClass: top
+objectClass: domain
+
+dn: ou=users,dc=fediz,dc=org
+objectClass: organizationalUnit
+objectClass: top
+ou: users
+
+dn: ou=groups,dc=fediz,dc=org
+objectClass: top
+objectClass: organizationalUnit
+ou: groups
+
+dn: cn=User,ou=groups,dc=fediz,dc=org
+objectClass: groupOfNames
+objectClass: top
+cn: User
+member: cn=alice,ou=users,dc=fediz,dc=org
+member: cn=bob,ou=users,dc=fediz,dc=org
+description: This is a User
+
+dn: cn=Manager,ou=groups,dc=fediz,dc=org
+objectClass: groupOfNames
+objectClass: top
+cn: Manager
+businessCategory: widgets
+member: cn=bob,ou=users,dc=fediz,dc=org
+description: The boss
+
+# Web server identity/service principal.
+dn: cn=bob,ou=users,dc=fediz,dc=org
+objectclass: top
+objectclass: person
+objectclass: inetOrgPerson
+objectclass: organizationalPerson
+cn: bob
+sn: Windsor
+uid: bob
+mail: bobwindsor@realma.org
+givenname: bob
+userpassword: bob
+
+# User / client principal.
+dn: cn=alice,ou=users,dc=fediz,dc=org
+objectclass: top
+objectclass: person
+objectclass: inetOrgPerson
+objectclass: organizationalPerson
+cn: alice
+sn: Smith
+uid: alice
+givenname: Alice
+userpassword: ecila
+mail: alice@realma.org
+
+dn: uid=admin,dc=fediz,dc=org
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+cn: system administrator
+sn: administrator
+displayName: Directory Superuser
+uid: admin
+userPassword:: e1NTSEF9c2UyV0ZiWHowL2RjSkVuTWgvOWNOZnIzUXU4YUg1R1gvM2E1OFE9P
+ Q==
+
