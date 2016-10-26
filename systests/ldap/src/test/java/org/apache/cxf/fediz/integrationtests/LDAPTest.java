@@ -76,6 +76,7 @@ import org.junit.runner.RunWith;
 @CreateLdapServer(
   transports = {
       @CreateTransport(protocol = "LDAP", address = "localhost")
+      // @CreateTransport(protocol = "LDAP", address = "localhost", port = 12345)
       }
   )
 
@@ -238,6 +239,14 @@ public class LDAPTest extends AbstractLdapTestUnit {
     public String getServletContextName() {
         return "fedizhelloworld";
     }
+
+    /*
+    @Test
+    public void testStart() throws Exception {
+        System.out.println("Sleeping...");
+        Thread.sleep(5 * 60 * 1000);
+    }
+    */
     
     @Test
     public void testLDAP() throws Exception {
