@@ -28,7 +28,80 @@
     <input name="RelayState" />
     <input name="Signature" />
 
-    <decision-state id="signInEntryPoint">
+    <decision-state id="processHRDSExpression">
+        <on-entry>
+            <evaluate expression="processHRDSExpressionAction.submit(flowRequestContext, null)" 
+                      result="flowScope.homerealm" />
+        </on-entry>
+        <if test="flowScope.homerealm == null or flowScope.homerealm.trim().isEmpty()"
+            then="provideIDPListForUser" else="checkIsThisIDP" />
+    </decision-state>
+    
+    <decision-state id="provideIDPListForUser">
+        <if test="flowScope.idpConfig.trustedIdps == null or idpConfig.trustedIdps.isEmpty()"
+            then="checkDefaultToThisIDP" />
+        <if test="flowScope.idpConfig.isProvideIdpList() == false"
+            then="checkDefaultToThisIDP" else="showIDPList" />
+    </decision-state>
+    
+    <decision-state id="checkDefaultToThisIDP">
+        <if test="flowScope.idpConfig.isUseCurrentIdp()" then="homeRealmSignInEntryPoint"
+            else="viewBadRequest" />
+    </decision-state>
+    
+    <view-state id="showIDPList" view="idplist" model="trustedIDPSelection">
+        <var name="trustedIDPSelection"
+            class="org.apache.cxf.fediz.service.idp.model.TrustedIDPSelection" />
+        <binder>
+            <binding property="whr" required="true" />
+        </binder>
+        <on-entry>
+            <set name="requestScope.idPConfig" value="flowScope.idpConfig" />
+        </on-entry>
+        <transition on="submit" to="checkIsThisIDP" bind="true"
+            validate="true">
+            <set name="flowScope.homerealm" value="trustedIDPSelection.whr" />
+            <evaluate
+                expression="homeRealmReminder.addCookie(flowRequestContext, flowScope.homerealm)" />
+        </transition>
+        <transition on="cancel" to="checkDefaultToThisIDP"
+            bind="false" validate="false" />
+    </view-state>
+    
+    <!-- Home Realm is known then we can store it in cookie -->
+    <decision-state id="checkIsThisIDP">
+        <if test="flowScope.idpConfig.realm.equals(flowScope.homerealm)"
+            then="homeRealmSignInEntryPoint" else="checkIdpTokenWhrWauth" />
+    </decision-state>
+    
+    <!-- ============================================================================================================= -->
+    
+    <!-- Is 'wresult/RP-IDP token' already received and validated (then stored 
+        in session) from requestor IDP ? -->
+    <decision-state id="checkIdpTokenWhrWauth">
+        <if test="externalContext.sessionMap[flowScope.homerealm] != null"
+            then="wfreshParserRemoteAction" else="redirectToTrustedIDP" />
+    </decision-state>
+    
+    <action-state id="wfreshParserRemoteAction">
+        <evaluate
+            expression="idpTokenExpiredAction.isTokenExpired(flowScope.homerealm, flowRequestContext)" />
+        <transition on="yes" to="redirectToTrustedIDP" />
+        <transition on="no" to="validateWReply" >
+            <set name="flowScope.idpToken" value="externalContext.sessionMap[flowScope.homerealm]" />
+        </transition>
+        <transition on-exception="java.lang.Throwable" to="viewBadRequest" />
+    </action-state>
+    
+    <action-state id="validateWReply">
+        <evaluate expression="passiveRequestorValidator.isValid(flowRequestContext, flowScope.consumerURL, flowScope.realm)"/>
+        <transition on="yes" to="requestRpToken" />
+        <transition on="no" to="viewBadRequest" />
+    </action-state>
+    
+    <!-- ============================================================================================================= -->
+    
+    <decision-state id="homeRealmSignInEntryPoint">
         <on-entry>
             <!-- Here, home realm is guaranteed to be THIS realm -->
             <set name="flowScope.homerealm" value="flowScope.idpConfig.realm" />
@@ -110,5 +183,14 @@
     
     <!-- abnormal exit point -->
     <end-state id="scInternalServerError" />
+    
+    <!-- redirects to requestor idp -->
+    <end-state id="redirectToTrustedIDP">
+        <on-entry>
+            <evaluate expression="signinParametersCacheAction.store(flowRequestContext)" />
+        </on-entry>
+        <output name="homerealm" value="flowScope.homerealm" />
+        <output name="trusted_idp_context" value="flowScope.trusted_idp_context" />
+    </end-state>
 
 </flow>

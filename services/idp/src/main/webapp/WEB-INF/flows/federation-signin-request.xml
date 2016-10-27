@@ -31,15 +31,6 @@
     <input name="wauth" />
     <input name="whr" />
 
-    <decision-state id="checkHRDSEnabled">
-        <if test="true" then="processHRDSExpression" else="checkDefaultToThisIDP" />
-    </decision-state>
-
-    <decision-state id="checkDefaultToThisIDP">
-        <if test="flowScope.idpConfig.isUseCurrentIdp()" then="checkWauthTypeSupported"
-            else="viewBadRequest" />
-    </decision-state>
-
     <decision-state id="processHRDSExpression">
         <on-entry>
             <evaluate expression="processHRDSExpressionAction.submit(flowRequestContext, flowScope.whr)" 
@@ -54,6 +45,11 @@
             then="checkDefaultToThisIDP" />
         <if test="flowScope.idpConfig.isProvideIdpList() == false"
             then="checkDefaultToThisIDP" else="showIDPList" />
+    </decision-state>
+    
+    <decision-state id="checkDefaultToThisIDP">
+        <if test="flowScope.idpConfig.isUseCurrentIdp()" then="checkWauthTypeSupported"
+            else="viewBadRequest" />
     </decision-state>
 
     <view-state id="showIDPList" view="idplist" model="trustedIDPSelection">

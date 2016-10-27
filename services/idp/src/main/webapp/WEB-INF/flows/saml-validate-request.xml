@@ -57,6 +57,10 @@
         </transition>
         <transition on="scInternalServerError" to="scInternalServerError" />
         <transition on="redirectToLocalIDP" to="redirectToLocalIDP" />
+        <transition on="redirectToTrustedIDP" to="processTrustedIdpProtocol">
+            <set name="flowScope.homerealm" value="currentEvent.attributes.homerealm" />
+            <set name="flowScope.trusted_idp_context" value="currentEvent.attributes.trusted_idp_context"/>
+        </transition>
     </subflow-state>
     
     <!-- produce RP security token (as String type) -->
@@ -97,6 +101,13 @@
             <evaluate expression="flowScope.rpResponse" result="requestScope.samlResponse" />
         </on-entry>
     </end-state>
+    
+    <action-state id="processTrustedIdpProtocol">
+        <evaluate expression="trustedIdpProtocolAction.mapSignInRequest(flowRequestContext, flowScope.homerealm)"
+                      result="flowScope.remoteIdpUrl"/>
+        <transition to="redirectToTrustedIDP" />
+        <transition on-exception="java.lang.Throwable" to="scInternalServerError" />
+    </action-state>
 
     <!-- abnormal exit point -->
     <decision-state id="handleBadRequestError">
@@ -151,5 +162,8 @@
                       result="flowScope.localIdpUrl"/>
         </on-entry>
     </end-state>
+    
+    <!-- redirect to remote idp -->
+    <end-state id="redirectToTrustedIDP" view="externalRedirect:${flowScope.remoteIdpUrl}" />
 
 </flow>
