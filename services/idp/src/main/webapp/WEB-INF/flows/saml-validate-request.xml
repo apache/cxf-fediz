@@ -28,12 +28,18 @@
             <set name="flowScope.RelayState" value="requestParameters.RelayState" />
             <set name="flowScope.SAMLRequest" value="requestParameters.SAMLRequest" />
             <set name="flowScope.Signature" value="requestParameters.Signature" />
+            <set name="flowScope.wresult" value="requestParameters.wresult" />
             <set name="flowScope.idpConfig" value="config.getIDP(fedizEntryPoint.getRealm())" />
         </on-entry>
+        <if test="requestParameters.SAMLRequest != null and !requestParameters.SAMLRequest.isEmpty()"
+            then="signinSAMLRequest" />
+        <if test="requestParameters.wresult != null and !requestParameters.wresult.isEmpty()"
+            then="signinResponse" />
+        <if test="requestParameters.SAMLResponse == null or requestParameters.SAMLResponse.length() == 0"
+            then="viewBadRequest" else="signinResponse" />
+        <!-- TODO Refactor this -->
         <if test="requestParameters.RelayState == null or requestParameters.RelayState.length() == 0"
             then="handleBadRequestError" />
-        <if test="requestParameters.SAMLRequest != null and !requestParameters.SAMLRequest.isEmpty()"
-            then="signinSAMLRequest" else="handleBadRequestError" />
     </decision-state>
     
     <subflow-state id="signinSAMLRequest" subflow="signinSAMLRequest">
@@ -61,6 +67,33 @@
             <set name="flowScope.homerealm" value="currentEvent.attributes.homerealm" />
             <set name="flowScope.trusted_idp_context" value="currentEvent.attributes.trusted_idp_context"/>
         </transition>
+    </subflow-state>
+    
+     <subflow-state id="signinResponse" subflow="signinResponse">
+        <input name="idpConfig" value="flowScope.idpConfig" />
+        <input name="wfresh" value="flowScope.wfresh" />
+        <input name="wctx" value="flowScope.wctx" />
+        <input name="wauth" value="flowScope.wauth" />
+        <input name="wresult" value="flowScope.wresult" />
+        <input name="RelayState" value="flowScope.RelayState" />
+        <input name="SAMLResponse" value="flowScope.SAMLResponse" />
+        <input name="state" value="flowScope.state" />
+        <input name="code" value="flowScope.code" />
+        <input name="whr" value="flowScope.whr" />
+
+        <output name="wtrealm" />
+        <output name="wreply" />
+        <output name="wctx" />
+        <output name="whr" />
+        <output name="idpToken" />
+
+        <transition on="requestRpToken" to="requestRpToken">
+            <set name="flowScope.homerealm" value="currentEvent.attributes.whr" />
+            <set name="flowScope.idpToken" value="currentEvent.attributes.idpToken" />
+            <set name="flowScope.saml_authn_request" value="currentEvent.attributes.saml_authn_request" />
+        </transition>
+        <transition on="viewBadRequest" to="viewBadRequest" />
+        <transition on="scInternalServerError" to="scInternalServerError" />
     </subflow-state>
     
     <!-- produce RP security token (as String type) -->

@@ -65,6 +65,10 @@ public class SigninParametersCacheAction {
         if (value != null) {
             signinParams.put(FederationConstants.PARAM_CONTEXT, value);
         }
+        value = WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
+        if (value != null) {
+            signinParams.put(IdpConstants.SAML_AUTHN_REQUEST, value);
+        }
         WebUtils.putAttributeInExternalContext(context, uuidKey, signinParams);
         
         LOG.debug("SignIn parameters cached: {}", signinParams.toString());
@@ -110,6 +114,11 @@ public class SigninParametersCacheAction {
                 value = (String)signinParams.get(FederationConstants.PARAM_CONTEXT);
                 if (value != null) {
                     WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_CONTEXT, value);
+                }
+                
+                value = (String)signinParams.get(IdpConstants.SAML_AUTHN_REQUEST);
+                if (value != null) {
+                    WebUtils.putAttributeInFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST, value);
                 }
             }  else {
                 LOG.debug("Error in restoring security context");
