@@ -101,6 +101,7 @@
            <ref bean="oidcKeysService"/>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
+            <ref bean="corsFilter"/>
             <bean class="org.apache.cxf.rs.security.jose.jaxrs.JsonWebKeysProvider"/>
         </jaxrs:providers>
         <jaxrs:properties>
@@ -125,6 +126,7 @@
            <ref bean="userInfoService"/>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
+            <ref bean="corsFilter"/>
             <bean class="org.apache.cxf.jaxrs.provider.json.JsonMapObjectProvider"/>
             <ref bean="oauth2TokenValidationFilter"/>
         </jaxrs:providers>
@@ -184,18 +186,36 @@
         <property name="signWithClientSecret" value="true"/>
       -->
     </bean>
+    <!-- Cors filter for endpoints used by implicit flow (by js clients) -->
+    <util:list id="implicitFlowAllowHeaders">
+        <value>Authorization</value>
+    </util:list>
+    <bean id="corsFilter" class="org.apache.cxf.rs.security.cors.CrossOriginResourceSharingFilter">
+        <property name="allowHeaders" ref="implicitFlowAllowHeaders"/>
+    </bean>
     <bean id="refreshTokenHandler" class="org.apache.cxf.rs.security.oauth2.grants.refresh.RefreshTokenGrantHandler">
         <property name="dataProvider" ref="oauthProvider"/>
     </bean>
-     <bean id="clientCredsHandler" class="org.apache.cxf.rs.security.oauth2.grants.clientcred.ClientCredentialsGrantHandler">
+    
+    <bean id="clientCredsHandler" class="org.apache.cxf.rs.security.oauth2.grants.clientcred.ClientCredentialsGrantHandler">
         <property name="dataProvider" ref="oauthProvider"/>
     </bean>
+        
+    <util:list id="grantHandlers">
+        <ref bean="refreshTokenHandler"/>
+        <!-- Add more custom grant handlers as needed -->
+        <ref bean="clientCredsHandler"/>
+    </util:list>
     <!-- Access Token service -->
     <bean id="accessTokenService" class="org.apache.cxf.rs.security.oauth2.services.AccessTokenService">
         <property name="dataProvider" ref="oauthProvider"/>
         <property name="responseFilter" ref="idTokenFilter"/>
-        <property name="grantHandler" ref="clientCredsHandler"/>
+        <property name="grantHandlers" ref="grantHandlers"/>
         <property name="canSupportPublicClients" value="true"/>
+    </bean>
+    <!-- Access Token Revocation service -->
+    <bean id="accessTokenRevocationService" class="org.apache.cxf.rs.security.oauth2.services.TokenRevocationService">
+        <property name="dataProvider" ref="oauthProvider"/>
     </bean>
     <!-- Access Token Introspection service -->
     <bean id="accessTokenIntrospectionService" class="org.apache.cxf.rs.security.oauth2.services.TokenIntrospectionService">
@@ -207,6 +227,7 @@
         <jaxrs:serviceBeans>
             <ref bean="accessTokenService"/>
             <ref bean="accessTokenIntrospectionService"/>
+            <ref bean="accessTokenRevocationService"/>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
            <ref bean="oauthJsonProvider"/>
@@ -216,7 +237,17 @@
             <entry key="rs.security.signature.key.password.provider" value-ref="keyPasswordProvider"/>
         </jaxrs:properties>
      </jaxrs:server>
-     
+    
+     <!-- .well-known OIDC Configuration Service --> 
+     <bean id="oidcConfigService" class="org.apache.cxf.rs.security.oidc.idp.OidcConfigurationService"/>
+     <jaxrs:server address="/.well-known">
+        <jaxrs:serviceBeans>
+            <ref bean="oidcConfigService"/>
+        </jaxrs:serviceBeans>
+        <jaxrs:properties>
+            <entry key="rs.security.signature.properties" value="rs.security.properties"/>
+        </jaxrs:properties>
+     </jaxrs:server>
      <http:conduit name="*.http-conduit">
         <http:tlsClientParameters
             disableCNCheck="true">
