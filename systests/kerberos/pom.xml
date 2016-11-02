@@ -258,6 +258,16 @@
                                     <overWrite>true</overWrite>
                                     <outputDirectory>target/tomcat/rp/webapps/simpleWebapp</outputDirectory>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.cxf.fediz.systests</groupId>
+                                    <artifactId>fediz-systests-tests</artifactId>
+                                    <version>${project.version}</version>
+                                    <classifier>tests</classifier>
+                                    <type>jar</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target/test-classes</outputDirectory>
+                                    <includes>**/*.jks</includes>
+                                </artifactItem>
                             </artifactItems>
                             <outputAbsoluteArtifactFilename>true</outputAbsoluteArtifactFilename>
                             <overWriteSnapshots>true</overWriteSnapshots>
