@@ -29,6 +29,7 @@
             <set name="flowScope.SAMLRequest" value="requestParameters.SAMLRequest" />
             <set name="flowScope.Signature" value="requestParameters.Signature" />
             <set name="flowScope.wresult" value="requestParameters.wresult" />
+            <set name="flowScope.wctx" value="requestParameters.wctx" />
             <set name="flowScope.idpConfig" value="config.getIDP(fedizEntryPoint.getRealm())" />
         </on-entry>
         <if test="requestParameters.SAMLRequest != null and !requestParameters.SAMLRequest.isEmpty()"
@@ -48,13 +49,13 @@
         <input name="RelayState" value="flowScope.RelayState" />
         <input name="Signature" value="flowScope.Signature" />
 
-        <output name="homerealm" />
+        <output name="home_realm" />
         <output name="idpToken" />
         <output name="trusted_idp_context" />
         <output name="saml_authn_request" />
 
         <transition on="requestRpToken" to="requestRpToken">
-            <set name="flowScope.homerealm" value="currentEvent.attributes.homerealm" />
+            <set name="flowScope.home_realm" value="currentEvent.attributes.home_realm" />
             <set name="flowScope.idpToken" value="currentEvent.attributes.idpToken" />
             <set name="flowScope.saml_authn_request" value="currentEvent.attributes.saml_authn_request" />
         </transition>
@@ -64,7 +65,7 @@
         <transition on="scInternalServerError" to="scInternalServerError" />
         <transition on="redirectToLocalIDP" to="redirectToLocalIDP" />
         <transition on="redirectToTrustedIDP" to="processTrustedIdpProtocol">
-            <set name="flowScope.homerealm" value="currentEvent.attributes.homerealm" />
+            <set name="flowScope.home_realm" value="currentEvent.attributes.home_realm" />
             <set name="flowScope.trusted_idp_context" value="currentEvent.attributes.trusted_idp_context"/>
         </transition>
     </subflow-state>
@@ -88,7 +89,7 @@
         <output name="idpToken" />
 
         <transition on="requestRpToken" to="requestRpToken">
-            <set name="flowScope.homerealm" value="currentEvent.attributes.whr" />
+            <set name="flowScope.home_realm" value="currentEvent.attributes.whr" />
             <set name="flowScope.idpToken" value="currentEvent.attributes.idpToken" />
             <set name="flowScope.saml_authn_request" value="currentEvent.attributes.saml_authn_request" />
         </transition>
@@ -101,7 +102,7 @@
         <on-entry>
             <evaluate expression="authnRequestParser.retrieveRealm(flowRequestContext)" 
                       result="flowScope.realm"/>
-            <evaluate expression="stsClientForRpAction.submit(flowRequestContext, flowScope.realm, flowScope.homerealm)"
+            <evaluate expression="stsClientForRpAction.submit(flowRequestContext, flowScope.realm, flowScope.home_realm)"
                       result="flowScope.rpTokenElement"/>
         </on-entry>
         <evaluate expression="signinParametersCacheAction.storeRPConfigInSession(flowRequestContext)"/>
@@ -136,7 +137,7 @@
     </end-state>
     
     <action-state id="processTrustedIdpProtocol">
-        <evaluate expression="trustedIdpProtocolAction.mapSignInRequest(flowRequestContext, flowScope.homerealm)"
+        <evaluate expression="trustedIdpProtocolAction.mapSignInRequest(flowRequestContext, flowScope.home_realm)"
                       result="flowScope.remoteIdpUrl"/>
         <transition to="redirectToTrustedIDP" />
         <transition on-exception="java.lang.Throwable" to="scInternalServerError" />

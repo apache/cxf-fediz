@@ -33,6 +33,11 @@ public final class IdpConstants {
      */
     public static final String SAML_AUTHN_REQUEST = "saml_authn_request";
     
+    /**
+     * A key used to store the home realm for the given request.
+     */
+    public static final String HOME_REALM = "home_realm";
+    
     private IdpConstants() {
         // complete
     }

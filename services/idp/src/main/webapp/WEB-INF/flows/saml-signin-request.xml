@@ -31,9 +31,9 @@
     <decision-state id="processHRDSExpression">
         <on-entry>
             <evaluate expression="processHRDSExpressionAction.submit(flowRequestContext, null)" 
-                      result="flowScope.homerealm" />
+                      result="flowScope.home_realm" />
         </on-entry>
-        <if test="flowScope.homerealm == null or flowScope.homerealm.trim().isEmpty()"
+        <if test="flowScope.home_realm == null or flowScope.home_realm.trim().isEmpty()"
             then="provideIDPListForUser" else="checkIsThisIDP" />
     </decision-state>
     
@@ -60,9 +60,9 @@
         </on-entry>
         <transition on="submit" to="checkIsThisIDP" bind="true"
             validate="true">
-            <set name="flowScope.homerealm" value="trustedIDPSelection.whr" />
+            <set name="flowScope.home_realm" value="trustedIDPSelection.whr" />
             <evaluate
-                expression="homeRealmReminder.addCookie(flowRequestContext, flowScope.homerealm)" />
+                expression="homeRealmReminder.addCookie(flowRequestContext, flowScope.home_realm)" />
         </transition>
         <transition on="cancel" to="checkDefaultToThisIDP"
             bind="false" validate="false" />
@@ -70,7 +70,7 @@
     
     <!-- Home Realm is known then we can store it in cookie -->
     <decision-state id="checkIsThisIDP">
-        <if test="flowScope.idpConfig.realm.equals(flowScope.homerealm)"
+        <if test="flowScope.idpConfig.realm.equals(flowScope.home_realm)"
             then="homeRealmSignInEntryPoint" else="checkIdpTokenWhrWauth" />
     </decision-state>
     
@@ -79,16 +79,16 @@
     <!-- Is 'wresult/RP-IDP token' already received and validated (then stored 
         in session) from requestor IDP ? -->
     <decision-state id="checkIdpTokenWhrWauth">
-        <if test="externalContext.sessionMap[flowScope.homerealm] != null"
+        <if test="externalContext.sessionMap[flowScope.home_realm] != null"
             then="wfreshParserRemoteAction" else="redirectToTrustedIDP" />
     </decision-state>
     
     <action-state id="wfreshParserRemoteAction">
         <evaluate
-            expression="idpTokenExpiredAction.isTokenExpired(flowScope.homerealm, flowRequestContext)" />
+            expression="idpTokenExpiredAction.isTokenExpired(flowScope.home_realm, flowRequestContext)" />
         <transition on="yes" to="redirectToTrustedIDP" />
         <transition on="no" to="validateWReply" >
-            <set name="flowScope.idpToken" value="externalContext.sessionMap[flowScope.homerealm]" />
+            <set name="flowScope.idpToken" value="externalContext.sessionMap[flowScope.home_realm]" />
         </transition>
         <transition on-exception="java.lang.Throwable" to="viewBadRequest" />
     </action-state>
@@ -104,12 +104,12 @@
     <decision-state id="homeRealmSignInEntryPoint">
         <on-entry>
             <!-- Here, home realm is guaranteed to be THIS realm -->
-            <set name="flowScope.homerealm" value="flowScope.idpConfig.realm" />
+            <set name="flowScope.home_realm" value="flowScope.idpConfig.realm" />
         </on-entry>
         <if test="flowScope.idpConfig.getAuthenticationURIs() == null"
             then="scInternalServerError" />
         <!-- check presence of cached IDP token for THIS realm -->
-        <if test="externalContext.sessionMap[flowScope.homerealm] == null"
+        <if test="externalContext.sessionMap[flowScope.home_realm] == null"
             then="cacheSecurityToken" else="checkTokenExpiry" />
     </decision-state>
 
@@ -119,11 +119,11 @@
                                                                   flowScope.SAMLRequest)" />
         </on-entry>
         <evaluate
-            expression="idpTokenExpiredAction.isTokenExpired(flowScope.homerealm, flowRequestContext)
+            expression="idpTokenExpiredAction.isTokenExpired(flowScope.home_realm, flowRequestContext)
                         or authnRequestParser.isForceAuthentication(flowRequestContext)" />
         <transition on="yes" to="redirectToLocalIDP" />
         <transition on="no" to="parseAndValidateSAMLRequest">
-            <set name="flowScope.idpToken" value="externalContext.sessionMap[flowScope.homerealm]" />
+            <set name="flowScope.idpToken" value="externalContext.sessionMap[flowScope.home_realm]" />
         </transition>
         <transition on-exception="java.lang.Throwable" to="scInternalServerError" />
     </action-state>
@@ -132,14 +132,14 @@
         <on-entry>
             <evaluate expression="logoutAction.submit(flowRequestContext)" />
         </on-entry>
-        <output name="homerealm" value="flowScope.homerealm" />
+        <output name="home_realm" value="flowScope.home_realm" />
     </end-state>
 
     <action-state id="cacheSecurityToken">
         <secured attributes="IS_AUTHENTICATED_FULLY" />
         <evaluate expression="cacheSecurityToken.submit(flowRequestContext)" />
         <transition to="parseAndValidateSAMLRequest">
-            <set name="flowScope.idpToken" value="externalContext.sessionMap[flowScope.homerealm]" />
+            <set name="flowScope.idpToken" value="externalContext.sessionMap[flowScope.home_realm]" />
         </transition>
     </action-state>
     
@@ -171,7 +171,7 @@
 
     <!-- normal exit point -->
     <end-state id="requestRpToken">
-        <output name="homerealm" value="flowScope.homerealm" />
+        <output name="home_realm" value="flowScope.home_realm" />
         <output name="idpToken" value="flowScope.idpToken" />
         <output name="saml_authn_request" value="flowScope.saml_authn_request" />
     </end-state>
@@ -189,7 +189,7 @@
         <on-entry>
             <evaluate expression="signinParametersCacheAction.store(flowRequestContext)" />
         </on-entry>
-        <output name="homerealm" value="flowScope.homerealm" />
+        <output name="home_realm" value="flowScope.home_realm" />
         <output name="trusted_idp_context" value="flowScope.trusted_idp_context" />
     </end-state>
 

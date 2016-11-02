@@ -49,6 +49,8 @@ public class SigninParametersCacheAction {
         Map<String, Object> signinParams = new HashMap<>();
         String uuidKey = UUID.randomUUID().toString();
         
+        WebUtils.removeAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
+        
         Object value = WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_REPLY);
         if (value != null) {
             signinParams.put(FederationConstants.PARAM_REPLY, value);
@@ -61,13 +63,17 @@ public class SigninParametersCacheAction {
         if (value != null) {
             signinParams.put(FederationConstants.PARAM_HOME_REALM, value);
         }
+        value = WebUtils.getAttributeFromFlowScope(context, IdpConstants.HOME_REALM);
+        if (value != null) {
+            signinParams.put(IdpConstants.HOME_REALM, value);
+        }
         value = WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_CONTEXT);
         if (value != null) {
             signinParams.put(FederationConstants.PARAM_CONTEXT, value);
         }
-        value = WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
+        value = WebUtils.getAttributeFromFlowScope(context, "SAMLRequest");
         if (value != null) {
-            signinParams.put(IdpConstants.SAML_AUTHN_REQUEST, value);
+            signinParams.put("SAMLRequest", value);
         }
         WebUtils.putAttributeInExternalContext(context, uuidKey, signinParams);
         
@@ -105,6 +111,17 @@ public class SigninParametersCacheAction {
                 if (value != null) {
                     WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_HOME_REALM, value);
                 }
+                // TODO...
+                value = (String)signinParams.get(IdpConstants.HOME_REALM);
+                if (value != null) {
+                    WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_HOME_REALM, value);
+                    WebUtils.putAttributeInFlowScope(context, IdpConstants.HOME_REALM, value);
+                }
+                
+                value = (String)signinParams.get("SAMLRequest");
+                if (value != null) {
+                    WebUtils.putAttributeInFlowScope(context, "SAMLRequest", value);
+                } 
                 
                 LOG.debug("SignIn parameters restored: {}", signinParams.toString());
                 WebUtils.removeAttributeFromFlowScope(context, FederationConstants.PARAM_CONTEXT);
@@ -116,10 +133,6 @@ public class SigninParametersCacheAction {
                     WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_CONTEXT, value);
                 }
                 
-                value = (String)signinParams.get(IdpConstants.SAML_AUTHN_REQUEST);
-                if (value != null) {
-                    WebUtils.putAttributeInFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST, value);
-                }
             }  else {
                 LOG.debug("Error in restoring security context");
             }
