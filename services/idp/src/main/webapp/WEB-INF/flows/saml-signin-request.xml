@@ -27,6 +27,14 @@
     <input name="SAMLRequest" />
     <input name="RelayState" />
     <input name="Signature" />
+    
+    <action-state id="parseAuthnRequest">
+        <evaluate expression="authnRequestParser.parseSAMLRequest(flowRequestContext, flowScope.idpConfig,
+                                                              flowScope.SAMLRequest, flowScope.Signature,
+                                                              flowScope.RelayState)" />
+        <transition to="processHRDSExpression"/>
+        <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
+    </action-state>
 
     <decision-state id="processHRDSExpression">
         <on-entry>
@@ -114,15 +122,11 @@
     </decision-state>
 
     <action-state id="checkTokenExpiry">
-        <on-entry>
-            <evaluate expression="authnRequestParser.parseSAMLRequest(flowRequestContext, flowScope.idpConfig,
-                                                                  flowScope.SAMLRequest)" />
-        </on-entry>
         <evaluate
             expression="idpTokenExpiredAction.isTokenExpired(flowScope.home_realm, flowRequestContext)
                         or authnRequestParser.isForceAuthentication(flowRequestContext)" />
         <transition on="yes" to="redirectToLocalIDP" />
-        <transition on="no" to="parseAndValidateSAMLRequest">
+        <transition on="no" to="validateEndpointAddress">
             <set name="flowScope.idpToken" value="externalContext.sessionMap[flowScope.home_realm]" />
         </transition>
         <transition on-exception="java.lang.Throwable" to="scInternalServerError" />
@@ -138,29 +142,17 @@
     <action-state id="cacheSecurityToken">
         <secured attributes="IS_AUTHENTICATED_FULLY" />
         <evaluate expression="cacheSecurityToken.submit(flowRequestContext)" />
-        <transition to="parseAndValidateSAMLRequest">
+        <transition to="validateEndpointAddress">
             <set name="flowScope.idpToken" value="externalContext.sessionMap[flowScope.home_realm]" />
         </transition>
-    </action-state>
-    
-    <action-state id="parseAndValidateSAMLRequest">
-        <on-entry>
-            <evaluate expression="authnRequestParser.parseSAMLRequest(flowRequestContext, flowScope.idpConfig,
-                                                                  flowScope.SAMLRequest)" />
-            <evaluate expression="authnRequestParser.retrieveRealm(flowRequestContext)" 
-                          result="flowScope.realm"/>
-        </on-entry>
-        <evaluate expression="authnRequestValidator.validateAuthnRequest(flowRequestContext, flowScope.idpConfig,
-                                                                  flowScope.Signature, flowScope.RelayState,
-                                                                  flowScope.SAMLRequest, flowScope.realm)" />
-        <transition to="validateEndpointAddress"/>
-        <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
     </action-state>
     
     <action-state id="validateEndpointAddress">
         <on-entry>
             <evaluate expression="authnRequestParser.retrieveConsumerURL(flowRequestContext)" 
                       result="flowScope.consumerURL"/>
+            <evaluate expression="authnRequestParser.retrieveRealm(flowRequestContext)" 
+                          result="flowScope.realm"/>
         </on-entry>
         <evaluate expression="passiveRequestorValidator.isValid(flowRequestContext, flowScope.consumerURL, flowScope.realm)"/>
         <transition on="yes" to="requestRpToken" />

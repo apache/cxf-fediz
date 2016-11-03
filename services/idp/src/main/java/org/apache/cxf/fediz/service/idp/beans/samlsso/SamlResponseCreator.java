@@ -33,6 +33,7 @@ import org.apache.cxf.fediz.service.idp.IdpConstants;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.samlsso.SAML2CallbackHandler;
 import org.apache.cxf.fediz.service.idp.samlsso.SAML2PResponseComponentBuilder;
+import org.apache.cxf.fediz.service.idp.samlsso.SAMLAuthnRequest;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.rs.security.saml.DeflateEncoderDecoder;
@@ -48,7 +49,6 @@ import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.wss4j.dom.WSConstants;
 import org.joda.time.DateTime;
 import org.opensaml.saml.saml2.core.Assertion;
-import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.NameID;
 import org.opensaml.saml.saml2.core.Response;
 import org.opensaml.saml.saml2.core.Status;
@@ -103,15 +103,13 @@ public class SamlResponseCreator {
         callbackHandler.setSubject(receivedToken.getSaml2().getSubject());
         
         // Test Subject against received Subject (if applicable)
-        AuthnRequest authnRequest = 
-            (AuthnRequest)WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
-        if (authnRequest.getSubject() != null && authnRequest.getSubject().getNameID() != null
-            && receivedToken.getSaml2().getSubject().getNameID() != null) {
-            NameID receivedNameId = authnRequest.getSubject().getNameID();
+        SAMLAuthnRequest authnRequest = 
+            (SAMLAuthnRequest)WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
+        if (authnRequest.getSubjectNameId() != null && receivedToken.getSaml2().getSubject().getNameID() != null) {
             NameID issuedNameId = receivedToken.getSaml2().getSubject().getNameID();
-            if (!receivedNameId.getValue().equals(issuedNameId.getValue())) {
+            if (!authnRequest.getSubjectNameId().equals(issuedNameId.getValue())) {
                 LOG.debug("Received NameID value of {} does not match issued value {}",
-                          receivedNameId.getValue(), issuedNameId.getValue());
+                          authnRequest.getSubjectNameId(), issuedNameId.getValue());
                 throw new ProcessingException(ProcessingException.TYPE.INVALID_REQUEST);
             }
         }
