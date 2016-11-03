@@ -65,6 +65,9 @@
         <property name="trustedIdps">
             <util:list>
                 <ref bean="trusted-idp-realmB" />
+                <ref bean="trusted-idp-realmC" />
+                <ref bean="trusted-idp-realmD" />
+                <ref bean="trusted-idp-realmE" />
             </util:list>
         </property>
         <property name="claimTypesOffered">
@@ -89,6 +92,62 @@
         <property name="name" value="Realm B" />
         <property name="description" value="Realm B description" />
     </bean>
+    
+    <bean id="trusted-idp-realmC"
+        class="org.apache.cxf.fediz.service.idp.service.jpa.TrustedIdpEntity">
+        <property name="realm" value="urn:org:apache:cxf:fediz:idp:realm-C" />
+        <property name="issuer" value="urn:org:apache:cxf:fediz:idp:realm-B" />
+        <property name="cacheTokens" value="true" />
+        <property name="url" value="https://localhost:${idp.realmb.https.port}/fediz-idp-realmb/saml/up" />
+        <property name="certificate" value="realmb.cert" />
+        <property name="trustType" value="PEER_TRUST" />
+        <property name="protocol" value="urn:oasis:names:tc:SAML:2.0:profiles:SSO:browser" />
+        <property name="federationType" value="FEDERATE_IDENTITY" />
+        <property name="name" value="Realm B" />
+        <property name="description" value="Realm B description" />
+        <property name="parameters">
+            <util:map>
+                <entry key="sign.request" value="true" />
+            </util:map>
+        </property>
+    </bean>
+    
+    <bean id="trusted-idp-realmD"
+        class="org.apache.cxf.fediz.service.idp.service.jpa.TrustedIdpEntity">
+        <property name="realm" value="urn:org:apache:cxf:fediz:idp:realm-D" />
+        <property name="cacheTokens" value="true" />
+        <property name="url" value="https://localhost:${idp.samlsso.https.port}/idp/samlsso?binding=REDIRECT" />
+        <property name="certificate" value="realmb.cert" />
+        <property name="trustType" value="PEER_TRUST" />
+        <property name="protocol" value="urn:oasis:names:tc:SAML:2.0:profiles:SSO:browser" />
+        <property name="federationType" value="FEDERATE_IDENTITY" />
+        <property name="name" value="Realm D" />
+        <property name="description" value="Realm D description" />
+        <property name="parameters">
+            <util:map>
+                <entry key="sign.request" value="true" />
+                <entry key="support.deflate.encoding" value="true" />
+            </util:map>
+        </property>
+    </bean>
+    
+    <bean id="trusted-idp-realmE"
+        class="org.apache.cxf.fediz.service.idp.service.jpa.TrustedIdpEntity">
+        <property name="realm" value="urn:org:apache:cxf:fediz:idp:realm-E" />
+        <property name="cacheTokens" value="true" />
+        <property name="url" value="https://localhost:${idp.samlsso.https.port}/idp/samlsso" />
+        <property name="certificate" value="realmb.cert" />
+        <property name="trustType" value="PEER_TRUST" />
+        <property name="protocol" value="urn:oasis:names:tc:SAML:2.0:profiles:SSO:browser" />
+        <property name="federationType" value="FEDERATE_IDENTITY" />
+        <property name="name" value="Realm E" />
+        <property name="description" value="SAML Web Profile - Response POST Binding" />
+        <property name="parameters">
+            <util:map>
+                <entry key="sign.request" value="true" />
+            </util:map>
+        </property>
+    </bean>
 
     <bean id="srv-fedizhelloworld" class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationEntity">
         <property name="realm" value="urn:org:apache:cxf:fediz:fedizhelloworld" />
@@ -99,7 +158,7 @@
         <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0" />
         <property name="lifeTime" value="3600" />
         <property name="passiveRequestorEndpointConstraint" 
-                  value="https://localhost:(\d)*/(\w)*helloworld(\w)*/secure/.*" />
+                  value="https://localhost:(\d)*/(\w)*/secure/.*" />
     </bean>
     
     <bean class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationClaimEntity">

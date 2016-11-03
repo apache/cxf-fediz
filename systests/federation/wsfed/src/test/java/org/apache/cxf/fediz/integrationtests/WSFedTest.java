@@ -26,6 +26,10 @@ import java.net.URLEncoder;
 
 import javax.servlet.ServletException;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.DomElement;
@@ -33,6 +37,7 @@ import com.gargoylesoftware.htmlunit.html.DomNodeList;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
+import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
@@ -40,27 +45,36 @@ import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.cxf.fediz.core.ClaimTypes;
+import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.cxf.fediz.tomcat7.FederationAuthenticator;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.xml.security.keys.KeyInfo;
+import org.apache.xml.security.signature.XMLSignature;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
- * This is a test for federation in the IdP. The RP application is configured to use a home realm of "realm b". The
- * client gets redirected to the IdP for "realm a", which in turn redirects to the IdP for "realm b". The user 
- * authenticates + is redirected back to the IdP for "realm a" to get a SAML token from the STS + then back to the
- * application.
+ * This is a test for federation using a WS-Federation enabled web application. The web application is configured
+ * to use a different realm to that of the IdP. The IdP then redirects to a third party IdP for authentication. 
+ * The third party IdPs that are tested are as follows:
+ *  - WS-Federation (Fediz)
+ *  - SAML SSO (Fediz)
+ *  - SAML SSO (custom webapp - supports POST binding as well)
+ *  - OIDC (custom webapp)
  */
 public class WSFedTest {
 
     static String idpHttpsPort;
     static String idpRealmbHttpsPort;
+    static String idpSamlSSOHttpsPort;
     static String rpHttpsPort;
     
     private static Tomcat idpServer;
     private static Tomcat idpRealmbServer;
+    private static Tomcat idpSamlSSOServer;
     private static Tomcat rpServer;
     
     @BeforeClass
@@ -78,15 +92,18 @@ public class WSFedTest {
         Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
         idpRealmbHttpsPort = System.getProperty("idp.realmb.https.port");
         Assert.assertNotNull("Property 'idp.realmb.https.port' null", idpRealmbHttpsPort);
+        idpSamlSSOHttpsPort = System.getProperty("idp.samlsso.https.port");
+        Assert.assertNotNull("Property 'idp.samlsso.https.port' null", idpSamlSSOHttpsPort);
         rpHttpsPort = System.getProperty("rp.https.port");
         Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
 
-        idpServer = startServer(true, false, idpHttpsPort);
-        idpRealmbServer = startServer(false, true, idpRealmbHttpsPort);
-        rpServer = startServer(false, false, rpHttpsPort);
+        idpServer = startServer(true, false, false, idpHttpsPort);
+        idpRealmbServer = startServer(false, true, false, idpRealmbHttpsPort);
+        idpSamlSSOServer = startServer(false, false, true, idpSamlSSOHttpsPort);
+        rpServer = startServer(false, false, false, rpHttpsPort);
     }
     
-    private static Tomcat startServer(boolean idp, boolean realmb, String port) 
+    private static Tomcat startServer(boolean idp, boolean realmb, boolean samlSSOIdP, String port) 
         throws ServletException, LifecycleException, IOException {
         Tomcat server = new Tomcat();
         server.setPort(0);
@@ -98,6 +115,8 @@ public class WSFedTest {
             server.getHost().setAppBase("tomcat/idp/webapps");
         } else if (realmb) {
             server.getHost().setAppBase("tomcat/idprealmb/webapps");
+        } else if (samlSSOIdP) {
+            server.getHost().setAppBase("tomcat/idpsamlsso/webapps");
         } else {
             server.getHost().setAppBase("tomcat/rp/webapps");
         }
@@ -132,13 +151,28 @@ public class WSFedTest {
     
             File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp-realmb");
             server.addWebapp("/fediz-idp-realmb", idpWebapp.getAbsolutePath());
+        } else if (samlSSOIdP) {
+            File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "idpsaml");
+            server.addWebapp("/idp", idpWebapp.getAbsolutePath());
         } else {
             File rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
-            Context cxt = server.addWebapp("/fedizhelloworld", rpWebapp.getAbsolutePath());
+            Context cxt = server.addWebapp("/wsfed", rpWebapp.getAbsolutePath());
             
             FederationAuthenticator fa = new FederationAuthenticator();
             fa.setConfigFile(currentDir + File.separator + "target" + File.separator
                              + "test-classes" + File.separator + "fediz_config_wsfed.xml");
+            cxt.getPipeline().addValve(fa);
+            
+            rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
+            cxt = server.addWebapp("/samlsso", rpWebapp.getAbsolutePath());
+            cxt.getPipeline().addValve(fa);
+            
+            rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
+            cxt = server.addWebapp("/samlssocustom", rpWebapp.getAbsolutePath());
+            cxt.getPipeline().addValve(fa);
+            
+            rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
+            cxt = server.addWebapp("/samlssocustompost", rpWebapp.getAbsolutePath());
             cxt.getPipeline().addValve(fa);
         }
 
@@ -151,6 +185,7 @@ public class WSFedTest {
     public static void cleanup() {
         shutdownServer(idpServer);
         shutdownServer(idpRealmbServer);
+        shutdownServer(idpSamlSSOServer);
         shutdownServer(rpServer);
     }
     
@@ -185,8 +220,8 @@ public class WSFedTest {
     }
     
     @org.junit.Test
-    public void testWSFed() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+    public void testWSFederation() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/wsfed/secure/fedservlet";
         // System.out.println(url);
         // Thread.sleep(60 * 2 * 1000);
         String user = "ALICE";  // realm b credentials
@@ -213,6 +248,132 @@ public class WSFedTest {
         claim = ClaimTypes.EMAILADDRESS.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
                           bodyTextContent.contains(claim + "=alice@realma.org"));
+    }
+    
+    @org.junit.Test
+    public void testSAMLSSOFedizIdP() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/samlsso/secure/fedservlet";
+        // System.out.println(url);
+        // Thread.sleep(60 * 2 * 1000);
+        String user = "ALICE";  // realm b credentials
+        String password = "ECILA";
+        
+        final String bodyTextContent = 
+            login(url, user, password, getIdpRealmbHttpsPort(), getIdpHttpsPort(), true);
+        
+        Assert.assertTrue("Principal not alice",
+                          bodyTextContent.contains("userPrincipal=alice"));
+        Assert.assertTrue("User " + user + " does not have role Admin",
+                          bodyTextContent.contains("role:Admin=false"));
+        Assert.assertTrue("User " + user + " does not have role Manager",
+                          bodyTextContent.contains("role:Manager=false"));
+        Assert.assertTrue("User " + user + " must have role User",
+                          bodyTextContent.contains("role:User=true"));
+
+        String claim = ClaimTypes.FIRSTNAME.toString();
+        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
+                          bodyTextContent.contains(claim + "=Alice"));
+        claim = ClaimTypes.LASTNAME.toString();
+        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
+                          bodyTextContent.contains(claim + "=Smith"));
+        claim = ClaimTypes.EMAILADDRESS.toString();
+        Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
+                          bodyTextContent.contains(claim + "=alice@realma.org"));
+    }
+    
+    @org.junit.Test
+    public void testSAMLSSOCustom() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/samlssocustom/secure/fedservlet";
+        // System.out.println("URL: " + url);
+        // Thread.sleep(60 * 2 * 1000);
+        String user = "ALICE";  // realm b credentials
+        String password = "ECILA";
+        
+        final String bodyTextContent = 
+            login(url, user, password, idpSamlSSOHttpsPort, idpHttpsPort, false);
+        
+        Assert.assertTrue("Principal not alice",
+                          bodyTextContent.contains("userPrincipal=alice"));
+        Assert.assertTrue("User " + user + " does not have role Admin",
+                          bodyTextContent.contains("role:Admin=false"));
+        Assert.assertTrue("User " + user + " does not have role Manager",
+                          bodyTextContent.contains("role:Manager=false"));
+        Assert.assertTrue("User " + user + " must have role User",
+                          bodyTextContent.contains("role:User=true"));
+
+        String claim = ClaimTypes.FIRSTNAME.toString();
+        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
+                          bodyTextContent.contains(claim + "=Alice"));
+        claim = ClaimTypes.LASTNAME.toString();
+        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
+                          bodyTextContent.contains(claim + "=Smith"));
+        claim = ClaimTypes.EMAILADDRESS.toString();
+        Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
+                          bodyTextContent.contains(claim + "=alice@realma.org"));
+    }
+    
+    @org.junit.Test
+    public void testSAMLSSOCustomPostBinding() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/samlssocustompost/secure/fedservlet";
+        // System.out.println("URL: " + url);
+        // Thread.sleep(60 * 2 * 1000);
+        String user = "ALICE";  // realm b credentials
+        String password = "ECILA";
+        
+        final String bodyTextContent = 
+            login(url, user, password, idpSamlSSOHttpsPort, idpHttpsPort, true);
+        
+        Assert.assertTrue("Principal not alice",
+                          bodyTextContent.contains("userPrincipal=alice"));
+        Assert.assertTrue("User " + user + " does not have role Admin",
+                          bodyTextContent.contains("role:Admin=false"));
+        Assert.assertTrue("User " + user + " does not have role Manager",
+                          bodyTextContent.contains("role:Manager=false"));
+        Assert.assertTrue("User " + user + " must have role User",
+                          bodyTextContent.contains("role:User=true"));
+
+        String claim = ClaimTypes.FIRSTNAME.toString();
+        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
+                          bodyTextContent.contains(claim + "=Alice"));
+        claim = ClaimTypes.LASTNAME.toString();
+        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
+                          bodyTextContent.contains(claim + "=Smith"));
+        claim = ClaimTypes.EMAILADDRESS.toString();
+        Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
+                          bodyTextContent.contains(claim + "=alice@realma.org"));
+    }
+    
+    @Test
+    public void testSAMLSSOIdPServiceMetadata() throws Exception {
+        String url = "https://localhost:" + getIdpHttpsPort()
+            + "/fediz-idp/metadata/urn:org:apache:cxf:fediz:idp:realm-B";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getOptions().setSSLClientCertificate(
+            this.getClass().getClassLoader().getResource("client.jks"), "storepass", "jks");
+
+        final XmlPage rpPage = webClient.getPage(url);
+        final String xmlContent = rpPage.asXml();
+        Assert.assertTrue(xmlContent.startsWith("<md:EntityDescriptor"));
+
+        // Now validate the Signature
+        Document doc = rpPage.getXmlDocument();
+
+        doc.getDocumentElement().setIdAttributeNS(null, "ID", true);
+
+        Node signatureNode =
+            DOMUtils.getChild(doc.getDocumentElement(), "Signature");
+        Assert.assertNotNull(signatureNode);
+
+        XMLSignature signature = new XMLSignature((Element)signatureNode, "");
+        KeyInfo ki = signature.getKeyInfo();
+        Assert.assertNotNull(ki);
+        Assert.assertNotNull(ki.getX509Certificate());
+
+        Assert.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
+
+        webClient.close();
     }
     
     private static String login(String url, String user, String password, 
@@ -282,5 +443,47 @@ public class WSFedTest {
         return rpPage.getBody().getTextContent();
     }
     
+    private static String login(String url, String user, String password, 
+                                String idpPort, String rpIdpPort, boolean postBinding) throws IOException {
+        //
+        // Access the RP + get redirected to the IdP for "realm a". Then get redirected to the IdP for
+        // "realm b".
+        //
+        final WebClient webClient = new WebClient();
+        CookieManager cookieManager = new CookieManager();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(idpPort)),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        HtmlPage idpPage = webClient.getPage(url);
+        
+        if (postBinding) {
+            Assert.assertTrue("SAML IDP Response Form".equals(idpPage.getTitleText())
+                                || "IDP SignIn Response Form".equals(idpPage.getTitleText()));
+            for (HtmlForm form : idpPage.getForms()) {
+                String name = form.getAttributeNS(null, "name");
+                if ("signinresponseform".equals(name) || "samlsigninresponseform".equals(name)) {
+                    final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
+                    idpPage = button.click();
+                }
+            }
+        }
+        
+        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+
+        // Now redirect back to the RP
+        final HtmlForm form = idpPage.getFormByName("signinresponseform");
+
+        final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
+
+        final HtmlPage rpPage = button.click();
+        Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
+
+        webClient.close();
+        return rpPage.getBody().getTextContent();
+    }
     
 }

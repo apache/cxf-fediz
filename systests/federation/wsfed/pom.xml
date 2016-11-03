@@ -128,6 +128,7 @@
                             <portNames>
                                 <portName>idp.https.port</portName>
                                 <portName>idp.realmb.https.port</portName>
+                                <portName>idp.samlsso.https.port</portName>
                                 <portName>rp.https.port</portName>
                             </portNames>
                         </configuration>
@@ -185,6 +186,14 @@
                                     <type>war</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>target/tomcat/idprealmb/webapps/fediz-idp-sts-realmb</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.cxf.fediz.systests.federation</groupId>
+                                    <artifactId>fediz-systests-federation-samlIdpWebapp</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>war</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target/tomcat/idpsamlsso/webapps/idpsaml</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz.systests</groupId>
@@ -287,6 +296,7 @@
                                 <wt.headless>true</wt.headless>
                                 <idp.https.port>${idp.https.port}</idp.https.port>
                                 <idp.realmb.https.port>${idp.realmb.https.port}</idp.realmb.https.port>
+                                <idp.samlsso.https.port>${idp.samlsso.https.port}</idp.samlsso.https.port>
                                 <rp.https.port>${rp.https.port}</rp.https.port>
                             </systemPropertyVariables>
                             <includes>

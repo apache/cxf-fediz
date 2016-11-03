@@ -37,10 +37,9 @@
         <property name="idpUrl" value="https://localhost:${idp.realmb.https.port}/fediz-idp-realmb/federation" />
         <property name="supportedProtocols">
             <util:list>
-                <value>http://docs.oasis-open.org/wsfed/federation/200706
-                </value>
-                <value>http://docs.oasis-open.org/ws-sx/ws-trust/200512
-                </value>
+                <value>http://docs.oasis-open.org/wsfed/federation/200706</value>
+                <value>http://docs.oasis-open.org/ws-sx/ws-trust/200512</value>
+                <value>urn:oasis:names:tc:SAML:2.0:profiles:SSO:browser</value>
             </util:list>
         </property>
         <property name="tokenTypesOffered">
@@ -79,6 +78,7 @@
         <property name="role" value="SecurityTokenServiceType" />
         <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0" />
         <property name="lifeTime" value="3600" />
+        <property name="validatingCertificate" value="realma.cert" />
     </bean>
     
     <bean id="claim_role"
