@@ -54,20 +54,21 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * This is a test for federation in the IdP. The RP application is configured to use a home realm of "realm b". The
- * client gets redirected to the IdP for "realm a", which in turn redirects to the IdP for "realm b", which is a 
- * SAML SSO IdP. The IdP for "realm a" will convert the signin request to a SAML SSO sign in request. The IdP for 
- * realm b authenticates the user, who is then redirected back to the IdP for "realm a" to get a SAML token from 
- * the STS + then back to the application.
+ * This is a test for federation using SAML SSO in the IdP. The RP application is configured to use a home realm
+ * which is different to that of the IdP ("realm a"). The IdP for realm "a" then redirects the client to the
+ * relevant IdP, which is a SAML SSO IdP. Two different third party IdPs are used - a mock SAML SSO IdP, which 
+ * supports both the redirect and POST bindings, as well as the Fediz IdP itself.
  */
 public class SAMLSSOTest {
 
     static String idpHttpsPort;
     static String idpSamlSSOHttpsPort;
     static String rpHttpsPort;
+    static String idpRealmbHttpsPort;
     
     private static Tomcat idpServer;
     private static Tomcat idpSamlSSOServer;
+    private static Tomcat idpRealmbServer;
     private static Tomcat rpServer;
     
     @BeforeClass
@@ -85,15 +86,18 @@ public class SAMLSSOTest {
         Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
         idpSamlSSOHttpsPort = System.getProperty("idp.samlsso.https.port");
         Assert.assertNotNull("Property 'idp.samlsso.https.port' null", idpSamlSSOHttpsPort);
+        idpRealmbHttpsPort = System.getProperty("idp.realmb.https.port");
+        Assert.assertNotNull("Property 'idp.realmb.https.port' null", idpRealmbHttpsPort);
         rpHttpsPort = System.getProperty("rp.https.port");
         Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
 
-        idpServer = startServer(true, false, idpHttpsPort);
-        idpSamlSSOServer = startServer(false, true, idpSamlSSOHttpsPort);
-        rpServer = startServer(false, false, rpHttpsPort);
+        idpServer = startServer(true, false, false, idpHttpsPort);
+        idpSamlSSOServer = startServer(false, true, false, idpSamlSSOHttpsPort);
+        idpRealmbServer = startServer(false, false, true, idpRealmbHttpsPort);
+        rpServer = startServer(false, false, false, rpHttpsPort);
     }
     
-    private static Tomcat startServer(boolean idp, boolean realmb, String port) 
+    private static Tomcat startServer(boolean idp, boolean samlSSOIdP, boolean realmb, String port) 
         throws ServletException, LifecycleException, IOException {
         Tomcat server = new Tomcat();
         server.setPort(0);
@@ -103,8 +107,10 @@ public class SAMLSSOTest {
 
         if (idp) {
             server.getHost().setAppBase("tomcat/idp/webapps");
-        } else if (realmb) {
+        } else if (samlSSOIdP) {
             server.getHost().setAppBase("tomcat/idpsamlsso/webapps");
+        } else if (realmb) {
+            server.getHost().setAppBase("tomcat/idprealmb/webapps");
         } else {
             server.getHost().setAppBase("tomcat/rp/webapps");
         }
@@ -133,9 +139,15 @@ public class SAMLSSOTest {
     
             File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp");
             server.addWebapp("/fediz-idp", idpWebapp.getAbsolutePath());
-        } else if (realmb) {
+        } else if (samlSSOIdP) {
             File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "idpsaml");
             server.addWebapp("/idp", idpWebapp.getAbsolutePath());
+        } else if (realmb) {
+            File stsWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp-sts-realmb");
+            server.addWebapp("/fediz-idp-sts-realmb", stsWebapp.getAbsolutePath());
+    
+            File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp-realmb");
+            server.addWebapp("/fediz-idp-realmb", idpWebapp.getAbsolutePath());
         } else {
             File rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
             Context cxt = server.addWebapp("/fedizhelloworld", rpWebapp.getAbsolutePath());
@@ -145,8 +157,12 @@ public class SAMLSSOTest {
                              + "test-classes" + File.separator + "fediz_config_saml_sso.xml");
             cxt.getPipeline().addValve(fa);
             
-            File rpWebapp2 = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp2");
+            File rpWebapp2 = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
             cxt = server.addWebapp("/fedizhelloworld-post-binding", rpWebapp2.getAbsolutePath());
+            cxt.getPipeline().addValve(fa);
+            
+            File rpWebapp3 = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
+            cxt = server.addWebapp("/fedizhelloworld3", rpWebapp3.getAbsolutePath());
             cxt.getPipeline().addValve(fa);
         }
 
@@ -160,6 +176,7 @@ public class SAMLSSOTest {
     public static void cleanup() {
         shutdownServer(idpServer);
         shutdownServer(idpSamlSSOServer);
+        shutdownServer(idpRealmbServer);
         shutdownServer(rpServer);
     }
     
@@ -187,6 +204,10 @@ public class SAMLSSOTest {
     
     public String getServletContextName() {
         return "fedizhelloworld";
+    }
+    
+    public String getIdpRealmbHttpsPort() {
+        return idpRealmbHttpsPort;
     }
     
     @org.junit.Test
@@ -284,6 +305,37 @@ public class SAMLSSOTest {
         webClient.close();
     }
     
+    @org.junit.Test
+    public void testSAMLSSOFedizIdP() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld3/secure/fedservlet";
+        // System.out.println(url);
+        // Thread.sleep(60 * 2 * 1000);
+        String user = "ALICE";  // realm b credentials
+        String password = "ECILA";
+        
+        final String bodyTextContent = 
+            login(url, user, password, getIdpRealmbHttpsPort(), getIdpHttpsPort(), true);
+        
+        Assert.assertTrue("Principal not alice",
+                          bodyTextContent.contains("userPrincipal=alice"));
+        Assert.assertTrue("User " + user + " does not have role Admin",
+                          bodyTextContent.contains("role:Admin=false"));
+        Assert.assertTrue("User " + user + " does not have role Manager",
+                          bodyTextContent.contains("role:Manager=false"));
+        Assert.assertTrue("User " + user + " must have role User",
+                          bodyTextContent.contains("role:User=true"));
+
+        String claim = ClaimTypes.FIRSTNAME.toString();
+        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
+                          bodyTextContent.contains(claim + "=Alice"));
+        claim = ClaimTypes.LASTNAME.toString();
+        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
+                          bodyTextContent.contains(claim + "=Smith"));
+        claim = ClaimTypes.EMAILADDRESS.toString();
+        Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
+                          bodyTextContent.contains(claim + "=alice@realma.org"));
+    }
+    
     private static String login(String url, String user, String password, 
                                 String idpPort, String rpIdpPort, boolean postBinding) throws IOException {
         //
@@ -302,10 +354,15 @@ public class SAMLSSOTest {
         HtmlPage idpPage = webClient.getPage(url);
         
         if (postBinding) {
-            Assert.assertEquals("SAML IDP Response Form", idpPage.getTitleText());
-            final HtmlForm form = idpPage.getFormByName("signinresponseform");
-            final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
-            idpPage = button.click();
+            Assert.assertTrue("SAML IDP Response Form".equals(idpPage.getTitleText())
+                                || "IDP SignIn Response Form".equals(idpPage.getTitleText()));
+            for (HtmlForm form : idpPage.getForms()) {
+                String name = form.getAttributeNS(null, "name");
+                if ("signinresponseform".equals(name) || "samlsigninresponseform".equals(name)) {
+                    final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
+                    idpPage = button.click();
+                }
+            }
         }
         
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
