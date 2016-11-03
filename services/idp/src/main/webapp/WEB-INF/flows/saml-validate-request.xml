@@ -87,6 +87,7 @@
         <output name="wctx" />
         <output name="whr" />
         <output name="idpToken" />
+        <output name="saml_authn_request" />
 
         <transition on="requestRpToken" to="requestRpToken">
             <set name="flowScope.home_realm" value="currentEvent.attributes.whr" />

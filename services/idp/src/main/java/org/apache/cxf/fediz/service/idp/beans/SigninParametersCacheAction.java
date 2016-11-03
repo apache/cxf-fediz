@@ -29,6 +29,7 @@ import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.service.idp.IdpConstants;
 import org.apache.cxf.fediz.service.idp.domain.Application;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
+import org.apache.cxf.fediz.service.idp.samlsso.SAMLAuthnRequest;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 import org.slf4j.Logger;
@@ -48,8 +49,6 @@ public class SigninParametersCacheAction {
     public void store(RequestContext context) {
         Map<String, Object> signinParams = new HashMap<>();
         String uuidKey = UUID.randomUUID().toString();
-        
-        WebUtils.removeAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
         
         Object value = WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_REPLY);
         if (value != null) {
@@ -71,9 +70,9 @@ public class SigninParametersCacheAction {
         if (value != null) {
             signinParams.put(FederationConstants.PARAM_CONTEXT, value);
         }
-        value = WebUtils.getAttributeFromFlowScope(context, "SAMLRequest");
+        value = WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
         if (value != null) {
-            signinParams.put("SAMLRequest", value);
+            signinParams.put(IdpConstants.SAML_AUTHN_REQUEST, value);
         }
         WebUtils.putAttributeInExternalContext(context, uuidKey, signinParams);
         
@@ -118,9 +117,10 @@ public class SigninParametersCacheAction {
                     WebUtils.putAttributeInFlowScope(context, IdpConstants.HOME_REALM, value);
                 }
                 
-                value = (String)signinParams.get("SAMLRequest");
-                if (value != null) {
-                    WebUtils.putAttributeInFlowScope(context, "SAMLRequest", value);
+                SAMLAuthnRequest authnRequest = 
+                    (SAMLAuthnRequest)signinParams.get(IdpConstants.SAML_AUTHN_REQUEST);
+                if (authnRequest != null) {
+                    WebUtils.putAttributeInFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST, authnRequest);
                 } 
                 
                 LOG.debug("SignIn parameters restored: {}", signinParams.toString());
