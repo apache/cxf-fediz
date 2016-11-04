@@ -154,6 +154,8 @@ public class TrustedIdpOIDCProtocolHandler extends AbstractTrustedIdpOAuth2Proto
                 return null;
             }
             
+            client.close();
+            
             try {
                 String whr = (String) WebUtils.getAttributeFromFlowScope(context,
                                                                          FederationConstants.PARAM_HOME_REALM);
