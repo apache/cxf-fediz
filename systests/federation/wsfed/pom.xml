@@ -129,6 +129,7 @@
                                 <portName>idp.https.port</portName>
                                 <portName>idp.realmb.https.port</portName>
                                 <portName>idp.samlsso.https.port</portName>
+                                <portName>idp.oidc.https.port</portName>
                                 <portName>rp.https.port</portName>
                             </portNames>
                         </configuration>
@@ -194,6 +195,14 @@
                                     <type>war</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>target/tomcat/idpsamlsso/webapps/idpsaml</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.cxf.fediz.systests.federation</groupId>
+                                    <artifactId>fediz-systests-federation-oidcIdpWebapp</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>war</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target/tomcat/idpoidc/webapps/idpoidc</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz.systests</groupId>
@@ -278,6 +287,25 @@
                             </resources>              
                         </configuration>            
                     </execution>
+                    <execution>
+                        <id>copy-entities-to-oidc-idp</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/tomcat/idpoidc/webapps/idpoidc/WEB-INF</outputDirectory>
+                            <resources>          
+                                <resource>
+                                    <directory>${basedir}/src/test/resources</directory>
+                                    <includes>
+                                        <include>cxf-service.xml</include>
+                                    </includes>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>              
+                        </configuration>            
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -297,6 +325,7 @@
                                 <idp.https.port>${idp.https.port}</idp.https.port>
                                 <idp.realmb.https.port>${idp.realmb.https.port}</idp.realmb.https.port>
                                 <idp.samlsso.https.port>${idp.samlsso.https.port}</idp.samlsso.https.port>
+                                <idp.oidc.https.port>${idp.oidc.https.port}</idp.oidc.https.port>
                                 <rp.https.port>${rp.https.port}</rp.https.port>
                             </systemPropertyVariables>
                             <includes>

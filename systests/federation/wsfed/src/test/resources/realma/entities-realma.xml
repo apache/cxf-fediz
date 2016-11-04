@@ -68,6 +68,7 @@
                 <ref bean="trusted-idp-realmC" />
                 <ref bean="trusted-idp-realmD" />
                 <ref bean="trusted-idp-realmE" />
+                <ref bean="trusted-idp-realmF" />
             </util:list>
         </property>
         <property name="claimTypesOffered">
@@ -145,6 +146,26 @@
         <property name="parameters">
             <util:map>
                 <entry key="sign.request" value="true" />
+            </util:map>
+        </property>
+    </bean>
+    
+    <bean id="trusted-idp-realmF"
+        class="org.apache.cxf.fediz.service.idp.service.jpa.TrustedIdpEntity">
+        <property name="realm" value="urn:org:apache:cxf:fediz:idp:realm-F" />
+        <property name="cacheTokens" value="true" />
+        <property name="url" value="https://localhost:${idp.oidc.https.port}/idpoidc/services/authorize" />
+        <property name="certificate" value="realmb.cert" />
+        <property name="trustType" value="PEER_TRUST" />
+        <property name="protocol" value="openid-connect-1.0" />
+        <property name="federationType" value="FEDERATE_IDENTITY" />
+        <property name="name" value="Realm B" />
+        <property name="description" value="Realm B description" />
+        <property name="parameters">
+            <util:map>
+                <entry key="client.id" value="consumer-id"/>
+                <entry key="client.secret" value="this-is-a-secret"/>
+                <entry key="token.endpoint" value="https://localhost:${idp.oidc.https.port}/idpoidc/services/token"/>
             </util:map>
         </property>
     </bean>
