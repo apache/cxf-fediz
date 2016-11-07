@@ -88,11 +88,13 @@
         <output name="whr" />
         <output name="idpToken" />
         <output name="saml_authn_request" />
+        <output name="RelayState" />
 
         <transition on="requestRpToken" to="requestRpToken">
             <set name="flowScope.home_realm" value="currentEvent.attributes.whr" />
             <set name="flowScope.idpToken" value="currentEvent.attributes.idpToken" />
             <set name="flowScope.saml_authn_request" value="currentEvent.attributes.saml_authn_request" />
+            <set name="flowScope.RelayState" value="currentEvent.attributes.RelayState" />
         </transition>
         <transition on="viewBadRequest" to="viewBadRequest" />
         <transition on="scInternalServerError" to="scInternalServerError" />

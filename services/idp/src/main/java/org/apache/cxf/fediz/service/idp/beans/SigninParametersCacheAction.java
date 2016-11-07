@@ -70,6 +70,11 @@ public class SigninParametersCacheAction {
         if (value != null) {
             signinParams.put(FederationConstants.PARAM_CONTEXT, value);
         }
+        // TODO
+        value = WebUtils.getAttributeFromFlowScope(context, "RelayState");
+        if (value != null) {
+            signinParams.put("RelayState", value);
+        }
         value = WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
         if (value != null) {
             signinParams.put(IdpConstants.SAML_AUTHN_REQUEST, value);
@@ -121,7 +126,13 @@ public class SigninParametersCacheAction {
                     (SAMLAuthnRequest)signinParams.get(IdpConstants.SAML_AUTHN_REQUEST);
                 if (authnRequest != null) {
                     WebUtils.putAttributeInFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST, authnRequest);
-                } 
+                }
+                
+                // TODO
+                value = (String)signinParams.get("RelayState");
+                if (value != null) {
+                    WebUtils.putAttributeInFlowScope(context, "RelayState", value);
+                }
                 
                 LOG.debug("SignIn parameters restored: {}", signinParams.toString());
                 WebUtils.removeAttributeFromFlowScope(context, FederationConstants.PARAM_CONTEXT);

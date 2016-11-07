@@ -65,6 +65,7 @@
         <output name="wtrealm" value="flowScope.wtrealm" />
         <output name="idpToken" value="flowScope.idpToken" />
         <output name="saml_authn_request" value="flowScope.saml_authn_request" />
+        <output name="RelayState" value="flowScope.RelayState" />
     </end-state>
 
     <!-- abnormal exit point : Http 400 Bad Request -->

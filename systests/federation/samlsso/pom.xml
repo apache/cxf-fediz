@@ -20,14 +20,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.apache.cxf.fediz</groupId>
-        <artifactId>fediz-systests</artifactId>
+        <groupId>org.apache.cxf.fediz.systests</groupId>
+        <artifactId>fediz-systests-federation</artifactId>
         <version>1.3.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>org.apache.cxf.fediz.systests.federation</groupId>
-    <artifactId>fediz-systests-federation-temp</artifactId>
-    <name>Apache Fediz Federation Systests Tomcat 7 WS-Federation temp</name>
+    <artifactId>fediz-systests-federation-samlsso</artifactId>
+    <name>Apache Fediz Federation Systests Tomcat 7 SAML SSO</name>
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -95,15 +95,24 @@
             <version>${hsqldb.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-rs-security-sso-saml</artifactId>
-            <version>${cxf.version}</version>
-            <scope>test</scope>
-        </dependency>
-
     </dependencies>
     <build>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/fediz_config*.xml</include>
+                </includes>
+            </testResource>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>**/fediz_config*.xml</exclude>
+                </excludes>
+            </testResource>
+        </testResources>
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -119,6 +128,7 @@
                             <portNames>
                                 <portName>idp.https.port</portName>
                                 <portName>idp.realmb.https.port</portName>
+                                <portName>idp.oidc.https.port</portName>
                                 <portName>rp.https.port</portName>
                             </portNames>
                         </configuration>
@@ -154,12 +164,12 @@
                                     <outputDirectory>target/tomcat/idp/webapps/fediz-idp-sts</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
-                                    <groupId>org.apache.cxf.fediz.systests.webapps</groupId>
-                                    <artifactId>fediz-systests-webapps-simple</artifactId>
+                                    <groupId>org.apache.cxf.fediz.systests.federation</groupId>
+                                    <artifactId>fediz-systests-federation-samlWebapp</artifactId>
                                     <version>${project.version}</version>
                                     <type>war</type>
                                     <overWrite>true</overWrite>
-                                    <outputDirectory>target/tomcat/rp/webapps/simpleWebapp</outputDirectory>
+                                    <outputDirectory>target/tomcat/rp/webapps/samlssoWebapp</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz</groupId>
@@ -176,6 +186,14 @@
                                     <type>war</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>target/tomcat/idprealmb/webapps/fediz-idp-sts-realmb</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.cxf.fediz.systests.federation</groupId>
+                                    <artifactId>fediz-systests-federation-oidcIdpWebapp</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>war</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target/tomcat/idpoidc/webapps/idpoidc</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz.systests</groupId>
@@ -213,7 +231,6 @@
                                     <directory>${basedir}/src/test/resources/realma</directory>
                                     <includes>
                                         <include>entities-realma.xml</include>
-                                        <include>realm.properties</include>
                                     </includes>
                                     <filtering>true</filtering>
                                 </resource>
@@ -261,6 +278,44 @@
                             </resources>              
                         </configuration>            
                     </execution>
+                    <execution>
+                        <id>copy-entities-to-oidc-idp</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/tomcat/idpoidc/webapps/idpoidc/WEB-INF</outputDirectory>
+                            <resources>          
+                                <resource>
+                                    <directory>${basedir}/src/test/resources</directory>
+                                    <includes>
+                                        <include>cxf-service.xml</include>
+                                    </includes>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>              
+                        </configuration>            
+                    </execution>
+                    <execution>
+                        <id>copy-entities-to-samlsso-webapp</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/tomcat/rp/webapps/samlssoWebapp/WEB-INF</outputDirectory>
+                            <resources>          
+                                <resource>
+                                    <directory>${basedir}/src/test/resources/rp</directory>
+                                    <includes>
+                                        <include>cxf-service.xml</include>
+                                    </includes>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>              
+                        </configuration>            
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -279,13 +334,15 @@
                                 <wt.headless>true</wt.headless>
                                 <idp.https.port>${idp.https.port}</idp.https.port>
                                 <idp.realmb.https.port>${idp.realmb.https.port}</idp.realmb.https.port>
+                                <idp.samlsso.https.port>${idp.samlsso.https.port}</idp.samlsso.https.port>
+                                <idp.oidc.https.port>${idp.oidc.https.port}</idp.oidc.https.port>
                                 <rp.https.port>${rp.https.port}</rp.https.port>
                             </systemPropertyVariables>
                             <includes>
-                                <include>**/idp/**</include>
+                                <include>**/integrationtests/**</include>
                             </includes>
-                            <argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=256m </argLine>
-                            <!--argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=256m -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y</argLine-->
+                            <argLine>-Xms512m -Xmx1024m
+                                -XX:MaxPermSize=256m</argLine>
                         </configuration>
                     </execution>
                     <execution>
@@ -303,7 +360,7 @@
                 <inherited>true</inherited>
                 <configuration>
                     <excludes>
-                        <exclude>**/idp/**</exclude>
+                        <exclude>**/integrationtests/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>
