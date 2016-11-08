@@ -61,7 +61,7 @@
         <property name="defaultObject" ref="localDataSource" />
     </bean>
 
-    <bean id="localDataSource" class="org.apache.commons.dbcp.BasicDataSource"
+    <bean id="localDataSource" class="org.apache.commons.dbcp2.BasicDataSource"
         destroy-method="close">
         <property name="driverClassName" value="${jpa.driverClassName}" />
         <property name="url" value="${jpa.url}" />
