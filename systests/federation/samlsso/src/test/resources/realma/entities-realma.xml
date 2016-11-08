@@ -26,6 +26,9 @@
         http://www.springframework.org/schema/util
         http://www.springframework.org/schema/util/spring-util-2.0.xsd">
 
+    <bean id="homeRealmParser" class="org.apache.cxf.fediz.integrationtests.HomeRealmParser">
+    </bean>
+
     <bean id="idp-realmA" class="org.apache.cxf.fediz.service.idp.service.jpa.IdpEntity">
         <property name="realm" value="urn:org:apache:cxf:fediz:idp:realm-A" />
         <property name="uri" value="realma" />
@@ -78,6 +81,7 @@
                 <ref bean="claim_email" />
             </util:list>
         </property>
+        <property name="hrds" value="'#{ homeRealmParser.realm }'" />
     </bean>
 
     <bean id="trusted-idp-realmB"

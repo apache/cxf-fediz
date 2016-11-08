@@ -25,10 +25,19 @@ import java.io.IOException;
 
 import javax.servlet.ServletException;
 
+import com.gargoylesoftware.htmlunit.CookieManager;
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
+import com.gargoylesoftware.htmlunit.xml.XmlPage;
+
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -200,42 +209,23 @@ public class SAMLSSOTest {
     }
     
     @org.junit.Test
-    @org.junit.Ignore
     public void testWSFederation() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/wsfed/app1/services/25";
-        System.out.println(url);
-        Thread.sleep(60 * 2 * 1000);
+        //System.out.println(url);
+        //Thread.sleep(60 * 2 * 1000);
         
-        /*
         String user = "ALICE";  // realm b credentials
         String password = "ECILA";
         
         final String bodyTextContent = 
-            login(url, user, password, getIdpRealmbHttpsPort(), idpHttpsPort);
+            login(url, user, password, getIdpRealmbHttpsPort(), getIdpHttpsPort());
         
-        Assert.assertTrue("Principal not alice",
-                          bodyTextContent.contains("userPrincipal=alice"));
-        Assert.assertTrue("User " + user + " does not have role Admin",
-                          bodyTextContent.contains("role:Admin=false"));
-        Assert.assertTrue("User " + user + " does not have role Manager",
-                          bodyTextContent.contains("role:Manager=false"));
-        Assert.assertTrue("User " + user + " must have role User",
-                          bodyTextContent.contains("role:User=true"));
-
-        String claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
-                          bodyTextContent.contains(claim + "=Alice"));
-        claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
-                          bodyTextContent.contains(claim + "=Smith"));
-        claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
-                          bodyTextContent.contains(claim + "=alice@realma.org"));
-        */
+        Assert.assertTrue(bodyTextContent.contains("This is the double number response"));
+        
     }
-    /*
+
     private static String login(String url, String user, String password, 
-                                           String idpPort, String rpIdpPort) throws IOException {
+                                String idpPort, String rpIdpPort) throws IOException {
         //
         // Access the RP + get redirected to the IdP for "realm a". Then get redirected to the IdP for
         // "realm b".
@@ -249,56 +239,27 @@ public class SAMLSSOTest {
             new UsernamePasswordCredentials(user, password));
 
         webClient.getOptions().setJavaScriptEnabled(false);
-        final HtmlPage idpPage = webClient.getPage(url);
-        webClient.getOptions().setJavaScriptEnabled(true);
+        HtmlPage idpPage = webClient.getPage(url);
+        
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
-        
-        // For some reason, redirecting back to the IdP for "realm a" is not working with htmlunit. So extract
-        // the parameters manually from the form, and access the IdP for "realm a" with them
-        DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
 
-        String wresult = null;
-        String wa = "wsignin1.0";
-        String wctx = null;
-        String wtrealm = null;
-        for (DomElement result : results) {
-            if ("wresult".equals(result.getAttributeNS(null, "name"))) {
-                wresult = result.getAttributeNS(null, "value");
-            } else if ("wctx".equals(result.getAttributeNS(null, "name"))) {
-                wctx = result.getAttributeNS(null, "value");
-            } else if ("wtrealm".equals(result.getAttributeNS(null, "name"))) {
-                wtrealm = result.getAttributeNS(null, "value");
-            }
-        }
-        Assert.assertTrue(wctx != null && wresult != null && wtrealm != null);
+        // Now redirect back to the IdP for Realm A
+        HtmlForm form = idpPage.getFormByName("signinresponseform");
+
+        HtmlSubmitInput button = form.getInputByName("_eventId_submit");
+
+        HtmlPage idpPageRealmA = button.click();
+        
+        Assert.assertTrue("SAML IDP Response Form".equals(idpPage.getTitleText())
+                          || "IDP SignIn Response Form".equals(idpPage.getTitleText()));
+        form = idpPageRealmA.getFormByName("samlsigninresponseform");
+
+        // Now redirect back to the SAML SSO web app
+        button = form.getInputByName("_eventId_submit");
+
+        XmlPage rpPage = button.click();
+        
         webClient.close();
-
-        // Invoke on the IdP for "realm a"
-        final WebClient webClient2 = new WebClient();
-        webClient2.setCookieManager(cookieManager);
-        webClient2.getOptions().setUseInsecureSSL(true);
-        
-        String url2 = "https://localhost:" + rpIdpPort + "/fediz-idp/federation?";
-        url2 += "wctx=" + wctx + "&";
-        url2 += "wa=" + wa + "&";
-        url2 += "wtrealm=" + URLEncoder.encode(wtrealm, "UTF8") + "&";
-        url2 += "wresult=" + URLEncoder.encode(wresult, "UTF8") + "&";
-        
-        webClient2.getOptions().setJavaScriptEnabled(false);
-        final HtmlPage idpPage2 = webClient2.getPage(url2);
-        webClient2.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage2.getTitleText());
-        
-        // Now redirect back to the RP
-        final HtmlForm form2 = idpPage2.getFormByName("signinresponseform");
-        
-        final HtmlSubmitInput button2 = form2.getInputByName("_eventId_submit");
-
-        final HtmlPage rpPage = button2.click();
-        Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
-
-        webClient2.close();
-        return rpPage.getBody().getTextContent();
+        return rpPage.asXml();
     }
-    */
 }
