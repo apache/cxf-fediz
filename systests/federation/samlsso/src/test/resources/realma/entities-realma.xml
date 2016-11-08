@@ -26,9 +26,6 @@
         http://www.springframework.org/schema/util
         http://www.springframework.org/schema/util/spring-util-2.0.xsd">
 
-    <bean id="homeRealmParser" class="org.apache.cxf.fediz.integrationtests.HomeRealmParser">
-    </bean>
-
     <bean id="idp-realmA" class="org.apache.cxf.fediz.service.idp.service.jpa.IdpEntity">
         <property name="realm" value="urn:org:apache:cxf:fediz:idp:realm-A" />
         <property name="uri" value="realma" />
@@ -81,9 +78,10 @@
                 <ref bean="claim_email" />
             </util:list>
         </property>
-        <property name="hrds" value="'#{ homeRealmParser.realm }'" />
+        <property name="hrds" value="{'urn:org:apache:cxf:fediz:fedizhelloworld:realm-B':'urn:org:apache:cxf:fediz:idp:realm-B'}
+                                     .get(getFlowScope().get('saml_authn_request').issuer)" />
     </bean>
-
+    
     <bean id="trusted-idp-realmB"
         class="org.apache.cxf.fediz.service.idp.service.jpa.TrustedIdpEntity">
         <property name="realm" value="urn:org:apache:cxf:fediz:idp:realm-B" />
@@ -156,7 +154,7 @@
     </bean>
 
     <bean id="srv-fedizhelloworld" class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationEntity">
-        <property name="realm" value="urn:org:apache:cxf:fediz:fedizhelloworld" />
+        <property name="realm" value="urn:org:apache:cxf:fediz:fedizhelloworld:realm-B" />
         <property name="protocol" value="http://docs.oasis-open.org/wsfed/federation/200706" />
         <property name="serviceDisplayName" value="Fedizhelloworld" />
         <property name="serviceDescription" value="Web Application to illustrate WS-Federation" />
