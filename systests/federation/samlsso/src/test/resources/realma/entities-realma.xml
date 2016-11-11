@@ -77,7 +77,7 @@
                 <ref bean="claim_email" />
             </util:list>
         </property>
-        <property name="hrds" value="{'urn:org:apache:cxf:fediz:fedizhelloworld:realm-B':'urn:org:apache:cxf:fediz:idp:realm-B'}
+        <property name="hrds" value="T(org.apache.cxf.fediz.integrationtests.RealmMapper).realms()
                                      .get(getFlowScope().get('saml_authn_request').issuer)" />
     </bean>
     
