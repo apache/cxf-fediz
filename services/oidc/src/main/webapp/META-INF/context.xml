@@ -18,5 +18,5 @@
   under the License.
 -->
 <Context>
-     <Valve className="org.apache.cxf.fediz.tomcat7.FederationAuthenticator" configFile="conf/fediz_config.xml" />
+     <Valve className="org.apache.cxf.fediz.tomcat8.FederationAuthenticator" configFile="conf/fediz_config.xml" />
 </Context>
