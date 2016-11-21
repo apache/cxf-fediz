@@ -28,11 +28,11 @@
         http://cxf.apache.org/core
         http://cxf.apache.org/schemas/core.xsd
         http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
         http://cxf.apache.org/jaxws
         http://cxf.apache.org/schemas/jaxws.xsd
         http://www.springframework.org/schema/util
-        http://www.springframework.org/schema/util/spring-util.xsd">
+        http://www.springframework.org/schema/util/spring-util-4.3.xsd">
     
     <import resource="classpath:META-INF/cxf/cxf.xml"/>   
     <import resource="cxf-service.xml"/>  
