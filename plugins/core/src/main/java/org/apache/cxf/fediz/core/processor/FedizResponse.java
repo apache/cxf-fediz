@@ -37,7 +37,7 @@ public class FedizResponse implements Serializable {
     private List<String> roles;
     private String issuer;
     private List<Claim> claims;
-    private Element token;
+    private transient Element token;
     private String uniqueTokenId;
 
     /**
@@ -58,8 +58,12 @@ public class FedizResponse implements Serializable {
         this.roles = roles;
         this.claims = claims;
         this.audience = audience;
-        this.tokenCreated = created;
-        this.tokenExpires = expires;
+        if (created != null) {
+            this.tokenCreated = new Date(created.getTime());
+        }
+        if (expires != null) {
+            this.tokenExpires = new Date(expires.getTime());
+        }
         this.token = token;
         this.uniqueTokenId = uniqueTokenId;
     }
@@ -95,11 +99,17 @@ public class FedizResponse implements Serializable {
     }
 
     public Date getTokenCreated() {
-        return tokenCreated;
+        if (tokenCreated != null) {
+            return new Date(tokenCreated.getTime());
+        }
+        return null;
     }
 
     public Date getTokenExpires() {
-        return tokenExpires;
+        if (tokenExpires != null) {
+            return new Date(tokenExpires.getTime());
+        }
+        return null;
     }
 
     public Element getToken() {

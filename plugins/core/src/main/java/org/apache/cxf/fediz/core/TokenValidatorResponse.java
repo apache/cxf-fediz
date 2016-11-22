@@ -66,21 +66,35 @@ public class TokenValidatorResponse {
     }
 
     public Date getExpires() {
-        return expires;
+        if (expires != null) {
+            return new Date(expires.getTime());
+        }
+        return null;
     }
 
     public void setExpires(Date expires) {
-        this.expires = expires;
+        if (expires != null) {
+            this.expires = new Date(expires.getTime());
+        } else {
+            this.expires = null;
+        }
     }
 
 
     public Date getCreated() {
-        return created;
+        if (created != null) {
+            return new Date(created.getTime());
+        }
+        return null;
     }
 
 
     public void setCreated(Date created) {
-        this.created = created;
+        if (created != null) {
+            this.created = new Date(created.getTime());
+        } else {
+            this.created = null;
+        }
     }
 
 

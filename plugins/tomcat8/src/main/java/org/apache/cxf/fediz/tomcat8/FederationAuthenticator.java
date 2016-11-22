@@ -20,12 +20,12 @@
 package org.apache.cxf.fediz.tomcat8;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -115,7 +115,7 @@ public class FederationAuthenticator extends FormAuthenticator {
             configurator = new FedizConfigurator();
             configurator.loadConfig(f);
             LOG.debug("Fediz configuration read from " + f.getAbsolutePath());
-        } catch (JAXBException | FileNotFoundException e) {
+        } catch (JAXBException | IOException e) {
             throw new LifecycleException("Failed to load Fediz configuration", e);
         }
         super.startInternal();
@@ -139,7 +139,7 @@ public class FederationAuthenticator extends FormAuthenticator {
         super.stopInternal();
     }
 
-    protected FedizContext getContextConfiguration(String contextName) {
+    protected synchronized FedizContext getContextConfiguration(String contextName) {
         if (configurator == null) {
             throw new IllegalStateException("No Fediz configuration available");
         }
@@ -289,8 +289,8 @@ public class FederationAuthenticator extends FormAuthenticator {
             if (redirectURL != null) {
                 Map<String, String> headers = redirectionResponse.getHeaders();
                 if (!headers.isEmpty()) {
-                    for (String headerName : headers.keySet()) {
-                        response.addHeader(headerName, headers.get(headerName));
+                    for (Entry<String, String> entry : headers.entrySet()) {
+                        response.addHeader(entry.getKey(), entry.getValue());
                     }
                 }
 
@@ -333,7 +333,9 @@ public class FederationAuthenticator extends FormAuthenticator {
     protected void saveRequest(Request request, String contextId) throws IOException {
         String uri = request.getDecodedRequestURI();
         Session session = request.getSessionInternal(true);
-        LOG.debug("Save request in session '{}'", session.getIdInternal());
+        if (session != null) {
+            LOG.debug("Save request in session '{}'", session.getIdInternal());
+        }
         if (session != null && uri != null) {
             SavedRequest saved;
             synchronized (session) {
