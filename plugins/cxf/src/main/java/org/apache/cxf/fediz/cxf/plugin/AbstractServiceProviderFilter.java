@@ -243,7 +243,7 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
         return getContextConfiguration(contextName);
     }
     
-    protected FedizContext getContextConfiguration(String contextName) {
+    protected synchronized FedizContext getContextConfiguration(String contextName) {
         if (configurator == null) {
             throw new IllegalStateException("No Fediz configuration available");
         }

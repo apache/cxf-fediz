@@ -78,7 +78,18 @@ public abstract class Protocol {
     }
 
     public boolean equals(Object obj) {
-        return protocolType.equals(obj);
+        if (!(obj instanceof Protocol)) {
+            return false;
+        }
+        
+        Protocol that = (Protocol)obj;
+        if (protocolType != null && !protocolType.equals(that.getProtocolType())) {
+            return false;
+        } else if (protocolType == null && that.getProtocolType() != null) {
+            return false;
+        }
+        
+        return true;
     }
 
     public String toString() {
@@ -168,7 +179,7 @@ public abstract class Protocol {
             return null;
         }
         if (cbt.getType() == null || cbt.getType().equals(ArgumentType.STRING)) {
-            return new String(cbt.getValue());
+            return cbt.getValue();
         } else if (cbt.getType().equals(ArgumentType.CLASS)) {
             try {
                 if (getClassloader() == null) {

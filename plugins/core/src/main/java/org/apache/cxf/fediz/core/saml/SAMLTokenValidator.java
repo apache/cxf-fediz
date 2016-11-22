@@ -195,8 +195,10 @@ public class SAMLTokenValidator implements TokenValidator {
                     .equals(SAMLVersion.VERSION_11)) {
                 claims = parseClaimsInAssertion(assertion.getSaml1());
                 audience = getAudienceRestriction(assertion.getSaml1());
+            } else {
+                claims = Collections.emptyList();
             }
-
+            
             List<String> roles = parseRoles(config, claims);
             
             SAMLTokenPrincipal p = new SAMLTokenPrincipalImpl(assertion);

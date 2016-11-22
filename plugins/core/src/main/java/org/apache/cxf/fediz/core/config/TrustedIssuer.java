@@ -98,12 +98,26 @@ public class TrustedIssuer {
     }
     
     public boolean equals(Object obj) {
-        return trustedIssuerType.equals(obj);
+        if (!(obj instanceof TrustedIssuer)) {
+            return false;
+        }
+        
+        TrustedIssuer that = (TrustedIssuer)obj;
+        if (trustedIssuerType != null && !trustedIssuerType.equals(that.getTrustedIssuerType())) {
+            return false;
+        } else if (trustedIssuerType == null && that.getTrustedIssuerType() != null) {
+            return false;
+        }
+        
+        return true;
     }
 
     public String toString() {
         return trustedIssuerType.toString();
     }
     
+    public TrustedIssuerType getTrustedIssuerType() {
+        return trustedIssuerType;
+    }
 
 }

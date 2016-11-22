@@ -21,6 +21,7 @@ package org.apache.cxf.fediz.jetty;
 
 
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.Date;
 
 import javax.security.auth.Subject;
@@ -40,7 +41,9 @@ public class FederationUserIdentity implements UserIdentity {
                                   String[] roles, FedizResponse fedResponse) {
         this.subject = subject;
         this.principal = principal;
-        this.roles = roles;
+        if (roles != null) {
+            this.roles = Arrays.copyOf(roles, roles.length);
+        }
         this.fedResponse = fedResponse;
     }
 

@@ -20,7 +20,6 @@
 package org.apache.cxf.fediz.jetty;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -28,6 +27,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
@@ -125,7 +125,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
                     e);
             //throw new ServerAuthException("Failed to load Fediz configuration",
             //                              e);
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             //[TODO] use other exception
             throw new RuntimeException("Failed to load Fediz configuration",
                     e);
@@ -503,8 +503,8 @@ public class FederationAuthenticator extends LoginAuthenticator {
             if (redirectURL != null) {
                 Map<String, String> headers = redirectionResponse.getHeaders();
                 if (!headers.isEmpty()) {
-                    for (String headerName : headers.keySet()) {
-                        response.addHeader(headerName, headers.get(headerName));
+                    for (Entry<String, String> entry : headers.entrySet()) {
+                        response.addHeader(entry.getKey(), entry.getValue());
                     }
                 }
                 
@@ -539,8 +539,8 @@ public class FederationAuthenticator extends LoginAuthenticator {
             if (redirectURL != null) {
                 Map<String, String> headers = redirectionResponse.getHeaders();
                 if (!headers.isEmpty()) {
-                    for (String headerName : headers.keySet()) {
-                        response.addHeader(headerName, headers.get(headerName));
+                    for (Entry<String, String> entry : headers.entrySet()) {
+                        response.addHeader(entry.getKey(), entry.getValue());
                     }
                 }
                 

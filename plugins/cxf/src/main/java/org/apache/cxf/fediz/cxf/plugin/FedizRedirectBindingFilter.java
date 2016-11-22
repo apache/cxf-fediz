@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import javax.servlet.ServletOutputStream;
@@ -277,8 +278,8 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter {
                         ResponseBuilder response = Response.seeOther(new URI(redirectURL));
                         Map<String, String> headers = redirectionResponse.getHeaders();
                         if (!headers.isEmpty()) {
-                            for (String headerName : headers.keySet()) {
-                                response.header(headerName, headers.get(headerName));
+                            for (Entry<String, String> entry : headers.entrySet()) {
+                                response.header(entry.getKey(), entry.getValue());
                             }
                         }
     

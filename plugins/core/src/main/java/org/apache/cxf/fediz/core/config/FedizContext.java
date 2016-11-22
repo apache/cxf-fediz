@@ -131,11 +131,7 @@ public class FedizContext implements Closeable {
     }
 
     public BigInteger getMaximumClockSkew() {
-        if (config.getMaximumClockSkew() == null) {
-            return BigInteger.valueOf(5L);
-        } else {
-            return config.getMaximumClockSkew();
-        }
+        return config.getMaximumClockSkew();
     }
     
     public void setMaximumClockSkew(BigInteger maximumClockSkew) {
@@ -293,7 +289,9 @@ public class FedizContext implements Closeable {
                 // WSS4J will re-load the resource anyway
                 trustStoreFile = ks.getResource();
             }
-        } else {
+        }
+        
+        if (trustStoreFile == null) {
             throw new IllegalStateException("No certificate store configured");
         }
         File f = new File(trustStoreFile);
@@ -331,7 +329,9 @@ public class FedizContext implements Closeable {
                 // WSS4J will re-load the resource anyway
                 keyStoreFile = ks.getResource();
             }
-        } else {
+        }
+        
+        if (keyStoreFile == null) {
             throw new IllegalStateException("No certificate store configured");
         }
         File f = new File(keyStoreFile);

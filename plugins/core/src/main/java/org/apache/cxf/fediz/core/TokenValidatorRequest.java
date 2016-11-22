@@ -20,6 +20,7 @@
 package org.apache.cxf.fediz.core;
 
 import java.security.cert.Certificate;
+import java.util.Arrays;
 
 import org.w3c.dom.Element;
 
@@ -30,7 +31,11 @@ public class TokenValidatorRequest {
 
     public TokenValidatorRequest(Element token, Certificate[] certs) {
         this.token = token;
-        this.certs = certs;
+        if (certs != null) {
+            this.certs = Arrays.copyOf(certs, certs.length);
+        } else {
+            this.certs = null;
+        }
     }
 
     public Element getToken() {
@@ -38,7 +43,10 @@ public class TokenValidatorRequest {
     }
 
     public Certificate[] getCerts() {
-        return certs;
+        if (certs != null) {
+            return Arrays.copyOf(certs, certs.length);
+        }
+        return null;
     }
 
 

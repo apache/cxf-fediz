@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import javax.security.auth.callback.Callback;
@@ -316,22 +317,36 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         }
     }
 
-    public class LifeTime {
+    public static class LifeTime {
 
-        private Date created;
-        private Date expires;
+        private final Date created;
+        private final Date expires;
 
         public LifeTime(Date created, Date expires) {
-            this.created = created;
-            this.expires = expires;
+            if (created != null) {
+                this.created = new Date(created.getTime());
+            } else {
+                this.created = null;
+            }
+            if (expires != null) {
+                this.expires = new Date(expires.getTime());
+            } else {
+                this.expires = null;
+            }
         }
 
         public Date getCreated() {
-            return created;
+            if (created != null) {
+                return new Date(created.getTime());
+            }
+            return null;
         }
 
         public Date getExpires() {
-            return expires;
+            if (expires != null) {
+                return new Date(expires.getTime());
+            }
+            return null;
         }
 
     }
@@ -457,7 +472,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             redirectURL = redirectURL + "?" + sb.toString();
         } catch (Exception ex) {
             LOG.error("Failed to create SignInRequest", ex);
-            throw new ProcessingException("Failed to create SignInRequest");
+            throw new ProcessingException("Failed to create SignInRequest", ex);
         }
 
         RedirectionResponse response = new RedirectionResponse();
@@ -529,11 +544,11 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                 });
                 Map<String, String> signInQueryMap = callback.getSignInQueryParamMap();
                 StringBuilder sbQuery = new StringBuilder();
-                for (String key : signInQueryMap.keySet()) {
+                for (Entry<String, String> entry : signInQueryMap.entrySet()) {
                     if (sbQuery.length() > 0) {
                         sbQuery.append("&");
                     }
-                    sbQuery.append(key).append('=').append(URLEncoder.encode(signInQueryMap.get(key), "UTF-8"));
+                    sbQuery.append(entry.getKey()).append('=').append(URLEncoder.encode(entry.getValue(), "UTF-8"));
                 }
                 signInQuery = sbQuery.toString();
 

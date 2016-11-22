@@ -137,12 +137,12 @@ public class SigninHandler<T> implements RequestHandler<T> {
         if (fedizContext.getProtocol() instanceof FederationProtocol) {
             token = request.getParameter(FederationConstants.PARAM_RESULT);
             if (token == null) {
-                new RuntimeException("Missing required parameter 'wresult'");
+                throw new RuntimeException("Missing required parameter 'wresult'");
             }
         } else if (fedizContext.getProtocol() instanceof SAMLProtocol) {
             token = request.getParameter(SAMLSSOConstants.SAML_RESPONSE);
             if (token == null) {
-                new RuntimeException("Missing required parameter 'SAMLResponse'");
+                throw new RuntimeException("Missing required parameter 'SAMLResponse'");
             }
         }
         return token;

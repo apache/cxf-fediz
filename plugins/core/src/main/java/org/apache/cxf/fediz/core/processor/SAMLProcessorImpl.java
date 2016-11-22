@@ -201,6 +201,11 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             }
         }
         
+        if (validatorResponse == null) {
+            LOG.warn("No token validation response was available");
+            throw new ProcessingException(TYPE.BAD_REQUEST);
+        }
+        
         // Check whether token already used for signin
         Date expires = validatorResponse.getExpires();
         if (expires == null) {
