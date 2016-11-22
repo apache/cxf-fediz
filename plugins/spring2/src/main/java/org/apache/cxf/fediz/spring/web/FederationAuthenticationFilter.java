@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
@@ -153,8 +154,8 @@ public class FederationAuthenticationFilter extends AbstractProcessingFilter {
                 
                 Map<String, String> headers = redirectionResponse.getHeaders();
                 if (!headers.isEmpty()) {
-                    for (String headerName : headers.keySet()) {
-                        response.addHeader(headerName, headers.get(headerName));
+                    for (Entry<String, String> entry : headers.entrySet()) {
+                        response.addHeader(entry.getKey(), entry.getValue());
                     }
                 }
                 

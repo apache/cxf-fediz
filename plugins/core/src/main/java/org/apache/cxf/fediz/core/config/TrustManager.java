@@ -74,11 +74,18 @@ public class TrustManager {
     }
     
     public boolean equals(Object obj) {
-        if (trustManagerType == null) {
-            return super.equals(obj);
-        } else {
-            return trustManagerType.equals(obj);
+        if (!(obj instanceof TrustManager)) {
+            return false;
         }
+        
+        TrustManager that = (TrustManager)obj;
+        if (trustManagerType != null && !trustManagerType.equals(that.getTrustManagersType())) {
+            return false;
+        } else if (trustManagerType == null && that.getTrustManagersType() != null) {
+            return false;
+        }
+        
+        return true;
     }
 
     public String toString() {
@@ -89,5 +96,8 @@ public class TrustManager {
         }
     }
     
+    public TrustManagersType getTrustManagersType() {
+        return trustManagerType;
+    }
 
 }

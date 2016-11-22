@@ -19,6 +19,8 @@
 
 package org.apache.cxf.fediz.spring.preauth;
 
+import java.security.Principal;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.cxf.fediz.core.FedizPrincipal;
@@ -39,10 +41,10 @@ public class FederationPreAuthenticatedProcessingFilter extends AbstractPreAuthe
      * Return the J2EE user name.
      */
     protected Object getPreAuthenticatedPrincipal(HttpServletRequest httpRequest) {
-        Object principal = httpRequest.getUserPrincipal();
+        Principal principal = httpRequest.getUserPrincipal();
         if (logger.isDebugEnabled()) {
             logger.debug("PreAuthenticated J2EE principal: "
-                         + httpRequest.getUserPrincipal() == null ? null : httpRequest.getUserPrincipal().getName());
+                         + principal == null ? null : principal.getName());
         }
         return principal;
     }
@@ -53,7 +55,7 @@ public class FederationPreAuthenticatedProcessingFilter extends AbstractPreAuthe
      * value.
      */
     protected Object getPreAuthenticatedCredentials(HttpServletRequest httpRequest) {
-        Object principal = httpRequest.getUserPrincipal() == null ? null : httpRequest.getUserPrincipal();
+        Principal principal = httpRequest.getUserPrincipal() == null ? null : httpRequest.getUserPrincipal();
         if (principal instanceof FedizPrincipal) {
             Object obj = httpRequest.getSession(false).getAttribute(SECURITY_TOKEN_ATTR);
             if (obj != null)  {
@@ -63,7 +65,7 @@ public class FederationPreAuthenticatedProcessingFilter extends AbstractPreAuthe
                 throw new IllegalStateException("Session must contain Federation response");
             }
         } else {
-            logger.error("Principal must be instance of FedizPrincipal: " + principal.toString());
+            logger.error("Principal must be instance of FedizPrincipal: " + principal);
             throw new IllegalStateException("Principal must be instance of FedizPrincipal");
         }
         //return "N/A";

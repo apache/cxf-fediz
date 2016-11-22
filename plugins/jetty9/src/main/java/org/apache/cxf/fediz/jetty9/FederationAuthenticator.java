@@ -20,13 +20,13 @@
 package org.apache.cxf.fediz.jetty9;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
@@ -115,7 +115,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
             configurator = new FedizConfigurator();
             configurator.loadConfig(f);
             LOG.debug("Fediz configuration read from " + f.getAbsolutePath());
-        } catch (JAXBException | FileNotFoundException e) {
+        } catch (JAXBException | IOException e) {
             //[TODO] use other exception
             throw new RuntimeException("Failed to load Fediz configuration",
                     e);
@@ -357,7 +357,8 @@ public class FederationAuthenticator extends LoginAuthenticator {
                     }
                     session.setAttribute(J_URI, buf.toString());
                     
-                    if (MimeTypes.Type.FORM_ENCODED.equals(req.getContentType()) && HttpMethod.POST.equals(request.getMethod()))
+                    if (MimeTypes.Type.FORM_ENCODED.asString().equals(req.getContentType()) 
+                        && HttpMethod.POST.asString().equals(request.getMethod()))
                     {
                         Request base_request = (Request)req; 
                             //(req instanceof Request)?(Request)req:HttpConnection.getCurrentConnection().getRequest();
@@ -466,8 +467,8 @@ public class FederationAuthenticator extends LoginAuthenticator {
             if (redirectURL != null) {
                 Map<String, String> headers = redirectionResponse.getHeaders();
                 if (!headers.isEmpty()) {
-                    for (String headerName : headers.keySet()) {
-                        response.addHeader(headerName, headers.get(headerName));
+                    for (Entry<String, String> entry : headers.entrySet()) {
+                        response.addHeader(entry.getKey(), entry.getValue());
                     }
                 }
                 
@@ -502,8 +503,8 @@ public class FederationAuthenticator extends LoginAuthenticator {
             if (redirectURL != null) {
                 Map<String, String> headers = redirectionResponse.getHeaders();
                 if (!headers.isEmpty()) {
-                    for (String headerName : headers.keySet()) {
-                        response.addHeader(headerName, headers.get(headerName));
+                    for (Entry<String, String> entry : headers.entrySet()) {
+                        response.addHeader(entry.getKey(), entry.getValue());
                     }
                 }
                 

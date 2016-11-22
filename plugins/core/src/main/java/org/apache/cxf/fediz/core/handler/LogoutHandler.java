@@ -20,7 +20,9 @@ package org.apache.cxf.fediz.core.handler;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -90,7 +92,7 @@ public class LogoutHandler implements RequestHandler<Boolean> {
         if (wreply != null && !wreply.isEmpty()) {
             try {
                 LOG.debug("Redirecting user after logout to: {}", wreply);
-                response.sendRedirect(wreply);
+                response.sendRedirect(URLEncoder.encode(wreply, "UTF-8"));
             } catch (IOException e) {
                 LOG.error("Error redirecting user after logout: {}", e.getMessage());
             }
@@ -119,8 +121,8 @@ public class LogoutHandler implements RequestHandler<Boolean> {
             if (redirectURL != null) {
                 Map<String, String> headers = redirectionResponse.getHeaders();
                 if (!headers.isEmpty()) {
-                    for (String headerName : headers.keySet()) {
-                        response.addHeader(headerName, headers.get(headerName));
+                    for (Entry<String, String> entry : headers.entrySet()) {
+                        response.addHeader(entry.getKey(), entry.getValue());
                     }
                 }
                 response.sendRedirect(redirectURL);
