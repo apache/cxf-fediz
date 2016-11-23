@@ -67,7 +67,11 @@ public class KerberosServiceRequestToken extends AbstractAuthenticationToken {
                                        Collection<? extends GrantedAuthority> authorities, 
                                        byte[] token) {
         super(authorities);
-        this.token = token;
+        if (token != null) {
+            this.token = Arrays.copyOf(token, token.length);
+        } else {
+            this.token = null;
+        }
         this.principal = principal;
         super.setAuthenticated(true);
     }
@@ -81,7 +85,11 @@ public class KerberosServiceRequestToken extends AbstractAuthenticationToken {
      */
     public KerberosServiceRequestToken(byte[] token) {
         super(null);
-        this.token = token;
+        if (token != null) {
+            this.token = Arrays.copyOf(token, token.length);
+        } else {
+            this.token = null;
+        }
         this.principal = null;
     }
     
@@ -134,6 +142,9 @@ public class KerberosServiceRequestToken extends AbstractAuthenticationToken {
     /** Returns the Kerberos token
      */
     public byte[] getToken() {
-        return this.token;
+        if (token != null) {
+            return Arrays.copyOf(token, token.length);
+        }
+        return null;
     }
 }
