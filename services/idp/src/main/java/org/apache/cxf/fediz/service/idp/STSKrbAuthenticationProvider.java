@@ -132,6 +132,11 @@ public class STSKrbAuthenticationProvider extends STSAuthenticationProvider {
                     new SAMLTokenPrincipalImpl(new SamlAssertionWrapper(token.getToken()));
             }
             
+            if (kerberosPrincipal == null) {
+                LOG.info("Failed to authenticate user '" + kerberosRequestToken.getName());
+                return null;
+            }
+            
             List<GrantedAuthority> authorities = createAuthorities(token);
             
             KerberosServiceRequestToken ksrt = 

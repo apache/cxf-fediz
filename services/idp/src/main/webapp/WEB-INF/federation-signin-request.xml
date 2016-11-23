@@ -98,7 +98,7 @@
         </transition>
         <transition on-exception="java.lang.Throwable" to="viewBadRequest" />
     </action-state>
-
+    
     <decision-state id="checkWauthTypeSupported">
         <on-entry>
             <!-- Here, home realm is guaranteed to be THIS realm -->

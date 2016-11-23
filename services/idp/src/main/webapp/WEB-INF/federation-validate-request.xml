@@ -61,6 +61,12 @@
             test="requestParameters.SAMLResponse == null or requestParameters.SAMLResponse.length() == 0"
             then="viewBadRequest" else="signinResponse" />
     </decision-state>
+    
+    <action-state id="validateWReplyForSignout">
+        <evaluate expression="commonsURLValidator.isValid(flowRequestContext, flowScope.wreply)"/>
+        <transition on="yes" to="selectSignOutProcess" />
+        <transition on="no" to="viewBadRequest" />
+    </action-state>
 	
     <decision-state id="selectSignOutProcess">
         <on-entry>
