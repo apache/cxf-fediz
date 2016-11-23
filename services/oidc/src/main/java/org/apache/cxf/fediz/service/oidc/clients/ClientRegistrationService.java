@@ -447,7 +447,7 @@ public class ClientRegistrationService {
 
         @Override
         public int compare(ServerAccessToken t1, ServerAccessToken t2) {
-            return Long.valueOf(t1.getIssuedAt()).compareTo(t2.getIssuedAt());
+            return Long.compare(t1.getIssuedAt(), t2.getIssuedAt());
         }
         
     }
@@ -455,7 +455,7 @@ public class ClientRegistrationService {
 
         @Override
         public int compare(ServerAuthorizationCodeGrant g1, ServerAuthorizationCodeGrant g2) {
-            return Long.valueOf(g1.getIssuedAt()).compareTo(g2.getIssuedAt());
+            return Long.compare(g1.getIssuedAt(), g2.getIssuedAt());
         }
         
     }

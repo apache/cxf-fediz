@@ -95,7 +95,8 @@ public class FedizEntryPoint implements AuthenticationEntryPoint,
         if (loginUri == null) {
             LOG.warn("wauth value '" + wauth + "' not supported");
             response.sendError(
-                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "wauth value '" + wauth + "' not supported");
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The wauth value that was supplied is not supported");
+            return;
         }
         redirectUrl = new StringBuilder(extractFullContextPath(servletRequest))
             .append(loginUri).append("?").append(servletRequest.getQueryString()).toString();

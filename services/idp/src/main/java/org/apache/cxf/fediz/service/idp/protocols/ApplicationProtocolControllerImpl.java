@@ -40,7 +40,7 @@ public class ApplicationProtocolControllerImpl implements ProtocolController<App
     @Override
     public ApplicationProtocolHandler getProtocolHandler(String protocol) {
         for (ApplicationProtocolHandler protocolHandler : protocolHandlers) {
-            if (protocolHandler.equals(protocol)) {
+            if (protocolHandler.getProtocol() != null && protocolHandler.getProtocol().equals(protocol)) {
                 return protocolHandler;
             }
         }

@@ -376,7 +376,7 @@ public class STSClientAction {
         writer.writeAttribute("Dialect",
                 HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_05_IDENTITY);
 
-        if (realmClaims != null && realmClaims.size() > 0) {
+        if (realmClaims.size() > 0) {
             for (RequestClaim item : realmClaims) {
                 LOG.debug("  {}", item.getClaimType().toString());
                 writer.writeStartElement("ic", "ClaimType",

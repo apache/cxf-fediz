@@ -41,7 +41,7 @@
             <set name="flowScope.idpConfig" value="config.getIDP(fedizEntryPoint.getRealm())" />
         </on-entry>
         <if test="requestParameters.wa == 'wsignout1.0' or requestParameters.wa == 'wsignoutcleanup1.0'"
-            then="selectSignOutProcess" />
+            then="validateWReplyForSignout" />
         <if test="requestParameters.wa == 'wsignin1.0'" then="selectWsFedProcess" />
         <if test="requestParameters.SAMLResponse != null" then="selectSAMLProcess"
             else="selectOIDCAuthorizationCodeFlowProcess"
@@ -68,6 +68,12 @@
         <if test="requestParameters.state == null or requestParameters.state.length() == 0"
             then="viewBadRequest" else="signinResponse" />
     </decision-state>
+    
+    <action-state id="validateWReplyForSignout">
+        <evaluate expression="commonsURLValidator.isValid(flowRequestContext, flowScope.wreply)"/>
+        <transition on="yes" to="selectSignOutProcess" />
+        <transition on="no" to="viewBadRequest" />
+    </action-state>
 	
     <decision-state id="selectSignOutProcess">
         <if test="requestParameters.wa == 'wsignout1.0' and flowScope.idpConfig.rpSingleSignOutConfirmation == true

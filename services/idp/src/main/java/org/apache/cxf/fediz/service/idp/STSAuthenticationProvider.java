@@ -92,7 +92,7 @@ public abstract class STSAuthenticationProvider implements AuthenticationProvide
             
             List<Claim> claims = parseClaimsInAssertion(assertion.getSaml2());
             for (Claim c : claims) {
-                if (roleURI.equals(c.getClaimType())) {
+                if (c.getClaimType() != null && roleURI.equals(c.getClaimType().toString())) {
                     Object oValue = c.getValue();
                     if ((oValue instanceof List<?>) && !((List<?>)oValue).isEmpty()) {
                         List<?> values = (List<?>)oValue;

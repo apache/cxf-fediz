@@ -20,7 +20,6 @@ package org.apache.cxf.fediz.service.idp.beans;
 
 import java.util.regex.Matcher;
 
-import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.cxf.fediz.service.idp.domain.Application;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
@@ -53,15 +52,6 @@ public class PassiveRequestorValidator {
         
         // The endpointAddress address must match the passive endpoint requestor constraint 
         // (if it is specified)
-        // Also, it must be a valid URL + start with https
-        // Validate it first using commons-validator
-        UrlValidator urlValidator = new UrlValidator(UrlValidator.ALLOW_LOCAL_URLS
-                                                     + UrlValidator.ALLOW_ALL_SCHEMES);
-        if (!urlValidator.isValid(endpointAddress)) {
-            LOG.warn("The given endpointAddress parameter {} is not a valid URL", endpointAddress);
-            return false;
-        }
-
         if (serviceConfig.getCompiledPassiveRequestorEndpointConstraint() == null) {
             LOG.warn("No passive requestor endpoint constraint is configured for the application. "
                 + "This could lead to a malicious redirection attack");
