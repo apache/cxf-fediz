@@ -4,6 +4,7 @@
 <%@ page import="java.util.Locale"%>
 <%@ page import="java.util.TimeZone"%>
 <%@ page import="javax.servlet.http.HttpServletRequest" %>
+<%@ page import="org.owasp.esapi.ESAPI" %>
 
 <%
 	Client client = (Client)request.getAttribute("data");
@@ -72,7 +73,7 @@
 </head>
 <body>
 <div class="padded">
-<h1><%= client.getApplicationName() %></h1>
+<h1><%= ESAPI.encoder().encodeForHTML(client.getApplicationName()) %></h1>
 <br/>
 <table border="1" id=client>
     <%
