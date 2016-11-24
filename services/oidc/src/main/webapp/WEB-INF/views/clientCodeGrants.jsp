@@ -7,6 +7,7 @@
 <%@ page import="java.util.TimeZone"%>
 <%@ page import="javax.servlet.http.HttpServletRequest" %>
 <%@ page import="org.apache.cxf.fediz.service.oidc.clients.ClientCodeGrants" %>
+<%@ page import="org.owasp.esapi.ESAPI" %>
 
 <%
 	ClientCodeGrants tokens = (ClientCodeGrants)request.getAttribute("data");
@@ -41,7 +42,7 @@
 </head>
 <body>
 <div class="padded">
-<h1>Code Grants issued to <%= client.getApplicationName() + " (" + client.getClientId() + ")"%></h1>
+<h1>Code Grants issued to <%= ESAPI.encoder().encodeForHTML(client.getApplicationName()) + " (" + client.getClientId() + ")"%></h1>
 <br/>
 <table border="1">
     <tr><th>ID</th><th>Issue Date</th><th>Expiry Date</th><th>Action</th></tr> 
