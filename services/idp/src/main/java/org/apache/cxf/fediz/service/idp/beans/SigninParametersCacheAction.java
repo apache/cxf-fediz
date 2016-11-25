@@ -24,14 +24,12 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.apache.cxf.fediz.core.FederationConstants;
-import org.apache.cxf.fediz.core.SAMLSSOConstants;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.service.idp.IdpConstants;
 import org.apache.cxf.fediz.service.idp.domain.Application;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.samlsso.SAMLAuthnRequest;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
-import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -86,21 +84,12 @@ public class SigninParametersCacheAction {
         LOG.info("SignIn parameters cached and context set to [" + uuidKey + "].");
     }
     
-    public void restore(RequestContext context) {
+    public void restore(RequestContext context, String contextKey) {
         
-        String uuidKey = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_CONTEXT);
-        
-        if (uuidKey == null) {
-            uuidKey = (String)WebUtils.getAttributeFromFlowScope(context, SAMLSSOConstants.RELAY_STATE);
-        }
-        if (uuidKey == null) {
-            uuidKey = (String)WebUtils.getAttributeFromFlowScope(context, OAuthConstants.STATE);
-        }
-        
-        if (uuidKey != null) {
+        if (contextKey != null) {
             @SuppressWarnings("unchecked")
             Map<String, Object> signinParams =
-                (Map<String, Object>)WebUtils.getAttributeFromExternalContext(context, uuidKey);
+                (Map<String, Object>)WebUtils.getAttributeFromExternalContext(context, contextKey);
             
             if (signinParams != null) {
                 String value = (String)signinParams.get(FederationConstants.PARAM_REPLY);
@@ -111,14 +100,14 @@ public class SigninParametersCacheAction {
                 if (value != null) {
                     WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_TREALM, value);
                 }
+                // TODO - Remove
                 value = (String)signinParams.get(FederationConstants.PARAM_HOME_REALM);
                 if (value != null) {
                     WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_HOME_REALM, value);
+                    WebUtils.putAttributeInFlowScope(context, IdpConstants.HOME_REALM, value);
                 }
-                // TODO...
                 value = (String)signinParams.get(IdpConstants.HOME_REALM);
                 if (value != null) {
-                    WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_HOME_REALM, value);
                     WebUtils.putAttributeInFlowScope(context, IdpConstants.HOME_REALM, value);
                 }
                 
@@ -137,7 +126,7 @@ public class SigninParametersCacheAction {
                 LOG.debug("SignIn parameters restored: {}", signinParams.toString());
                 WebUtils.removeAttributeFromFlowScope(context, FederationConstants.PARAM_CONTEXT);
                 LOG.info("SignIn parameters restored and " + FederationConstants.PARAM_CONTEXT + "[" 
-                    + uuidKey + "] cleared.");
+                    + contextKey + "] cleared.");
                 
                 value = (String)signinParams.get(FederationConstants.PARAM_CONTEXT);
                 if (value != null) {

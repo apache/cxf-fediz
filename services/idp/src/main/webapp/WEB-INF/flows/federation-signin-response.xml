@@ -29,23 +29,22 @@ subflow to get a RP token from the STS.
         http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd">
 
     <input name="idpConfig" />
-    <input name="wctx" />
-    <input name="wauth" />
+    <input name="context_key" />
     <input name="wresult" />
     <input name="RelayState" />
     <input name="SAMLResponse" />
     <input name="state" />
     <input name="code" />
-    <input name="whr" />
+    <input name="home_realm" />
 
     <on-start>
         <!-- restore the original request parameters for the current context -->
-        <evaluate expression="signinParametersCacheAction.restore(flowRequestContext)" />
+        <evaluate expression="signinParametersCacheAction.restore(flowRequestContext, context_key)" />
     </on-start>
     
-    <!-- validate token issued by requestor IDP ('wresult') given its 'whr' -->
+    <!-- validate token issued by requestor IDP given its home realm -->
     <action-state id="validateToken">
-        <evaluate expression="trustedIdpProtocolAction.mapSignInResponse(flowRequestContext, whr)"
+        <evaluate expression="trustedIdpProtocolAction.mapSignInResponse(flowRequestContext, home_realm)"
             result="flowScope.idpToken" result-type="org.apache.cxf.ws.security.tokenstore.SecurityToken" />
         <transition to="checkCacheTrustedIdpToken" />
         <transition
@@ -55,16 +54,16 @@ subflow to get a RP token from the STS.
     </action-state>
     
     <action-state id="checkCacheTrustedIdpToken">
-        <evaluate expression="idpConfig.findTrustedIdp(flowScope.whr).cacheTokens" />
+        <evaluate expression="idpConfig.findTrustedIdp(flowScope.home_realm).cacheTokens" />
         <transition on="yes" to="requestRpToken">
-            <set name="externalContext.sessionMap[flowScope.whr]"
+            <set name="externalContext.sessionMap[flowScope.home_realm]"
                     value="flowScope.idpToken" />
         </transition>
         <transition on="no" to="requestRpToken" />
     </action-state>
 
     <end-state id="requestRpToken">
-        <output name="whr" value="flowScope.whr" />
+        <output name="home_realm" value="flowScope.home_realm" />
         <output name="wctx" value="flowScope.wctx" />
         <output name="wreply" value="flowScope.wreply" />
         <output name="wtrealm" value="flowScope.wtrealm" />

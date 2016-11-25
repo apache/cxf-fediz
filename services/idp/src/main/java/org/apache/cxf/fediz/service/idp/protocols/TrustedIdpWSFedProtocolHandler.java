@@ -115,8 +115,7 @@ public class TrustedIdpWSFedProtocolHandler extends AbstractTrustedIdpProtocolHa
     public SecurityToken mapSignInResponse(RequestContext context, Idp idp, TrustedIdp trustedIdp) {
 
         try {
-            String whr = (String) WebUtils.getAttributeFromFlowScope(context,
-                                                                     FederationConstants.PARAM_HOME_REALM);
+            String whr = (String) WebUtils.getAttributeFromFlowScope(context, IdpConstants.HOME_REALM);
     
             if (whr == null) {
                 LOG.warn("Home realm is null");

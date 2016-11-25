@@ -30,7 +30,7 @@ import javax.ws.rs.core.Response;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import org.apache.cxf.fediz.core.FederationConstants;
+import org.apache.cxf.fediz.service.idp.IdpConstants;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
@@ -118,8 +118,7 @@ public class TrustedIdpFacebookProtocolHandler extends AbstractTrustedIdpOAuth2P
             // user's claims
             String subjectName = getSubjectName(apiEndpoint, accessToken.getTokenKey(), trustedIdp);
             try {
-                String whr = (String) WebUtils.getAttributeFromFlowScope(context,
-                                                                         FederationConstants.PARAM_HOME_REALM);
+                String whr = (String) WebUtils.getAttributeFromFlowScope(context, IdpConstants.HOME_REALM);
                 if (whr == null) {
                     LOG.warn("Home realm is null");
                     throw new IllegalStateException("Home realm is null");

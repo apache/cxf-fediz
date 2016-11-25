@@ -42,7 +42,6 @@ import org.w3c.dom.Element;
 import org.apache.cxf.common.util.Base64Exception;
 import org.apache.cxf.common.util.Base64Utility;
 import org.apache.cxf.common.util.StringUtils;
-import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.util.CertsUtils;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.cxf.fediz.service.idp.IdpConstants;
@@ -200,8 +199,7 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
                 new SecurityToken(id, validatorResponse.getCreated(), validatorResponse.getSessionNotOnOrAfter());
 
             idpToken.setToken(validatorResponse.getAssertionElement());
-            String whr = (String) WebUtils.getAttributeFromFlowScope(context,
-                                                                     FederationConstants.PARAM_HOME_REALM);
+            String whr = (String) WebUtils.getAttributeFromFlowScope(context, IdpConstants.HOME_REALM);
             LOG.info("[IDP_TOKEN={}] created from [RP_TOKEN={}] issued by home realm [{}]",
                      id, validatorResponse.getResponseId(), whr);
             LOG.debug("Created date={}", validatorResponse.getCreated());

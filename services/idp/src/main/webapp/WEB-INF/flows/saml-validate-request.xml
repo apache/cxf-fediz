@@ -22,25 +22,44 @@
     xsi:schemaLocation="http://www.springframework.org/schema/webflow
                           http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd">
 
-    <!-- protocol check -->
-    <decision-state id="SAMLRequestCheck">
+    <decision-state id="evaluateProtocol">
         <on-entry>
-            <set name="flowScope.RelayState" value="requestParameters.RelayState" />
-            <set name="flowScope.SAMLRequest" value="requestParameters.SAMLRequest" />
-            <set name="flowScope.Signature" value="requestParameters.Signature" />
-            <set name="flowScope.wresult" value="requestParameters.wresult" />
-            <set name="flowScope.wctx" value="requestParameters.wctx" />
             <set name="flowScope.idpConfig" value="config.getIDP(fedizEntryPoint.getRealm())" />
         </on-entry>
+        <if test="requestParameters.wa == 'wsignin1.0'" then="selectWsFedProcess" />
+        <if test="requestParameters.SAMLRequest != null or requestParameters.SAMLResponse != null" 
+            then="selectSAMLProcess" else="viewBadRequest"
+        />
+    </decision-state>
+    
+    <decision-state id="selectWsFedProcess">
+        <on-entry>
+            <set name="flowScope.wresult" value="requestParameters.wresult" />
+            <set name="flowScope.wctx" value="requestParameters.wctx" />
+            <set name="flowScope.context_key" value="requestParameters.wctx" />
+        </on-entry>
+        <if test="requestParameters.wctx == null or requestParameters.wctx.isEmpty()"
+            then="viewBadRequest" />
+        <if test="requestParameters.wresult == null or requestParameters.wresult.isEmpty()"
+            then="viewBadRequest" />
+        <if test="requestParameters.wtrealm != null and !requestParameters.wtrealm.isEmpty()"
+            then="signinResponse" else="viewBadRequest" />
+    </decision-state>
+    
+    <decision-state id="selectSAMLProcess">
+        <on-entry>
+            <set name="flowScope.RelayState" value="requestParameters.RelayState" />
+            <set name="flowScope.context_key" value="requestParameters.RelayState" />
+            <set name="flowScope.SAMLResponse" value="requestParameters.SAMLResponse" />
+            <set name="flowScope.SAMLRequest" value="requestParameters.SAMLRequest" />
+            <set name="flowScope.Signature" value="requestParameters.Signature" />
+        </on-entry>
+        <if test="requestParameters.RelayState == null or requestParameters.RelayState.isEmpty()"
+            then="handleBadRequestError" />
         <if test="requestParameters.SAMLRequest != null and !requestParameters.SAMLRequest.isEmpty()"
             then="signinSAMLRequest" />
-        <if test="requestParameters.wresult != null and !requestParameters.wresult.isEmpty()"
-            then="signinResponse" />
-        <if test="requestParameters.SAMLResponse == null or requestParameters.SAMLResponse.length() == 0"
-            then="viewBadRequest" else="signinResponse" />
-        <!-- TODO Refactor this -->
-        <if test="requestParameters.RelayState == null or requestParameters.RelayState.length() == 0"
-            then="handleBadRequestError" />
+        <if test="requestParameters.SAMLResponse == null or requestParameters.SAMLResponse.isEmpty()"
+            then="handleBadRequestError" else="signinResponse" />
     </decision-state>
     
     <subflow-state id="signinSAMLRequest" subflow="signinSAMLRequest">
@@ -73,25 +92,24 @@
      <subflow-state id="signinResponse" subflow="signinResponse">
         <input name="idpConfig" value="flowScope.idpConfig" />
         <input name="wfresh" value="flowScope.wfresh" />
-        <input name="wctx" value="flowScope.wctx" />
-        <input name="wauth" value="flowScope.wauth" />
+        <input name="context_key" value="flowScope.context_key" />
         <input name="wresult" value="flowScope.wresult" />
         <input name="RelayState" value="flowScope.RelayState" />
         <input name="SAMLResponse" value="flowScope.SAMLResponse" />
         <input name="state" value="flowScope.state" />
         <input name="code" value="flowScope.code" />
-        <input name="whr" value="flowScope.whr" />
+        <input name="home_realm" value="flowScope.whr" />
 
         <output name="wtrealm" />
         <output name="wreply" />
         <output name="wctx" />
-        <output name="whr" />
+        <output name="home_realm" />
         <output name="idpToken" />
         <output name="saml_authn_request" />
         <output name="RelayState" />
 
         <transition on="requestRpToken" to="requestRpToken">
-            <set name="flowScope.home_realm" value="currentEvent.attributes.whr" />
+            <set name="flowScope.home_realm" value="currentEvent.attributes.home_realm" />
             <set name="flowScope.idpToken" value="currentEvent.attributes.idpToken" />
             <set name="flowScope.saml_authn_request" value="currentEvent.attributes.saml_authn_request" />
             <set name="flowScope.RelayState" value="currentEvent.attributes.RelayState" />
@@ -153,7 +171,7 @@
                       result="requestScope.samlAction"/>
         </on-entry>
         <!-- See if we managed to at least parse the request to get the response URL -->
-        <if test="requestScope.samlAction == null or requestScope.samlAction.length() == 0"
+        <if test="requestScope.samlAction == null or requestScope.samlAction.isEmpty()"
             then="viewBadRequestParsingError" else="viewBadRequest"/>
     </decision-state>
     
