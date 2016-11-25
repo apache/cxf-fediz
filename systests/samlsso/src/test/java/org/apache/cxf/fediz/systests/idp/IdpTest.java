@@ -926,9 +926,7 @@ public class IdpTest {
         webClient.close();
     }
     
-    // TODO - Re-enable
     @org.junit.Ignore
-    @org.junit.Test
     public void testMissingRelayState() throws Exception {
         OpenSAMLUtil.initSamlEngine();
         
