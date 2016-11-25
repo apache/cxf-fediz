@@ -17,6 +17,11 @@
   specific language governing permissions and limitations
   under the License.
 -->
+<!--
+Process a response from a trusted third party IdP. It starts by restoring the original request parameters for the current context. 
+It then converts the response from the third party IdP into a SecurityToken via the TrustedIdPProtocolAction. It then exits this 
+subflow to get a RP token from the STS.
+ -->
 <flow xmlns="http://www.springframework.org/schema/webflow"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="
@@ -34,7 +39,7 @@
     <input name="whr" />
 
     <on-start>
-        <!-- restore 'wreply','wtrealm','whr' for current 'wctx' -->
+        <!-- restore the original request parameters for the current context -->
         <evaluate expression="signinParametersCacheAction.restore(flowRequestContext)" />
     </on-start>
     

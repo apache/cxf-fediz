@@ -38,6 +38,11 @@ public final class IdpConstants {
      */
     public static final String SAML_AUTHN_REQUEST = "saml_authn_request";
     
+    /**
+     * A Context variable associated with the request (independent of protocol)
+     */
+    public static final String CONTEXT = "context";
+    
     
     
     private IdpConstants() {

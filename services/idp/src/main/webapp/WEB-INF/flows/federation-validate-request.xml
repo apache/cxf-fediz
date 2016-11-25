@@ -22,8 +22,19 @@
     xsi:schemaLocation="http://www.springframework.org/schema/webflow
                           http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd">
 
-    <!-- protocol check -->
-    <decision-state id="WSFederationRequestCheck">
+    <decision-state id="evaluateProtocol">
+        <on-entry>
+            <set name="flowScope.idpConfig" value="config.getIDP(fedizEntryPoint.getRealm())" />
+        </on-entry>
+        <if test="requestParameters.wa == 'wsignin1.0'" then="selectWsFedProcess" />
+        <if test="requestParameters.wa == 'wsignout1.0' or requestParameters.wa == 'wsignoutcleanup1.0'"
+            then="selectWsFedProcess" />
+        <if test="requestParameters.SAMLResponse != null" then="selectSAMLProcess"
+            else="selectOIDCAuthorizationCodeFlowProcess"
+        /> 
+    </decision-state>
+
+    <decision-state id="selectWsFedProcess">
         <on-entry>
             <set name="flowScope.wtrealm" value="requestParameters.wtrealm" />
             <set name="flowScope.wreply" value="requestParameters.wreply" />
@@ -32,23 +43,11 @@
             <set name="flowScope.whr" value="requestParameters.whr" />
             <set name="flowScope.wresult" value="requestParameters.wresult" />
             <set name="flowScope.wreq" value="requestParameters.wreq" />
-            <set name="flowScope.RelayState" value="requestParameters.RelayState" />
-            <set name="flowScope.SAMLResponse" value="requestParameters.SAMLResponse" />
-            <set name="flowScope.state" value="requestParameters.state" />
-            <set name="flowScope.code" value="requestParameters.code" />
             <evaluate expression="requestScope.getString('wauth','default')"
                 result="flowScope.wauth" />
-            <set name="flowScope.idpConfig" value="config.getIDP(fedizEntryPoint.getRealm())" />
         </on-entry>
         <if test="requestParameters.wa == 'wsignout1.0' or requestParameters.wa == 'wsignoutcleanup1.0'"
             then="validateWReplyForSignout" />
-        <if test="requestParameters.wa == 'wsignin1.0'" then="selectWsFedProcess" />
-        <if test="requestParameters.SAMLResponse != null" then="selectSAMLProcess"
-            else="selectOIDCAuthorizationCodeFlowProcess"
-        /> 
-    </decision-state>
-
-    <decision-state id="selectWsFedProcess">
         <if test="requestParameters.wresult != null and !requestParameters.wresult.isEmpty()"
             then="signinResponse" />
         <if test="requestParameters.wtrealm != null and !requestParameters.wtrealm.isEmpty()"
@@ -56,6 +55,10 @@
     </decision-state>
     
     <decision-state id="selectSAMLProcess">
+        <on-entry>
+            <set name="flowScope.RelayState" value="requestParameters.RelayState" />
+            <set name="flowScope.SAMLResponse" value="requestParameters.SAMLResponse" />
+        </on-entry>
         <if test="requestParameters.RelayState == null or requestParameters.RelayState.length() == 0"
             then="viewBadRequest" />
         <if test="requestParameters.SAMLResponse == null or requestParameters.SAMLResponse.length() == 0"
@@ -63,6 +66,10 @@
     </decision-state>
     
     <decision-state id="selectOIDCAuthorizationCodeFlowProcess">
+         <on-entry>
+            <set name="flowScope.state" value="requestParameters.state" />
+            <set name="flowScope.code" value="requestParameters.code" />
+        </on-entry>
         <if test="requestParameters.code == null or requestParameters.code.length() == 0"
             then="viewBadRequest" />
         <if test="requestParameters.state == null or requestParameters.state.length() == 0"
