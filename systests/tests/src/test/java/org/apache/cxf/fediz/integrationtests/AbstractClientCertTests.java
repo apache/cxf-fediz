@@ -109,7 +109,7 @@ public abstract class AbstractClientCertTests {
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
                           bodyTextContent.contains(claim + "=alice@realma.org"));
         
-        // webClient.close();
+        webClient.close();
     }
     
     @org.junit.Test
@@ -148,7 +148,7 @@ public abstract class AbstractClientCertTests {
         Assert.assertTrue(wctx != null && wtrealm != null);
         Assert.assertTrue(wresult != null 
             && wresult.contains("urn:oasis:names:tc:SAML:2.0:cm:holder-of-key"));
-        // webClient.close();
+        webClient.close();
         
         // Now invoke on the RP using the saved parameters above, but a different client cert!
         final WebClient webClient2 = new WebClient();
@@ -175,7 +175,7 @@ public abstract class AbstractClientCertTests {
                               || ex.getMessage().contains("403 Forbidden"));
         }
 
-        // webClient2.close();
+        webClient2.close();
     }
 
 }

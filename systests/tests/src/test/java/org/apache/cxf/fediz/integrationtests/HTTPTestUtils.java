@@ -61,7 +61,7 @@ public final class HTTPTestUtils {
         Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
                             || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
 
-        // webClient.close();
+        webClient.close();
         return rpPage.getBody().getTextContent();
     }
     
@@ -75,7 +75,7 @@ public final class HTTPTestUtils {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage rpPage = webClient.getPage(url);
 
-        // webClient.close();
+        webClient.close();
         return rpPage.getBody().getTextContent();
     }
     
@@ -100,7 +100,7 @@ public final class HTTPTestUtils {
         Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
                           || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
 
-        // webClient.close();
+        webClient.close();
         return rpPage.getBody().getTextContent();
     }
     
@@ -126,7 +126,7 @@ public final class HTTPTestUtils {
             webClient.getPage(imgSrc);
         }
         
-        // webClient.close();
+        webClient.close();
     }
     
     public static void logoutCleanup(String url, CookieManager cookieManager) throws IOException {
@@ -149,7 +149,7 @@ public final class HTTPTestUtils {
             webClient.getPage(imgSrc);
         }
         
-        // webClient.close();
+        webClient.close();
     }
 
 }
