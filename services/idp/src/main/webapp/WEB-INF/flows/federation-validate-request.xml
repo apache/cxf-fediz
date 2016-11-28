@@ -82,7 +82,7 @@
     <action-state id="validateWReplyForSignout">
         <evaluate expression="commonsURLValidator.isValid(flowRequestContext, flowScope.wreply)"/>
         <transition on="yes" to="selectSignOutProcess" />
-        <transition on="no" to="viewBadRequest" />
+        <transition on="no" to="viewBadRequestAndLogout" />
     </action-state>
 	
     <decision-state id="selectSignOutProcess">
@@ -194,6 +194,16 @@
     <!-- abnormal exit point : Http 400 Bad Request -->
     <end-state id="viewBadRequest" view="genericerror">
         <on-entry>
+            <evaluate
+                expression="externalContext.nativeResponse.setStatus(400,flowRequestContext.currentTransition.toString())" />
+            <!--<set name="requestScope.reason" value="flowRequestContext.currentTransition" />-->
+        </on-entry>
+    </end-state>
+    
+    <end-state id="viewBadRequestAndLogout" view="genericerror">
+        <on-entry>
+            <evaluate expression="homeRealmReminder.removeCookie(flowRequestContext)" />
+            <evaluate expression="logoutAction.submit(flowRequestContext)" />
             <evaluate
                 expression="externalContext.nativeResponse.setStatus(400,flowRequestContext.currentTransition.toString())" />
             <!--<set name="requestScope.reason" value="flowRequestContext.currentTransition" />-->
