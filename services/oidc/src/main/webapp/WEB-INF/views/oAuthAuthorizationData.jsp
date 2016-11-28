@@ -77,7 +77,7 @@
                             }
                         %>
 
-                        <h2>Would you like to grant <%= ESAPI.encoder().encodeForHTML(client.getApplicationName()) %><br />the following permissions:</h2>
+                        <h2>Would you like to grant <%= ESAPI.encoder().encodeForHTML(data.getApplicationName()) %><br />the following permissions:</h2>
 
                         <table> 
                             <%
