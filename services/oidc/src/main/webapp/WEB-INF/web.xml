@@ -25,6 +25,9 @@
     <display-name>WS Federation Spring Example</display-name>
 	
 	<session-config>
+	    <cookie-config>
+            <http-only>true</http-only>
+        </cookie-config>
 		<tracking-mode>COOKIE</tracking-mode>
 	</session-config>
 	

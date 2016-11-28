@@ -26,6 +26,9 @@ under the License.
 	<display-name>Fediz IDP</display-name>
 	
 	<session-config>
+	    <cookie-config>
+            <http-only>true</http-only>
+        </cookie-config>
 		<tracking-mode>COOKIE</tracking-mode>
 	</session-config>
 
