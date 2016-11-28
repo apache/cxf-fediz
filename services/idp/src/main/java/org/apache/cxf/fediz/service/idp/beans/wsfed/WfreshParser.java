@@ -38,6 +38,12 @@ public class WfreshParser {
     public boolean authenticationRequired(String wfresh, String whr, RequestContext context)
         throws Exception {
         
+        SecurityToken idpToken = 
+            (SecurityToken) WebUtils.getAttributeFromExternalContext(context, whr);
+        if (idpToken == null) {
+            return true;
+        }
+        
         if (wfresh == null || wfresh.trim().isEmpty()) {
             return false;
         }
@@ -55,9 +61,6 @@ public class WfreshParser {
         
         long ttlMs = ttl * 60L * 1000L;
         if (ttlMs > 0) {
-
-            SecurityToken idpToken = 
-                (SecurityToken) WebUtils.getAttributeFromExternalContext(context, whr);
             Date createdDate = idpToken.getCreated();
             if (createdDate != null) {
                 Date expiryDate = new Date();
