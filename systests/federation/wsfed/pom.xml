@@ -79,12 +79,6 @@
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
             <version>${slf4j.version}</version>
             <scope>test</scope>
@@ -327,6 +321,7 @@
                                 <idp.samlsso.https.port>${idp.samlsso.https.port}</idp.samlsso.https.port>
                                 <idp.oidc.https.port>${idp.oidc.https.port}</idp.oidc.https.port>
                                 <rp.https.port>${rp.https.port}</rp.https.port>
+                                <java.util.logging.config.file>${basedir}/target/test-classes/logging.properties</java.util.logging.config.file>
                             </systemPropertyVariables>
                             <includes>
                                 <include>**/integrationtests/**</include>

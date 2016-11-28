@@ -77,12 +77,6 @@
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
             <version>${slf4j.version}</version>
             <scope>test</scope>
@@ -296,6 +290,7 @@
                                 <rp.https.port>${rp.https.port}</rp.https.port>
                                 <java.io.tmpdir>${basedir}/target</java.io.tmpdir>
                                 <java.security.auth.login.config>src/test/resources/sts.jaas</java.security.auth.login.config>
+                                <java.util.logging.config.file>${basedir}/target/test-classes/logging.properties</java.util.logging.config.file>
                             </systemPropertyVariables>
                             <includes>
                                 <include>**/systests/**</include>
