@@ -38,17 +38,15 @@ public class IdpTokenExpiredAction {
     public boolean isTokenExpired(String homeRealm, RequestContext context)
         throws Exception {
         
-        if (tokenExpirationValidation) {
-            SecurityToken idpToken = 
-                (SecurityToken) WebUtils.getAttributeFromExternalContext(context, homeRealm);
-            if (idpToken == null) {
-                return true;
-            }
-            
-            if (idpToken.isExpired()) {
-                LOG.info("[IDP_TOKEN=" + idpToken.getId() + "] is expired.");
-                return true;
-            }
+        SecurityToken idpToken = 
+            (SecurityToken) WebUtils.getAttributeFromExternalContext(context, homeRealm);
+        if (idpToken == null) {
+            return true;
+        }
+        
+        if (tokenExpirationValidation && idpToken.isExpired()) {
+            LOG.info("[IDP_TOKEN=" + idpToken.getId() + "] is expired.");
+            return true;
         }
 
         return false;
