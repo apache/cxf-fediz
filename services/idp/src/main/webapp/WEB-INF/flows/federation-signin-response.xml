@@ -29,7 +29,7 @@ subflow to get a RP token from the STS.
         http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd">
 
     <input name="idpConfig" />
-    <input name="context_key" />
+    <input name="request_context" />
     <input name="wresult" />
     <input name="RelayState" />
     <input name="SAMLResponse" />
@@ -39,7 +39,7 @@ subflow to get a RP token from the STS.
 
     <on-start>
         <!-- restore the original request parameters for the current context -->
-        <evaluate expression="signinParametersCacheAction.restore(flowRequestContext, context_key)" />
+        <evaluate expression="signinParametersCacheAction.restore(flowRequestContext, request_context)" />
     </on-start>
     
     <!-- validate token issued by requestor IDP given its home realm -->

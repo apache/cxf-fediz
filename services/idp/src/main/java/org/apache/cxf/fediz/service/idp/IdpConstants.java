@@ -41,7 +41,7 @@ public final class IdpConstants {
     /**
      * A Context variable associated with the request (independent of protocol)
      */
-    public static final String CONTEXT = "context_key";
+    public static final String CONTEXT = "request_context";
     
     
     

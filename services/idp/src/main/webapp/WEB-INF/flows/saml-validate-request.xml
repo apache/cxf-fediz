@@ -36,7 +36,7 @@
         <on-entry>
             <set name="flowScope.wresult" value="requestParameters.wresult" />
             <set name="flowScope.wctx" value="requestParameters.wctx" />
-            <set name="flowScope.context_key" value="requestParameters.wctx" />
+            <set name="flowScope.request_context" value="requestParameters.wctx" />
         </on-entry>
         <if test="requestParameters.wctx == null or requestParameters.wctx.isEmpty()"
             then="viewBadRequest" />
@@ -49,7 +49,7 @@
     <decision-state id="selectSAMLProcess">
         <on-entry>
             <set name="flowScope.RelayState" value="requestParameters.RelayState" />
-            <set name="flowScope.context_key" value="requestParameters.RelayState" />
+            <set name="flowScope.request_context" value="requestParameters.RelayState" />
             <set name="flowScope.SAMLResponse" value="requestParameters.SAMLResponse" />
             <set name="flowScope.SAMLRequest" value="requestParameters.SAMLRequest" />
             <set name="flowScope.Signature" value="requestParameters.Signature" />
@@ -92,7 +92,7 @@
      <subflow-state id="signinResponse" subflow="signinResponse">
         <input name="idpConfig" value="flowScope.idpConfig" />
         <input name="wfresh" value="flowScope.wfresh" />
-        <input name="context_key" value="flowScope.context_key" />
+        <input name="request_context" value="flowScope.request_context" />
         <input name="wresult" value="flowScope.wresult" />
         <input name="RelayState" value="flowScope.RelayState" />
         <input name="SAMLResponse" value="flowScope.SAMLResponse" />
