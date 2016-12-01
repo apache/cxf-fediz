@@ -98,22 +98,22 @@
         <input name="wctx" value="flowScope.wctx" />
         <input name="wfresh" value="flowScope.wfresh" />
         <input name="wauth" value="flowScope.wauth" />
-        <input name="whr" value="flowScope.whr" />
+        <input name="home_realm" value="flowScope.whr" />
 
-        <output name="whr" />
+        <output name="home_realm" />
         <output name="wctx" />
         <output name="idpToken" />
         <output name="trusted_idp_context" />
 
         <transition on="requestRpToken" to="requestRpToken">
-            <set name="flowScope.whr" value="currentEvent.attributes.whr" />
+            <set name="flowScope.whr" value="currentEvent.attributes.home_realm" />
             <set name="flowScope.wctx" value="currentEvent.attributes.wctx" />
             <set name="flowScope.idpToken" value="currentEvent.attributes.idpToken" />
         </transition>
         <transition on="viewBadRequest" to="viewBadRequest" />
         <transition on="scInternalServerError" to="scInternalServerError" />
         <transition on="redirectToTrustedIDP" to="processTrustedIdpProtocol">
-            <set name="flowScope.whr" value="currentEvent.attributes.whr" />
+            <set name="flowScope.whr" value="currentEvent.attributes.home_realm" />
             <set name="flowScope.trusted_idp_context" value="currentEvent.attributes.trusted_idp_context"/>
         </transition>
         <transition on="redirectToLocalIDP" to="redirectToLocalIDP">

@@ -56,10 +56,6 @@ public class SigninParametersCacheAction {
         if (value != null) {
             signinParams.put(FederationConstants.PARAM_TREALM, value);
         }
-        value = WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_HOME_REALM);
-        if (value != null) {
-            signinParams.put(FederationConstants.PARAM_HOME_REALM, value);
-        }
         value = WebUtils.getAttributeFromFlowScope(context, IdpConstants.HOME_REALM);
         if (value != null) {
             signinParams.put(IdpConstants.HOME_REALM, value);
@@ -99,12 +95,6 @@ public class SigninParametersCacheAction {
                 value = (String)signinParams.get(FederationConstants.PARAM_TREALM);
                 if (value != null) {
                     WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_TREALM, value);
-                }
-                // TODO - Remove
-                value = (String)signinParams.get(FederationConstants.PARAM_HOME_REALM);
-                if (value != null) {
-                    WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_HOME_REALM, value);
-                    WebUtils.putAttributeInFlowScope(context, IdpConstants.HOME_REALM, value);
                 }
                 value = (String)signinParams.get(IdpConstants.HOME_REALM);
                 if (value != null) {
