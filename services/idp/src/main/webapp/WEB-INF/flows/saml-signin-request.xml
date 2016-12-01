@@ -27,6 +27,7 @@
     <input name="SAMLRequest" />
     <input name="RelayState" />
     <input name="Signature" />
+    <input name="protocol" />
     
     <action-state id="parseAuthnRequest">
         <evaluate expression="authnRequestParser.parseSAMLRequest(flowRequestContext, flowScope.idpConfig,
@@ -180,7 +181,7 @@
     <!-- redirects to requestor idp -->
     <end-state id="redirectToTrustedIDP">
         <on-entry>
-            <evaluate expression="signinParametersCacheAction.store(flowRequestContext)" />
+            <evaluate expression="signinParametersCacheAction.store(flowRequestContext, protocol)" />
         </on-entry>
         <output name="home_realm" value="flowScope.home_realm" />
         <output name="trusted_idp_context" value="flowScope.trusted_idp_context" />

@@ -30,6 +30,7 @@
     <input name="wfresh" />
     <input name="wauth" />
     <input name="home_realm" />
+    <input name="protocol" />
 
     <decision-state id="processHRDSExpression">
         <on-entry>
@@ -166,7 +167,7 @@
     <!-- redirects to requestor idp -->
     <end-state id="redirectToTrustedIDP">
         <on-entry>
-            <evaluate expression="signinParametersCacheAction.store(flowRequestContext)" />
+            <evaluate expression="signinParametersCacheAction.store(flowRequestContext, protocol)" />
         </on-entry>
         <output name="home_realm" value="flowScope.home_realm" />
         <output name="trusted_idp_context" value="flowScope.trusted_idp_context" />

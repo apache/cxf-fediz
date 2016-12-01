@@ -36,10 +36,11 @@ subflow to get a RP token from the STS.
     <input name="state" />
     <input name="code" />
     <input name="home_realm" />
+    <input name="protocol" />
 
     <on-start>
         <!-- restore the original request parameters for the current context -->
-        <evaluate expression="signinParametersCacheAction.restore(flowRequestContext, request_context)" />
+        <evaluate expression="signinParametersCacheAction.restore(flowRequestContext, request_context, protocol)" />
     </on-start>
     
     <!-- validate token issued by requestor IDP given its home realm -->

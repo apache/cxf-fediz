@@ -67,6 +67,7 @@
         <input name="SAMLRequest" value="flowScope.SAMLRequest" />
         <input name="RelayState" value="flowScope.RelayState" />
         <input name="Signature" value="flowScope.Signature" />
+        <input name="protocol" value="'samlsso'" />
 
         <output name="home_realm" />
         <output name="idpToken" />
@@ -99,6 +100,7 @@
         <input name="state" value="flowScope.state" />
         <input name="code" value="flowScope.code" />
         <input name="home_realm" value="flowScope.whr" />
+        <input name="protocol" value="'samlsso'" />
 
         <output name="wtrealm" />
         <output name="wreply" />
