@@ -102,9 +102,6 @@
         <input name="home_realm" value="flowScope.whr" />
         <input name="protocol" value="'samlsso'" />
 
-        <output name="wtrealm" />
-        <output name="wreply" />
-        <output name="wctx" />
         <output name="home_realm" />
         <output name="idpToken" />
         <output name="saml_authn_request" />
