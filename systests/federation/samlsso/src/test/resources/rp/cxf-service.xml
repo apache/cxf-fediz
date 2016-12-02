@@ -57,7 +57,12 @@
        <constructor-arg ref="cxf"/>
    </bean>
 
-   <bean id="ssoFilter" class="org.apache.cxf.rs.security.saml.sso.SamlRedirectBindingFilter">
+   <bean id="authorizationInterceptor"
+         class="org.apache.cxf.interceptor.security.SecureAnnotationsInterceptor">
+       <property name="securedObject" ref="serviceBean" />
+   </bean>
+   
+   <bean id="ssoFilterApp1" class="org.apache.cxf.rs.security.saml.sso.SamlRedirectBindingFilter">
        <property name="idpServiceAddress" value="https://localhost:${idp.https.port}/fediz-idp/saml/up"/>
        <property name="assertionConsumerServiceAddress" 
                  value="/racs/sso"/>
@@ -69,18 +74,38 @@
        <property name="signatureUsername" value="realma" />
        <property name="issuerId" value="urn:org:apache:cxf:fediz:fedizhelloworld:realm-B" />
    </bean>
-
-   <bean id="authorizationInterceptor"
-         class="org.apache.cxf.interceptor.security.SecureAnnotationsInterceptor">
-       <property name="securedObject" ref="serviceBean" />
-   </bean>
    
    <jaxrs:server address="/app1">
        <jaxrs:serviceBeans>
             <ref bean="serviceBean"/>
        </jaxrs:serviceBeans>
        <jaxrs:providers>
-            <ref bean="ssoFilter"/>
+            <ref bean="ssoFilterApp1"/>
+       </jaxrs:providers>
+       <jaxrs:inInterceptors>
+            <ref bean="authorizationInterceptor"/>
+       </jaxrs:inInterceptors>
+   </jaxrs:server>
+   
+   <bean id="ssoFilterApp2" class="org.apache.cxf.rs.security.saml.sso.SamlRedirectBindingFilter">
+       <property name="idpServiceAddress" value="https://localhost:${idp.https.port}/fediz-idp/saml/up"/>
+       <property name="assertionConsumerServiceAddress" 
+                 value="/racs/sso"/>
+       <property name="stateProvider" ref="stateManager"/>
+       <property name="addEndpointAddressToContext" value="true"/>
+       <property name="signRequest" value="true"/>
+       <property name="signaturePropertiesFile" value="stsKeystoreA.properties"/>
+       <property name="callbackHandler" ref="callbackHandler"/>
+       <property name="signatureUsername" value="realma" />
+       <property name="issuerId" value="urn:org:apache:cxf:fediz:fedizhelloworld:realm-C" />
+   </bean>
+   
+   <jaxrs:server address="/app2">
+       <jaxrs:serviceBeans>
+            <ref bean="serviceBean"/>
+       </jaxrs:serviceBeans>
+       <jaxrs:providers>
+            <ref bean="ssoFilterApp2"/>
        </jaxrs:providers>
        <jaxrs:inInterceptors>
             <ref bean="authorizationInterceptor"/>

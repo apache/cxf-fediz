@@ -148,17 +148,9 @@ public class SAMLSSOTest {
             server.addWebapp("/idpoidc", idpWebapp.getAbsolutePath());
         } else {
             File rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "samlssoWebapp");
-            server.addWebapp("/wsfed", rpWebapp.getAbsolutePath());
+            server.addWebapp("/samlsso", rpWebapp.getAbsolutePath());
             
             /*            
-            rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
-            cxt = server.addWebapp("/samlssocustom", rpWebapp.getAbsolutePath());
-            cxt.getPipeline().addValve(fa);
-            
-            rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
-            cxt = server.addWebapp("/samlssocustompost", rpWebapp.getAbsolutePath());
-            cxt.getPipeline().addValve(fa);
-            
             rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
             cxt = server.addWebapp("/oidc", rpWebapp.getAbsolutePath());
             cxt.getPipeline().addValve(fa);
@@ -210,7 +202,7 @@ public class SAMLSSOTest {
     
     @org.junit.Test
     public void testWSFederation() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/wsfed/app1/services/25";
+        String url = "https://localhost:" + getRpHttpsPort() + "/samlsso/app1/services/25";
         //System.out.println(url);
         //Thread.sleep(60 * 2 * 1000);
         
@@ -222,6 +214,20 @@ public class SAMLSSOTest {
         
         Assert.assertTrue(bodyTextContent.contains("This is the double number response"));
         
+    }
+    
+    @org.junit.Test
+    public void testSAMLSSOFedizIdP() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/samlsso/app2/services/25";
+        // System.out.println(url);
+        // Thread.sleep(60 * 2 * 1000);
+        String user = "ALICE";  // realm b credentials
+        String password = "ECILA";
+        
+        final String bodyTextContent = 
+            login(url, user, password, getIdpRealmbHttpsPort(), getIdpHttpsPort(), true);
+        
+        Assert.assertTrue(bodyTextContent.contains("This is the double number response"));
     }
 
     private static String login(String url, String user, String password, 
@@ -262,4 +268,48 @@ public class SAMLSSOTest {
         webClient.close();
         return rpPage.asXml();
     }
+    
+    private static String login(String url, String user, String password, 
+                                String idpPort, String rpIdpPort, boolean postBinding) throws IOException {
+        //
+        // Access the RP + get redirected to the IdP for "realm a". Then get redirected to the IdP for
+        // "realm b".
+        //
+        final WebClient webClient = new WebClient();
+        CookieManager cookieManager = new CookieManager();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(idpPort)),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        HtmlPage idpPage = webClient.getPage(url);
+        
+        if (postBinding) {
+            Assert.assertTrue("SAML IDP Response Form".equals(idpPage.getTitleText())
+                                || "IDP SignIn Response Form".equals(idpPage.getTitleText()));
+            for (HtmlForm form : idpPage.getForms()) {
+                String name = form.getAttributeNS(null, "name");
+                if ("signinresponseform".equals(name) || "samlsigninresponseform".equals(name)) {
+                    final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
+                    idpPage = button.click();
+                }
+            }
+        }
+        
+        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+
+        System.out.println("IDP: " + idpPage.asXml());
+        // Now redirect back to the RP
+        final HtmlForm form = idpPage.getFormByName("samlsigninresponseform");
+
+        final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
+
+        final XmlPage rpPage = button.click();
+
+        webClient.close();
+        return rpPage.asXml();
+    }
+    
 }
