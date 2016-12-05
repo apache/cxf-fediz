@@ -61,6 +61,7 @@
             <util:list>
                 <ref bean="srv-fedizhelloworld-realmB" />
                 <ref bean="srv-fedizhelloworld-realmC" />
+                <ref bean="srv-fedizhelloworld-realmD" />
             </util:list>
         </property>
         <property name="trustedIdps">
@@ -116,7 +117,7 @@
     
     <bean id="trusted-idp-realmD"
         class="org.apache.cxf.fediz.service.idp.service.jpa.TrustedIdpEntity">
-        <property name="realm" value="urn:org:apache:cxf:fediz:idp:realm-F" />
+        <property name="realm" value="urn:org:apache:cxf:fediz:idp:realm-D" />
         <property name="cacheTokens" value="true" />
         <property name="url" value="https://localhost:${idp.oidc.https.port}/idpoidc/services/authorize" />
         <property name="certificate" value="realmb.cert" />
@@ -138,7 +139,7 @@
         <property name="realm" value="urn:org:apache:cxf:fediz:fedizhelloworld:realm-B" />
         <property name="protocol" value="http://docs.oasis-open.org/wsfed/federation/200706" />
         <property name="serviceDisplayName" value="Fedizhelloworld" />
-        <property name="serviceDescription" value="Web Application to illustrate WS-Federation" />
+        <property name="serviceDescription" value="Web Application to illustrate SAML SSO" />
         <property name="role" value="ApplicationServiceType" />
         <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0" />
         <property name="lifeTime" value="3600" />
@@ -151,7 +152,20 @@
         <property name="realm" value="urn:org:apache:cxf:fediz:fedizhelloworld:realm-C" />
         <property name="protocol" value="http://docs.oasis-open.org/wsfed/federation/200706" />
         <property name="serviceDisplayName" value="Fedizhelloworld" />
-        <property name="serviceDescription" value="Web Application to illustrate WS-Federation" />
+        <property name="serviceDescription" value="Web Application to illustrate SAML SSO" />
+        <property name="role" value="ApplicationServiceType" />
+        <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0" />
+        <property name="lifeTime" value="3600" />
+        <property name="passiveRequestorEndpointConstraint" 
+                  value="https://localhost:(\d)*/(\w)*/racs/.*" />
+        <property name="validatingCertificate" value="realma.cert" />
+    </bean>
+    
+    <bean id="srv-fedizhelloworld-realmD" class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationEntity">
+        <property name="realm" value="urn:org:apache:cxf:fediz:fedizhelloworld:realm-D" />
+        <property name="protocol" value="http://docs.oasis-open.org/wsfed/federation/200706" />
+        <property name="serviceDisplayName" value="Fedizhelloworld" />
+        <property name="serviceDescription" value="Web Application to illustrate SAML SSO" />
         <property name="role" value="ApplicationServiceType" />
         <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0" />
         <property name="lifeTime" value="3600" />
@@ -167,6 +181,11 @@
     </bean>
     <bean class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationClaimEntity">
         <property name="application" ref="srv-fedizhelloworld-realmC" />
+        <property name="claim" ref="claim_role" />
+        <property name="optional" value="false" />
+    </bean>
+    <bean class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationClaimEntity">
+        <property name="application" ref="srv-fedizhelloworld-realmD" />
         <property name="claim" ref="claim_role" />
         <property name="optional" value="false" />
     </bean>

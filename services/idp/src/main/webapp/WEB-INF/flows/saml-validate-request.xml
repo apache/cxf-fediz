@@ -28,7 +28,7 @@
         </on-entry>
         <if test="requestParameters.wa == 'wsignin1.0'" then="selectWsFedProcess" />
         <if test="requestParameters.SAMLRequest != null or requestParameters.SAMLResponse != null" 
-            then="selectSAMLProcess" else="viewBadRequest"
+            then="selectSAMLProcess" else="selectOIDCAuthorizationCodeFlowProcess"
         />
     </decision-state>
     
@@ -59,6 +59,18 @@
         <if test="requestParameters.SAMLRequest != null and !requestParameters.SAMLRequest.isEmpty()"
             then="signinSAMLRequest" />
         <if test="requestParameters.SAMLResponse == null or requestParameters.SAMLResponse.isEmpty()"
+            then="viewBadRequest" else="signinResponse" />
+    </decision-state>
+    
+    <decision-state id="selectOIDCAuthorizationCodeFlowProcess">
+         <on-entry>
+            <set name="flowScope.state" value="requestParameters.state" />
+            <set name="flowScope.request_context" value="requestParameters.state" />
+            <set name="flowScope.code" value="requestParameters.code" />
+        </on-entry>
+        <if test="requestParameters.code == null or requestParameters.code.isEmpty()"
+            then="viewBadRequest" />
+        <if test="requestParameters.state == null or requestParameters.state.isEmpty()"
             then="viewBadRequest" else="signinResponse" />
     </decision-state>
     

@@ -22,14 +22,19 @@ package org.apache.cxf.fediz.integrationtests;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
 
 import javax.servlet.ServletException;
 
 import com.gargoylesoftware.htmlunit.CookieManager;
+import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
+import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 import org.apache.catalina.LifecycleException;
@@ -149,12 +154,6 @@ public class SAMLSSOTest {
         } else {
             File rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "samlssoWebapp");
             server.addWebapp("/samlsso", rpWebapp.getAbsolutePath());
-            
-            /*            
-            rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
-            cxt = server.addWebapp("/oidc", rpWebapp.getAbsolutePath());
-            cxt.getPipeline().addValve(fa);
-            */
         }
 
         server.start();
@@ -229,6 +228,19 @@ public class SAMLSSOTest {
         
         Assert.assertTrue(bodyTextContent.contains("This is the double number response"));
     }
+    
+    @org.junit.Test
+    public void testOIDC() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/samlsso/app3/services/25";
+        String user = "ALICE";  // realm b credentials
+        String password = "ECILA";
+        
+        final String bodyTextContent = 
+            loginOIDC(url, user, password, idpOIDCHttpsPort, idpHttpsPort);
+        
+        Assert.assertTrue(bodyTextContent.contains("This is the double number response"));
+    }
+    
 
     private static String login(String url, String user, String password, 
                                 String idpPort, String rpIdpPort) throws IOException {
@@ -300,7 +312,6 @@ public class SAMLSSOTest {
         
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
-        System.out.println("IDP: " + idpPage.asXml());
         // Now redirect back to the RP
         final HtmlForm form = idpPage.getFormByName("samlsigninresponseform");
 
@@ -312,4 +323,54 @@ public class SAMLSSOTest {
         return rpPage.asXml();
     }
     
+    private static String loginOIDC(String url, String user, String password, 
+                                    String idpPort, String rpIdpPort) throws IOException {
+        //
+        // Access the RP + get redirected to the IdP for "realm a". Then get redirected to the IdP for
+        // "realm b".
+        //
+        final WebClient webClient = new WebClient();
+        CookieManager cookieManager = new CookieManager();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+                                                          new AuthScope("localhost", Integer.parseInt(idpPort)),
+                                                          new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+
+        // The decision page is returned as XML for some reason. So parse it and send a form response back.
+        HtmlPage oidcIdpConfirmationPage = webClient.getPage(url);
+        final HtmlForm oidcForm = oidcIdpConfirmationPage.getForms().get(0);
+
+        WebRequest request = new WebRequest(new URL(oidcForm.getActionAttribute()), HttpMethod.POST);
+
+        request.setRequestParameters(new ArrayList<NameValuePair>());
+        String clientId = oidcForm.getInputByName("client_id").getValueAttribute();
+        request.getRequestParameters().add(new NameValuePair("client_id", clientId));
+        String redirectUri = oidcForm.getInputByName("redirect_uri").getValueAttribute();
+        request.getRequestParameters().add(new NameValuePair("redirect_uri", redirectUri));
+        String scope = oidcForm.getInputByName("scope").getValueAttribute();
+        request.getRequestParameters().add(new NameValuePair("scope", scope));
+        String state = oidcForm.getInputByName("state").getValueAttribute();
+        request.getRequestParameters().add(new NameValuePair("state", state));
+        String authToken = oidcForm.getInputByName("session_authenticity_token").getValueAttribute();
+        request.getRequestParameters().add(new NameValuePair("session_authenticity_token", authToken));
+        request.getRequestParameters().add(new NameValuePair("oauthDecision", "allow"));
+
+        HtmlPage idpPage = webClient.getPage(request);
+
+        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+
+        // Now redirect back to the RP
+        final HtmlForm form = idpPage.getFormByName("samlsigninresponseform");
+
+        final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
+
+        final XmlPage rpPage = button.click();
+
+        webClient.close();
+        return rpPage.asXml();
+    }
+
 }
