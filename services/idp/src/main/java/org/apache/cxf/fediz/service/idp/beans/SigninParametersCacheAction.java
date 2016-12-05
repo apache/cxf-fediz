@@ -38,8 +38,6 @@ import org.springframework.webflow.execution.RequestContext;
 @Component
 public class SigninParametersCacheAction {
 
-    @Deprecated
-    public static final String REALM_URL_MAP = "realmUrlMap";
     public static final String ACTIVE_APPLICATIONS = "realmConfigMap";
 
     private static final Logger LOG = LoggerFactory.getLogger(SigninParametersCacheAction.class);
