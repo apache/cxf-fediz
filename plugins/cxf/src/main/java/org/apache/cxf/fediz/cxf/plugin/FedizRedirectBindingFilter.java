@@ -90,11 +90,6 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
             return;
         }
 
-        // See if it is a Logout request
-        if (isLogoutRequest(context, m, fedConfig)) {
-            return;
-        }
-        
         String httpMethod = context.getMethod();
         MultivaluedMap<String, String> params = null;
         
@@ -108,6 +103,11 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
         } catch (Exception ex) {
             LOG.debug(ex.getMessage(), ex);
             throw ExceptionUtils.toInternalServerErrorException(ex, null);
+        }
+        
+        // See if it is a Logout request
+        if (isLogoutRequest(context, m, fedConfig, params)) {
+            return;
         }
         
         if (isSignoutCleanupRequest(fedConfig, m, params)) {
@@ -289,39 +289,48 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
     }
     
     private boolean isLogoutRequest(ContainerRequestContext context, Message message,
-                                    FedizContext fedConfig) {
-        //logout
+                                    FedizContext fedConfig, MultivaluedMap<String, String> params) {
+
+        boolean signout = false;
         String logoutUrl = fedConfig.getLogoutURL();
-        if (logoutUrl != null && !logoutUrl.isEmpty()) {
+        if (params != null && fedConfig.getProtocol() instanceof FederationProtocol
+            && FederationConstants.ACTION_SIGNOUT.equals(
+                params.getFirst(FederationConstants.PARAM_ACTION))) {
+            signout = true;
+        } else if (logoutUrl != null && !logoutUrl.isEmpty()) {
             String requestPath = "/" + context.getUriInfo().getPath();
             if (requestPath.equals(logoutUrl) || requestPath.equals(logoutUrl + "/")) {
-                cleanupContext(message);
-                
-                try {
-                    FedizProcessor processor = 
-                        FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
-                    
-                    HttpServletRequest request = messageContext.getHttpServletRequest();
-                    RedirectionResponse redirectionResponse = 
-                        processor.createSignOutRequest(request, null, fedConfig); //TODO
-                    String redirectURL = redirectionResponse.getRedirectionURL();
-                    if (redirectURL != null) {
-                        ResponseBuilder response = Response.seeOther(new URI(redirectURL));
-                        Map<String, String> headers = redirectionResponse.getHeaders();
-                        if (!headers.isEmpty()) {
-                            for (Entry<String, String> entry : headers.entrySet()) {
-                                response.header(entry.getKey(), entry.getValue());
-                            }
+                signout = true;
+            }
+        }
+        
+        if (signout) {
+            cleanupContext(message);
+
+            try {
+                FedizProcessor processor = 
+                    FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
+
+                HttpServletRequest request = messageContext.getHttpServletRequest();
+                RedirectionResponse redirectionResponse = 
+                    processor.createSignOutRequest(request, null, fedConfig); //TODO
+                String redirectURL = redirectionResponse.getRedirectionURL();
+                if (redirectURL != null) {
+                    ResponseBuilder response = Response.seeOther(new URI(redirectURL));
+                    Map<String, String> headers = redirectionResponse.getHeaders();
+                    if (!headers.isEmpty()) {
+                        for (Entry<String, String> entry : headers.entrySet()) {
+                            response.header(entry.getKey(), entry.getValue());
                         }
-    
-                        context.abortWith(response.build());
-    
-                        return true;
                     }
-                } catch (Exception ex) {
-                    LOG.debug(ex.getMessage(), ex);
-                    throw ExceptionUtils.toInternalServerErrorException(ex, null);
+
+                    context.abortWith(response.build());
+
+                    return true;
                 }
+            } catch (Exception ex) {
+                LOG.debug(ex.getMessage(), ex);
+                throw ExceptionUtils.toInternalServerErrorException(ex, null);
             }
         }
         
