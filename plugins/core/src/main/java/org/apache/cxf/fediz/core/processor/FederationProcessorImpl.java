@@ -500,7 +500,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             sb.append(FederationConstants.PARAM_ACTION).append('=').append(FederationConstants.ACTION_SIGNOUT);
 
             String logoutRedirectTo = request.getParameter(FederationConstants.PARAM_REPLY);
-            if (logoutRedirectTo != null && !logoutRedirectTo.isEmpty()) {
+            if (logoutRedirectTo == null || logoutRedirectTo.isEmpty()) {
                 logoutRedirectTo = config.getLogoutRedirectTo();
             }
             if (logoutRedirectTo != null && !logoutRedirectTo.isEmpty()) {
