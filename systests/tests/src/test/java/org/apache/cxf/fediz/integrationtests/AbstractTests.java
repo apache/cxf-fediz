@@ -387,21 +387,62 @@ public abstract class AbstractTests {
 
         // 4. now we try to access the RP and idp without authentication but with the existing cookies
         // to see if we are really logged out
-        String rpUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
-            + "/secure/fedservlet";
 
         // webClient.close();
         webClient = new WebClient();
         webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);
         webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
-        final HtmlPage idpPage = webClient.getPage(rpUrl);
+        final HtmlPage idpPage = webClient.getPage(url);
 
         Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
 
         // webClient.close();
     }
+    
+    @Test
+    public void testRPLogoutViaAction() throws Exception {
 
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
+            + "/secure/fedservlet";
+        String user = "alice";
+        String password = "ecila";
+
+        CookieManager cookieManager = new CookieManager();
+
+        // 1. Login
+        HTTPTestUtils.loginWithCookieManager(url, user, password, getIdpHttpsPort(), cookieManager);
+
+        // 2. Now we should have a cookie from the RP and IdP and should be able to do
+        // subsequent requests without authenticate again. Lets test this first.
+        WebClient webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        final HtmlPage rpPage = webClient.getPage(url);
+        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
+                          || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
+
+        // 3. now we logout from RP
+        String rpLogoutUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
+            + "?wa=" + FederationConstants.ACTION_SIGNOUT;
+
+        HTTPTestUtils.logout(rpLogoutUrl, cookieManager);
+
+        // 4. now we try to access the RP and idp without authentication but with the existing cookies
+        // to see if we are really logged out
+
+        // webClient.close();
+        webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        final HtmlPage idpPage = webClient.getPage(url);
+
+        Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
+
+        // webClient.close();
+    }
+    
     @Test
     public void testIdPLogout() throws Exception {
 
@@ -432,15 +473,13 @@ public abstract class AbstractTests {
 
         // 4. now we try to access the RP and idp without authentication but with the existing cookies
         // to see if we are really logged out
-        String rpUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
-            + "/secure/fedservlet";
 
         // webClient.close();
         webClient = new WebClient();
         webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);
         webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
-        final HtmlPage idpPage = webClient.getPage(rpUrl);
+        final HtmlPage idpPage = webClient.getPage(url);
 
         Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
 
@@ -477,15 +516,13 @@ public abstract class AbstractTests {
 
         // 4. now we try to access the RP and idp without authentication but with the existing cookies
         // to see if we are really logged out
-        String rpUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
-            + "/secure/fedservlet";
 
         // webClient.close();
         webClient = new WebClient();
         webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);
         webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
-        final HtmlPage idpPage = webClient.getPage(rpUrl);
+        final HtmlPage idpPage = webClient.getPage(url);
 
         Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
 
