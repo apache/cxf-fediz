@@ -49,8 +49,9 @@ subflow to get a RP token from the STS.
             result="flowScope.idpToken" result-type="org.apache.cxf.ws.security.tokenstore.SecurityToken" />
         <transition to="checkCacheTrustedIdpToken" />
         <transition
-            on-exception="org.apache.cxf.fediz.core.exception.ProcessingException"
-            to="viewBadRequest" />
+            on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
+        <transition
+            on-exception="javax.ws.rs.BadRequestException" to="viewBadRequest" />
         <transition on-exception="java.lang.Throwable" to="scInternalServerError" />
     </action-state>
     
@@ -74,7 +75,10 @@ subflow to get a RP token from the STS.
     </end-state>
 
     <!-- abnormal exit point : Http 400 Bad Request -->
-    <end-state id="viewBadRequest" />
+    <end-state id="viewBadRequest">
+        <output name="saml_authn_request" value="flowScope.saml_authn_request" />
+        <output name="RelayState" value="flowScope.RelayState" />
+    </end-state>
 
     <!-- abnormal exit point : Http 500 Internal Server Error -->
     <end-state id="scInternalServerError" />

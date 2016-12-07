@@ -34,6 +34,7 @@ import java.util.zip.DataFormatException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.UriBuilder;
 
@@ -209,7 +210,7 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
                     + System.getProperty("line.separator") + validatorResponse.getAssertion());
             }
             return idpToken;
-        } catch (IllegalStateException ex) {
+        } catch (BadRequestException ex) {
             throw ex;
         } catch (Exception ex) {
             LOG.warn("Unexpected exception occured", ex);
