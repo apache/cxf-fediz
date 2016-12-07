@@ -184,6 +184,13 @@ public class Spring2Test extends AbstractTests {
         
     }
     
+    @Test
+    @Ignore("Logout not supported with Spring2")
+    @Override
+    public void testRPLogoutViaAction() throws Exception {
+        
+    }
+    
     @Override
     @Test
     public void testAliceModifiedSignature() throws Exception {
@@ -242,4 +249,5 @@ public class Spring2Test extends AbstractTests {
     public void testEntityExpansionAttack() throws Exception {
 
     }
+    
 }
