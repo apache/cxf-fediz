@@ -424,7 +424,7 @@ public abstract class AbstractTests {
 
         // 3. now we logout from RP
         String rpLogoutUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
-            + "?wa=" + FederationConstants.ACTION_SIGNOUT;
+            + "/secure/fedservlet?wa=" + FederationConstants.ACTION_SIGNOUT;
 
         HTTPTestUtils.logout(rpLogoutUrl, cookieManager);
 
