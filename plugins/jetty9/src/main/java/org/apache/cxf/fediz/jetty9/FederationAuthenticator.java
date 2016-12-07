@@ -276,7 +276,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
                 inputStream.close();
                 responseOutputStream.flush();
                 return Authentication.SEND_SUCCESS;
-            } else if (action != null) {
+            } else if (!FederationConstants.ACTION_SIGNOUT.equals(action) && action != null) {
                 LOG.warn("Not supported action found in parameter wa: " + action);
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 return Authentication.UNAUTHENTICATED;
@@ -294,8 +294,9 @@ public class FederationAuthenticator extends LoginAuthenticator {
                 else
                 {
                     //logout
+                    boolean logout = FederationConstants.ACTION_SIGNOUT.equals(action);
                     String logoutUrl = fedConfig.getLogoutURL();
-                    if (logoutUrl != null && !logoutUrl.isEmpty() && uri.equals(contextName + logoutUrl)) {
+                    if (logout || logoutUrl != null && !logoutUrl.isEmpty() && uri.equals(contextName + logoutUrl)) {
                         session.invalidate();
 
                         FedizProcessor wfProc = 
