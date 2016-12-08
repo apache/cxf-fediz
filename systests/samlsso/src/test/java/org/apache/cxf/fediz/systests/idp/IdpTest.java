@@ -38,6 +38,7 @@ import javax.servlet.ServletException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -546,6 +547,8 @@ public class IdpTest {
         String password = "ecila";
 
         final WebClient webClient = new WebClient();
+        CookieManager cookieManager = new CookieManager();
+        webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);
         webClient.getCredentialsProvider().setCredentials(
             new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
@@ -595,8 +598,27 @@ public class IdpTest {
         Assert.assertTrue(parsedResponse.contains(claim));
         claim = ClaimTypes.EMAILADDRESS.toString();
         Assert.assertTrue(parsedResponse.contains(claim));
-
+        
         webClient.close();
+        
+        //
+        // Third invocation - create a new WebClient with no credentials (but with the same CookieManager)
+        // ...this should fail
+        //
+        
+        WebClient newWebClient = new WebClient();
+        newWebClient.setCookieManager(cookieManager);
+        newWebClient.getOptions().setUseInsecureSSL(true);
+        newWebClient.getOptions().setJavaScriptEnabled(false);
+        
+        try {
+            newWebClient.getPage(url);
+            Assert.fail("Failure expected on no credentials");
+        }  catch (FailingHttpStatusCodeException ex) {
+            Assert.assertEquals(ex.getStatusCode(), 401);
+        }
+        
+        newWebClient.close();
     }
     
     @org.junit.Test
@@ -654,6 +676,8 @@ public class IdpTest {
         String password = "ecila";
 
         final WebClient webClient = new WebClient();
+        CookieManager cookieManager = new CookieManager();
+        webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);
         webClient.getCredentialsProvider().setCredentials(
             new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
@@ -705,6 +729,25 @@ public class IdpTest {
         Assert.assertTrue(parsedResponse.contains(claim));
 
         webClient.close();
+        
+        //
+        // Third invocation - create a new WebClient with no credentials (but with the same CookieManager)
+        // ...this should fail
+        //
+        
+        WebClient newWebClient = new WebClient();
+        newWebClient.setCookieManager(cookieManager);
+        newWebClient.getOptions().setUseInsecureSSL(true);
+        newWebClient.getOptions().setJavaScriptEnabled(false);
+        
+        try {
+            newWebClient.getPage(url);
+            Assert.fail("Failure expected on no credentials");
+        }  catch (FailingHttpStatusCodeException ex) {
+            Assert.assertEquals(ex.getStatusCode(), 401);
+        }
+        
+        newWebClient.close();
     }
     
     //
