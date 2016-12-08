@@ -31,6 +31,8 @@
     <input name="wauth" />
     <input name="home_realm" />
     <input name="protocol" />
+    
+    <!-- ===== Home Realm Discovery ===== -->
 
     <decision-state id="processHRDSExpression">
         <on-entry>
@@ -75,14 +77,14 @@
     <!-- Home Realm is known then we can store it in cookie -->
     <decision-state id="checkIsThisIDP">
         <if test="flowScope.idpConfig.realm.equals(flowScope.home_realm)"
-            then="checkWauthTypeSupported" else="checkIdpTokenWhrWauth" />
+            then="checkWauthTypeSupported" else="checkIdpTokenHomeRealm" />
     </decision-state>
 
     <!-- ============================================================================================================= -->
 
     <!-- Is 'wresult/RP-IDP token' already received and validated (then stored 
         in session) from requestor IDP ? -->
-    <decision-state id="checkIdpTokenWhrWauth">
+    <decision-state id="checkIdpTokenHomeRealm">
         <if test="externalContext.sessionMap[flowScope.home_realm] != null"
             then="wfreshParserRemoteAction" else="redirectToTrustedIDP" />
     </decision-state>
@@ -104,7 +106,9 @@
         <transition on="yes" to="requestRpToken" />
         <transition on="no" to="viewBadRequest" />
     </action-state>
-
+    
+    <!-- ============================================================================================================= -->
+    
     <decision-state id="checkWauthTypeSupported">
         <on-entry>
             <!-- Here, home realm is guaranteed to be THIS realm -->

@@ -89,6 +89,7 @@
         <input name="Signature" value="flowScope.Signature" />
         <input name="protocol" value="'samlsso'" />
         <input name="saml_authn_request" value="flowScope.saml_authn_request" />
+        <input name="home_realm" value="null" />
 
         <output name="home_realm" />
         <output name="idpToken" />

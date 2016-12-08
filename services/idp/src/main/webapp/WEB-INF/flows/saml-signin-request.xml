@@ -27,10 +27,13 @@
     <input name="RelayState" />
     <input name="protocol" />
     <input name="saml_authn_request" />
+    <input name="home_realm" />
+    
+    <!-- ===== Home Realm Discovery ===== -->
     
     <decision-state id="processHRDSExpression">
         <on-entry>
-            <evaluate expression="processHRDSExpressionAction.submit(flowRequestContext, null)" 
+            <evaluate expression="processHRDSExpressionAction.submit(flowRequestContext, flowScope.home_realm)" 
                       result="flowScope.home_realm" />
         </on-entry>
         <if test="flowScope.home_realm == null or flowScope.home_realm.trim().isEmpty()"
@@ -71,14 +74,14 @@
     <!-- Home Realm is known then we can store it in cookie -->
     <decision-state id="checkIsThisIDP">
         <if test="flowScope.idpConfig.realm.equals(flowScope.home_realm)"
-            then="homeRealmSignInEntryPoint" else="checkIdpTokenWhrWauth" />
+            then="homeRealmSignInEntryPoint" else="checkIdpTokenHomeRealm" />
     </decision-state>
     
     <!-- ============================================================================================================= -->
     
     <!-- Is 'wresult/RP-IDP token' already received and validated (then stored 
         in session) from requestor IDP ? -->
-    <decision-state id="checkIdpTokenWhrWauth">
+    <decision-state id="checkIdpTokenHomeRealm">
         <if test="externalContext.sessionMap[flowScope.home_realm] != null"
             then="wfreshParserRemoteAction" else="redirectToTrustedIDP" />
     </decision-state>
@@ -109,7 +112,7 @@
             <set name="flowScope.home_realm" value="flowScope.idpConfig.realm" />
         </on-entry>
         <if test="flowScope.idpConfig.getAuthenticationURIs() == null"
-            then="scInternalServerError" />
+            then="viewBadRequest" />
         <!-- check presence of cached IDP token for THIS realm -->
         <if test="externalContext.sessionMap[flowScope.home_realm] == null"
             then="cacheSecurityToken" else="checkTokenExpiry" />
