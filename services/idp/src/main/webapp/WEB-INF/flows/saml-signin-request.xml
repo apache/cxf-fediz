@@ -24,19 +24,10 @@
         http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd">
 
     <input name="idpConfig" />
-    <input name="SAMLRequest" />
     <input name="RelayState" />
-    <input name="Signature" />
     <input name="protocol" />
+    <input name="saml_authn_request" />
     
-    <action-state id="parseAuthnRequest">
-        <evaluate expression="authnRequestParser.parseSAMLRequest(flowRequestContext, flowScope.idpConfig,
-                                                              flowScope.SAMLRequest, flowScope.Signature,
-                                                              flowScope.RelayState)" />
-        <transition to="processHRDSExpression"/>
-        <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
-    </action-state>
-
     <decision-state id="processHRDSExpression">
         <on-entry>
             <evaluate expression="processHRDSExpressionAction.submit(flowRequestContext, null)" 
@@ -62,14 +53,14 @@
         <var name="trustedIDPSelection"
             class="org.apache.cxf.fediz.service.idp.model.TrustedIDPSelection" />
         <binder>
-            <binding property="whr" required="true" />
+            <binding property="home_realm" required="true" />
         </binder>
         <on-entry>
             <set name="requestScope.idPConfig" value="flowScope.idpConfig" />
         </on-entry>
         <transition on="submit" to="checkIsThisIDP" bind="true"
             validate="true">
-            <set name="flowScope.home_realm" value="trustedIDPSelection.whr" />
+            <set name="flowScope.home_realm" value="trustedIDPSelection.home_realm" />
             <evaluate
                 expression="homeRealmReminder.addCookie(flowRequestContext, flowScope.home_realm)" />
         </transition>
@@ -168,13 +159,10 @@
     <end-state id="requestRpToken">
         <output name="home_realm" value="flowScope.home_realm" />
         <output name="idpToken" value="flowScope.idpToken" />
-        <output name="saml_authn_request" value="flowScope.saml_authn_request" />
     </end-state>
 
     <!-- abnormal exit point -->
-    <end-state id="viewBadRequest">
-        <output name="saml_authn_request" value="flowScope.saml_authn_request" />
-    </end-state>
+    <end-state id="viewBadRequest" />
     
     <!-- abnormal exit point -->
     <end-state id="scInternalServerError" />
