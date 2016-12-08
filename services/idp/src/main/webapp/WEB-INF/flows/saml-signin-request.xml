@@ -94,7 +94,8 @@
     
     <action-state id="wfreshParserRemoteAction">
         <evaluate
-            expression="idpTokenExpiredAction.isTokenExpired(flowScope.home_realm, flowRequestContext)" />
+            expression="idpTokenExpiredAction.isTokenExpired(flowScope.home_realm, flowRequestContext)
+                        or authnRequestParser.isForceAuthentication(flowRequestContext)" />
         <transition on="yes" to="redirectToTrustedIDP" />
         <transition on="no" to="validateWReply" >
             <set name="flowScope.idpToken" value="externalContext.sessionMap[flowScope.home_realm]" />
