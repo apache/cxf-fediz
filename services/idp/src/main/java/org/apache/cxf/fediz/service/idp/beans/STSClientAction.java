@@ -272,11 +272,6 @@ public class STSClientAction {
         sts.setEnableAppliesTo(serviceConfig.isEnableAppliesTo());
         
         sts.setOnBehalfOf(idpToken.getToken());
-        if (!(serviceConfig.getProtocol() == null
-            || FederationConstants.WS_FEDERATION_NS.equals(serviceConfig.getProtocol()))) {
-            LOG.error("Protocol {} not supported for realm {} ", serviceConfig.getProtocol(), realm);
-            throw new ProcessingException(TYPE.BAD_REQUEST);
-        }
        
         if (properties != null) {
             sts.setProperties(properties);

@@ -137,7 +137,7 @@
 
     <bean id="srv-fedizhelloworld-realmB" class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationEntity">
         <property name="realm" value="urn:org:apache:cxf:fediz:fedizhelloworld:realm-B" />
-        <property name="protocol" value="http://docs.oasis-open.org/wsfed/federation/200706" />
+        <property name="protocol" value="urn:oasis:names:tc:SAML:2.0:profiles:SSO:browser" />
         <property name="serviceDisplayName" value="Fedizhelloworld" />
         <property name="serviceDescription" value="Web Application to illustrate SAML SSO" />
         <property name="role" value="ApplicationServiceType" />
@@ -150,7 +150,7 @@
     
     <bean id="srv-fedizhelloworld-realmC" class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationEntity">
         <property name="realm" value="urn:org:apache:cxf:fediz:fedizhelloworld:realm-C" />
-        <property name="protocol" value="http://docs.oasis-open.org/wsfed/federation/200706" />
+        <property name="protocol" value="urn:oasis:names:tc:SAML:2.0:profiles:SSO:browser" />
         <property name="serviceDisplayName" value="Fedizhelloworld" />
         <property name="serviceDescription" value="Web Application to illustrate SAML SSO" />
         <property name="role" value="ApplicationServiceType" />
@@ -163,7 +163,7 @@
     
     <bean id="srv-fedizhelloworld-realmD" class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationEntity">
         <property name="realm" value="urn:org:apache:cxf:fediz:fedizhelloworld:realm-D" />
-        <property name="protocol" value="http://docs.oasis-open.org/wsfed/federation/200706" />
+        <property name="protocol" value="urn:oasis:names:tc:SAML:2.0:profiles:SSO:browser" />
         <property name="serviceDisplayName" value="Fedizhelloworld" />
         <property name="serviceDescription" value="Web Application to illustrate SAML SSO" />
         <property name="role" value="ApplicationServiceType" />
