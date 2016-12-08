@@ -91,14 +91,18 @@
             expression="idpTokenExpiredAction.isTokenExpired(flowScope.home_realm, flowRequestContext)
                         or authnRequestParser.isForceAuthentication(flowRequestContext)" />
         <transition on="yes" to="redirectToTrustedIDP" />
-        <transition on="no" to="validateWReply" >
+        <transition on="no" to="validateReturnAddress" >
             <set name="flowScope.idpToken" value="externalContext.sessionMap[flowScope.home_realm]" />
         </transition>
         <transition on-exception="java.lang.Throwable" to="viewBadRequest" />
     </action-state>
     
-    <action-state id="validateWReply">
-        <evaluate expression="commonsURLValidator.isValid(flowRequestContext, flowScope.wreply)
+    <action-state id="validateReturnAddress">
+        <on-entry>
+            <evaluate expression="authnRequestParser.retrieveConsumerURL(flowRequestContext)" 
+                      result="flowScope.consumerURL"/>
+        </on-entry>
+        <evaluate expression="commonsURLValidator.isValid(flowRequestContext, flowScope.consumerURL)
                               and passiveRequestorValidator.isValid(flowRequestContext, flowScope.consumerURL, flowScope.realm)"/>
         <transition on="yes" to="requestRpToken" />
         <transition on="no" to="viewBadRequest" />

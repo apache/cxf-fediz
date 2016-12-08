@@ -94,13 +94,13 @@
             expression="idpTokenExpiredAction.isTokenExpired(flowScope.home_realm, flowRequestContext) or
                         wfreshParser.authenticationRequired(flowScope.wfresh, flowScope.home_realm, flowRequestContext)" />
         <transition on="yes" to="redirectToTrustedIDP" />
-        <transition on="no" to="validateWReply" >
+        <transition on="no" to="validateReturnAddress" >
             <set name="flowScope.idpToken" value="externalContext.sessionMap[home_realm]" />
         </transition>
         <transition on-exception="java.lang.Throwable" to="viewBadRequest" />
     </action-state>
     
-    <action-state id="validateWReply">
+    <action-state id="validateReturnAddress">
         <evaluate expression="commonsURLValidator.isValid(flowRequestContext, flowScope.wreply)
                               and passiveRequestorValidator.isValid(flowRequestContext, flowScope.wreply, flowScope.wtrealm)"/>
         <transition on="yes" to="requestRpToken" />
@@ -134,7 +134,7 @@
             expression="idpTokenExpiredAction.isTokenExpired(flowScope.home_realm, flowRequestContext) or
                         wfreshParser.authenticationRequired(flowScope.wfresh, flowScope.home_realm, flowRequestContext)" />
         <transition on="yes" to="redirectToLocalIDP" />
-        <transition on="no" to="validateWReply">
+        <transition on="no" to="validateReturnAddress">
             <set name="flowScope.idpToken" value="externalContext.sessionMap[home_realm]" />
         </transition>
         <transition on-exception="java.lang.Throwable" to="viewBadRequest" />
@@ -151,7 +151,7 @@
     <action-state id="cacheSecurityToken">
         <secured attributes="IS_AUTHENTICATED_FULLY" />
         <evaluate expression="cacheSecurityToken.submit(flowRequestContext)" />
-        <transition to="validateWReply">
+        <transition to="validateReturnAddress">
             <set name="flowScope.idpToken" value="externalContext.sessionMap[home_realm]" />
         </transition>
     </action-state>
