@@ -145,12 +145,10 @@
     
     <action-state id="validateEndpointAddress">
         <on-entry>
-            <evaluate expression="authnRequestParser.retrieveConsumerURL(flowRequestContext)" 
-                      result="flowScope.consumerURL"/>
             <evaluate expression="authnRequestParser.retrieveRealm(flowRequestContext)" 
                           result="flowScope.realm"/>
         </on-entry>
-        <evaluate expression="passiveRequestorValidator.isValid(flowRequestContext, flowScope.consumerURL, flowScope.realm)"/>
+        <evaluate expression="passiveRequestorValidator.isValid(flowRequestContext, flowScope.return_address, flowScope.realm)"/>
         <transition on="yes" to="requestRpToken" />
         <transition on="no" to="viewBadRequest" />
     </action-state>
