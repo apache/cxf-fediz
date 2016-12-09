@@ -63,7 +63,7 @@
     </decision-state>
     
     <decision-state id="selectOIDCAuthorizationCodeFlowProcess">
-         <on-entry>
+        <on-entry>
             <set name="flowScope.state" value="requestParameters.state" />
             <set name="flowScope.request_context" value="requestParameters.state" />
             <set name="flowScope.code" value="requestParameters.code" />
@@ -78,6 +78,11 @@
         <evaluate expression="authnRequestParser.parseSAMLRequest(flowRequestContext, flowScope.idpConfig,
                                                               flowScope.SAMLRequest, flowScope.Signature,
                                                               flowScope.RelayState)" />
+        <transition to="retrieveConsumerURL"/>
+        <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
+    </action-state>
+    
+    <action-state id="retrieveConsumerURL">
         <evaluate expression="authnRequestParser.retrieveConsumerURL(flowRequestContext)" 
                   result="flowScope.consumerURL"/>
         <transition to="signinSAMLRequest"/>
