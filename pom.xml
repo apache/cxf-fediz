@@ -68,8 +68,8 @@
         <slf4j.version>1.7.21</slf4j.version>
         <spring.version>4.3.4.RELEASE</spring.version>
         <spring.security.version>3.2.9.RELEASE</spring.security.version>
-        <tomcat7.version>7.0.72</tomcat7.version>
-        <tomcat8.version>8.0.38</tomcat8.version>
+        <tomcat7.version>7.0.73</tomcat7.version>
+        <tomcat8.version>8.0.39</tomcat8.version>
         <wss4j.version>2.1.8</wss4j.version>
 
         <tomcat.url>http://localhost:8080/manager/text</tomcat.url>
