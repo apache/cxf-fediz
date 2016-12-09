@@ -22,29 +22,33 @@ package org.apache.cxf.fediz.service.idp;
 public final class IdpConstants {
 
     public static final String IDP_CONFIG = "idpConfig";
-    
+
     /**
      * A key used to store context/state when communicating with a trusted third party IdP.
      */
     public static final String TRUSTED_IDP_CONTEXT = "trusted_idp_context";
-    
+
     /**
      * A key used to store the home realm for the given request.
      */
     public static final String HOME_REALM = "home_realm";
-    
+
     /**
      * The SAML Authn Request
      */
     public static final String SAML_AUTHN_REQUEST = "saml_authn_request";
-    
+
     /**
      * A Context variable associated with the request (independent of protocol)
      */
     public static final String CONTEXT = "request_context";
-    
-    
-    
+
+    /**
+     * A key used to store the return address for the given request
+     */
+    public static final String RETURN_ADDRESS = "return_address";
+
+
     private IdpConstants() {
         // complete
     }

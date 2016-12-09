@@ -78,6 +78,8 @@
         <evaluate expression="authnRequestParser.parseSAMLRequest(flowRequestContext, flowScope.idpConfig,
                                                               flowScope.SAMLRequest, flowScope.Signature,
                                                               flowScope.RelayState)" />
+        <evaluate expression="authnRequestParser.retrieveConsumerURL(flowRequestContext)" 
+                  result="flowScope.consumerURL"/>
         <transition to="signinSAMLRequest"/>
         <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
     </action-state>
@@ -90,6 +92,7 @@
         <input name="protocol" value="'samlsso'" />
         <input name="saml_authn_request" value="flowScope.saml_authn_request" />
         <input name="home_realm" value="null" />
+        <input name="return_address" value="flowScope.consumerURL" />
 
         <output name="home_realm" />
         <output name="idpToken" />

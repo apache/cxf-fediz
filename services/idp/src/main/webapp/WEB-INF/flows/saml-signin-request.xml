@@ -28,6 +28,7 @@
     <input name="protocol" />
     <input name="saml_authn_request" />
     <input name="home_realm" />
+    <input name="return_address" />
     
     <!-- ===== Home Realm Discovery ===== -->
     
@@ -74,19 +75,17 @@
     <!-- Home Realm is known then we can store it in cookie -->
     <decision-state id="checkIsThisIDP">
         <if test="flowScope.idpConfig.realm.equals(flowScope.home_realm)"
-            then="homeRealmSignInEntryPoint" else="checkIdpTokenHomeRealm" />
+            then="homeRealmSignInEntryPoint" else="checkRemoteIdpToken" />
     </decision-state>
     
-    <!-- ============================================================================================================= -->
+    <!-- ===== Home Realm != this realm ===== -->
     
-    <!-- Is 'wresult/RP-IDP token' already received and validated (then stored 
-        in session) from requestor IDP ? -->
-    <decision-state id="checkIdpTokenHomeRealm">
+    <decision-state id="checkRemoteIdpToken">
         <if test="externalContext.sessionMap[flowScope.home_realm] != null"
-            then="wfreshParserRemoteAction" else="redirectToTrustedIDP" />
+            then="checkRemoteIdpTokenExpiry" else="redirectToTrustedIDP" />
     </decision-state>
     
-    <action-state id="wfreshParserRemoteAction">
+    <action-state id="checkRemoteIdpTokenExpiry">
         <evaluate
             expression="idpTokenExpiredAction.isTokenExpired(flowScope.home_realm, flowRequestContext)
                         or authnRequestParser.isForceAuthentication(flowRequestContext)" />
@@ -98,17 +97,13 @@
     </action-state>
     
     <action-state id="validateReturnAddress">
-        <on-entry>
-            <evaluate expression="authnRequestParser.retrieveConsumerURL(flowRequestContext)" 
-                      result="flowScope.consumerURL"/>
-        </on-entry>
-        <evaluate expression="commonsURLValidator.isValid(flowRequestContext, flowScope.consumerURL)
-                              and passiveRequestorValidator.isValid(flowRequestContext, flowScope.consumerURL, flowScope.realm)"/>
+        <evaluate expression="commonsURLValidator.isValid(flowRequestContext, flowScope.return_address)
+                              and passiveRequestorValidator.isValid(flowRequestContext, flowScope.return_address, flowScope.realm)"/>
         <transition on="yes" to="requestRpToken" />
         <transition on="no" to="viewBadRequest" />
     </action-state>
     
-    <!-- ============================================================================================================= -->
+    <!-- ===== Home Realm == this realm ===== -->
     
     <decision-state id="homeRealmSignInEntryPoint">
         <on-entry>
@@ -119,10 +114,10 @@
             then="viewBadRequest" />
         <!-- check presence of cached IDP token for THIS realm -->
         <if test="externalContext.sessionMap[flowScope.home_realm] == null"
-            then="cacheSecurityToken" else="checkTokenExpiry" />
+            then="cacheSecurityToken" else="checkLocalIdPTokenExpiry" />
     </decision-state>
 
-    <action-state id="checkTokenExpiry">
+    <action-state id="checkLocalIdPTokenExpiry">
         <evaluate
             expression="idpTokenExpiredAction.isTokenExpired(flowScope.home_realm, flowRequestContext)
                         or authnRequestParser.isForceAuthentication(flowRequestContext)" />
@@ -130,7 +125,7 @@
         <transition on="no" to="validateEndpointAddress">
             <set name="flowScope.idpToken" value="externalContext.sessionMap[flowScope.home_realm]" />
         </transition>
-        <transition on-exception="java.lang.Throwable" to="scInternalServerError" />
+        <transition on-exception="java.lang.Throwable" to="viewBadRequest" />
     </action-state>
 
     <end-state id="redirectToLocalIDP">
@@ -170,9 +165,6 @@
 
     <!-- abnormal exit point -->
     <end-state id="viewBadRequest" />
-    
-    <!-- abnormal exit point -->
-    <end-state id="scInternalServerError" />
     
     <!-- redirects to requestor idp -->
     <end-state id="redirectToTrustedIDP">

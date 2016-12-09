@@ -45,14 +45,14 @@ public class SigninParametersCacheAction {
     public void store(RequestContext context, String protocol) {
         Map<String, Object> signinParams = new HashMap<>();
         String uuidKey = UUID.randomUUID().toString();
-        
+
         Object value = WebUtils.getAttributeFromFlowScope(context, IdpConstants.HOME_REALM);
         if (value != null) {
             signinParams.put(IdpConstants.HOME_REALM, value);
         }
-        
+
         if ("wsfed".equals(protocol)) {
-            value = WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_REPLY);
+            value = WebUtils.getAttributeFromFlowScope(context, IdpConstants.RETURN_ADDRESS);
             if (value != null) {
                 signinParams.put(FederationConstants.PARAM_REPLY, value);
             }
@@ -75,29 +75,29 @@ public class SigninParametersCacheAction {
                 signinParams.put(IdpConstants.SAML_AUTHN_REQUEST, value);
             }
         }
-        
+
         WebUtils.putAttributeInExternalContext(context, uuidKey, signinParams);
-        
+
         LOG.debug("SignIn parameters cached: {}", signinParams.toString());
         WebUtils.putAttributeInFlowScope(context, IdpConstants.TRUSTED_IDP_CONTEXT, uuidKey);
         LOG.info("SignIn parameters cached and context set to [" + uuidKey + "].");
     }
-    
+
     public void restore(RequestContext context, String contextKey, String protocol) {
-        
+
         if (contextKey != null) {
             @SuppressWarnings("unchecked")
             Map<String, Object> signinParams =
                 (Map<String, Object>)WebUtils.getAttributeFromExternalContext(context, contextKey);
-            
+
             if (signinParams != null) {
                 LOG.debug("SignIn parameters restored: {}", signinParams.toString());
-                
+
                 String value = (String)signinParams.get(IdpConstants.HOME_REALM);
                 if (value != null) {
                     WebUtils.putAttributeInFlowScope(context, IdpConstants.HOME_REALM, value);
                 }
-                
+
                 if ("wsfed".equals(protocol)) {
                     value = (String)signinParams.get(FederationConstants.PARAM_REPLY);
                     if (value != null) {
@@ -107,33 +107,33 @@ public class SigninParametersCacheAction {
                     if (value != null) {
                         WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_TREALM, value);
                     }
-                    
+
                     WebUtils.removeAttributeFromFlowScope(context, FederationConstants.PARAM_CONTEXT);
-                    LOG.info("SignIn parameters restored and " + FederationConstants.PARAM_CONTEXT + "[" 
+                    LOG.info("SignIn parameters restored and " + FederationConstants.PARAM_CONTEXT + "["
                         + contextKey + "] cleared.");
-                    
+
                     value = (String)signinParams.get(FederationConstants.PARAM_CONTEXT);
                     if (value != null) {
                         WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_CONTEXT, value);
                     }
                 } else if ("samlsso".equals(protocol)) {
-                    SAMLAuthnRequest authnRequest = 
+                    SAMLAuthnRequest authnRequest =
                         (SAMLAuthnRequest)signinParams.get(IdpConstants.SAML_AUTHN_REQUEST);
                     if (authnRequest != null) {
                         WebUtils.putAttributeInFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST, authnRequest);
                     }
-                    
+
                     // TODO
                     value = (String)signinParams.get("RelayState");
                     if (value != null) {
                         WebUtils.putAttributeInFlowScope(context, "RelayState", value);
                     }
                 }
-                
+
             }  else {
                 LOG.debug("Error in restoring security context");
             }
-            
+
             WebUtils.removeAttributeFromFlowScope(context, contextKey);
         } else {
             LOG.debug("Error in restoring security context");
@@ -146,15 +146,15 @@ public class SigninParametersCacheAction {
         Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(context, IdpConstants.IDP_CONFIG);
         if (wtrealm == null || idpConfig == null) {
             return;
-        }       
-        
+        }
+
         Application serviceConfig = idpConfig.findApplication(wtrealm);
         if (serviceConfig != null) {
             if (serviceConfig.getPassiveRequestorEndpoint() == null) {
                 String url = guessPassiveRequestorURL(context, wtrealm);
                 serviceConfig.setPassiveRequestorEndpoint(url);
             }
-            
+
             @SuppressWarnings("unchecked")
             Map<String, Application> realmConfigMap =
                     (Map<String, Application>)WebUtils
