@@ -51,7 +51,7 @@
     </decision-state>
     
     <decision-state id="checkDefaultToThisIDP">
-        <if test="flowScope.idpConfig.isUseCurrentIdp()" then="checkWauthTypeSupported"
+        <if test="flowScope.idpConfig.isUseCurrentIdp()" then="homeRealmSignInEntryPoint"
             else="viewBadRequest" />
     </decision-state>
 
@@ -77,7 +77,7 @@
     <!-- Home Realm is known then we can store it in cookie -->
     <decision-state id="checkIsThisIDP">
         <if test="flowScope.idpConfig.realm.equals(flowScope.home_realm)"
-            then="checkWauthTypeSupported" else="checkRemoteIdpToken" />
+            then="homeRealmSignInEntryPoint" else="checkRemoteIdpToken" />
     </decision-state>
     
     <!-- ===== Realm independent ===== -->
@@ -109,19 +109,14 @@
     
     <!-- ===== Home Realm == this realm ===== -->
     
-    <decision-state id="checkWauthTypeSupported">
+    <decision-state id="homeRealmSignInEntryPoint">
         <on-entry>
             <!-- Here, home realm is guaranteed to be THIS realm -->
             <set name="flowScope.home_realm" value="flowScope.idpConfig.realm" />
         </on-entry>
         <if test="flowScope.idpConfig.getAuthenticationURIs() == null"
             then="viewBadRequest" />
-        <if
-            test="flowScope.idpConfig.getAuthenticationURIs().get(flowScope.wauth) != null"
-            then="checkIdpTokenWauth" else="viewBadRequest" />
-    </decision-state>
 
-    <decision-state id="checkIdpTokenWauth">
         <!-- check presence of cached IDP token for THIS realm -->
         <if test="externalContext.sessionMap[flowScope.home_realm] == null"
             then="cacheSecurityToken" else="checkLocalIdPTokenExpiry" />
