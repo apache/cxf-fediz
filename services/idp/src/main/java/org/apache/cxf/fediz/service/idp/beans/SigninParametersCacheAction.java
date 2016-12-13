@@ -56,9 +56,9 @@ public class SigninParametersCacheAction {
             if (value != null) {
                 signinParams.put(FederationConstants.PARAM_REPLY, value);
             }
-            value = WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_TREALM);
+            value = WebUtils.getAttributeFromFlowScope(context, IdpConstants.REALM);
             if (value != null) {
-                signinParams.put(FederationConstants.PARAM_TREALM, value);
+                signinParams.put(IdpConstants.REALM, value);
             }
             value = WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_CONTEXT);
             if (value != null) {
@@ -97,15 +97,15 @@ public class SigninParametersCacheAction {
                 if (value != null) {
                     WebUtils.putAttributeInFlowScope(context, IdpConstants.HOME_REALM, value);
                 }
+                value = (String)signinParams.get(IdpConstants.REALM);
+                if (value != null) {
+                    WebUtils.putAttributeInFlowScope(context, IdpConstants.REALM, value);
+                }
 
                 if ("wsfed".equals(protocol)) {
                     value = (String)signinParams.get(FederationConstants.PARAM_REPLY);
                     if (value != null) {
                         WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_REPLY, value);
-                    }
-                    value = (String)signinParams.get(FederationConstants.PARAM_TREALM);
-                    if (value != null) {
-                        WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_TREALM, value);
                     }
 
                     WebUtils.removeAttributeFromFlowScope(context, FederationConstants.PARAM_CONTEXT);

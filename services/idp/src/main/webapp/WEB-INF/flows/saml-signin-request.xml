@@ -25,9 +25,10 @@
 
     <input name="idpConfig" />
     <input name="RelayState" />
-    <input name="protocol" />
     <input name="saml_authn_request" />
+    <input name="realm" />
     <input name="home_realm" />
+    <input name="protocol" />
     <input name="return_address" />
     
     <!-- ===== Home Realm Discovery ===== -->
@@ -78,6 +79,15 @@
             then="homeRealmSignInEntryPoint" else="checkRemoteIdpToken" />
     </decision-state>
     
+    <!-- ===== Realm independent ===== -->
+    
+    <action-state id="validateReturnAddress">
+        <evaluate expression="commonsURLValidator.isValid(flowRequestContext, flowScope.return_address)
+                              and passiveRequestorValidator.isValid(flowRequestContext, flowScope.return_address, flowScope.realm)"/>
+        <transition on="yes" to="requestRpToken" />
+        <transition on="no" to="viewBadRequest" />
+    </action-state>
+    
     <!-- ===== Home Realm != this realm ===== -->
     
     <decision-state id="checkRemoteIdpToken">
@@ -94,13 +104,6 @@
             <set name="flowScope.idpToken" value="externalContext.sessionMap[flowScope.home_realm]" />
         </transition>
         <transition on-exception="java.lang.Throwable" to="viewBadRequest" />
-    </action-state>
-    
-    <action-state id="validateReturnAddress">
-        <evaluate expression="commonsURLValidator.isValid(flowRequestContext, flowScope.return_address)
-                              and passiveRequestorValidator.isValid(flowRequestContext, flowScope.return_address, flowScope.realm)"/>
-        <transition on="yes" to="requestRpToken" />
-        <transition on="no" to="viewBadRequest" />
     </action-state>
     
     <!-- ===== Home Realm == this realm ===== -->
@@ -122,7 +125,7 @@
             expression="idpTokenExpiredAction.isTokenExpired(flowScope.home_realm, flowRequestContext)
                         or authnRequestParser.isForceAuthentication(flowRequestContext)" />
         <transition on="yes" to="redirectToLocalIDP" />
-        <transition on="no" to="validateEndpointAddress">
+        <transition on="no" to="validateReturnAddress">
             <set name="flowScope.idpToken" value="externalContext.sessionMap[flowScope.home_realm]" />
         </transition>
         <transition on-exception="java.lang.Throwable" to="viewBadRequest" />
@@ -138,21 +141,11 @@
     <action-state id="cacheSecurityToken">
         <secured attributes="IS_AUTHENTICATED_FULLY" />
         <evaluate expression="cacheSecurityToken.submit(flowRequestContext)" />
-        <transition to="validateEndpointAddress">
+        <transition to="validateReturnAddress">
             <set name="flowScope.idpToken" value="externalContext.sessionMap[flowScope.home_realm]" />
         </transition>
     </action-state>
     
-    <action-state id="validateEndpointAddress">
-        <on-entry>
-            <evaluate expression="authnRequestParser.retrieveRealm(flowRequestContext)" 
-                          result="flowScope.realm"/>
-        </on-entry>
-        <evaluate expression="passiveRequestorValidator.isValid(flowRequestContext, flowScope.return_address, flowScope.realm)"/>
-        <transition on="yes" to="requestRpToken" />
-        <transition on="no" to="viewBadRequest" />
-    </action-state>
-
     <!-- ============================================================================================================= -->
 
     <!-- normal exit point -->

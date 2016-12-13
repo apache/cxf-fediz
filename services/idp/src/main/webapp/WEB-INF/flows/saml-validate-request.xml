@@ -85,6 +85,13 @@
     <action-state id="retrieveConsumerURL">
         <evaluate expression="authnRequestParser.retrieveConsumerURL(flowRequestContext)" 
                   result="flowScope.consumerURL"/>
+        <transition to="retrieveRealm"/>
+        <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
+    </action-state>
+    
+    <action-state id="retrieveRealm">
+        <evaluate expression="authnRequestParser.retrieveRealm(flowRequestContext)" 
+                  result="flowScope.realm"/>
         <transition to="signinSAMLRequest"/>
         <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
     </action-state>
@@ -96,6 +103,7 @@
         <input name="Signature" value="flowScope.Signature" />
         <input name="protocol" value="'samlsso'" />
         <input name="saml_authn_request" value="flowScope.saml_authn_request" />
+        <input name="realm" value="flowScope.realm" />
         <input name="home_realm" value="null" />
         <input name="return_address" value="flowScope.consumerURL" />
 

@@ -24,10 +24,10 @@
         http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd">
 
     <input name="idpConfig" />
-    <input name="wtrealm" />
     <input name="wctx" />
     <input name="wfresh" />
     <input name="wauth" />
+    <input name="realm" />
     <input name="home_realm" />
     <input name="protocol" />
     <input name="return_address" />
@@ -79,7 +79,16 @@
         <if test="flowScope.idpConfig.realm.equals(flowScope.home_realm)"
             then="checkWauthTypeSupported" else="checkRemoteIdpToken" />
     </decision-state>
-
+    
+    <!-- ===== Realm independent ===== -->
+    
+    <action-state id="validateReturnAddress">
+        <evaluate expression="commonsURLValidator.isValid(flowRequestContext, flowScope.return_address)
+                              and passiveRequestorValidator.isValid(flowRequestContext, flowScope.return_address, flowScope.realm)"/>
+        <transition on="yes" to="requestRpToken" />
+        <transition on="no" to="viewBadRequest" />
+    </action-state>
+    
     <!-- ===== Home Realm != this realm ===== -->
 
     <decision-state id="checkRemoteIdpToken">
@@ -96,13 +105,6 @@
             <set name="flowScope.idpToken" value="externalContext.sessionMap[home_realm]" />
         </transition>
         <transition on-exception="java.lang.Throwable" to="viewBadRequest" />
-    </action-state>
-    
-    <action-state id="validateReturnAddress">
-        <evaluate expression="commonsURLValidator.isValid(flowRequestContext, flowScope.return_address)
-                              and passiveRequestorValidator.isValid(flowRequestContext, flowScope.return_address, flowScope.wtrealm)"/>
-        <transition on="yes" to="requestRpToken" />
-        <transition on="no" to="viewBadRequest" />
     </action-state>
     
     <!-- ===== Home Realm == this realm ===== -->

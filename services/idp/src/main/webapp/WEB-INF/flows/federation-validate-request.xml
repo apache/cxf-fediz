@@ -93,7 +93,7 @@
 
     <subflow-state id="signinRequest" subflow="signinRequest">
         <input name="idpConfig" value="flowScope.idpConfig" />
-        <input name="wtrealm" value="flowScope.wtrealm" />
+        <input name="realm" value="flowScope.wtrealm" />
         <input name="wctx" value="flowScope.wctx" />
         <input name="wfresh" value="flowScope.wfresh" />
         <input name="wauth" value="flowScope.wauth" />
@@ -132,7 +132,7 @@
         <input name="home_realm" value="flowScope.whr" />
         <input name="protocol" value="'wsfed'" />
 
-        <output name="wtrealm" />
+        <output name="realm" />
         <output name="wreply" />
         <output name="wctx" />
         <output name="home_realm" />
@@ -141,7 +141,7 @@
         <transition on="requestRpToken" to="requestRpToken">
             <set name="flowScope.whr" value="currentEvent.attributes.home_realm" />
             <set name="flowScope.wctx" value="currentEvent.attributes.wctx" />
-            <set name="flowScope.wtrealm" value="currentEvent.attributes.wtrealm" />
+            <set name="flowScope.wtrealm" value="currentEvent.attributes.realm" />
             <set name="flowScope.wreply" value="currentEvent.attributes.wreply" />
             <set name="flowScope.idpToken" value="currentEvent.attributes.idpToken" />
         </transition>

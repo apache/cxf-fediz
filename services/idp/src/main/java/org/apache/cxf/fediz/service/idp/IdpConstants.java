@@ -29,6 +29,11 @@ public final class IdpConstants {
     public static final String TRUSTED_IDP_CONTEXT = "trusted_idp_context";
 
     /**
+     * A key used to store the application realm for the given request.
+     */
+    public static final String REALM = "realm";
+
+    /**
      * A key used to store the home realm for the given request.
      */
     public static final String HOME_REALM = "home_realm";

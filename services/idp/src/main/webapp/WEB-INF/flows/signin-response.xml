@@ -68,7 +68,7 @@ subflow to get a RP token from the STS.
         <output name="home_realm" value="flowScope.home_realm" />
         <output name="wctx" value="flowScope.wctx" />
         <output name="wreply" value="flowScope.wreply" />
-        <output name="wtrealm" value="flowScope.wtrealm" />
+        <output name="realm" value="flowScope.realm" />
         <output name="idpToken" value="flowScope.idpToken" />
         <output name="saml_authn_request" value="flowScope.saml_authn_request" />
         <output name="RelayState" value="flowScope.RelayState" />
