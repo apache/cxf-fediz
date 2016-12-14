@@ -115,8 +115,6 @@
             <!-- Here, home realm is guaranteed to be THIS realm -->
             <set name="flowScope.home_realm" value="flowScope.idpConfig.realm" />
         </on-entry>
-        <if test="flowScope.idpConfig.getAuthenticationURIs() == null"
-            then="viewBadRequest" />
             
         <!-- check presence of cached IDP token for THIS realm -->
         <if test="externalContext.sessionMap[flowScope.home_realm] == null"

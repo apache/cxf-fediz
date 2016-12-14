@@ -134,7 +134,7 @@
         <input name="protocol" value="'wsfed'" />
 
         <output name="realm" />
-        <output name="wreply" />
+        <output name="return_address" />
         <output name="request_context" />
         <output name="home_realm" />
         <output name="idpToken" />
@@ -143,7 +143,7 @@
             <set name="flowScope.whr" value="currentEvent.attributes.home_realm" />
             <set name="flowScope.wctx" value="currentEvent.attributes.request_context" />
             <set name="flowScope.wtrealm" value="currentEvent.attributes.realm" />
-            <set name="flowScope.wreply" value="currentEvent.attributes.wreply" />
+            <set name="flowScope.wreply" value="currentEvent.attributes.return_address" />
             <set name="flowScope.idpToken" value="currentEvent.attributes.idpToken" />
         </transition>
         <transition on="viewBadRequest" to="viewBadRequest" />

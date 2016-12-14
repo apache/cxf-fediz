@@ -54,17 +54,20 @@ public class SigninParametersCacheAction {
         if (value != null) {
             signinParams.put(IdpConstants.CONTEXT, value);
         }
+        value = WebUtils.getAttributeFromFlowScope(context, IdpConstants.REALM);
+        if (value != null) {
+            signinParams.put(IdpConstants.REALM, value);
+        }
+        value = WebUtils.getAttributeFromFlowScope(context, IdpConstants.RETURN_ADDRESS);
+        if (value != null) {
+            signinParams.put(IdpConstants.RETURN_ADDRESS, value);
+        }
+        value = WebUtils.getAttributeFromFlowScope(context, IdpConstants.RETURN_ADDRESS);
+        if (value != null) {
+            signinParams.put(IdpConstants.RETURN_ADDRESS, value);
+        }
 
-        if ("wsfed".equals(protocol)) {
-            value = WebUtils.getAttributeFromFlowScope(context, IdpConstants.RETURN_ADDRESS);
-            if (value != null) {
-                signinParams.put(FederationConstants.PARAM_REPLY, value);
-            }
-            value = WebUtils.getAttributeFromFlowScope(context, IdpConstants.REALM);
-            if (value != null) {
-                signinParams.put(IdpConstants.REALM, value);
-            }
-        } else if ("samlsso".equals(protocol)) {
+        if ("samlsso".equals(protocol)) {
             value = WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
             if (value != null) {
                 signinParams.put(IdpConstants.SAML_AUTHN_REQUEST, value);
@@ -96,12 +99,16 @@ public class SigninParametersCacheAction {
                 if (value != null) {
                     WebUtils.putAttributeInFlowScope(context, IdpConstants.REALM, value);
                 }
+                value = (String)signinParams.get(IdpConstants.RETURN_ADDRESS);
+                if (value != null) {
+                    WebUtils.putAttributeInFlowScope(context, IdpConstants.RETURN_ADDRESS, value);
+                }
+                value = (String)signinParams.get(IdpConstants.CONTEXT);
+                if (value != null) {
+                    WebUtils.putAttributeInFlowScope(context, IdpConstants.CONTEXT, value);
+                }
 
                 if ("wsfed".equals(protocol)) {
-                    value = (String)signinParams.get(FederationConstants.PARAM_REPLY);
-                    if (value != null) {
-                        WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_REPLY, value);
-                    }
 
                     WebUtils.removeAttributeFromFlowScope(context, FederationConstants.PARAM_CONTEXT);
                     LOG.info("SignIn parameters restored and " + FederationConstants.PARAM_CONTEXT + "["
@@ -113,11 +120,6 @@ public class SigninParametersCacheAction {
                     if (authnRequest != null) {
                         WebUtils.putAttributeInFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST, authnRequest);
                     }
-                }
-
-                value = (String)signinParams.get(IdpConstants.CONTEXT);
-                if (value != null) {
-                    WebUtils.putAttributeInFlowScope(context, IdpConstants.CONTEXT, value);
                 }
 
             }  else {
