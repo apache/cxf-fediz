@@ -24,6 +24,7 @@
         http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd">
 
     <input name="idpConfig" />
+    <input name="wfresh" />
     <input name="saml_authn_request" />
     <input name="realm" />
     <input name="home_realm" />
