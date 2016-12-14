@@ -50,6 +50,10 @@ public class SigninParametersCacheAction {
         if (value != null) {
             signinParams.put(IdpConstants.HOME_REALM, value);
         }
+        value = WebUtils.getAttributeFromFlowScope(context, IdpConstants.CONTEXT);
+        if (value != null) {
+            signinParams.put(IdpConstants.CONTEXT, value);
+        }
 
         if ("wsfed".equals(protocol)) {
             value = WebUtils.getAttributeFromFlowScope(context, IdpConstants.RETURN_ADDRESS);
@@ -60,16 +64,7 @@ public class SigninParametersCacheAction {
             if (value != null) {
                 signinParams.put(IdpConstants.REALM, value);
             }
-            value = WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_CONTEXT);
-            if (value != null) {
-                signinParams.put(FederationConstants.PARAM_CONTEXT, value);
-            }
         } else if ("samlsso".equals(protocol)) {
-            // TODO
-            value = WebUtils.getAttributeFromFlowScope(context, "RelayState");
-            if (value != null) {
-                signinParams.put("RelayState", value);
-            }
             value = WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
             if (value != null) {
                 signinParams.put(IdpConstants.SAML_AUTHN_REQUEST, value);
@@ -112,22 +107,17 @@ public class SigninParametersCacheAction {
                     LOG.info("SignIn parameters restored and " + FederationConstants.PARAM_CONTEXT + "["
                         + contextKey + "] cleared.");
 
-                    value = (String)signinParams.get(FederationConstants.PARAM_CONTEXT);
-                    if (value != null) {
-                        WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_CONTEXT, value);
-                    }
                 } else if ("samlsso".equals(protocol)) {
                     SAMLAuthnRequest authnRequest =
                         (SAMLAuthnRequest)signinParams.get(IdpConstants.SAML_AUTHN_REQUEST);
                     if (authnRequest != null) {
                         WebUtils.putAttributeInFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST, authnRequest);
                     }
+                }
 
-                    // TODO
-                    value = (String)signinParams.get("RelayState");
-                    if (value != null) {
-                        WebUtils.putAttributeInFlowScope(context, "RelayState", value);
-                    }
+                value = (String)signinParams.get(IdpConstants.CONTEXT);
+                if (value != null) {
+                    WebUtils.putAttributeInFlowScope(context, IdpConstants.CONTEXT, value);
                 }
 
             }  else {

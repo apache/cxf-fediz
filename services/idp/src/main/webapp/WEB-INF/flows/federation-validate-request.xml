@@ -100,6 +100,7 @@
         <input name="home_realm" value="flowScope.whr" />
         <input name="protocol" value="'wsfed'" />
         <input name="return_address" value="flowScope.wreply" />
+        <input name="request_context" value="flowScope.request_context" />
 
         <output name="home_realm" />
         <output name="idpToken" />
@@ -134,13 +135,13 @@
 
         <output name="realm" />
         <output name="wreply" />
-        <output name="wctx" />
+        <output name="request_context" />
         <output name="home_realm" />
         <output name="idpToken" />
 
         <transition on="requestRpToken" to="requestRpToken">
             <set name="flowScope.whr" value="currentEvent.attributes.home_realm" />
-            <set name="flowScope.wctx" value="currentEvent.attributes.wctx" />
+            <set name="flowScope.wctx" value="currentEvent.attributes.request_context" />
             <set name="flowScope.wtrealm" value="currentEvent.attributes.realm" />
             <set name="flowScope.wreply" value="currentEvent.attributes.wreply" />
             <set name="flowScope.idpToken" value="currentEvent.attributes.idpToken" />

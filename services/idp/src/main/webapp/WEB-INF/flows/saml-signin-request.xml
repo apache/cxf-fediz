@@ -24,12 +24,12 @@
         http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd">
 
     <input name="idpConfig" />
-    <input name="RelayState" />
     <input name="saml_authn_request" />
     <input name="realm" />
     <input name="home_realm" />
     <input name="protocol" />
     <input name="return_address" />
+    <input name="request_context" />
     
     <!-- ===== Home Realm Discovery ===== -->
     
@@ -97,8 +97,9 @@
     
     <action-state id="checkRemoteIdpTokenExpiry">
         <evaluate
-            expression="idpTokenExpiredAction.isTokenExpired(flowScope.home_realm, flowRequestContext)
-                        or authnRequestParser.isForceAuthentication(flowRequestContext)" />
+            expression="idpTokenExpiredAction.isTokenExpired(flowScope.home_realm, flowRequestContext) or
+                        protocol.equals('wsfed') and wfreshParser.authenticationRequired(flowScope.wfresh, flowScope.home_realm, flowRequestContext)
+                        or protocol.equals('samlsso') and authnRequestParser.isForceAuthentication(flowRequestContext)" />
         <transition on="yes" to="redirectToTrustedIDP" />
         <transition on="no" to="validateReturnAddress" >
             <set name="flowScope.idpToken" value="externalContext.sessionMap[flowScope.home_realm]" />
@@ -123,8 +124,9 @@
 
     <action-state id="checkLocalIdPTokenExpiry">
         <evaluate
-            expression="idpTokenExpiredAction.isTokenExpired(flowScope.home_realm, flowRequestContext)
-                        or authnRequestParser.isForceAuthentication(flowRequestContext)" />
+            expression="idpTokenExpiredAction.isTokenExpired(flowScope.home_realm, flowRequestContext) or
+                        protocol.equals('wsfed') and wfreshParser.authenticationRequired(flowScope.wfresh, flowScope.home_realm, flowRequestContext)
+                        or protocol.equals('samlsso') and authnRequestParser.isForceAuthentication(flowRequestContext)" />
         <transition on="yes" to="redirectToLocalIDP" />
         <transition on="no" to="validateReturnAddress">
             <set name="flowScope.idpToken" value="externalContext.sessionMap[flowScope.home_realm]" />

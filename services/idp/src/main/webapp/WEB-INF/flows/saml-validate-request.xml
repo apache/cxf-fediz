@@ -106,6 +106,7 @@
         <input name="realm" value="flowScope.realm" />
         <input name="home_realm" value="null" />
         <input name="return_address" value="flowScope.consumerURL" />
+        <input name="request_context" value="flowScope.request_context" />
 
         <output name="home_realm" />
         <output name="idpToken" />
@@ -139,13 +140,13 @@
         <output name="home_realm" />
         <output name="idpToken" />
         <output name="saml_authn_request" />
-        <output name="RelayState" />
+        <output name="request_context" />
 
         <transition on="requestRpToken" to="requestRpToken">
             <set name="flowScope.home_realm" value="currentEvent.attributes.home_realm" />
             <set name="flowScope.idpToken" value="currentEvent.attributes.idpToken" />
             <set name="flowScope.saml_authn_request" value="currentEvent.attributes.saml_authn_request" />
-            <set name="flowScope.RelayState" value="currentEvent.attributes.RelayState" />
+            <set name="flowScope.RelayState" value="currentEvent.attributes.request_context" />
         </transition>
         <transition on="viewBadRequest" to="viewBadRequest" />
         <transition on="scInternalServerError" to="scInternalServerError" />

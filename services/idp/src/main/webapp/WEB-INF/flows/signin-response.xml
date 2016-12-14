@@ -66,12 +66,11 @@ subflow to get a RP token from the STS.
 
     <end-state id="requestRpToken">
         <output name="home_realm" value="flowScope.home_realm" />
-        <output name="wctx" value="flowScope.wctx" />
+        <output name="request_context" value="flowScope.request_context" />
         <output name="wreply" value="flowScope.wreply" />
         <output name="realm" value="flowScope.realm" />
         <output name="idpToken" value="flowScope.idpToken" />
         <output name="saml_authn_request" value="flowScope.saml_authn_request" />
-        <output name="RelayState" value="flowScope.RelayState" />
     </end-state>
 
     <!-- abnormal exit point : Http 400 Bad Request -->
