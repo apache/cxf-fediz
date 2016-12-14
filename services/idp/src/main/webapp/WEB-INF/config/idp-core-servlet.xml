@@ -54,10 +54,7 @@
         </property>
     </bean>
 
-    <bean id="expressionParser" class="org.springframework.webflow.expression.WebFlowOgnlExpressionParser" />
-
-    <webflow:flow-builder-services id="builder" view-factory-creator="viewFactoryCreator"
-        expression-parser="expressionParser" />
+    <webflow:flow-builder-services id="builder" view-factory-creator="viewFactoryCreator" />
 
     <webflow:flow-registry id="flowRegistry" flow-builder-services="builder">
         <webflow:flow-location path="/WEB-INF/flows/federation-validate-request.xml" id="federation" />

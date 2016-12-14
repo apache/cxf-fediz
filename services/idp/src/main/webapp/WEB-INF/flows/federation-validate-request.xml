@@ -231,7 +231,7 @@
         <transition on="cancel" to="redirect" />
     </view-state>
 
-    <view-state id="redirect" view="externalRedirect:${flowScope.wreply}" />
+    <view-state id="redirect" view="externalRedirect:#{flowScope.wreply}" />
 
     <!-- normal exit point for logout -->
     <end-state id="invalidateSessionAction" view="signoutresponse">
@@ -250,7 +250,7 @@
     </end-state>
 
     <!-- redirect to remote idp -->
-    <end-state id="redirectToTrustedIDP" view="externalRedirect:${flowScope.remoteIdpUrl}">
+    <end-state id="redirectToTrustedIDP" view="externalRedirect:#{flowScope.remoteIdpUrl}">
     <!-- 
         <on-entry>
             <set name="flowScope.remoteIdpUrl"
@@ -265,7 +265,7 @@
          --> 
     </end-state>
 
-    <end-state id="redirectToLocalIDP" view="externalRedirect:${flowScope.localIdpUrl}">
+    <end-state id="redirectToLocalIDP" view="externalRedirect:#{flowScope.localIdpUrl}">
         <on-entry>
             <set name="flowScope.localIdpUrl"
                 value="flowScope.idpConfig.idpUrl

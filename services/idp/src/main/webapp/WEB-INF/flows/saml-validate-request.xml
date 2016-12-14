@@ -246,7 +246,7 @@
         </on-entry>
     </end-state>
     
-    <end-state id="redirectToLocalIDP" view="externalRedirect:${flowScope.localIdpUrl}">
+    <end-state id="redirectToLocalIDP" view="externalRedirect:#{flowScope.localIdpUrl}">
         <on-entry>
             <evaluate expression="localRedirectCreator.createRedirectURL(flowRequestContext, flowScope.idpConfig)"
                       result="flowScope.localIdpUrl"/>
@@ -254,6 +254,6 @@
     </end-state>
     
     <!-- redirect to remote idp -->
-    <end-state id="redirectToTrustedIDP" view="externalRedirect:${flowScope.remoteIdpUrl}" />
+    <end-state id="redirectToTrustedIDP" view="externalRedirect:#{flowScope.remoteIdpUrl}" />
 
 </flow>
