@@ -22,6 +22,8 @@ package org.apache.cxf.fediz.service.idp;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.util.Enumeration;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -66,7 +68,7 @@ public class FederationEntryPoint implements AuthenticationEntryPoint,
     public void setConfigService(ConfigService configService) {
         this.configService = configService;
     }
-    
+
     public String getRealm() {
         return realm;
     }
@@ -74,7 +76,7 @@ public class FederationEntryPoint implements AuthenticationEntryPoint,
     public void setRealm(String realm) {
         this.realm = realm;
     }
-    
+
     public void afterPropertiesSet() throws Exception {
         Assert.notNull(this.appContext, "ApplicationContext cannot be null.");
         Assert.notNull(this.configService, "ConfigService cannot be null.");
@@ -86,8 +88,7 @@ public class FederationEntryPoint implements AuthenticationEntryPoint,
 
         idpConfig = configService.getIDP(realm);
         Assert.notNull(this.idpConfig, "idpConfig cannot be null. Check realm and config service implementation");
-        
-        String redirectUrl = null;
+
         String wauth = servletRequest.getParameter(FederationConstants.PARAM_AUTH_TYPE);
         if (wauth == null) {
             wauth = "default";
@@ -99,13 +100,32 @@ public class FederationEntryPoint implements AuthenticationEntryPoint,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The wauth value that was supplied is not supported");
             return;
         }
-        redirectUrl = new StringBuilder(extractFullContextPath(servletRequest))
-            .append(loginUri).append("?").append(servletRequest.getQueryString()).toString();
-        
+
+        StringBuilder builder = new StringBuilder(extractFullContextPath(servletRequest))
+            .append(loginUri).append("?");
+
+        // Add the query parameters - URL encoding them for safety
+        @SuppressWarnings("unchecked")
+        Enumeration<String> names = servletRequest.getParameterNames();
+        while (names.hasMoreElements()) {
+            String name = names.nextElement();
+            String[] values = servletRequest.getParameterValues(name);
+            if (values != null && values.length > 0) {
+                builder.append(name).append("=");
+                builder.append(URLEncoder.encode(values[0], "UTF-8"));
+                builder.append("&");
+            }
+        }
+        // Remove trailing ampersand
+        if (builder.charAt(builder.length() - 1) == '&') {
+            builder.deleteCharAt(builder.length() - 1);
+        }
+
+        String redirectUrl = builder.toString();
         preCommence(servletRequest, response);
         if (LOG.isInfoEnabled()) {
             LOG.info("Redirect to " + redirectUrl);
-        }  
+        }
         response.sendRedirect(redirectUrl);
     }
 
@@ -124,12 +144,12 @@ public class FederationEntryPoint implements AuthenticationEntryPoint,
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.appContext = applicationContext;
     }
-    
+
     protected String extractFullContextPath(HttpServletRequest request) throws MalformedURLException {
         String result = null;
         String contextPath = request.getContextPath();
         String requestUrl = request.getRequestURL().toString();
-        
+
         String requestPath = new URL(requestUrl).getPath();
         // Cut request path of request url and add context path if not ROOT
         if (requestPath != null && requestPath.length() > 0) {
