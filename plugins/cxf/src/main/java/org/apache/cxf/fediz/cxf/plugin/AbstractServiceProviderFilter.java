@@ -34,21 +34,27 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.xml.bind.JAXBException;
 
 import org.w3c.dom.Element;
 
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.common.i18n.BundleUtils;
+import org.apache.cxf.fediz.core.FederationConstants;
+import org.apache.cxf.fediz.core.SAMLSSOConstants;
 import org.apache.cxf.fediz.core.SecurityTokenThreadLocal;
+import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
+import org.apache.cxf.fediz.core.config.SAMLProtocol;
 import org.apache.cxf.fediz.core.util.CookieUtils;
 import org.apache.cxf.fediz.cxf.plugin.state.EHCacheSPStateManager;
 import org.apache.cxf.fediz.cxf.plugin.state.ResponseState;
 import org.apache.cxf.fediz.cxf.plugin.state.SPStateManager;
 import org.apache.cxf.jaxrs.impl.HttpHeadersImpl;
 import org.apache.cxf.jaxrs.impl.UriInfoImpl;
+import org.apache.cxf.jaxrs.utils.ExceptionUtils;
 import org.apache.cxf.jaxrs.utils.ResourceUtils;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.security.SecurityContext;
@@ -143,7 +149,7 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
         stateManager.close();
     }
     
-    protected boolean checkSecurityContext(FedizContext fedConfig, Message m) {
+    protected boolean checkSecurityContext(FedizContext fedConfig, Message m, MultivaluedMap<String, String> params) {
         HttpHeaders headers = new HttpHeadersImpl(m);
         Map<String, Cookie> cookies = headers.getCookies();
         
@@ -164,6 +170,13 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
             // perhaps the response state should also be removed
             reportError("INVALID_RELAY_STATE");
             return false;
+        }
+        
+        // Check to see if a CSRF-style attack is being mounted
+        String state = getState(fedConfig, params);
+        if (state != null && !state.equals(responseState.getState())) {
+            LOG.error("wctx parameter does not match stored value");
+            throw ExceptionUtils.toForbiddenException(null, null);
         }
         
         // Create SecurityContext
@@ -233,6 +246,16 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
             return null;
         }
         return responseState;
+    }
+    
+    protected String getState(FedizContext fedConfig, MultivaluedMap<String, String> params) {
+        if (params != null && fedConfig.getProtocol() instanceof FederationProtocol) {
+            return params.getFirst(FederationConstants.PARAM_CONTEXT);
+        } else if (params != null && fedConfig.getProtocol() instanceof SAMLProtocol) {
+            return params.getFirst(SAMLSSOConstants.RELAY_STATE);
+        }
+
+        return null;
     }
     
     protected FedizContext getFedizContext(Message message) {

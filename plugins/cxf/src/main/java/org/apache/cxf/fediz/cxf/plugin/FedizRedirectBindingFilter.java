@@ -108,7 +108,7 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
         // See if it is a Logout request first
         if (isLogoutRequest(context, fedConfig, m, params) || isSignoutCleanupRequest(fedConfig, m, params)) {
             return;
-        } else if (checkSecurityContext(fedConfig, m)) {
+        } else if (checkSecurityContext(fedConfig, m, params)) {
             return;
         } else if (isSignInRequired(fedConfig, params)) {
             processSignInRequired(context, fedConfig);
@@ -436,16 +436,6 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
         return null;
     }
 
-    private String getState(FedizContext fedConfig, MultivaluedMap<String, String> params) {
-        if (params != null && fedConfig.getProtocol() instanceof FederationProtocol) {
-            return params.getFirst(FederationConstants.PARAM_CONTEXT);
-        } else if (params != null && fedConfig.getProtocol() instanceof SAMLProtocol) {
-            return params.getFirst(SAMLSSOConstants.RELAY_STATE);
-        }
-
-        return null;
-    }
-            
     private FedizResponse validateSignInRequest(
         FedizContext fedConfig,
         MultivaluedMap<String, String> params,
