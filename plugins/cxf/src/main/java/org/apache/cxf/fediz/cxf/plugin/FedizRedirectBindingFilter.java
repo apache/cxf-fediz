@@ -105,29 +105,23 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
             throw ExceptionUtils.toInternalServerErrorException(ex, null);
         }
         
-        // See if it is a Logout request
-        if (isLogoutRequest(context, m, fedConfig, params)) {
-            return;
-        }
-        
-        if (isSignoutCleanupRequest(fedConfig, m, params)) {
+        // See if it is a Logout request first
+        if (isLogoutRequest(context, fedConfig, m, params) || isSignoutCleanupRequest(fedConfig, m, params)) {
             return;
         } else if (checkSecurityContext(fedConfig, m)) {
             return;
+        } else if (isSignInRequired(fedConfig, params)) {
+            processSignInRequired(context, fedConfig);
+        } else if (isSignInRequest(fedConfig, params)) {
+            processSignInRequest(context, fedConfig, m, params);
         } else {
-            if (isSignInRequired(fedConfig, params)) {
-                processSignInRequired(context, fedConfig);
-            } else if (isSignInRequest(fedConfig, params)) {
-                processSignInRequest(context, fedConfig, params, m);
-            } else {
-                LOG.error("SignIn parameter is incorrect or not supported");
-                throw ExceptionUtils.toBadRequestException(null, null);
-            }
+            LOG.error("SignIn parameter is incorrect or not supported");
+            throw ExceptionUtils.toBadRequestException(null, null);
         }
     }
     
     private void processSignInRequest(ContainerRequestContext context, FedizContext fedConfig,
-            MultivaluedMap<String, String> params, Message m) {
+                                      Message m, MultivaluedMap<String, String> params) {
         String responseToken = getResponseToken(fedConfig, params);
         String state = getState(fedConfig, params);
 
@@ -288,8 +282,8 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
         return false;
     }
     
-    private boolean isLogoutRequest(ContainerRequestContext context, Message message,
-                                    FedizContext fedConfig, MultivaluedMap<String, String> params) {
+    private boolean isLogoutRequest(ContainerRequestContext context, FedizContext fedConfig,
+                                    Message message, MultivaluedMap<String, String> params) {
 
         boolean signout = false;
         String logoutUrl = fedConfig.getLogoutURL();
@@ -441,17 +435,17 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
         
         return null;
     }
-    
+
     private String getState(FedizContext fedConfig, MultivaluedMap<String, String> params) {
         if (params != null && fedConfig.getProtocol() instanceof FederationProtocol) {
             return params.getFirst(FederationConstants.PARAM_CONTEXT);
         } else if (params != null && fedConfig.getProtocol() instanceof SAMLProtocol) {
             return params.getFirst(SAMLSSOConstants.RELAY_STATE);
         }
-        
+
         return null;
     }
-    
+            
     private FedizResponse validateSignInRequest(
         FedizContext fedConfig,
         MultivaluedMap<String, String> params,
