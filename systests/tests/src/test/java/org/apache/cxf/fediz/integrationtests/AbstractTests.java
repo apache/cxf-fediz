@@ -788,7 +788,6 @@ public abstract class AbstractTests {
             }
         }
         
-        webClient.getOptions().setJavaScriptEnabled(false);
         try {
             HtmlPage rpPage2 = webClient.getPage(request);
             String bodyTextContent = rpPage2.getBody().getTextContent();
@@ -797,29 +796,9 @@ public abstract class AbstractTests {
             Assert.fail("Failure expected on a CSRF attack");
         } catch (FailingHttpStatusCodeException ex) {
             // expected
-        }
-        
-        // Send without context...
-        request = new WebRequest(new URL(url), HttpMethod.POST);
-        request.setRequestParameters(new ArrayList<NameValuePair>());
-        
-        for (DomElement result : results) {
-            if ("wresult".equals(result.getAttributeNS(null, "name"))
-                || "wa".equals(result.getAttributeNS(null, "name"))) {
-                String value = result.getAttributeNS(null, "value");
-                request.getRequestParameters().add(new NameValuePair(result.getAttributeNS(null, "name"), value));
-            }
-        }
-        
-        webClient.getOptions().setJavaScriptEnabled(false);
-        try {
-            HtmlPage rpPage2 = webClient.getPage(request);
-            String bodyTextContent = rpPage2.getBody().getTextContent();
-            Assert.assertTrue("Principal not " + user,
-                              bodyTextContent.contains("userPrincipal=" + user));
-            Assert.fail("Failure expected on a CSRF attack");
-        } catch (FailingHttpStatusCodeException ex) {
-            // expected
+            Assert.assertTrue(ex.getMessage().contains("401 Unauthorized")
+                              || ex.getMessage().contains("401 Authentication Failed")
+                              || ex.getMessage().contains("403 Forbidden"));
         }
         
         // webClient.close();
