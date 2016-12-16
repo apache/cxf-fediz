@@ -731,11 +731,11 @@ public abstract class AbstractTests {
 
         // webClient.close();
     }
-    
+
     @org.junit.Test
     @org.junit.Ignore
     public void testCSRFAttack() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
         
@@ -790,7 +790,10 @@ public abstract class AbstractTests {
         
         webClient.getOptions().setJavaScriptEnabled(false);
         try {
-            webClient.getPage(request);
+            HtmlPage rpPage2 = webClient.getPage(request);
+            String bodyTextContent = rpPage2.getBody().getTextContent();
+            Assert.assertTrue("Principal not " + user,
+                              bodyTextContent.contains("userPrincipal=" + user));
             Assert.fail("Failure expected on a CSRF attack");
         } catch (FailingHttpStatusCodeException ex) {
             // expected
@@ -810,13 +813,13 @@ public abstract class AbstractTests {
         
         webClient.getOptions().setJavaScriptEnabled(false);
         try {
-            webClient.getPage(request);
+            HtmlPage rpPage2 = webClient.getPage(request);
+            String bodyTextContent = rpPage2.getBody().getTextContent();
+            Assert.assertTrue("Principal not " + user,
+                              bodyTextContent.contains("userPrincipal=" + user));
             Assert.fail("Failure expected on a CSRF attack");
         } catch (FailingHttpStatusCodeException ex) {
             // expected
-            Assert.assertTrue(ex.getMessage().contains("401 Unauthorized")
-                              || ex.getMessage().contains("401 Authentication Failed")
-                              || ex.getMessage().contains("403 Forbidden"));
         }
         
         // webClient.close();
