@@ -19,7 +19,9 @@
 
 package org.apache.cxf.fediz.integrationtests;
 
+import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -27,12 +29,15 @@ import org.w3c.dom.Node;
 
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNodeList;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
+import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 import org.apache.commons.io.IOUtils;
@@ -664,12 +669,102 @@ public abstract class AbstractTests {
             button.click();
             Assert.fail("Failure expected on an entity expansion attack");
         } catch (FailingHttpStatusCodeException ex) {
-            ex.printStackTrace();
             // expected
             Assert.assertTrue(ex.getMessage().contains("401 Unauthorized")
                               || ex.getMessage().contains("401 Authentication Failed")
                               || ex.getMessage().contains("403 Forbidden"));
         }
+    }
+    
+    @org.junit.Test
+    @org.junit.Ignore
+    public void testCSRFAttack() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String user = "alice";
+        String password = "ecila";
+        
+        // 1. Log in as "alice"
+        WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        final HtmlPage idpPage = webClient.getPage(url);
+        webClient.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+
+        final HtmlForm form = idpPage.getFormByName("signinresponseform");
+        final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
+        
+        final HtmlPage rpPage = button.click();
+        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
+                            || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
+        
+        
+        // 2. Log in as "bob" using another WebClient
+        WebClient webClient2 = new WebClient();
+        webClient2.getOptions().setUseInsecureSSL(true);
+        webClient2.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials("bob", "bob"));
+
+        webClient2.getOptions().setJavaScriptEnabled(false);
+        final HtmlPage idpPage2 = webClient2.getPage(url);
+        webClient2.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage2.getTitleText());
+
+        // 3. Now instead of clicking on the form, send the form via alice's WebClient instead
+        
+        // Send with context...
+        WebRequest request = new WebRequest(new URL(url), HttpMethod.POST);
+        request.setRequestParameters(new ArrayList<NameValuePair>());
+        
+        DomNodeList<DomElement> results = idpPage2.getElementsByTagName("input");
+
+        for (DomElement result : results) {
+            if ("wresult".equals(result.getAttributeNS(null, "name"))
+                || "wa".equals(result.getAttributeNS(null, "name"))
+                || "wctx".equals(result.getAttributeNS(null, "name"))) {
+                String value = result.getAttributeNS(null, "value");
+                request.getRequestParameters().add(new NameValuePair(result.getAttributeNS(null, "name"), value));
+            }
+        }
+        
+        webClient.getOptions().setJavaScriptEnabled(false);
+        try {
+            webClient.getPage(request);
+            Assert.fail("Failure expected on a CSRF attack");
+        } catch (FailingHttpStatusCodeException ex) {
+            // expected
+        }
+        
+        // Send without context...
+        request = new WebRequest(new URL(url), HttpMethod.POST);
+        request.setRequestParameters(new ArrayList<NameValuePair>());
+        
+        for (DomElement result : results) {
+            if ("wresult".equals(result.getAttributeNS(null, "name"))
+                || "wa".equals(result.getAttributeNS(null, "name"))) {
+                String value = result.getAttributeNS(null, "value");
+                request.getRequestParameters().add(new NameValuePair(result.getAttributeNS(null, "name"), value));
+            }
+        }
+        
+        webClient.getOptions().setJavaScriptEnabled(false);
+        try {
+            webClient.getPage(request);
+            Assert.fail("Failure expected on a CSRF attack");
+        } catch (FailingHttpStatusCodeException ex) {
+            // expected
+            Assert.assertTrue(ex.getMessage().contains("401 Unauthorized")
+                              || ex.getMessage().contains("401 Authentication Failed")
+                              || ex.getMessage().contains("403 Forbidden"));
+        }
+        
+        // webClient.close();
+        
     }
     
 }
