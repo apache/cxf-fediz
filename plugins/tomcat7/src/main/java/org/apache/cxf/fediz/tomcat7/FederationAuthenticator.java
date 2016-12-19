@@ -236,36 +236,35 @@ public class FederationAuthenticator extends FormAuthenticator {
         return false;
     }
 
-    protected void resumeRequest(HttpServletRequest request, HttpServletResponse response) {
-        String originalURL = null;
+    protected void resumeRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String contextId = request.getParameter(FederationConstants.PARAM_CONTEXT);
-        if (contextId != null) {
-            Session session = ((Request)request).getSessionInternal();
-            originalURL = (String)session.getNote(FederationAuthenticator.SESSION_SAVED_URI_PREFIX + contextId);
-            session.removeNote(FederationAuthenticator.SESSION_SAVED_URI_PREFIX + contextId); // Cleanup session
+        if (contextId == null) {
+            LOG.warn("The 'wctx' parameter has not been provided back with signin request.");
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
             
         } else {
-            LOG.warn("The 'wctx' parameter has not been provided back with signin request. "
-                + "Trying to resume now with signin URL (without parameters)");
-            originalURL = request.getRequestURI();
-        }
-        try {
-            if (originalURL != null) {
-                LOG.debug("Restore request to {}", originalURL);
-                response.sendRedirect(response.encodeRedirectURL(originalURL));
-            } else {
-                LOG.debug("User took so long to log on the session expired");
-                if (landingPage == null) {
-                    response.sendError(HttpServletResponse.SC_REQUEST_TIMEOUT, sm
-                        .getString("authenticator.sessionExpired"));
+            Session session = ((Request)request).getSessionInternal();
+            String originalURL = (String)session.getNote(FederationAuthenticator.SESSION_SAVED_URI_PREFIX + contextId);
+            session.removeNote(FederationAuthenticator.SESSION_SAVED_URI_PREFIX + contextId); // Cleanup session
+            
+            try {
+                if (originalURL != null) {
+                    LOG.debug("Restore request to {}", originalURL);
+                    response.sendRedirect(response.encodeRedirectURL(originalURL));
                 } else {
-                    // Redirect to landing page
-                    String uri = request.getContextPath() + landingPage;
-                    response.sendRedirect(response.encodeRedirectURL(uri));
+                    LOG.debug("User took so long to log on the session expired");
+                    if (landingPage == null) {
+                        response.sendError(HttpServletResponse.SC_REQUEST_TIMEOUT, sm
+                                           .getString("authenticator.sessionExpired"));
+                    } else {
+                        // Redirect to landing page
+                        String uri = request.getContextPath() + landingPage;
+                        response.sendRedirect(response.encodeRedirectURL(uri));
+                    }
                 }
+            } catch (IOException e) {
+                LOG.error("Cannot resume with request.", e.getMessage());
             }
-        } catch (IOException e) {
-            LOG.error("Cannot resume with request.", e.getMessage());
         }
     }
     
