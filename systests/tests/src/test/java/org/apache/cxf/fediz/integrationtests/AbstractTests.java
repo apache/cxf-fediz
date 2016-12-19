@@ -680,6 +680,11 @@ public abstract class AbstractTests {
     @org.junit.Ignore
     public void testCSRFAttack() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
+        csrfAttackTest(url);
+    }
+    
+    protected void csrfAttackTest(String rpURL) throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
         
@@ -718,7 +723,7 @@ public abstract class AbstractTests {
         // 3. Now instead of clicking on the form, send the form via alice's WebClient instead
         
         // Send with context...
-        WebRequest request = new WebRequest(new URL(url), HttpMethod.POST);
+        WebRequest request = new WebRequest(new URL(rpURL), HttpMethod.POST);
         request.setRequestParameters(new ArrayList<NameValuePair>());
         
         DomNodeList<DomElement> results = idpPage2.getElementsByTagName("input");
@@ -740,10 +745,6 @@ public abstract class AbstractTests {
             Assert.fail("Failure expected on a CSRF attack");
         } catch (FailingHttpStatusCodeException ex) {
             // expected
-            Assert.assertTrue(ex.getMessage().contains("401 Unauthorized")
-                              || ex.getMessage().contains("401 Authentication Failed")
-                              || ex.getMessage().contains("403 Forbidden")
-                              || ex.getMessage().contains("408 Request Timeout"));
         }
         
         // webClient.close();

@@ -240,4 +240,13 @@ public class Spring2Test extends AbstractTests {
     public void testEntityExpansionAttack() throws Exception {
 
     }
+    
+    @Override
+    @org.junit.Test
+    public void testCSRFAttack() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+            + "/j_spring_fediz_security_check";
+        csrfAttackTest(url);
+    }
+    
 }
