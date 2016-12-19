@@ -742,7 +742,8 @@ public abstract class AbstractTests {
             // expected
             Assert.assertTrue(ex.getMessage().contains("401 Unauthorized")
                               || ex.getMessage().contains("401 Authentication Failed")
-                              || ex.getMessage().contains("403 Forbidden"));
+                              || ex.getMessage().contains("403 Forbidden")
+                              || ex.getMessage().contains("408 Request Timeout"));
         }
         
         // webClient.close();
