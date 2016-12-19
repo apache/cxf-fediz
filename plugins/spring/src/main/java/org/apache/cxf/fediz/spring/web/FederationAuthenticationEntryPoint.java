@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.w3c.dom.Document;
 
@@ -62,6 +63,11 @@ import org.springframework.util.Assert;
  */
 public class FederationAuthenticationEntryPoint implements AuthenticationEntryPoint,
     InitializingBean, ApplicationContextAware {
+    
+    /**
+     * The key used to save the context of the request
+     */
+    public static final String SAVED_CONTEXT = "SAVED_CONTEXT";
     
     private static final Logger LOG = LoggerFactory.getLogger(FederationAuthenticationEntryPoint.class);
     
@@ -128,6 +134,8 @@ public class FederationAuthenticationEntryPoint implements AuthenticationEntryPo
                 }
             }
             
+            HttpSession session = servletRequest.getSession(true);
+            session.setAttribute(SAVED_CONTEXT, redirectionResponse.getRequestState().getState());
         } catch (ProcessingException ex) {
             LOG.warn("Failed to create SignInRequest", ex);
             throw new ServletException("Failed to create SignInRequest: " + ex.getMessage());
