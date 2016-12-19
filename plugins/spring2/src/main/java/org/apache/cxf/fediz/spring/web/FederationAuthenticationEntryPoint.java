@@ -28,6 +28,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
@@ -56,6 +57,11 @@ import org.springframework.util.Assert;
  */
 public class FederationAuthenticationEntryPoint implements AuthenticationEntryPoint,
     InitializingBean, ApplicationContextAware {
+    
+    /**
+     * The key used to save the context of the request
+     */
+    public static final String SAVED_CONTEXT = "SAVED_CONTEXT";
     
     private static final Logger LOG = LoggerFactory.getLogger(FederationAuthenticationEntryPoint.class);
     
@@ -129,6 +135,8 @@ public class FederationAuthenticationEntryPoint implements AuthenticationEntryPo
                 }
             }
             
+            HttpSession session = ((HttpServletRequest)request).getSession(true);
+            session.setAttribute(SAVED_CONTEXT, redirectionResponse.getRequestState().getState());
         } catch (ProcessingException ex) {
             System.err.println("Failed to create SignInRequest: " + ex.getMessage());
             LOG.warn("Failed to create SignInRequest: " + ex.getMessage());
