@@ -149,4 +149,12 @@ public class SpringTest extends AbstractTests {
     public void testConcurrentRequests() throws Exception {
         // super.testConcurrentRequests();
     }
+    
+    @Override
+    @org.junit.Test
+    public void testCSRFAttack() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+            + "/j_spring_fediz_security_check";
+        csrfAttackTest(url);
+    }
 }
