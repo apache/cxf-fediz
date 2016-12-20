@@ -72,13 +72,14 @@
 
     <bean id="idp-realmA" class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationEntity">
         <property name="realm" value="urn:org:apache:cxf:fediz:idp:realm-A" />
-        <property name="protocol" value="http://docs.oasis-open.org/wsfed/federation/200706" />
+        <property name="protocol" value="urn:oasis:names:tc:SAML:2.0:profiles:SSO:browser" />
         <property name="serviceDisplayName" value="Resource IDP Realm A" />
         <property name="serviceDescription" value="Resource IDP Realm A" />
         <property name="role" value="SecurityTokenServiceType" />
         <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0" />
         <property name="lifeTime" value="3600" />
         <property name="validatingCertificate" value="realma.cert" />
+        <property name="passiveRequestorEndpoint" value="https://localhost:${idp.https.port}/fediz-idp/saml" />
     </bean>
     
     <bean id="claim_role"

@@ -66,6 +66,9 @@
         <property name="applications">
             <util:list>
                 <ref bean="srv-fedizhelloworld" />
+                <ref bean="srv-fedizhelloworld2" />
+                <ref bean="srv-fedizhelloworld3" />
+                <ref bean="srv-fedizhelloworld4" />
             </util:list>
         </property>
         <property name="trustedIdps">
@@ -106,6 +109,40 @@
         <property name="lifeTime" value="3600" />
         <property name="passiveRequestorEndpointConstraint" 
                   value="https://localhost:(\d)*/(\w)*helloworld(\w)*/secure/.*" />
+    </bean>
+    
+    <bean id="srv-fedizhelloworld2" class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationEntity">
+        <property name="realm" value="urn:org:apache:cxf:fediz:fedizhelloworld2" />
+        <property name="protocol" value="http://docs.oasis-open.org/wsfed/federation/200706" />
+        <property name="serviceDisplayName" value="Fedizhelloworld" />
+        <property name="serviceDescription" value="Web Application to illustrate WS-Federation" />
+        <property name="role" value="ApplicationServiceType" />
+        <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0" />
+        <property name="lifeTime" value="3600" />
+        <property name="passiveRequestorEndpointConstraint" 
+                  value="https://localhost:(\d)*/(\w)*helloworld(\w)*/secure2/.*" />
+    </bean>
+    
+    <bean id="srv-fedizhelloworld3" class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationEntity">
+        <property name="realm" value="urn:org:apache:cxf:fediz:fedizhelloworld3" />
+        <property name="protocol" value="http://docs.oasis-open.org/wsfed/federation/200706" />
+        <property name="serviceDisplayName" value="Fedizhelloworld" />
+        <property name="serviceDescription" value="Web Application to illustrate WS-Federation" />
+        <property name="role" value="ApplicationServiceType" />
+        <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0" />
+        <property name="lifeTime" value="3600" />
+        <property name="passiveRequestorEndpoint" 
+                  value="https://localhost:${rp.https.port}/fedizhelloworld/secure/fedservlet" />
+    </bean>
+    
+    <bean id="srv-fedizhelloworld4" class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationEntity">
+        <property name="realm" value="urn:org:apache:cxf:fediz:fedizhelloworld4" />
+        <property name="protocol" value="http://docs.oasis-open.org/wsfed/federation/200706" />
+        <property name="serviceDisplayName" value="Fedizhelloworld" />
+        <property name="serviceDescription" value="Web Application to illustrate WS-Federation" />
+        <property name="role" value="ApplicationServiceType" />
+        <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0" />
+        <property name="lifeTime" value="3600" />
     </bean>
     
     <bean class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationClaimEntity">
