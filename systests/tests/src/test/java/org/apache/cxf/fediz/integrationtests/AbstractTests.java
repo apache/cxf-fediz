@@ -677,7 +677,6 @@ public abstract class AbstractTests {
     }
 
     @org.junit.Test
-    @org.junit.Ignore
     public void testCSRFAttack() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
         csrfAttackTest(url);
