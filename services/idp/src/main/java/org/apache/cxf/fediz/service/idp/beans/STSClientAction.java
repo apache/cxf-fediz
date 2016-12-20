@@ -320,20 +320,27 @@ public class STSClientAction {
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
         
-        if (serviceConfig.getCompiledPassiveRequestorEndpointConstraint() == null) {
-            LOG.warn("No passive requestor endpoint constraint is configured for the application. "
-                     + "This could lead to a malicious redirection attack");
-            return;
-        }
-        
-        if (wreply != null) {
-            Matcher matcher = serviceConfig.getCompiledPassiveRequestorEndpointConstraint().matcher(wreply);
-            if (!matcher.matches()) {
-                LOG.error("The wreply value of {} does not match any of the passive requestor values",
+        if (serviceConfig.getPassiveRequestorEndpoint() == null 
+            && serviceConfig.getCompiledPassiveRequestorEndpointConstraint() == null) {
+            LOG.error("Either the 'passiveRequestorEndpoint' or the 'passiveRequestorEndpointConstraint' "
+                + "configuration values must be specified for the application");
+        } else if (serviceConfig.getPassiveRequestorEndpoint() != null 
+            && serviceConfig.getPassiveRequestorEndpoint().equals(wreply)) {
+            LOG.debug("The supplied endpoint address {} matches the configured passive requestor endpoint value", 
                       wreply);
-                throw new ProcessingException(TYPE.BAD_REQUEST);
+            return;
+        } else if (serviceConfig.getCompiledPassiveRequestorEndpointConstraint() != null) {
+            Matcher matcher = 
+                serviceConfig.getCompiledPassiveRequestorEndpointConstraint().matcher(wreply);
+            if (matcher.matches()) {
+                return;
+            } else {
+                LOG.error("The endpointAddress value of {} does not match any of the passive requestor values",
+                          wreply);
             }
         }
+        
+        throw new ProcessingException(TYPE.BAD_REQUEST);
     }
 
     private String getIdFromToken(String token) throws XMLStreamException {
