@@ -738,10 +738,7 @@ public abstract class AbstractTests {
         }
         
         try {
-            HtmlPage rpPage2 = webClient.getPage(request);
-            String bodyTextContent = rpPage2.getBody().getTextContent();
-            Assert.assertTrue("Principal not " + user,
-                              bodyTextContent.contains("userPrincipal=" + user));
+            webClient.getPage(request);
             Assert.fail("Failure expected on a CSRF attack");
         } catch (FailingHttpStatusCodeException ex) {
             // expected
