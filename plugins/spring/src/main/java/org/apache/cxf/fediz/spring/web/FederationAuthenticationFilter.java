@@ -69,7 +69,7 @@ public class FederationAuthenticationFilter extends AbstractAuthenticationProces
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(wa);
         wfReq.setResponseToken(responseToken);
-        wfReq.setState(request.getParameter(SAMLSSOConstants.RELAY_STATE));
+        wfReq.setState(getState(request));
         wfReq.setRequest(request);
         
         X509Certificate certs[] = 
