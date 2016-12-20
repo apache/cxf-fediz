@@ -87,6 +87,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
     
     public static final String J_URI = "org.eclipse.jetty.security.form_URI";
     public static final String J_POST = "org.eclipse.jetty.security.form_POST";
+    public static final String J_CONTEXT = "org.eclipse.jetty.security.form_CONTEXT";
 
     private static final Logger LOG = Log.getLogger(FederationAuthenticator.class);
     
@@ -248,13 +249,19 @@ public class FederationAuthenticator extends LoginAuthenticator {
                     {
                         session=renewSession(request,response);
 
-                        FederationUserIdentity fui = (FederationUserIdentity)user;
-                        session.setAttribute(SECURITY_TOKEN_ATTR, fui.getToken());
-
                         // Redirect to original request
                         String nuri;
                         synchronized(session)
                         {
+                            // Check the context
+                            String savedContext = (String) session.getAttribute(J_CONTEXT);
+                            String receivedContext = request.getParameter(FederationConstants.PARAM_CONTEXT);
+                            if (savedContext == null || !savedContext.equals(receivedContext)) {
+                                LOG.warn("The received wctx parameter does not match the saved value");
+                                response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                                return Authentication.UNAUTHENTICATED;
+                            }
+                            
                             nuri = (String) session.getAttribute(J_URI);
 
                             if (nuri == null || nuri.length() == 0)
@@ -267,6 +274,10 @@ public class FederationAuthenticator extends LoginAuthenticator {
                             Authentication cached=new SessionAuthentication(getAuthMethod(), user, wfRes);
                             session.setAttribute(SessionAuthentication.__J_AUTHENTICATED, cached);
                         }
+                        
+                        FederationUserIdentity fui = (FederationUserIdentity)user;
+                        session.setAttribute(SECURITY_TOKEN_ATTR, fui.getToken());
+                        
                         response.setContentLength(0);   
                         response.sendRedirect(response.encodeRedirectURL(nuri));
 
@@ -279,6 +290,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
                     }
                     if (response != null) {
                         response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                        return Authentication.UNAUTHENTICATED;
                     }
 
                 }
@@ -394,7 +406,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
             
             FedizProcessor wfProc = 
                 FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
-            signInRedirectToIssuer(request, response, wfProc);
+            signInRedirectToIssuer(request, response, wfProc, session);
 
             return Authentication.SEND_CONTINUE;
 
@@ -482,12 +494,13 @@ public class FederationAuthenticator extends LoginAuthenticator {
      *            Response we are populating
      * @param processor
      *            FederationProcessor
+     * @param session The HTTPSession
      * @throws IOException
      *             If the forward to the login page fails and the call to
      *             {@link HttpServletResponse#sendError(int, String)} throws an
      *             {@link IOException}
      */
-    protected void signInRedirectToIssuer(HttpServletRequest request, HttpServletResponse response, FedizProcessor processor)
+    protected void signInRedirectToIssuer(HttpServletRequest request, HttpServletResponse response, FedizProcessor processor, HttpSession session)
         throws IOException {
 
         //Not supported in jetty 7.6
@@ -506,6 +519,10 @@ public class FederationAuthenticator extends LoginAuthenticator {
                     for (Entry<String, String> entry : headers.entrySet()) {
                         response.addHeader(entry.getKey(), entry.getValue());
                     }
+                }
+                
+                synchronized(session) {
+                    session.setAttribute(J_CONTEXT, redirectionResponse.getRequestState().getState());
                 }
                 
                 response.sendRedirect(redirectURL);
