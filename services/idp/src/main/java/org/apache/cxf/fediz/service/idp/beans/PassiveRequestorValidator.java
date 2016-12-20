@@ -47,26 +47,30 @@ public class PassiveRequestorValidator {
         Application serviceConfig = idpConfig.findApplication(realm);
         if (serviceConfig == null) {
             LOG.warn("No service config found for " + realm);
-            return true;
-        }
-        
-        // The endpointAddress address must match the passive endpoint requestor constraint 
-        // (if it is specified)
-        if (serviceConfig.getCompiledPassiveRequestorEndpointConstraint() == null) {
-            LOG.warn("No passive requestor endpoint constraint is configured for the application. "
-                + "This could lead to a malicious redirection attack");
-            return true;
-        }
-
-        Matcher matcher = 
-            serviceConfig.getCompiledPassiveRequestorEndpointConstraint().matcher(endpointAddress);
-        if (!matcher.matches()) {
-            LOG.error("The endpointAddress value of {} does not match any of the passive requestor values",
-                      endpointAddress);
             return false;
         }
         
-        return true;
+        if (serviceConfig.getPassiveRequestorEndpoint() == null 
+            && serviceConfig.getCompiledPassiveRequestorEndpointConstraint() == null) {
+            LOG.error("Either the 'passiveRequestorEndpoint' or the 'passiveRequestorEndpointConstraint' "
+                + "configuration values must be specified for the application");
+        } else if (serviceConfig.getPassiveRequestorEndpoint() != null 
+            && serviceConfig.getPassiveRequestorEndpoint().equals(endpointAddress)) {
+            LOG.debug("The supplied endpoint address {} matches the configured passive requestor endpoint value", 
+                      endpointAddress);
+            return true;
+        } else if (serviceConfig.getCompiledPassiveRequestorEndpointConstraint() != null) {
+            Matcher matcher = 
+                serviceConfig.getCompiledPassiveRequestorEndpointConstraint().matcher(endpointAddress);
+            if (matcher.matches()) {
+                return true;
+            } else {
+                LOG.error("The endpointAddress value of {} does not match any of the passive requestor values",
+                          endpointAddress);
+            }
+        }
+        
+        return false;
     }
     
 }
