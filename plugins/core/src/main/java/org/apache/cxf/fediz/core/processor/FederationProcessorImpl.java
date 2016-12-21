@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -501,21 +503,42 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             StringBuilder sb = new StringBuilder();
             sb.append(FederationConstants.PARAM_ACTION).append('=').append(FederationConstants.ACTION_SIGNOUT);
 
-            String logoutRedirectTo = request.getParameter(FederationConstants.PARAM_REPLY);
-            if (logoutRedirectTo != null && !logoutRedirectTo.isEmpty()) {
-                logoutRedirectTo = config.getLogoutRedirectTo();
-            }
-            if (logoutRedirectTo != null && !logoutRedirectTo.isEmpty()) {
-
-                if (logoutRedirectTo.startsWith("/")) {
-                    logoutRedirectTo = extractFullContextPath(request).concat(logoutRedirectTo.substring(1));
+            // Match the 'wreply' parameter against the constraint
+            String logoutRedirectTo = null;
+            Pattern logoutRedirectToConstraint = config.getLogoutRedirectToConstraint();
+            if (request.getParameter(FederationConstants.PARAM_REPLY) != null) {
+                if (logoutRedirectToConstraint == null) {
+                    LOG.debug("No regular expression constraint configured for logout. Ignoring wreply parameter");
                 } else {
-                    logoutRedirectTo = extractFullContextPath(request).concat(logoutRedirectTo);
+                    Matcher matcher = 
+                        logoutRedirectToConstraint.matcher(request.getParameter(FederationConstants.PARAM_REPLY));
+                    if (matcher.matches()) {
+                        logoutRedirectTo = request.getParameter(FederationConstants.PARAM_REPLY);
+                    } else {
+                        LOG.warn("The received wreply address {} does not match the configured constraint {}",
+                                 logoutRedirectTo, logoutRedirectToConstraint);
+                    }
                 }
-
-                LOG.debug("wreply=" + logoutRedirectTo);
+            }
+            
+            if (logoutRedirectTo != null && !logoutRedirectTo.isEmpty()) {
+                LOG.debug("wreply={}", logoutRedirectTo);
                 sb.append('&').append(FederationConstants.PARAM_REPLY).append('=');
                 sb.append(URLEncoder.encode(logoutRedirectTo, "UTF-8"));
+            } else {
+                logoutRedirectTo = config.getLogoutRedirectTo();
+                if (logoutRedirectTo != null && !logoutRedirectTo.isEmpty()) {
+    
+                    if (logoutRedirectTo.startsWith("/")) {
+                        logoutRedirectTo = extractFullContextPath(request).concat(logoutRedirectTo.substring(1));
+                    } else {
+                        logoutRedirectTo = extractFullContextPath(request).concat(logoutRedirectTo);
+                    }
+    
+                    LOG.debug("wreply={}", logoutRedirectTo);
+                    sb.append('&').append(FederationConstants.PARAM_REPLY).append('=');
+                    sb.append(URLEncoder.encode(logoutRedirectTo, "UTF-8"));
+                }
             }
 
             redirectURL = redirectURL + "?" + sb.toString();
