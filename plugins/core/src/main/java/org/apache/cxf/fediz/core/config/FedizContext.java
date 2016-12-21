@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import org.apache.cxf.fediz.core.config.jaxb.CertificateStores;
 import org.apache.cxf.fediz.core.config.jaxb.ContextConfig;
@@ -69,6 +70,7 @@ public class FedizContext implements Closeable {
     private KeyManager keyManager;
     private KeyManager decryptionKeyManager;
     private ClassLoader classloader;
+    private Pattern logoutRedirectToConstraint;
     
 
     public FedizContext(ContextConfig config) {
@@ -170,6 +172,12 @@ public class FedizContext implements Closeable {
         return config.getLogoutRedirectTo();
     }
     
+    public Pattern getLogoutRedirectToConstraint() {
+        if (logoutRedirectToConstraint == null && config.getLogoutRedirectToConstraint() != null) {
+            logoutRedirectToConstraint = Pattern.compile(config.getLogoutRedirectToConstraint());
+        }
+        return logoutRedirectToConstraint;
+    }
     
     public KeyManager getSigningKey() {
         

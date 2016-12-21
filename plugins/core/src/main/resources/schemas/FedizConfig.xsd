@@ -27,6 +27,7 @@
                 <xs:element ref="protocol" />
                 <xs:element ref="logoutURL" minOccurs="0" />
                 <xs:element ref="logoutRedirectTo" minOccurs="0" />
+                <xs:element ref="logoutRedirectToConstraint" minOccurs="0" />
             </xs:sequence>
             <xs:attribute name="name" use="required" type="xs:string" />
 
@@ -140,6 +141,16 @@
         <xs:annotation>
             <xs:documentation>URL to landing-page after successful logout.
                 Example: '/index.jsp'
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    
+    <xs:element name="logoutRedirectToConstraint" type="xs:string">
+        <xs:annotation>
+            <xs:documentation>A regular expression constraint on the 'wreply' parameter, which is used to obtain the URL to 
+                navigate to after successful logout. If the constraint is not specified, then the 'wreply' parameter is ignored 
+                and instead the URL is taken from the "logoutRedirectTo" configuration option.
+                Example: 'https://localhost:12345/logout.*/'
             </xs:documentation>
         </xs:annotation>
     </xs:element>
