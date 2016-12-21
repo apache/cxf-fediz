@@ -519,24 +519,21 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                 }
             }
             
+            if (logoutRedirectTo == null || logoutRedirectTo.isEmpty()) {
+                logoutRedirectTo = config.getLogoutRedirectTo();
+            }
+            
             if (logoutRedirectTo != null && !logoutRedirectTo.isEmpty()) {
+    
+                if (logoutRedirectTo.startsWith("/")) {
+                    logoutRedirectTo = extractFullContextPath(request).concat(logoutRedirectTo.substring(1));
+                } else {
+                    logoutRedirectTo = extractFullContextPath(request).concat(logoutRedirectTo);
+                }
+
                 LOG.debug("wreply={}", logoutRedirectTo);
                 sb.append('&').append(FederationConstants.PARAM_REPLY).append('=');
                 sb.append(URLEncoder.encode(logoutRedirectTo, "UTF-8"));
-            } else {
-                logoutRedirectTo = config.getLogoutRedirectTo();
-                if (logoutRedirectTo != null && !logoutRedirectTo.isEmpty()) {
-    
-                    if (logoutRedirectTo.startsWith("/")) {
-                        logoutRedirectTo = extractFullContextPath(request).concat(logoutRedirectTo.substring(1));
-                    } else {
-                        logoutRedirectTo = extractFullContextPath(request).concat(logoutRedirectTo);
-                    }
-    
-                    LOG.debug("wreply={}", logoutRedirectTo);
-                    sb.append('&').append(FederationConstants.PARAM_REPLY).append('=');
-                    sb.append(URLEncoder.encode(logoutRedirectTo, "UTF-8"));
-                }
             }
 
             redirectURL = redirectURL + "?" + sb.toString();
