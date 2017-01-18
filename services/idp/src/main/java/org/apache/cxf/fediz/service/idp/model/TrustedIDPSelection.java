@@ -24,13 +24,13 @@ public class TrustedIDPSelection implements Serializable {
 
     private static final long serialVersionUID = 1L;
     
-    private String whr;
+    private String homeRealm;
 
-    public String getWhr() {
-        return whr;
+    public String getHomeRealm() {
+        return homeRealm;
     }
 
-    public void setWhr(String whr) {
-        this.whr = whr;
+    public void setHomeRealm(String homeRealm) {
+        this.homeRealm = homeRealm;
     }
 }

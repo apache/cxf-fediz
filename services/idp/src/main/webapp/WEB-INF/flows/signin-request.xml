@@ -59,14 +59,14 @@
         <var name="trustedIDPSelection"
             class="org.apache.cxf.fediz.service.idp.model.TrustedIDPSelection" />
         <binder>
-            <binding property="home_realm" required="true" />
+            <binding property="homeRealm" required="true" />
         </binder>
         <on-entry>
             <set name="requestScope.idPConfig" value="flowScope.idpConfig" />
         </on-entry>
         <transition on="submit" to="checkIsThisIDP" bind="true"
             validate="true">
-            <set name="flowScope.home_realm" value="trustedIDPSelection.home_realm" />
+            <set name="flowScope.home_realm" value="trustedIDPSelection.homeRealm" />
             <evaluate
                 expression="homeRealmReminder.addCookie(flowRequestContext, flowScope.home_realm)" />
         </transition>
