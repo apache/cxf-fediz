@@ -32,6 +32,8 @@
     <!-- List of accepted scopes -->
     <util:map id="supportedScopes">
         <entry key="openid" value="Access the authentication claims" />
+        <entry key="email" value="Access the email address" />
+        <entry key="profile" value="Access the profile claims" />
         <entry key="refreshToken" value="Refresh access tokens" />
     </util:map>
     
