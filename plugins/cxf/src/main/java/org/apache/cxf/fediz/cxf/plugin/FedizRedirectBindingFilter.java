@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import javax.servlet.ServletOutputStream;
@@ -89,11 +90,6 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
             return;
         }
 
-        // See if it is a Logout request
-        if (isLogoutRequest(context, m, fedConfig)) {
-            return;
-        }
-        
         String httpMethod = context.getMethod();
         MultivaluedMap<String, String> params = null;
         
@@ -109,24 +105,23 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
             throw ExceptionUtils.toInternalServerErrorException(ex, null);
         }
         
-        if (isSignoutCleanupRequest(fedConfig, m, params)) {
+        // See if it is a Logout request first
+        if (isLogoutRequest(context, fedConfig, m, params) || isSignoutCleanupRequest(fedConfig, m, params)) {
             return;
-        } else if (checkSecurityContext(fedConfig, m)) {
+        } else if (checkSecurityContext(fedConfig, m, params)) {
             return;
+        } else if (isSignInRequired(fedConfig, params)) {
+            processSignInRequired(context, fedConfig);
+        } else if (isSignInRequest(fedConfig, params)) {
+            processSignInRequest(context, fedConfig, m, params);
         } else {
-            if (isSignInRequired(fedConfig, params)) {
-                processSignInRequired(context, fedConfig);
-            } else if (isSignInRequest(fedConfig, params)) {
-                processSignInRequest(context, fedConfig, params, m);
-            } else {
-                LOG.error("SignIn parameter is incorrect or not supported");
-                throw ExceptionUtils.toBadRequestException(null, null);
-            }
+            LOG.error("SignIn parameter is incorrect or not supported");
+            throw ExceptionUtils.toBadRequestException(null, null);
         }
     }
     
     private void processSignInRequest(ContainerRequestContext context, FedizContext fedConfig,
-            MultivaluedMap<String, String> params, Message m) {
+                                      Message m, MultivaluedMap<String, String> params) {
         String responseToken = getResponseToken(fedConfig, params);
         String state = getState(fedConfig, params);
 
@@ -228,8 +223,8 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
                 ResponseBuilder response = Response.seeOther(new URI(redirectURL));
                 Map<String, String> headers = redirectionResponse.getHeaders();
                 if (!headers.isEmpty()) {
-                    for (String headerName : headers.keySet()) {
-                        response.header(headerName, headers.get(headerName));
+                    for (Entry<String, String> entry : headers.entrySet()) {
+                        response.header(entry.getKey(), entry.getValue());
                     }
                 }
 
@@ -287,40 +282,49 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
         return false;
     }
     
-    private boolean isLogoutRequest(ContainerRequestContext context, Message message,
-                                    FedizContext fedConfig) {
-        //logout
+    private boolean isLogoutRequest(ContainerRequestContext context, FedizContext fedConfig,
+                                    Message message, MultivaluedMap<String, String> params) {
+
+        boolean signout = false;
         String logoutUrl = fedConfig.getLogoutURL();
-        if (logoutUrl != null && !logoutUrl.isEmpty()) {
+        if (params != null && fedConfig.getProtocol() instanceof FederationProtocol
+            && FederationConstants.ACTION_SIGNOUT.equals(
+                params.getFirst(FederationConstants.PARAM_ACTION))) {
+            signout = true;
+        } else if (logoutUrl != null && !logoutUrl.isEmpty()) {
             String requestPath = "/" + context.getUriInfo().getPath();
             if (requestPath.equals(logoutUrl) || requestPath.equals(logoutUrl + "/")) {
-                cleanupContext(message);
-                
-                try {
-                    FedizProcessor processor = 
-                        FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
-                    
-                    HttpServletRequest request = messageContext.getHttpServletRequest();
-                    RedirectionResponse redirectionResponse = 
-                        processor.createSignOutRequest(request, null, fedConfig); //TODO
-                    String redirectURL = redirectionResponse.getRedirectionURL();
-                    if (redirectURL != null) {
-                        ResponseBuilder response = Response.seeOther(new URI(redirectURL));
-                        Map<String, String> headers = redirectionResponse.getHeaders();
-                        if (!headers.isEmpty()) {
-                            for (String headerName : headers.keySet()) {
-                                response.header(headerName, headers.get(headerName));
-                            }
+                signout = true;
+            }
+        }
+        
+        if (signout) {
+            cleanupContext(message);
+
+            try {
+                FedizProcessor processor = 
+                    FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
+
+                HttpServletRequest request = messageContext.getHttpServletRequest();
+                RedirectionResponse redirectionResponse = 
+                    processor.createSignOutRequest(request, null, fedConfig); //TODO
+                String redirectURL = redirectionResponse.getRedirectionURL();
+                if (redirectURL != null) {
+                    ResponseBuilder response = Response.seeOther(new URI(redirectURL));
+                    Map<String, String> headers = redirectionResponse.getHeaders();
+                    if (!headers.isEmpty()) {
+                        for (Entry<String, String> entry : headers.entrySet()) {
+                            response.header(entry.getKey(), entry.getValue());
                         }
-    
-                        context.abortWith(response.build());
-    
-                        return true;
                     }
-                } catch (Exception ex) {
-                    LOG.debug(ex.getMessage(), ex);
-                    throw ExceptionUtils.toInternalServerErrorException(ex, null);
+
+                    context.abortWith(response.build());
+
+                    return true;
                 }
+            } catch (Exception ex) {
+                LOG.debug(ex.getMessage(), ex);
+                throw ExceptionUtils.toInternalServerErrorException(ex, null);
             }
         }
         
@@ -431,17 +435,7 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
         
         return null;
     }
-    
-    private String getState(FedizContext fedConfig, MultivaluedMap<String, String> params) {
-        if (params != null && fedConfig.getProtocol() instanceof FederationProtocol) {
-            return params.getFirst(FederationConstants.PARAM_CONTEXT);
-        } else if (params != null && fedConfig.getProtocol() instanceof SAMLProtocol) {
-            return params.getFirst(SAMLSSOConstants.RELAY_STATE);
-        }
-        
-        return null;
-    }
-    
+
     private FedizResponse validateSignInRequest(
         FedizContext fedConfig,
         MultivaluedMap<String, String> params,

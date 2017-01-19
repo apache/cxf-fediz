@@ -272,11 +272,6 @@ public class STSClientAction {
         sts.setEnableAppliesTo(serviceConfig.isEnableAppliesTo());
         
         sts.setOnBehalfOf(idpToken.getToken());
-        if (!(serviceConfig.getProtocol() == null
-            || FederationConstants.WS_FEDERATION_NS.equals(serviceConfig.getProtocol()))) {
-            LOG.error("Protocol {} not supported for realm {} ", serviceConfig.getProtocol(), realm);
-            throw new ProcessingException(TYPE.BAD_REQUEST);
-        }
        
         if (properties != null) {
             sts.setProperties(properties);
@@ -376,7 +371,7 @@ public class STSClientAction {
         writer.writeAttribute("Dialect",
                 HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_05_IDENTITY);
 
-        if (realmClaims != null && realmClaims.size() > 0) {
+        if (realmClaims.size() > 0) {
             for (RequestClaim item : realmClaims) {
                 LOG.debug("  {}", item.getClaimType().toString());
                 writer.writeStartElement("ic", "ClaimType",

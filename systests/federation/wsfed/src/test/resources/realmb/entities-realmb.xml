@@ -22,9 +22,9 @@
     xmlns:util="http://www.springframework.org/schema/util"
     xsi:schemaLocation="
         http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
         http://www.springframework.org/schema/util
-        http://www.springframework.org/schema/util/spring-util-2.0.xsd">
+        http://www.springframework.org/schema/util/spring-util-4.3.xsd">
 
     <bean id="idp-realmB" class="org.apache.cxf.fediz.service.idp.service.jpa.IdpEntity">
         <property name="realm" value="urn:org:apache:cxf:fediz:idp:realm-B" />
@@ -37,10 +37,9 @@
         <property name="idpUrl" value="https://localhost:${idp.realmb.https.port}/fediz-idp-realmb/federation" />
         <property name="supportedProtocols">
             <util:list>
-                <value>http://docs.oasis-open.org/wsfed/federation/200706
-                </value>
-                <value>http://docs.oasis-open.org/ws-sx/ws-trust/200512
-                </value>
+                <value>http://docs.oasis-open.org/wsfed/federation/200706</value>
+                <value>http://docs.oasis-open.org/ws-sx/ws-trust/200512</value>
+                <value>urn:oasis:names:tc:SAML:2.0:profiles:SSO:browser</value>
             </util:list>
         </property>
         <property name="tokenTypesOffered">
@@ -79,6 +78,8 @@
         <property name="role" value="SecurityTokenServiceType" />
         <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0" />
         <property name="lifeTime" value="3600" />
+        <property name="validatingCertificate" value="realma.cert" />
+        <property name="passiveRequestorEndpoint" value="https://localhost:${idp.https.port}/fediz-idp/federation" />
     </bean>
     
     <bean id="claim_role"

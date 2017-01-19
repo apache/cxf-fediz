@@ -88,12 +88,6 @@
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
             <version>${slf4j.version}</version>
             <scope>test</scope>
@@ -194,6 +188,16 @@
                                     <outputDirectory>target/tomcat/rp/webapps/simpleWebapp</outputDirectory>
                                 </artifactItem>
                                  -->
+                                <artifactItem>
+                                    <groupId>org.apache.cxf.fediz.systests</groupId>
+                                    <artifactId>fediz-systests-tests</artifactId>
+                                    <version>${project.version}</version>
+                                    <classifier>tests</classifier>
+                                    <type>jar</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target/test-classes</outputDirectory>
+                                    <includes>**/*.jks</includes>
+                                </artifactItem>
                             </artifactItems>
                             <outputAbsoluteArtifactFilename>true</outputAbsoluteArtifactFilename>
                             <overWriteSnapshots>true</overWriteSnapshots>
@@ -219,6 +223,7 @@
                                 <wt.headless>true</wt.headless>
                                 <idp.https.port>${idp.https.port}</idp.https.port>
                                 <rp.https.port>${rp.https.port}</rp.https.port>
+                                <java.util.logging.config.file>${basedir}/target/test-classes/logging.properties</java.util.logging.config.file>
                             </systemPropertyVariables>
                             <includes>
                                 <include>**/integrationtests/**</include>

@@ -20,7 +20,11 @@ package org.apache.cxf.fediz.core.handler;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -86,18 +90,31 @@ public class LogoutHandler implements RequestHandler<Boolean> {
     protected boolean signoutCleanup(HttpServletRequest request, HttpServletResponse response) {
         LOG.info("SignOutCleanup request found. Terminating user session.");
         request.getSession().invalidate();
+        
         String wreply = request.getParameter(FederationConstants.PARAM_REPLY);
+        Pattern logoutRedirectToConstraint = fedizConfig.getLogoutRedirectToConstraint();
+        
         if (wreply != null && !wreply.isEmpty()) {
-            try {
-                LOG.debug("Redirecting user after logout to: {}", wreply);
-                response.sendRedirect(wreply);
-            } catch (IOException e) {
-                LOG.error("Error redirecting user after logout: {}", e.getMessage());
+            if (logoutRedirectToConstraint == null) {
+                LOG.debug("No regular expression constraint configured for logout. Ignoring wreply parameter");
+            } else {
+                Matcher matcher = logoutRedirectToConstraint.matcher(wreply);
+                if (matcher.matches()) {
+                    try {
+                        LOG.debug("Redirecting user after logout to: {}", wreply);
+                        response.sendRedirect(URLEncoder.encode(wreply, "UTF-8"));
+                        return true;
+                    } catch (IOException e) {
+                        LOG.error("Error redirecting user after logout: {}", e.getMessage());
+                    }
+                } else {
+                    LOG.warn("The received wreply address {} does not match the configured constraint {}",
+                             wreply, logoutRedirectToConstraint);
+                }
             }
-        } else {
-            LOG.debug("No wreply parameter was set in logout action. Returning logout image");
-            writeLogoutImage(response);
         }
+        
+        writeLogoutImage(response);
         return true;
     }
 
@@ -119,8 +136,8 @@ public class LogoutHandler implements RequestHandler<Boolean> {
             if (redirectURL != null) {
                 Map<String, String> headers = redirectionResponse.getHeaders();
                 if (!headers.isEmpty()) {
-                    for (String headerName : headers.keySet()) {
-                        response.addHeader(headerName, headers.get(headerName));
+                    for (Entry<String, String> entry : headers.entrySet()) {
+                        response.addHeader(entry.getKey(), entry.getValue());
                     }
                 }
                 response.sendRedirect(redirectURL);

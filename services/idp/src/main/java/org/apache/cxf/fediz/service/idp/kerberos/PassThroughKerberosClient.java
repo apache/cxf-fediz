@@ -19,6 +19,8 @@
 
 package org.apache.cxf.fediz.service.idp.kerberos;
 
+import java.util.Arrays;
+
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.cxf.ws.security.kerberos.KerberosClient;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
@@ -61,11 +63,18 @@ public class PassThroughKerberosClient extends KerberosClient {
     }
 
     public byte[] getToken() {
-        return token;
+        if (token != null) {
+            return Arrays.copyOf(token, token.length);
+        }
+        return null;
     }
 
     public void setToken(byte[] token) {
-        this.token = token;
+        if (token != null) {
+            this.token = Arrays.copyOf(token, token.length);
+        } else {
+            this.token = null;
+        }
     }
 
 }

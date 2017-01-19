@@ -46,4 +46,28 @@ public class STSUserDetails extends User {
         return this.token;
     }
 
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof STSUserDetails)) {
+            return false;
+        }
+        
+        if (token != null && !token.equals(((STSUserDetails)object).token)) {
+            return false;
+        } else  if (token == null && ((STSUserDetails)object).token != null) {
+            return false;
+        }
+        
+        return super.equals(object);
+    }
+    
+    @Override
+    public int hashCode() {
+        int hashCode = 17;
+        if (token != null) {
+            hashCode *= 31 * token.hashCode();
+        }
+        
+        return hashCode * super.hashCode();
+    }
 }

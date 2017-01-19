@@ -1,9 +1,9 @@
-Apache CXF Fediz 1.2.2 Release Notes
+Apache CXF Fediz 1.4.0 Release Notes
 ------------------------------------
 
 1. Overview
 
-The 1.2.x versions of Apache CXF Fediz provide the following features:
+Apache CXF Fediz provide the following features:
 
 * WS-Federation 1.0/1.1/1.2
 * SAML 1.1/2.0 Tokens
@@ -11,14 +11,16 @@ The 1.2.x versions of Apache CXF Fediz provide the following features:
 * Publish WS-Federation Metadata document for RP and IDP
 * Role information encoded as AttributeStatement in SAML 1.1/2.0 tokens
 * Claims information provided by FederationPrincipal interface
-* Fediz IDP supports Resource and Requestor IDP role, Home Realm Discovery Service, ...
+* Fediz IdP supports Resource and Requestor IDP role, Home Realm Discovery Service, ...
 * Support for Jetty, Tomcat, Websphere and Spring Security 2.0/3.1
-* Support for logout in the RP and IDP
+* Support for logout in the RP and IdP
 * Support for logging on to the IdP via UsernamePassword, Kerberos and TLS
 client authentication
 * A container independent CXF plugin for WS-Federation
 * A REST API for the IDP
-* Support to use the IDP as an identity broker with a remote SAML SSO IDP
+* Support to use the IDP as an identity broker with a remote SAML SSO IdP
+* Support to use the IDP as an identity broker with a remote OpenId Connect IdP
+* SAML SSO support in the IdP
 
 
 2. Installation Prerequisites 
@@ -33,7 +35,7 @@ with the specified versions, are installed on your system:
 
 Follow the Getting Started instructions at 
 http://cxf.apache.org/fediz.html#Fediz-Gettingstarted for information
-on installing the Fediz IDP and IDP STS.
+on installing the Fediz IDP and IdP STS.
 
 4. Building the Samples
 

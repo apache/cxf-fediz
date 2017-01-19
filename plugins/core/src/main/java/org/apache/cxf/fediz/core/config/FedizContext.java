@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import org.apache.cxf.fediz.core.config.jaxb.CertificateStores;
 import org.apache.cxf.fediz.core.config.jaxb.ContextConfig;
@@ -69,6 +70,7 @@ public class FedizContext implements Closeable {
     private KeyManager keyManager;
     private KeyManager decryptionKeyManager;
     private ClassLoader classloader;
+    private Pattern logoutRedirectToConstraint;
     
 
     public FedizContext(ContextConfig config) {
@@ -134,11 +136,7 @@ public class FedizContext implements Closeable {
     }
 
     public BigInteger getMaximumClockSkew() {
-        if (config.getMaximumClockSkew() == null) {
-            return BigInteger.valueOf(5L);
-        } else {
-            return config.getMaximumClockSkew();
-        }
+        return config.getMaximumClockSkew();
     }
     
     public void setMaximumClockSkew(BigInteger maximumClockSkew) {
@@ -174,6 +172,12 @@ public class FedizContext implements Closeable {
         return config.getLogoutRedirectTo();
     }
     
+    public Pattern getLogoutRedirectToConstraint() {
+        if (logoutRedirectToConstraint == null && config.getLogoutRedirectToConstraint() != null) {
+            logoutRedirectToConstraint = Pattern.compile(config.getLogoutRedirectToConstraint());
+        }
+        return logoutRedirectToConstraint;
+    }
     
     public KeyManager getSigningKey() {
         
@@ -296,7 +300,9 @@ public class FedizContext implements Closeable {
                 // WSS4J will re-load the resource anyway
                 trustStoreFile = ks.getResource();
             }
-        } else {
+        }
+        
+        if (trustStoreFile == null) {
             throw new IllegalStateException("No certificate store configured");
         }
         File f = new File(trustStoreFile);
@@ -334,7 +340,9 @@ public class FedizContext implements Closeable {
                 // WSS4J will re-load the resource anyway
                 keyStoreFile = ks.getResource();
             }
-        } else {
+        }
+        
+        if (keyStoreFile == null) {
             throw new IllegalStateException("No certificate store configured");
         }
         File f = new File(keyStoreFile);

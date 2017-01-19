@@ -2,6 +2,7 @@
 <%@ page import="java.util.List" %>
 <%@ page import="org.apache.cxf.rs.security.oauth2.common.OAuthAuthorizationData" %>
 <%@ page import="org.apache.cxf.rs.security.oauth2.common.OAuthPermission" %>
+<%@ page import="org.owasp.esapi.ESAPI" %>
 
 
 <%
@@ -76,7 +77,7 @@
                             }
                         %>
 
-                        <h2>Would you like to grant <%= data.getApplicationName() %><br />the following permissions:</h2>
+                        <h2>Would you like to grant <%= ESAPI.encoder().encodeForHTML(data.getApplicationName()) %><br />the following permissions:</h2>
 
                         <table> 
                             <%

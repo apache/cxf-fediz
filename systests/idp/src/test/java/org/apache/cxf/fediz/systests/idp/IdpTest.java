@@ -21,6 +21,7 @@ package org.apache.cxf.fediz.systests.idp;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLEncoder;
 
 import javax.servlet.ServletException;
@@ -29,11 +30,14 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNodeList;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 import org.apache.catalina.LifecycleException;
@@ -41,6 +45,7 @@ import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.commons.io.IOUtils;
+import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -371,7 +376,9 @@ public class IdpTest {
         String wreply = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
         url += "&wreply=" + wreply;
 
-        String entity = IOUtils.toString(this.getClass().getClassLoader().getResource("entity_wreq.xml").openStream());
+        InputStream is = this.getClass().getClassLoader().getResource("entity_wreq.xml").openStream();
+        String entity = IOUtils.toString(is, "UTF-8");
+        is.close();
         String validWreq =
             "<RequestSecurityToken xmlns=\"http://docs.oasis-open.org/ws-sx/ws-trust/200512\">"
             + "<TokenType>&m;http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0</TokenType>"
@@ -586,6 +593,119 @@ public class IdpTest {
         webClient.close();
     }
     
+    @org.junit.Test
+    public void testValidWReplyWrongApplication() throws Exception {
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
+        url += "wa=wsignin1.0";
+        url += "&whr=urn:org:apache:cxf:fediz:idp:realm-A";
+        url += "&wtrealm=urn:org:apache:cxf:fediz:fedizhelloworld2";
+        String wreply = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
+        url += "&wreply=" + wreply;
+
+        String user = "alice";
+        String password = "ecila";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        try {
+            webClient.getPage(url);
+            Assert.fail("Failure expected on a bad wreply value");
+        } catch (FailingHttpStatusCodeException ex) {
+            Assert.assertEquals(ex.getStatusCode(), 400);
+        }
+
+        webClient.close();
+    }
+    
+    @org.junit.Test
+    public void testWReplyExactMatchingSuccess() throws Exception {
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
+        url += "wa=wsignin1.0";
+        url += "&whr=urn:org:apache:cxf:fediz:idp:realm-A";
+        url += "&wtrealm=urn:org:apache:cxf:fediz:fedizhelloworld3";
+        String wreply = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
+        url += "&wreply=" + wreply;
+
+        String user = "alice";
+        String password = "ecila";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        webClient.getPage(url);
+
+        webClient.close();
+    }
+    
+    @org.junit.Test
+    public void testWReplyExactMatchingFailure() throws Exception {
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
+        url += "wa=wsignin1.0";
+        url += "&whr=urn:org:apache:cxf:fediz:idp:realm-A";
+        url += "&wtrealm=urn:org:apache:cxf:fediz:fedizhelloworld3";
+        String wreply = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+            + "/secure/fedservlet/blah";
+        url += "&wreply=" + wreply;
+
+        String user = "alice";
+        String password = "ecila";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        try {
+            webClient.getPage(url);
+            Assert.fail("Failure expected on a bad wreply value");
+        } catch (FailingHttpStatusCodeException ex) {
+            Assert.assertEquals(ex.getStatusCode(), 400);
+        }
+
+        webClient.close();
+    }
+    
+    @org.junit.Test
+    public void testNoEndpointAddressOrConstraint() throws Exception {
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
+        url += "wa=wsignin1.0";
+        url += "&whr=urn:org:apache:cxf:fediz:idp:realm-A";
+        url += "&wtrealm=urn:org:apache:cxf:fediz:fedizhelloworld4";
+        String wreply = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
+        url += "&wreply=" + wreply;
+
+        String user = "alice";
+        String password = "ecila";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        // This is an error in the IdP
+        try {
+            webClient.getPage(url);
+            Assert.fail("Failure expected on a bad wreply value");
+        } catch (FailingHttpStatusCodeException ex) {
+            Assert.assertEquals(ex.getStatusCode(), 400);
+        }
+
+        webClient.close();
+    }
+    
     // Send a bad wreply value. This will pass the reg ex validation but fail the commons-validator 
     // validation
     @org.junit.Test
@@ -617,5 +737,181 @@ public class IdpTest {
 
         webClient.close();
     }
+  
     
+    @Test
+    public void testIdPLogout() throws Exception {
+
+        // 1. First let's login to the IdP
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
+        url += "wa=wsignin1.0";
+        url += "&whr=urn:org:apache:cxf:fediz:idp:realm-A";
+        url += "&wtrealm=urn:org:apache:cxf:fediz:fedizhelloworld";
+        String wreply = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
+        url += "&wreply=" + wreply;
+
+        String user = "alice";
+        String password = "ecila";
+        
+        CookieManager cookieManager = new CookieManager();
+
+        WebClient webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        HtmlPage idpPage = webClient.getPage(url);
+        webClient.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        webClient.close();
+
+        // 2. now we logout from IdP
+        String idpLogoutUrl = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?wa="
+            + FederationConstants.ACTION_SIGNOUT;
+
+        webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        idpPage = webClient.getPage(idpLogoutUrl);
+
+        Assert.assertEquals("IDP SignOut Confirmation Response Page", idpPage.getTitleText());
+
+        HtmlForm form = idpPage.getFormByName("signoutconfirmationresponseform");
+        HtmlSubmitInput button = form.getInputByName("_eventId_submit");
+        button.click();
+
+        webClient.close();
+
+        // 3. now we try to access the idp without authentication but with the existing cookies
+        // to see if we are really logged out
+        webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        idpPage = webClient.getPage(url);
+
+        Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
+
+        webClient.close();
+    }
+    
+    @Test
+    public void testIdPLogoutCleanup() throws Exception {
+
+        // 1. First let's login to the IdP
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
+        url += "wa=wsignin1.0";
+        url += "&whr=urn:org:apache:cxf:fediz:idp:realm-A";
+        url += "&wtrealm=urn:org:apache:cxf:fediz:fedizhelloworld";
+        String wreply = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
+        url += "&wreply=" + wreply;
+
+        String user = "alice";
+        String password = "ecila";
+        
+        CookieManager cookieManager = new CookieManager();
+
+        WebClient webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        HtmlPage idpPage = webClient.getPage(url);
+        webClient.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        webClient.close();
+
+        // 2. now we logout from IdP
+        String idpLogoutUrl = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?wa="
+            + FederationConstants.ACTION_SIGNOUT_CLEANUP;
+
+        webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        idpPage = webClient.getPage(idpLogoutUrl);
+
+        Assert.assertEquals("IDP SignOut Response Page", idpPage.getTitleText());
+
+        webClient.close();
+
+        // 3. now we try to access the idp without authentication but with the existing cookies
+        // to see if we are really logged out
+        webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        idpPage = webClient.getPage(url);
+
+        Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
+
+        webClient.close();
+    }
+    
+    @Test
+    public void testIdPLogoutCleanupWithBadWReply() throws Exception {
+
+        // 1. First let's login to the IdP
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
+        url += "wa=wsignin1.0";
+        url += "&whr=urn:org:apache:cxf:fediz:idp:realm-A";
+        url += "&wtrealm=urn:org:apache:cxf:fediz:fedizhelloworld";
+        String wreply = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
+        url += "&wreply=" + wreply;
+
+        String user = "alice";
+        String password = "ecila";
+        
+        CookieManager cookieManager = new CookieManager();
+
+        WebClient webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        HtmlPage idpPage = webClient.getPage(url);
+        webClient.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        webClient.close();
+
+        // 2. now we logout from IdP using a bad wreply
+        String badWReply = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+            + "/secure//fedservlet";
+        String idpLogoutUrl = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?wa="
+            + FederationConstants.ACTION_SIGNOUT_CLEANUP;
+        idpLogoutUrl += "&wreply=" + badWReply;
+
+        webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        try {
+            webClient.getPage(idpLogoutUrl);
+            Assert.fail("Failure expected on a bad wreply value");
+        } catch (FailingHttpStatusCodeException ex) {
+            Assert.assertEquals(ex.getStatusCode(), 400);
+        }
+
+        webClient.close();
+
+        // 3. now we try to access the idp without authentication but with the existing cookies
+        // to see if we are really logged out. Even though an error was thrown on a bad wreply, we should still
+        // be logged out
+        webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        idpPage = webClient.getPage(url);
+
+        Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
+
+        webClient.close();
+    }
 }

@@ -21,6 +21,7 @@ package org.apache.cxf.fediz.spring.web;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.spring.FederationConfig;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
@@ -44,6 +45,12 @@ public class FederationLogoutFilter extends LogoutFilter {
 
     @Override
     protected boolean requiresLogout(HttpServletRequest request, HttpServletResponse response) {
+        String wa = request.getParameter(FederationConstants.PARAM_ACTION);
+        if (FederationConstants.ACTION_SIGNOUT.equals(wa) || FederationConstants.ACTION_SIGNOUT_CLEANUP.equals(wa)) {
+            // Default WS-Federation logout action
+            return true;
+        }
+        
         if (this.logoutUrl == null) {
             String contextName = request.getContextPath();
             if (contextName == null || contextName.isEmpty()) {

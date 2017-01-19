@@ -20,12 +20,12 @@
 package org.apache.cxf.fediz.tomcat7;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -124,7 +124,7 @@ public class FederationAuthenticator extends FormAuthenticator {
             configurator = new FedizConfigurator();
             configurator.loadConfig(f);
             LOG.debug("Fediz configuration read from " + f.getAbsolutePath());
-        } catch (JAXBException | FileNotFoundException e) {
+        } catch (JAXBException | IOException e) {
             throw new LifecycleException("Failed to load Fediz configuration", e);
         }
         super.startInternal();
@@ -148,7 +148,7 @@ public class FederationAuthenticator extends FormAuthenticator {
         super.stopInternal();
     }
 
-    protected FedizContext getContextConfiguration(String contextName) {
+    protected synchronized FedizContext getContextConfiguration(String contextName) {
         if (configurator == null) {
             throw new IllegalStateException("No Fediz configuration available");
         }
@@ -236,36 +236,35 @@ public class FederationAuthenticator extends FormAuthenticator {
         return false;
     }
 
-    protected void resumeRequest(HttpServletRequest request, HttpServletResponse response) {
-        String originalURL = null;
+    protected void resumeRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String contextId = request.getParameter(FederationConstants.PARAM_CONTEXT);
-        if (contextId != null) {
-            Session session = ((Request)request).getSessionInternal();
-            originalURL = (String)session.getNote(FederationAuthenticator.SESSION_SAVED_URI_PREFIX + contextId);
-            session.removeNote(FederationAuthenticator.SESSION_SAVED_URI_PREFIX + contextId); // Cleanup session
+        if (contextId == null) {
+            LOG.warn("The 'wctx' parameter has not been provided back with signin request.");
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
             
         } else {
-            LOG.warn("The 'wctx' parameter has not been provided back with signin request. "
-                + "Trying to resume now with signin URL (without parameters)");
-            originalURL = request.getRequestURI();
-        }
-        try {
-            if (originalURL != null) {
-                LOG.debug("Restore request to {}", originalURL);
-                response.sendRedirect(response.encodeRedirectURL(originalURL));
-            } else {
-                LOG.debug("User took so long to log on the session expired");
-                if (landingPage == null) {
-                    response.sendError(HttpServletResponse.SC_REQUEST_TIMEOUT, sm
-                        .getString("authenticator.sessionExpired"));
+            Session session = ((Request)request).getSessionInternal();
+            String originalURL = (String)session.getNote(FederationAuthenticator.SESSION_SAVED_URI_PREFIX + contextId);
+            session.removeNote(FederationAuthenticator.SESSION_SAVED_URI_PREFIX + contextId); // Cleanup session
+            
+            try {
+                if (originalURL != null) {
+                    LOG.debug("Restore request to {}", originalURL);
+                    response.sendRedirect(response.encodeRedirectURL(originalURL));
                 } else {
-                    // Redirect to landing page
-                    String uri = request.getContextPath() + landingPage;
-                    response.sendRedirect(response.encodeRedirectURL(uri));
+                    LOG.debug("User took so long to log on the session expired");
+                    if (landingPage == null) {
+                        response.sendError(HttpServletResponse.SC_REQUEST_TIMEOUT, sm
+                                           .getString("authenticator.sessionExpired"));
+                    } else {
+                        // Redirect to landing page
+                        String uri = request.getContextPath() + landingPage;
+                        response.sendRedirect(response.encodeRedirectURL(uri));
+                    }
                 }
+            } catch (IOException e) {
+                LOG.error("Cannot resume with request.", e.getMessage());
             }
-        } catch (IOException e) {
-            LOG.error("Cannot resume with request.", e.getMessage());
         }
     }
     
@@ -299,8 +298,8 @@ public class FederationAuthenticator extends FormAuthenticator {
             if (redirectURL != null) {
                 Map<String, String> headers = redirectionResponse.getHeaders();
                 if (!headers.isEmpty()) {
-                    for (String headerName : headers.keySet()) {
-                        response.addHeader(headerName, headers.get(headerName));
+                    for (Entry<String, String> entry : headers.entrySet()) {
+                        response.addHeader(entry.getKey(), entry.getValue());
                     }
                 }
 
@@ -343,7 +342,9 @@ public class FederationAuthenticator extends FormAuthenticator {
     protected void saveRequest(Request request, String contextId) throws IOException {
         String uri = request.getDecodedRequestURI();
         Session session = request.getSessionInternal(true);
-        LOG.debug("Save request in session '{}'", session.getIdInternal());
+        if (session != null) {
+            LOG.debug("Save request in session '{}'", session.getIdInternal());
+        }
         if (session != null && uri != null) {
             SavedRequest saved;
             synchronized (session) {

@@ -63,7 +63,7 @@ import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.commons.io.IOUtils;
-import org.apache.cxf.fediz.tomcat7.FederationAuthenticator;
+import org.apache.cxf.fediz.tomcat8.FederationAuthenticator;
 import org.apache.cxf.rs.security.jose.jwa.SignatureAlgorithm;
 import org.apache.cxf.rs.security.jose.jws.JwsJwtCompactConsumer;
 import org.apache.cxf.rs.security.jose.jwt.JwtConstants;

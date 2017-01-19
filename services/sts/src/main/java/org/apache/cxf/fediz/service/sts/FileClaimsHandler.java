@@ -76,7 +76,7 @@ public class FileClaimsHandler implements ClaimsHandler {
             return new ProcessedClaimCollection();
         }
 
-        if (claims != null && claims.size() > 0) {
+        if (claims.size() > 0) {
             ProcessedClaimCollection claimCollection = new ProcessedClaimCollection();
             for (Claim requestClaim : claims) { 
                 String claimValue = claimMap.get(requestClaim.getClaimType().toString());

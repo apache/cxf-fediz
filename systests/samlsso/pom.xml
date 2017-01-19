@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.apache.cxf.fediz</groupId>
         <artifactId>fediz-systests</artifactId>
-        <version>1.3.2-SNAPSHOT</version>
+        <version>1.4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>org.apache.cxf.fediz.systests</groupId>
@@ -75,12 +75,6 @@
             <artifactId>fediz-systests-tests</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -152,6 +146,16 @@
                                     <overWrite>true</overWrite>
                                     <outputDirectory>target/tomcat/idp/webapps/fediz-idp-sts</outputDirectory>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.cxf.fediz.systests</groupId>
+                                    <artifactId>fediz-systests-tests</artifactId>
+                                    <version>${project.version}</version>
+                                    <classifier>tests</classifier>
+                                    <type>jar</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target/test-classes</outputDirectory>
+                                    <includes>**/*.jks</includes>
+                                </artifactItem>
                             </artifactItems>
                             <outputAbsoluteArtifactFilename>true</outputAbsoluteArtifactFilename>
                             <overWriteSnapshots>true</overWriteSnapshots>
@@ -203,6 +207,7 @@
                                 <wt.headless>true</wt.headless>
                                 <idp.https.port>${idp.https.port}</idp.https.port>
                                 <rp.https.port>${rp.https.port}</rp.https.port>
+                                <java.util.logging.config.file>${basedir}/target/test-classes/logging.properties</java.util.logging.config.file>
                             </systemPropertyVariables>
                             <includes>
                                 <include>**/idp/**</include>

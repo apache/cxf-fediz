@@ -26,6 +26,7 @@ import java.util.Date;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.SAMLSSOConstants;
@@ -33,6 +34,7 @@ import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.apache.cxf.fediz.spring.FederationConfig;
 import org.apache.cxf.fediz.spring.authentication.ExpiredTokenException;
 import org.apache.cxf.fediz.spring.authentication.FederationAuthenticationToken;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -55,22 +57,19 @@ public class FederationAuthenticationFilter extends AbstractAuthenticationProces
     public Authentication attemptAuthentication(final HttpServletRequest request, final HttpServletResponse response)
         throws AuthenticationException, IOException {
 
-        SecurityContext context = SecurityContextHolder.getContext();
-        if (context != null) {
-            Authentication authentication = context.getAuthentication();
-            if (authentication instanceof FederationAuthenticationToken) {
-                // If we reach this point then the token must be expired
-                throw new ExpiredTokenException("Token is expired");
-            }
+        if (isTokenExpired()) {
+            throw new ExpiredTokenException("Token is expired");
         }
- 
+        
+        verifySavedState(request);
+        
         String wa = request.getParameter(FederationConstants.PARAM_ACTION);
         String responseToken = getResponseToken(request);
         
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(wa);
         wfReq.setResponseToken(responseToken);
-        wfReq.setState(request.getParameter(SAMLSSOConstants.RELAY_STATE));
+        wfReq.setState(getState(request));
         wfReq.setRequest(request);
         
         X509Certificate certs[] = 
@@ -106,7 +105,7 @@ public class FederationAuthenticationFilter extends AbstractAuthenticationProces
             
         return false;
     }
-  
+    
     private String getResponseToken(ServletRequest request) {
         if (request.getParameter(FederationConstants.PARAM_RESULT) != null) {
             return request.getParameter(FederationConstants.PARAM_RESULT);
@@ -116,7 +115,29 @@ public class FederationAuthenticationFilter extends AbstractAuthenticationProces
         
         return null;
     }
+    
+    private String getState(ServletRequest request) {
+        if (request.getParameter(FederationConstants.PARAM_CONTEXT) != null) {
+            return request.getParameter(FederationConstants.PARAM_CONTEXT);
+        } else if (request.getParameter(SAMLSSOConstants.RELAY_STATE) != null) {
+            return request.getParameter(SAMLSSOConstants.RELAY_STATE);
+        }
+        
+        return null;
+    }
 
+    private void verifySavedState(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            String savedContext = (String)session.getAttribute(FederationAuthenticationEntryPoint.SAVED_CONTEXT);
+            String state = getState(request);
+            if (savedContext != null && !savedContext.equals(state)) {
+                logger.warn("The received state does not match the state saved in the context");
+                throw new BadCredentialsException("The received state does not match the state saved in the context");
+            }
+        }
+    }
+    
     /**
      * 
      */

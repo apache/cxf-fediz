@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.apache.cxf.fediz.systests</groupId>
         <artifactId>fediz-systests-federation</artifactId>
-        <version>1.3.2-SNAPSHOT</version>
+        <version>1.4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>org.apache.cxf.fediz.systests.federation</groupId>
@@ -79,12 +79,6 @@
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
             <version>${slf4j.version}</version>
             <scope>test</scope>
@@ -127,8 +121,8 @@
                         <configuration>
                             <portNames>
                                 <portName>idp.https.port</portName>
-                                <portName>idp.samlsso.https.port</portName>
                                 <portName>idp.realmb.https.port</portName>
+                                <portName>idp.oidc.https.port</portName>
                                 <portName>rp.https.port</portName>
                             </portNames>
                         </configuration>
@@ -165,27 +159,11 @@
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz.systests.federation</groupId>
-                                    <artifactId>fediz-systests-federation-samlIdpWebapp</artifactId>
+                                    <artifactId>fediz-systests-federation-samlWebapp</artifactId>
                                     <version>${project.version}</version>
                                     <type>war</type>
                                     <overWrite>true</overWrite>
-                                    <outputDirectory>target/tomcat/idpsamlsso/webapps/idpsaml</outputDirectory>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.apache.cxf.fediz.systests.webapps</groupId>
-                                    <artifactId>fediz-systests-webapps-simple</artifactId>
-                                    <version>${project.version}</version>
-                                    <type>war</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>target/tomcat/rp/webapps/simpleWebapp</outputDirectory>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.apache.cxf.fediz.systests.webapps</groupId>
-                                    <artifactId>fediz-systests-webapps-simple</artifactId>
-                                    <version>${project.version}</version>
-                                    <type>war</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>target/tomcat/rp/webapps/simpleWebapp2</outputDirectory>
+                                    <outputDirectory>target/tomcat/rp/webapps/samlssoWebapp</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz</groupId>
@@ -202,6 +180,24 @@
                                     <type>war</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>target/tomcat/idprealmb/webapps/fediz-idp-sts-realmb</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.cxf.fediz.systests.federation</groupId>
+                                    <artifactId>fediz-systests-federation-oidcIdpWebapp</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>war</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target/tomcat/idpoidc/webapps/idpoidc</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.cxf.fediz.systests</groupId>
+                                    <artifactId>fediz-systests-tests</artifactId>
+                                    <version>${project.version}</version>
+                                    <classifier>tests</classifier>
+                                    <type>jar</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target/test-classes</outputDirectory>
+                                    <includes>**/*.jks</includes>
                                 </artifactItem>
                             </artifactItems>
                             <outputAbsoluteArtifactFilename>true</outputAbsoluteArtifactFilename>
@@ -226,7 +222,7 @@
                             <outputDirectory>${basedir}/target/tomcat/idp/webapps/fediz-idp/WEB-INF/classes</outputDirectory>
                             <resources>          
                                 <resource>
-                                    <directory>${basedir}/src/test/resources</directory>
+                                    <directory>${basedir}/src/test/resources/realma</directory>
                                     <includes>
                                         <include>entities-realma.xml</include>
                                     </includes>
@@ -276,6 +272,44 @@
                             </resources>              
                         </configuration>            
                     </execution>
+                    <execution>
+                        <id>copy-entities-to-oidc-idp</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/tomcat/idpoidc/webapps/idpoidc/WEB-INF</outputDirectory>
+                            <resources>          
+                                <resource>
+                                    <directory>${basedir}/src/test/resources</directory>
+                                    <includes>
+                                        <include>cxf-service.xml</include>
+                                    </includes>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>              
+                        </configuration>            
+                    </execution>
+                    <execution>
+                        <id>copy-entities-to-samlsso-webapp</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/tomcat/rp/webapps/samlssoWebapp/WEB-INF</outputDirectory>
+                            <resources>          
+                                <resource>
+                                    <directory>${basedir}/src/test/resources/rp</directory>
+                                    <includes>
+                                        <include>cxf-service.xml</include>
+                                    </includes>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>              
+                        </configuration>            
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -293,9 +327,11 @@
                             <systemPropertyVariables>
                                 <wt.headless>true</wt.headless>
                                 <idp.https.port>${idp.https.port}</idp.https.port>
-                                <idp.samlsso.https.port>${idp.samlsso.https.port}</idp.samlsso.https.port>
                                 <idp.realmb.https.port>${idp.realmb.https.port}</idp.realmb.https.port>
+                                <idp.samlsso.https.port>${idp.samlsso.https.port}</idp.samlsso.https.port>
+                                <idp.oidc.https.port>${idp.oidc.https.port}</idp.oidc.https.port>
                                 <rp.https.port>${rp.https.port}</rp.https.port>
+                                <java.util.logging.config.file>${basedir}/target/test-classes/logging.properties</java.util.logging.config.file>
                             </systemPropertyVariables>
                             <includes>
                                 <include>**/integrationtests/**</include>

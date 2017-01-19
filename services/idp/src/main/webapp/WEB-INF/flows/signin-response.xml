@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements. See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership. The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License. You may obtain a copy of the License at
+ 
+  http://www.apache.org/licenses/LICENSE-2.0
+ 
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied. See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<!--
+Process a response from a trusted third party IdP. It starts by restoring the original request parameters for the current context. 
+It then converts the response from the third party IdP into a SecurityToken via the TrustedIdPProtocolAction. It then exits this 
+subflow to get a RP token from the STS.
+ -->
+<flow xmlns="http://www.springframework.org/schema/webflow"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/webflow
+        http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd">
+
+    <input name="idpConfig" />
+    <input name="request_context" />
+    <input name="wresult" />
+    <input name="RelayState" />
+    <input name="SAMLResponse" />
+    <input name="state" />
+    <input name="code" />
+    <input name="home_realm" />
+    <input name="protocol" />
+
+    <on-start>
+        <!-- restore the original request parameters for the current context -->
+        <evaluate expression="signinParametersCacheAction.restore(flowRequestContext, request_context, protocol)" />
+    </on-start>
+    
+    <!-- validate token issued by requestor IDP given its home realm -->
+    <action-state id="validateToken">
+        <evaluate expression="trustedIdpProtocolAction.mapSignInResponse(flowRequestContext, home_realm)"
+            result="flowScope.idpToken" result-type="org.apache.cxf.ws.security.tokenstore.SecurityToken" />
+        <transition to="checkCacheTrustedIdpToken" />
+        <transition
+            on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
+        <transition
+            on-exception="javax.ws.rs.BadRequestException" to="viewBadRequest" />
+        <transition on-exception="java.lang.Throwable" to="scInternalServerError" />
+    </action-state>
+    
+    <action-state id="checkCacheTrustedIdpToken">
+        <evaluate expression="idpConfig.findTrustedIdp(flowScope.home_realm).cacheTokens" />
+        <transition on="yes" to="requestRpToken">
+            <set name="externalContext.sessionMap[flowScope.home_realm]"
+                    value="flowScope.idpToken" />
+        </transition>
+        <transition on="no" to="requestRpToken" />
+    </action-state>
+
+    <end-state id="requestRpToken">
+        <output name="home_realm" value="flowScope.home_realm" />
+        <output name="request_context" value="flowScope.request_context" />
+        <output name="return_address" value="flowScope.return_address" />
+        <output name="realm" value="flowScope.realm" />
+        <output name="idpToken" value="flowScope.idpToken" />
+        <output name="saml_authn_request" value="flowScope.saml_authn_request" />
+    </end-state>
+
+    <!-- abnormal exit point : Http 400 Bad Request -->
+    <end-state id="viewBadRequest">
+        <output name="saml_authn_request" value="flowScope.saml_authn_request" />
+        <output name="RelayState" value="flowScope.RelayState" />
+    </end-state>
+
+    <!-- abnormal exit point : Http 500 Internal Server Error -->
+    <end-state id="scInternalServerError" />
+    
+</flow>

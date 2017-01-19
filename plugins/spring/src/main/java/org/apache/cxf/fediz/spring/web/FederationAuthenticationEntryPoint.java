@@ -21,10 +21,12 @@ package org.apache.cxf.fediz.spring.web;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
@@ -53,6 +55,11 @@ import org.springframework.util.Assert;
  */
 public class FederationAuthenticationEntryPoint implements AuthenticationEntryPoint,
     InitializingBean, ApplicationContextAware {
+    
+    /**
+     * The key used to save the context of the request
+     */
+    public static final String SAVED_CONTEXT = "SAVED_CONTEXT";
     
     private static final Logger LOG = LoggerFactory.getLogger(FederationAuthenticationEntryPoint.class);
     
@@ -100,11 +107,13 @@ public class FederationAuthenticationEntryPoint implements AuthenticationEntryPo
             
             Map<String, String> headers = redirectionResponse.getHeaders();
             if (!headers.isEmpty()) {
-                for (String headerName : headers.keySet()) {
-                    response.addHeader(headerName, headers.get(headerName));
+                for (Entry<String, String> entry : headers.entrySet()) {
+                    response.addHeader(entry.getKey(), entry.getValue());
                 }
             }
             
+            HttpSession session = servletRequest.getSession(true);
+            session.setAttribute(SAVED_CONTEXT, redirectionResponse.getRequestState().getState());
         } catch (ProcessingException ex) {
             LOG.warn("Failed to create SignInRequest", ex);
             throw new ServletException("Failed to create SignInRequest: " + ex.getMessage());
@@ -116,7 +125,7 @@ public class FederationAuthenticationEntryPoint implements AuthenticationEntryPo
         }
         response.sendRedirect(redirectUrl);
     }
-
+    
     /**
      * Template method for you to do your own pre-processing before the redirect occurs.
      *

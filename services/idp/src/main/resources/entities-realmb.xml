@@ -22,9 +22,9 @@
     xmlns:util="http://www.springframework.org/schema/util"
     xsi:schemaLocation="
         http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
         http://www.springframework.org/schema/util
-        http://www.springframework.org/schema/util/spring-util-2.0.xsd">
+        http://www.springframework.org/schema/util/spring-util-4.3.xsd">
 
     <bean id="idp-realmB" class="org.apache.cxf.fediz.service.idp.service.jpa.IdpEntity">
         <property name="realm" value="urn:org:apache:cxf:fediz:idp:realm-B" />
@@ -85,6 +85,7 @@
         <property name="role" value="SecurityTokenServiceType" />
         <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0" />
         <property name="lifeTime" value="3600" />
+        <property name="passiveRequestorEndpointConstraint" value="https://localhost:?(\d)*/.*" />
     </bean>
     
     <bean id="claim_role"

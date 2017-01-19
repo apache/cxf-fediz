@@ -40,11 +40,18 @@ public class SSOValidatorResponse {
     }
     
     public Date getSessionNotOnOrAfter() {
-        return sessionNotOnOrAfter;
+        if (sessionNotOnOrAfter != null) {
+            return new Date(sessionNotOnOrAfter.getTime());
+        }
+        return null;
     }
     
     public void setSessionNotOnOrAfter(Date sessionNotOnOrAfter) {
-        this.sessionNotOnOrAfter = sessionNotOnOrAfter;
+        if (sessionNotOnOrAfter != null) {
+            this.sessionNotOnOrAfter = new Date(sessionNotOnOrAfter.getTime());
+        } else {
+            this.sessionNotOnOrAfter = null;
+        }
     }
     
     public String getResponseId() {

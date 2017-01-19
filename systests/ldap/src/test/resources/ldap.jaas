@@ -1,0 +1,8 @@
+LDAP {
+    com.sun.security.auth.module.LdapLoginModule REQUIRED
+    userProvider="ldap://localhost:portno/"
+    authIdentity="cn={USERNAME},ou=users,dc=fediz,dc=org"
+    useSSL=false
+    debug=true;
+};
+

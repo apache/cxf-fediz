@@ -129,9 +129,11 @@ public class IdpServiceImpl implements IdpService {
     @Override
     public Response addApplicationToIdp(UriInfo ui, String realm, Application application) {
         Idp idp = idpDAO.getIdp(realm, Arrays.asList("all"));
-        if (idp.getApplications().contains(application.getRealm())) {
-            LOG.warn("Application '" + application.getRealm() + "' already added");
-            throw new WebApplicationException(Status.CONFLICT);
+        for (Application idpApplication : idp.getApplications()) {
+            if (idpApplication.getRealm() != null && idpApplication.getRealm().equals(application.getRealm())) {
+                LOG.warn("Application '" + application.getRealm() + "' already added");
+                throw new WebApplicationException(Status.CONFLICT);
+            }
         }
         Application application2 = applicationDAO.getApplication(application.getRealm(), null);
         idpDAO.addApplicationToIdp(idp, application2);
@@ -165,9 +167,11 @@ public class IdpServiceImpl implements IdpService {
     @Override
     public Response addTrustedIdpToIdp(UriInfo ui, String realm, TrustedIdp trustedIdp) {
         Idp idp = idpDAO.getIdp(realm, Arrays.asList("all"));
-        if (idp.getTrustedIdps().contains(trustedIdp.getRealm())) {
-            LOG.warn("Trusted IDP '" + trustedIdp.getRealm() + "' already added");
-            throw new WebApplicationException(Status.CONFLICT);
+        for (TrustedIdp idpTrustedIdp : idp.getTrustedIdps()) {
+            if (idpTrustedIdp.getRealm() != null && idpTrustedIdp.getRealm().equals(trustedIdp.getRealm())) {
+                LOG.warn("Trusted IDP '" + trustedIdp.getRealm() + "' already added");
+                throw new WebApplicationException(Status.CONFLICT);
+            }
         }
         TrustedIdp trustedIpd2 = trustedIdpDAO.getTrustedIDP(trustedIdp.getRealm());
         
@@ -199,9 +203,12 @@ public class IdpServiceImpl implements IdpService {
     @Override
     public Response addClaimToIdp(UriInfo ui, String realm, Claim claim) {
         Idp idp = idpDAO.getIdp(realm, Arrays.asList("all"));
-        if (idp.getClaimTypesOffered().contains(claim.getClaimType().toString())) {
-            LOG.warn("Claim '" + claim.getClaimType() + "' already added");
-            throw new WebApplicationException(Status.CONFLICT);
+        for (Claim idpClaim : idp.getClaimTypesOffered()) {
+            if (idpClaim.getClaimType() != null 
+                && idpClaim.getClaimType().toString().equals(claim.getClaimType().toString())) {
+                LOG.warn("Claim '" + claim.getClaimType() + "' already added");
+                throw new WebApplicationException(Status.CONFLICT);
+            }
         }
         Claim claim2 = claimDAO.getClaim(claim.getClaimType().toString());
         idpDAO.addClaimToIdp(idp, claim2);

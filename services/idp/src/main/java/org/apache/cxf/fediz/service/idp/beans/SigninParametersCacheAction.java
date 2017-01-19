@@ -24,13 +24,12 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.apache.cxf.fediz.core.FederationConstants;
-import org.apache.cxf.fediz.core.SAMLSSOConstants;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.service.idp.IdpConstants;
 import org.apache.cxf.fediz.service.idp.domain.Application;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
+import org.apache.cxf.fediz.service.idp.samlsso.SAMLAuthnRequest;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
-import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -39,81 +38,95 @@ import org.springframework.webflow.execution.RequestContext;
 @Component
 public class SigninParametersCacheAction {
 
-    @Deprecated
-    public static final String REALM_URL_MAP = "realmUrlMap";
     public static final String ACTIVE_APPLICATIONS = "realmConfigMap";
 
     private static final Logger LOG = LoggerFactory.getLogger(SigninParametersCacheAction.class);
 
-    public void store(RequestContext context) {
+    public void store(RequestContext context, String protocol) {
         Map<String, Object> signinParams = new HashMap<>();
         String uuidKey = UUID.randomUUID().toString();
-        
-        Object value = WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_REPLY);
+
+        Object value = WebUtils.getAttributeFromFlowScope(context, IdpConstants.HOME_REALM);
         if (value != null) {
-            signinParams.put(FederationConstants.PARAM_REPLY, value);
+            signinParams.put(IdpConstants.HOME_REALM, value);
         }
-        value = WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_TREALM);
+        value = WebUtils.getAttributeFromFlowScope(context, IdpConstants.CONTEXT);
         if (value != null) {
-            signinParams.put(FederationConstants.PARAM_TREALM, value);
+            signinParams.put(IdpConstants.CONTEXT, value);
         }
-        value = WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_HOME_REALM);
+        value = WebUtils.getAttributeFromFlowScope(context, IdpConstants.REALM);
         if (value != null) {
-            signinParams.put(FederationConstants.PARAM_HOME_REALM, value);
+            signinParams.put(IdpConstants.REALM, value);
         }
-        value = WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_CONTEXT);
+        value = WebUtils.getAttributeFromFlowScope(context, IdpConstants.RETURN_ADDRESS);
         if (value != null) {
-            signinParams.put(FederationConstants.PARAM_CONTEXT, value);
+            signinParams.put(IdpConstants.RETURN_ADDRESS, value);
         }
+        value = WebUtils.getAttributeFromFlowScope(context, IdpConstants.RETURN_ADDRESS);
+        if (value != null) {
+            signinParams.put(IdpConstants.RETURN_ADDRESS, value);
+        }
+
+        if ("samlsso".equals(protocol)) {
+            value = WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
+            if (value != null) {
+                signinParams.put(IdpConstants.SAML_AUTHN_REQUEST, value);
+            }
+        }
+
         WebUtils.putAttributeInExternalContext(context, uuidKey, signinParams);
-        
+
         LOG.debug("SignIn parameters cached: {}", signinParams.toString());
         WebUtils.putAttributeInFlowScope(context, IdpConstants.TRUSTED_IDP_CONTEXT, uuidKey);
         LOG.info("SignIn parameters cached and context set to [" + uuidKey + "].");
     }
-    
-    public void restore(RequestContext context) {
-        
-        String uuidKey = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_CONTEXT);
-        
-        if (uuidKey == null) {
-            uuidKey = (String)WebUtils.getAttributeFromFlowScope(context, SAMLSSOConstants.RELAY_STATE);
-        }
-        if (uuidKey == null) {
-            uuidKey = (String)WebUtils.getAttributeFromFlowScope(context, OAuthConstants.STATE);
-        }
-        
-        if (uuidKey != null) {
+
+    public void restore(RequestContext context, String contextKey, String protocol) {
+
+        if (contextKey != null) {
             @SuppressWarnings("unchecked")
             Map<String, Object> signinParams =
-                (Map<String, Object>)WebUtils.getAttributeFromExternalContext(context, uuidKey);
-            
+                (Map<String, Object>)WebUtils.getAttributeFromExternalContext(context, contextKey);
+
             if (signinParams != null) {
-                String value = (String)signinParams.get(FederationConstants.PARAM_REPLY);
-                if (value != null) {
-                    WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_REPLY, value);
-                }
-                value = (String)signinParams.get(FederationConstants.PARAM_TREALM);
-                if (value != null) {
-                    WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_TREALM, value);
-                }
-                value = (String)signinParams.get(FederationConstants.PARAM_HOME_REALM);
-                if (value != null) {
-                    WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_HOME_REALM, value);
-                }
-                
                 LOG.debug("SignIn parameters restored: {}", signinParams.toString());
-                WebUtils.removeAttributeFromFlowScope(context, FederationConstants.PARAM_CONTEXT);
-                LOG.info("SignIn parameters restored and " + FederationConstants.PARAM_CONTEXT + "[" 
-                    + uuidKey + "] cleared.");
-                
-                value = (String)signinParams.get(FederationConstants.PARAM_CONTEXT);
+
+                String value = (String)signinParams.get(IdpConstants.HOME_REALM);
                 if (value != null) {
-                    WebUtils.putAttributeInFlowScope(context, FederationConstants.PARAM_CONTEXT, value);
+                    WebUtils.putAttributeInFlowScope(context, IdpConstants.HOME_REALM, value);
                 }
+                value = (String)signinParams.get(IdpConstants.REALM);
+                if (value != null) {
+                    WebUtils.putAttributeInFlowScope(context, IdpConstants.REALM, value);
+                }
+                value = (String)signinParams.get(IdpConstants.RETURN_ADDRESS);
+                if (value != null) {
+                    WebUtils.putAttributeInFlowScope(context, IdpConstants.RETURN_ADDRESS, value);
+                }
+                value = (String)signinParams.get(IdpConstants.CONTEXT);
+                if (value != null) {
+                    WebUtils.putAttributeInFlowScope(context, IdpConstants.CONTEXT, value);
+                }
+
+                if ("wsfed".equals(protocol)) {
+
+                    WebUtils.removeAttributeFromFlowScope(context, FederationConstants.PARAM_CONTEXT);
+                    LOG.info("SignIn parameters restored and " + FederationConstants.PARAM_CONTEXT + "["
+                        + contextKey + "] cleared.");
+
+                } else if ("samlsso".equals(protocol)) {
+                    SAMLAuthnRequest authnRequest =
+                        (SAMLAuthnRequest)signinParams.get(IdpConstants.SAML_AUTHN_REQUEST);
+                    if (authnRequest != null) {
+                        WebUtils.putAttributeInFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST, authnRequest);
+                    }
+                }
+
             }  else {
                 LOG.debug("Error in restoring security context");
             }
+
+            WebUtils.removeAttributeFromFlowScope(context, contextKey);
         } else {
             LOG.debug("Error in restoring security context");
         }
@@ -125,15 +138,15 @@ public class SigninParametersCacheAction {
         Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(context, IdpConstants.IDP_CONFIG);
         if (wtrealm == null || idpConfig == null) {
             return;
-        }       
-        
+        }
+
         Application serviceConfig = idpConfig.findApplication(wtrealm);
         if (serviceConfig != null) {
             if (serviceConfig.getPassiveRequestorEndpoint() == null) {
                 String url = guessPassiveRequestorURL(context, wtrealm);
                 serviceConfig.setPassiveRequestorEndpoint(url);
             }
-            
+
             @SuppressWarnings("unchecked")
             Map<String, Application> realmConfigMap =
                     (Map<String, Application>)WebUtils

@@ -32,7 +32,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -314,22 +317,36 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         }
     }
 
-    public class LifeTime {
+    public static class LifeTime {
 
-        private Date created;
-        private Date expires;
+        private final Date created;
+        private final Date expires;
 
         public LifeTime(Date created, Date expires) {
-            this.created = created;
-            this.expires = expires;
+            if (created != null) {
+                this.created = new Date(created.getTime());
+            } else {
+                this.created = null;
+            }
+            if (expires != null) {
+                this.expires = new Date(expires.getTime());
+            } else {
+                this.expires = null;
+            }
         }
 
         public Date getCreated() {
-            return created;
+            if (created != null) {
+                return new Date(created.getTime());
+            }
+            return null;
         }
 
         public Date getExpires() {
-            return expires;
+            if (expires != null) {
+                return new Date(expires.getTime());
+            }
+            return null;
         }
 
     }
@@ -455,7 +472,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             redirectURL = redirectURL + "?" + sb.toString();
         } catch (Exception ex) {
             LOG.error("Failed to create SignInRequest", ex);
-            throw new ProcessingException("Failed to create SignInRequest");
+            throw new ProcessingException("Failed to create SignInRequest", ex);
         }
 
         RedirectionResponse response = new RedirectionResponse();
@@ -484,21 +501,42 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             StringBuilder sb = new StringBuilder();
             sb.append(FederationConstants.PARAM_ACTION).append('=').append(FederationConstants.ACTION_SIGNOUT);
 
-            String logoutRedirectTo = request.getParameter(FederationConstants.PARAM_REPLY);
-            if (logoutRedirectTo != null && !logoutRedirectTo.isEmpty()) {
-                logoutRedirectTo = config.getLogoutRedirectTo();
-            }
-            if (logoutRedirectTo != null && !logoutRedirectTo.isEmpty()) {
-
-                if (logoutRedirectTo.startsWith("/")) {
-                    logoutRedirectTo = extractFullContextPath(request).concat(logoutRedirectTo.substring(1));
+            // Match the 'wreply' parameter against the constraint
+            String logoutRedirectTo = null;
+            Pattern logoutRedirectToConstraint = config.getLogoutRedirectToConstraint();
+            if (request.getParameter(FederationConstants.PARAM_REPLY) != null) {
+                if (logoutRedirectToConstraint == null) {
+                    LOG.debug("No regular expression constraint configured for logout. Ignoring wreply parameter");
                 } else {
-                    logoutRedirectTo = extractFullContextPath(request).concat(logoutRedirectTo);
+                    Matcher matcher = 
+                        logoutRedirectToConstraint.matcher(request.getParameter(FederationConstants.PARAM_REPLY));
+                    if (matcher.matches()) {
+                        logoutRedirectTo = request.getParameter(FederationConstants.PARAM_REPLY);
+                    } else {
+                        LOG.warn("The received wreply address {} does not match the configured constraint {}",
+                                 logoutRedirectTo, logoutRedirectToConstraint);
+                    }
                 }
-
+            }
+            
+            if (logoutRedirectTo != null && !logoutRedirectTo.isEmpty()) {
                 LOG.debug("wreply={}", logoutRedirectTo);
                 sb.append('&').append(FederationConstants.PARAM_REPLY).append('=');
                 sb.append(URLEncoder.encode(logoutRedirectTo, "UTF-8"));
+            } else {
+                logoutRedirectTo = config.getLogoutRedirectTo();
+                if (logoutRedirectTo != null && !logoutRedirectTo.isEmpty()) {
+    
+                    if (logoutRedirectTo.startsWith("/")) {
+                        logoutRedirectTo = extractFullContextPath(request).concat(logoutRedirectTo.substring(1));
+                    } else {
+                        logoutRedirectTo = extractFullContextPath(request).concat(logoutRedirectTo);
+                    }
+    
+                    LOG.debug("wreply={}", logoutRedirectTo);
+                    sb.append('&').append(FederationConstants.PARAM_REPLY).append('=');
+                    sb.append(URLEncoder.encode(logoutRedirectTo, "UTF-8"));
+                }
             }
 
             redirectURL = redirectURL + "?" + sb.toString();
@@ -527,11 +565,11 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                 });
                 Map<String, String> signInQueryMap = callback.getSignInQueryParamMap();
                 StringBuilder sbQuery = new StringBuilder();
-                for (String key : signInQueryMap.keySet()) {
+                for (Entry<String, String> entry : signInQueryMap.entrySet()) {
                     if (sbQuery.length() > 0) {
                         sbQuery.append("&");
                     }
-                    sbQuery.append(key).append('=').append(URLEncoder.encode(signInQueryMap.get(key), "UTF-8"));
+                    sbQuery.append(entry.getKey()).append('=').append(URLEncoder.encode(entry.getValue(), "UTF-8"));
                 }
                 signInQuery = sbQuery.toString();
 

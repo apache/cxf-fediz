@@ -23,10 +23,12 @@ import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.SAMLSSOConstants;
@@ -105,21 +107,18 @@ public class FederationAuthenticationFilter extends AbstractProcessingFilter {
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request) throws AuthenticationException {
         
-        SecurityContext context = SecurityContextHolder.getContext();
-        if (context != null) {
-            Authentication authentication = context.getAuthentication();
-            if (authentication instanceof FederationAuthenticationToken) {
-                // If we reach this point then the token must be expired
-                throw new ExpiredTokenException("Token is expired");
-            }
+        if (isTokenExpired()) {
+            throw new ExpiredTokenException("Token is expired");
         }
+        
+        verifySavedState(request);
         
         String wa = request.getParameter(FederationConstants.PARAM_ACTION);
         String responseToken = getResponseToken(request);
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(wa);
         wfReq.setResponseToken(responseToken);
-        wfReq.setState(request.getParameter(SAMLSSOConstants.RELAY_STATE));
+        wfReq.setState(getState(request));
         wfReq.setRequest(request);
         
         X509Certificate certs[] = 
@@ -131,6 +130,28 @@ public class FederationAuthenticationFilter extends AbstractProcessingFilter {
         authRequest.setDetails(authenticationDetailsSource.buildDetails(request));
 
         return this.getAuthenticationManager().authenticate(authRequest);
+    }
+    
+    private void verifySavedState(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            String savedContext = (String)session.getAttribute(FederationAuthenticationEntryPoint.SAVED_CONTEXT);
+            String state = getState(request);
+            if (savedContext != null && !savedContext.equals(state)) {
+                logger.warn("The received state does not match the state saved in the context");
+                throw new BadCredentialsException("The received state does not match the state saved in the context");
+            }
+        }
+    }
+    
+    private String getState(ServletRequest request) {
+        if (request.getParameter(FederationConstants.PARAM_CONTEXT) != null) {
+            return request.getParameter(FederationConstants.PARAM_CONTEXT);
+        } else if (request.getParameter(SAMLSSOConstants.RELAY_STATE) != null) {
+            return request.getParameter(SAMLSSOConstants.RELAY_STATE);
+        }
+        
+        return null;
     }
     
     @Override
@@ -153,8 +174,8 @@ public class FederationAuthenticationFilter extends AbstractProcessingFilter {
                 
                 Map<String, String> headers = redirectionResponse.getHeaders();
                 if (!headers.isEmpty()) {
-                    for (String headerName : headers.keySet()) {
-                        response.addHeader(headerName, headers.get(headerName));
+                    for (Entry<String, String> entry : headers.entrySet()) {
+                        response.addHeader(entry.getKey(), entry.getValue());
                     }
                 }
                 
