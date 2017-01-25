@@ -20,6 +20,7 @@ package org.apache.cxf.fediz.service.idp;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.namespace.QName;
 
 import org.apache.cxf.Bus;
@@ -32,6 +33,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
  * An authentication provider to authenticate a Username/Password to the STS
@@ -81,6 +84,16 @@ public class STSUPAuthenticationProvider extends STSAuthenticationProvider {
         sts.getProperties().put(SecurityConstants.PASSWORD, (String)usernamePasswordToken.getCredentials());
         
         try {
+            
+            if (getCustomSTSParameter() != null) {
+                HttpServletRequest request = 
+                    ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+                String authRealmParameter = request.getParameter(getCustomSTSParameter());
+                LOG.debug("Found {} custom STS parameter {}", getCustomSTSParameter(), authRealmParameter);
+                if (authRealmParameter != null) {
+                    sts.setCustomContent(authRealmParameter);
+                }
+            }
 
             // Line below may be uncommented for debugging    
             // setTimeout(sts.getClient(), 3600000L);

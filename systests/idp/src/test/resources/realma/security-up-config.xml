@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements. See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership. The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License. You may obtain a copy of the License at
+ 
+  http://www.apache.org/licenses/LICENSE-2.0
+ 
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied. See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:security="http://www.springframework.org/schema/security"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-4.3.xsd
+        http://www.springframework.org/schema/security
+        http://www.springframework.org/schema/security/spring-security-3.2.xsd
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util-4.3.xsd
+        ">
+
+    <!-- DISABLE in production as it might log confidential information about the user -->
+    <!-- <security:debug /> -->
+    
+    <bean id="requestContextFilter" class="org.springframework.web.filter.RequestContextFilter"/>
+    
+    <!-- HTTP/BA entry point for WS-Federation -->
+    <security:http pattern="/federation/up/**" use-expressions="true">
+		<security:intercept-url requires-channel="https" pattern="/federation/up/login*" access="isAnonymous() or isAuthenticated()" />
+        <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
+        <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
+        <security:custom-filter before="BASIC_AUTH_FILTER" ref="requestContextFilter"/>
+
+        <security:http-basic />
+	<!--security:form-login login-page='/federation/up/login'
+		login-processing-url="/federation/up/login.do"
+		authentication-failure-url="/federation/up/login?error" 
+		default-target-url="/"
+		username-parameter="username" 
+		password-parameter="password"
+	/-->
+	<security:logout logout-url="/federation/up/logout" 
+		logout-success-url="/federation/up/login?out" 
+		delete-cookies="FEDIZ_HOME_REALM,JSESSIONID" 
+		invalidate-session="true" 
+	/>
+    </security:http>
+    
+    <!-- HTTP/BA entry point for SAML SSO -->
+    <security:http pattern="/saml/up/**" use-expressions="true">
+		<security:intercept-url requires-channel="https" pattern="/saml/up/login*" access="isAnonymous() or isAuthenticated()" />
+        <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
+        <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
+
+        <security:http-basic />
+	<!--security:form-login login-page='/federation/up/login'
+		login-processing-url="/federation/up/login.do"
+		authentication-failure-url="/federation/up/login?error" 
+		default-target-url="/"
+		username-parameter="username" 
+		password-parameter="password"
+	/-->
+	<security:logout logout-url="/saml/up/logout" 
+		logout-success-url="/saml/up/login?out" 
+		delete-cookies="FEDIZ_HOME_REALM,JSESSIONID" 
+		invalidate-session="true" 
+	/>
+    </security:http>
+    
+    <bean id="stsUPPortFilter" class="org.apache.cxf.fediz.service.idp.STSPortFilter">
+        <property name="authenticationProvider" ref="stsUPAuthProvider" />
+    </bean>
+    
+    <!-- U/P Authentication Provider -->
+    <bean id="stsUPAuthProvider" class="org.apache.cxf.fediz.service.idp.STSUPAuthenticationProvider">
+        <property name="wsdlLocation" value="https://localhost:0/fediz-idp-sts/${realm.STS_URI}/STSServiceTransportUT?wsdl" />
+        <property name="wsdlEndpoint" value="TransportUT_Port" />
+        <property name="wsdlService" value="SecurityTokenService" />
+        <property name="appliesTo" value="urn:fediz:idp" />
+        <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0" />
+        <property name="customSTSParameter" value="auth_realm" />
+    </bean>
+    
+</beans>

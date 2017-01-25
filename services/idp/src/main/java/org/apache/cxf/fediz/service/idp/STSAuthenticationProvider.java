@@ -83,6 +83,8 @@ public abstract class STSAuthenticationProvider implements AuthenticationProvide
     
     protected Map<String, Object> properties = new HashMap<>();
     
+    private String customSTSParameter;
+    
     protected List<GrantedAuthority> createAuthorities(SecurityToken token) throws WSSecurityException {
         List<GrantedAuthority> authorities = new ArrayList<>();
         //authorities.add(new SimpleGrantedAuthority("ROLE_AUTHENTICATED"));
@@ -283,6 +285,14 @@ public abstract class STSAuthenticationProvider implements AuthenticationProvide
 
     public void setUse200502Namespace(boolean use200502Namespace) {
         this.use200502Namespace = use200502Namespace;
+    }
+
+    public String getCustomSTSParameter() {
+        return customSTSParameter;
+    }
+
+    public void setCustomSTSParameter(String customSTSParameter) {
+        this.customSTSParameter = customSTSParameter;
     }
 
 //May be uncommented for debugging    
