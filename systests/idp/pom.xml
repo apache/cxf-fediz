@@ -71,6 +71,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-bindings-soap</artifactId>
+            <version>${cxf.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.cxf.fediz.systests</groupId>
             <artifactId>fediz-systests-tests</artifactId>
             <version>${project.version}</version>
@@ -201,6 +207,44 @@
                                     <directory>${basedir}/src/test/resources/realma</directory>
                                     <includes>
                                         <include>security-up-config.xml</include>
+                                    </includes>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>              
+                        </configuration>            
+                    </execution>
+                    <execution>
+                        <id>copy-customised-sts-configp</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/tomcat/idp/webapps/fediz-idp-sts/WEB-INF/endpoints</outputDirectory>
+                            <resources>          
+                                <resource>
+                                    <directory>${basedir}/src/test/resources</directory>
+                                    <includes>
+                                        <include>file.xml</include>
+                                    </includes>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>              
+                        </configuration>            
+                    </execution>
+                    <execution>
+                        <id>copy-custom-validator</id>
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/tomcat/idp/webapps/fediz-idp-sts/WEB-INF/classes/custom</outputDirectory>
+                            <resources>          
+                                <resource>
+                                    <directory>${basedir}/target/test-classes/custom</directory>
+                                    <includes>
+                                        <include>CustomUTValidator.class</include>
                                     </includes>
                                     <filtering>false</filtering>
                                 </resource>

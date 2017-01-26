@@ -917,7 +917,6 @@ public class IdpTest {
     
     // Test a custom parameter that gets passed through to the STS
     @org.junit.Test
-    @org.junit.Ignore
     public void testCustomParameter() throws Exception {
         String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
         url += "wa=wsignin1.0";

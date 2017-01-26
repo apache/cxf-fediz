@@ -58,6 +58,7 @@
         <property name="tokenValidators" ref="transportTokenValidators" />
         <property name="eventListener" ref="loggerListener" />
         <property name="delegationHandlers" ref="delegationHandlers" />
+        <property name="allowCustomContent" value="true" />
     </bean>
 
     <bean id="transportValidateDelegate" class="org.apache.cxf.sts.operation.TokenValidateOperation">
