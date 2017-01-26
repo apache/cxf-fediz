@@ -33,6 +33,7 @@
    <modules>
       <module>tests</module>
       <module>idp</module>
+      <module>custom</module>
       <module>webapps</module>
       <module>jetty8</module>
       <module>jetty9</module>

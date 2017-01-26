@@ -26,8 +26,8 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>org.apache.cxf.fediz.systests</groupId>
-    <artifactId>fediz-systests-idp</artifactId>
-    <name>Apache Fediz IdP Systests</name>
+    <artifactId>fediz-systests-custom</artifactId>
+    <name>Apache Fediz Custom Systests</name>
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -176,20 +176,58 @@
                 <version>2.7</version>
                 <executions>
                     <execution>
-                        <id>copy-entities-to-idp</id>
+                        <id>copy-customised-spring-sec-to-idp</id>
                         <phase>generate-test-sources</phase>
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${basedir}/target/tomcat/idp/webapps/fediz-idp/WEB-INF/classes</outputDirectory>
+                            <outputDirectory>${basedir}/target/tomcat/idp/webapps/fediz-idp/WEB-INF/config</outputDirectory>
                             <resources>          
                                 <resource>
                                     <directory>${basedir}/src/test/resources/realma</directory>
                                     <includes>
-                                        <include>entities-realma.xml</include>
+                                        <include>security-up-config.xml</include>
                                     </includes>
-                                    <filtering>true</filtering>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>              
+                        </configuration>            
+                    </execution>
+                    <execution>
+                        <id>copy-customised-sts-config</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/tomcat/idp/webapps/fediz-idp-sts/WEB-INF/endpoints</outputDirectory>
+                            <resources>          
+                                <resource>
+                                    <directory>${basedir}/src/test/resources</directory>
+                                    <includes>
+                                        <include>file.xml</include>
+                                    </includes>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>              
+                        </configuration>            
+                    </execution>
+                    <execution>
+                        <id>copy-custom-validator</id>
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/tomcat/idp/webapps/fediz-idp-sts/WEB-INF/classes/custom</outputDirectory>
+                            <resources>          
+                                <resource>
+                                    <directory>${basedir}/target/test-classes/custom</directory>
+                                    <includes>
+                                        <include>CustomUTValidator.class</include>
+                                    </includes>
+                                    <filtering>false</filtering>
                                 </resource>
                             </resources>              
                         </configuration>            
@@ -236,7 +274,7 @@
                 <inherited>true</inherited>
                 <configuration>
                     <excludes>
-                        <exclude>**/idp/**</exclude>
+                        <exclude>**/custom/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>
