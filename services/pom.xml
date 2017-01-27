@@ -32,6 +32,7 @@
 
    <modules>
       <module>sts</module>
+      <module>idp-core</module>
       <module>idp</module>
       <module>oidc</module>
    </modules>

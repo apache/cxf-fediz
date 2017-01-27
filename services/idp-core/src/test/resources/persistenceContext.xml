@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements. See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership. The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License. You may obtain a copy of the License at
+ 
+  http://www.apache.org/licenses/LICENSE-2.0
+ 
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied. See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<beans profile="jpa" xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-4.3.xsd
+    http://www.springframework.org/schema/tx
+    http://www.springframework.org/schema/tx/spring-tx.xsd
+    http://www.springframework.org/schema/jdbc
+    http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd"
+       default-autowire="byName">
+    
+    <context:component-scan base-package="org.apache.cxf.fediz.service.idp.service" />
+    <context:component-scan base-package="org.apache.cxf.fediz.service.idp.rest" />
+
+    <bean id="entityManagerFactory"
+        class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="persistenceXmlLocation"
+            value="classpath*:META-INF/spring-persistence.xml" />
+        <property name="persistenceUnitName" value="fedizPersistenceUnit" />
+        <property name="dataSource" ref="dataSource" />
+        <property name="jpaVendorAdapter">
+            <bean
+                class="org.springframework.orm.jpa.vendor.OpenJpaVendorAdapter">
+                <property name="showSql" value="false" />
+                <property name="generateDdl" value="true" />
+                <property name="databasePlatform" value="org.apache.openjpa.jdbc.sql.${jpa.platform}" />
+            </bean>
+        </property>
+        <property name="jpaPropertyMap">
+            <map>
+                <entry key="javax.persistence.validation.factory" value-ref="validator" />
+            </map>
+        </property>
+    </bean>
+
+    <bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+        <property name="jndiName" value="java:comp/env/jdbc/fedizDataSource" />
+        <property name="defaultObject" ref="localDataSource" />
+    </bean>
+
+    <bean id="localDataSource" class="org.apache.commons.dbcp2.BasicDataSource"
+        destroy-method="close">
+        <property name="driverClassName" value="${jpa.driverClassName}" />
+        <property name="url" value="${jpa.url}" />
+        <property name="username" value="${jpa.username}" />
+        <property name="password" value="${jpa.password}" />
+    </bean>
+
+    <bean id="entityManager"
+        class="org.springframework.orm.jpa.support.SharedEntityManagerBean">
+        <property name="entityManagerFactory" ref="entityManagerFactory" />
+    </bean>
+
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactory" />
+    </bean>
+
+    <!-- Support annotation Transactional http://docs.spring.io/spring/docs/3.1.4.RELEASE/spring-framework-reference/htmlsingle/#tx-decl-explained -->
+    <tx:annotation-driven />
+
+    <!-- Support annotation PersistenceContext http://docs.spring.io/spring/docs/3.1.4.RELEASE/spring-framework-reference/htmlsingle/#orm-jpa-straight -->
+    <bean
+        class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor" />
+
+    <!-- Requires updates to unit testing as no JPA exceptions are returned -->
+    <bean
+        class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor" />
+
+    <bean id="config"
+        class="org.apache.cxf.fediz.service.idp.service.jpa.ConfigServiceJPA">
+        <property name="idpService" ref="idpServiceImpl" />
+    </bean>
+
+    <bean id="dbLoader"
+        class="org.apache.cxf.fediz.service.idp.service.jpa.DBLoaderSpring">
+        <property name="resource" value="${db-load-config}" />
+    </bean>
+
+    <bean id="dbListener"
+        class="org.apache.cxf.fediz.service.idp.service.jpa.DBInitApplicationListener" />
+        
+    <bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean" />
+
+</beans>

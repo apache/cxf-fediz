@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements. See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership. The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License. You may obtain a copy of the License at
+ 
+  http://www.apache.org/licenses/LICENSE-2.0
+ 
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied. See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<flow xmlns="http://www.springframework.org/schema/webflow"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/webflow
+                          http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd">
+
+    <decision-state id="evaluateProtocol">
+        <on-entry>
+            <set name="flowScope.idpConfig" value="config.getIDP(fedizEntryPoint.getRealm())" />
+        </on-entry>
+        <if test="requestParameters.wa == 'wsignin1.0'" then="selectWsFedProcess" />
+        <if test="requestParameters.SAMLRequest != null or requestParameters.SAMLResponse != null" 
+            then="selectSAMLProcess" else="selectOIDCAuthorizationCodeFlowProcess"
+        />
+    </decision-state>
+    
+    <decision-state id="selectWsFedProcess">
+        <on-entry>
+            <set name="flowScope.wresult" value="requestParameters.wresult" />
+            <set name="flowScope.wctx" value="requestParameters.wctx" />
+            <set name="flowScope.request_context" value="requestParameters.wctx" />
+        </on-entry>
+        <if test="requestParameters.wctx == null or requestParameters.wctx.isEmpty()"
+            then="viewBadRequest" />
+        <if test="requestParameters.wresult == null or requestParameters.wresult.isEmpty()"
+            then="viewBadRequest" />
+        <if test="requestParameters.wtrealm != null and !requestParameters.wtrealm.isEmpty()"
+            then="signinResponse" else="viewBadRequest" />
+    </decision-state>
+    
+    <decision-state id="selectSAMLProcess">
+        <on-entry>
+            <set name="flowScope.RelayState" value="requestParameters.RelayState" />
+            <set name="flowScope.request_context" value="requestParameters.RelayState" />
+            <set name="flowScope.SAMLResponse" value="requestParameters.SAMLResponse" />
+            <set name="flowScope.SAMLRequest" value="requestParameters.SAMLRequest" />
+            <set name="flowScope.Signature" value="requestParameters.Signature" />
+        </on-entry>
+        <if test="requestParameters.RelayState == null or requestParameters.RelayState.isEmpty()"
+            then="viewBadRequest" />
+        <if test="requestParameters.SAMLRequest != null and !requestParameters.SAMLRequest.isEmpty()"
+            then="parseSAMLAuthnRequest" />
+        <if test="requestParameters.SAMLResponse == null or requestParameters.SAMLResponse.isEmpty()"
+            then="viewBadRequest" else="signinResponse" />
+    </decision-state>
+    
+    <decision-state id="selectOIDCAuthorizationCodeFlowProcess">
+        <on-entry>
+            <set name="flowScope.state" value="requestParameters.state" />
+            <set name="flowScope.request_context" value="requestParameters.state" />
+            <set name="flowScope.code" value="requestParameters.code" />
+        </on-entry>
+        <if test="requestParameters.code == null or requestParameters.code.isEmpty()"
+            then="viewBadRequest" />
+        <if test="requestParameters.state == null or requestParameters.state.isEmpty()"
+            then="viewBadRequest" else="signinResponse" />
+    </decision-state>
+    
+    <action-state id="parseSAMLAuthnRequest">
+        <evaluate expression="authnRequestParser.parseSAMLRequest(flowRequestContext, flowScope.idpConfig,
+                                                              flowScope.SAMLRequest, flowScope.Signature,
+                                                              flowScope.RelayState)" />
+        <transition to="retrieveConsumerURL"/>
+        <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
+    </action-state>
+    
+    <action-state id="retrieveConsumerURL">
+        <evaluate expression="authnRequestParser.retrieveConsumerURL(flowRequestContext)" 
+                  result="flowScope.consumerURL"/>
+        <transition to="retrieveRealm"/>
+        <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
+    </action-state>
+    
+    <action-state id="retrieveRealm">
+        <evaluate expression="authnRequestParser.retrieveRealm(flowRequestContext)" 
+                  result="flowScope.realm"/>
+        <transition to="signinRequest"/>
+        <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
+    </action-state>
+    
+    <subflow-state id="signinRequest" subflow="signinRequest">
+        <input name="idpConfig" value="flowScope.idpConfig" />
+        <input name="SAMLRequest" value="flowScope.SAMLRequest" />
+        <input name="RelayState" value="flowScope.RelayState" />
+        <input name="Signature" value="flowScope.Signature" />
+        <input name="protocol" value="'samlsso'" />
+        <input name="saml_authn_request" value="flowScope.saml_authn_request" />
+        <input name="realm" value="flowScope.realm" />
+        <input name="home_realm" value="null" />
+        <input name="wfresh" value="null" />
+        <input name="return_address" value="flowScope.consumerURL" />
+        <input name="request_context" value="flowScope.request_context" />
+
+        <output name="home_realm" />
+        <output name="idpToken" />
+        <output name="trusted_idp_context" />
+
+        <transition on="requestRpToken" to="requestRpToken">
+            <set name="flowScope.home_realm" value="currentEvent.attributes.home_realm" />
+            <set name="flowScope.idpToken" value="currentEvent.attributes.idpToken" />
+        </transition>
+        <transition on="viewBadRequest" to="viewBadRequest" />
+        <transition on="scInternalServerError" to="scInternalServerError" />
+        <transition on="redirectToLocalIDP" to="redirectToLocalIDP" />
+        <transition on="redirectToTrustedIDP" to="processTrustedIdpProtocol">
+            <set name="flowScope.home_realm" value="currentEvent.attributes.home_realm" />
+            <set name="flowScope.trusted_idp_context" value="currentEvent.attributes.trusted_idp_context"/>
+        </transition>
+    </subflow-state>
+    
+     <subflow-state id="signinResponse" subflow="signinResponse">
+        <input name="idpConfig" value="flowScope.idpConfig" />
+        <input name="wfresh" value="flowScope.wfresh" />
+        <input name="request_context" value="flowScope.request_context" />
+        <input name="wresult" value="flowScope.wresult" />
+        <input name="RelayState" value="flowScope.RelayState" />
+        <input name="SAMLResponse" value="flowScope.SAMLResponse" />
+        <input name="state" value="flowScope.state" />
+        <input name="code" value="flowScope.code" />
+        <input name="home_realm" value="flowScope.whr" />
+        <input name="protocol" value="'samlsso'" />
+
+        <output name="home_realm" />
+        <output name="idpToken" />
+        <output name="saml_authn_request" />
+        <output name="request_context" />
+
+        <transition on="requestRpToken" to="requestRpToken">
+            <set name="flowScope.home_realm" value="currentEvent.attributes.home_realm" />
+            <set name="flowScope.idpToken" value="currentEvent.attributes.idpToken" />
+            <set name="flowScope.saml_authn_request" value="currentEvent.attributes.saml_authn_request" />
+            <set name="flowScope.RelayState" value="currentEvent.attributes.request_context" />
+        </transition>
+        <transition on="viewBadRequest" to="viewBadRequest" />
+        <transition on="scInternalServerError" to="scInternalServerError" />
+    </subflow-state>
+    
+    <!-- produce RP security token (as String type) -->
+    <action-state id="requestRpToken">
+        <on-entry>
+            <evaluate expression="authnRequestParser.retrieveRealm(flowRequestContext)" 
+                      result="flowScope.realm"/>
+            <evaluate expression="stsClientForRpAction.submit(flowRequestContext, flowScope.realm, flowScope.home_realm)"
+                      result="flowScope.rpTokenElement"/>
+        </on-entry>
+        <evaluate expression="signinParametersCacheAction.storeRPConfigInSession(flowRequestContext)"/>
+        <transition to="produceSAMLResponse" />
+        <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
+        <transition on-exception="java.lang.Throwable" to="scInternalServerError" />
+    </action-state>
+    
+    <action-state id="produceSAMLResponse">
+        <on-entry>
+            <evaluate expression="authnRequestParser.retrieveConsumerURL(flowRequestContext)" 
+                      result="flowScope.consumerURL"/>
+            <evaluate expression="authnRequestParser.retrieveRequestId(flowRequestContext)" 
+                      result="flowScope.requestId"/>
+            <evaluate expression="authnRequestParser.retrieveRequestIssuer(flowRequestContext)" 
+                      result="flowScope.requestIssuer"/>
+        </on-entry>
+        <evaluate expression="samlResponseCreator.createSAMLResponse(flowRequestContext, flowScope.idpConfig, flowScope.rpTokenElement,
+                                                                     flowScope.consumerURL, flowScope.requestId, flowScope.requestIssuer)"
+                  result="flowScope.rpResponse"/>                                               
+        <transition to="formResponseView" />
+    </action-state>
+    
+    <!-- normal exit point for login -->
+    <!-- browser redirection (self-submitted form 'samlsigninresponseform.jsp') -->
+    <end-state id="formResponseView" view="samlsigninresponseform">
+        <on-entry>
+            <evaluate expression="flowScope.consumerURL" result="requestScope.samlAction" />
+            <evaluate expression="flowScope.RelayState" result="requestScope.relayState" />
+            <evaluate expression="flowScope.rpResponse" result="requestScope.samlResponse" />
+        </on-entry>
+    </end-state>
+    
+    <action-state id="processTrustedIdpProtocol">
+        <evaluate expression="trustedIdpProtocolAction.mapSignInRequest(flowRequestContext, flowScope.home_realm)"
+                      result="flowScope.remoteIdpUrl"/>
+        <transition to="redirectToTrustedIDP" />
+        <transition on-exception="java.lang.Throwable" to="scInternalServerError" />
+    </action-state>
+
+    <!-- abnormal exit point -->
+    <decision-state id="viewBadRequest">
+        <on-entry>
+            <evaluate expression="authnRequestParser.retrieveConsumerURL(flowRequestContext)" 
+                      result="requestScope.samlAction"/>
+        </on-entry>
+        <!-- See if we managed to at least parse the request to get the response URL -->
+        <if test="requestScope.samlAction == null or requestScope.samlAction.isEmpty()"
+            then="viewBadRequestParsingError" else="viewBadRequestResponse"/>
+    </decision-state>
+    
+    <end-state id="viewBadRequestResponse" view="samlsigninresponseform">
+        <on-entry>
+            <evaluate expression="authnRequestParser.retrieveConsumerURL(flowRequestContext)" 
+                      result="requestScope.samlAction"/>
+            <evaluate expression="authnRequestParser.retrieveRequestId(flowRequestContext)" 
+                      result="flowScope.requestId"/>
+            <evaluate expression="flowScope.RelayState" result="requestScope.relayState" />
+            <evaluate expression="samlResponseErrorCreator.createSAMLResponse(flowRequestContext, true, flowScope.idpConfig, 
+                                                                     flowScope.requestId)"
+                      result="requestScope.samlResponse"/>     
+        </on-entry>
+    </end-state>
+    
+    <!-- abnormal exit point : Http 400 Bad Request -->
+    <end-state id="viewBadRequestParsingError" view="genericerror">
+        <on-entry>
+            <evaluate
+                expression="externalContext.nativeResponse.setStatus(400,'Error parsing SAML Request')" />
+            <set name="requestScope.reason" value="'Error parsing SAML Request'" />
+        </on-entry>
+    </end-state>
+
+    <!-- abnormal exit point : Http 500 Internal Server Error -->
+    <end-state id="scInternalServerError" view="genericerror">
+        <on-entry>
+            <evaluate
+                expression="externalContext.nativeResponse.setStatus(500,'IDP is unavailable, please contact the administrator')" />
+            <set name="requestScope.reason"
+                value="'IDP is unavailable, please contact the administrator'" />
+            <set name="requestScope.stateException"
+                value="flowScope.stateException" />
+            <set name="requestScope.rootCauseException"
+                value="flowScope.rootCauseException" />
+        </on-entry>
+    </end-state>
+    
+    <end-state id="redirectToLocalIDP" view="externalRedirect:#{flowScope.localIdpUrl}">
+        <on-entry>
+            <evaluate expression="localRedirectCreator.createRedirectURL(flowRequestContext, flowScope.idpConfig)"
+                      result="flowScope.localIdpUrl"/>
+        </on-entry>
+    </end-state>
+    
+    <!-- redirect to remote idp -->
+    <end-state id="redirectToTrustedIDP" view="externalRedirect:#{flowScope.remoteIdpUrl}" />
+
+</flow>

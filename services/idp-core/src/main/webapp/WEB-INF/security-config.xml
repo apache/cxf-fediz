@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements. See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership. The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License. You may obtain a copy of the License at
+ 
+  http://www.apache.org/licenses/LICENSE-2.0
+ 
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied. See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:security="http://www.springframework.org/schema/security"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-4.3.xsd
+        http://www.springframework.org/schema/security
+        http://www.springframework.org/schema/security/spring-security-3.2.xsd
+        ">
+
+    <context:property-placeholder location="classpath:realm.properties" />
+
+    <import resource="config/security-krb-config.xml" />
+    <import resource="config/security-clientcert-config.xml" />
+    <import resource="config/security-up-config.xml" />
+    <import resource="config/security-rs-config.xml" />
+    
+    <!-- DISABLE in production as it might log confidential information about the user -->
+    <!-- <security:debug /> -->
+
+    <!-- Configure Spring Security -->
+    
+    <!-- If enabled, you can't access the Service layer within the Spring Webflow -->
+    <!-- The user has no role during the login phase of WS-Federation -->
+    <security:global-method-security pre-post-annotations="enabled" />
+
+    <!-- Redirects to a dedicated http config -->
+    <bean id="fedizEntryPoint" class="org.apache.cxf.fediz.service.idp.FedizEntryPoint">
+        <property name="realm" value="${realm-uri}" />
+        <property name="configService" ref="config" />
+    </bean>
+    
+    <!-- Main entry point for WS-Federation -->
+    <security:http pattern="/federation" use-expressions="true" entry-point-ref="fedizEntryPoint">
+        <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
+        <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
+    </security:http>
+    
+    <!-- Main entry point for SAML SSO -->
+    <security:http pattern="/saml" use-expressions="true" entry-point-ref="fedizEntryPoint">
+        <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
+        <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
+    </security:http>
+    
+    <security:authentication-manager alias="authenticationManagers">
+        <security:authentication-provider ref="stsUPAuthProvider" />
+        <security:authentication-provider ref="stsKrbAuthProvider" />
+        <security:authentication-provider ref="stsClientCertAuthProvider" />
+    </security:authentication-manager>
+	
+    <bean id="entitlementsEnricher" 
+          class="org.apache.cxf.fediz.service.idp.service.security.GrantedAuthorityEntitlements" />
+	
+</beans>
