@@ -104,6 +104,8 @@ public class STSClientAction {
     private boolean isPortSet;
     
     private String keyType = HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER;
+    
+    private String customSTSParameter;
 
 
     public String getWsdlLocation() {
@@ -170,6 +172,14 @@ public class STSClientAction {
 
     public void setTtl(int ttl) {
         this.ttl = ttl;
+    }
+    
+    public String getCustomSTSParameter() {
+        return customSTSParameter;
+    }
+
+    public void setCustomSTSParameter(String customSTSParameter) {
+        this.customSTSParameter = customSTSParameter;
     }
     
     /**
@@ -275,6 +285,14 @@ public class STSClientAction {
        
         if (properties != null) {
             sts.setProperties(properties);
+        }
+        
+        if (getCustomSTSParameter() != null) {
+            String authRealmParameter = context.getRequestParameters().get(getCustomSTSParameter());
+            LOG.debug("Found {} custom STS parameter {}", getCustomSTSParameter(), authRealmParameter);
+            if (authRealmParameter != null) {
+                sts.setCustomContent(authRealmParameter);
+            }
         }
         
         Element rpToken = null;
