@@ -192,7 +192,7 @@
                                     <filtering>false</filtering>
                                 </resource>
                             </resources>       
-                             <overwrite>true</overwrite>       
+                            <overwrite>true</overwrite>       
                         </configuration>            
                     </execution>
                     <execution>
@@ -212,6 +212,7 @@
                                     <filtering>false</filtering>
                                 </resource>
                             </resources>              
+                            <overwrite>true</overwrite>       
                         </configuration>            
                     </execution>
                     <execution>
@@ -231,6 +232,7 @@
                                     <filtering>false</filtering>
                                 </resource>
                             </resources>              
+                            <overwrite>true</overwrite>       
                         </configuration>            
                     </execution>
                 </executions>
