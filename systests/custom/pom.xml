@@ -191,7 +191,8 @@
                                     </includes>
                                     <filtering>false</filtering>
                                 </resource>
-                            </resources>              
+                            </resources>       
+                             <overwrite>true</overwrite>       
                         </configuration>            
                     </execution>
                     <execution>
