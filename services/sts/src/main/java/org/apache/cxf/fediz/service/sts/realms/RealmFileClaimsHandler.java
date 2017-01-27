@@ -33,12 +33,9 @@ import org.apache.cxf.sts.claims.ProcessedClaim;
 import org.apache.cxf.sts.claims.ProcessedClaimCollection;
 
 /**
- * A custom ClaimsHandler implementation for use in the tests.
+ * A custom ClaimsHandler implementation for use with "userClaims.xml"
  */
 public class RealmFileClaimsHandler implements ClaimsHandler {
-
-    public static final URI ROLE = 
-        URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role");
 
     private static final Logger LOG = LogUtils.getL7dLogger(RealmFileClaimsHandler.class);
     
