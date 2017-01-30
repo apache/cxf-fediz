@@ -20,6 +20,8 @@
 package org.apache.cxf.fediz.systests.custom;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
 
@@ -31,10 +33,15 @@ import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNodeList;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
+import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
+import org.apache.commons.io.IOUtils;
+import org.apache.cxf.fediz.core.ClaimTypes;
+import org.apache.cxf.fediz.integrationtests.HTTPTestUtils;
+import org.apache.cxf.fediz.tomcat7.FederationAuthenticator;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.wss4j.dom.engine.WSSConfig;
@@ -51,6 +58,7 @@ public class CustomParametersTest {
     static String rpHttpsPort;
 
     private static Tomcat idpServer;
+    private static Tomcat rpServer;
 
     @BeforeClass
     public static void init() throws Exception {
@@ -69,6 +77,7 @@ public class CustomParametersTest {
         Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
 
         idpServer = startServer(true, idpHttpsPort);
+        rpServer = startServer(false, rpHttpsPort);
 
         WSSConfig.init();
     }
@@ -81,7 +90,11 @@ public class CustomParametersTest {
         String baseDir = currentDir + File.separator + "target";
         server.setBaseDir(baseDir);
 
-        server.getHost().setAppBase("tomcat/idp/webapps");
+        if (idp) {
+            server.getHost().setAppBase("tomcat/idp/webapps");
+        } else {
+            server.getHost().setAppBase("tomcat/rp/webapps");
+        }
         server.getHost().setAutoDeploy(true);
         server.getHost().setDeployOnStartup(true);
 
@@ -100,12 +113,37 @@ public class CustomParametersTest {
         httpsConnector.setAttribute("SSLEnabled", true);
 
         server.getService().addConnector(httpsConnector);
-
-        File stsWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp-sts");
-        server.addWebapp("/fediz-idp-sts", stsWebapp.getAbsolutePath());
-
-        File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp");
-        server.addWebapp("/fediz-idp", idpWebapp.getAbsolutePath());
+        
+        if (idp) {
+            File stsWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp-sts");
+            server.addWebapp("/fediz-idp-sts", stsWebapp.getAbsolutePath());
+    
+            File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp");
+            server.addWebapp("/fediz-idp", idpWebapp.getAbsolutePath());
+        } else {
+            File rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
+            Context cxt = server.addWebapp("/fedizhelloworld", rpWebapp.getAbsolutePath());
+            
+            // Substitute the IDP port. Necessary if running the test in eclipse where port filtering doesn't seem
+            // to work
+            File f = new File(currentDir + "/src/test/resources/fediz_config.xml");
+            FileInputStream inputStream = new FileInputStream(f);
+            String content = IOUtils.toString(inputStream, "UTF-8");
+            inputStream.close();
+            if (content.contains("idp.https.port")) {
+                content = content.replaceAll("\\$\\{idp.https.port\\}", "" + idpHttpsPort);
+            
+                File f2 = new File(baseDir + "/test-classes/fediz_config.xml");
+                try (FileOutputStream outputStream = new FileOutputStream(f2)) {
+                    IOUtils.write(content, outputStream, "UTF-8");
+                }
+            }
+            
+            FederationAuthenticator fa = new FederationAuthenticator();
+            fa.setConfigFile(currentDir + File.separator + "target" + File.separator
+                             + "test-classes" + File.separator + "fediz_config.xml");
+            cxt.getPipeline().addValve(fa);
+        }
 
         server.start();
 
@@ -115,6 +153,7 @@ public class CustomParametersTest {
     @AfterClass
     public static void cleanup() {
         shutdownServer(idpServer);
+        shutdownServer(rpServer);
     }
     
     private static void shutdownServer(Tomcat server) {
@@ -205,4 +244,34 @@ public class CustomParametersTest {
 
         webClient.close();
     }
+    
+    @org.junit.Test
+    public void testCustomParameterViaRP() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String user = "alice";
+        String password = "ecila";
+        
+        final String bodyTextContent = HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
+        
+        Assert.assertTrue("Principal not " + user,
+                          bodyTextContent.contains("userPrincipal=" + user));
+        Assert.assertTrue("User " + user + " does not have role Admin",
+                          bodyTextContent.contains("role:Admin=false"));
+        Assert.assertTrue("User " + user + " does not have role Manager",
+                          bodyTextContent.contains("role:Manager=false"));
+        Assert.assertTrue("User " + user + " must have role User",
+                          bodyTextContent.contains("role:User=true"));
+
+        String claim = ClaimTypes.FIRSTNAME.toString();
+        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
+                          bodyTextContent.contains(claim + "=Alice"));
+        claim = ClaimTypes.LASTNAME.toString();
+        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
+                          bodyTextContent.contains(claim + "=Smith"));
+        claim = ClaimTypes.EMAILADDRESS.toString();
+        Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
+                          bodyTextContent.contains(claim + "=alice@realma.org"));
+
+    }
+    
 }
