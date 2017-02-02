@@ -130,7 +130,7 @@
 <b>Redirect URL</b>
 </td>
 <td>
-<% if(client.getRedirectUris() != null) {
+<% if (client.getRedirectUris() != null) {
                 for (String redirectURI : client.getRedirectUris()) {
 		   %>
            <%=    redirectURI %><br/>
@@ -143,12 +143,22 @@
 <b>Audience URL</b>
 </td>
 <td>
-<% if(client.getRegisteredAudiences() != null) {
+<% if (client.getRegisteredAudiences() != null) {
                 for (String audURI : client.getRegisteredAudiences()) {
 		   %>
            <%=    audURI %><br/>
            <%   }
               } %>
+</td>
+</tr>
+<tr>
+<td>
+<b>Logout URL</b>
+</td>
+<td>
+<% if (client.getProperties().get("client_logout_uri") != null) { %>
+           <%=    client.getProperties().get("client_logout_uri") %>
+<% } %>
 </td>
 </tr>
 </table>

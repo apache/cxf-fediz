@@ -219,89 +219,102 @@ public class ClientRegistrationService {
     @Produces(MediaType.TEXT_HTML)
     @Path("/")
     public Response registerForm(@FormParam("client_name") String appName,
-                                           @FormParam("client_type") String appType, 
-                                           @FormParam("client_audience") String audience,
-                                           @FormParam("client_redirectURI") String redirectURI,
-                                           @FormParam("client_homeRealm") String homeRealm
+                                 @FormParam("client_type") String appType, 
+                                 @FormParam("client_audience") String audience,
+                                 @FormParam("client_redirectURI") String redirectURI,
+                                 @FormParam("client_logoutURI") String logoutURI,
+                                 @FormParam("client_homeRealm") String homeRealm
     ) {
-        
-        // Client Name
-        if (StringUtils.isEmpty(appName)) {
-            return invalidRegistrationResponse("The client name must not be empty");
-        }
-        // Client Type
-        if (StringUtils.isEmpty(appType)) {
-            return invalidRegistrationResponse("The client type must not be empty");
-        }
-        if (!("confidential".equals(appType) || "public".equals(appType))) {
-            return invalidRegistrationResponse("An invalid client type was specified: " + appType);
-        }
-        // Client ID
-        String clientId = generateClientId();
-        boolean isConfidential = "confidential".equals(appType);
-        // Client Secret
-        String clientSecret = isConfidential
-            ? generateClientSecret()
-            : null;
-
-        Client newClient = new Client(clientId, clientSecret, isConfidential, appName);
-        
-        // User who registered this client
-        String userName = sc.getUserPrincipal().getName();
-        UserSubject userSubject = new OidcUserSubject(userName);
-        newClient.setResourceOwnerSubject(userSubject);
-
-        // Client Registration Time
-        newClient.setRegisteredAt(System.currentTimeMillis() / 1000);
-        
-        // Client Realm
-        if (homeRealm != null) {
-            newClient.setHomeRealm(homeRealm);
-            if (homeRealms.containsKey(homeRealm)) {
-                newClient.getProperties().put("homeRealmAlias", homeRealms.get(homeRealm));
+        try {
+            // Client Name
+            if (StringUtils.isEmpty(appName)) {
+                throwInvalidRegistrationException("The client name must not be empty");
             }
-        }
-        
-        // Client Redirect URIs
-        if (!StringUtils.isEmpty(redirectURI)) {
-            String[] allUris = redirectURI.trim().split(" ");
-            List<String> redirectUris = new LinkedList<String>();
-            for (String uri : allUris) {
-                if (!StringUtils.isEmpty(uri)) {
-                    if (!isValidURI(uri, false)) {
-                        return invalidRegistrationResponse("An invalid redirect URI was specified: " + uri);
-                    }
-                    redirectUris.add(uri);
+            // Client Type
+            if (StringUtils.isEmpty(appType)) {
+                throwInvalidRegistrationException("The client type must not be empty");
+            }
+            if (!("confidential".equals(appType) || "public".equals(appType))) {
+                throwInvalidRegistrationException("An invalid client type was specified: " + appType);
+            }
+            // Client ID
+            String clientId = generateClientId();
+            boolean isConfidential = "confidential".equals(appType);
+            // Client Secret
+            String clientSecret = isConfidential
+                ? generateClientSecret()
+                : null;
+    
+            Client newClient = new Client(clientId, clientSecret, isConfidential, appName);
+            
+            // User who registered this client
+            String userName = sc.getUserPrincipal().getName();
+            UserSubject userSubject = new OidcUserSubject(userName);
+            newClient.setResourceOwnerSubject(userSubject);
+    
+            // Client Registration Time
+            newClient.setRegisteredAt(System.currentTimeMillis() / 1000);
+            
+            // Client Realm
+            if (homeRealm != null) {
+                newClient.setHomeRealm(homeRealm);
+                if (homeRealms.containsKey(homeRealm)) {
+                    newClient.getProperties().put("homeRealmAlias", homeRealms.get(homeRealm));
                 }
             }
-            newClient.setRedirectUris(redirectUris);
-        }
-        
-        // Client Audience URIs
-        if (!StringUtils.isEmpty(audience)) {
-            String[] auds = audience.trim().split(" ");
-            List<String> registeredAuds = new LinkedList<String>();
-            for (String aud : auds) {
-                if (!StringUtils.isEmpty(aud)) {
-                    if (!isValidURI(aud, true)) {
-                        return invalidRegistrationResponse("An invalid audience URI was specified: " + aud);
+            
+            // Client Redirect URIs
+            if (!StringUtils.isEmpty(redirectURI)) {
+                String[] allUris = redirectURI.trim().split(" ");
+                List<String> redirectUris = new LinkedList<String>();
+                for (String uri : allUris) {
+                    if (!StringUtils.isEmpty(uri)) {
+                        if (!isValidURI(uri, false)) {
+                            throwInvalidRegistrationException("An invalid redirect URI was specified: " + uri);
+                        }
+                        redirectUris.add(uri);
                     }
-                    registeredAuds.add(aud);
                 }
+                newClient.setRedirectUris(redirectUris);
             }
-            newClient.setRegisteredAudiences(registeredAuds);
+            // Client Logout URI
+            if (!StringUtils.isEmpty(logoutURI)) {
+                if (!isValidURI(logoutURI, false)) {
+                    throwInvalidRegistrationException("An invalid logout URI was specified: " + logoutURI);
+                }
+                //TODO: replace this code with newClient.setLogoutUri() once it becomes available
+                newClient.getProperties().put("client_logout_uri", logoutURI);
+            }
+            
+            // Client Audience URIs
+            if (!StringUtils.isEmpty(audience)) {
+                String[] auds = audience.trim().split(" ");
+                List<String> registeredAuds = new LinkedList<String>();
+                for (String aud : auds) {
+                    if (!StringUtils.isEmpty(aud)) {
+                        if (!isValidURI(aud, true)) {
+                            throwInvalidRegistrationException("An invalid audience URI was specified: " + aud);
+                        }
+                        registeredAuds.add(aud);
+                    }
+                }
+                newClient.setRegisteredAudiences(registeredAuds);
+            }
+            
+            // Client Scopes
+            if (clientScopes != null && !clientScopes.isEmpty()) {
+                newClient.setRegisteredScopes(new ArrayList<String>(clientScopes.keySet()));
+            }
+            return Response.ok(registerNewClient(newClient)).build();
+        } catch (InvalidRegistrationException ex) {
+            // For the view handlers to handle it
+            return Response.ok(new InvalidRegistration(ex.getMessage())).build();
         }
-        
-        // Client Scopes
-        if (clientScopes != null && !clientScopes.isEmpty()) {
-            newClient.setRegisteredScopes(new ArrayList<String>(clientScopes.keySet()));
-        }
-        
-        return Response.ok(registerNewClient(newClient)).build();
     }
     
-    private Response invalidRegistrationResponse(String error) {
-        return Response.ok(new InvalidRegistration(error)).build();
+    
+    private void throwInvalidRegistrationException(String error) {
+        throw new InvalidRegistrationException(error);
     }
 
     private boolean isValidURI(String uri, boolean requireHttps) {

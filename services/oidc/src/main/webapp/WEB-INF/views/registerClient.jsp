@@ -91,6 +91,12 @@ input, select, button {
 					id="input_7" data-type="input-textbox" />
 			</div>
 			<div class="form-line">
+				<label for="client_logoutURI" id="label_logout" class="form-label"> Logout URL </label>
+				<input type="text" value="" size="40" name="client_logoutURI"
+					placeholder="URL of the client to finalize OIDC logout process"
+					id="input_6" data-type="input-textbox" />
+			</div>
+			<div class="form-line">
 				<label for="client_homeRealm" id="label_homeRealm" class="form-label"> Home Realm </label>
 				<select name="client_homeRealm" id="input_homeRealm">
 					<option value="" selected>Default - User selection at login</option>
