@@ -166,7 +166,7 @@ public class FederationProtocol extends Protocol {
         if (this.reply != null) {
             return this.reply;
         }
-        CallbackType cbt = getFederationProtocol().getRequest();
+        CallbackType cbt = getFederationProtocol().getReply();
         this.reply = loadCallbackType(cbt, "Reply");
         return this.reply;
     }
