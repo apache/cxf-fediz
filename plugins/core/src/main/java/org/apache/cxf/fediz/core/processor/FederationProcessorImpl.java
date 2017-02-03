@@ -57,6 +57,7 @@ import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.core.metadata.MetadataWriter;
 import org.apache.cxf.fediz.core.spi.FreshnessCallback;
 import org.apache.cxf.fediz.core.spi.HomeRealmCallback;
+import org.apache.cxf.fediz.core.spi.ReplyCallback;
 import org.apache.cxf.fediz.core.spi.SignInQueryCallback;
 import org.apache.cxf.fediz.core.spi.WAuthCallback;
 import org.apache.cxf.fediz.core.spi.WReqCallback;
@@ -400,7 +401,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             StringBuilder sb = new StringBuilder();
             sb.append(FederationConstants.PARAM_ACTION).append('=').append(FederationConstants.ACTION_SIGNIN);
 
-            String reply = ((FederationProtocol)config.getProtocol()).getReply();
+            String reply = resolveReply(request, config);
             if (reply == null || reply.length() == 0) {
                 reply = request.getRequestURL().toString();
             } else {
@@ -678,6 +679,25 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             }
         }
         return wReq;
+    }
+    
+    private String resolveReply(HttpServletRequest request, FedizContext config) throws IOException,
+        UnsupportedCallbackException {
+        Object replyObj = ((FederationProtocol)config.getProtocol()).getReply();
+        String reply = null;
+        if (replyObj != null) {
+            if (replyObj instanceof String) {
+                reply = (String)replyObj;
+            } else if (replyObj instanceof CallbackHandler) {
+                CallbackHandler replyCB = (CallbackHandler)replyObj;
+                ReplyCallback callback = new ReplyCallback(request);
+                replyCB.handle(new Callback[] {
+                    callback
+                });
+                reply = callback.getReply();
+            }
+        }
+        return reply;
     }
     
     private void testForMandatoryClaims(String roleURI,

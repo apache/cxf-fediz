@@ -49,6 +49,7 @@ import org.apache.cxf.fediz.core.config.jaxb.ValidationType;
 import org.apache.cxf.fediz.core.spi.HomeRealmCallback;
 import org.apache.cxf.fediz.core.spi.IDPCallback;
 import org.apache.cxf.fediz.core.spi.RealmCallback;
+import org.apache.cxf.fediz.core.spi.ReplyCallback;
 import org.apache.cxf.fediz.core.spi.SignInQueryCallback;
 import org.apache.cxf.fediz.core.spi.WAuthCallback;
 import org.apache.cxf.fediz.core.spi.WReqCallback;
@@ -125,7 +126,9 @@ public class CallbackHandlerTest {
             realm.setValue(TARGET_REALM);
             protocol.setRealm(freshness);
             
-            ((FederationProtocolType)protocol).setReply(REPLY);
+            CallbackType reply = new CallbackType();
+            reply.setValue(REPLY);
+            ((FederationProtocolType)protocol).setReply(reply);
             ((FederationProtocolType)protocol).setVersion(PROTOCOL_VERSION);
         } else {
             protocol = new SamlProtocolType();
@@ -215,6 +218,11 @@ public class CallbackHandlerTest {
             signInQueryType.setType(ArgumentType.CLASS);
             signInQueryType.setValue(CALLBACKHANDLER_CLASS);
             ((FederationProtocolType)protocol).setSignInQuery(signInQueryType);
+            
+            CallbackType replyType = new CallbackType();
+            replyType.setType(ArgumentType.CLASS);
+            replyType.setValue(CALLBACKHANDLER_CLASS);
+            ((FederationProtocolType)protocol).setReply(replyType);
         }
         
         return config;
@@ -285,6 +293,14 @@ public class CallbackHandlerTest {
         Assert.assertEquals(2, signinQueryMap.size());
         Assert.assertEquals("myid", signinQueryMap.get("pubid"));
         Assert.assertEquals("<=>", signinQueryMap.get("testenc"));
+        
+        Object replyObj = fp.getReply();
+        Assert.assertTrue(replyObj instanceof CallbackHandler);
+        CallbackHandler replyCB = (CallbackHandler)replyObj;
+        ReplyCallback callbackReply = new ReplyCallback(null);
+        replyCB.handle(new Callback[] {callbackReply});
+        String reply = callbackReply.getReply();
+        Assert.assertEquals(TestCallbackHandler.TEST_REPLY, reply);
         
     }
     

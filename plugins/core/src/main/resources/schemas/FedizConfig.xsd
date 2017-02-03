@@ -225,6 +225,7 @@
     <xs:element name="request" type="CallbackType" />
     <xs:element name="freshness" type="CallbackType" />
     <xs:element name="signInQuery" type="CallbackType" />
+    <xs:element name="reply" type="CallbackType" />
 
     <xs:simpleType name="argumentType">
         <xs:restriction base="xs:string">
@@ -232,8 +233,6 @@
             <xs:enumeration value="String" />
         </xs:restriction>
     </xs:simpleType>
-
-    <xs:element name="reply" type="xs:string" />
 
     <xs:element name="claimTypesRequested">
         <xs:complexType>

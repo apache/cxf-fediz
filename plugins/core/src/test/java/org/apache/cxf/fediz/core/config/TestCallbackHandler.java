@@ -31,6 +31,7 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import org.apache.cxf.fediz.core.spi.HomeRealmCallback;
 import org.apache.cxf.fediz.core.spi.IDPCallback;
 import org.apache.cxf.fediz.core.spi.RealmCallback;
+import org.apache.cxf.fediz.core.spi.ReplyCallback;
 import org.apache.cxf.fediz.core.spi.SignInQueryCallback;
 import org.apache.cxf.fediz.core.spi.WAuthCallback;
 import org.apache.cxf.fediz.core.spi.WReqCallback;
@@ -42,6 +43,7 @@ public class TestCallbackHandler implements CallbackHandler {
     static final String TEST_IDP = "http://rp.example.com/";
     static final String TEST_WAUTH = "up";
     static final String TEST_SIGNIN_QUERY = "pubid=myid";
+    static final String TEST_REPLY = "http://apache.org/reply";
     static final String TEST_WREQ = 
         "<RequestSecurityToken xmlns=\"http://docs.oasis-open.org/ws-sx/ws-trust/200512\">"
         + "<TokenType>http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV1.1</TokenType>"
@@ -70,6 +72,9 @@ public class TestCallbackHandler implements CallbackHandler {
                 queryParamMap.put("pubid", "myid");
                 queryParamMap.put("testenc", "<=>");
                 callback.setSignInQueryParamMap(queryParamMap);
+            } else if (callbacks[i] instanceof ReplyCallback) {
+                ReplyCallback callback = (ReplyCallback) callbacks[i];
+                callback.setReply(TEST_REPLY);
             } else {
                 throw new UnsupportedCallbackException(callbacks[i], "Unrecognized Callback");
             }

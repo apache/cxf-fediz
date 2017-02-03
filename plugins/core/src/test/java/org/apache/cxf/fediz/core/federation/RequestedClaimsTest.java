@@ -168,7 +168,9 @@ public class RequestedClaimsTest {
         homeRealm.setValue(HOME_REALM_CLASS);
         ((FederationProtocolType)protocol).setHomeRealm(homeRealm);
 
-        ((FederationProtocolType)protocol).setReply(REPLY);
+        CallbackType reply = new CallbackType();
+        reply.setValue(REPLY);
+        ((FederationProtocolType)protocol).setReply(reply);
         ((FederationProtocolType)protocol).setVersion(PROTOCOL_VERSION);
         
         config.setProtocol(protocol);
