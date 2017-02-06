@@ -122,7 +122,7 @@ public class LogoutService {
     }
     private URI getAbsoluteIdpLogoutUri(Client client) {
         UriBuilder ub = mc.getUriInfo().getAbsolutePathBuilder();
-        ub.segment(relativeIdpLogoutUri);
+        ub.path(relativeIdpLogoutUri);
         //TODO: include a logout uri as a uri parameter, either 
         // 1. "/finalize" URI for the IDP to redirect to this service again
         // or 
