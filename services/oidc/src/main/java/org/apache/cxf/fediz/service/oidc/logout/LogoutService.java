@@ -77,13 +77,13 @@ public class LogoutService {
     
     @GET
     @Path("/finalize")
-    protected Response finalizeLogoutGet() {
+    public Response finalizeLogoutGet() {
         // This method won't be needed if IDP will itself redirect to the client logout URI
         return doFinalizeLogout(mc.getUriInfo().getQueryParameters());    
     }
     @POST
     @Path("/finalize")
-    protected Response finalizeLogoutPost(MultivaluedMap<String, String> params) {
+    public Response finalizeLogoutPost(MultivaluedMap<String, String> params) {
      // This method won't be needed if IDP will itself redirect to the client logout URI
         return doFinalizeLogout(params);    
     }
