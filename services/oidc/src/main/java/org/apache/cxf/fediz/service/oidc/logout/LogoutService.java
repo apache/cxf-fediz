@@ -127,6 +127,11 @@ public class LogoutService {
         // 1. "/finalize" URI for the IDP to redirect to this service again
         // or 
         // 2. may be let IDP redirect straight to getClientLogoutUri(client) ? 
+        
+        UriBuilder ub2 = mc.getUriInfo().getAbsolutePathBuilder();
+        ub2.path("finalize");
+        ub.queryParam("wreply", ub2.build());
+        
         return ub.build();
     }
 
