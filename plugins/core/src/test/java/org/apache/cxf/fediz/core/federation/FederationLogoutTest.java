@@ -354,4 +354,29 @@ public class FederationLogoutTest {
         EasyMock.replay(resp);
         logoutHandler.handleRequest(req, resp);
     }
+    
+    @org.junit.Test
+    public void testSignoutCustomQueryParameter() throws Exception {
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT3");
+        
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getParameter(FederationConstants.PARAM_ACTION)).andReturn(null).anyTimes();
+        EasyMock.expect(req.getParameter(FederationConstants.PARAM_REPLY)).andReturn(null);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(LOGOUT_URL));
+        EasyMock.expect(req.getRequestURI()).andReturn(LOGOUT_URI);
+        EasyMock.expect(req.getContextPath()).andReturn(LOGOUT_URI);
+        EasyMock.replay(req);
+        
+        LogoutHandler logoutHandler = new LogoutHandler(config);
+        Assert.assertTrue(logoutHandler.canHandleRequest(req));
+        
+        HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
+        String expectedRedirectToIdP = 
+            "http://url_to_the_issuer?wa=wsignout1.0&wreply=https%3A%2F%2Flocalhost%2Fsecure%2Flogout%2Findex.html"
+            + "&custom=param";
+        resp.sendRedirect(expectedRedirectToIdP);
+        EasyMock.expectLastCall();
+        EasyMock.replay(resp);
+        logoutHandler.handleRequest(req, resp);
+    }
 }

@@ -165,6 +165,7 @@
                     <xs:element ref="reply" />
                     <xs:element ref="request" />
                     <xs:element ref="signInQuery" />
+                    <xs:element ref="signOutQuery" />
                 </xs:sequence>
                 <xs:attribute name="version" use="required" type="xs:string" />
             </xs:extension>
@@ -225,6 +226,7 @@
     <xs:element name="request" type="CallbackType" />
     <xs:element name="freshness" type="CallbackType" />
     <xs:element name="signInQuery" type="CallbackType" />
+    <xs:element name="signOutQuery" type="CallbackType" />
     <xs:element name="reply" type="CallbackType" />
 
     <xs:simpleType name="argumentType">

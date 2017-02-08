@@ -59,6 +59,7 @@ import org.apache.cxf.fediz.core.spi.FreshnessCallback;
 import org.apache.cxf.fediz.core.spi.HomeRealmCallback;
 import org.apache.cxf.fediz.core.spi.ReplyCallback;
 import org.apache.cxf.fediz.core.spi.SignInQueryCallback;
+import org.apache.cxf.fediz.core.spi.SignOutQueryCallback;
 import org.apache.cxf.fediz.core.spi.WAuthCallback;
 import org.apache.cxf.fediz.core.spi.WReqCallback;
 import org.apache.cxf.fediz.core.util.DOMUtils;
@@ -539,7 +540,15 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                     sb.append(URLEncoder.encode(logoutRedirectTo, "UTF-8"));
                 }
             }
+            
+            String signOutQuery = resolveSignOutQuery(request, config);
+            LOG.debug("SignIn Query: {}", signOutQuery);
 
+            // add signout query extensions
+            if (signOutQuery != null && signOutQuery.length() > 0) {
+                sb.append('&').append(signOutQuery);
+            }
+            
             redirectURL = redirectURL + "?" + sb.toString();
         } catch (Exception ex) {
             LOG.error("Failed to create SignInRequest", ex);
@@ -577,6 +586,34 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             }
         }
         return signInQuery;
+    }
+    
+    private String resolveSignOutQuery(HttpServletRequest request, FedizContext config) throws IOException,
+        UnsupportedCallbackException, UnsupportedEncodingException {
+        Object signOutQueryObj = ((FederationProtocol)config.getProtocol()).getSignOutQuery();
+        String signOutQuery = null;
+        if (signOutQueryObj != null) {
+            if (signOutQueryObj instanceof String) {
+                signOutQuery = (String)signOutQueryObj;
+            } else if (signOutQueryObj instanceof CallbackHandler) {
+                CallbackHandler frCB = (CallbackHandler)signOutQueryObj;
+                SignOutQueryCallback callback = new SignOutQueryCallback(request);
+                frCB.handle(new Callback[] {
+                    callback
+                });
+                Map<String, String> signInQueryMap = callback.getSignOutQueryParamMap();
+                StringBuilder sbQuery = new StringBuilder();
+                for (Entry<String, String> entry : signInQueryMap.entrySet()) {
+                    if (sbQuery.length() > 0) {
+                        sbQuery.append("&");
+                    }
+                    sbQuery.append(entry.getKey()).append('=').append(URLEncoder.encode(entry.getValue(), "UTF-8"));
+                }
+                signOutQuery = sbQuery.toString();
+    
+            }
+        }
+        return signOutQuery;
     }
 
     private String resolveFreshness(HttpServletRequest request, FedizContext config) throws IOException,

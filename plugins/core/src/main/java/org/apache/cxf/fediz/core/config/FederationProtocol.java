@@ -37,6 +37,7 @@ public class FederationProtocol extends Protocol {
     private Object homeRealm;
     private Object freshness;
     private Object signInQuery;
+    private Object signOutQuery;
     private Object reply;
     
     public FederationProtocol(ProtocolType protocolType) {
@@ -137,6 +138,27 @@ public class FederationProtocol extends Protocol {
         } else {
             LOG.error("Unsupported 'SignInQuery' object");
             throw new IllegalArgumentException("Unsupported 'SignInQuery' object. Type must be "
+                                               + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
+        }
+    }
+    
+    public Object getSignOutQuery() {
+        if (this.signOutQuery != null) {
+            return this.signOutQuery;
+        }
+        CallbackType cbt = getFederationProtocol().getSignOutQuery();
+        this.signOutQuery = loadCallbackType(cbt, "SignOutQuery");
+        return this.signOutQuery;
+    }
+
+    public void setSignOutQuery(Object value) {
+        final boolean isString = value instanceof String;
+        final boolean isCallbackHandler = value instanceof CallbackHandler;
+        if (isString || isCallbackHandler) {
+            this.signOutQuery = value;
+        } else {
+            LOG.error("Unsupported 'SignOutQuery' object");
+            throw new IllegalArgumentException("Unsupported 'SignOutQuery' object. Type must be "
                                                + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
         }
     }
