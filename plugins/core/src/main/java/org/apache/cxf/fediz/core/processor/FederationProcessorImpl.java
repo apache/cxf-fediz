@@ -574,14 +574,16 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                     callback
                 });
                 Map<String, String> signInQueryMap = callback.getSignInQueryParamMap();
-                StringBuilder sbQuery = new StringBuilder();
-                for (Entry<String, String> entry : signInQueryMap.entrySet()) {
-                    if (sbQuery.length() > 0) {
-                        sbQuery.append("&");
+                if (signInQueryMap != null) {
+                    StringBuilder sbQuery = new StringBuilder();
+                    for (Entry<String, String> entry : signInQueryMap.entrySet()) {
+                        if (sbQuery.length() > 0) {
+                            sbQuery.append("&");
+                        }
+                        sbQuery.append(entry.getKey()).append('=').append(URLEncoder.encode(entry.getValue(), "UTF-8"));
                     }
-                    sbQuery.append(entry.getKey()).append('=').append(URLEncoder.encode(entry.getValue(), "UTF-8"));
+                    signInQuery = sbQuery.toString();
                 }
-                signInQuery = sbQuery.toString();
 
             }
         }
@@ -601,16 +603,17 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                 frCB.handle(new Callback[] {
                     callback
                 });
-                Map<String, String> signInQueryMap = callback.getSignOutQueryParamMap();
-                StringBuilder sbQuery = new StringBuilder();
-                for (Entry<String, String> entry : signInQueryMap.entrySet()) {
-                    if (sbQuery.length() > 0) {
-                        sbQuery.append("&");
+                Map<String, String> signOutQueryMap = callback.getSignOutQueryParamMap();
+                if (signOutQueryMap != null) {
+                    StringBuilder sbQuery = new StringBuilder();
+                    for (Entry<String, String> entry : signOutQueryMap.entrySet()) {
+                        if (sbQuery.length() > 0) {
+                            sbQuery.append("&");
+                        }
+                        sbQuery.append(entry.getKey()).append('=').append(URLEncoder.encode(entry.getValue(), "UTF-8"));
                     }
-                    sbQuery.append(entry.getKey()).append('=').append(URLEncoder.encode(entry.getValue(), "UTF-8"));
+                    signOutQuery = sbQuery.toString();
                 }
-                signOutQuery = sbQuery.toString();
-    
             }
         }
         return signOutQuery;
