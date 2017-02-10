@@ -531,7 +531,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
     
                     if (logoutRedirectTo.startsWith("/")) {
                         logoutRedirectTo = extractFullContextPath(request).concat(logoutRedirectTo.substring(1));
-                    } else {
+                    } else if (!logoutRedirectTo.startsWith("http") && !logoutRedirectTo.startsWith("https")) {
                         logoutRedirectTo = extractFullContextPath(request).concat(logoutRedirectTo);
                     }
     
