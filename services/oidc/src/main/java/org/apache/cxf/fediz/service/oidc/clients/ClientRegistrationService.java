@@ -193,7 +193,7 @@ public class ClientRegistrationService {
         if (dataProvider instanceof AuthorizationCodeDataProvider) {
             Client c = getRegisteredClient(id);
             UserSubject subject = new OidcUserSubject(getUserName());
-            List<ServerAuthorizationCodeGrant> codeGrants = new ArrayList<>(
+            List<ServerAuthorizationCodeGrant> codeGrants = new ArrayList<ServerAuthorizationCodeGrant>(
                ((AuthorizationCodeDataProvider)dataProvider).getCodeGrants(c, subject));
             Collections.sort(codeGrants, new CodeGrantComparator());
             return new ClientCodeGrants(c, codeGrants);
@@ -363,7 +363,7 @@ public class ClientRegistrationService {
         String userName = newClient.getResourceOwnerSubject().getLogin();
         Set<String> names = clientNames.get(userName);
         if (names == null) {
-            names = new HashSet<>();
+            names = new HashSet<String>();
             clientNames.put(userName, names);
         } else if (names.contains(newClient.getApplicationName())) {
             String newName = newClient.getApplicationName();
@@ -419,7 +419,7 @@ public class ClientRegistrationService {
             getClientRegistrations(userName).add(c);
             Set<String> names = clientNames.get(userName);
             if (names == null) {
-                names = new HashSet<>();
+                names = new HashSet<String>();
                 clientNames.put(userName, names);
             }
             names.add(c.getApplicationName());

@@ -34,7 +34,7 @@ public class IDPConfig extends Idp {
     }
     
     public void setTrustedIdps(Map<String, TrustedIDPConfig> trustedIdps) {
-        this.trustedIdpList = new ArrayList<>(trustedIdps.values());
+        this.trustedIdpList = new ArrayList<TrustedIdp>(trustedIdps.values());
     }
     
     @Deprecated

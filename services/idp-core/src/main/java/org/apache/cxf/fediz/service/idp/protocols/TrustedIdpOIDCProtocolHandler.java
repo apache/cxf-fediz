@@ -125,7 +125,7 @@ public class TrustedIdpOIDCProtocolHandler extends AbstractTrustedIdpOAuth2Proto
             }
             
             // Here we need to get the IdToken using the authorization code
-            List<Object> providers = new ArrayList<>();
+            List<Object> providers = new ArrayList<Object>();
             providers.add(new OAuthJSONProvider());
             
             WebClient client = 
@@ -284,7 +284,7 @@ public class TrustedIdpOIDCProtocolHandler extends AbstractTrustedIdpOAuth2Proto
             && jwt.getJwsHeaders().containsHeader(JoseConstants.HEADER_KEY_ID)) {
             String kid = (String)jwt.getJwsHeaders().getHeader(JoseConstants.HEADER_KEY_ID);
             LOG.debug("Attemping to retrieve key id {} from uri {}", kid, jwksUri);
-            List<Object> jsonKeyProviders = new ArrayList<>();
+            List<Object> jsonKeyProviders = new ArrayList<Object>();
             jsonKeyProviders.add(new JsonWebKeysProvider());
             
             WebClient client = 
