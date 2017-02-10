@@ -181,7 +181,7 @@ public abstract class Protocol {
         if (cbt.getType() == null || cbt.getType().equals(ArgumentType.STRING)) {
             return cbt.getValue();
         } else if (cbt.getType().equals(ArgumentType.CLASS)) {
-            List<Object> handler = new ArrayList<Object>();
+            List<Object> handler = new ArrayList<>();
             String[] cbtHandler = cbt.getValue().split(",");
             for (String cbh : cbtHandler) {
                 try {

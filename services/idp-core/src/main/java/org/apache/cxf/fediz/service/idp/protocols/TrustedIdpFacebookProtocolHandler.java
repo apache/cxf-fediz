@@ -156,7 +156,7 @@ public class TrustedIdpFacebookProtocolHandler extends AbstractTrustedIdpOAuth2P
     private ClientAccessToken getAccessTokenUsingCode(String tokenEndpoint, String code, String clientId,
                                                       String clientSecret, String redirectURI) {
         // Here we need to get the AccessToken using the authorization code
-        List<Object> providers = new ArrayList<Object>();
+        List<Object> providers = new ArrayList<>();
         providers.add(new OAuthJSONProvider());
         
         WebClient client = 
