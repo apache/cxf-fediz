@@ -25,7 +25,6 @@ import java.util.List;
 import javax.security.auth.callback.CallbackHandler;
 
 import org.apache.cxf.fediz.core.TokenValidator;
-import org.apache.cxf.fediz.core.config.jaxb.ArgumentType;
 import org.apache.cxf.fediz.core.config.jaxb.CallbackType;
 import org.apache.cxf.fediz.core.config.jaxb.ClaimType;
 import org.apache.cxf.fediz.core.config.jaxb.ClaimTypesRequested;
@@ -133,7 +132,7 @@ public abstract class Protocol {
             return this.issuer;
         }
         CallbackType cbt = getProtocolType().getIssuer();
-        this.issuer = loadCallbackType(cbt, "Issuer");
+        this.issuer = ConfigUtils.loadCallbackType(cbt, "Issuer", getClassloader());
         return this.issuer;
     }
 
@@ -154,7 +153,7 @@ public abstract class Protocol {
             return this.realm;
         }
         CallbackType cbt = getProtocolType().getRealm();
-        this.realm = loadCallbackType(cbt, "Realm");
+        this.realm = ConfigUtils.loadCallbackType(cbt, "Realm", getClassloader());
         return this.realm;
     }
 
@@ -172,39 +171,6 @@ public abstract class Protocol {
 
     public List<TokenValidator> getTokenValidators() {
         return validators;
-    }
-
-    protected Object loadCallbackType(CallbackType cbt, String name) {
-        if (cbt == null || cbt.getValue() == null) {
-            return null;
-        }
-        if (cbt.getType() == null || cbt.getType().equals(ArgumentType.STRING)) {
-            return cbt.getValue();
-        } else if (cbt.getType().equals(ArgumentType.CLASS)) {
-            List<Object> handler = new ArrayList<>();
-            String[] cbtHandler = cbt.getValue().split(",");
-            for (String cbh : cbtHandler) {
-                try {
-                    if (getClassloader() == null) {
-                        handler.add(ClassLoaderUtils.loadClass(cbh, this.getClass()).newInstance());
-                    } else {
-                        handler.add(getClassloader().loadClass(cbh).newInstance());
-                    }
-                } catch (Exception e) {
-                    LOG.error("Failed to create instance of " + cbh, e);
-                    //throw new IllegalStateException("Failed to create instance of " + cbt.getValue());
-                }
-            }
-            if (handler.size() == 1) {
-                // Backward compatible return handler directly if only one is configured
-                return handler.get(0);
-            } else {
-                return handler;
-            }
-        } else {
-            LOG.error("Only String and Class are supported for '{}'", name);
-            throw new IllegalStateException("Only String and Class are supported for '" + name + "'");
-        }
     }
 
     public List<Claim> getClaimTypesRequested() {

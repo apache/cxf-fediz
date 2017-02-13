@@ -145,16 +145,6 @@
         </xs:annotation>
     </xs:element>
     
-    <xs:element name="logoutRedirectToConstraint" type="xs:string">
-        <xs:annotation>
-            <xs:documentation>A regular expression constraint on the 'wreply' parameter, which is used to obtain the URL to 
-                navigate to after successful logout. If the constraint is not specified, then the 'wreply' parameter is ignored 
-                and instead the URL is taken from the "logoutRedirectTo" configuration option.
-                Example: 'https://localhost:12345/logout.*/'
-            </xs:documentation>
-        </xs:annotation>
-    </xs:element>
-
     <xs:complexType name="federationProtocolType">
         <xs:complexContent>
             <xs:extension base="protocolType">
@@ -219,6 +209,16 @@
             </xs:extension>
         </xs:simpleContent>
     </xs:complexType>
+    
+    <xs:element name="logoutRedirectToConstraint" type="CallbackType">
+        <xs:annotation>
+            <xs:documentation>A regular expression constraint on the 'wreply' parameter, which is used to obtain the URL to 
+                navigate to after successful logout. If the constraint is not specified, then the 'wreply' parameter is ignored 
+                and instead the URL is taken from the "logoutRedirectTo" configuration option.
+                Example: 'https://localhost:12345/logout.*/'. Alternatively it can be specified in a CallbackHandler
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
 
     <xs:element name="issuer" type="CallbackType" />
     <xs:element name="homeRealm" type="CallbackType" />

@@ -26,6 +26,9 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,6 +40,7 @@ import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
 import org.apache.cxf.fediz.core.processor.RedirectionResponse;
+import org.apache.cxf.fediz.core.spi.ReplyConstraintCallback;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,9 +96,14 @@ public class LogoutHandler implements RequestHandler<Boolean> {
         request.getSession().invalidate();
 
         String wreply = request.getParameter(FederationConstants.PARAM_REPLY);
-        Pattern logoutRedirectToConstraint = fedizConfig.getLogoutRedirectToConstraint();
 
         if (wreply != null && !wreply.isEmpty()) {
+            Pattern logoutRedirectToConstraint = null;
+            try {
+                logoutRedirectToConstraint = resolveLogoutRedirectToConstraint(request, fedizConfig);
+            } catch (Exception e) {
+                LOG.error("Error redirecting user after logout: {}", e.getMessage());
+            }
             if (logoutRedirectToConstraint == null) {
                 LOG.debug("No regular expression constraint configured for logout. Ignoring wreply parameter");
             } else {
@@ -116,6 +125,25 @@ public class LogoutHandler implements RequestHandler<Boolean> {
 
         writeLogoutImage(response);
         return true;
+    }
+    
+    private Pattern resolveLogoutRedirectToConstraint(HttpServletRequest request, FedizContext config) 
+        throws IOException, UnsupportedCallbackException {
+        Object logoutConstraintObj = config.getLogoutRedirectToConstraint();
+        Pattern logoutConstraint = null;
+        if (logoutConstraintObj != null) {
+            if (logoutConstraintObj instanceof Pattern) {
+                logoutConstraint = (Pattern)logoutConstraintObj;
+            } else if (logoutConstraintObj instanceof CallbackHandler) {
+                CallbackHandler frCB = (CallbackHandler)logoutConstraintObj;
+                ReplyConstraintCallback callback = new ReplyConstraintCallback(request);
+                frCB.handle(new Callback[] {
+                    callback
+                });
+                logoutConstraint = callback.getReplyConstraint();
+            }
+        }
+        return logoutConstraint;
     }
 
     public void setToken(Element token) {

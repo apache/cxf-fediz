@@ -63,7 +63,7 @@ public class FederationProtocol extends Protocol {
             return this.authenticationType;
         }
         CallbackType cbt = getFederationProtocol().getAuthenticationType();
-        this.authenticationType = loadCallbackType(cbt, "AuthenticationType");
+        this.authenticationType = ConfigUtils.loadCallbackType(cbt, "AuthenticationType", getClassloader());
         return this.authenticationType;
     }
 
@@ -84,7 +84,7 @@ public class FederationProtocol extends Protocol {
             return this.homeRealm;
         }
         CallbackType cbt = getFederationProtocol().getHomeRealm();
-        this.homeRealm = loadCallbackType(cbt, "HomeRealm");
+        this.homeRealm = ConfigUtils.loadCallbackType(cbt, "HomeRealm", getClassloader());
         return this.homeRealm;
     }
 
@@ -105,7 +105,7 @@ public class FederationProtocol extends Protocol {
             return this.freshness;
         }
         CallbackType cbt = getFederationProtocol().getFreshness();
-        this.freshness = loadCallbackType(cbt, "Freshness");
+        this.freshness = ConfigUtils.loadCallbackType(cbt, "Freshness", getClassloader());
         return this.freshness;
     }
 
@@ -126,7 +126,7 @@ public class FederationProtocol extends Protocol {
             return this.signInQuery;
         }
         CallbackType cbt = getFederationProtocol().getSignInQuery();
-        this.signInQuery = loadCallbackType(cbt, "SignInQuery");
+        this.signInQuery = ConfigUtils.loadCallbackType(cbt, "SignInQuery", getClassloader());
         return this.signInQuery;
     }
 
@@ -147,7 +147,7 @@ public class FederationProtocol extends Protocol {
             return this.signOutQuery;
         }
         CallbackType cbt = getFederationProtocol().getSignOutQuery();
-        this.signOutQuery = loadCallbackType(cbt, "SignOutQuery");
+        this.signOutQuery = ConfigUtils.loadCallbackType(cbt, "SignOutQuery", getClassloader());
         return this.signOutQuery;
     }
 
@@ -168,7 +168,7 @@ public class FederationProtocol extends Protocol {
             return this.request;
         }
         CallbackType cbt = getFederationProtocol().getRequest();
-        this.request = loadCallbackType(cbt, "Request");
+        this.request = ConfigUtils.loadCallbackType(cbt, "Request", getClassloader());
         return this.request;
     }
 
@@ -189,7 +189,7 @@ public class FederationProtocol extends Protocol {
             return this.reply;
         }
         CallbackType cbt = getFederationProtocol().getReply();
-        this.reply = loadCallbackType(cbt, "Reply");
+        this.reply = ConfigUtils.loadCallbackType(cbt, "Reply", getClassloader());
         return this.reply;
     }
 

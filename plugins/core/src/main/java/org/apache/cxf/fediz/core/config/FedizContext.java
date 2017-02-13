@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
+import org.apache.cxf.fediz.core.config.jaxb.CallbackType;
 import org.apache.cxf.fediz.core.config.jaxb.CertificateStores;
 import org.apache.cxf.fediz.core.config.jaxb.ContextConfig;
 import org.apache.cxf.fediz.core.config.jaxb.FederationProtocolType;
@@ -70,7 +71,7 @@ public class FedizContext implements Closeable {
     private KeyManager keyManager;
     private KeyManager decryptionKeyManager;
     private ClassLoader classloader;
-    private Pattern logoutRedirectToConstraint;
+    private Object logoutRedirectToConstraint;
 
 
     public FedizContext(ContextConfig config) {
@@ -172,9 +173,17 @@ public class FedizContext implements Closeable {
         return config.getLogoutRedirectTo();
     }
 
-    public Pattern getLogoutRedirectToConstraint() {
-        if (logoutRedirectToConstraint == null && config.getLogoutRedirectToConstraint() != null) {
-            logoutRedirectToConstraint = Pattern.compile(config.getLogoutRedirectToConstraint());
+    public Object getLogoutRedirectToConstraint() {
+        if (logoutRedirectToConstraint != null) {
+            return logoutRedirectToConstraint;
+        }
+        
+        CallbackType cbt = config.getLogoutRedirectToConstraint();
+        Object constraint = ConfigUtils.loadCallbackType(cbt, "LogoutRedirectToConstraint", getClassloader());
+        if (constraint instanceof String) {
+            logoutRedirectToConstraint = Pattern.compile((String)constraint);
+        } else {
+            this.logoutRedirectToConstraint = constraint;
         }
         return logoutRedirectToConstraint;
     }

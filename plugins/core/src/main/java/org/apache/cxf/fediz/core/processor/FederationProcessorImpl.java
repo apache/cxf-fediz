@@ -58,6 +58,7 @@ import org.apache.cxf.fediz.core.metadata.MetadataWriter;
 import org.apache.cxf.fediz.core.spi.FreshnessCallback;
 import org.apache.cxf.fediz.core.spi.HomeRealmCallback;
 import org.apache.cxf.fediz.core.spi.ReplyCallback;
+import org.apache.cxf.fediz.core.spi.ReplyConstraintCallback;
 import org.apache.cxf.fediz.core.spi.SignInQueryCallback;
 import org.apache.cxf.fediz.core.spi.SignOutQueryCallback;
 import org.apache.cxf.fediz.core.spi.WAuthCallback;
@@ -505,8 +506,8 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
 
             // Match the 'wreply' parameter against the constraint
             String logoutRedirectTo = null;
-            Pattern logoutRedirectToConstraint = config.getLogoutRedirectToConstraint();
             if (request.getParameter(FederationConstants.PARAM_REPLY) != null) {
+                Pattern logoutRedirectToConstraint = resolveLogoutRedirectToConstraint(request, config);
                 if (logoutRedirectToConstraint == null) {
                     LOG.debug("No regular expression constraint configured for logout. Ignoring wreply parameter");
                 } else {
@@ -585,9 +586,28 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         }
         return signInQuery;
     }
+    
+    private Pattern resolveLogoutRedirectToConstraint(HttpServletRequest request, FedizContext config) 
+        throws IOException, UnsupportedCallbackException {
+        Object logoutConstraintObj = config.getLogoutRedirectToConstraint();
+        Pattern logoutConstraint = null;
+        if (logoutConstraintObj != null) {
+            if (logoutConstraintObj instanceof Pattern) {
+                logoutConstraint = (Pattern)logoutConstraintObj;
+            } else if (logoutConstraintObj instanceof CallbackHandler) {
+                CallbackHandler frCB = (CallbackHandler)logoutConstraintObj;
+                ReplyConstraintCallback callback = new ReplyConstraintCallback(request);
+                frCB.handle(new Callback[] {
+                    callback
+                });
+                logoutConstraint = callback.getReplyConstraint();
+            }
+        }
+        return logoutConstraint;
+    }
 
     private String resolveSignOutQuery(HttpServletRequest request, FedizContext config) throws IOException,
-        UnsupportedCallbackException, UnsupportedEncodingException {
+        UnsupportedCallbackException {
         Object signOutQueryObj = ((FederationProtocol)config.getProtocol()).getSignOutQuery();
         String signOutQuery = null;
         if (signOutQueryObj != null) {
