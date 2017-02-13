@@ -27,14 +27,14 @@ import org.w3c.dom.Element;
  */
 public final class SecurityTokenThreadLocal {
 
-    private static final ThreadLocal<Element> TLS = 
+    private static final ThreadLocal<Element> TLS =
         new ThreadLocal<Element>();
 
     private SecurityTokenThreadLocal() {
-    }    
-        
+    }
+
     public static void setToken(Element token) {
-        if (token == null) { 
+        if (token == null) {
             TLS.remove();
         } else {
             TLS.set(token);
@@ -44,6 +44,6 @@ public final class SecurityTokenThreadLocal {
     public static Element getToken() {
         return TLS.get();
     }
-    
+
 
 }

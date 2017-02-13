@@ -73,22 +73,22 @@ import org.eclipse.jetty.util.log.Logger;
  * by sending a WS-Federation SignIn request.
  * </p>
  * <p>
- * The federation authenticator redirects unauthenticated requests to an Identity Provider which use any kind of 
+ * The federation authenticator redirects unauthenticated requests to an Identity Provider which use any kind of
  * mechanism to authenticate the user.
  * FederationAuthentication uses {@link SessionAuthentication} to wrap Authentication results so that they are
  * associated with the session.
  * </p>
  */
 public class FederationAuthenticator extends LoginAuthenticator {
-    
+
     public static final String J_URI = "org.eclipse.jetty.security.form_URI";
     public static final String J_POST = "org.eclipse.jetty.security.form_POST";
     public static final String J_CONTEXT = "org.eclipse.jetty.security.form_CONTEXT";
 
     private static final Logger LOG = Log.getLogger(FederationAuthenticator.class);
-    
+
     private static final String SECURITY_TOKEN_ATTR = "org.apache.fediz.SECURITY_TOKEN";
-       
+
     private String configFile;
     private FedizConfigurator configurator;
     private String encoding = "UTF-8";
@@ -98,7 +98,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
 
 
     /**
-     * 
+     *
      */
     @Override
     public void setConfiguration(AuthConfiguration configuration) {
@@ -123,7 +123,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
             //throw new ServerAuthException("Failed to load Fediz configuration",
             //                              e);
         }
-        
+
     }
 
     /* ------------------------------------------------------------ */
@@ -138,7 +138,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
     public void setConfigFile(String configFile) {
         this.configFile = configFile;
     }
-    
+
     public String getEncoding() {
         return encoding;
     }
@@ -146,22 +146,22 @@ public class FederationAuthenticator extends LoginAuthenticator {
     public void setEncoding(String encoding) {
         this.encoding = encoding;
     }
-    
+
     /* ------------------------------------------------------------ */
     public Authentication validateRequest(ServletRequest req, ServletResponse res, boolean mandatory)
         throws ServerAuthException {
-        
+
         HttpServletRequest request = (HttpServletRequest)req;
         HttpServletResponse response = (HttpServletResponse)res;
 
         HttpSession session = request.getSession(true);
-        
+
         String contextName = request.getSession().getServletContext().getContextPath();
         if (contextName == null || contextName.isEmpty()) {
             contextName = "/";
         }
         FedizContext fedConfig = getContextConfiguration(contextName);
-        
+
         // Check to see if it is a metadata request
         MetadataDocumentHandler mdHandler = new MetadataDocumentHandler(fedConfig);
         if (mdHandler.canHandleRequest(request)) {
@@ -175,17 +175,17 @@ public class FederationAuthenticator extends LoginAuthenticator {
         if (!mandatory) {
             return new DeferredAuthentication(this);
         }
-        
+
         try {
             req.setCharacterEncoding(this.encoding);
         } catch (UnsupportedEncodingException ex) {
             LOG.warn("Unsupported encoding '" + this.encoding + "'", ex);
         }
-        
+
         try {
             String action = request.getParameter(FederationConstants.PARAM_ACTION);
             Authentication authentication = null;
-            
+
             // Handle a request for authentication.
             if (isSignInRequest(request, fedConfig)) {
                 authentication = handleSignInRequest(request, response, session, fedConfig);
@@ -196,7 +196,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 authentication = Authentication.UNAUTHENTICATED;
             }
-            
+
             if (authentication != null) {
                 return authentication;
             }
@@ -206,35 +206,35 @@ public class FederationAuthenticator extends LoginAuthenticator {
             if (authentication != null) {
                 return authentication;
             }
-            
+
 
             // if we can't send challenge
             if (DeferredAuthentication.isDeferred(response)) {
                 LOG.debug("auth deferred {}", session.getId());
                 return Authentication.UNAUTHENTICATED;
             }
-            
+
             // remember the current URI
             synchronized (session) {
                 // But only if it is not set already, or we save every uri that leads to a login form redirect
-                if (session.getAttribute(J_URI) == null) { // || alwaysSaveUri)  
+                if (session.getAttribute(J_URI) == null) { // || alwaysSaveUri)
                     StringBuffer buf = request.getRequestURL();
                     if (request.getQueryString() != null) {
                         buf.append("?").append(request.getQueryString());
                     }
                     session.setAttribute(J_URI, buf.toString());
-                    
-                    if (MimeTypes.FORM_ENCODED.equalsIgnoreCase(req.getContentType()) 
+
+                    if (MimeTypes.FORM_ENCODED.equalsIgnoreCase(req.getContentType())
                         && HttpMethods.POST.equals(request.getMethod())) {
-                        Request baseRequest = (req instanceof Request) ? (Request)req 
+                        Request baseRequest = (req instanceof Request) ? (Request)req
                             : AbstractHttpConnection.getCurrentConnection().getRequest();
-                        baseRequest.extractParameters();                        
+                        baseRequest.extractParameters();
                         session.setAttribute(J_POST, new MultiMap<String>(baseRequest.getParameters()));
                     }
                 }
             }
-            
-            FedizProcessor wfProc = 
+
+            FedizProcessor wfProc =
                 FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
             signInRedirectToIssuer(request, response, wfProc, session);
 
@@ -247,8 +247,8 @@ public class FederationAuthenticator extends LoginAuthenticator {
          * catch (ServletException e) { throw new ServerAuthException(e); }
          */
     }
-    
-    private Authentication handleSignInRequest(HttpServletRequest request, HttpServletResponse response, 
+
+    private Authentication handleSignInRequest(HttpServletRequest request, HttpServletResponse response,
                                                HttpSession session, FedizContext fedConfig) throws IOException {
         FedizResponse wfRes = null;
         if (LOG.isDebugEnabled()) {
@@ -271,7 +271,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
             wfReq.setState(request.getParameter("RelayState"));
             wfReq.setRequest(request);
 
-            X509Certificate[] certs = 
+            X509Certificate[] certs =
                 (X509Certificate[])request.getAttribute("javax.servlet.request.X509Certificate");
             wfReq.setCerts(certs);
 
@@ -291,23 +291,23 @@ public class FederationAuthenticator extends LoginAuthenticator {
                         response.sendError(HttpServletResponse.SC_FORBIDDEN);
                         return Authentication.UNAUTHENTICATED;
                     }
-                    
+
                     nuri = (String) session.getAttribute(J_URI);
 
                     if (nuri == null || nuri.length() == 0) {
                         nuri = request.getContextPath();
-                        if (nuri.length() == 0) { 
+                        if (nuri.length() == 0) {
                             nuri = URIUtil.SLASH;
                         }
                     }
                     Authentication cached = new SessionAuthentication(getAuthMethod(), user, wfRes);
                     session.setAttribute(SessionAuthentication.__J_AUTHENTICATED, cached);
                 }
-                
+
                 FederationUserIdentity fui = (FederationUserIdentity)user;
                 session.setAttribute(SECURITY_TOKEN_ATTR, fui.getToken());
-                
-                response.setContentLength(0);   
+
+                response.setContentLength(0);
                 response.sendRedirect(response.encodeRedirectURL(nuri));
 
                 return new FederationAuthentication(getAuthMethod(), user);
@@ -323,7 +323,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
             return Authentication.UNAUTHENTICATED;
         }
     }
-    
+
     private Authentication handleSignOutCleanup(HttpServletResponse response, HttpSession session) throws IOException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("SignOutCleanup request found");
@@ -346,10 +346,10 @@ public class FederationAuthenticator extends LoginAuthenticator {
         responseOutputStream.flush();
         return Authentication.SEND_SUCCESS;
     }
-    
-    private Authentication handleCachedAuthentication(HttpServletRequest request, HttpServletResponse response, 
+
+    private Authentication handleCachedAuthentication(HttpServletRequest request, HttpServletResponse response,
                                                       HttpSession session, FedizContext fedConfig) throws IOException {
-        Authentication authentication = 
+        Authentication authentication =
             (Authentication) session.getAttribute(SessionAuthentication.__J_AUTHENTICATED);
         if (authentication != null) {
             // Has authentication been revoked?
@@ -361,21 +361,21 @@ public class FederationAuthenticator extends LoginAuthenticator {
                 String action = request.getParameter(FederationConstants.PARAM_ACTION);
                 boolean logout = FederationConstants.ACTION_SIGNOUT.equals(action);
                 String logoutUrl = fedConfig.getLogoutURL();
-                
+
                 String uri = request.getRequestURI();
                 if (uri == null) {
                     uri = URIUtil.SLASH;
                 }
-                
+
                 String contextName = request.getSession().getServletContext().getContextPath();
                 if (contextName == null || contextName.isEmpty()) {
                     contextName = "/";
                 }
-                
+
                 if (logout || logoutUrl != null && !logoutUrl.isEmpty() && uri.equals(contextName + logoutUrl)) {
                     session.invalidate();
 
-                    FedizProcessor wfProc = 
+                    FedizProcessor wfProc =
                         FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
                     signOutRedirectToIssuer(request, response, wfProc);
 
@@ -395,8 +395,8 @@ public class FederationAuthenticator extends LoginAuthenticator {
                         // This is a retry of an original POST request
                         // so restore method and parameters
 
-                        session.removeAttribute(J_POST);            
-                        Request baseRequest = (Request)request; 
+                        session.removeAttribute(J_POST);
+                        Request baseRequest = (Request)request;
                         // (req instanceof Request)?(Request)
                         // req:HttpConnection.getCurrentConnection().getRequest();
                         baseRequest.setMethod(HttpMethods.POST);
@@ -405,13 +405,13 @@ public class FederationAuthenticator extends LoginAuthenticator {
                 } else if (jUri != null) {
                     session.removeAttribute(J_URI);
                 }
-                        
+
                 return authentication;
             }
         }
         return null;
     }
-    
+
     private boolean isTokenExpired(FedizContext fedConfig, UserIdentity userIdentity) {
         if (fedConfig.isDetectExpiredTokens()) {
             try {
@@ -421,13 +421,13 @@ public class FederationAuthenticator extends LoginAuthenticator {
                     LOG.debug("Token doesn't expire");
                     return false;
                 }
-    
+
                 Date currentTime = new Date();
                 if (!currentTime.after(tokenExpires)) {
                     return false;
                 } else {
                     LOG.warn("Token already expired. Clean up and redirect");
-    
+
                     return true;
                 }
             } catch (ClassCastException ex) {
@@ -435,7 +435,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
                 throw new IllegalStateException("UserIdentity must be instance of FederationUserIdentity");
             }
         }
-        
+
         return false;
     }
 
@@ -451,7 +451,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
 
         return false;
     }
-    
+
     private String getResponseToken(ServletRequest request, FedizContext fedConfig) {
         if (fedConfig.getProtocol() instanceof FederationProtocol) {
             return request.getParameter(FederationConstants.PARAM_RESULT);
@@ -460,16 +460,16 @@ public class FederationAuthenticator extends LoginAuthenticator {
         }
         return null;
     }
-    
+
     /* ------------------------------------------------------------ */
     public boolean secureResponse(ServletRequest req, ServletResponse res, boolean mandatory,
                                   User validatedUser) throws ServerAuthException {
         return true;
-    }    
-    
+    }
+
     /**
      * Called to redirect sign-in to the IDP/Issuer
-     * 
+     *
      * @param request
      *            Request we are processing
      * @param response
@@ -482,7 +482,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
      *             {@link HttpServletResponse#sendError(int, String)} throws an
      *             {@link IOException}
      */
-    protected void signInRedirectToIssuer(HttpServletRequest request, HttpServletResponse response, 
+    protected void signInRedirectToIssuer(HttpServletRequest request, HttpServletResponse response,
                                           FedizProcessor processor, HttpSession session)
         throws IOException {
 
@@ -503,11 +503,11 @@ public class FederationAuthenticator extends LoginAuthenticator {
                         response.addHeader(entry.getKey(), entry.getValue());
                     }
                 }
-                
+
                 synchronized (session) {
                     session.setAttribute(J_CONTEXT, redirectionResponse.getRequestState().getState());
                 }
-                
+
                 response.sendRedirect(redirectURL);
             } else {
                 LOG.warn("Failed to create SignInRequest.");
@@ -519,10 +519,10 @@ public class FederationAuthenticator extends LoginAuthenticator {
             response.sendError(
                                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignInRequest.");
         }
-        
+
     }
 
-    protected void signOutRedirectToIssuer(HttpServletRequest request, HttpServletResponse response, 
+    protected void signOutRedirectToIssuer(HttpServletRequest request, HttpServletResponse response,
                                            FedizProcessor processor)
             throws IOException {
 
@@ -534,7 +534,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
         }
         FedizContext fedCtx = this.configurator.getFedizContext(contextName);
         try {
-            RedirectionResponse redirectionResponse = 
+            RedirectionResponse redirectionResponse =
                 processor.createSignOutRequest(request, null, fedCtx); //TODO
             String redirectURL = redirectionResponse.getRedirectionURL();
             if (redirectURL != null) {
@@ -544,7 +544,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
                         response.addHeader(entry.getKey(), entry.getValue());
                     }
                 }
-                
+
                 response.sendRedirect(redirectURL);
             } else {
                 LOG.warn("Failed to create SignOutRequest.");
@@ -557,7 +557,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignOutRequest.");
         }
     }
-    
+
     private FedizContext getContextConfiguration(String contextName) {
         if (configurator == null) {
             throw new IllegalStateException("No Fediz configuration available");
@@ -566,7 +566,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
         if (config == null) {
             throw new IllegalStateException("No Fediz configuration for context :" + contextName);
         }
-        
+
         String jettyHome = System.getProperty("jetty.home");
         if (jettyHome != null && jettyHome.length() > 0) {
             config.setRelativePath(jettyHome);
@@ -581,7 +581,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
      */
     public static class FederationAuthentication extends UserAuthentication implements
         Authentication.ResponseSent {
-        
+
         public FederationAuthentication(String method, UserIdentity userIdentity) {
             super(method, userIdentity);
         }

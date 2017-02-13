@@ -44,26 +44,26 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 public class MetadataServlet extends HttpServlet {
 
     public static final String PARAM_REALM = "realm";
-    
+
     private static final Logger LOG = LoggerFactory
         .getLogger(MetadataServlet.class);
     private static final long serialVersionUID = 1L;
-    
+
     private ApplicationContext applicationContext;
     private String realm;
-    
-    
+
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException,
         IOException {
         response.setContentType("text/xml; charset=utf-8");
         PrintWriter out = response.getWriter();
-        
+
         ConfigService cs = (ConfigService)getApplicationContext().getBean("config");
         Idp idpConfig = cs.getIDP(realm);
         try {
             if (request.getServletPath() != null && request.getServletPath().startsWith("/metadata")) {
-                String serviceRealm = 
+                String serviceRealm =
                     request.getRequestURI().substring(request.getRequestURI().indexOf("/metadata")
                                                       + "/metadata".length());
                 if (serviceRealm != null && serviceRealm.charAt(0) == '/') {
@@ -107,5 +107,5 @@ public class MetadataServlet extends HttpServlet {
         }
         return applicationContext;
     }
-    
+
 }

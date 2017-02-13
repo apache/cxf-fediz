@@ -18,7 +18,7 @@
  */
 /*
  * Copyright 2009 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -53,9 +53,9 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 * @see KerberosAuthenticationProcessingFilter
 */
 public class KerberosEntryPoint implements AuthenticationEntryPoint {
-    
+
     private static final Log LOG = LogFactory.getLog(KerberosEntryPoint.class);
-    
+
     public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException ex) throws IOException, ServletException {
         if (LOG.isDebugEnabled()) {
@@ -65,6 +65,6 @@ public class KerberosEntryPoint implements AuthenticationEntryPoint {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.flushBuffer();
     }
-    
+
 }
 

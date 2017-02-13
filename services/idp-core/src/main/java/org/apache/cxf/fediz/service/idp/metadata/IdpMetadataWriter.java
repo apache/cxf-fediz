@@ -43,9 +43,9 @@ import static org.apache.cxf.fediz.core.FedizConstants.WS_ADDRESSING_NS;
 import static org.apache.cxf.fediz.core.FedizConstants.WS_FEDERATION_NS;
 
 public class IdpMetadataWriter {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(IdpMetadataWriter.class);
-    
+
     //CHECKSTYLE:OFF
     public Document getMetaData(Idp config) throws RuntimeException {
         try {
@@ -83,7 +83,7 @@ public class IdpMetadataWriter {
                 LOG.debug("***************** unsigned ****************");
             }
 
-            Document result = SignatureUtils.signMetaInfo(crypto, null, config.getCertificatePassword(), 
+            Document result = SignatureUtils.signMetaInfo(crypto, null, config.getCertificatePassword(),
                                                           writer.getDocument(), referenceID);
             if (result != null) {
                 return result;
@@ -96,7 +96,7 @@ public class IdpMetadataWriter {
         }
 
     }
-    
+
     private void writeFederationMetadata(
         XMLStreamWriter writer, Idp config, Crypto crypto
     ) throws XMLStreamException {
@@ -176,5 +176,5 @@ public class IdpMetadataWriter {
         writer.writeEndElement(); // RoleDescriptor
     }
 
- 
+
 }

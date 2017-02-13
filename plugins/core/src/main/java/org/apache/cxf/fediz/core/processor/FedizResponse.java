@@ -31,7 +31,7 @@ import org.apache.cxf.fediz.core.Claim;
 public class FedizResponse implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    
+
     private String audience;
     private String username;
     private List<String> roles;
@@ -51,7 +51,7 @@ public class FedizResponse implements Serializable {
     private Date tokenExpires;
 
     //CHECKSTYLE:OFF
-    public FedizResponse(String username, String issuer, List<String> roles, List<Claim> claims, String audience, 
+    public FedizResponse(String username, String issuer, List<String> roles, List<Claim> claims, String audience,
         Date created, Date expires, Element token, String uniqueTokenId) {
         this.username = username;
         this.issuer = issuer;

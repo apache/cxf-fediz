@@ -127,10 +127,10 @@ public class SecurityContextTTLChecker extends HttpServlet implements Filter {
         long currentTime = System.currentTimeMillis();
         return response.getTokenExpires().getTime() > currentTime;
     }
-    
+
     private FedizResponse getCachedFederationResponse(Subject subject) {
         Iterator<?> i = subject.getPublicCredentials().iterator();
-        
+
         while (i.hasNext()) {
             Object o = i.next();
             if (o instanceof Hashtable) {
@@ -141,7 +141,7 @@ public class SecurityContextTTLChecker extends HttpServlet implements Filter {
         }
         return null;
     }
-    
+
 
     /*
      * (non-Java-doc)

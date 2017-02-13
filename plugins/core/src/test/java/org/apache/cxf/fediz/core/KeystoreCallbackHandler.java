@@ -30,20 +30,20 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import org.apache.wss4j.common.ext.WSPasswordCallback;
 
 /**
- * A Callback Handler implementation for the case of finding a password to access a 
+ * A Callback Handler implementation for the case of finding a password to access a
  * cert/private key in a keystore.
  */
 public class KeystoreCallbackHandler implements CallbackHandler {
-    
+
     private Map<String, String> users = new HashMap<>();
-    
+
     public KeystoreCallbackHandler() {
         users.put("mystskey", "stskpass");
         users.put("myclientkey", "ckpass");
         users.put("realma", "realma");
         users.put("realmb", "realmb");
     }
-    
+
     public void handle(Callback[] callbacks)
         throws IOException, UnsupportedCallbackException {
         for (int i = 0; i < callbacks.length; i++) {

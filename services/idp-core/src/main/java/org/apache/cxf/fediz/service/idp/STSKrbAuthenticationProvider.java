@@ -56,21 +56,21 @@ public class STSKrbAuthenticationProvider extends STSAuthenticationProvider {
     private static final Logger LOG = LoggerFactory.getLogger(STSKrbAuthenticationProvider.class);
 
     private KerberosTokenValidator kerberosTokenValidator;
-    
+
     private CallbackHandler kerberosCallbackHandler;
-    
+
     private boolean kerberosUsernameServiceNameForm;
-    
+
     private boolean requireDelegation;
-    
-    
+
+
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         // We only handle KerberosServiceRequestTokens
         if (!(authentication instanceof KerberosServiceRequestToken)) {
             return null;
         }
-        
+
         Bus cxfBus = getBus();
         IdpSTSClient sts = new IdpSTSClient(cxfBus);
         sts.setAddressingNamespace("http://www.w3.org/2005/08/addressing");
@@ -83,26 +83,26 @@ public class STSKrbAuthenticationProvider extends STSAuthenticationProvider {
         sts.setWsdlLocation(wsdlLocation);
         sts.setServiceQName(new QName(namespace, wsdlService));
         sts.setEndpointQName(new QName(namespace, wsdlEndpoint));
-        
+
         sts.getProperties().putAll(properties);
         if (use200502Namespace) {
             sts.setNamespace(HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_02_TRUST);
         }
-        
+
         if (lifetime != null) {
             sts.setEnableLifetime(true);
             sts.setTtl(lifetime.intValue());
         }
-        
+
         return handleKerberos((KerberosServiceRequestToken)authentication, sts);
     }
-    
+
     private Authentication handleKerberos(
         KerberosServiceRequestToken kerberosRequestToken,
         IdpSTSClient sts
     ) {
         Principal kerberosPrincipal = null;
-        // 
+        //
         // If delegation is required then validate the received token + store the
         // Delegated Credential so that we can retrieve a new kerberos token for the
         // STS with it. If delegation is not required, then we just get the received
@@ -118,36 +118,36 @@ public class STSKrbAuthenticationProvider extends STSAuthenticationProvider {
             kerberosClient.setToken(kerberosRequestToken.getToken());
             sts.getProperties().put(SecurityConstants.KERBEROS_CLIENT, kerberosClient);
         }
-        
+
         try {
-            // Line below may be uncommented for debugging    
+            // Line below may be uncommented for debugging
             // setTimeout(sts.getClient(), 3600000L);
 
             SecurityToken token = sts.requestSecurityToken(this.appliesTo);
-            
+
             if (kerberosPrincipal == null && token.getToken() != null
                 && "Assertion".equals(token.getToken().getLocalName())) {
                 // For the pass-through Kerberos case, we don't know the Principal name...
-                kerberosPrincipal = 
+                kerberosPrincipal =
                     new SAMLTokenPrincipalImpl(new SamlAssertionWrapper(token.getToken()));
             }
-            
+
             if (kerberosPrincipal == null) {
                 LOG.info("Failed to authenticate user '" + kerberosRequestToken.getName());
                 return null;
             }
-            
+
             List<GrantedAuthority> authorities = createAuthorities(token);
-            
-            KerberosServiceRequestToken ksrt = 
+
+            KerberosServiceRequestToken ksrt =
                 new KerberosServiceRequestToken(kerberosPrincipal, authorities, kerberosRequestToken.getToken());
-            
+
             STSUserDetails details = new STSUserDetails(kerberosPrincipal.getName(),
                                                         "",
                                                         authorities,
                                                         token);
             ksrt.setDetails(details);
-            
+
             LOG.debug("[IDP_TOKEN={}] provided for user '{}'", token.getId(), kerberosPrincipal.getName());
             return ksrt;
         } catch (Exception ex) {
@@ -155,7 +155,7 @@ public class STSKrbAuthenticationProvider extends STSAuthenticationProvider {
             return null;
         }
     }
-    
+
     private Principal validateKerberosToken(
         KerberosServiceRequestToken token,
         IdpSTSClient sts
@@ -174,7 +174,7 @@ public class STSKrbAuthenticationProvider extends STSAuthenticationProvider {
                 return null;
             }
             GSSCredential delegatedCredential = kerberosContext.getDelegationCredential();
-            sts.getProperties().put(SecurityConstants.DELEGATED_CREDENTIAL, 
+            sts.getProperties().put(SecurityConstants.DELEGATED_CREDENTIAL,
                                     delegatedCredential);
             sts.getProperties().put(SecurityConstants.KERBEROS_USE_CREDENTIAL_DELEGATION, "true");
             kerberosPrincipal = kerberosContext.getPrincipal();
@@ -187,7 +187,7 @@ public class STSKrbAuthenticationProvider extends STSAuthenticationProvider {
         }
 
         if (kerberosTokenValidator.getContextName() != null) {
-            sts.getProperties().put(SecurityConstants.KERBEROS_JAAS_CONTEXT_NAME, 
+            sts.getProperties().put(SecurityConstants.KERBEROS_JAAS_CONTEXT_NAME,
                                     kerberosTokenValidator.getContextName());
         }
         if (kerberosTokenValidator.getServiceName() != null) {
@@ -195,17 +195,17 @@ public class STSKrbAuthenticationProvider extends STSAuthenticationProvider {
                                     kerberosTokenValidator.getServiceName());
         }
         if (kerberosCallbackHandler != null) {
-            sts.getProperties().put(SecurityConstants.CALLBACK_HANDLER, 
+            sts.getProperties().put(SecurityConstants.CALLBACK_HANDLER,
                                     kerberosCallbackHandler);
         }
         if (kerberosUsernameServiceNameForm) {
-            sts.getProperties().put(SecurityConstants.KERBEROS_IS_USERNAME_IN_SERVICENAME_FORM, 
+            sts.getProperties().put(SecurityConstants.KERBEROS_IS_USERNAME_IN_SERVICENAME_FORM,
                                     "true");
         }
-        
+
         return kerberosPrincipal;
     }
-    
+
     protected GSSContext createGSSContext() throws GSSException {
         Oid oid = new Oid("1.2.840.113554.1.2.2");
 
@@ -223,7 +223,7 @@ public class STSKrbAuthenticationProvider extends STSAuthenticationProvider {
     public boolean supports(Class<?> authentication) {
         return authentication.equals(KerberosServiceRequestToken.class);
     }
-    
+
     public KerberosTokenValidator getKerberosTokenValidator() {
         return kerberosTokenValidator;
     }

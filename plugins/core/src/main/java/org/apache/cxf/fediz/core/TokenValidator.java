@@ -41,10 +41,10 @@ public interface TokenValidator {
 
     /**
      * Validate a Token using the given Element and Configuration.
-     * @throws ProcessingException 
+     * @throws ProcessingException
      */
     TokenValidatorResponse validateAndProcessToken(
-        TokenValidatorRequest request, 
+        TokenValidatorRequest request,
         FedizContext config
     ) throws ProcessingException;
 }

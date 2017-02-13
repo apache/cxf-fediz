@@ -27,12 +27,12 @@ import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.FedizPrincipal;
 
 public class CXFFedizPrincipal implements FedizPrincipal {
-    
+
     private final String subject;
     private final List<Claim> claims;
     private Element token;
     private List<String> roles = Collections.emptyList();
-    
+
     public CXFFedizPrincipal(String subject, List<Claim> claims, List<String> roles, Element token) {
         this.subject = subject;
         this.claims = claims;
@@ -56,7 +56,7 @@ public class CXFFedizPrincipal implements FedizPrincipal {
     public Element getLoginToken() {
         return token;
     }
-    
+
     public List<String> getRoleClaims() {
         return Collections.unmodifiableList(roles);
     }

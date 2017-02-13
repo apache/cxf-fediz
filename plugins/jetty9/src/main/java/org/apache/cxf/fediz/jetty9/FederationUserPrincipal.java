@@ -53,7 +53,7 @@ public class FederationUserPrincipal implements FedizPrincipal {
     public ClaimCollection getClaims() {
         return claims;
     }
-    
+
     // not public available
     //[TODO] maybe find better approach, custom UserIdentity
     FedizResponse getFedizResponse() {
@@ -64,7 +64,7 @@ public class FederationUserPrincipal implements FedizPrincipal {
     public Element getLoginToken() {
         return response.getToken();
     }
-    
+
     public List<String> getRoleClaims() {
         return Collections.unmodifiableList(roles);
     }

@@ -55,14 +55,14 @@ import org.springframework.util.Assert;
  */
 public class FederationAuthenticationEntryPoint implements AuthenticationEntryPoint,
     InitializingBean, ApplicationContextAware {
-    
+
     /**
      * The key used to save the context of the request
      */
     public static final String SAVED_CONTEXT = "SAVED_CONTEXT";
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(FederationAuthenticationEntryPoint.class);
-    
+
     private ApplicationContext appContext;
     private FederationConfig federationConfig;
 
@@ -84,48 +84,48 @@ public class FederationAuthenticationEntryPoint implements AuthenticationEntryPo
 
         FedizContext fedContext = federationConfig.getFedizContext();
         LOG.debug("Federation context: {}", fedContext);
-        
+
         // Check to see if it is a metadata request
         MetadataDocumentHandler mdHandler = new MetadataDocumentHandler(fedContext);
         if (mdHandler.canHandleRequest(servletRequest)) {
             mdHandler.handleRequest(servletRequest, response);
             return;
         }
-        
+
         String redirectUrl = null;
         try {
-            FedizProcessor wfProc = 
+            FedizProcessor wfProc =
                 FedizProcessorFactory.newFedizProcessor(fedContext.getProtocol());
             RedirectionResponse redirectionResponse =
                 wfProc.createSignInRequest(servletRequest, fedContext);
             redirectUrl = redirectionResponse.getRedirectionURL();
-            
+
             if (redirectUrl == null) {
                 LOG.warn("Failed to create SignInRequest. Redirect URL null");
                 throw new ServletException("Failed to create SignInRequest. Redirect URL null");
             }
-            
+
             Map<String, String> headers = redirectionResponse.getHeaders();
             if (!headers.isEmpty()) {
                 for (Entry<String, String> entry : headers.entrySet()) {
                     response.addHeader(entry.getKey(), entry.getValue());
                 }
             }
-            
+
             HttpSession session = servletRequest.getSession(true);
             session.setAttribute(SAVED_CONTEXT, redirectionResponse.getRequestState().getState());
         } catch (ProcessingException ex) {
             LOG.warn("Failed to create SignInRequest", ex);
             throw new ServletException("Failed to create SignInRequest: " + ex.getMessage());
         }
-        
+
         preCommence(servletRequest, response);
         if (LOG.isInfoEnabled()) {
             LOG.info("Redirecting to IDP: " + redirectUrl);
         }
         response.sendRedirect(redirectUrl);
     }
-    
+
     /**
      * Template method for you to do your own pre-processing before the redirect occurs.
      *

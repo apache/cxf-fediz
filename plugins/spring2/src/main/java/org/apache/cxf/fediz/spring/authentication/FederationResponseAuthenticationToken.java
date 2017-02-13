@@ -42,7 +42,7 @@ public final class FederationResponseAuthenticationToken extends AbstractAuthent
     public Object getCredentials() {
         return this.response;
     }
-    
+
     public FedizResponse getResponse() {
         return this.response;
     }

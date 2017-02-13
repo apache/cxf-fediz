@@ -95,7 +95,7 @@ public class KerberosTokenValidator {
         return serviceName;
     }
 
-    public KerberosServiceContext validate(KerberosServiceRequestToken token) 
+    public KerberosServiceContext validate(KerberosServiceRequestToken token)
         throws LoginException, PrivilegedActionException {
         if (LOG.isDebugEnabled()) {
             try {
@@ -133,8 +133,8 @@ public class KerberosTokenValidator {
         }
 
         // Validate the ticket
-        KerberosServiceExceptionAction action = 
-            new KerberosServiceExceptionAction(token.getToken(), service, 
+        KerberosServiceExceptionAction action =
+            new KerberosServiceExceptionAction(token.getToken(), service,
                                                isUsernameServiceNameForm(), spnego);
         KerberosServiceContext krbServiceCtx = Subject.doAs(subject, action);
 
@@ -148,15 +148,15 @@ public class KerberosTokenValidator {
     /**
      * SPN can be configured to be in either <b>"hostbased"</b> or <b>"username"</b> form.<br/>
      *     - <b>"hostbased"</b> - specifies that the service principal name should be interpreted
-     *      as a "host-based" name as specified in GSS API Rfc, section "4.1: Host-Based Service 
+     *      as a "host-based" name as specified in GSS API Rfc, section "4.1: Host-Based Service
      *      Name Form" - The service name, as it is specified in LDAP/AD, as it is listed in the
      *      KDC.<br/>
      *     - <b>"username"</b> - specifies that the service principal name should be interpreted
-     *      as a "username" name as specified in GSS API Rfc, section "4.2: User Name Form" 
+     *      as a "username" name as specified in GSS API Rfc, section "4.2: User Name Form"
      *      This is usually the client username in LDAP/AD used for authentication to the KDC.
-     * 
+     *
      * <br/><br/>Default is <b>"hostbased"</b>.
-     * 
+     *
      * @return the isUsernameServiceNameForm
      */
     public boolean isUsernameServiceNameForm() {
@@ -166,9 +166,9 @@ public class KerberosTokenValidator {
     /**
      * If true - sets the SPN form to "username"
      * <br/>If false<b>(default)</b> - the SPN form is "hostbased"
-     * 
+     *
      * @see KerberosSecurity#retrieveServiceTicket(String, CallbackHandler, String, boolean)
-     * 
+     *
      * @param isUsernameServiceNameForm the isUsernameServiceNameForm to set
      */
     public void setUsernameServiceNameForm(boolean isUsernameServiceNameForm) {

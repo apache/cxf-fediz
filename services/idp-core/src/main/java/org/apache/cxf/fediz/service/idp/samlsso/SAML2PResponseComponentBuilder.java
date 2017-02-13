@@ -36,24 +36,24 @@ import org.opensaml.saml.saml2.core.StatusMessage;
 * A (basic) set of utility methods to construct SAML 2.0 Protocol Response statements
 */
 public final class SAML2PResponseComponentBuilder {
-    
+
     private static SAMLObjectBuilder<Response> responseBuilder;
-    
+
     private static SAMLObjectBuilder<Issuer> issuerBuilder;
-    
+
     private static SAMLObjectBuilder<Status> statusBuilder;
-    
+
     private static SAMLObjectBuilder<StatusCode> statusCodeBuilder;
-    
+
     private static SAMLObjectBuilder<StatusMessage> statusMessageBuilder;
-    
-    private static XMLObjectBuilderFactory builderFactory = 
+
+    private static XMLObjectBuilderFactory builderFactory =
         XMLObjectProviderRegistrySupport.getBuilderFactory();
-    
+
     private SAML2PResponseComponentBuilder() {
-        
+
     }
-    
+
     @SuppressWarnings("unchecked")
     public static Response createSAMLResponse(
         String inResponseTo,
@@ -65,17 +65,17 @@ public final class SAML2PResponseComponentBuilder {
                 builderFactory.getBuilder(Response.DEFAULT_ELEMENT_NAME);
         }
         Response response = responseBuilder.buildObject();
-        
+
         response.setID(UUID.randomUUID().toString());
         response.setIssueInstant(new DateTime());
         response.setInResponseTo(inResponseTo);
         response.setIssuer(createIssuer(issuer));
         response.setStatus(status);
         response.setVersion(SAMLVersion.VERSION_20);
-        
+
         return response;
     }
-    
+
     @SuppressWarnings("unchecked")
     public static Issuer createIssuer(
         String issuerValue
@@ -86,10 +86,10 @@ public final class SAML2PResponseComponentBuilder {
         }
         Issuer issuer = issuerBuilder.buildObject();
         issuer.setValue(issuerValue);
-        
+
         return issuer;
     }
-    
+
     @SuppressWarnings("unchecked")
     public static Status createStatus(
         String statusCodeValue,
@@ -107,21 +107,21 @@ public final class SAML2PResponseComponentBuilder {
             statusMessageBuilder = (SAMLObjectBuilder<StatusMessage>)
                 builderFactory.getBuilder(StatusMessage.DEFAULT_ELEMENT_NAME);
         }
-        
+
         Status status = statusBuilder.buildObject();
-        
+
         StatusCode statusCode = statusCodeBuilder.buildObject();
         statusCode.setValue(statusCodeValue);
         status.setStatusCode(statusCode);
-        
+
         if (statusMessage != null) {
             StatusMessage statusMessageObject = statusMessageBuilder.buildObject();
             statusMessageObject.setMessage(statusMessage);
             status.setStatusMessage(statusMessageObject);
         }
-        
+
         return status;
     }
-    
-    
+
+
 }

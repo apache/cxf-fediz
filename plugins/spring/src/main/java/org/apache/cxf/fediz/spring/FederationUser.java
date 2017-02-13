@@ -28,16 +28,16 @@ import org.springframework.security.core.userdetails.User;
 public class FederationUser extends User {
 
     private static final long serialVersionUID = -2231762973730849416L;
-    
+
     private ClaimCollection claims;
-    
+
     public FederationUser(String username, String password, boolean enabled, boolean accountNonExpired,
                           boolean credentialsNonExpired, boolean accountNonLocked,
                           Collection<? extends GrantedAuthority> authorities) {
         super(username, password, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked, authorities);
     }
-    
-    public FederationUser(String username, String password, 
+
+    public FederationUser(String username, String password,
                           Collection<? extends GrantedAuthority> authorities, ClaimCollection claims) {
         super(username, password, true, true, true, true, authorities);
         this.claims = claims;
@@ -47,7 +47,7 @@ public class FederationUser extends User {
         return this.claims;
     }
 
-    
-    
-    
+
+
+
 }

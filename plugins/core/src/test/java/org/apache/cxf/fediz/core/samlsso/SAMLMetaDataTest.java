@@ -50,15 +50,15 @@ import static org.junit.Assert.fail;
  */
 public class SAMLMetaDataTest {
     private static final String CONFIG_FILE = "fediz_meta_test_config_saml.xml";
-    private static final String TEST_REQUEST_URL = 
+    private static final String TEST_REQUEST_URL =
         "https://localhost/fedizhelloworld/FederationMetadata/2007-06/FederationMetadata.xml";
     private static final String CONTEXT_PATH = "/fedizhelloworld";
-    
+
     @AfterClass
     public static void cleanup() {
         SecurityTestUtil.cleanup();
     }
-    
+
     private FedizContext loadConfig(String context) {
         try {
             FedizConfigurator configurator = new FedizConfigurator();
@@ -72,7 +72,7 @@ public class SAMLMetaDataTest {
             return null;
         }
     }
-    
+
     @org.junit.Test
     public void validateMetaDataWithAlias() throws ProcessingException, XMLSignatureException, XMLSecurityException {
 
@@ -83,21 +83,21 @@ public class SAMLMetaDataTest {
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL)).times(2);
         EasyMock.expect(req.getContextPath()).andReturn(CONTEXT_PATH).times(2);
         EasyMock.replay(req);
-        
+
         Document doc = wfProc.getMetaData(req, config);
         Assert.assertNotNull(doc);
-        
+
         Node signatureNode = doc.getElementsByTagName("Signature").item(0);
         Assert.assertNotNull(signatureNode);
-        
+
         doc.getDocumentElement().setIdAttributeNS(null, "ID", true);
 
         try {
             DOMUtils.writeXml(doc, System.out);
         } catch (TransformerException e) {
-            fail("Exception not expected: " + e.getMessage()); 
+            fail("Exception not expected: " + e.getMessage());
         }
-        
+
         // Validate the signature
         XMLSignature signature = new XMLSignature((Element)signatureNode, "");
         KeyInfo ki = signature.getKeyInfo();
@@ -105,7 +105,7 @@ public class SAMLMetaDataTest {
         Assert.assertNotNull(ki.getX509Certificate());
 
         Assert.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
-        
+
     }
 
     @org.junit.Test
@@ -116,12 +116,12 @@ public class SAMLMetaDataTest {
 
             FedizProcessor wfProc = new FederationProcessorImpl();
             Document doc;
-            
+
             HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
             EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL)).times(2);
             EasyMock.expect(req.getContextPath()).andReturn(CONTEXT_PATH).times(2);
             EasyMock.replay(req);
-           
+
             doc = wfProc.getMetaData(req, config);
             Assert.assertNull(doc);
             fail("Failure expected as signing store contains more than one certificate");
@@ -129,7 +129,7 @@ public class SAMLMetaDataTest {
             //Expected as signing store contains more than one certificate
         }
     }
-    
+
     @org.junit.Test
     public void validateMetaDataNoSigningKey() throws ProcessingException {
 
@@ -140,14 +140,14 @@ public class SAMLMetaDataTest {
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL)).times(2);
         EasyMock.expect(req.getContextPath()).andReturn(CONTEXT_PATH).times(2);
         EasyMock.replay(req);
-        
+
         Document doc = wfProc.getMetaData(req, config);
         Assert.assertNotNull(doc);
-        
+
         try {
             DOMUtils.writeXml(doc, System.out);
         } catch (TransformerException e) {
-            fail("Exception not expected: " + e.getMessage()); 
+            fail("Exception not expected: " + e.getMessage());
         }
     }
 }

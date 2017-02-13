@@ -56,18 +56,18 @@ import org.apache.wss4j.dom.message.WSSecEncryptedKey;
  * authentication assertion.
  */
 public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
-    
+
     public enum Statement {
         AUTHN, ATTR, AUTHZ
     };
-    
+
     public enum MultiValue {
         MULTI_VALUE, MULTI_ATTR, ENC_VALUE
     };
-    
-    public static final URI CLAIM_TYPE_LANGUAGE = 
+
+    public static final URI CLAIM_TYPE_LANGUAGE =
         URI.create("http://schemas.mycompany.com/claims/language");
-    
+
     protected String subjectName;
     protected String subjectQualifier;
     protected String confirmationMethod;
@@ -93,60 +93,60 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
     protected String customClaimName = CLAIM_TYPE_LANGUAGE.toString();
     protected String attributeNameFormat = "urn:oasis:names:tc:SAML:2.0:attrname-format:unspecified";
     protected boolean useNameFormatAsNamespace;
-    
+
     public void setSubjectConfirmationData(SubjectConfirmationDataBean subjectConfirmationData) {
         this.subjectConfirmationData = subjectConfirmationData;
     }
-    
+
     public void setConditions(ConditionsBean conditionsBean) {
         this.conditions = conditionsBean;
     }
-    
+
     public void setConfirmationMethod(String confMethod) {
         confirmationMethod = confMethod;
     }
-    
+
     public void setStatement(Statement statement) {
         this.statement = statement;
     }
-    
+
     public void setCertIdentifier(CERT_IDENTIFIER certIdentifier) {
         this.certIdentifier = certIdentifier;
     }
-    
+
     public void setCerts(X509Certificate[] certs) {
         this.certs = certs;
     }
-    
+
     public byte[] getEphemeralKey() {
         return ephemeralKey;
     }
-    
+
     public void setIssuer(String issuer) {
         this.issuer = issuer;
     }
-    
+
     public void setSubjectNameIDFormat(String subjectNameIDFormat) {
         this.subjectNameIDFormat = subjectNameIDFormat;
     }
-    
+
     public void setSubjectName(String subjectName) {
         this.subjectName = subjectName;
     }
-    
+
     public void setSubjectLocality(String ipAddress, String dnsAddress) {
         this.subjectLocalityIpAddress = ipAddress;
         this.subjectLocalityDnsAddress = dnsAddress;
     }
-    
+
     public void setResource(String resource) {
         this.resource = resource;
     }
-    
+
     public void setCustomAttributeValues(List<?> customAttributeValues) {
         this.customAttributeValues = customAttributeValues;
     }
-    
+
     public void setRoles(List<String> roles) {
         this.roles = roles;
     }
@@ -158,19 +158,19 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
     public void setMultiValueType(MultiValue multiValueType) {
         this.multiValueType = multiValueType;
     }
-    
+
     public void setRoleAttributeName(String roleAttributeName) {
         this.roleAttributeName = roleAttributeName;
     }
-    
+
     public String getRoleAttributeName() {
         return this.roleAttributeName;
     }
-    
+
     public void setCountryClaimName(String countryClaimName) {
         this.countryClaimName = countryClaimName;
     }
-    
+
     public String getCountryClaimName() {
         return this.countryClaimName;
     }
@@ -178,7 +178,7 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
     public void setCustomClaimName(String customClaimName) {
         this.customClaimName = customClaimName;
     }
-    
+
     public String getCustomClaimName() {
         return this.customClaimName;
     }
@@ -186,11 +186,11 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
     public void setAttributeNameFormat(String attributeNameFormat) {
         this.attributeNameFormat = attributeNameFormat;
     }
-    
+
     public String getAttributeNameFormat() {
         return this.attributeNameFormat;
     }
-    
+
     public boolean isUseNameFormatAsNamespace() {
         return useNameFormatAsNamespace;
     }
@@ -218,13 +218,13 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
             authBean.setAuthenticationMethod("Password");
             callback.setAuthenticationStatementData(Collections.singletonList(authBean));
         }
-        
+
         if (statement == Statement.ATTR) {
             AttributeStatementBean attrStateBean = new AttributeStatementBean();
             if (subjectBean != null) {
                 attrStateBean.setSubject(subjectBean);
             }
-            
+
             if (this.roles == null) {
                 AttributeBean attributeBean = new AttributeBean();
                 if (subjectBean != null) {
@@ -238,9 +238,9 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
                 callback.setAttributeStatementData(Collections.singletonList(attrStateBean));
                 return;
             }
-            
+
             List<AttributeBean> attributeList = new ArrayList<>();
-                        
+
             if (this.multiValueType.equals(MultiValue.MULTI_VALUE)
                 || this.multiValueType.equals(MultiValue.ENC_VALUE)) {
 //              <saml:Attribute xmlns:saml="urn:oasis:names:tc:SAML:1.0:assertion"
@@ -248,7 +248,7 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
 //                <saml:AttributeValue>Value1</saml:AttributeValue>
 //                <saml:AttributeValue>Value2</saml:AttributeValue>
 //              </saml:Attribute>
-//                 or                
+//                 or
 //              <saml:Attribute xmlns:saml="urn:oasis:names:tc:SAML:1.0:assertion"
 //              AttributeNamespace="http://schemas.xmlsoap.org/claims" AttributeName="roles">
 //              <saml:AttributeValue>Value1,Value2</saml:AttributeValue>
@@ -293,7 +293,7 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
 //                AttributeNamespace="http://schemas.xmlsoap.org/claims" AttributeName="roles">
 //                <saml:AttributeValue>Value2</saml:AttributeValue>
 //              </saml:Attribute>
-                
+
                 //List<AttributeBean> attrBeans = new ArrayList<>();
                 for (String role: roles) {
                     AttributeBean attributeBean = new AttributeBean();
@@ -318,7 +318,7 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
                     attributeList.add(attributeBean);
                 }
             }
-            
+
             //ClaimTypes.COUNTRY
             AttributeBean attributeBean = new AttributeBean();
             if (subjectBean != null) {
@@ -326,7 +326,7 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
                 attributeBean.setSimpleName(getNameOfClaimType(this.countryClaimName));
                 //QualifiedName maps to AttributeNamespace in SAML1ComponentBuilder.createSamlv1Attribute()
                 attributeBean.setQualifiedName(getNamespaceOfClaimType(this.countryClaimName));
-                
+
             } else {
                 //SAML 2.0
                 attributeBean.setQualifiedName(this.countryClaimName);
@@ -334,7 +334,7 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
             }
             attributeBean.addAttributeValue("CH");
             attributeList.add(attributeBean);
-            
+
             //custom claim language
             AttributeBean attributeBean2 = new AttributeBean();
             if (subjectBean != null) {
@@ -362,10 +362,10 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
                 attributeBean2.addAttributeValue("CH");
             }
             attributeList.add(attributeBean2);
-            
+
             attrStateBean.setSamlAttributes(attributeList);
             callback.setAttributeStatementData(Collections.singletonList(attrStateBean));
-                       
+
         } else if (statement == Statement.AUTHZ) {
             AuthDecisionStatementBean authzBean = new AuthDecisionStatementBean();
             if (subjectBean != null) {
@@ -380,7 +380,7 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
             callback.setAuthDecisionStatementData(Collections.singletonList(authzBean));
         }
     }
-    
+
     protected KeyInfoBean createKeyInfo() throws Exception {
         KeyInfoBean keyInfo = new KeyInfoBean();
         if (alsoAddAuthnStatement || statement == Statement.AUTHN) {
@@ -388,12 +388,12 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
             keyInfo.setCertIdentifer(certIdentifier);
         } else if (statement == Statement.ATTR) {
             // Build a new Document
-            DocumentBuilderFactory docBuilderFactory = 
+            DocumentBuilderFactory docBuilderFactory =
                 DocumentBuilderFactory.newInstance();
             docBuilderFactory.setNamespaceAware(true);
             DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
             Document doc = docBuilder.newDocument();
-                  
+
             // Create an Encrypted Key
             WSSecEncryptedKey encrKey = new WSSecEncryptedKey();
             encrKey.setKeyIdentifierType(WSConstants.ISSUER_SERIAL);
@@ -401,9 +401,9 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
             encrKey.prepare(doc, null);
             ephemeralKey = encrKey.getEphemeralKey();
             Element encryptedKeyElement = encrKey.getEncryptedKeyElement();
-            
+
             // Append the EncryptedKey to a KeyInfo element
-            Element keyInfoElement = 
+            Element keyInfoElement =
                 doc.createElementNS(
                     WSConstants.SIG_NS, WSConstants.SIG_PREFIX + ":" + WSConstants.KEYINFO_LN
                 );
@@ -411,22 +411,22 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
                 WSConstants.XMLNS_NS, "xmlns:" + WSConstants.SIG_PREFIX, WSConstants.SIG_NS
             );
             keyInfoElement.appendChild(encryptedKeyElement);
-            
+
             keyInfo.setElement(keyInfoElement);
         }
         return keyInfo;
     }
-    
+
     protected String getNamespaceOfClaimType(String claimType) {
         int i = claimType.lastIndexOf("/");
         return claimType.substring(0, i);
     }
-    
+
     protected String getNameOfClaimType(String claimType) {
         int i = claimType.lastIndexOf("/");
         return claimType.substring(i + 1);
     }
-    
+
     public boolean isAlsoAddAuthnStatement() {
         return alsoAddAuthnStatement;
     }

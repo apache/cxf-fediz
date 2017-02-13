@@ -32,7 +32,7 @@ import java.util.List;
 public class ClaimCollection extends ArrayList<Claim> {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

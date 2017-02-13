@@ -49,22 +49,22 @@ public class SamlResponseErrorCreator {
     private boolean supportDeflateEncoding;
 
     public String createSAMLResponse(RequestContext context, boolean requestor,
-                                     Idp idp, String requestID) throws ProcessingException { 
+                                     Idp idp, String requestID) throws ProcessingException {
         Document doc = DOMUtils.newDocument();
-        
+
         String statusValue = "urn:oasis:names:tc:SAML:2.0:status:Responder";
         if (requestor) {
             statusValue = "urn:oasis:names:tc:SAML:2.0:status:Requester";
         }
-        Status status = 
+        Status status =
             SAML2PResponseComponentBuilder.createStatus(statusValue, null);
-        Response response = 
+        Response response =
             SAML2PResponseComponentBuilder.createSAMLResponse(requestID, idp.getRealm(), status);
-        
+
         try {
             Element policyElement = OpenSAMLUtil.toDom(response, doc);
             doc.appendChild(policyElement);
-            
+
             Element responseElement = policyElement;
             return encodeResponse(responseElement);
         } catch (Exception e) {
@@ -83,10 +83,10 @@ public class SamlResponseErrorCreator {
 
             return Base64Utility.encode(deflatedBytes);
         }
-        
+
         return Base64Utility.encode(responseMessage.getBytes());
     }
-    
+
     public boolean isSupportDeflateEncoding() {
         return supportDeflateEncoding;
     }

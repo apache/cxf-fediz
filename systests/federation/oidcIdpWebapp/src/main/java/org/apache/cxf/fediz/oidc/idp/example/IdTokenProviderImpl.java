@@ -36,7 +36,7 @@ public class IdTokenProviderImpl implements IdTokenProvider {
     @Override
     public IdToken getIdToken(String clientId, UserSubject authenticatedUser, List<String> scopes) {
         IdToken token = new IdToken();
-        
+
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.SECOND, 60);
         token.setExpiryTime(cal.getTimeInMillis() / 1000L);
@@ -46,7 +46,7 @@ public class IdTokenProviderImpl implements IdTokenProvider {
         token.setSubject(authenticatedUser.getLogin().toLowerCase());
         token.setClaim("preferred_username", authenticatedUser.getLogin().toLowerCase());
         token.setIssuer("OIDC IdP");
-        
+
         return token;
     }
 

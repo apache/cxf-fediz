@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class Protocol {
     private static final Logger LOG = LoggerFactory.getLogger(Protocol.class);
-                                                              
+
     private ProtocolType protocolType;
     private ClassLoader classloader;
     private Object issuer;
@@ -46,7 +46,7 @@ public abstract class Protocol {
     public Protocol(ProtocolType protocolType) {
         super();
         this.protocolType = protocolType;
-        
+
         if (protocolType.getTokenValidators() != null && protocolType.getTokenValidators().getValidator() != null) {
             for (String validatorClassname : protocolType.getTokenValidators().getValidator()) {
                 Object obj = null;
@@ -81,21 +81,21 @@ public abstract class Protocol {
         if (!(obj instanceof Protocol)) {
             return false;
         }
-        
+
         Protocol that = (Protocol)obj;
         if (protocolType != null && !protocolType.equals(that.getProtocolType())) {
             return false;
         } else if (protocolType == null && that.getProtocolType() != null) {
             return false;
         }
-        
+
         return true;
     }
 
     public String toString() {
         return protocolType.toString();
     }
-    
+
     public ClassLoader getClassloader() {
         return classloader;
     }
@@ -103,7 +103,7 @@ public abstract class Protocol {
     public void setClassloader(ClassLoader classloader) {
         this.classloader = classloader;
     }
-    
+
     public String getRoleDelimiter() {
         return getProtocolType().getRoleDelimiter();
     }
@@ -119,11 +119,11 @@ public abstract class Protocol {
     public void setRoleURI(String value) {
         getProtocolType().setRoleURI(value);
     }
-    
+
     public String getMetadataURI() {
         return getProtocolType().getMetadataURI();
     }
-    
+
     public void setMetadataURI(String value) {
         getProtocolType().setMetadataURI(value);
     }
@@ -148,7 +148,7 @@ public abstract class Protocol {
                                                + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
         }
     }
-    
+
     public Object getRealm() {
         if (this.realm != null) {
             return this.realm;
@@ -169,11 +169,11 @@ public abstract class Protocol {
                                                + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
         }
     }
-    
+
     public List<TokenValidator> getTokenValidators() {
         return validators;
     }
-    
+
     protected Object loadCallbackType(CallbackType cbt, String name) {
         if (cbt == null || cbt.getValue() == null) {
             return null;
@@ -221,7 +221,7 @@ public abstract class Protocol {
     public void setClaimTypesRequested(ClaimTypesRequested value) {
         getProtocolType().setClaimTypesRequested(value);
     }
-    
+
     public String getApplicationServiceURL() {
         return getProtocolType().getApplicationServiceURL();
     }

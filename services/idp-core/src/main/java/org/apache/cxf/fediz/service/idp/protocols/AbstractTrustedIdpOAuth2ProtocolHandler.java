@@ -48,42 +48,42 @@ import org.slf4j.LoggerFactory;
 import org.springframework.webflow.execution.RequestContext;
 
 public abstract class AbstractTrustedIdpOAuth2ProtocolHandler extends AbstractTrustedIdpProtocolHandler {
-    
+
     /**
      * The client_id value to send to the IdP.
      */
     public static final String CLIENT_ID = "client.id";
-    
+
     /**
      * The secret associated with the client to authenticate to the IdP.
      */
     public static final String CLIENT_SECRET = "client.secret";
-    
+
     /**
      * The Token endpoint. The authorization endpoint is specified by TrustedIdp.url.
      */
     public static final String TOKEN_ENDPOINT = "token.endpoint";
-    
+
     /**
      * Additional (space-separated) parameters to be sent in the "scope" to the authorization endpoint.
      * The default value depends on the subclass.
      */
     public static final String SCOPE = "scope";
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(AbstractTrustedIdpOAuth2ProtocolHandler.class);
 
     @Override
     public URL mapSignInRequest(RequestContext context, Idp idp, TrustedIdp trustedIdp) {
-        
+
         String clientId = getProperty(trustedIdp, CLIENT_ID);
         if (clientId == null || clientId.isEmpty()) {
             LOG.warn("A CLIENT_ID must be configured for OAuth 2.0");
             throw new IllegalStateException("No CLIENT_ID specified");
         }
-        
+
         String scope = getScope(trustedIdp);
         LOG.debug("Using scope: {}", scope);
-        
+
         try {
             StringBuilder sb = new StringBuilder();
             sb.append(trustedIdp.getUrl());
@@ -99,11 +99,11 @@ public abstract class AbstractTrustedIdpOAuth2ProtocolHandler extends AbstractTr
             sb.append("&");
             sb.append("scope").append('=');
             sb.append(URLEncoder.encode(scope, "UTF-8"));
-            
+
             String state = context.getFlowScope().getString(IdpConstants.TRUSTED_IDP_CONTEXT);
             sb.append("&").append("state").append('=');
             sb.append(state);
-            
+
             return new URL(sb.toString());
         } catch (MalformedURLException ex) {
             LOG.error("Invalid Redirect URL for Trusted Idp", ex);
@@ -113,7 +113,7 @@ public abstract class AbstractTrustedIdpOAuth2ProtocolHandler extends AbstractTr
             throw new IllegalStateException("Invalid Redirect URL for Trusted Idp");
         }
     }
-    
+
     protected SamlAssertionWrapper createSamlAssertion(Idp idp, TrustedIdp trustedIdp, String subjectName,
                                                      Date notBefore,
                                                      Date expires) throws Exception {
@@ -125,12 +125,12 @@ public abstract class AbstractTrustedIdpOAuth2ProtocolHandler extends AbstractTr
         if (issuer != null) {
             callbackHandler.setIssuer(issuer);
         }
-        
+
         // Subject
         SubjectBean subjectBean =
             new SubjectBean(subjectName, SAML2Constants.NAMEID_FORMAT_UNSPECIFIED, SAML2Constants.CONF_BEARER);
         callbackHandler.setSubjectBean(subjectBean);
-        
+
         // Conditions
         ConditionsBean conditionsBean = new ConditionsBean();
         conditionsBean.setNotAfter(new DateTime(expires));
@@ -141,45 +141,45 @@ public abstract class AbstractTrustedIdpOAuth2ProtocolHandler extends AbstractTr
             conditionsBean.setNotBefore(new DateTime());
         }
         callbackHandler.setConditionsBean(conditionsBean);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
-        
+
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
+
         Crypto crypto = CertsUtils.getCryptoFromCertificate(idp.getCertificate());
-        assertion.signAssertion(crypto.getDefaultX509Identifier(), idp.getCertificatePassword(), 
+        assertion.signAssertion(crypto.getDefaultX509Identifier(), idp.getCertificatePassword(),
                                 crypto, false);
-        
+
         return assertion;
     }
-    
+
     private static class SamlCallbackHandler implements CallbackHandler {
         private ConditionsBean conditionsBean;
         private SubjectBean subjectBean;
         private String issuer;
-        
+
         /**
          * Set the SubjectBean
          */
         public void setSubjectBean(SubjectBean subjectBean) {
             this.subjectBean = subjectBean;
         }
-        
+
         /**
          * Set the ConditionsBean
          */
         public void setConditionsBean(ConditionsBean conditionsBean) {
             this.conditionsBean = conditionsBean;
         }
-        
+
         /**
          * Set the issuer name
          */
         public void setIssuer(String issuerName) {
             this.issuer = issuerName;
         }
-        
+
         public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
             for (Callback callback : callbacks) {
                 if (callback instanceof SAMLCallback) {
@@ -190,7 +190,7 @@ public abstract class AbstractTrustedIdpOAuth2ProtocolHandler extends AbstractTr
                         samlCallback.setSubject(subjectBean);
                     }
                     samlCallback.setSamlVersion(Version.SAML_20);
-                    
+
                     // Set the issuer
                     samlCallback.setIssuer(issuer);
 
@@ -199,9 +199,9 @@ public abstract class AbstractTrustedIdpOAuth2ProtocolHandler extends AbstractTr
                 }
             }
         }
-        
+
     }
-    
+
     abstract String getScope(TrustedIdp trustedIdp);
 
 }

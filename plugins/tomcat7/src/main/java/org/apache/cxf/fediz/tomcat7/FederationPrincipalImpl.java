@@ -52,7 +52,7 @@ public class FederationPrincipalImpl extends GenericPrincipal implements FedizPr
     public Element getLoginToken() {
         return loginToken;
     }
-    
+
     public List<String> getRoleClaims() {
         return Collections.unmodifiableList(roles);
     }

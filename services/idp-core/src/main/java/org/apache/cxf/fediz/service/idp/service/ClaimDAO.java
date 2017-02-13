@@ -26,13 +26,13 @@ import org.apache.cxf.fediz.service.idp.domain.Claim;
 public interface ClaimDAO {
 
     List<Claim> getClaims(int start, int size);
-    
+
     Claim getClaim(String claimType);
-    
+
     Claim addClaim(Claim claim);
-    
+
     void updateClaim(String claimType, Claim claim);
-    
+
     void deleteClaim(String claimType);
 
 }

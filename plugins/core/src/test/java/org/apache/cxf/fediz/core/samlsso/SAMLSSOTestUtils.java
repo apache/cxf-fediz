@@ -21,9 +21,9 @@ package org.apache.cxf.fediz.core.samlsso;
 
 
 public final class SAMLSSOTestUtils {
-    
- 
-    public static final String SAMPLE_EMPTY_SAML_RESPONSE = 
+
+
+    public static final String SAMPLE_EMPTY_SAML_RESPONSE =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
         + "<saml2p:Response ID=\"c4b78949-d52e-4ae0-ad44-04ef58fe1ca8\" "
         + "InResponseTo=\"612223b6-fb12-4c40-9a31-9bd94e09a579\" "
@@ -33,9 +33,9 @@ public final class SAMLSSOTestUtils {
         + "http://localhost:12345/idp/samlsso</saml2:Issuer><saml2p:Status>"
         + "<saml2p:StatusCode Value=\"urn:oasis:names:tc:SAML:2.0:status:Success\"/>"
         + "</saml2p:Status></saml2p:Response>";
-    
+
     private SAMLSSOTestUtils() {
-        
+
     }
-    
+
 }

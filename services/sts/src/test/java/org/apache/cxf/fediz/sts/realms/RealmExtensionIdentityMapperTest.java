@@ -39,7 +39,7 @@ public class RealmExtensionIdentityMapperTest {
         RealmExtensionIdentityMapper im = new RealmExtensionIdentityMapper();
         assertEquals(RealmExtensionIdentityMapper.DEFAULT_DELIMITER, im.getDelimiter());
     }
-    
+
     @Test
     public void testRealmMappingSimpleUser() {
         RealmExtensionIdentityMapper im = new RealmExtensionIdentityMapper();
@@ -47,7 +47,7 @@ public class RealmExtensionIdentityMapperTest {
         assertNotNull(result);
         assertEquals("user@realm-b", result.getName());
     }
-    
+
     @Test
     public void testRealmMappingComplexUser() {
         RealmExtensionIdentityMapper im = new RealmExtensionIdentityMapper();
@@ -63,14 +63,14 @@ public class RealmExtensionIdentityMapperTest {
         assertNotNull(result);
         assertEquals("user-name@realm-b", result.getName());
     }
-    
+
     @Test
     public void testRealmMappingNullUser() {
         RealmExtensionIdentityMapper im = new RealmExtensionIdentityMapper();
         Principal result = im.mapPrincipal("realm-a", null, "realm-b");
         assertNull(result);
     }
-    
+
     @Test
     public void testRealmMappingEmptyUserName() {
         RealmExtensionIdentityMapper im = new RealmExtensionIdentityMapper();
@@ -78,7 +78,7 @@ public class RealmExtensionIdentityMapperTest {
         assertNotNull(result);
         assertEquals("@realm-b", result.getName());
     }
-    
+
     @Test
     public void testRealmMappingCustomDelimiter() {
         RealmExtensionIdentityMapper im = new RealmExtensionIdentityMapper();

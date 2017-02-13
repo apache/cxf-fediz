@@ -30,7 +30,7 @@ import org.apache.cxf.fediz.core.RequestState;
 public class FedizRequest implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    
+
     private String action;
     private String responseToken;
     private String freshness;
@@ -88,5 +88,5 @@ public class FedizRequest implements Serializable {
     public void setRequestState(RequestState requestState) {
         this.requestState = requestState;
     }
-    
+
 }

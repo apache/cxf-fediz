@@ -90,7 +90,7 @@ import static org.junit.Assert.fail;
  * Some tests for the WS-Federation "FederationProcessor".
  */
 public class FederationResponseTest {
-    public static final String SAMPLE_MULTIPLE_RSTR_COLL_MSG = 
+    public static final String SAMPLE_MULTIPLE_RSTR_COLL_MSG =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
         + "<RequestSecurityTokenResponseCollection "
         +   "xmlns=\"http://docs.oasis-open.org/ws-sx/ws-trust/200512\"> "
@@ -103,18 +103,18 @@ public class FederationResponseTest {
         +     "</RequestedSecurityToken>"
         +   "</RequestSecurityTokenResponse>"
         + "</RequestSecurityTokenResponseCollection>";
-    
+
     static final String TEST_USER = "alice";
     static final String TEST_RSTR_ISSUER = "FedizSTSIssuer";
     static final String TEST_AUDIENCE = "https://localhost/fedizhelloworld";
-    
+
     private static final String CONFIG_FILE = "fediz_test_config.xml";
-    
+
     private static Crypto crypto;
     private static CallbackHandler cbPasswordHandler;
     private static FedizConfigurator configurator;
-    
-    
+
+
     @BeforeClass
     public static void init() {
         try {
@@ -127,12 +127,12 @@ public class FederationResponseTest {
         Assert.assertNotNull(configurator);
 
     }
-    
+
     @AfterClass
     public static void cleanup() {
         SecurityTestUtil.cleanup();
     }
-    
+
 
     private static FedizConfigurator getFederationConfigurator() {
         if (configurator != null) {
@@ -151,18 +151,18 @@ public class FederationResponseTest {
         }
     }
 
-    
+
     /**
      * Validate RSTR without RequestedSecurityToken element
      */
     @org.junit.Test
     public void validateRSTRWithoutToken() throws Exception {
         Document doc = STSUtil.toSOAPPart(STSUtil.SAMPLE_RSTR_COLL_MSG);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(DOM2Writer.nodeToString(doc));
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
 
@@ -176,18 +176,18 @@ public class FederationResponseTest {
             }
         }
     }
-    
+
     /**
      * Validate FederationRequest with unknown action
      */
     @org.junit.Test
     public void validateRequestUnknownAction() throws Exception {
         Document doc = STSUtil.toSOAPPart(STSUtil.SAMPLE_RSTR_COLL_MSG);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction("gugus");
         wfReq.setResponseToken(DOM2Writer.nodeToString(doc));
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
 
@@ -201,7 +201,7 @@ public class FederationResponseTest {
             }
         }
     }
-    
+
     /**
      *Validate FederationRequest with invalid RSTR/wresult
      */
@@ -210,7 +210,7 @@ public class FederationResponseTest {
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken("gugus");
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
 
@@ -224,14 +224,14 @@ public class FederationResponseTest {
             }
         }
     }
-    
+
     @org.junit.Test
     public void validateTokenAndCreateMetadata() throws Exception {
         validateSAML2Token();
         FederationMetaDataTest other = new FederationMetaDataTest();
         other.validateMetaDataWithAlias();
     }
-    
+
     /**
      * Validate SAML 2 token which includes the role attribute with 2 values
      * Roles are encoded as a multi-value saml attribute
@@ -248,22 +248,22 @@ public class FederationResponseTest {
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
+
         Assert.assertEquals("Principal name wrong", TEST_USER,
                             wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
@@ -271,9 +271,9 @@ public class FederationResponseTest {
                             .size());
         Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
         assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
-        
+
     }
-    
+
     @org.junit.Test
     public void testChainTrust() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -286,32 +286,32 @@ public class FederationResponseTest {
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         // Test successful trust validation (subject cert constraint)
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("CHAIN_TRUST");
-        
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
+
         Assert.assertEquals("Principal name wrong", TEST_USER,
                             wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
         Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
-        
+
         // Test unsuccessful trust validation (bad subject cert constraint)
         configurator = null;
         config = getFederationConfigurator().getFedizContext("CHAIN_TRUST2");
-        
+
         wfProc = new FederationProcessorImpl();
         try {
             wfRes = wfProc.processRequest(wfReq, config);
@@ -320,7 +320,7 @@ public class FederationResponseTest {
             // expected
         }
     }
-    
+
     /**
      * Validate SAML 2 token which includes the role attribute with 2 values
      * Roles are encoded as a multi-value saml attribute
@@ -338,22 +338,22 @@ public class FederationResponseTest {
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true, STSUtil.SAMPLE_RSTR_MSG);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
+
         Assert.assertEquals("Principal name wrong", TEST_USER,
                             wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
@@ -361,7 +361,7 @@ public class FederationResponseTest {
                             .size());
         Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
     }
-    
+
     /**
      * Validate SAML 2 token which doesn't include the role SAML attribute
      */
@@ -378,29 +378,29 @@ public class FederationResponseTest {
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
+
         Assert.assertEquals("Principal name wrong", TEST_USER,
                             wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
         Assert.assertEquals("No roles must be found", null, wfRes.getRoles());
         Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
     }
-    
+
     /**
      * Validate SAML 2 token where role information is provided
      * within another SAML attribute
@@ -418,29 +418,29 @@ public class FederationResponseTest {
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("CUSTOMROLEURI");
-        
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
+
         Assert.assertEquals("Principal name wrong", TEST_USER, wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
         Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles().size());
         Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
         assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
     }
-    
+
     /**
      * Validate SAML 1 token where role information is provided
      * within another SAML attribute
@@ -458,29 +458,29 @@ public class FederationResponseTest {
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("CUSTOMROLEURI");
-        
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
+
         Assert.assertEquals("Principal name wrong", TEST_USER, wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
         Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles().size());
         Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
         assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
     }
-    
+
     /**
      * Validate SAML 2 token which includes role attribute
      * but RoleURI is not configured
@@ -502,25 +502,25 @@ public class FederationResponseTest {
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
         config.getProtocol().setRoleURI(null);
-        
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
+
         Assert.assertEquals("Principal name wrong", TEST_USER,
                             wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
         Assert.assertEquals("Two roles must be found", null, wfRes.getRoles());
         Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
     }
-    
+
     /**
      * Validate SAML 1.1 token which includes the role attribute with 2 values
      * Roles are encoded as a multi-value saml attribute
@@ -542,17 +542,17 @@ public class FederationResponseTest {
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
+
         Assert.assertEquals("Principal name wrong", TEST_USER,
                             wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
@@ -561,7 +561,7 @@ public class FederationResponseTest {
         Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
         assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
     }
-    
+
     /**
      * Validate SAML 1.1 token which includes the role attribute with 2 values
      * Roles are encoded as a multi-value saml attribute
@@ -587,13 +587,13 @@ public class FederationResponseTest {
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
+
         Assert.assertEquals("Principal name wrong", TEST_USER,
                             wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
@@ -601,7 +601,7 @@ public class FederationResponseTest {
                             .size());
         Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
     }
-    
+
     /**
      * Validate SAML 2 token which includes the role attribute with 2 values
      * Roles are encoded as a multiple saml attributes with the same name
@@ -619,22 +619,22 @@ public class FederationResponseTest {
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
 
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
+
         Assert.assertEquals("Principal name wrong", TEST_USER,
                             wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
@@ -660,16 +660,16 @@ public class FederationResponseTest {
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
         Protocol protocol = config.getProtocol();
@@ -677,7 +677,7 @@ public class FederationResponseTest {
 
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
+
         Assert.assertEquals("Principal name wrong", TEST_USER,
                             wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
@@ -685,12 +685,12 @@ public class FederationResponseTest {
                             .size());
         assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
     }
-    
+
     /**
      * Validate SAML 2 token which includes the role attribute with 2 values
      * The configured subject of the trusted issuer doesn't match with
      * the issuer of the SAML token
-     * 
+     *
      * Ignored because PeerTrust ignores subject attribute
      */
     @org.junit.Test
@@ -710,17 +710,17 @@ public class FederationResponseTest {
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
+
         String rstr = createSamlToken(assertion, "mystskey", true);
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         // Load and update the config to enforce an error
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        config.getTrustedIssuers().get(0).setSubject("wrong-issuer-name");        
-        
+        config.getTrustedIssuers().get(0).setSubject("wrong-issuer-name");
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
@@ -749,20 +749,20 @@ public class FederationResponseTest {
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
+
         String rstr = createSamlToken(assertion, "mystskey", false);
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         // Load and update the config to enforce an error
         configurator = null;
-        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");       
-        
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
@@ -773,7 +773,7 @@ public class FederationResponseTest {
             }
         }
     }
-    
+
     @org.junit.Test
     public void testUnsignedAssertionAfterSignedAssertion() throws Exception {
         // First assertion
@@ -787,11 +787,11 @@ public class FederationResponseTest {
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion1 = new SamlAssertionWrapper(samlCallback);
-        
+
         // Second assertion
         SAML2CallbackHandler callbackHandler2 = new SAML2CallbackHandler();
         callbackHandler2.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -803,27 +803,27 @@ public class FederationResponseTest {
         audienceRestriction2.getAudienceURIs().add(TEST_AUDIENCE);
         cp2.setAudienceRestrictions(Collections.singletonList(audienceRestriction2));
         callbackHandler2.setConditions(cp2);
-        
+
         SAMLCallback samlCallback2 = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler2, samlCallback2);
         SamlAssertionWrapper assertion2 = new SamlAssertionWrapper(samlCallback2);
-        
-        Element rstrElement = 
+
+        Element rstrElement =
             createResponseWithMultipleAssertions(assertion1, true, assertion2, false, "mystskey");
         String rstr = DOM2Writer.nodeToString(rstrElement);
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         // Load and update the config to enforce an error
         configurator = null;
-        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");       
-        
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse fedizResponse = wfProc.processRequest(wfReq, config);
         Assert.assertEquals(TEST_USER, fedizResponse.getUsername());
     }
-    
+
     @org.junit.Test
     public void testSignedAssertionAfterUnsignedAssertion() throws Exception {
         // First assertion
@@ -837,11 +837,11 @@ public class FederationResponseTest {
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion1 = new SamlAssertionWrapper(samlCallback);
-        
+
         // Second assertion
         SAML2CallbackHandler callbackHandler2 = new SAML2CallbackHandler();
         callbackHandler2.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -853,22 +853,22 @@ public class FederationResponseTest {
         audienceRestriction2.getAudienceURIs().add(TEST_AUDIENCE);
         cp2.setAudienceRestrictions(Collections.singletonList(audienceRestriction2));
         callbackHandler2.setConditions(cp2);
-        
+
         SAMLCallback samlCallback2 = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler2, samlCallback2);
         SamlAssertionWrapper assertion2 = new SamlAssertionWrapper(samlCallback2);
-        
-        Element rstrElement = 
+
+        Element rstrElement =
             createResponseWithMultipleAssertions(assertion2, false, assertion1, true, "mystskey");
         String rstr = DOM2Writer.nodeToString(rstrElement);
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         // Load and update the config to enforce an error
         configurator = null;
-        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");       
-        
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
@@ -879,7 +879,7 @@ public class FederationResponseTest {
             }
         }
     }
-    
+
     @org.junit.Test
     public void testWrappingAttack() throws Exception {
         // First assertion
@@ -893,11 +893,11 @@ public class FederationResponseTest {
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion1 = new SamlAssertionWrapper(samlCallback);
-        
+
         // Second assertion
         SAML2CallbackHandler callbackHandler2 = new SAML2CallbackHandler();
         callbackHandler2.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -909,11 +909,11 @@ public class FederationResponseTest {
         audienceRestriction2.getAudienceURIs().add(TEST_AUDIENCE);
         cp2.setAudienceRestrictions(Collections.singletonList(audienceRestriction2));
         callbackHandler2.setConditions(cp2);
-        
+
         SAMLCallback samlCallback2 = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler2, samlCallback2);
         SamlAssertionWrapper assertion2 = new SamlAssertionWrapper(samlCallback2);
-        
+
         WSPasswordCallback[] cb = {
             new WSPasswordCallback("mystskey", WSPasswordCallback.SIGNATURE)
         };
@@ -926,29 +926,29 @@ public class FederationResponseTest {
         Document doc = STSUtil.toSOAPPart(SAMPLE_MULTIPLE_RSTR_COLL_MSG);
         Element token1 = assertion2.toDOM(doc);
         Element token2 = assertion1.toDOM(doc);
-        
+
         // Now modify the first Signature to point to the other Element
         Element sig1 = XMLUtils.findElement(token1, "Signature", WSConstants.SIG_NS);
         Element sig2 = XMLUtils.findElement(token2, "Signature", WSConstants.SIG_NS);
         sig1.getParentNode().replaceChild(sig2.cloneNode(true), sig1);
 
-        List<Element> requestedTokenElements = 
+        List<Element> requestedTokenElements =
             XMLUtils.findElements(doc, "RequestedSecurityToken", FederationConstants.WS_TRUST_13_NS);
         Assert.assertEquals(2, requestedTokenElements.size());
         requestedTokenElements.get(0).appendChild(token1);
         requestedTokenElements.get(1).appendChild(token2);
 
         Element rstrElement = doc.getDocumentElement();
-        
+
         String rstr = DOM2Writer.nodeToString(rstrElement);
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         // Load and update the config to enforce an error
         configurator = null;
-        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");       
-        
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
@@ -957,8 +957,8 @@ public class FederationResponseTest {
             // expected
         }
     }
-    
-    private Element createResponseWithMultipleAssertions(SamlAssertionWrapper assertion1, 
+
+    private Element createResponseWithMultipleAssertions(SamlAssertionWrapper assertion1,
                                           boolean signFirstAssertion,
                                           SamlAssertionWrapper assertion2,
                                           boolean signSecondAssertion,
@@ -975,20 +975,20 @@ public class FederationResponseTest {
         if (signSecondAssertion) {
             assertion2.signAssertion(alias, password, crypto, false);
         }
-        
+
         Document doc = STSUtil.toSOAPPart(SAMPLE_MULTIPLE_RSTR_COLL_MSG);
         Element token1 = assertion1.toDOM(doc);
         Element token2 = assertion2.toDOM(doc);
 
-        List<Element> requestedTokenElements = 
+        List<Element> requestedTokenElements =
             XMLUtils.findElements(doc, "RequestedSecurityToken", FederationConstants.WS_TRUST_13_NS);
         Assert.assertEquals(2, requestedTokenElements.size());
         requestedTokenElements.get(0).appendChild(token1);
         requestedTokenElements.get(1).appendChild(token2);
-        
+
         return doc.getDocumentElement();
     }
-    
+
     /**
      * Validate SAML 2 token twice which causes an exception
      * due to replay attack
@@ -1005,17 +1005,17 @@ public class FederationResponseTest {
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
+
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
 
@@ -1024,7 +1024,7 @@ public class FederationResponseTest {
         Assert.assertEquals("Principal name wrong", TEST_USER,
                 wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        
+
         wfProc = new FederationProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
@@ -1035,8 +1035,8 @@ public class FederationResponseTest {
             }
         }
     }
-    
-    
+
+
     /**
      * Validate SAML 2 token which includes the role attribute with 2 values
      * The configured subject of the trusted issuer doesn't match with
@@ -1058,19 +1058,19 @@ public class FederationResponseTest {
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
+
         String rstr = createSamlToken(assertion, "mystskey", true);
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         // Load and update the config to enforce an error
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT2");
-        
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
+
         Assert.assertEquals("Principal name wrong", TEST_USER,
                             wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
@@ -1095,30 +1095,30 @@ public class FederationResponseTest {
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
+
         String rstr = createSamlToken(assertion, "mystskey", true);
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         // Load and update the config to enforce an error
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT3");
-        
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
+
         Assert.assertEquals("Principal name wrong", TEST_USER,
                             wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
         Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
                             .size());
     }
-    
+
     /**
      * Validate SAML 2 token which is expired
      */
@@ -1140,17 +1140,17 @@ public class FederationResponseTest {
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
+
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
 
@@ -1164,7 +1164,7 @@ public class FederationResponseTest {
             }
         }
     }
-    
+
     /**
      * Validate SAML 2 token which is not yet valid (in 30 seconds)
      * but within the maximum clock skew range (60 seconds)
@@ -1187,24 +1187,24 @@ public class FederationResponseTest {
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
+
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
         config.setMaximumClockSkew(BigInteger.valueOf(60));
-        
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
+
         Assert.assertEquals("Principal name wrong", TEST_USER,
                             wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
@@ -1228,17 +1228,17 @@ public class FederationResponseTest {
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
+
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("CUSTTOK");
         Protocol protocol = config.getProtocol();
@@ -1246,10 +1246,10 @@ public class FederationResponseTest {
         Assert.assertEquals("Two validators must be found", 2, validators.size());
         Assert.assertEquals("First validator must be custom validator",
                             CustomValidator.class.getName(), validators.get(0).getClass().getName());
-        
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
+
         Assert.assertEquals("Principal name wrong", TEST_USER,
                             wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
@@ -1271,23 +1271,23 @@ public class FederationResponseTest {
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
+
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("NOCLOCKSKEW");
-        
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
+
         Assert.assertEquals("Principal name wrong", TEST_USER,
                             wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
@@ -1295,7 +1295,7 @@ public class FederationResponseTest {
                             .size());
         Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
     }
-    
+
     /**
      * Validate an encrypted SAML 2 token which includes the role attribute with 2 values
      * Roles are encoded as a multi-value saml attribute
@@ -1316,20 +1316,20 @@ public class FederationResponseTest {
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
+
         String rstr = encryptAndSignToken(assertion);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         configurator = null;
-        FedizContext config = 
+        FedizContext config =
             getFederationConfigurator().getFedizContext("ROOT_DECRYPTION");
-        
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
+
         Assert.assertEquals("Principal name wrong", TEST_USER,
                             wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
@@ -1338,7 +1338,7 @@ public class FederationResponseTest {
         Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
         assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
     }
-    
+
     /**
      * Validate a HolderOfKey SAML 2 token
      */
@@ -1354,7 +1354,7 @@ public class FederationResponseTest {
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         Crypto clientCrypto = CryptoFactory.getInstance("client-crypto.properties");
         CryptoType cryptoType = new CryptoType(CryptoType.TYPE.ALIAS);
         cryptoType.setAlias("myclientkey");
@@ -1364,7 +1364,7 @@ public class FederationResponseTest {
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
+
         WSPasswordCallback[] cb = {
             new WSPasswordCallback("mystskey", WSPasswordCallback.SIGNATURE)
         };
@@ -1383,17 +1383,17 @@ public class FederationResponseTest {
                                                     FederationConstants.WS_TRUST_2005_02_NS);
         }
         e.appendChild(token);
-                               
+
         String rstr = DOM2Writer.nodeToString(doc);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         configurator = null;
-        FedizContext config = 
+        FedizContext config =
             getFederationConfigurator().getFedizContext("ROOT_DECRYPTION");
-        
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
@@ -1401,22 +1401,22 @@ public class FederationResponseTest {
         } catch (ProcessingException ex) {
             // expected
         }
-        
+
         // Now set client certs
-        wfReq.setCerts(certs);      
+        wfReq.setCerts(certs);
         wfProc.processRequest(wfReq, config);
     }
-    
+
     @org.junit.Test
     public void validateSAML2TokenWithConfigCreatedWithAPI() throws Exception {
-        
+
         ContextConfig config = new ContextConfig();
-        
+
         config.setName("whatever");
 
         // Configure certificate store
         CertificateStores certStores = new CertificateStores();
-        TrustManagersType tm0 = new TrustManagersType();       
+        TrustManagersType tm0 = new TrustManagersType();
         KeyStoreType ks0 = new KeyStoreType();
         ks0.setType("JKS");
         ks0.setPassword("storepass");
@@ -1424,7 +1424,7 @@ public class FederationResponseTest {
         tm0.setKeyStore(ks0);
         certStores.getTrustManager().add(tm0);
         config.setCertificateStores(certStores);
-        
+
         // Configure trusted IDP
         TrustedIssuers trustedIssuers = new TrustedIssuers();
         TrustedIssuerType ti0 = new TrustedIssuerType();
@@ -1444,7 +1444,7 @@ public class FederationResponseTest {
         protocol.setRoleURI("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role");
 
         FedizContext fedContext = new FedizContext(config);
-        
+
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
         callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
@@ -1459,27 +1459,27 @@ public class FederationResponseTest {
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
+
         String rstr = createSamlToken(assertion, "mystskey", true, STSUtil.SAMPLE_RSTR_MSG);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-                
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, fedContext);
-        
+
         Assert.assertEquals("Principal name wrong", TEST_USER,
                             wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
         Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
                             .size());
         Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
-        
+
         fedContext.close();
 
     }
-    
+
     @org.junit.Test
     public void testModifiedSignature() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -1492,11 +1492,11 @@ public class FederationResponseTest {
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
+
         WSPasswordCallback[] cb = {
             new WSPasswordCallback("mystskey", WSPasswordCallback.SIGNATURE)
         };
@@ -1506,7 +1506,7 @@ public class FederationResponseTest {
         assertion.signAssertion("mystskey", password, crypto, false);
         Document doc = STSUtil.toSOAPPart(STSUtil.SAMPLE_RSTR_COLL_MSG);
         Element token = assertion.toDOM(doc);
-        
+
         // Change IssueInstant attribute
         String issueInstance = token.getAttributeNS(null, "IssueInstant");
         DateTime issueDateTime = new DateTime(issueInstance, DateTimeZone.UTC);
@@ -1520,15 +1520,15 @@ public class FederationResponseTest {
                                                    FederationConstants.WS_TRUST_2005_02_NS);
         }
         e.appendChild(token);
-        String rstr =  DOM2Writer.nodeToString(doc);
-        
+        String rstr = DOM2Writer.nodeToString(doc);
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
@@ -1537,7 +1537,7 @@ public class FederationResponseTest {
             // expected
         }
     }
-    
+
     @org.junit.Test
     public void testTrustFailure() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -1550,19 +1550,19 @@ public class FederationResponseTest {
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("CLIENT_TRUST");
-        
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
@@ -1571,7 +1571,7 @@ public class FederationResponseTest {
             // expected
         }
     }
-    
+
     @org.junit.Test
     public void testUnableToFindTruststore() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -1584,19 +1584,19 @@ public class FederationResponseTest {
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("BAD_KEYSTORE");
-        
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
@@ -1606,11 +1606,11 @@ public class FederationResponseTest {
             // expected
         }
     }
-    
+
     private String encryptAndSignToken(
         SamlAssertionWrapper assertion
     ) throws Exception {
-        
+
         WSPasswordCallback[] cb = {
             new WSPasswordCallback("mystskey", WSPasswordCallback.SIGNATURE)
         };
@@ -1618,7 +1618,7 @@ public class FederationResponseTest {
         String password = cb[0].getPassword();
 
         assertion.signAssertion("mystskey", password, crypto, false);
-        
+
         Document doc = STSUtil.toSOAPPart(STSUtil.SAMPLE_RSTR_COLL_MSG);
         Element token = assertion.toDOM(doc);
 
@@ -1629,31 +1629,31 @@ public class FederationResponseTest {
                                                     FederationConstants.WS_TRUST_2005_02_NS);
         }
         e.appendChild(token);
-        
+
         WSSecEncrypt builder = new WSSecEncrypt();
         builder.setUserInfo("mystskey");
-        
+
         builder.setKeyIdentifierType(WSConstants.ISSUER_SERIAL);
         builder.setSymmetricEncAlgorithm(WSConstants.AES_128);
         builder.setKeyEncAlgo(WSConstants.KEYTRANSPORT_RSAOAEP);
         builder.setEmbedEncryptedKey(true);
-        
+
         WSEncryptionPart encryptionPart = new WSEncryptionPart(assertion.getId(), "Element");
         encryptionPart.setElement(token);
-        
+
         Crypto encrCrypto = CryptoFactory.getInstance("signature.properties");
         builder.prepare(token.getOwnerDocument(), encrCrypto);
         builder.encryptForRef(null, Collections.singletonList(encryptionPart));
-        
+
         // return doc.getDocumentElement();
         return DOM2Writer.nodeToString(doc);
     }
-    
+
     private String createSamlToken(SamlAssertionWrapper assertion, String alias, boolean sign)
         throws IOException, UnsupportedCallbackException, WSSecurityException, Exception {
         return createSamlToken(assertion, alias, sign, STSUtil.SAMPLE_RSTR_COLL_MSG);
     }
-    
+
     private String createSamlToken(SamlAssertionWrapper assertion, String alias, boolean sign, String rstr)
         throws IOException, UnsupportedCallbackException, WSSecurityException, Exception {
         WSPasswordCallback[] cb = {
@@ -1677,16 +1677,16 @@ public class FederationResponseTest {
         e.appendChild(token);
         return DOM2Writer.nodeToString(doc);
     }
-    
+
     private void assertClaims(List<Claim> claims, String roleClaimType) {
         for (Claim c : claims) {
-            Assert.assertTrue("Invalid ClaimType URI: " + c.getClaimType(), 
+            Assert.assertTrue("Invalid ClaimType URI: " + c.getClaimType(),
                               c.getClaimType().equals(roleClaimType)
                               || c.getClaimType().equals(ClaimTypes.COUNTRY)
                               || c.getClaimType().equals(AbstractSAMLCallbackHandler.CLAIM_TYPE_LANGUAGE)
                               );
         }
     }
-    
+
 
 }

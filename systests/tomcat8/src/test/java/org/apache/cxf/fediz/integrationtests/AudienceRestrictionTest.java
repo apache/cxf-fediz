@@ -53,10 +53,10 @@ public class AudienceRestrictionTest {
 
     static String idpHttpsPort;
     static String rpHttpsPort;
-    
+
     private static Tomcat idpServer;
     private static Tomcat rpServer;
-    
+
     @BeforeClass
     public static void init() throws Exception {
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
@@ -66,8 +66,8 @@ public class AudienceRestrictionTest {
         System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.webflow", "info");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.security.web", "info");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf.fediz", "info");
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf", "info");  
-        
+        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf", "info");
+
         idpHttpsPort = System.getProperty("idp.https.port");
         Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
         rpHttpsPort = System.getProperty("rp.https.port");
@@ -76,8 +76,8 @@ public class AudienceRestrictionTest {
         idpServer = startServer(true, idpHttpsPort);
         rpServer = startServer(false, rpHttpsPort);
     }
-    
-    private static Tomcat startServer(boolean idp, String port) 
+
+    private static Tomcat startServer(boolean idp, String port)
         throws ServletException, LifecycleException, IOException {
         Tomcat server = new Tomcat();
         server.setPort(0);
@@ -112,13 +112,13 @@ public class AudienceRestrictionTest {
         if (idp) {
             File stsWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp-sts");
             server.addWebapp("/fediz-idp-sts", stsWebapp.getAbsolutePath());
-    
+
             File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp");
             server.addWebapp("/fediz-idp", idpWebapp.getAbsolutePath());
         } else {
             File rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
             Context cxt = server.addWebapp("/fedizhelloworld", rpWebapp.getAbsolutePath());
-            
+
             // Substitute the IDP port. Necessary if running the test in eclipse where port filtering doesn't seem
             // to work
             File f = new File(currentDir + "/src/test/resources/fediz_config_aud_restr.xml");
@@ -127,13 +127,13 @@ public class AudienceRestrictionTest {
             inputStream.close();
             if (content.contains("idp.https.port")) {
                 content = content.replaceAll("\\$\\{idp.https.port\\}", "" + idpHttpsPort);
-            
+
                 File f2 = new File(baseDir + "/test-classes/fediz_config_aud_restr.xml");
                 try (FileOutputStream outputStream = new FileOutputStream(f2)) {
                     IOUtils.write(content, outputStream, "UTF-8");
                 }
             }
-            
+
             FederationAuthenticator fa = new FederationAuthenticator();
             fa.setConfigFile(currentDir + File.separator + "target" + File.separator
                              + "test-classes" + File.separator + "fediz_config_aud_restr.xml");
@@ -144,13 +144,13 @@ public class AudienceRestrictionTest {
 
         return server;
     }
-    
+
     @AfterClass
     public static void cleanup() {
         shutdownServer(idpServer);
         shutdownServer(rpServer);
     }
-    
+
     private static void shutdownServer(Tomcat server) {
         try {
             if (server != null && server.getServer() != null
@@ -172,17 +172,17 @@ public class AudienceRestrictionTest {
     public String getRpHttpsPort() {
         return rpHttpsPort;
     }
-    
+
     public String getServletContextName() {
         return "fedizhelloworld";
     }
-    
+
     @org.junit.Test
     public void testSAMLTokenWithNonMatchingAudienceRestriction() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
-        
+
         final WebClient webClient = new WebClient();
         webClient.getOptions().setUseInsecureSSL(true);
         webClient.getCredentialsProvider().setCredentials(
@@ -193,7 +193,7 @@ public class AudienceRestrictionTest {
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
-        
+
         final HtmlForm form = idpPage.getFormByName("signinresponseform");
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
 
@@ -206,5 +206,5 @@ public class AudienceRestrictionTest {
 
         webClient.close();
     }
-    
+
 }

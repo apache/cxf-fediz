@@ -26,27 +26,27 @@ import org.eclipse.jetty.xml.XmlConfiguration;
 public final class JettyUtils {
 
     private static Server rpServer;
-    
+
     private JettyUtils() {
     }
-        
+
     public static void initRpServer() {
         initRpServer("rp-server.xml");
     }
-    
+
     public static void initRpServer(String configurationFile) {
         if (rpServer == null) {
             try {
                 Resource testServerConfig = Resource.newSystemResource(configurationFile);
                 XmlConfiguration configuration = new XmlConfiguration(testServerConfig.getInputStream());
-                rpServer = (Server)configuration.configure();   
-                
+                rpServer = (Server)configuration.configure();
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
-    
+
     public static void startRpServer() {
         if (rpServer != null && !rpServer.isStarted()) {
             try {
@@ -56,7 +56,7 @@ public final class JettyUtils {
             }
         }
     }
-    
+
     public static void stopRpServer() {
         if (rpServer != null && rpServer.isStarted()) {
             try {
@@ -66,5 +66,5 @@ public final class JettyUtils {
             }
         }
     }
-    
+
 }

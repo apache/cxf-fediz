@@ -60,7 +60,7 @@ import org.junit.BeforeClass;
  * Some tests for audience restriction
  */
 public class AudienceRestrictionTest {
-    public static final String SAMPLE_MULTIPLE_RSTR_COLL_MSG = 
+    public static final String SAMPLE_MULTIPLE_RSTR_COLL_MSG =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
         + "<RequestSecurityTokenResponseCollection "
         +   "xmlns=\"http://docs.oasis-open.org/ws-sx/ws-trust/200512\"> "
@@ -73,20 +73,20 @@ public class AudienceRestrictionTest {
         +     "</RequestedSecurityToken>"
         +   "</RequestSecurityTokenResponse>"
         + "</RequestSecurityTokenResponseCollection>";
-    
+
     static final String TEST_USER = "alice";
     static final String TEST_RSTR_ISSUER = "FedizSTSIssuer";
     static final String TEST_AUDIENCE = "https://localhost/fedizhelloworld";
     static final String TEST_REQUEST_URL = "https://localhost/fedizhelloworld/";
     static final String TEST_REQUEST_URI = "/fedizhelloworld";
-    
+
     private static final String CONFIG_FILE = "fediz_test_config_aud.xml";
-    
+
     private static Crypto crypto;
     private static CallbackHandler cbPasswordHandler;
     private static FedizConfigurator configurator;
-    
-    
+
+
     @BeforeClass
     public static void init() {
         try {
@@ -99,12 +99,12 @@ public class AudienceRestrictionTest {
         Assert.assertNotNull(configurator);
 
     }
-    
+
     @AfterClass
     public static void cleanup() {
         SecurityTestUtil.cleanup();
     }
-    
+
 
     private static FedizConfigurator getFederationConfigurator() {
         if (configurator != null) {
@@ -135,15 +135,15 @@ public class AudienceRestrictionTest {
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("AUD1");
-        
+
         // Mock up the servet request/response
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_HOME_REALM)).andReturn(null);
@@ -158,15 +158,15 @@ public class AudienceRestrictionTest {
         EasyMock.expect(req.getAttribute("javax.servlet.request.X509Certificate")).andReturn(null);
         EasyMock.expect(req.getQueryString()).andReturn(null);
         EasyMock.replay(req);
-        
+
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
         EasyMock.replay(resp);
-        
+
         // Now validate the request
         TestSigninHandler signinHandler = new TestSigninHandler(config);
         Assert.assertNotNull(signinHandler.handleRequest(req, resp));
     }
-    
+
     @org.junit.Test
     public void validateAudienceThatIsRequiredAgainstMultipleAudiences() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -179,15 +179,15 @@ public class AudienceRestrictionTest {
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("AUD2");
-        
+
         // Mock up the servet request/response
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_HOME_REALM)).andReturn(null);
@@ -202,15 +202,15 @@ public class AudienceRestrictionTest {
         EasyMock.expect(req.getAttribute("javax.servlet.request.X509Certificate")).andReturn(null);
         EasyMock.expect(req.getQueryString()).andReturn(null);
         EasyMock.replay(req);
-        
+
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
         EasyMock.replay(resp);
-        
+
         // Now validate the request
         TestSigninHandler signinHandler = new TestSigninHandler(config);
         Assert.assertNotNull(signinHandler.handleRequest(req, resp));
     }
-    
+
     @org.junit.Test
     public void validateBadAudienceThatIsRequired() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -223,15 +223,15 @@ public class AudienceRestrictionTest {
         audienceRestriction.getAudienceURIs().add("https://localhost/badfedizhelloworld");
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("AUD1");
-        
+
         // Mock up the servet request/response
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_HOME_REALM)).andReturn(null);
@@ -246,15 +246,15 @@ public class AudienceRestrictionTest {
         EasyMock.expect(req.getAttribute("javax.servlet.request.X509Certificate")).andReturn(null);
         EasyMock.expect(req.getQueryString()).andReturn(null);
         EasyMock.replay(req);
-        
+
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
         EasyMock.replay(resp);
-        
+
         // Now validate the request
         TestSigninHandler signinHandler = new TestSigninHandler(config);
         Assert.assertNull(signinHandler.handleRequest(req, resp));
     }
-    
+
     @org.junit.Test
     public void validateNoAudienceThatIsRequired() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -264,15 +264,15 @@ public class AudienceRestrictionTest {
         callbackHandler.setSubjectName(TEST_USER);
         ConditionsBean cp = new ConditionsBean();
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("AUD1");
-        
+
         // Mock up the servet request/response
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_HOME_REALM)).andReturn(null);
@@ -287,15 +287,15 @@ public class AudienceRestrictionTest {
         EasyMock.expect(req.getAttribute("javax.servlet.request.X509Certificate")).andReturn(null);
         EasyMock.expect(req.getQueryString()).andReturn(null);
         EasyMock.replay(req);
-        
+
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
         EasyMock.replay(resp);
-        
+
         // Now validate the request
         TestSigninHandler signinHandler = new TestSigninHandler(config);
         Assert.assertNull(signinHandler.handleRequest(req, resp));
     }
-    
+
     @org.junit.Test
     public void validateNoAudienceThatIsNotRequired() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -305,15 +305,15 @@ public class AudienceRestrictionTest {
         callbackHandler.setSubjectName(TEST_USER);
         ConditionsBean cp = new ConditionsBean();
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("NOAUD");
-        
+
         // Mock up the servet request/response
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_HOME_REALM)).andReturn(null);
@@ -328,15 +328,15 @@ public class AudienceRestrictionTest {
         EasyMock.expect(req.getAttribute("javax.servlet.request.X509Certificate")).andReturn(null);
         EasyMock.expect(req.getQueryString()).andReturn(null);
         EasyMock.replay(req);
-        
+
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
         EasyMock.replay(resp);
-        
+
         // Now validate the request
         TestSigninHandler signinHandler = new TestSigninHandler(config);
         Assert.assertNotNull(signinHandler.handleRequest(req, resp));
     }
-    
+
     @org.junit.Test
     public void validateAudienceThatIsNotRequired() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -349,15 +349,15 @@ public class AudienceRestrictionTest {
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("NOAUD");
-        
+
         // Mock up the servet request/response
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_HOME_REALM)).andReturn(null);
@@ -372,20 +372,20 @@ public class AudienceRestrictionTest {
         EasyMock.expect(req.getAttribute("javax.servlet.request.X509Certificate")).andReturn(null);
         EasyMock.expect(req.getQueryString()).andReturn(null);
         EasyMock.replay(req);
-        
+
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
         EasyMock.replay(resp);
-        
+
         // Now validate the request
         TestSigninHandler signinHandler = new TestSigninHandler(config);
         Assert.assertNull(signinHandler.handleRequest(req, resp));
     }
-    
+
     private String createSamlToken(SamlAssertionWrapper assertion, String alias, boolean sign)
         throws IOException, UnsupportedCallbackException, WSSecurityException, Exception {
         return createSamlToken(assertion, alias, sign, STSUtil.SAMPLE_RSTR_COLL_MSG);
     }
-    
+
     private String createSamlToken(SamlAssertionWrapper assertion, String alias, boolean sign, String rstr)
         throws IOException, UnsupportedCallbackException, WSSecurityException, Exception {
         WSPasswordCallback[] cb = {
@@ -409,5 +409,5 @@ public class AudienceRestrictionTest {
         e.appendChild(token);
         return DOM2Writer.nodeToString(doc);
     }
-    
+
 }

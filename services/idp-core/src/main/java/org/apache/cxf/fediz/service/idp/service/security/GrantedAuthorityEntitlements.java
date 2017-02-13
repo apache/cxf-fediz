@@ -47,31 +47,31 @@ import org.springframework.web.filter.GenericFilterBean;
 public class GrantedAuthorityEntitlements extends GenericFilterBean {
 
     private static final Logger LOG = LoggerFactory.getLogger(GrantedAuthorityEntitlements.class);
-    
+
     @Autowired
     private RoleDAO roleDAO;
-    
+
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
         throws IOException, ServletException {
-        
+
         try {
             Authentication currentAuth = SecurityContextHolder.getContext().getAuthentication();
             if (currentAuth == null) {
                 chain.doFilter(request, response);
                 return;
             }
-            
+
             final Set<GrantedAuthority> authorities = new HashSet<>();
             if (currentAuth.getAuthorities() != null) {
                 authorities.addAll(currentAuth.getAuthorities());
             }
-            
+
             Iterator<? extends GrantedAuthority> authIt = currentAuth.getAuthorities().iterator();
             while (authIt.hasNext()) {
                 GrantedAuthority ga = authIt.next();
                 String roleName = ga.getAuthority();
-                
+
                 try {
                     Role role = roleDAO.getRole(roleName.substring(5), Arrays.asList("all"));
                     for (Entitlement e : role.getEntitlements()) {
@@ -82,18 +82,18 @@ public class GrantedAuthorityEntitlements extends GenericFilterBean {
                 }
             }
             LOG.debug("Granted Authorities: {}", authorities);
-            
+
             UsernamePasswordAuthenticationToken enrichedAuthentication = new UsernamePasswordAuthenticationToken(
                 currentAuth.getName(), currentAuth.getCredentials(), authorities);
             enrichedAuthentication.setDetails(currentAuth.getDetails());
-            
+
             SecurityContextHolder.getContext().setAuthentication(enrichedAuthentication);
             LOG.info("Enriched AuthenticationToken added");
-            
+
         } catch (Exception ex) {
             LOG.error("Failed to enrich security context with entitlements", ex);
         }
-        
+
         chain.doFilter(request, response);
     }
 

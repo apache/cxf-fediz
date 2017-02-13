@@ -25,7 +25,7 @@ public enum CertificateValidationMethod {
 
     PEER_TRUST("PeerTrust"),
     CHAIN_TRUST("ChainTrust");
-    
+
     private final String value;
 
     CertificateValidationMethod(String v) {
@@ -38,7 +38,7 @@ public enum CertificateValidationMethod {
     public String value() {
         return value;
     }
-    
+
     public static CertificateValidationMethod fromValue(String v) {
         for (CertificateValidationMethod c: CertificateValidationMethod.values()) {
             if (c.value.equals(v)) {
@@ -48,6 +48,6 @@ public enum CertificateValidationMethod {
         throw new IllegalArgumentException(v);
     }
 
-    
-    
+
+
 }

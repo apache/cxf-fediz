@@ -68,14 +68,14 @@ public class SAMLTokenValidatorOldTest {
     static final String TEST_USER = "alice";
     static final String TEST_RSTR_ISSUER = "FedizSTSIssuer";
     static final String TEST_AUDIENCE = "https://localhost/fedizhelloworld";
-    
+
     private static final String CONFIG_FILE = "fediz_test_config.xml";
-    
+
     private static Crypto crypto;
     private static CallbackHandler cbPasswordHandler;
     private static FedizConfigurator configurator;
-    
-    
+
+
     @BeforeClass
     public static void init() {
         try {
@@ -88,12 +88,12 @@ public class SAMLTokenValidatorOldTest {
         Assert.assertNotNull(configurator);
 
     }
-    
+
     @AfterClass
     public static void cleanup() {
         SecurityTestUtil.cleanup();
     }
-    
+
 
     private static FedizConfigurator getFederationConfigurator() {
         if (configurator != null) {
@@ -111,7 +111,7 @@ public class SAMLTokenValidatorOldTest {
             return null;
         }
     }
-    
+
     /**
      * Validate SAML 2 token which includes the role attribute with 2 values
      * Roles are encoded as a multi-value saml attribute
@@ -126,29 +126,29 @@ public class SAMLTokenValidatorOldTest {
         callbackHandler.setAttributeNameFormat(ClaimTypes.URI_BASE.toString());
         callbackHandler.setCountryClaimName("country");
         callbackHandler.setRoleAttributeName("role");
-        
+
         ConditionsBean cp = new ConditionsBean();
         AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
+
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
+
         Assert.assertEquals("Principal name wrong", TEST_USER,
                             wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
@@ -156,9 +156,9 @@ public class SAMLTokenValidatorOldTest {
                             .size());
         Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
         assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
-        
+
     }
-    
+
     /**
      * Validate SAML 2 token where role information is provided
      * within another SAML attribute
@@ -173,36 +173,36 @@ public class SAMLTokenValidatorOldTest {
         callbackHandler.setAttributeNameFormat(ClaimTypes.URI_BASE.toString());
         callbackHandler.setCountryClaimName("country");
         callbackHandler.setRoleAttributeName("http://schemas.mycompany.com/claims/role");
-        
+
         ConditionsBean cp = new ConditionsBean();
         AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
 
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("CUSTOMROLEURI");
-        
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
+
         Assert.assertEquals("Principal name wrong", TEST_USER, wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
         Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles().size());
         Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
         assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
     }
-    
+
     /**
      * Validate SAML 2 token where role information is provided
      * within another SAML attribute
@@ -226,26 +226,26 @@ public class SAMLTokenValidatorOldTest {
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
+
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("CUSTOMROLEURI");
-        
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
+
         Assert.assertEquals("Principal name wrong", TEST_USER, wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
         Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles().size());
         Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
         assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
     }
-    
+
     /**
      * Validate SAML 1.1 token which includes the role attribute with 2 values
      * Roles are encoded as a multi-value saml attribute
@@ -260,7 +260,7 @@ public class SAMLTokenValidatorOldTest {
         callbackHandler.setUseNameFormatAsNamespace(true);
         callbackHandler.setAttributeNameFormat(ClaimTypes.URI_BASE.toString());
         callbackHandler.setRoleAttributeName("role");
-        
+
         ConditionsBean cp = new ConditionsBean();
         AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
         audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
@@ -270,19 +270,19 @@ public class SAMLTokenValidatorOldTest {
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
+
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         configurator = null;
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
+
         Assert.assertEquals("Principal name wrong", TEST_USER,
                             wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
@@ -291,13 +291,13 @@ public class SAMLTokenValidatorOldTest {
         Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
         assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
     }
-    
-    
+
+
     private String createSamlToken(SamlAssertionWrapper assertion, String alias, boolean sign)
         throws IOException, UnsupportedCallbackException, WSSecurityException, Exception {
         return createSamlToken(assertion, alias, sign, STSUtil.SAMPLE_RSTR_COLL_MSG);
     }
-    
+
     private String createSamlToken(SamlAssertionWrapper assertion, String alias, boolean sign, String rstr)
         throws IOException, UnsupportedCallbackException, WSSecurityException, Exception {
         WSPasswordCallback[] cb = {
@@ -321,16 +321,16 @@ public class SAMLTokenValidatorOldTest {
         e.appendChild(token);
         return DOM2Writer.nodeToString(doc);
     }
-    
 
-    
-    
+
+
+
     /**
      * Returns the first element that matches <code>name</code> and
      * <code>namespace</code>. <p/> This is a replacement for a XPath lookup
      * <code>//name</code> with the given namespace. It's somewhat faster than
      * XPath, and we do not deal with prefixes, just with the real namespace URI
-     * 
+     *
      * @param startNode Where to start the search
      * @param name Local name of the element
      * @param namespace Namespace URI of the element
@@ -382,10 +382,10 @@ public class SAMLTokenValidatorOldTest {
         }
         return null;
     }
-    
+
     private void assertClaims(List<Claim> claims, String roleClaimType) {
         for (Claim c : claims) {
-            Assert.assertTrue("Invalid ClaimType URI: " + c.getClaimType(), 
+            Assert.assertTrue("Invalid ClaimType URI: " + c.getClaimType(),
                               c.getClaimType().equals(roleClaimType)
                               || c.getClaimType().equals(ClaimTypes.COUNTRY)
                               || c.getClaimType().equals(AbstractSAMLCallbackHandler.CLAIM_TYPE_LANGUAGE)
@@ -394,6 +394,6 @@ public class SAMLTokenValidatorOldTest {
     }
 
 
-    
+
 
 }

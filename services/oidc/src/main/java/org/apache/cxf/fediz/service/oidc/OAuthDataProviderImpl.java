@@ -39,15 +39,15 @@ import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 import org.apache.cxf.rs.security.oidc.utils.OidcUtils;
 
 public class OAuthDataProviderImpl extends DefaultEHCacheCodeDataProvider {
-    
+
     private static final Logger LOG = LogUtils.getL7dLogger(OAuthDataProviderImpl.class);
-    
+
     private boolean checkOnlyRegisteredClients;
     private boolean persistUnregisteredClients = true;
     private String contextName;
     private Configuration loginConfig;
 
-    
+
     @Override
     public Client getClient(String clientId) {
         //TODO: push most of this code into the abstract class
@@ -55,11 +55,11 @@ public class OAuthDataProviderImpl extends DefaultEHCacheCodeDataProvider {
         if (client != null || checkOnlyRegisteredClients) {
             return client;
         }
-        
+
         String grantType = (String)getMessageContext().get(OAuthConstants.GRANT_TYPE);
         if (OAuthConstants.CLIENT_CREDENTIALS_GRANT.equals(grantType)) {
-            // Pre-registering the OAuth2 Client representations for 
-            // "client_credentials" can be difficult. 
+            // Pre-registering the OAuth2 Client representations for
+            // "client_credentials" can be difficult.
             String clientSecret = (String)getMessageContext().get(OAuthConstants.CLIENT_SECRET);
             if (clientSecret != null) {
                 // Direct authentication with the back-end storage
@@ -82,18 +82,18 @@ public class OAuthDataProviderImpl extends DefaultEHCacheCodeDataProvider {
         // with the help of getMessageContext().get(OAuthConstants.GRANT_TYPE)
         if (!client.getAllowedGrantTypes().contains(OAuthConstants.CLIENT_CREDENTIALS_GRANT)
             && !requestedScopes.contains(OidcUtils.OPENID_SCOPE)) {
-            throw new OAuthServiceException("Required scopes are missing"); 
+            throw new OAuthServiceException("Required scopes are missing");
         }
         return super.convertScopeToPermissions(client, requestedScopes);
     }
-    
+
     protected Client authenticateClient(String clientId, String clientSecret) {
         if (contextName != null) {
             try {
                 // Login using JAAS
-                CallbackHandler callbackHandler = 
+                CallbackHandler callbackHandler =
                     new NamePasswordCallbackHandler(clientId, clientSecret);
-                LoginContext ctx = new LoginContext(contextName, null, callbackHandler, loginConfig);  
+                LoginContext ctx = new LoginContext(contextName, null, callbackHandler, loginConfig);
                 ctx.login();
                 Client client = createClientCredClient(clientId, clientSecret);
                 ctx.logout();
@@ -109,7 +109,7 @@ public class OAuthDataProviderImpl extends DefaultEHCacheCodeDataProvider {
     public void setCheckOnlyRegisteredClients(boolean checkOnlyRegisteredClients) {
         this.checkOnlyRegisteredClients = checkOnlyRegisteredClients;
     }
-    
+
     public void setContextName(String contextName) {
         this.contextName = contextName;
     }
@@ -121,7 +121,7 @@ public class OAuthDataProviderImpl extends DefaultEHCacheCodeDataProvider {
     public void setPersistUnregisteredClients(boolean persistUnregisteredClients) {
         this.persistUnregisteredClients = persistUnregisteredClients;
     }
-    
+
     protected Client createClientCredClient(String clientId, String password) {
         Client c = new Client(clientId, password, true);
         c.setAllowedGrantTypes(Collections.singletonList(OAuthConstants.CLIENT_CREDENTIALS_GRANT));

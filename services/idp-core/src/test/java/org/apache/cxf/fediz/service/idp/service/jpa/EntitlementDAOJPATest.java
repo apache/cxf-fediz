@@ -41,20 +41,20 @@ public class EntitlementDAOJPATest {
 
     @Autowired
     private EntitlementDAO entitlementDAO;
-    
-    
+
+
     @BeforeClass
     public static void init() {
         System.setProperty("spring.profiles.active", "jpa");
     }
-    
-    
+
+
     @Test
     public void testReadAllEntitlements() {
         List<Entitlement> entitlements = entitlementDAO.getEntitlements(0, 999);
         Assert.isTrue(30 == entitlements.size(), "Size doesn't match");
     }
-    
+
     @Test
     public void testReadExistingEntitlement() {
         Entitlement entitlement = entitlementDAO.getEntitlement("CLAIM_LIST");
@@ -63,26 +63,26 @@ public class EntitlementDAOJPATest {
         Assert.isTrue("Description for CLAIM_LIST".equals(entitlement.getDescription()),
                       "Entitlement Description doesn't match");
     }
-    
-    
+
+
     @Test(expected = EmptyResultDataAccessException.class)
     public void testTryReadNonexistingEntitlement() {
         entitlementDAO.getEntitlement("CLAIM_NOT_EXIST");
     }
-    
-    
+
+
     @Test
     public void testAddNewEntitlement() {
         Entitlement entitlement5 = new Entitlement();
         entitlement5.setName("GUGUS_CREATE");
         entitlement5.setDescription("Any entitlement");
         entitlementDAO.addEntitlement(entitlement5);
-        
+
         List<Entitlement> entitlements = entitlementDAO.getEntitlements(0, 999);
         Assert.isTrue(31 == entitlements.size(), "Size doesn't match. Entitlement not added");
     }
-    
-    
+
+
     @Test(expected = DataIntegrityViolationException.class)
     public void testTryAddExistingEntitlement() {
         Entitlement entitlement5 = new Entitlement();
@@ -90,26 +90,26 @@ public class EntitlementDAOJPATest {
         entitlement5.setDescription("Description for CLAIM_DELETE");
         entitlementDAO.addEntitlement(entitlement5);
     }
-    
-    
+
+
     @Test(expected = EmptyResultDataAccessException.class)
     public void testTryRemoveUnknownEntitlement() {
         entitlementDAO.deleteEntitlement("GUGUS_NOT_EXIST");
     }
-    
-    
+
+
     @Test(expected = EmptyResultDataAccessException.class)
     public void testRemoveExistingEntitlement() {
-        
+
         Entitlement entitlement5 = new Entitlement();
         entitlement5.setName("CLAIM_TO_DELETE");
         entitlement5.setDescription("Description for CLAIM_TO_DELETE");
         entitlementDAO.addEntitlement(entitlement5);
-        
+
         entitlementDAO.deleteEntitlement("CLAIM_TO_DELETE");
-        
+
         entitlementDAO.getEntitlement("CLAIM_TO_DELETE");
     }
-    
+
 
 }

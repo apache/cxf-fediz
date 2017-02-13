@@ -49,7 +49,7 @@ import org.apache.hello_world_soap_http.Greeter;
 public class FederationServlet extends HttpServlet {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = -9019993850246851112L;
 
@@ -156,7 +156,7 @@ public class FederationServlet extends HttpServlet {
 
         Greeter service = (Greeter)ApplicationContextProvider.getContext().getBean("HelloServiceClient");
         String reply = service.greetMe();
-        
+
         out.println("<br><b>Greeter Service Response: " + reply + "</b><p>");
 
         out.println("</body>");

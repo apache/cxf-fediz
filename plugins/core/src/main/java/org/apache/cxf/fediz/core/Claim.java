@@ -29,7 +29,7 @@ import java.security.Principal;
 public class Claim implements Serializable {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

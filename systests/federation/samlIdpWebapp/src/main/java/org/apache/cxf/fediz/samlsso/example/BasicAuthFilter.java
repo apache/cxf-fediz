@@ -44,17 +44,17 @@ import org.apache.wss4j.dom.validate.UsernameTokenValidator;
  * A simple filter to validate a Basic Auth username/password via a CallbackHandler
  */
 public class BasicAuthFilter implements ContainerRequestFilter {
-    
+
     static {
         WSSConfig.init();
     }
 
     private CallbackHandler callbackHandler;
-    
+
     public void filter(ContainerRequestContext requestContext) throws IOException {
         Message message = JAXRSUtils.getCurrentMessage();
         AuthorizationPolicy policy = message.get(AuthorizationPolicy.class);
-        
+
         if (policy == null || policy.getUserName() == null || policy.getPassword() == null) {
             requestContext.abortWith(
                 Response.status(401).header("WWW-Authenticate", "Basic realm=\"IdP\"").build());
@@ -65,13 +65,13 @@ public class BasicAuthFilter implements ContainerRequestFilter {
             UsernameToken token = convertPolicyToToken(policy);
             Credential credential = new Credential();
             credential.setUsernametoken(token);
-            
+
             RequestData data = new RequestData();
             data.setMsgContext(message);
             data.setCallbackHandler(callbackHandler);
             UsernameTokenValidator validator = new UsernameTokenValidator();
             credential = validator.validate(credential, data);
-            
+
             // Create a Principal/SecurityContext
             Principal p = null;
             if (credential != null && credential.getPrincipal() != null) {
@@ -87,17 +87,17 @@ public class BasicAuthFilter implements ContainerRequestFilter {
         }
     }
 
-    protected UsernameToken convertPolicyToToken(AuthorizationPolicy policy) 
+    protected UsernameToken convertPolicyToToken(AuthorizationPolicy policy)
         throws Exception {
 
         Document doc = DOMUtils.createDocument();
-        UsernameToken token = new UsernameToken(false, doc, 
+        UsernameToken token = new UsernameToken(false, doc,
                                                 WSConstants.PASSWORD_TEXT);
         token.setName(policy.getUserName());
         token.setPassword(policy.getPassword());
         return token;
     }
-    
+
     protected SecurityContext createSecurityContext(final Principal p) {
         return new SecurityContext() {
 

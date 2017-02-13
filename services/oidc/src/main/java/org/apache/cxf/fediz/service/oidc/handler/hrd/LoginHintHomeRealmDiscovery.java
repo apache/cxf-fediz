@@ -30,8 +30,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * This callback handler uses the login_hint parameter defined in OpenID Connect to discover the users home realm.
- * 
- * It is expected that the login_hint will contain the users email address and that the domain name from the mail 
+ *
+ * It is expected that the login_hint will contain the users email address and that the domain name from the mail
  * address will be equal to the home realm identifier.
  */
 public class LoginHintHomeRealmDiscovery implements CallbackHandler {

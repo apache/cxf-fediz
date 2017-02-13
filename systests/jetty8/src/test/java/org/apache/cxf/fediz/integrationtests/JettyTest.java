@@ -29,7 +29,7 @@ public class JettyTest extends AbstractTests {
 
     static String idpHttpsPort;
     static String rpHttpsPort;
-    
+
     @BeforeClass
     public static void init() {
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
@@ -52,7 +52,7 @@ public class JettyTest extends AbstractTests {
         JettyUtils.initRpServer();
         JettyUtils.startRpServer();
     }
-    
+
     @AfterClass
     public static void cleanup() {
         JettyUtils.stopIdpServer();
@@ -68,12 +68,12 @@ public class JettyTest extends AbstractTests {
     public String getRpHttpsPort() {
         return rpHttpsPort;
     }
-    
+
     @Override
     public String getServletContextName() {
         return "fedizhelloworld";
     }
-    
+
     @Ignore("This tests is currently failing on Jetty")
     @Override
     public void testConcurrentRequests() throws Exception {

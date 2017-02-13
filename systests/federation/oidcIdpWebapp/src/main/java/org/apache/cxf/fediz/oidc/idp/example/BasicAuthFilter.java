@@ -38,7 +38,7 @@ public class BasicAuthFilter extends WSS4JBasicAuthValidator implements Containe
     public void filter(ContainerRequestContext requestContext) throws IOException {
         Message message = JAXRSUtils.getCurrentMessage();
         AuthorizationPolicy policy = message.get(AuthorizationPolicy.class);
-        
+
         if (policy == null || policy.getUserName() == null || policy.getPassword() == null) {
             requestContext.abortWith(
                 Response.status(401).header("WWW-Authenticate", "Basic realm=\"IdP\"").build());

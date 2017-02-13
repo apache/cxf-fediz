@@ -40,7 +40,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 public class ConfigServiceJPA implements ConfigService {
 
     private static final Logger LOG = LoggerFactory.getLogger(ConfigServiceJPA.class);
-    
+
     IdpService idpService;
 
     @Override
@@ -48,22 +48,22 @@ public class ConfigServiceJPA implements ConfigService {
         Authentication currentAuthentication = SecurityContextHolder.getContext().getAuthentication();
         try {
             final Set<GrantedAuthority> authorities = new HashSet<>();
-            
+
             if (realm == null || realm.length() == 0) {
                 authorities.add(new SimpleGrantedAuthority("IDP_LIST"));
                 UsernamePasswordAuthenticationToken technicalUser =
                     new UsernamePasswordAuthenticationToken("IDP_TEST", "N.A", authorities);
-                
+
                 SecurityContextHolder.getContext().setAuthentication(technicalUser);
-                
+
                 return idpService.getIdps(0, 1, Arrays.asList("all"), null).getIdps().iterator().next();
             } else {
                 authorities.add(new SimpleGrantedAuthority("IDP_READ"));
                 UsernamePasswordAuthenticationToken technicalUser =
                     new UsernamePasswordAuthenticationToken("IDP_TEST", "N.A", authorities);
-                
+
                 SecurityContextHolder.getContext().setAuthentication(technicalUser);
-                
+
                 return idpService.getIdp(realm, Arrays.asList("all"));
             }
         } finally {
@@ -75,13 +75,13 @@ public class ConfigServiceJPA implements ConfigService {
     @Override
     public void setIDP(Idp config) {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override
     public void removeIDP(String realm) {
         // TODO Auto-generated method stub
-        
+
     }
 
     public IdpService getIdpService() {
@@ -91,6 +91,6 @@ public class ConfigServiceJPA implements ConfigService {
     public void setIdpService(IdpService idpService) {
         this.idpService = idpService;
     }
-    
+
 
 }

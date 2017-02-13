@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class RequestState implements Serializable {
 
     private static final long serialVersionUID = 869323136115571943L;
-    
+
     private String targetAddress;
     private String idpServiceAddress;
     private String requestId;
@@ -38,11 +38,11 @@ public class RequestState implements Serializable {
     private long createdAt;
     private String state;
     private String webAppDomain;
- 
+
     public RequestState() {
-        
+
     }
-    
+
     // CHECKSTYLE:OFF
     public RequestState(String targetAddress,
                         String idpServiceAddress,
@@ -62,7 +62,7 @@ public class RequestState implements Serializable {
         setCreatedAt(createdAt);
     }
 
-    
+
     public void setTargetAddress(String targetAddress) {
         this.targetAddress = targetAddress;
     }
@@ -114,7 +114,7 @@ public class RequestState implements Serializable {
     public String getWebAppContext() {
         return webAppContext;
     }
-    
+
     public String getState() {
         return state;
     }

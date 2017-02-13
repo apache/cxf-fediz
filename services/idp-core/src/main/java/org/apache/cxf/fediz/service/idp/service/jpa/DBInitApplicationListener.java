@@ -37,31 +37,31 @@ import org.springframework.stereotype.Component;
 public class DBInitApplicationListener implements ApplicationListener<ContextRefreshedEvent> {
 
     private static final Logger LOG = LoggerFactory.getLogger(DBInitApplicationListener.class);
-    
+
     private EntityManager em;
-    
+
     @Autowired
     private List<DBLoader> dbloader;
-    
+
     @PersistenceContext
     public void setEntityManager(EntityManager entityManager) {
         this.em = entityManager;
     }
-        
+
     @Override
     public void onApplicationEvent(ContextRefreshedEvent arg0) {
         if (!isDBEmpty()) {
             LOG.info("Inital DB already loaded");
             return;
         }
-        
+
         LOG.debug("Loading inital DB data...");
         for (DBLoader loader : this.dbloader) {
             loader.load();
             LOG.info("Inital DB data loaded for " + loader.getName());
         }
     }
-    
+
     protected boolean isDBEmpty() {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Long> cq = cb.createQuery(Long.class);

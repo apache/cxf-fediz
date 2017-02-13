@@ -49,19 +49,19 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Validate a SAML (1.1 or 2.0) Protocol Response. It validates the Response against the specs,
- * the signature of the Response (if it exists), and any internal Assertion stored in the Response 
+ * the signature of the Response (if it exists), and any internal Assertion stored in the Response
  * - including any signature. It validates the status code of the Response as well.
  */
 public class SAMLProtocolResponseValidator {
-    
-    public static final String SAML2_STATUSCODE_SUCCESS = 
+
+    public static final String SAML2_STATUSCODE_SUCCESS =
         "urn:oasis:names:tc:SAML:2.0:status:Success";
     public static final String SAML1_STATUSCODE_SUCCESS = "Success";
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(SAMLProtocolResponseValidator.class);
-    
+
     // private Validator signatureValidator = new SignatureTrustValidator();
-    
+
     /**
      * Validate a SAML 2 Protocol Response
      * @param samlResponse
@@ -84,10 +84,10 @@ public class SAMLProtocolResponseValidator {
             );
             throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
         }
-        
+
         validateResponseSignature(samlResponse, config);
     }
-    
+
     /**
      * Validate a SAML 1.1 Protocol Response
      * @param samlResponse
@@ -115,7 +115,7 @@ public class SAMLProtocolResponseValidator {
 
         validateResponseSignature(samlResponse, config);
     }
-    
+
     /**
      * Validate the Response signature (if it exists)
      */
@@ -126,12 +126,12 @@ public class SAMLProtocolResponseValidator {
         if (!samlResponse.isSigned()) {
             return;
         }
-        
+
         validateResponseSignature(
             samlResponse.getSignature(), samlResponse.getDOM().getOwnerDocument(), config
         );
     }
-    
+
     /**
      * Validate the Response signature (if it exists)
      */
@@ -142,32 +142,32 @@ public class SAMLProtocolResponseValidator {
         if (!samlResponse.isSigned()) {
             return;
         }
-        
+
         validateResponseSignature(
             samlResponse.getSignature(), samlResponse.getDOM().getOwnerDocument(), config
         );
     }
-    
+
     /**
      * Validate the response signature
      */
     private void validateResponseSignature(
-        Signature signature, 
+        Signature signature,
         Document doc,
         FedizContext config
     ) throws WSSecurityException {
         RequestData requestData = new RequestData();
         WSSConfig wssConfig = WSSConfig.getNewInstance();
         requestData.setWssConfig(wssConfig);
-        
+
         SAMLKeyInfo samlKeyInfo = null;
-        
+
         KeyInfo keyInfo = signature.getKeyInfo();
         if (keyInfo != null) {
             try {
-                samlKeyInfo = 
+                samlKeyInfo =
                     SAMLUtil.getCredentialFromKeyInfo(
-                        keyInfo.getDOM(), new WSSSAMLKeyInfoProcessor(requestData, new WSDocInfo(doc)), 
+                        keyInfo.getDOM(), new WSSSAMLKeyInfoProcessor(requestData, new WSDocInfo(doc)),
                         requestData.getSigVerCrypto()
                     );
             } catch (WSSecurityException ex) {
@@ -179,7 +179,7 @@ public class SAMLProtocolResponseValidator {
             LOG.debug("No KeyInfo supplied in the SAMLResponse signature");
             throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
         }
-        
+
         // Validate Signature against profiles
         validateSignatureAgainstProfiles(signature, samlKeyInfo);
 
@@ -189,9 +189,9 @@ public class SAMLProtocolResponseValidator {
         trustCredential.setCertificates(samlKeyInfo.getCerts());
 
         FedizSignatureTrustValidator trustValidator = new FedizSignatureTrustValidator();
-        
+
         boolean trusted = false;
-        
+
         List<TrustedIssuer> trustedIssuers = config.getTrustedIssuers();
         for (TrustedIssuer ti : trustedIssuers) {
             Pattern subjectConstraint = ti.getCompiledSubject();
@@ -199,14 +199,14 @@ public class SAMLProtocolResponseValidator {
             if (subjectConstraint != null) {
                 subjectConstraints.add(subjectConstraint);
             }
-            
+
             if (ti.getCertificateValidationMethod().equals(CertificateValidationMethod.CHAIN_TRUST)) {
                 trustValidator.setSubjectConstraints(subjectConstraints);
                 trustValidator.setSignatureTrustType(TrustType.CHAIN_TRUST_CONSTRAINTS);
             } else if (ti.getCertificateValidationMethod().equals(CertificateValidationMethod.PEER_TRUST)) {
                 trustValidator.setSignatureTrustType(TrustType.PEER_TRUST);
             } else {
-                throw new IllegalStateException("Unsupported certificate validation method: " 
+                throw new IllegalStateException("Unsupported certificate validation method: "
                                                 + ti.getCertificateValidationMethod());
             }
             try {
@@ -224,24 +224,24 @@ public class SAMLProtocolResponseValidator {
                 if (trusted) {
                     break;
                 }
-                
+
             } catch (Exception ex) {
                 LOG.info("Error in validating signature on SAML Response: " + ex.getMessage(), ex);
                 throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
             }
         }
-        
+
         if (!trusted) {
             LOG.warn("SAML Response is not trusted");
             throw new WSSecurityException(WSSecurityException.ErrorCode.FAILED_AUTHENTICATION);
         }
     }
-    
+
     /**
      * Validate a signature against the profiles
      */
     private void validateSignatureAgainstProfiles(
-        Signature signature, 
+        Signature signature,
         SAMLKeyInfo samlKeyInfo
     ) throws WSSecurityException {
         // Validate Signature against profiles
@@ -269,5 +269,5 @@ public class SAMLProtocolResponseValidator {
             throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
         }
     }
-    
+
 }

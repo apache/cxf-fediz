@@ -26,9 +26,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 public class STSUtil {
-    
- 
-    public static final String SAMPLE_RSTR_COLL_MSG = 
+
+
+    public static final String SAMPLE_RSTR_COLL_MSG =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
         + "<RequestSecurityTokenResponseCollection "
         +   "xmlns=\"http://docs.oasis-open.org/ws-sx/ws-trust/200512\"> "
@@ -37,34 +37,34 @@ public class STSUtil {
         +     "</RequestedSecurityToken>"
         +   "</RequestSecurityTokenResponse>"
         + "</RequestSecurityTokenResponseCollection>";
-    
-    public static final String SAMPLE_RSTR_MSG = 
+
+    public static final String SAMPLE_RSTR_MSG =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
         + "<RequestSecurityTokenResponse "
         +   "xmlns=\"http://docs.oasis-open.org/ws-sx/ws-trust/200512\"> "
         +   "<RequestedSecurityToken>"
         +   "</RequestedSecurityToken>"
         + "</RequestSecurityTokenResponse>";
-    
-    public static final String SAMPLE_RSTR_2005_02_MSG = 
+
+    public static final String SAMPLE_RSTR_2005_02_MSG =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
         + "<RequestSecurityTokenResponse "
         +   "xmlns=\"http://schemas.xmlsoap.org/ws/2005/02/trust\"> "
         +   "<RequestedSecurityToken>"
         +   "</RequestedSecurityToken>"
         + "</RequestSecurityTokenResponse>";
-    
-    
+
+
     private static DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    
+
     static {
         factory.setNamespaceAware(true);
     }
-    
+
     protected STSUtil() {
-        
+
     }
-    
+
     /**
      * Convert an XML document as a String to a org.w3c.dom.Document.
      */
@@ -74,5 +74,5 @@ public class STSUtil {
             return builder.parse(in);
         }
     }
-    
+
 }

@@ -80,28 +80,28 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
      * Whether to sign the request or not. The default is "true".
      */
     public static final String SIGN_REQUEST = "sign.request";
-    
+
     /**
      * Whether to require a KeyInfo or not when processing a (signed) Response. The default is "true".
      */
     public static final String REQUIRE_KEYINFO = "require.keyinfo";
-    
+
     /**
      * Whether the assertions contained in the Response must be signed or not (if the response itself
      * is not signed). The default is "true".
      */
     public static final String REQUIRE_SIGNED_ASSERTIONS = "require.signed.assertions";
-    
+
     /**
      * Whether we have to "know" the issuer of the SAML Response or not. The default is "true".
      */
     public static final String REQUIRE_KNOWN_ISSUER = "require.known.issuer";
-    
+
     /**
      * Whether we BASE-64 decode the response or not. The default is "true".
      */
     public static final String SUPPORT_BASE64_ENCODING = "support.base64.encoding";
-    
+
     /**
      * Whether we support Deflate encoding or not. The default is "false".
      */
@@ -131,11 +131,11 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
             Document doc = DOMUtils.createDocument();
             doc.appendChild(doc.createElement("root"));
             // Create the AuthnRequest
-            AuthnRequest authnRequest = 
+            AuthnRequest authnRequest =
                 authnRequestBuilder.createAuthnRequest(
                     null, idp.getRealm(), idp.getIdpUrl().toString()
                 );
-            
+
             boolean signRequest = isBooleanPropertyConfigured(trustedIdp, SIGN_REQUEST, true);
             if (signRequest) {
                 authnRequest.setDestination(trustedIdp.getUrl());
@@ -148,13 +148,13 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
             UriBuilder ub = UriBuilder.fromUri(trustedIdp.getUrl());
 
             ub.queryParam(SSOConstants.SAML_REQUEST, urlEncodedRequest);
-            
+
             String wctx = context.getFlowScope().getString(IdpConstants.TRUSTED_IDP_CONTEXT);
             ub.queryParam(SSOConstants.RELAY_STATE, wctx);
             if (signRequest) {
                 signRequest(urlEncodedRequest, wctx, idp, ub);
             }
-            
+
             // Store the Request ID
             String authnRequestId = authnRequest.getID();
             WebUtils.putAttributeInExternalContext(context, SAML_SSO_REQUEST_ID, authnRequestId);
@@ -180,23 +180,23 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
     public SecurityToken mapSignInResponse(RequestContext context, Idp idp, TrustedIdp trustedIdp) {
 
         try {
-            String encodedSAMLResponse = (String) WebUtils.getAttributeFromFlowScope(context, 
+            String encodedSAMLResponse = (String) WebUtils.getAttributeFromFlowScope(context,
                                                                                      SSOConstants.SAML_RESPONSE);
-            
+
             // Read the response + convert to an OpenSAML Response Object
-            org.opensaml.saml.saml2.core.Response samlResponse = 
+            org.opensaml.saml.saml2.core.Response samlResponse =
                 readSAMLResponse(encodedSAMLResponse, trustedIdp);
-            
+
             Crypto crypto = CertsUtils.getCryptoFromCertificate(trustedIdp.getCertificate());
             validateSamlResponseProtocol(samlResponse, crypto, trustedIdp);
             // Validate the Response
-            SSOValidatorResponse validatorResponse = 
+            SSOValidatorResponse validatorResponse =
                 validateSamlSSOResponse(samlResponse, idp, trustedIdp, context);
 
-            // Create new Security token with new id. 
+            // Create new Security token with new id.
             // Parameters for freshness computation are copied from original IDP_TOKEN
             String id = IDGenerator.generateID("_");
-            SecurityToken idpToken = 
+            SecurityToken idpToken =
                 new SecurityToken(id, validatorResponse.getCreated(), validatorResponse.getSessionNotOnOrAfter());
 
             idpToken.setToken(validatorResponse.getAssertionElement());
@@ -217,10 +217,10 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
             throw new IllegalStateException("Unexpected exception occured: " + ex.getMessage());
         }
     }
-    
+
     private String encodeAuthnRequest(Element authnRequest) throws IOException {
         String requestMessage = DOM2Writer.nodeToString(authnRequest);
-        
+
         if (LOG.isDebugEnabled()) {
             LOG.debug(requestMessage);
         }
@@ -230,7 +230,7 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
 
         return Base64Utility.encode(deflatedBytes);
     }
-    
+
     /**
      * Sign a request according to the redirect binding spec for Web SSO
      */
@@ -245,7 +245,7 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
             LOG.error("No crypto instance of properties file configured for signature");
             throw new IllegalStateException("Invalid IdP configuration");
         }
-        
+
         String alias = crypto.getDefaultX509Identifier();
         X509Certificate cert = CertsUtils.getX509CertificateFromCrypto(crypto, alias);
         if (cert == null) {
@@ -262,29 +262,29 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
             jceSigAlgo = "SHA1withDSA";
         }
         LOG.debug("Using Signature algorithm " + sigAlgo);
-        
+
         ub.queryParam(SSOConstants.SIG_ALG, URLEncoder.encode(sigAlgo, "UTF-8"));
-        
+
         // Get the password
         String password = config.getCertificatePassword();
-        
+
         // Get the private key
         PrivateKey privateKey = crypto.getPrivateKey(alias, password);
-        
+
         // Sign the request
         Signature signature = Signature.getInstance(jceSigAlgo);
         signature.initSign(privateKey);
-       
-        String requestToSign = 
+
+        String requestToSign =
             SSOConstants.SAML_REQUEST + "=" + authnRequest + "&"
             + SSOConstants.RELAY_STATE + "=" + relayState + "&"
             + SSOConstants.SIG_ALG + "=" + URLEncoder.encode(sigAlgo, "UTF-8");
 
         signature.update(requestToSign.getBytes("UTF-8"));
         byte[] signBytes = signature.sign();
-        
+
         String encodedSignature = Base64.encode(signBytes);
-        
+
         ub.queryParam(SSOConstants.SIGNATURE, URLEncoder.encode(encodedSignature, "UTF-8"));
     }
 
@@ -294,14 +294,14 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
         }
 
         String samlResponseDecoded = samlResponse;
-        
+
         InputStream tokenStream = null;
         if (isBooleanPropertyConfigured(trustedIdp, SUPPORT_BASE64_ENCODING, true)) {
             try {
                 byte[] deflatedToken = Base64Utility.decode(samlResponseDecoded);
                 tokenStream = isBooleanPropertyConfigured(trustedIdp, SUPPORT_DEFLATE_ENCODING, false)
                     ? new DeflateEncoderDecoder().inflateToken(deflatedToken)
-                    : new ByteArrayInputStream(deflatedToken); 
+                    : new ByteArrayInputStream(deflatedToken);
             } catch (Base64Exception ex) {
                 throw ExceptionUtils.toBadRequestException(ex, null);
             } catch (DataFormatException ex) {
@@ -321,9 +321,9 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
         } catch (Exception ex) {
             throw new WebApplicationException(400);
         }
-        
+
         LOG.debug("Received response: " + DOM2Writer.nodeToString(responseDoc.getDocumentElement()));
-        
+
         XMLObject responseObject = null;
         try {
             responseObject = OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
@@ -336,7 +336,7 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
         return (org.opensaml.saml.saml2.core.Response)responseObject;
 
     }
-    
+
     /**
      * Validate the received SAML Response as per the protocol
      */
@@ -353,13 +353,13 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
             throw ExceptionUtils.toBadRequestException(null, null);
         }
     }
-    
+
     /**
      * Validate the received SAML Response as per the Web SSO profile
      */
     private SSOValidatorResponse validateSamlSSOResponse(
         org.opensaml.saml.saml2.core.Response samlResponse,
-        Idp idp, 
+        Idp idp,
         TrustedIdp trustedIdp,
         RequestContext requestContext
     ) {
@@ -378,9 +378,9 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
             }
             LOG.debug("Using {} for issuer validation", issuer);
             ssoResponseValidator.setIssuerIDP(issuer);
-            
+
             // Get the stored request ID
-            String requestId = 
+            String requestId =
                 (String)WebUtils.getAttributeFromExternalContext(requestContext, SAML_SSO_REQUEST_ID);
             ssoResponseValidator.setRequestId(requestId);
             ssoResponseValidator.setSpIdentifier(idp.getRealm());
@@ -388,7 +388,7 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
                 isBooleanPropertyConfigured(trustedIdp, REQUIRE_SIGNED_ASSERTIONS, true));
             ssoResponseValidator.setEnforceKnownIssuer(
                 isBooleanPropertyConfigured(trustedIdp, REQUIRE_KNOWN_ISSUER, true));
-            
+
             HttpServletRequest httpServletRequest = WebUtils.getHttpServletRequest(requestContext);
             boolean post = "POST".equals(httpServletRequest.getMethod());
             if (post) {
@@ -401,11 +401,11 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
             throw ExceptionUtils.toBadRequestException(ex, null);
         }
     }
-    
+
     public void setReplayCache(TokenReplayCache<String> replayCache) {
         this.replayCache = replayCache;
     }
-    
+
     public TokenReplayCache<String> getReplayCache() {
         if (replayCache == null) {
             replayCache = new EHCacheTokenReplayCache();

@@ -26,17 +26,17 @@ import org.apache.openjpa.persistence.jdbc.Index;
 
 @Entity(name = "Claim")
 public class ClaimEntity {
-    
+
     @Id
     private int id;
-    
+
     @Index
     @NotNull
     private String claimType;
-    
+
     private String displayName;
     private String description;
-        
+
     public int getId() {
         return id;
     }
@@ -44,11 +44,11 @@ public class ClaimEntity {
     public void setId(int id) {
         this.id = id;
     }
-    
+
     public void setClaimType(String claimType) {
         this.claimType = claimType;
     }
-    
+
     public String getClaimType() {
         return claimType;
     }

@@ -34,9 +34,9 @@ public class JettyTest extends AbstractTests {
 
     static String idpHttpsPort;
     static String rpHttpsPort;
-    
+
     private static Tomcat idpServer;
-    
+
     @BeforeClass
     public static void init() {
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
@@ -48,18 +48,18 @@ public class JettyTest extends AbstractTests {
         System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.security", "info");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf.fediz", "info");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf", "info");
-        
+
         idpHttpsPort = System.getProperty("idp.https.port");
         Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
         rpHttpsPort = System.getProperty("rp.https.port");
         Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
 
         initIdp();
-        
+
         JettyUtils.initRpServer();
         JettyUtils.startRpServer();
     }
-    
+
     @AfterClass
     public static void cleanup() {
         try {
@@ -73,10 +73,10 @@ public class JettyTest extends AbstractTests {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
         JettyUtils.stopRpServer();
     }
-    
+
     private static void initIdp() {
         try {
             idpServer = new Tomcat();
@@ -84,11 +84,11 @@ public class JettyTest extends AbstractTests {
             String currentDir = new File(".").getCanonicalPath();
             String baseDir = currentDir + File.separator + "target";
             idpServer.setBaseDir(baseDir);
-            
+
             idpServer.getHost().setAppBase("tomcat/idp/webapps");
             idpServer.getHost().setAutoDeploy(true);
             idpServer.getHost().setDeployOnStartup(true);
-            
+
             Connector httpsConnector = new Connector();
             httpsConnector.setPort(Integer.parseInt(idpHttpsPort));
             httpsConnector.setSecure(true);
@@ -104,13 +104,13 @@ public class JettyTest extends AbstractTests {
             httpsConnector.setAttribute("SSLEnabled", true);
 
             idpServer.getService().addConnector(httpsConnector);
-            
+
             File stsWebapp = new File(baseDir + File.separator + idpServer.getHost().getAppBase(), "fediz-idp-sts");
             idpServer.addWebapp("/fediz-idp-sts", stsWebapp.getAbsolutePath());
-    
+
             File idpWebapp = new File(baseDir + File.separator + idpServer.getHost().getAppBase(), "fediz-idp");
             idpServer.addWebapp("/fediz-idp", idpWebapp.getAbsolutePath());
-            
+
             idpServer.start();
         } catch (Exception e) {
             e.printStackTrace();
@@ -126,16 +126,16 @@ public class JettyTest extends AbstractTests {
     public String getRpHttpsPort() {
         return rpHttpsPort;
     }
-    
+
     @Override
     public String getServletContextName() {
         return "fedizhelloworld";
     }
-    
+
     @Ignore("This tests is currently failing on Jetty")
     @Override
     public void testConcurrentRequests() throws Exception {
         // super.testConcurrentRequests();
     }
-    
+
 }

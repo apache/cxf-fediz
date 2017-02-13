@@ -62,21 +62,21 @@ public class Claim {
         if (!(obj instanceof Claim)) {
             return false;
         }
-        
+
         Claim that = (Claim)obj;
         if (claimType != null && !claimType.equals(that.getClaimType())) {
             return false;
         } else if (claimType == null && that.getClaimType() != null) {
             return false;
         }
-        
+
         return true;
     }
 
     public String toString() {
         return claimType.toString();
     }
-    
-    
-    
+
+
+
 }

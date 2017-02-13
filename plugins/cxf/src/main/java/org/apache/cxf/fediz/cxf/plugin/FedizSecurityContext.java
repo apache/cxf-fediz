@@ -27,7 +27,7 @@ import org.apache.cxf.common.security.SimplePrincipal;
 import org.apache.cxf.security.SecurityContext;
 
 public class FedizSecurityContext implements SecurityContext {
-    
+
     private Principal principal;
     private Set<Principal> roles;
 
@@ -41,7 +41,7 @@ public class FedizSecurityContext implements SecurityContext {
             }
         }
     }
-    
+
     @Override
     public Principal getUserPrincipal() {
         return principal;
@@ -54,7 +54,7 @@ public class FedizSecurityContext implements SecurityContext {
                 return true;
             }
         }
-        
+
         return false;
     }
 

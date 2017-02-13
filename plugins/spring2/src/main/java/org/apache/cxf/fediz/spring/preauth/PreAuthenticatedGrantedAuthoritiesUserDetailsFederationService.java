@@ -60,9 +60,9 @@ public class PreAuthenticatedGrantedAuthoritiesUserDetailsFederationService
         Assert.notNull(token.getDetails());
         Assert.isInstanceOf(GrantedAuthoritiesContainer.class, token.getDetails());
         Assert.isInstanceOf(FedizPrincipal.class, token.getPrincipal());
-        GrantedAuthority[] authorities = 
+        GrantedAuthority[] authorities =
             ((GrantedAuthoritiesContainer) token.getDetails()).getGrantedAuthorities();
-        
+
         return createuserDetails(token, authorities, ((FedizPrincipal)token.getPrincipal()).getClaims());
     }
 
@@ -83,9 +83,9 @@ public class PreAuthenticatedGrantedAuthoritiesUserDetailsFederationService
         Assert.isInstanceOf(PreAuthenticatedAuthenticationToken.class, token);
         Assert.isInstanceOf(GrantedAuthoritiesContainer.class, token.getDetails());
         Assert.isInstanceOf(FedizPrincipal.class, token.getPrincipal());
-        GrantedAuthority[] authorities = 
+        GrantedAuthority[] authorities =
             ((GrantedAuthoritiesContainer) token.getDetails()).getGrantedAuthorities();
-        
+
         return createuserDetails(token, authorities, ((FedizPrincipal)token.getPrincipal()).getClaims());
     }
 }

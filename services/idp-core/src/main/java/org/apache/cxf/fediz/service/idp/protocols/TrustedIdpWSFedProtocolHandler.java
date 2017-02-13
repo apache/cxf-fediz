@@ -59,12 +59,12 @@ import org.springframework.webflow.execution.RequestContext;
 
 @Component
 public class TrustedIdpWSFedProtocolHandler extends AbstractTrustedIdpProtocolHandler {
-    
+
     /**
      * Whether to add the home realm parameter to the URL for redirection or not. The default is "true".
      */
     public static final String HOME_REALM_PROPAGATION = "home.realm.propagation";
-    
+
     public static final String PROTOCOL = "http://docs.oasis-open.org/wsfed/federation/200706";
 
     private static final Logger LOG = LoggerFactory.getLogger(TrustedIdpWSFedProtocolHandler.class);
@@ -73,10 +73,10 @@ public class TrustedIdpWSFedProtocolHandler extends AbstractTrustedIdpProtocolHa
     public String getProtocol() {
         return PROTOCOL;
     }
-    
+
     @Override
     public URL mapSignInRequest(RequestContext context, Idp idp, TrustedIdp trustedIdp) {
-        
+
         try {
             StringBuilder sb = new StringBuilder();
             sb.append(trustedIdp.getUrl());
@@ -86,12 +86,12 @@ public class TrustedIdpWSFedProtocolHandler extends AbstractTrustedIdpProtocolHa
             sb.append(URLEncoder.encode(idp.getRealm(), "UTF-8"));
             sb.append("&").append(FederationConstants.PARAM_REPLY).append('=');
             sb.append(URLEncoder.encode(idp.getIdpUrl().toString(), "UTF-8"));
-            
+
             if (isBooleanPropertyConfigured(trustedIdp, HOME_REALM_PROPAGATION, true)) {
                 sb.append("&").append(FederationConstants.PARAM_HOME_REALM).append('=');
                 sb.append(trustedIdp.getRealm());
             }
-            
+
             String wfresh = context.getFlowScope().getString(FederationConstants.PARAM_FRESHNESS);
             if (wfresh != null) {
                 sb.append("&").append(FederationConstants.PARAM_FRESHNESS).append('=');
@@ -100,7 +100,7 @@ public class TrustedIdpWSFedProtocolHandler extends AbstractTrustedIdpProtocolHa
             String wctx = context.getFlowScope().getString(IdpConstants.TRUSTED_IDP_CONTEXT);
             sb.append("&").append(FederationConstants.PARAM_CONTEXT).append('=');
             sb.append(wctx);
-        
+
             return new URL(sb.toString());
         } catch (MalformedURLException ex) {
             LOG.error("Invalid Redirect URL for Trusted Idp", ex);
@@ -110,45 +110,45 @@ public class TrustedIdpWSFedProtocolHandler extends AbstractTrustedIdpProtocolHa
             throw new IllegalStateException("Invalid Redirect URL for Trusted Idp");
         }
     }
-    
+
     @Override
     public SecurityToken mapSignInResponse(RequestContext context, Idp idp, TrustedIdp trustedIdp) {
 
         try {
             String whr = (String) WebUtils.getAttributeFromFlowScope(context, IdpConstants.HOME_REALM);
-    
+
             if (whr == null) {
                 LOG.warn("Home realm is null");
                 throw new IllegalStateException("Home realm is null");
             }
-    
+
             String wresult = (String) WebUtils.getAttributeFromFlowScope(context,
                                                                          FederationConstants.PARAM_RESULT);
-    
+
             if (wresult == null) {
                 LOG.warn("Parameter wresult not found");
                 throw new IllegalStateException("No security token issued");
             }
-    
+
             FedizContext fedContext = getFedizContext(idp, trustedIdp);
-    
+
             FedizRequest wfReq = new FedizRequest();
             wfReq.setAction(FederationConstants.ACTION_SIGNIN);
             wfReq.setResponseToken(wresult);
-    
+
             FedizProcessor wfProc = new FederationProcessorImpl();
             FedizResponse wfResp = wfProc.processRequest(wfReq, fedContext);
-    
+
             fedContext.close();
-    
+
             Element e = wfResp.getToken();
-    
-            // Create new Security token with new id. 
+
+            // Create new Security token with new id.
             // Parameters for freshness computation are copied from original IDP_TOKEN
             String id = IDGenerator.generateID("_");
             SecurityToken idpToken = new SecurityToken(id,
                                                        wfResp.getTokenCreated(), wfResp.getTokenExpires());
-    
+
             idpToken.setToken(e);
             LOG.info("[IDP_TOKEN={}] for user '{}' created from [RP_TOKEN={}] issued by home realm [{}/{}]",
                      id, wfResp.getUsername(), wfResp.getUniqueTokenId(), whr, wfResp.getIssuer());
@@ -166,8 +166,8 @@ public class TrustedIdpWSFedProtocolHandler extends AbstractTrustedIdpProtocolHa
             throw new IllegalStateException("Unexpected exception occured: " + ex.getMessage());
         }
     }
-    
-    
+
+
     private FedizContext getFedizContext(Idp idpConfig,
             TrustedIdp trustedIdpConfig) throws ProcessingException {
 
@@ -190,7 +190,7 @@ public class TrustedIdpWSFedProtocolHandler extends AbstractTrustedIdpProtocolHa
             certStores.getTrustManager().add(tm0);
             config.setCertificateStores(certStores);
         }
-        
+
         // Configure trusted IDP
         TrustedIssuers trustedIssuers = new TrustedIssuers();
         TrustedIssuerType ti0 = new TrustedIssuerType();
@@ -210,7 +210,7 @@ public class TrustedIdpWSFedProtocolHandler extends AbstractTrustedIdpProtocolHa
         FedizContext fedContext = new FedizContext(config);
         if (!isCertificateLocation) {
             CertificateStore cs = null;
-            
+
             X509Certificate cert;
             try {
                 cert = CertsUtils.parseX509Certificate(trustedIdpConfig.getCertificate());
@@ -219,13 +219,13 @@ public class TrustedIdpWSFedProtocolHandler extends AbstractTrustedIdpProtocolHa
                 throw new ProcessingException("Failed to parse trusted certificate");
             }
             cs = new CertificateStore(Collections.singletonList(cert).toArray(new X509Certificate[0]));
-            
+
             TrustManager tm = new TrustManager(cs);
             fedContext.getCertificateStores().add(tm);
         }
-        
+
         fedContext.init();
         return fedContext;
     }
-    
+
 }

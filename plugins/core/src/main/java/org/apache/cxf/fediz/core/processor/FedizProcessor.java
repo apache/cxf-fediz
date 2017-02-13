@@ -32,7 +32,7 @@ public interface FedizProcessor {
     FedizResponse processRequest(
         FedizRequest request, FedizContext config
     ) throws ProcessingException;
-    
+
     RedirectionResponse createSignInRequest(
         HttpServletRequest request, FedizContext config
     ) throws ProcessingException;

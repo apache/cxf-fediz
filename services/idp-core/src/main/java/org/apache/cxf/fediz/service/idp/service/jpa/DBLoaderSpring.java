@@ -30,11 +30,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
 public class DBLoaderSpring implements DBLoader {
-    
+
     public static final String NAME = "SPRINGDBLOADER";
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(DBLoaderSpring.class);
-    
+
     private EntityManager em;
     private String resource;
 
@@ -42,12 +42,12 @@ public class DBLoaderSpring implements DBLoader {
     public void setEntityManager(EntityManager entityManager) {
         this.em = entityManager;
     }
-    
+
     @Override
     public String getName() {
         return NAME;
     }
-    
+
     public String getResource() {
         return resource;
     }
@@ -61,61 +61,61 @@ public class DBLoaderSpring implements DBLoader {
 
         GenericXmlApplicationContext ctx = null;
         try {
-            
+
             if (resource == null) {
                 LOG.warn("Resource null for DBLoaderSpring");
             }
-            
+
             ctx = new GenericXmlApplicationContext();
             ctx.load(resource);
             ctx.refresh();
             ctx.start();
-            
+
             Collection<EntitlementEntity> entitlements = ctx.
                 getBeansOfType(EntitlementEntity.class, true, true).values();
             for (EntitlementEntity e : entitlements) {
                 em.persist(e);
             }
             LOG.info(entitlements.size() + " EntitlementEntity added");
-            
+
             Collection<RoleEntity> roles = ctx.
                 getBeansOfType(RoleEntity.class, true, true).values();
             for (RoleEntity r : roles) {
                 em.persist(r);
             }
             LOG.info(roles.size() + " RoleEntity added");
-            
+
             Collection<ClaimEntity> claims = ctx.getBeansOfType(ClaimEntity.class, true, true).values();
             for (ClaimEntity c : claims) {
                 em.persist(c);
             }
             LOG.info(claims.size() + " ClaimEntity added");
-            
+
             Collection<TrustedIdpEntity> trustedIdps = ctx.getBeansOfType(TrustedIdpEntity.class).values();
             for (TrustedIdpEntity t : trustedIdps) {
                 em.persist(t);
             }
             LOG.info(trustedIdps.size() + " TrustedIdpEntity added");
-            
+
             Collection<ApplicationEntity> applications = ctx.getBeansOfType(ApplicationEntity.class).values();
             for (ApplicationEntity a : applications) {
                 em.persist(a);
             }
             LOG.info(applications.size() + " ApplicationEntity added");
-            
+
             Collection<IdpEntity> idps = ctx.getBeansOfType(IdpEntity.class).values();
             for (IdpEntity i : idps) {
                 em.persist(i);
             }
             LOG.info(idps.size() + " IdpEntity added");
-            
+
             Collection<ApplicationClaimEntity> applicationClaims =
                 ctx.getBeansOfType(ApplicationClaimEntity.class).values();
             for (ApplicationClaimEntity ac : applicationClaims) {
                 em.persist(ac);
             }
             LOG.info(applicationClaims.size() + " ApplicationClaimEntity added");
-            
+
             em.flush();
         } catch (Exception ex) {
             LOG.warn("Failed to initialize DB with data", ex);

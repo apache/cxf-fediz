@@ -69,7 +69,7 @@ import org.slf4j.LoggerFactory;
 public class SAMLProcessorImpl extends AbstractFedizProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(SAMLProcessorImpl.class);
-    
+
     static {
         OpenSAMLUtil.initSamlEngine();
     }
@@ -85,25 +85,25 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
     public FedizResponse processRequest(FedizRequest request,
                                              FedizContext config)
         throws ProcessingException {
-        
+
         if (!(config.getProtocol() instanceof SAMLProtocol)) {
             LOG.error("Unsupported protocol");
             throw new IllegalStateException("Unsupported protocol");
         }
-        
+
         if (request.getResponseToken() == null || request.getState() == null) {
             LOG.error("Missing response token or RelayState parameters");
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
-        
+
         return processSignInRequest(request, config);
     }
-    
+
 
     public Document getMetaData(HttpServletRequest request, FedizContext config) throws ProcessingException {
         return new MetadataWriter().getMetaData(request, config);
     }
-    
+
     private RequestState processRelayState(
         String relayState, RequestState requestState
     ) throws ProcessingException {
@@ -117,14 +117,14 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
         }
         return requestState;
     }
-    
+
     protected FedizResponse processSignInRequest(
             FedizRequest request, FedizContext config)
         throws ProcessingException {
         SAMLProtocol protocol = (SAMLProtocol)config.getProtocol();
-        RequestState requestState = 
+        RequestState requestState =
             processRelayState(request.getState(), request.getRequestState());
-        
+
         InputStream tokenStream = null;
         try {
             byte[] deflatedToken = Base64.decode(request.getResponseToken());
@@ -138,7 +138,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
         } catch (Base64DecodingException e) {
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
-        
+
         Document doc = null;
         Element el = null;
         try {
@@ -149,9 +149,9 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             LOG.warn("Failed to parse token: " + e.getMessage());
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
-        
+
         LOG.debug("Received response: " + DOM2Writer.nodeToString(el));
-        
+
         XMLObject responseObject = null;
         try {
             responseObject = OpenSAMLUtil.fromDom(el);
@@ -162,31 +162,31 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
         if (!(responseObject instanceof org.opensaml.saml.saml2.core.Response)) {
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
-        
+
         // Validate the Response
         validateSamlResponseProtocol((org.opensaml.saml.saml2.core.Response)responseObject, config);
-        
-        SSOValidatorResponse ssoValidatorResponse = 
-            validateSamlSSOResponse((org.opensaml.saml.saml2.core.Response)responseObject, 
+
+        SSOValidatorResponse ssoValidatorResponse =
+            validateSamlSSOResponse((org.opensaml.saml.saml2.core.Response)responseObject,
                                 request.getRequest(), requestState, config);
-        
+
         // Validate the internal assertion(s)
         TokenValidatorResponse validatorResponse = null;
-        List<Element> assertions = 
+        List<Element> assertions =
             DOMUtils.getChildrenWithName(el, SAMLConstants.SAML20_NS, "Assertion");
-        
+
         if (assertions.isEmpty()) {
             LOG.debug("No Assertion extracted from SAML Response");
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
         Element token = assertions.get(0);
-            
+
         List<TokenValidator> validators = protocol.getTokenValidators();
         for (TokenValidator validator : validators) {
             boolean canHandle = validator.canHandleToken(token);
             if (canHandle) {
                 try {
-                    TokenValidatorRequest validatorRequest = 
+                    TokenValidatorRequest validatorRequest =
                         new TokenValidatorRequest(token, request.getCerts());
                     validatorResponse = validator.validateAndProcessToken(validatorRequest, config);
                 } catch (ProcessingException ex) {
@@ -201,19 +201,19 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
                 throw new ProcessingException(TYPE.BAD_REQUEST);
             }
         }
-        
+
         if (validatorResponse == null) {
             LOG.warn("No token validation response was available");
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
-        
+
         // Check whether token already used for signin
         Date expires = validatorResponse.getExpires();
         if (expires == null) {
             expires = ssoValidatorResponse.getSessionNotOnOrAfter();
         }
         testForReplayAttack(validatorResponse.getUniqueTokenId(), config, expires);
-        
+
         FedizResponse fedResponse = new FedizResponse(
                 validatorResponse.getUsername(), validatorResponse.getIssuer(),
                 validatorResponse.getRoles(), validatorResponse.getClaims(),
@@ -225,10 +225,10 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
 
         return fedResponse;
     }
-    
+
     /**
      * Validate the received SAML Response as per the protocol
-     * @throws ProcessingException 
+     * @throws ProcessingException
      */
     protected void validateSamlResponseProtocol(
         org.opensaml.saml.saml2.core.Response samlResponse,
@@ -242,10 +242,10 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
     }
-    
+
     /**
      * Validate the received SAML Response as per the Web SSO profile
-     * @throws ProcessingException 
+     * @throws ProcessingException
      */
     protected SSOValidatorResponse validateSamlSSOResponse(
         org.opensaml.saml.saml2.core.Response samlResponse,
@@ -258,8 +258,8 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             String requestURL = request.getRequestURL().toString();
             ssoResponseValidator.setAssertionConsumerURL(requestURL);
             ssoResponseValidator.setClientAddress(request.getRemoteAddr());
-            
-            boolean doNotEnforceKnownIssuer = 
+
+            boolean doNotEnforceKnownIssuer =
                 ((SAMLProtocol)config.getProtocol()).isDoNotEnforceKnownIssuer();
             ssoResponseValidator.setEnforceKnownIssuer(!doNotEnforceKnownIssuer);
 
@@ -286,32 +286,32 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
                 LOG.error("Unsupported protocol");
                 throw new IllegalStateException("Unsupported protocol");
             }
-            
+
             String issuerURL = resolveIssuer(request, config);
             LOG.info("Issuer url: " + issuerURL);
             if (issuerURL != null && issuerURL.length() > 0) {
                 redirectURL = issuerURL;
             }
-            
-            SAMLPRequestBuilder samlpRequestBuilder = 
+
+            SAMLPRequestBuilder samlpRequestBuilder =
                 ((SAMLProtocol)config.getProtocol()).getSAMLPRequestBuilder();
-            
+
             Document doc = DOMUtils.createDocument();
             doc.appendChild(doc.createElement("root"));
-     
+
             // Create the AuthnRequest
             String requestURL = request.getRequestURL().toString();
             String realm = resolveWTRealm(request, config);
-            AuthnRequest authnRequest = 
+            AuthnRequest authnRequest =
                 samlpRequestBuilder.createAuthnRequest(realm, requestURL);
-            
+
             if (((SAMLProtocol)config.getProtocol()).isSignRequest()) {
                 authnRequest.setDestination(redirectURL);
             }
-            
+
             Element authnRequestElement = OpenSAMLUtil.toDom(authnRequest, doc);
             String authnRequestEncoded = encodeAuthnRequest(authnRequestElement);
-            
+
             String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
             RequestState requestState = new RequestState();
             requestState.setTargetAddress(requestURL);
@@ -321,34 +321,34 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             requestState.setWebAppContext(authnRequest.getIssuer().getValue());
             requestState.setState(relayState);
             requestState.setCreatedAt(System.currentTimeMillis());
-            
-            String urlEncodedRequest = 
+
+            String urlEncodedRequest =
                 URLEncoder.encode(authnRequestEncoded, "UTF-8");
-            
+
             StringBuilder sb = new StringBuilder();
             sb.append(SAMLSSOConstants.SAML_REQUEST).append('=').append(urlEncodedRequest);
             sb.append("&" + SAMLSSOConstants.RELAY_STATE).append('=').append(relayState);
-            
+
             if (((SAMLProtocol)config.getProtocol()).isSignRequest()) {
                 String signature = signRequest(config, sb);
                 sb.append("&" + SAMLSSOConstants.SIGNATURE).append('=').append(signature);
             }
-            
+
             RedirectionResponse response = new RedirectionResponse();
             response.addHeader("Cache-Control", "no-cache, no-store");
             response.addHeader("Pragma", "no-cache");
             response.setRequestState(requestState);
-            
+
             redirectURL = redirectURL + "?" + sb.toString();
             response.setRedirectionURL(redirectURL);
-            
+
             return response;
         } catch (Exception ex) {
             LOG.error("Failed to create SignInRequest", ex);
             throw new ProcessingException("Failed to create SignInRequest");
         }
     }
-    
+
     /**
      * Sign a request according to the redirect binding spec for Web SSO
      */
@@ -371,14 +371,14 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             LOG.debug("No signature password available");
             throw new ProcessingException("Failed to Sign Request");
         }
-        
+
         // Get the private key
         PrivateKey privateKey = crypto.getPrivateKey(signatureUser, signaturePassword);
         if (privateKey == null) {
             LOG.debug("No private key available");
             throw new ProcessingException("Failed to Sign Request");
         }
-        
+
         String sigAlgo = WSConstants.RSA_SHA1;
         String jceSigAlgo = "SHA1withRSA";
         LOG.debug("automatic sig algo detection: " + privateKey.getAlgorithm());
@@ -387,22 +387,22 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             jceSigAlgo = "SHA1withDSA";
         }
         LOG.debug("Using Signature algorithm " + sigAlgo);
-        
+
         // Sign the request
         Signature signature = Signature.getInstance(jceSigAlgo);
         signature.initSign(privateKey);
-       
+
         sb.append("&" + SAMLSSOConstants.SIG_ALG).append('=').append(URLEncoder.encode(sigAlgo, "UTF-8"));
         String requestToSign = sb.toString();
 
         signature.update(requestToSign.getBytes("UTF-8"));
         byte[] signBytes = signature.sign();
-        
+
         String encodedSignature = Base64.encode(signBytes);
-        
+
         return URLEncoder.encode(encodedSignature, "UTF-8");
     }
-    
+
     protected String encodeAuthnRequest(Element authnRequest) throws IOException {
         String requestMessage = DOM2Writer.nodeToString(authnRequest);
 
@@ -412,11 +412,11 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
     }
 
     @Override
-    public RedirectionResponse createSignOutRequest(HttpServletRequest request, 
+    public RedirectionResponse createSignOutRequest(HttpServletRequest request,
                                                     SamlAssertionWrapper token,
                                                     FedizContext config)
         throws ProcessingException {
-        
+
         String redirectURL = null;
         try {
             if (!(config.getProtocol() instanceof SAMLProtocol)) {
@@ -436,52 +436,52 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
                 LOG.debug("No issuerLogoutURL or issuer parameter specified for logout");
                 throw new ProcessingException("Failed to create SignOutRequest");
             }
-            
-            SAMLPRequestBuilder samlpRequestBuilder = 
+
+            SAMLPRequestBuilder samlpRequestBuilder =
                 ((SAMLProtocol)config.getProtocol()).getSAMLPRequestBuilder();
-            
+
             Document doc = DOMUtils.createDocument();
             doc.appendChild(doc.createElement("root"));
-     
+
             // Create the LogoutRequest
             String realm = resolveWTRealm(request, config);
             String reason = "urn:oasis:names:tc:SAML:2.0:logout:user";
-            LogoutRequest logoutRequest = 
+            LogoutRequest logoutRequest =
                 samlpRequestBuilder.createLogoutRequest(realm, reason, token);
-            
+
             if (((SAMLProtocol)config.getProtocol()).isSignRequest()) {
                 logoutRequest.setDestination(redirectURL);
             }
-            
+
             Element logoutRequestElement = OpenSAMLUtil.toDom(logoutRequest, doc);
             String logoutRequestEncoded = encodeAuthnRequest(logoutRequestElement);
-            
+
             String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-            
-            String urlEncodedRequest = 
+
+            String urlEncodedRequest =
                 URLEncoder.encode(logoutRequestEncoded, "UTF-8");
 
             StringBuilder sb = new StringBuilder();
             sb.append(SAMLSSOConstants.SAML_REQUEST).append('=').append(urlEncodedRequest);
             sb.append("&" + SAMLSSOConstants.RELAY_STATE).append('=').append(relayState);
-            
+
             if (((SAMLProtocol)config.getProtocol()).isSignRequest()) {
                 String signature = signRequest(config, sb);
                 sb.append("&" + SAMLSSOConstants.SIGNATURE).append('=').append(signature);
             }
-            
+
             RedirectionResponse response = new RedirectionResponse();
             response.addHeader("Cache-Control", "no-cache, no-store");
             response.addHeader("Pragma", "no-cache");
-            
+
             redirectURL = redirectURL + "?" + sb.toString();
             response.setRedirectionURL(redirectURL);
-            
+
             return response;
         } catch (Exception ex) {
             LOG.error("Failed to create SignOutRequest", ex);
             throw new ProcessingException("Failed to create SignOutRequest");
         }
     }
-    
+
 }

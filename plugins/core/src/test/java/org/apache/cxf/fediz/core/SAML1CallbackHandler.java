@@ -36,7 +36,7 @@ import org.apache.wss4j.common.saml.builder.SAML2Constants;
  * authentication assertion using Sender Vouches.
  */
 public class SAML1CallbackHandler extends AbstractSAMLCallbackHandler {
-    
+
     public SAML1CallbackHandler() throws Exception {
         // Required for Holder-Of-Key. Commented out.
         /*
@@ -47,12 +47,12 @@ public class SAML1CallbackHandler extends AbstractSAMLCallbackHandler {
             certs = crypto.getX509Certificates(cryptoType);
         }
         */
-        
+
         subjectName = "uid=joe,ou=people,ou=saml-demo,o=example.com";
         subjectQualifier = "www.example.com";
         confirmationMethod = SAML2Constants.CONF_BEARER;
     }
-    
+
     public void handle(Callback[] callbacks)
         throws IOException, UnsupportedCallbackException {
         for (int i = 0; i < callbacks.length; i++) {
@@ -63,8 +63,8 @@ public class SAML1CallbackHandler extends AbstractSAMLCallbackHandler {
                 if (conditions != null) {
                     callback.setConditions(conditions);
                 }
-                
-                SubjectBean subjectBean = 
+
+                SubjectBean subjectBean =
                     new SubjectBean(
                         subjectName, subjectQualifier, confirmationMethod
                     );
@@ -85,6 +85,6 @@ public class SAML1CallbackHandler extends AbstractSAMLCallbackHandler {
             }
         }
     }
-    
+
 }
 

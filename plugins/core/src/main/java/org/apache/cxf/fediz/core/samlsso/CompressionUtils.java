@@ -27,17 +27,17 @@ import java.util.zip.Inflater;
 
 public final class CompressionUtils {
     private CompressionUtils() {
-        
+
     }
-    public static InputStream inflate(byte[] deflatedToken) 
+    public static InputStream inflate(byte[] deflatedToken)
         throws DataFormatException {
         return inflate(deflatedToken, true);
     }
-    public static InputStream inflate(byte[] deflatedToken, boolean nowrap) 
+    public static InputStream inflate(byte[] deflatedToken, boolean nowrap)
         throws DataFormatException {
         Inflater inflater = new Inflater(nowrap);
         inflater.setInput(deflatedToken);
-        
+
         byte[] input = new byte[deflatedToken.length * 2];
         int inflatedLen = 0;
         int inputLen = 0;
@@ -45,7 +45,7 @@ public final class CompressionUtils {
         while (!inflater.finished()) {
             inputLen = inflater.inflate(input);
             if (!inflater.finished()) {
-                
+
                 if (inputLen == 0) {
                     if (inflater.needsInput()) {
                         throw new DataFormatException("Inflater can not inflate all the token bytes");
@@ -53,7 +53,7 @@ public final class CompressionUtils {
                         break;
                     }
                 }
-                
+
                 inflatedToken = new byte[input.length + inflatedLen];
                 System.arraycopy(input, 0, inflatedToken, inflatedLen, inputLen);
                 inflatedLen += inputLen;
@@ -66,21 +66,21 @@ public final class CompressionUtils {
         }
         return is;
     }
-    
+
     public static byte[] deflate(byte[] tokenBytes) {
         return deflate(tokenBytes, true);
     }
-    
+
     public static byte[] deflate(byte[] tokenBytes, boolean nowrap) {
         Deflater compresser = new Deflater(Deflater.DEFLATED, nowrap);
-        
+
         compresser.setInput(tokenBytes);
         compresser.finish();
-        
+
         byte[] output = new byte[tokenBytes.length * 2];
-        
+
         int compressedDataLength = compresser.deflate(output);
-        
+
         byte[] result = new byte[compressedDataLength];
         System.arraycopy(output, 0, result, 0, compressedDataLength);
         return result;

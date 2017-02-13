@@ -47,52 +47,52 @@ public class TrustedIdpEntity {
     @Index
     @NotNull
     private String realm;  //wtrealm, whr
-    
+
     private String issuer;  //Validation of issuer name in SAMLResponse
 
     // Should tokens be cached from trusted IDPs
     // to avoid redirection to the trusted IDP again for next SignIn request
     private boolean cacheTokens;
-    
+
     //Could be read from Metadata, PassiveRequestorEndpoint
     @NotNull
     private String url;
-    
+
     //Could be read from Metadata, md:KeyDescriptor, use="signing"
     //Store certificate in DB or filesystem, provide options?
     private String certificate;
-    
+
     //Direct trust (signing cert imported), Indirect trust (CA certs imported, subject configured)
     @Enumerated(EnumType.STRING)
     private TrustType trustType;
-    
+
     //Could be read from Metadata, RoleDescriptor protocolSupportEnumeration=
     // "http://docs.oasis-open.org/wsfed/federation/200706"
     // Metadata could provide more than one but one must be chosen
     @TrustedIdpProtocolSupported
     private String protocol;
-    
+
     //FederateIdentity, FederateClaims
     @Enumerated(EnumType.STRING)
     private FederationType federationType;
-    
+
     //optional (to provide a list of IDPs)
     @NotNull
     private String name;
-    
+
     //optional (to provide a list of IDPs)
     private String description;
-    
+
     //optional (to provide a list of IDPs)
     private String logo;
-    
+
     // Additional (possibly protocol specific parameters)
     @ElementCollection
     @MapKeyColumn(name = "name")
     @Column(name = "value")
     @CollectionTable(name = "trusted_idp_parameters", joinColumns = @JoinColumn(name = "trusted_idp_id"))
     private Map<String, String> parameters = new HashMap<>();
-    
+
 
     public int getId() {
         return id;
@@ -109,7 +109,7 @@ public class TrustedIdpEntity {
     public void setIssuer(String issuer) {
         this.issuer = issuer;
     }
-    
+
     public String getRealm() {
         return realm;
     }

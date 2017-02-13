@@ -208,7 +208,7 @@ public final class StringUtils {
 
     /**
      * Return input string with first character in upper case.
-     * 
+     *
      * @param name
      *            input string.
      * @return capitalized form.

@@ -26,8 +26,8 @@ import org.apache.cxf.fediz.core.config.FedizContext;
 public interface FederationConfig {
 
     List<FedizContext> getFedizContextList();
-    
+
     FedizContext getFedizContext(String contextName);
-    
+
     FedizContext getFedizContext();
 }

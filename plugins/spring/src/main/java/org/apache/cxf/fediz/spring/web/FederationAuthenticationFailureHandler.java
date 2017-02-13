@@ -43,55 +43,55 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationFa
  * A AuthenticationFailureHandler which will redirect a expired user (token) back to the IdP.
  */
 public class FederationAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(FederationAuthenticationFailureHandler.class);
-       
+
     private FederationConfig federationConfig;
-    
+
     public FederationAuthenticationFailureHandler() {
         super();
     }
-    
+
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
                                         AuthenticationException exception) throws IOException, ServletException {
-        
+
         if (exception instanceof ExpiredTokenException) {
             String redirectUrl = null;
             try {
                 FedizContext fedContext = federationConfig.getFedizContext();
-                FedizProcessor wfProc = 
+                FedizProcessor wfProc =
                     FedizProcessorFactory.newFedizProcessor(fedContext.getProtocol());
                 RedirectionResponse redirectionResponse =
                     wfProc.createSignInRequest(request, fedContext);
                 redirectUrl = redirectionResponse.getRedirectionURL();
-                
+
                 if (redirectUrl == null) {
                     LOG.warn("Failed to create SignInRequest. Redirect URL null");
                     throw new ServletException("Failed to create SignInRequest. Redirect URL null");
                 }
-                
+
                 Map<String, String> headers = redirectionResponse.getHeaders();
                 if (!headers.isEmpty()) {
                     for (Entry<String, String> entry : headers.entrySet()) {
                         response.addHeader(entry.getKey(), entry.getValue());
                     }
                 }
-                
+
             } catch (ProcessingException ex) {
                 LOG.warn("Failed to create SignInRequest", ex);
                 throw new ServletException("Failed to create SignInRequest: " + ex.getMessage());
             }
-            
+
             if (LOG.isInfoEnabled()) {
                 LOG.info("Redirecting to IDP: " + redirectUrl);
             }
             response.sendRedirect(redirectUrl);
         }
-        
+
         super.onAuthenticationFailure(request, response, exception);
     }
-    
+
     public FederationConfig getFederationConfig() {
         return federationConfig;
     }

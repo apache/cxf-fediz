@@ -25,19 +25,19 @@ import org.apache.openjpa.persistence.jdbc.Index;
 
 @Entity(name = "Entitlement")
 public class EntitlementEntity {
-    
+
     @Id
     private int id;
-    
+
     @Index
     private String name;
-    
+
     private String description;
-    
+
     //Internal entities can't be updated, changed and deleted
     //Default: false
     private boolean internal;
-        
+
     public int getId() {
         return id;
     }
@@ -45,7 +45,7 @@ public class EntitlementEntity {
     public void setId(int id) {
         this.id = id;
     }
-    
+
     public String getName() {
         return name;
     }

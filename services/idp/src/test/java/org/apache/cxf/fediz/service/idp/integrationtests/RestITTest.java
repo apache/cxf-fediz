@@ -43,7 +43,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class RestITTest {
-        
+
     private static String idpHttpsPort;
     private static String realm;
     private static Bus bus;
@@ -63,26 +63,26 @@ public class RestITTest {
 
         idpHttpsPort = System.getProperty("idp.https.port");
         Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
-        
+
         realm = System.getProperty("realm");
         Assert.assertNotNull("Property 'realm' null", realm);
 
         SpringBusFactory bf = new SpringBusFactory();
-        
+
         URL busFile = RestITTest.class.getResource("/rest-client.xml");
         bus = bf.createBus(busFile.toString());
         SpringBusFactory.setDefaultBus(bus);
         SpringBusFactory.setThreadDefaultBus(bus);
-        
+
     }
-    
+
     @AfterClass
     public static void cleanup() {
         if (bus != null) {
             bus.shutdown(true);
         }
     }
-    
+
     @Test
     public void testGetAllIdps() throws UnsupportedEncodingException, MalformedURLException {
         String address = "https://localhost:" + idpHttpsPort + "/" + getContextName() + "/services/rs";
@@ -91,7 +91,7 @@ public class RestITTest {
             .request("application/xml").header("Authorization", getBasicAuthentication("admin", "password"))
             .get(Idps.class);
         Assert.assertEquals(1L, idps.getIdps().size());
-        
+
         Idp idp = idps.getIdps().iterator().next();
         if ("realm-a".equals(realm)) {
             Assert.assertEquals("Certificate doesn't match",
@@ -160,7 +160,7 @@ public class RestITTest {
     public void testReadExistingIdpEmbeddedTrustedIdps() throws UnsupportedEncodingException {
         String address = "https://localhost:" + idpHttpsPort + "/" + getContextName() + "/services/rs";
         Client client = ClientBuilder.newClient();
-        
+
         if ("realm-a".equals(realm)) {
             Idp idp = client.target(address).path("idps/").path("urn:org:apache:cxf:fediz:idp:realm-A")
                 .request("application/xml").header("Authorization", getBasicAuthentication("admin", "password"))
@@ -173,13 +173,13 @@ public class RestITTest {
             Assert.assertEquals("", "urn:org:apache:cxf:fediz:idp:realm-B", idp.getRealm());
         }
     }
-    
+
     @Test
     public void testAddClaimToApplication() throws UnsupportedEncodingException {
-        
+
         String address = "https://localhost:" + idpHttpsPort + "/" + getContextName() + "/services/rs";
         Client client = ClientBuilder.newClient();
-        
+
         String realmToAdd = "urn:org:apache:cxf:fediz:fedizhelloworld:testaddclaim";
         Application application = new Application();
         application.setRealm(realmToAdd);
@@ -190,29 +190,29 @@ public class RestITTest {
         application.setServiceDescription("Fedizhelloworld description");
         application.setServiceDisplayName("Fedizhelloworld");
         application.setTokenType("http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0");
-        
+
         Response response = client.target(address).path("applications/")
             .request("application/xml").header("Authorization", getBasicAuthentication("admin", "password"))
             .post(Entity.entity(application, MediaType.APPLICATION_XML));
         Assert.assertEquals(Status.CREATED.getStatusCode(), response.getStatus());
-        
+
         //Testcase
         RequestClaim requestClaim = new RequestClaim();
         requestClaim.setOptional(false);
         requestClaim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"));
-        
+
         response = client.target(address).path("applications").path(realmToAdd).path("claims")
             .request("application/xml").header("Authorization", getBasicAuthentication("admin", "password"))
             .post(Entity.entity(requestClaim, MediaType.APPLICATION_XML));
         Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
-        
+
         application = client.target(address).path("applications").path(realmToAdd).queryParam("expand", "claims")
             .request("application/xml").header("Authorization", getBasicAuthentication("admin", "password"))
             .get(Application.class);
         Assert.assertEquals("Claims size should be 1 instead of " + application.getRequestedClaims().size(),
                             1, application.getRequestedClaims().size());
     }
-    
+
     private String getBasicAuthentication(String username, String password) throws UnsupportedEncodingException {
         String token = username + ":" + password;
         return "Basic " + Base64.encode(token.getBytes());

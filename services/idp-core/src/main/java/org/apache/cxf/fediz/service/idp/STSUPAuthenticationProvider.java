@@ -42,14 +42,14 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 public class STSUPAuthenticationProvider extends STSAuthenticationProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(STSUPAuthenticationProvider.class);
-    
+
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         // We only handle UsernamePasswordAuthenticationTokens
         if (!(authentication instanceof UsernamePasswordAuthenticationToken)) {
             return null;
         }
-        
+
         Bus cxfBus = getBus();
         IdpSTSClient sts = new IdpSTSClient(cxfBus);
         sts.setAddressingNamespace("http://www.w3.org/2005/08/addressing");
@@ -62,31 +62,31 @@ public class STSUPAuthenticationProvider extends STSAuthenticationProvider {
         sts.setWsdlLocation(wsdlLocation);
         sts.setServiceQName(new QName(namespace, wsdlService));
         sts.setEndpointQName(new QName(namespace, wsdlEndpoint));
-        
+
         sts.getProperties().putAll(properties);
         if (use200502Namespace) {
             sts.setNamespace(HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_02_TRUST);
         }
-        
+
         if (lifetime != null) {
             sts.setEnableLifetime(true);
             sts.setTtl(lifetime.intValue());
         }
-        
+
         return handleUsernamePassword((UsernamePasswordAuthenticationToken)authentication, sts);
     }
-    
+
     private Authentication handleUsernamePassword(
         UsernamePasswordAuthenticationToken usernamePasswordToken,
         IdpSTSClient sts
     ) {
         sts.getProperties().put(SecurityConstants.USERNAME, usernamePasswordToken.getName());
         sts.getProperties().put(SecurityConstants.PASSWORD, (String)usernamePasswordToken.getCredentials());
-        
+
         try {
-            
+
             if (getCustomSTSParameter() != null) {
-                HttpServletRequest request = 
+                HttpServletRequest request =
                     ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
                 String authRealmParameter = request.getParameter(getCustomSTSParameter());
                 LOG.debug("Found {} custom STS parameter {}", getCustomSTSParameter(), authRealmParameter);
@@ -95,16 +95,16 @@ public class STSUPAuthenticationProvider extends STSAuthenticationProvider {
                 }
             }
 
-            // Line below may be uncommented for debugging    
+            // Line below may be uncommented for debugging
             // setTimeout(sts.getClient(), 3600000L);
 
             SecurityToken token = sts.requestSecurityToken(this.appliesTo);
-            
+
             List<GrantedAuthority> authorities = createAuthorities(token);
-            
-            UsernamePasswordAuthenticationToken upat = 
-                new UsernamePasswordAuthenticationToken(usernamePasswordToken.getName(), 
-                                                        usernamePasswordToken.getCredentials(), 
+
+            UsernamePasswordAuthenticationToken upat =
+                new UsernamePasswordAuthenticationToken(usernamePasswordToken.getName(),
+                                                        usernamePasswordToken.getCredentials(),
                                                         authorities);
 
             STSUserDetails details = new STSUserDetails(usernamePasswordToken.getName(),
@@ -115,17 +115,17 @@ public class STSUPAuthenticationProvider extends STSAuthenticationProvider {
 
             LOG.debug("[IDP_TOKEN={}] provided for user '{}'", token.getId(), usernamePasswordToken.getName());
             return upat;
-                                                                                           
+
         } catch (Exception ex) {
             LOG.info("Failed to authenticate user '" + usernamePasswordToken.getName() + "'", ex);
             return null;
         }
-        
+
     }
-    
+
     @Override
     public boolean supports(Class<?> authentication) {
         return authentication.equals(UsernamePasswordAuthenticationToken.class);
     }
-    
+
 }

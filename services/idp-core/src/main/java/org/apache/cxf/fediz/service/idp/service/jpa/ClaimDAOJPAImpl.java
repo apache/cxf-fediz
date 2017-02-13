@@ -38,23 +38,23 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 @Transactional
 public class ClaimDAOJPAImpl implements ClaimDAO {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(ClaimDAOJPAImpl.class);
 
     private EntityManager em;
-    
+
     @PersistenceContext
     public void setEntityManager(EntityManager entityManager) {
         this.em = entityManager;
     }
-    
+
     @Override
     public List<Claim> getClaims(int start, int size) {
         List<Claim> list = new ArrayList<>();
-        
+
         Query query = null;
         query = em.createQuery("select c from Claim c");
-        
+
         //@SuppressWarnings("rawtypes")
         List<?> claimEntities = query
             .setFirstResult(start)
@@ -65,16 +65,16 @@ public class ClaimDAOJPAImpl implements ClaimDAO {
             ClaimEntity entity = (ClaimEntity) obj;
             list.add(entity2domain(entity));
         }
-        
+
         return list;
     }
-    
+
     @Override
     public Claim addClaim(Claim claim) {
         ClaimEntity entity = new ClaimEntity();
         domain2entity(claim, entity);
         em.persist(entity);
-        
+
         LOG.debug("Claim '{}' added", claim.getClaimType());
         return entity2domain(entity);
     }
@@ -89,12 +89,12 @@ public class ClaimDAOJPAImpl implements ClaimDAO {
         Query query = null;
         query = em.createQuery("select c from Claim c where c.claimtype=:claimtype");
         query.setParameter("claimtype", claimType);
-        
+
         //@SuppressWarnings("rawtypes")
         ClaimEntity claimEntity = (ClaimEntity)query.getSingleResult();
-        
+
         domain2entity(claim, claimEntity);
-        
+
         LOG.debug("Claim '{}' added", claim.getClaimType());
         em.persist(claimEntity);
     }
@@ -104,23 +104,23 @@ public class ClaimDAOJPAImpl implements ClaimDAO {
         Query query = null;
         query = em.createQuery("select c from Claim c where c.claimType=:claimtype");
         query.setParameter("claimtype", claimType);
-        
+
         //@SuppressWarnings("rawtypes")
         Object claimObj = query.getSingleResult();
         em.remove(claimObj);
-        
+
         LOG.debug("Claim '{}' deleted", claimType);
     }
-    
+
     static ClaimEntity getClaimEntity(String claimType, EntityManager em) {
         Query query = null;
         query = em.createQuery("select c from Claim c where c.claimType=:claimtype");
         query.setParameter("claimtype", claimType);
-        
+
         //@SuppressWarnings("rawtypes")
         return (ClaimEntity)query.getSingleResult();
     }
-    
+
     public static void domain2entity(Claim claim, ClaimEntity entity) {
         //The ID must not be updated if the entity has got an id already (update case)
         if (claim.getId() > 0) {
@@ -130,7 +130,7 @@ public class ClaimDAOJPAImpl implements ClaimDAO {
         entity.setDisplayName(claim.getDisplayName());
         entity.setDescription(claim.getDescription());
     }
-    
+
     public static Claim entity2domain(ClaimEntity entity) {
         Claim claim = new Claim();
         claim.setId(entity.getId());

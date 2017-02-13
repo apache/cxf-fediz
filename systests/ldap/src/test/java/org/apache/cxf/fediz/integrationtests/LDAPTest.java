@@ -87,11 +87,11 @@ public class LDAPTest extends AbstractLdapTestUnit {
 
     static String idpHttpsPort;
     static String rpHttpsPort;
-    
+
     private static Tomcat idpServer;
     private static Tomcat rpServer;
     private static boolean portUpdated;
-    
+
     @Before
     public void init() throws Exception {
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
@@ -101,61 +101,61 @@ public class LDAPTest extends AbstractLdapTestUnit {
         System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.webflow", "info");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.security.web", "info");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf.fediz", "info");
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf", "info");  
-        
+        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf", "info");
+
         idpHttpsPort = System.getProperty("idp.https.port");
         Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
         rpHttpsPort = System.getProperty("rp.https.port");
         Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
 
         WSSConfig.init();
-        
+
         updatePort();
-        
+
         idpServer = startServer(true, idpHttpsPort);
         rpServer = startServer(false, rpHttpsPort);
     }
-    
+
     public void updatePort() throws Exception {
         if (!portUpdated) {
             String basedir = System.getProperty("basedir");
             if (basedir == null) {
                 basedir = new File(".").getCanonicalPath();
             }
-            
+
             // Read in ldap.xml and substitute in the correct port
             File f = new File(basedir + "/src/test/resources/sts/ldap.xml");
-            
+
             FileInputStream inputStream = new FileInputStream(f);
             String content = IOUtils.toString(inputStream, "UTF-8");
             inputStream.close();
             content = content.replaceAll("portno", "" + super.getLdapServer().getPort());
-            
+
             File f2 = new File(basedir + "/target/tomcat/idp/webapps/fediz-idp-sts/WEB-INF/endpoints/ldap.xml");
             try (FileOutputStream outputStream = new FileOutputStream(f2)) {
                 IOUtils.write(content, outputStream, "UTF-8");
             }
-            
+
             // Read in ldap.jaas and substitute in the correct port
             f = new File(basedir + "/src/test/resources/ldap.jaas");
-            
+
             inputStream = new FileInputStream(f);
             content = IOUtils.toString(inputStream, "UTF-8");
             inputStream.close();
             content = content.replaceAll("portno", "" + super.getLdapServer().getPort());
-            
+
             f2 = new File(basedir + "/target/test-classes/ldap.jaas");
             try (FileOutputStream outputStream = new FileOutputStream(f2)) {
                 IOUtils.write(content, outputStream, "UTF-8");
             }
-            
+
             portUpdated = true;
         }
-        
+
         System.setProperty("java.security.auth.login.config", "target/test-classes/ldap.jaas");
     }
-    
-    private static Tomcat startServer(boolean idp, String port) 
+
+    private static Tomcat startServer(boolean idp, String port)
         throws ServletException, LifecycleException, IOException {
         Tomcat server = new Tomcat();
         server.setPort(0);
@@ -190,13 +190,13 @@ public class LDAPTest extends AbstractLdapTestUnit {
         if (idp) {
             File stsWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp-sts");
             server.addWebapp("/fediz-idp-sts", stsWebapp.getAbsolutePath());
-    
+
             File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp");
             server.addWebapp("/fediz-idp", idpWebapp.getAbsolutePath());
         } else {
             File rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
             Context cxt = server.addWebapp("/fedizhelloworld", rpWebapp.getAbsolutePath());
-            
+
             FederationAuthenticator fa = new FederationAuthenticator();
             fa.setConfigFile(currentDir + File.separator + "target" + File.separator
                              + "test-classes" + File.separator + "fediz_config.xml");
@@ -207,13 +207,13 @@ public class LDAPTest extends AbstractLdapTestUnit {
 
         return server;
     }
-    
+
     @After
     public void cleanup() {
         shutdownServer(idpServer);
         shutdownServer(rpServer);
     }
-    
+
     private static void shutdownServer(Tomcat server) {
         try {
             if (server != null && server.getServer() != null
@@ -235,7 +235,7 @@ public class LDAPTest extends AbstractLdapTestUnit {
     public String getRpHttpsPort() {
         return rpHttpsPort;
     }
-    
+
     public String getServletContextName() {
         return "fedizhelloworld";
     }
@@ -247,7 +247,7 @@ public class LDAPTest extends AbstractLdapTestUnit {
         Thread.sleep(5 * 60 * 1000);
     }
     */
-    
+
     @Test
     public void testLDAP() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
@@ -278,6 +278,6 @@ public class LDAPTest extends AbstractLdapTestUnit {
                           bodyTextContent.contains(claim + "=alice@realma.org"));
 
     }
-    
-    
+
+
 }

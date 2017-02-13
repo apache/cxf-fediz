@@ -35,7 +35,7 @@ import org.springframework.security.web.authentication.preauth.AbstractPreAuthen
 public class FederationPreAuthenticatedProcessingFilter extends AbstractPreAuthenticatedProcessingFilter {
 
     private static final String SECURITY_TOKEN_ATTR = "org.apache.fediz.SECURITY_TOKEN";
-        
+
     /**
      * Return the J2EE user name.
      */

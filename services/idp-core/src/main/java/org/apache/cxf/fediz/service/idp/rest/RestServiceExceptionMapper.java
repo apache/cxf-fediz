@@ -36,9 +36,9 @@ import org.springframework.security.access.AccessDeniedException;
 public class RestServiceExceptionMapper implements ExceptionMapper<Exception> {
 
     public static final String APPLICATION_ERROR_CODE = "X-Application-Error-Code";
-    
+
     public static final String APPLICATION_ERROR_INFO = "X-Application-Error-Info";
-    
+
     private static final String BASIC_REALM_UNAUTHORIZED = "Basic realm=\"Apache Fediz authentication\"";
 
     private static final Logger LOG = LoggerFactory.getLogger(RestServiceExceptionMapper.class);
@@ -60,11 +60,11 @@ public class RestServiceExceptionMapper implements ExceptionMapper<Exception> {
         if (ex instanceof DataIntegrityViolationException) {
             return buildResponse(Response.Status.CONFLICT, ex);
         }
-        
+
         if (ex instanceof EmptyResultDataAccessException) {
             return buildResponse(Response.Status.NOT_FOUND, ex);
         }
-        
+
         if (ex instanceof DataRetrievalFailureException) {
             return buildResponse(Response.Status.NOT_FOUND, ex);
         }

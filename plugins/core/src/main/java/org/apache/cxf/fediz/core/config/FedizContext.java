@@ -55,11 +55,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class FedizContext implements Closeable {
-    
+
     public static final String CACHE_KEY_PREFIX = "fediz.replay.cache";
 
     private static final Logger LOG = LoggerFactory.getLogger(FedizContext.class);
-    
+
     private ContextConfig config;
 
     private boolean detectReplayedTokens = true;
@@ -71,7 +71,7 @@ public class FedizContext implements Closeable {
     private KeyManager decryptionKeyManager;
     private ClassLoader classloader;
     private Pattern logoutRedirectToConstraint;
-    
+
 
     public FedizContext(ContextConfig config) {
         if (config == null) {
@@ -79,7 +79,7 @@ public class FedizContext implements Closeable {
         }
         this.config = config;
     }
-    
+
     public void init() {
         //get validators initialized
         getProtocol();
@@ -94,24 +94,24 @@ public class FedizContext implements Closeable {
 
     public List<TrustedIssuer> getTrustedIssuers() {
         TrustedIssuers issuers = config.getTrustedIssuers();
-        List<TrustedIssuerType> trustManagers =  issuers.getIssuer();
+        List<TrustedIssuerType> trustManagers = issuers.getIssuer();
         List<TrustedIssuer> trustedIssuers = new ArrayList<>();
         for (TrustedIssuerType manager:trustManagers) {
             trustedIssuers.add(new TrustedIssuer(manager));
         }
-        return trustedIssuers; 
+        return trustedIssuers;
     }
-    
+
     public List<TrustManager> getCertificateStores() {
         if (!certificateStores.isEmpty()) {
             return Collections.unmodifiableList(certificateStores);
         }
-        
+
         CertificateStores certStores = config.getCertificateStores();
         List<TrustManagersType> trustManagers = certStores.getTrustManager();
         for (TrustManagersType manager : trustManagers) {
             TrustManager tm = new TrustManager(manager);
-            
+
             Crypto crypto = null;
             try {
                 if (manager.getKeyStore().getType().equalsIgnoreCase("PEM")) {
@@ -132,13 +132,13 @@ public class FedizContext implements Closeable {
                 throw new RuntimeException("Failed to read keystore");
             }
         }
-        return Collections.unmodifiableList(certificateStores); 
+        return Collections.unmodifiableList(certificateStores);
     }
 
     public BigInteger getMaximumClockSkew() {
         return config.getMaximumClockSkew();
     }
-    
+
     public void setMaximumClockSkew(BigInteger maximumClockSkew) {
         config.setMaximumClockSkew(maximumClockSkew);
     }
@@ -157,7 +157,7 @@ public class FedizContext implements Closeable {
         } else if (type instanceof SamlProtocolType) {
             protocol = new SAMLProtocol(type);
         }
-        
+
         if (protocol != null) {
             protocol.setClassloader(getClassloader());
         }
@@ -171,16 +171,16 @@ public class FedizContext implements Closeable {
     public String getLogoutRedirectTo() {
         return config.getLogoutRedirectTo();
     }
-    
+
     public Pattern getLogoutRedirectToConstraint() {
         if (logoutRedirectToConstraint == null && config.getLogoutRedirectToConstraint() != null) {
             logoutRedirectToConstraint = Pattern.compile(config.getLogoutRedirectToConstraint());
         }
         return logoutRedirectToConstraint;
     }
-    
+
     public KeyManager getSigningKey() {
-        
+
         if (keyManager != null) {
             return keyManager;
         }
@@ -199,11 +199,11 @@ public class FedizContext implements Closeable {
             LOG.error("Failed to load keystore '" + name + "'", e);
             throw new IllegalConfigurationException("Failed to load keystore '" + name + "'");
         }
-        
-        return keyManager; 
-        
+
+        return keyManager;
+
     }
-    
+
     public KeyManager getDecryptionKey() {
         if (decryptionKeyManager != null) {
             return decryptionKeyManager;
@@ -222,9 +222,9 @@ public class FedizContext implements Closeable {
             LOG.error("Failed to load keystore '" + name + "'", e);
             throw new IllegalConfigurationException("Failed to load keystore '" + name + "'");
         }
-        
-        return decryptionKeyManager; 
-        
+
+        return decryptionKeyManager;
+
     }
 
     public ReplayCache getTokenReplayCache() {
@@ -259,12 +259,12 @@ public class FedizContext implements Closeable {
     public boolean isDetectExpiredTokens() {
         return config.isTokenExpirationValidation();
     }
-    
+
     public void setDetectExpiredTokens(boolean detectExpiredTokens) {
         config.setTokenExpirationValidation(detectExpiredTokens);
     }
 
-    
+
     public boolean isDetectReplayedTokens() {
         return detectReplayedTokens;
     }
@@ -287,7 +287,7 @@ public class FedizContext implements Closeable {
             replayCache.close();
         }
     }
-    
+
     private Properties createCryptoProperties(TrustManagersType tm) {
         String trustStoreFile = null;
         KeyStoreType ks = tm.getKeyStore();
@@ -301,7 +301,7 @@ public class FedizContext implements Closeable {
                 trustStoreFile = ks.getResource();
             }
         }
-        
+
         if (trustStoreFile == null) {
             throw new IllegalStateException("No certificate store configured");
         }
@@ -309,7 +309,7 @@ public class FedizContext implements Closeable {
         if (!f.exists() && getRelativePath() != null && !getRelativePath().isEmpty()) {
             trustStoreFile = getRelativePath().concat(File.separator + trustStoreFile);
         }
-        
+
         if (trustStoreFile == null || trustStoreFile.isEmpty()) {
             throw new IllegalConfigurationException("truststoreFile not configured");
         }
@@ -326,7 +326,7 @@ public class FedizContext implements Closeable {
               trustStoreFile);
         return p;
     }
-    
+
     private Properties createCryptoProperties(KeyManagersType km) {
         String keyStoreFile = null;
         String keyType = "jks";
@@ -341,7 +341,7 @@ public class FedizContext implements Closeable {
                 keyStoreFile = ks.getResource();
             }
         }
-        
+
         if (keyStoreFile == null) {
             throw new IllegalStateException("No certificate store configured");
         }
@@ -349,7 +349,7 @@ public class FedizContext implements Closeable {
         if (!f.exists() && getRelativePath() != null && !getRelativePath().isEmpty()) {
             keyStoreFile = getRelativePath().concat(File.separator + keyStoreFile);
         }
-        
+
         if (keyStoreFile == null || keyStoreFile.isEmpty()) {
             throw new IllegalConfigurationException("truststoreFile not configured");
         }
@@ -359,7 +359,7 @@ public class FedizContext implements Closeable {
         if (ks.getType() != null) {
             keyType = ks.getType();
         }
-        
+
         Properties p = new Properties();
         p.put("org.apache.ws.security.crypto.provider",
                 "org.apache.ws.security.components.crypto.Merlin");
@@ -370,7 +370,7 @@ public class FedizContext implements Closeable {
               keyStoreFile);
         return p;
     }
-    
+
     public ClassLoader getClassloader() {
         return classloader;
     }
@@ -378,7 +378,7 @@ public class FedizContext implements Closeable {
     public void setClassloader(ClassLoader classloader) {
         this.classloader = classloader;
     }
-    
+
     public boolean isAddAuthenticatedRole() {
         return config.isAddAuthenticatedRole();
     }

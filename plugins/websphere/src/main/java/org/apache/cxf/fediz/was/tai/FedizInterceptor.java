@@ -78,7 +78,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
     private FedizConfigurator configurator;
     private RoleToGroupMapper mapper;
     private String cookieName = "LtpaToken2";
-    
+
     /**
      * @see org.apache.cxf.fediz.was.Constants#PROPERTY_KEY_DIRECT_GROUP_MAPPING
      */
@@ -123,7 +123,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
     /**
      * Registers a WebApplication using its contextPath as a key. This method must be called by the associated
      * security ServletFilter instance of a secured application at initialization time
-     * 
+     *
      * @param contextPath
      * @deprecated Not used/needed any longer since version 1.2.0
      */
@@ -134,7 +134,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
     /**
      * Deregister a WebApplication using its contextPath as a key. This method must be called by the
      * associated security ServletFilter instance of a secured application in the #destroy() method
-     * 
+     *
      * @param contextPath
      * @deprecated Not used/needed any longer since version 1.2.0
      */
@@ -214,7 +214,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
      * This method decides weather the interceptor shall be called for #negotiateValidateandEstablishTrust. If
      * the request is applicable for a metadata document, logout URL, or provides a signin token, this method
      * returns true. I the use , otherwise this interceptor will not be called.
-     * 
+     *
      * @see com.ibm.wsspi.security.tai.TrustAssociationInterceptor#isTargetInterceptor(HttpServletRequest)
      */
     @Override
@@ -390,7 +390,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
             throw new WebTrustAssociationFailedException(e.getMessage());
         }
     }
-    
+
     protected void terminateSession(HttpServletRequest request) {
         HttpSession session = request.getSession();
         session.removeAttribute(Constants.SECURITY_TOKEN_SESSION_ATTRIBUTE_KEY);
@@ -583,7 +583,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
 
     /**
      * Convenience method for converting a list of group names to their unique group IDs
-     * 
+     *
      * @param reg
      * @param group
      * @return

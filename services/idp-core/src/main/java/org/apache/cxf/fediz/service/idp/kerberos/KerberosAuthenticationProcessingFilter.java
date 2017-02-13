@@ -18,7 +18,7 @@
  */
 /*
  * Copyright 2002-2008 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -68,7 +68,7 @@ import org.springframework.web.filter.GenericFilterBean;
  * @see KerberosEntryPoint
  */
 public class KerberosAuthenticationProcessingFilter extends GenericFilterBean {
-    private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource = 
+    private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource =
         new WebAuthenticationDetailsSource();
     private AuthenticationManager authenticationManager;
     private AuthenticationSuccessHandler successHandler;
@@ -81,7 +81,7 @@ public class KerberosAuthenticationProcessingFilter extends GenericFilterBean {
      * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest,
      * javax.servlet.ServletResponse, javax.servlet.FilterChain)
      */
-    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) 
+    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
         throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;

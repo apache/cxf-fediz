@@ -24,12 +24,12 @@ package org.apache.cxf.fediz.was;
  */
 //CHECKSTYLE:OFF
 public interface Constants {
-    
+
     String HTTP_POST_METHOD = "POST";
     //String UTF_8_ENCODING_SCHEME = "UTF-8";
     String VERSION = "1.2.0";
     String TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
-    
+
     String USER_REGISTRY_JNDI_NAME = "UserRegistry";
 
     String SUBJECT_TOKEN_KEY = "_security.token";
@@ -69,13 +69,13 @@ public interface Constants {
      * default value is set to 'false', thus the UserRegistry will be invoked.
      */
     String PROPERTY_KEY_DIRECT_GROUP_MAPPING = "directGroupMapping";
-    
+
     /**
      * The session cookie name can be renamed in WebSphere. If it is renamed, it is required to change it in the
      * interceptor configuration too. A misconfiguration would lead to performance loss.
      */
     String PROPERTY_SESSION_COOKIE_NAME = "sessionCookieName";
-    
+
     /**
      * Default name of the session cookie in wbesphere
      */

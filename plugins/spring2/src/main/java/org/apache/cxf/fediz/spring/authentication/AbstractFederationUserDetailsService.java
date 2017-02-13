@@ -32,7 +32,7 @@ public abstract class AbstractFederationUserDetailsService
 
     /*
     public final UserDetails loadUserDetails(final Authentication token) {
-        
+
     }*/
     @Override
     public final UserDetails loadUserDetails(Authentication token) throws UsernameNotFoundException {
@@ -44,12 +44,12 @@ public abstract class AbstractFederationUserDetailsService
     }
 
     /**
-     * Protected template method for construct a {@link org.springframework.security.core.userdetails.UserDetails} 
+     * Protected template method for construct a {@link org.springframework.security.core.userdetails.UserDetails}
      * via the supplied FedizResponse
      *
      * @return the newly created UserDetails object.
      */
     protected abstract UserDetails loadUserDetails(FedizResponse response);
 
-    
+
 }

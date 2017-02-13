@@ -31,12 +31,12 @@ import org.apache.wss4j.dom.message.token.KerberosSecurity;
 import org.apache.xml.security.utils.Base64;
 
 /**
- * Override the default CXF KerberosClient just to create a BinarySecurityToken from a 
- * give Kerberos token. This is used to pass a received Kerberos token through to the 
+ * Override the default CXF KerberosClient just to create a BinarySecurityToken from a
+ * give Kerberos token. This is used to pass a received Kerberos token through to the
  * STS, without retrieving a new token.
  */
 public class PassThroughKerberosClient extends KerberosClient {
-    
+
     private byte[] token;
 
     public PassThroughKerberosClient() {
@@ -50,7 +50,7 @@ public class PassThroughKerberosClient extends KerberosClient {
         bst.setToken(token);
         bst.addWSUNamespace();
         bst.setID(WSSConfig.getNewInstance().getIdAllocator().createSecureId("BST-", bst));
-        
+
         SecurityToken securityToken = new SecurityToken(bst.getID());
         securityToken.setToken(bst.getElement());
         securityToken.setWsuId(bst.getID());

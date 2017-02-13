@@ -50,10 +50,10 @@ public class Spring2Test extends AbstractTests {
 
     static String idpHttpsPort;
     static String rpHttpsPort;
-    
+
     private static Tomcat idpServer;
     private static Tomcat rpServer;
-    
+
     @BeforeClass
     public static void init() throws Exception {
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
@@ -72,13 +72,13 @@ public class Spring2Test extends AbstractTests {
         idpServer = startServer(true, idpHttpsPort);
         rpServer = startServer(false, rpHttpsPort);
     }
-    
+
     @AfterClass
     public static void cleanup() {
         shutdownServer(idpServer);
         shutdownServer(rpServer);
     }
-    
+
     private static void shutdownServer(Tomcat server) {
         try {
             if (server != null && server.getServer() != null
@@ -92,8 +92,8 @@ public class Spring2Test extends AbstractTests {
             e.printStackTrace();
         }
     }
-    
-    private static Tomcat startServer(boolean idp, String port) 
+
+    private static Tomcat startServer(boolean idp, String port)
         throws ServletException, LifecycleException, IOException {
         Tomcat server = new Tomcat();
         server.setPort(0);
@@ -128,11 +128,11 @@ public class Spring2Test extends AbstractTests {
         if (idp) {
             File stsWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp-sts");
             server.addWebapp("/fediz-idp-sts", stsWebapp.getAbsolutePath());
-    
+
             File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp");
             server.addWebapp("/fediz-idp", idpWebapp.getAbsolutePath());
         } else {
-            File rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), 
+            File rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(),
                                      "fediz-systests-webapps-spring2");
             server.addWebapp("/fedizhelloworld_spring2", rpWebapp.getAbsolutePath());
         }
@@ -151,54 +151,54 @@ public class Spring2Test extends AbstractTests {
     public String getRpHttpsPort() {
         return rpHttpsPort;
     }
-    
+
     @Override
     public String getServletContextName() {
         return "fedizhelloworld_spring2";
     }
-    
+
     @Ignore("This tests is currently failing on Spring")
     @Override
     public void testConcurrentRequests() throws Exception {
         // super.testConcurrentRequests();
     }
-    
+
     @Test
     @Ignore("Logout not supported with Spring2")
     @Override
     public void testIdPLogout() throws Exception {
-        
+
     }
-    
+
     @Test
     @Ignore("Logout not supported with Spring2")
     @Override
     public void testIdPLogoutCleanup() throws Exception {
-        
+
     }
-    
+
     @Test
     @Ignore("Logout not supported with Spring2")
     @Override
     public void testRPLogout() throws Exception {
-        
+
     }
-    
+
     @Test
     @Ignore("Logout not supported with Spring2")
     @Override
     public void testRPLogoutViaAction() throws Exception {
-        
+
     }
-    
+
     @Override
     @Test
     public void testAliceModifiedSignature() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
-        
+
         // Get the initial token
         CookieManager cookieManager = new CookieManager();
         final WebClient webClient = new WebClient();
@@ -224,9 +224,9 @@ public class Spring2Test extends AbstractTests {
                 result.setAttributeNS(null, "value", value);
             }
         }
-        
+
         // Invoke back on the RP
-        
+
         final HtmlForm form = idpPage.getFormByName("signinresponseform");
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
 
@@ -242,20 +242,20 @@ public class Spring2Test extends AbstractTests {
 
         webClient.close();
     }
-    
+
     @Override
     @Test
     @Ignore
     public void testEntityExpansionAttack() throws Exception {
 
     }
-    
+
     @Override
     @org.junit.Test
     public void testCSRFAttack() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/j_spring_fediz_security_check";
         csrfAttackTest(url);
     }
-    
+
 }

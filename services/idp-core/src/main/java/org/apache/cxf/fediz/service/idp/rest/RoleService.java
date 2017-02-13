@@ -63,22 +63,22 @@ public interface RoleService {
     @POST
     @PreAuthorize("hasRole('ROLE_CREATE')")
     Response addRole(@Context UriInfo ui, Role role);
-    
+
     @PUT
     @Path("{name}")
     @PreAuthorize("hasRole('ROLE_UPDATE')")
     Response updateRole(@Context UriInfo ui, @PathParam("name") String name, Role role);
-    
+
     @DELETE
     @Path("{name}")
     @PreAuthorize("hasRole('ROLE_DELETE')")
     Response deleteRole(@PathParam("name") String name);
-    
+
     @POST
     @Path("{name}/entitlements")
     @PreAuthorize("hasRole('ROLE_UPDATE')")
     Response addEntitlementToRole(@Context UriInfo ui, @PathParam("name") String name, Entitlement entitlement);
-    
+
     @DELETE
     @Path("{name}/entitlements/{entitlementName}")
     @PreAuthorize("hasRole('ROLE_UPDATE')")

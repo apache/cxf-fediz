@@ -30,7 +30,7 @@ public class RootServiceImpl implements RootService {
 
     public RootServiceImpl() {
     }
-    
+
     public Response head(UriInfo uriInfo) {
         UriBuilder absolute = uriInfo.getBaseUriBuilder();
         URI claimUrl = absolute.clone().path("claims").build();

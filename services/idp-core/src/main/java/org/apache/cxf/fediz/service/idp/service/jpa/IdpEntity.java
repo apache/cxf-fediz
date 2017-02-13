@@ -82,14 +82,14 @@ public class IdpEntity {
     // published hostname, port must be configured
     @NotNull
     private URL idpUrl;
-    
+
     private boolean rpSingleSignOutConfirmation;
 
     // RoleDescriptor protocolSupportEnumeration=
     // "http://docs.oasis-open.org/wsfed/federation/200706"
     // "http://docs.oasis-open.org/ws-sx/ws-trust/200512"
     // Could be more in the future
-    
+
     @ElementCollection
     @CollectionTable(name = "idp_protocols")
     @Column(name = "protocol")
@@ -134,7 +134,7 @@ public class IdpEntity {
 
     // ServiceDescription
     private String serviceDescription;
-    
+
     private boolean rpSingleSignOutCleanupConfirmation;
 
 
@@ -145,7 +145,7 @@ public class IdpEntity {
     public void setId(int id) {
         this.id = id;
     }
-    
+
     public String getRealm() {
         return realm;
     }
@@ -281,7 +281,7 @@ public class IdpEntity {
     public void setServiceDescription(String serviceDescription) {
         this.serviceDescription = serviceDescription;
     }
-    
+
     public boolean isRpSingleSignOutConfirmation() {
         return rpSingleSignOutConfirmation;
     }

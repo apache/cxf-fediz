@@ -23,11 +23,11 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.webflow.execution.RequestContext;
 
 public interface ApplicationProtocolHandler extends ProtocolHandler {
-    
+
     boolean canHandleRequest(HttpServletRequest request);
 
     void mapSignInRequest(RequestContext context);
-    
+
     void mapSignInResponse(RequestContext context);
 
 }

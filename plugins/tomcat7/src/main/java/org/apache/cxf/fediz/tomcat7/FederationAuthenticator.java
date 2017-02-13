@@ -195,16 +195,16 @@ public class FederationAuthenticator extends FormAuthenticator {
     @Override
     public boolean authenticate(Request request, HttpServletResponse response,
             LoginConfig config) throws IOException {
-        
+
         LOG.debug("authenticate invoked");
-        
+
         String contextName = request.getServletContext().getContextPath();
         if (contextName == null || contextName.isEmpty()) {
             contextName = "/";
         }
         LOG.debug("reading configuration for context path: {}", contextName);
         FedizContext fedCtx = getContextConfiguration(contextName);
-        
+
         // Handle Signin requests
         TomcatSigninHandler signinHandler = new TomcatSigninHandler(fedCtx);
         signinHandler.setLandingPage(landingPage);
@@ -219,7 +219,7 @@ public class FederationAuthenticator extends FormAuthenticator {
             // The actual login will take place after redirect
             return false;
         }
-        
+
         // Is this the re-submit of the original request URI after successful
         // authentication? If so, forward the *original* request instead.
         if (matchRequest(request)) {
@@ -241,12 +241,12 @@ public class FederationAuthenticator extends FormAuthenticator {
         if (contextId == null) {
             LOG.warn("The 'wctx' parameter has not been provided back with signin request.");
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-            
+
         } else {
             Session session = ((Request)request).getSessionInternal();
             String originalURL = (String)session.getNote(FederationAuthenticator.SESSION_SAVED_URI_PREFIX + contextId);
             session.removeNote(FederationAuthenticator.SESSION_SAVED_URI_PREFIX + contextId); // Cleanup session
-            
+
             try {
                 if (originalURL != null) {
                     LOG.debug("Restore request to {}", originalURL);
@@ -267,7 +267,7 @@ public class FederationAuthenticator extends FormAuthenticator {
             }
         }
     }
-    
+
     protected boolean restoreRequest(Request request, HttpServletResponse response) throws IOException {
 
         Session session = request.getSessionInternal();
@@ -288,7 +288,7 @@ public class FederationAuthenticator extends FormAuthenticator {
         }
     }
 
-    protected void redirectToIdp(Request request, HttpServletResponse response, FedizContext fedCtx) 
+    protected void redirectToIdp(Request request, HttpServletResponse response, FedizContext fedCtx)
         throws IOException {
 
         FedizProcessor processor = FedizProcessorFactory.newFedizProcessor(fedCtx.getProtocol());
@@ -322,7 +322,7 @@ public class FederationAuthenticator extends FormAuthenticator {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignInRequest.");
         }
     }
-    
+
     @Override
     protected boolean matchRequest(Request request) {
         Session session = request.getSessionInternal(false);
@@ -335,10 +335,10 @@ public class FederationAuthenticator extends FormAuthenticator {
                     return super.matchRequest(request);
                 }
             }
-        } 
+        }
         return false;
     }
-    
+
     protected void saveRequest(Request request, String contextId) throws IOException {
         String uri = request.getDecodedRequestURI();
         Session session = request.getSessionInternal(true);
@@ -360,7 +360,7 @@ public class FederationAuthenticator extends FormAuthenticator {
             session.setNote(SESSION_SAVED_URI_PREFIX + contextId, sb.toString());
         }
     }
-    
+
     protected boolean restoreRequest(Request request) throws IOException {
         Session session = request.getSessionInternal(false);
         String uri = request.getDecodedRequestURI();

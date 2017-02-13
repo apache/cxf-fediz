@@ -28,7 +28,7 @@ import org.springframework.webflow.execution.RequestContext;
 
 @Component
 public class ApplicationSAMLSSOProtocolHandler implements ApplicationProtocolHandler {
-    
+
     public static final String PROTOCOL = "urn:oasis:names:tc:SAML:2.0:profiles:SSO:browser";
 
     //private static final Logger LOG = LoggerFactory.getLogger(ApplicationWSFedProtocolHandler.class);

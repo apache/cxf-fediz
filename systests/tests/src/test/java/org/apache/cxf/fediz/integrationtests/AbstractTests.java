@@ -404,7 +404,7 @@ public abstract class AbstractTests {
 
         // webClient.close();
     }
-    
+
     @Test
     public void testRPLogoutViaAction() throws Exception {
 
@@ -447,7 +447,7 @@ public abstract class AbstractTests {
 
         // webClient.close();
     }
-    
+
     @Test
     public void testIdPLogout() throws Exception {
 
@@ -677,13 +677,13 @@ public abstract class AbstractTests {
         }
         // webClient2.close();
     }
-    
+
     @Test
     public void testEntityExpansionAttack() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
-        
+
         // Get the initial token
         CookieManager cookieManager = new CookieManager();
         final WebClient webClient = new WebClient();
@@ -703,7 +703,7 @@ public abstract class AbstractTests {
 
         String entity = IOUtils.toString(this.getClass().getClassLoader().getResource("entity.xml").openStream());
         String reference = "&m;";
-        
+
         for (DomElement result : results) {
             if ("wresult".equals(result.getAttributeNS(null, "name"))) {
                 // Now modify the Signature
@@ -713,9 +713,9 @@ public abstract class AbstractTests {
                 result.setAttributeNS(null, "value", value);
             }
         }
-        
+
         // Invoke back on the RP
-        
+
         final HtmlForm form = idpPage.getFormByName("signinresponseform");
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
 
@@ -737,12 +737,12 @@ public abstract class AbstractTests {
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
         csrfAttackTest(url);
     }
-    
+
     protected void csrfAttackTest(String rpURL) throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
-        
+
         // 1. Log in as "alice"
         WebClient webClient = new WebClient();
         webClient.getOptions().setUseInsecureSSL(true);
@@ -757,12 +757,12 @@ public abstract class AbstractTests {
 
         final HtmlForm form = idpPage.getFormByName("signinresponseform");
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
-        
+
         final HtmlPage rpPage = button.click();
         Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
                             || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
-        
-        
+
+
         // 2. Log in as "bob" using another WebClient
         WebClient webClient2 = new WebClient();
         webClient2.getOptions().setUseInsecureSSL(true);
@@ -776,11 +776,11 @@ public abstract class AbstractTests {
         Assert.assertEquals("IDP SignIn Response Form", idpPage2.getTitleText());
 
         // 3. Now instead of clicking on the form, send the form via alice's WebClient instead
-        
+
         // Send with context...
         WebRequest request = new WebRequest(new URL(rpURL), HttpMethod.POST);
         request.setRequestParameters(new ArrayList<NameValuePair>());
-        
+
         DomNodeList<DomElement> results = idpPage2.getElementsByTagName("input");
 
         for (DomElement result : results) {
@@ -791,16 +791,16 @@ public abstract class AbstractTests {
                 request.getRequestParameters().add(new NameValuePair(result.getAttributeNS(null, "name"), value));
             }
         }
-        
+
         try {
             webClient.getPage(request);
             Assert.fail("Failure expected on a CSRF attack");
         } catch (FailingHttpStatusCodeException ex) {
             // expected
         }
-        
+
         // webClient.close();
-        
+
     }
-    
+
 }

@@ -48,14 +48,14 @@ import org.opensaml.saml.saml2.core.Subject;
  * Assertion.
  */
 public class SAML2CallbackHandler implements CallbackHandler {
-    
+
     private Subject subject;
     private String confirmationMethod = SAML2Constants.CONF_BEARER;
     private String issuer;
     private ConditionsBean conditions;
     private SubjectConfirmationDataBean subjectConfirmationData;
     private List<AttributeStatement> attributeStatements;
-    
+
     private void createAndSetStatement(SAMLCallback callback) {
         AuthenticationStatementBean authBean = new AuthenticationStatementBean();
         authBean.setAuthenticationMethod("Password");
@@ -63,11 +63,11 @@ public class SAML2CallbackHandler implements CallbackHandler {
 
         if (attributeStatements != null && !attributeStatements.isEmpty()) {
             List<AttributeStatementBean> attrStatementBeans = new ArrayList<>();
-            
+
             for (AttributeStatement attrStatement : attributeStatements) {
                 AttributeStatementBean attrStatementBean = new AttributeStatementBean();
                 List<AttributeBean> attrBeans = new ArrayList<>();
-                
+
                 for (Attribute attribute : attrStatement.getAttributes()) {
                     AttributeBean attributeBean = new AttributeBean();
                     attributeBean.setQualifiedName(attribute.getName());
@@ -85,7 +85,7 @@ public class SAML2CallbackHandler implements CallbackHandler {
             callback.setAttributeStatementData(attrStatementBeans);
         }
     }
-    
+
     public void handle(Callback[] callbacks)
         throws IOException, UnsupportedCallbackException {
         for (int i = 0; i < callbacks.length; i++) {
@@ -96,8 +96,8 @@ public class SAML2CallbackHandler implements CallbackHandler {
                 if (conditions != null) {
                     callback.setConditions(conditions);
                 }
-                
-                SubjectBean subjectBean = 
+
+                SubjectBean subjectBean =
                     new SubjectBean(
                         subject.getNameID().getValue(), subject.getNameID().getNameQualifier(), confirmationMethod
                     );
@@ -111,19 +111,19 @@ public class SAML2CallbackHandler implements CallbackHandler {
             }
         }
     }
-    
+
     public void setSubjectConfirmationData(SubjectConfirmationDataBean subjectConfirmationData) {
         this.subjectConfirmationData = subjectConfirmationData;
     }
-    
+
     public void setConditions(ConditionsBean conditionsBean) {
         this.conditions = conditionsBean;
     }
-    
+
     public void setConfirmationMethod(String confMethod) {
         confirmationMethod = confMethod;
     }
-    
+
     public void setIssuer(String issuer) {
         this.issuer = issuer;
     }
@@ -143,6 +143,6 @@ public class SAML2CallbackHandler implements CallbackHandler {
     public void setAttributeStatements(List<AttributeStatement> attributeStatements) {
         this.attributeStatements = attributeStatements;
     }
-    
-    
+
+
 }

@@ -68,19 +68,19 @@ public class CallbackHandlerTest {
     private static final String KEYSTORE_PASSWORD = "passw0rd1";
     private static final String KEYSTORE_RESOURCE_PATH = "org.apache.fediz.kestore1";
     private static final String AUDIENCE_URI = "http://host_one:port/url";
-    
+
     private static final String ROLE_DELIMITER = ";";
     private static final String ROLE_URI = "http://someserver:8080/path/roles.uri";
     private static final String CLAIM_TYPE = "a particular claim type";
     private static final String SUBJECT_VALUE = ".*CN=www.sts1.com.*";
     private static final String TEST_SIGNIN_QUERY = "pubid=myid";
-    
-    
+
+
     @AfterClass
     public static void cleanup() {
         SecurityTestUtil.cleanup();
     }
-    
+
     private FedizConfig createConfiguration(boolean federation) throws JAXBException {
 
         FedizConfig rootConfig = new FedizConfig();
@@ -91,16 +91,16 @@ public class CallbackHandlerTest {
         config.setMaximumClockSkew(new BigInteger(CLOCK_SKEW));
 
         CertificateStores certStores = new CertificateStores();
-        
-        TrustManagersType tm0 = new TrustManagersType();       
+
+        TrustManagersType tm0 = new TrustManagersType();
         KeyStoreType ks0 = new KeyStoreType();
         ks0.setType("JKS");
         ks0.setPassword(KEYSTORE_PASSWORD);
         ks0.setResource(KEYSTORE_RESOURCE_PATH);
         tm0.setKeyStore(ks0);
-        certStores.getTrustManager().add(tm0);    
+        certStores.getTrustManager().add(tm0);
         config.setCertificateStores(certStores);
-        
+
         TrustedIssuers trustedIssuers = new TrustedIssuers();
         TrustedIssuerType ti0 = new TrustedIssuerType();
         ti0.setCertificateValidation(ValidationType.CHAIN_TRUST);
@@ -108,24 +108,24 @@ public class CallbackHandlerTest {
         ti0.setSubject(SUBJECT_VALUE);
         trustedIssuers.getIssuer().add(ti0);
         config.setTrustedIssuers(trustedIssuers);
-        
+
         AudienceUris audienceUris = new AudienceUris();
         audienceUris.getAudienceItem().add(AUDIENCE_URI);
         config.setAudienceUris(audienceUris);
 
         ProtocolType protocol = null;
-        
+
         if (federation) {
             protocol = new FederationProtocolType();
-            
+
             CallbackType freshness = new CallbackType();
             freshness.setValue(FRESHNESS_VALUE);
             ((FederationProtocolType)protocol).setFreshness(freshness);
-            
+
             CallbackType realm = new CallbackType();
             realm.setValue(TARGET_REALM);
             protocol.setRealm(freshness);
-            
+
             CallbackType reply = new CallbackType();
             reply.setValue(REPLY);
             ((FederationProtocolType)protocol).setReply(reply);
@@ -134,7 +134,7 @@ public class CallbackHandlerTest {
             protocol = new SamlProtocolType();
         }
         config.setProtocol(protocol);
-        
+
         protocol.setRoleDelimiter(ROLE_DELIMITER);
         protocol.setRoleURI(ROLE_URI);
 
@@ -144,106 +144,106 @@ public class CallbackHandlerTest {
         claimType.setType(CLAIM_TYPE);
         claimTypeReq.getClaimType().add(claimType);
         protocol.setClaimTypesRequested(claimTypeReq);
-        
+
         return rootConfig;
     }
-    
+
     private FedizConfig createConfigWithoutCB(boolean federation) throws JAXBException {
-        
+
         FedizConfig config = createConfiguration(federation);
         ProtocolType protocol = config.getContextConfig().get(0).getProtocol();
-        
+
         CallbackType issuer = new CallbackType();
         issuer.setType(ArgumentType.STRING);
         issuer.setValue(TestCallbackHandler.TEST_IDP);
         protocol.setIssuer(issuer);
-        
+
         if (protocol instanceof FederationProtocolType) {
             CallbackType homeRealm = new CallbackType();
             homeRealm.setType(ArgumentType.STRING);
             homeRealm.setValue(TestCallbackHandler.TEST_HOME_REALM);
             ((FederationProtocolType)protocol).setHomeRealm(homeRealm);
-            
+
             CallbackType authType = new CallbackType();
             authType.setType(ArgumentType.STRING);
             authType.setValue(TestCallbackHandler.TEST_WAUTH);
             ((FederationProtocolType)protocol).setAuthenticationType(authType);
-            
+
             CallbackType tokenRequest = new CallbackType();
             tokenRequest.setType(ArgumentType.STRING);
             tokenRequest.setValue(TestCallbackHandler.TEST_WREQ);
             ((FederationProtocolType)protocol).setRequest(tokenRequest);
-            
+
             CallbackType signInQueryType = new CallbackType();
             signInQueryType.setType(ArgumentType.STRING);
             signInQueryType.setValue(TEST_SIGNIN_QUERY);
             ((FederationProtocolType)protocol).setSignInQuery(signInQueryType);
         }
-        
+
         return config;
     }
-    
+
     private FedizConfig createConfigCB(boolean federation) throws JAXBException {
-        
+
         FedizConfig config = createConfiguration(federation);
         ProtocolType protocol = config.getContextConfig().get(0).getProtocol();
-        
+
         CallbackType realmType = new CallbackType();
         realmType.setType(ArgumentType.CLASS);
         realmType.setValue(CALLBACKHANDLER_CLASS);
         protocol.setRealm(realmType);
-        
+
         CallbackType issuer = new CallbackType();
         issuer.setType(ArgumentType.CLASS);
         issuer.setValue(CALLBACKHANDLER_CLASS);
         protocol.setIssuer(issuer);
-        
+
         if (protocol instanceof FederationProtocolType) {
             CallbackType homeRealm = new CallbackType();
             homeRealm.setType(ArgumentType.CLASS);
             homeRealm.setValue(CALLBACKHANDLER_CLASS);
             ((FederationProtocolType)protocol).setHomeRealm(homeRealm);
-            
+
             CallbackType authType = new CallbackType();
             authType.setType(ArgumentType.CLASS);
             authType.setValue(CALLBACKHANDLER_CLASS);
             ((FederationProtocolType)protocol).setAuthenticationType(authType);
-            
+
             CallbackType tokenRequest = new CallbackType();
             tokenRequest.setType(ArgumentType.CLASS);
             tokenRequest.setValue(CALLBACKHANDLER_CLASS);
             ((FederationProtocolType)protocol).setRequest(tokenRequest);
-            
+
             CallbackType signInQueryType = new CallbackType();
             signInQueryType.setType(ArgumentType.CLASS);
             signInQueryType.setValue(CALLBACKHANDLER_CLASS);
             ((FederationProtocolType)protocol).setSignInQuery(signInQueryType);
-            
+
             CallbackType replyType = new CallbackType();
             replyType.setType(ArgumentType.CLASS);
             replyType.setValue(CALLBACKHANDLER_CLASS);
             ((FederationProtocolType)protocol).setReply(replyType);
         }
-        
+
         return config;
     }
-    
+
     @org.junit.Test
     public void testParamsWithCallbackHandlerFederation() throws Exception {
-        
+
         final JAXBContext jaxbContext = JAXBContext.newInstance(FedizConfig.class);
         FedizConfig configOut = createConfigCB(true);
         StringWriter writer = new StringWriter();
         jaxbContext.createMarshaller().marshal(configOut, writer);
         StringReader reader = new StringReader(writer.toString());
-        
+
         FedizConfigurator configurator = new FedizConfigurator();
         configurator.loadConfig(reader);
-        
+
         FedizContext ctx = configurator.getFedizContext(CONFIG_NAME);
-        
+
         FederationProtocol fp = (FederationProtocol)ctx.getProtocol();
-        
+
         Object issuerObj = fp.getIssuer();
         Assert.assertTrue(issuerObj instanceof CallbackHandler);
         CallbackHandler issuerCB = (CallbackHandler)issuerObj;
@@ -251,7 +251,7 @@ public class CallbackHandlerTest {
         issuerCB.handle(new Callback[] {callbackIDP});
         String issuerURL = callbackIDP.getIssuerUrl().toString();
         Assert.assertEquals(TestCallbackHandler.TEST_IDP, issuerURL);
-        
+
         Object wAuthObj = fp.getAuthenticationType();
         Assert.assertTrue(wAuthObj instanceof CallbackHandler);
         CallbackHandler wauthCB = (CallbackHandler)wAuthObj;
@@ -259,7 +259,7 @@ public class CallbackHandlerTest {
         wauthCB.handle(new Callback[] {callbackWA});
         String wAuth = callbackWA.getWauth();
         Assert.assertEquals(TestCallbackHandler.TEST_WAUTH, wAuth);
-        
+
         Object wReqObj = fp.getRequest();
         Assert.assertTrue(wReqObj instanceof CallbackHandler);
         CallbackHandler wreqCB = (CallbackHandler)wReqObj;
@@ -267,7 +267,7 @@ public class CallbackHandlerTest {
         wreqCB.handle(new Callback[] {callbackReq});
         String wReq = callbackReq.getWreq();
         Assert.assertEquals(TestCallbackHandler.TEST_WREQ, wReq);
-        
+
         Object homeRealmObj = fp.getHomeRealm();
         Assert.assertTrue(homeRealmObj instanceof CallbackHandler);
         CallbackHandler hrCB = (CallbackHandler)homeRealmObj;
@@ -275,7 +275,7 @@ public class CallbackHandlerTest {
         hrCB.handle(new Callback[] {callbackHR});
         String hr = callbackHR.getHomeRealm();
         Assert.assertEquals(TestCallbackHandler.TEST_HOME_REALM, hr);
-        
+
         Object wtRealmObj = fp.getRealm();
         Assert.assertTrue(wtRealmObj instanceof CallbackHandler);
         CallbackHandler wtrCB = (CallbackHandler)wtRealmObj;
@@ -283,7 +283,7 @@ public class CallbackHandlerTest {
         wtrCB.handle(new Callback[]{callbackWTR});
         String wtr = callbackWTR.getRealm();
         Assert.assertEquals(TestCallbackHandler.TEST_WTREALM, wtr);
-        
+
         Object signInQueryObj = fp.getSignInQuery();
         Assert.assertTrue(signInQueryObj instanceof CallbackHandler);
         CallbackHandler siqCB = (CallbackHandler)signInQueryObj;
@@ -293,7 +293,7 @@ public class CallbackHandlerTest {
         Assert.assertEquals(2, signinQueryMap.size());
         Assert.assertEquals("myid", signinQueryMap.get("pubid"));
         Assert.assertEquals("<=>", signinQueryMap.get("testenc"));
-        
+
         Object replyObj = fp.getReply();
         Assert.assertTrue(replyObj instanceof CallbackHandler);
         CallbackHandler replyCB = (CallbackHandler)replyObj;
@@ -301,25 +301,25 @@ public class CallbackHandlerTest {
         replyCB.handle(new Callback[] {callbackReply});
         String reply = callbackReply.getReply();
         Assert.assertEquals(TestCallbackHandler.TEST_REPLY, reply);
-        
+
     }
-    
+
     @org.junit.Test
     public void testParamsWithCallbackHandlerSAML() throws Exception {
-        
+
         final JAXBContext jaxbContext = JAXBContext.newInstance(FedizConfig.class);
         FedizConfig configOut = createConfigCB(false);
         StringWriter writer = new StringWriter();
         jaxbContext.createMarshaller().marshal(configOut, writer);
         StringReader reader = new StringReader(writer.toString());
-        
+
         FedizConfigurator configurator = new FedizConfigurator();
         configurator.loadConfig(reader);
-        
+
         FedizContext ctx = configurator.getFedizContext(CONFIG_NAME);
-        
+
         SAMLProtocol protocol = (SAMLProtocol)ctx.getProtocol();
-        
+
         Object issuerObj = protocol.getIssuer();
         Assert.assertTrue(issuerObj instanceof CallbackHandler);
         CallbackHandler issuerCB = (CallbackHandler)issuerObj;
@@ -328,70 +328,70 @@ public class CallbackHandlerTest {
         String issuerURL = callbackIDP.getIssuerUrl().toString();
         Assert.assertEquals(TestCallbackHandler.TEST_IDP, issuerURL);
     }
-    
+
     @org.junit.Test
     public void testParamsWithoutCallbackHandlerFederation() throws Exception {
-        
+
         final JAXBContext jaxbContext = JAXBContext.newInstance(FedizConfig.class);
         FedizConfig configOut = createConfigWithoutCB(true);
         StringWriter writer = new StringWriter();
         jaxbContext.createMarshaller().marshal(configOut, writer);
         StringReader reader = new StringReader(writer.toString());
-        
+
         FedizConfigurator configurator = new FedizConfigurator();
         configurator.loadConfig(reader);
-        
+
         FedizContext ctx = configurator.getFedizContext(CONFIG_NAME);
-        
+
         FederationProtocol fp = (FederationProtocol)ctx.getProtocol();
-        
+
         Object issuerObj = fp.getIssuer();
         Assert.assertTrue(issuerObj instanceof String);
         String issuerURL = (String)issuerObj;
         Assert.assertEquals(TestCallbackHandler.TEST_IDP, issuerURL);
-        
+
         Object wAuthObj = fp.getAuthenticationType();
         Assert.assertTrue(wAuthObj instanceof String);
         String wAuth = (String)wAuthObj;
         Assert.assertEquals(TestCallbackHandler.TEST_WAUTH, wAuth);
-        
+
         Object wReqObj = fp.getRequest();
         Assert.assertTrue(wReqObj instanceof String);
         String wReq = (String)wReqObj;
         Assert.assertEquals(TestCallbackHandler.TEST_WREQ, wReq);
-        
+
         Object homeRealmObj = fp.getHomeRealm();
         Assert.assertTrue(homeRealmObj instanceof String);
         String hr = (String)homeRealmObj;
         Assert.assertEquals(TestCallbackHandler.TEST_HOME_REALM, hr);
-        
+
         Object signInQueryObj = fp.getSignInQuery();
         Assert.assertTrue(signInQueryObj instanceof String);
         String signInQuery = (String)signInQueryObj;
         Assert.assertEquals(TestCallbackHandler.TEST_SIGNIN_QUERY, signInQuery);
     }
-    
+
     @org.junit.Test
     public void testParamsWithoutCallbackHandlerSAML() throws Exception {
-        
+
         final JAXBContext jaxbContext = JAXBContext.newInstance(FedizConfig.class);
         FedizConfig configOut = createConfigWithoutCB(false);
         StringWriter writer = new StringWriter();
         jaxbContext.createMarshaller().marshal(configOut, writer);
         StringReader reader = new StringReader(writer.toString());
-        
+
         FedizConfigurator configurator = new FedizConfigurator();
         configurator.loadConfig(reader);
-        
+
         FedizContext ctx = configurator.getFedizContext(CONFIG_NAME);
-        
+
         Protocol protocol = ctx.getProtocol();
-        
+
         Object issuerObj = protocol.getIssuer();
         Assert.assertTrue(issuerObj instanceof String);
         String issuerURL = (String)issuerObj;
         Assert.assertEquals(TestCallbackHandler.TEST_IDP, issuerURL);
     }
-    
-    
+
+
 }

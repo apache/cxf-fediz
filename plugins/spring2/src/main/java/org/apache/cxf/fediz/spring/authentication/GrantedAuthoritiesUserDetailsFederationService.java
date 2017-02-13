@@ -35,15 +35,15 @@ public class GrantedAuthoritiesUserDetailsFederationService
         extends AbstractFederationUserDetailsService {
 
     private boolean convertToUpperCase = true;
-    
+
     @Override
     protected UserDetails loadUserDetails(FedizResponse response) {
-        
+
         List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
-        
+
         if (response.getRoles() != null) {
             for (final String role : response.getRoles()) {
-                
+
                 grantedAuthorities.add(new GrantedAuthorityImpl("ROLE_"
                                         + (this.convertToUpperCase ? role.toUpperCase() : role)));
             }
@@ -52,10 +52,10 @@ public class GrantedAuthoritiesUserDetailsFederationService
                                   (GrantedAuthority[]) grantedAuthorities.toArray(
                                       new GrantedAuthority[grantedAuthorities.size()]),
                                   new ClaimCollection(response.getClaims()));
-        
+
     }
-    
-    
+
+
     /**
      * Converts the role value to uppercase value.
      *

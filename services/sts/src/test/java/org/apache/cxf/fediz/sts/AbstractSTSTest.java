@@ -115,11 +115,11 @@ public abstract class AbstractSTSTest {
 
         return tokenType;
     }
-    
+
     //CHECKSTYLE:OFF
     protected SecurityToken requestSecurityTokenUsernamePassword(String username, String password,
-                                                                 String tokenType, String keyType, String realm, 
-                                                                 Bus bus, TLSClientParameters tlsClientParameters, 
+                                                                 String tokenType, String keyType, String realm,
+                                                                 Bus bus, TLSClientParameters tlsClientParameters,
                                                                  String baseEndpointUrl)
         throws Exception {
         STSClient stsClient = new STSClient(bus);
@@ -149,10 +149,10 @@ public abstract class AbstractSTSTest {
 
     protected SecurityToken requestSecurityTokenOnbehalfOf(String tokenType, String keyType, String realm,
         String appliesTo, List<String> claims, Element supportingToken,
-        Bus bus, TLSClientParameters tlsClientParameters, 
+        Bus bus, TLSClientParameters tlsClientParameters,
         String baseEndpointUrl)
         throws Exception {
-        
+
         STSClient stsClient = new STSClient(bus);
 
         String endpointUrl = baseEndpointUrl + realm + "/STSServiceTransport";
@@ -290,7 +290,7 @@ public abstract class AbstractSTSTest {
                                    SamlAssertionWrapper assertion) {
         String expectedSamlUser = testProps.getProperty("samluser");
         String samlUser = assertion.getSaml2().getSubject().getNameID().getValue();
-        Assert.assertEquals("Expected SAML subject '" + expectedSamlUser + "' [" + samlUser + "]", 
+        Assert.assertEquals("Expected SAML subject '" + expectedSamlUser + "' [" + samlUser + "]",
                             expectedSamlUser.toUpperCase(), samlUser.toUpperCase());
     }
 

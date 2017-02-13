@@ -41,65 +41,65 @@ import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 @Path("/logout")
 public class LogoutService {
     private static final String CLIENT_LOGOUT_URI = "client_logout_uri";
-    @Context 
+    @Context
     private MessageContext mc;
     private String relativeIdpLogoutUri;
     private OAuthDataProvider dataProvider;
     private FedizSubjectCreator subjectCreator = new FedizSubjectCreator();
-    
+
     private List<LogoutHandler> logoutHandlers;
-    
+
     @POST
     public Response initiateLogoutPost(MultivaluedMap<String, String> params) {
-        return doInitiateLogout(params);    
+        return doInitiateLogout(params);
     }
     @GET
     public Response initiateLogoutGet() {
-        return doInitiateLogout(mc.getUriInfo().getQueryParameters());    
+        return doInitiateLogout(mc.getUriInfo().getQueryParameters());
     }
-    
+
     protected Response doInitiateLogout(MultivaluedMap<String, String> params) {
         Client client = getClient(params);
         UserSubject subject = subjectCreator.createUserSubject(mc, params);
-        
+
         if (logoutHandlers != null) {
-            
+
             for (LogoutHandler handler : logoutHandlers) {
                 handler.handleLogout(client, subject);
             }
         }
         // Clear OIDC session now if core IDP will itself redirect to the client logout URI
-        
+
         // Redirect to the core IDP
         URI idpLogoutUri = getAbsoluteIdpLogoutUri(client);
-        return Response.seeOther(idpLogoutUri).build();    
+        return Response.seeOther(idpLogoutUri).build();
     }
-    
+
     @GET
     @Path("/finalize")
     public Response finalizeLogoutGet() {
         // This method won't be needed if IDP will itself redirect to the client logout URI
-        return doFinalizeLogout(mc.getUriInfo().getQueryParameters());    
+        return doFinalizeLogout(mc.getUriInfo().getQueryParameters());
     }
     @POST
     @Path("/finalize")
     public Response finalizeLogoutPost(MultivaluedMap<String, String> params) {
      // This method won't be needed if IDP will itself redirect to the client logout URI
-        return doFinalizeLogout(params);    
+        return doFinalizeLogout(params);
     }
     protected Response doFinalizeLogout(MultivaluedMap<String, String> params) {
-        
+
         // This method won't be needed if IDP will itself redirect to the client logout URI
-        
-        
+
+
         // Ensure this method is not called by skipping the initiate logout which is
         // why it may be simpler let IDP redirect directly to the client logout uri ?
-        
+
         // Clear the OIDC session
-        
+
         Client client = getClient(params);
         URI clientLogoutUri = getClientLogoutUri(client);
-        return Response.seeOther(clientLogoutUri).build();    
+        return Response.seeOther(clientLogoutUri).build();
     }
 
     private URI getClientLogoutUri(Client client) {
@@ -123,15 +123,15 @@ public class LogoutService {
     private URI getAbsoluteIdpLogoutUri(Client client) {
         UriBuilder ub = mc.getUriInfo().getAbsolutePathBuilder();
         ub.path(relativeIdpLogoutUri);
-        //TODO: include a logout uri as a uri parameter, either 
+        //TODO: include a logout uri as a uri parameter, either
         // 1. "/finalize" URI for the IDP to redirect to this service again
-        // or 
-        // 2. may be let IDP redirect straight to getClientLogoutUri(client) ? 
-        
+        // or
+        // 2. may be let IDP redirect straight to getClientLogoutUri(client) ?
+
         UriBuilder ub2 = mc.getUriInfo().getAbsolutePathBuilder();
         ub2.path("finalize");
         ub.queryParam("wreply", ub2.build());
-        
+
         return ub.build();
     }
 

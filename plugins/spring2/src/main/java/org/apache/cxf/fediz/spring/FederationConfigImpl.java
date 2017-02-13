@@ -34,14 +34,14 @@ import org.springframework.util.Assert;
 public class FederationConfigImpl implements FederationConfig {
 
     private static final Logger LOG = LoggerFactory.getLogger(FederationConfigImpl.class);
-    
+
     private Resource configFile;
     private String contextName;
-    
+
     //private ServletContext servletContext;
     private FedizConfigurator configurator = new FedizConfigurator();
-    
-    
+
+
     public Resource getConfigFile() {
         return configFile;
     }
@@ -49,7 +49,7 @@ public class FederationConfigImpl implements FederationConfig {
     public void setConfigFile(Resource configFile) {
         this.configFile = configFile;
     }
-    
+
     public String getContextName() {
         return contextName;
     }
@@ -57,7 +57,7 @@ public class FederationConfigImpl implements FederationConfig {
     public void setContextName(String contextName) {
         this.contextName = contextName;
     }
-    
+
     public void init() {
         Assert.notNull(this.configFile, "property 'configFile' mandatory");
         try {
@@ -83,7 +83,7 @@ public class FederationConfigImpl implements FederationConfig {
         return ctx;
     }
 
-    
+
     @Override
     public FedizContext getFedizContext() {
         if (contextName != null) {
@@ -94,7 +94,7 @@ public class FederationConfigImpl implements FederationConfig {
             return getFedizContext(contextName);
         }
     }
-    
+
 
     /*
     @Override

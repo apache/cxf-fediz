@@ -80,7 +80,7 @@ public class FileBasedRoleToGroupMapper implements RoleToGroupMapper {
         if (roles == null) {
             return null;
         }
-        
+
         List<String> groups = new ArrayList<>(20);
         for (String key : roles) {
             List<String> groupList = mappings.get(key);

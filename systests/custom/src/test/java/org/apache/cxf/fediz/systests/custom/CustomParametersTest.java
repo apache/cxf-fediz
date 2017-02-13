@@ -82,7 +82,7 @@ public class CustomParametersTest {
         WSSConfig.init();
     }
 
-    private static Tomcat startServer(boolean idp, String port) 
+    private static Tomcat startServer(boolean idp, String port)
         throws ServletException, LifecycleException, IOException {
         Tomcat server = new Tomcat();
         server.setPort(0);
@@ -113,17 +113,17 @@ public class CustomParametersTest {
         httpsConnector.setAttribute("SSLEnabled", true);
 
         server.getService().addConnector(httpsConnector);
-        
+
         if (idp) {
             File stsWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp-sts");
             server.addWebapp("/fediz-idp-sts", stsWebapp.getAbsolutePath());
-    
+
             File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp");
             server.addWebapp("/fediz-idp", idpWebapp.getAbsolutePath());
         } else {
             File rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
             Context cxt = server.addWebapp("/fedizhelloworld", rpWebapp.getAbsolutePath());
-            
+
             // Substitute the IDP port. Necessary if running the test in eclipse where port filtering doesn't seem
             // to work
             File f = new File(currentDir + "/src/test/resources/fediz_config.xml");
@@ -132,13 +132,13 @@ public class CustomParametersTest {
             inputStream.close();
             if (content.contains("idp.https.port")) {
                 content = content.replaceAll("\\$\\{idp.https.port\\}", "" + idpHttpsPort);
-            
+
                 File f2 = new File(baseDir + "/test-classes/fediz_config.xml");
                 try (FileOutputStream outputStream = new FileOutputStream(f2)) {
                     IOUtils.write(content, outputStream, "UTF-8");
                 }
             }
-            
+
             FederationAuthenticator fa = new FederationAuthenticator();
             fa.setConfigFile(currentDir + File.separator + "target" + File.separator
                              + "test-classes" + File.separator + "fediz_config.xml");
@@ -155,7 +155,7 @@ public class CustomParametersTest {
         shutdownServer(idpServer);
         shutdownServer(rpServer);
     }
-    
+
     private static void shutdownServer(Tomcat server) {
         try {
             if (server != null && server.getServer() != null
@@ -203,8 +203,8 @@ public class CustomParametersTest {
             new UsernamePasswordCredentials(user, password));
 
         webClient.getOptions().setJavaScriptEnabled(false);
-        
-        String authUrl = url + "&auth_realm=" 
+
+        String authUrl = url + "&auth_realm="
             + URLEncoder.encode("<realm xmlns=\"http://cxf.apache.org/custom\">custom-realm</realm>", "UTF-8");
         HtmlPage idpPage = webClient.getPage(authUrl);
         webClient.getOptions().setJavaScriptEnabled(true);
@@ -222,9 +222,9 @@ public class CustomParametersTest {
         }
 
         Assert.assertNotNull(wresult);
-        
+
         webClient.close();
-        
+
         // Unsuccessful test
         webClient = new WebClient();
         webClient.getOptions().setUseInsecureSSL(true);
@@ -233,7 +233,7 @@ public class CustomParametersTest {
             new UsernamePasswordCredentials(user, password));
 
         webClient.getOptions().setJavaScriptEnabled(false);
-        authUrl = url + "&auth_realm=" 
+        authUrl = url + "&auth_realm="
             + URLEncoder.encode("<realm xmlns=\"http://cxf.apache.org/custom\">unknown-realm</realm>", "UTF-8");
         try {
             webClient.getPage(authUrl);
@@ -244,15 +244,15 @@ public class CustomParametersTest {
 
         webClient.close();
     }
-    
+
     @org.junit.Test
     public void testCustomParameterViaRP() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
-        
+
         final String bodyTextContent = HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
-        
+
         Assert.assertTrue("Principal not " + user,
                           bodyTextContent.contains("userPrincipal=" + user));
         Assert.assertTrue("User " + user + " does not have role Admin",
@@ -273,5 +273,5 @@ public class CustomParametersTest {
                           bodyTextContent.contains(claim + "=alice@realma.org"));
 
     }
-    
+
 }

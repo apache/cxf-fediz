@@ -34,50 +34,50 @@ public class TrustedIdp implements Serializable {
 
     private static final long serialVersionUID = -6520081722646469178L;
 
-    
+
     protected int id;
 
     //@Column(name = "REALM", nullable = true, length = FIELD_LENGTH)
     protected String realm;  //wtrealm, whr
-    
+
     //@Column(name = "Issuer", nullable = true, length = FIELD_LENGTH)
     protected String issuer;  //SAMLResponse issuer name
 
     // Should tokens be cached from trusted IDPs
     // to avoid redirection to the trusted IDP again for next SignIn request
     protected boolean cacheTokens;
-    
+
     //Could be read from Metadata, PassiveRequestorEndpoint
     protected String url;
-    
+
     //Could be read from Metadata, md:KeyDescriptor, use="signing"
     //Store certificate in DB or filesystem, provide options?
     protected String certificate;
-    
+
     //Direct trust (signing cert imported), Indirect trust (CA certs imported, subject configured)
     protected TrustType trustType;
-    
+
     //Could be read from Metadata, RoleDescriptor protocolSupportEnumeration=
     // "http://docs.oasis-open.org/wsfed/federation/200706"
     // Metadata could provide more than one but one must be chosen
     protected String protocol;
-    
+
     //FederateIdentity, FederateClaims
     protected FederationType federationType;
-    
+
     //optional (to provide a list of IDPs)
     protected String name;
-    
+
     //optional (to provide a list of IDPs)
     protected String description;
-    
+
     //optional (to provide a list of IDPs)
     protected String logo;
-    
+
     // Additional (possibly protocol specific parameters)
     protected Map<String, String> parameters = new HashMap<>();
 
-    
+
     @XmlAttribute
     public int getId() {
         return id;
@@ -86,15 +86,15 @@ public class TrustedIdp implements Serializable {
     public void setId(int id) {
         this.id = id;
     }
-    
+
     public String getIssuer() {
         return issuer;
     }
-    
+
     public void setIssuer(String issuer) {
         this.issuer = issuer;
     }
-    
+
     public String getRealm() {
         return realm;
     }
@@ -182,6 +182,6 @@ public class TrustedIdp implements Serializable {
     public void setParameters(Map<String, String> parameters) {
         this.parameters = parameters;
     }
-               
+
 
 }

@@ -48,7 +48,7 @@ import org.apache.cxf.fediz.core.processor.FedizResponse;
 public class FederationServlet extends HttpServlet {
 
     /**
-     * 
+     *
      */
     private static final String SUBJECT_TOKEN_KEY = "_security.token";
 
@@ -109,7 +109,7 @@ public class FederationServlet extends HttpServlet {
             }
         } catch (WSSecurityException e) {
             out.println("<p>Exception=" + e.getMessage() + "</p>");
-        } 
+        }
     }
 
     private FedizResponse getCachedFederationResponse(Subject subject) {

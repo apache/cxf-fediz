@@ -20,7 +20,7 @@ package org.apache.cxf.fediz.service.idp.model;
 
 //@XmlRootElement(name = "Claim", namespace = "http://org.apache.cxf.fediz")
 public class RequestClaim extends org.apache.cxf.fediz.service.idp.domain.RequestClaim {
-    
+
     private static final long serialVersionUID = 2635896159019665467L;
-    
+
 }

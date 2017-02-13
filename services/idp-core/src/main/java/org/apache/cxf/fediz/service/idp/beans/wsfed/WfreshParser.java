@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
- * This class is responsible to parse the 'wfresh' parameter 
+ * This class is responsible to parse the 'wfresh' parameter
  */
 @Component
 public class WfreshParser {
@@ -37,13 +37,13 @@ public class WfreshParser {
 
     public boolean authenticationRequired(String wfresh, String whr, RequestContext context)
         throws Exception {
-        
-        SecurityToken idpToken = 
+
+        SecurityToken idpToken =
             (SecurityToken) WebUtils.getAttributeFromExternalContext(context, whr);
         if (idpToken == null) {
             return true;
         }
-        
+
         if (wfresh == null || wfresh.trim().isEmpty()) {
             return false;
         }
@@ -58,7 +58,7 @@ public class WfreshParser {
         if (ttl == 0) {
             return true;
         }
-        
+
         long ttlMs = ttl * 60L * 1000L;
         if (ttlMs > 0) {
             Date createdDate = idpToken.getCreated();
@@ -80,5 +80,5 @@ public class WfreshParser {
         }
         return false;
     }
-    
+
 }

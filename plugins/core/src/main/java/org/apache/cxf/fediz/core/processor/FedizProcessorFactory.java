@@ -27,7 +27,7 @@ import org.apache.cxf.fediz.core.config.SAMLProtocol;
  * A Factory to return FedizProcessor instances depending on the Protocol
  */
 public final class FedizProcessorFactory {
-    
+
     private FedizProcessorFactory() {
         // complete
     }

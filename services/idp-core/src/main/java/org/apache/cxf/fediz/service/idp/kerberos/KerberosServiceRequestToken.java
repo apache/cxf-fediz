@@ -18,7 +18,7 @@
  */
 /*
  * Copyright 2009 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -56,15 +56,15 @@ public class KerberosServiceRequestToken extends AbstractAuthenticationToken {
     private static final long serialVersionUID = 395488921064775014L;
     private final byte[] token;
     private final Object principal;
-    
+
     /** Creates an authenticated token, normally used as an output of an authentication provider.
      * @param principal the user principal (mostly of instance <code>UserDetails</code>
      * @param authorities the authorities which are granted to the user
      * @param token the Kerberos/SPNEGO token
      * @see UserDetails
      */
-    public KerberosServiceRequestToken(Object principal, 
-                                       Collection<? extends GrantedAuthority> authorities, 
+    public KerberosServiceRequestToken(Object principal,
+                                       Collection<? extends GrantedAuthority> authorities,
                                        byte[] token) {
         super(authorities);
         if (token != null) {
@@ -75,7 +75,7 @@ public class KerberosServiceRequestToken extends AbstractAuthenticationToken {
         this.principal = principal;
         super.setAuthenticated(true);
     }
-    
+
     /**
      * Creates an unauthenticated instance which should then be authenticated by
      * <code>KerberosServiceAuthenticationProvider/code>
@@ -92,7 +92,7 @@ public class KerberosServiceRequestToken extends AbstractAuthenticationToken {
         }
         this.principal = null;
     }
-    
+
     /**
      * Calculates hashcode based on the Kerberos token
      */
@@ -103,7 +103,7 @@ public class KerberosServiceRequestToken extends AbstractAuthenticationToken {
         result = prime * result + Arrays.hashCode(token);
         return result;
     }
-    
+
     /**
      * equals() is based only on the Kerberos token
      */
@@ -124,21 +124,21 @@ public class KerberosServiceRequestToken extends AbstractAuthenticationToken {
         }
         return true;
     }
-    
+
     /* (non-Javadoc)
      * @see org.springframework.security.core.Authentication#getCredentials()
      */
     public Object getCredentials() {
         return null;
     }
-    
+
     /* (non-Javadoc)
      * @see org.springframework.security.core.Authentication#getPrincipal()
      */
     public Object getPrincipal() {
         return this.principal;
     }
-    
+
     /** Returns the Kerberos token
      */
     public byte[] getToken() {

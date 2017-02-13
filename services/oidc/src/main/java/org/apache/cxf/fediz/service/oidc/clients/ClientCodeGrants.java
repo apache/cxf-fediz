@@ -43,6 +43,6 @@ public class ClientCodeGrants {
     public void setCodeGrants(List<ServerAuthorizationCodeGrant> codeGrants) {
         this.codeGrants = codeGrants;
     }
-    
+
 
 }

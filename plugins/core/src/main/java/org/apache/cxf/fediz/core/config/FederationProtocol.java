@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 public class FederationProtocol extends Protocol {
 
     private static final Logger LOG = LoggerFactory.getLogger(FederationProtocol.class);
-    
+
     private Object request;
     private Object authenticationType;
     private Object homeRealm;
@@ -39,10 +39,10 @@ public class FederationProtocol extends Protocol {
     private Object signInQuery;
     private Object signOutQuery;
     private Object reply;
-    
+
     public FederationProtocol(ProtocolType protocolType) {
         super(protocolType);
-        
+
         // add SAMLTokenValidator as the last one
         // Fediz chooses the first validator in the list if its
         // canHandleToken or canHandleTokenType method return true
@@ -78,7 +78,7 @@ public class FederationProtocol extends Protocol {
                                                + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
         }
     }
-    
+
     public Object getHomeRealm() {
         if (this.homeRealm != null) {
             return this.homeRealm;
@@ -99,7 +99,7 @@ public class FederationProtocol extends Protocol {
                                                + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
         }
     }
-    
+
     public Object getFreshness() {
         if (this.freshness != null) {
             return this.freshness;
@@ -120,7 +120,7 @@ public class FederationProtocol extends Protocol {
                                                + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
         }
     }
-    
+
     public Object getSignInQuery() {
         if (this.signInQuery != null) {
             return this.signInQuery;
@@ -141,7 +141,7 @@ public class FederationProtocol extends Protocol {
                                                + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
         }
     }
-    
+
     public Object getSignOutQuery() {
         if (this.signOutQuery != null) {
             return this.signOutQuery;
@@ -162,7 +162,7 @@ public class FederationProtocol extends Protocol {
                                                + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
         }
     }
-    
+
     public Object getRequest() {
         if (this.request != null) {
             return this.request;
@@ -171,7 +171,7 @@ public class FederationProtocol extends Protocol {
         this.request = loadCallbackType(cbt, "Request");
         return this.request;
     }
-    
+
     public void setRequest(Object value) {
         final boolean isString = value instanceof String;
         final boolean isCallbackHandler = value instanceof CallbackHandler;
@@ -216,5 +216,5 @@ public class FederationProtocol extends Protocol {
     public String toString() {
         return getFederationProtocol().toString();
     }
-    
+
 }

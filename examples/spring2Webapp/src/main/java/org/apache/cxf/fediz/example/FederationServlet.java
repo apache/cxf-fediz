@@ -51,7 +51,7 @@ import org.springframework.security.context.SecurityContextHolder;
 public class FederationServlet extends HttpServlet {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = -9019993850246851112L;
 
@@ -74,7 +74,7 @@ public class FederationServlet extends HttpServlet {
         if (p != null) {
             out.println("Principal: " + p.getName() + "<p>");
         }
-        
+
         // Access Spring security context
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth instanceof FederationAuthenticationToken) {
@@ -84,7 +84,7 @@ public class FederationServlet extends HttpServlet {
                 out.println("<li>" + item.getAuthority() + "</li>");
             }
             out.println("</ul>");
-            
+
             if (fedAuthToken.getUserDetails() instanceof FederationUser) {
                 out.println("<br><b>Claims</b><p>");
                 ClaimCollection claims = ((FederationUser)fedAuthToken.getUserDetails()).getClaims();
@@ -94,7 +94,7 @@ public class FederationServlet extends HttpServlet {
             } else {
                 out.println("FederationAuthenticationToken found but not FederationUser");
             }
-            
+
         } else {
             out.println("No FederationAuthenticationToken found in Spring Security Context.");
         }

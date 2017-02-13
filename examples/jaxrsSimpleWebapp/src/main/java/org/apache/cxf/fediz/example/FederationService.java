@@ -73,7 +73,7 @@ public class FederationService {
         out.append("<br><b>Roles</b><p>");
         List<String> roleListToCheck = Arrays.asList("Admin", "Manager", "User", "Authenticated");
         for (String item: roleListToCheck) {
-            out.append("Has role '" + item + "': " 
+            out.append("Has role '" + item + "': "
                 + ((securityContext.isUserInRole(item)) ? "<b>yes</b>" : "no") + "<p>");
         }
 

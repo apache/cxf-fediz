@@ -42,20 +42,20 @@ public class ClaimDAOJPATest {
 
     @Autowired
     private ClaimDAO claimDAO;
-    
-    
+
+
     @BeforeClass
     public static void init() {
         System.setProperty("spring.profiles.active", "jpa");
     }
-    
-    
+
+
     @Test
     public void testReadAllClaims() {
         List<Claim> claims = claimDAO.getClaims(0, 999);
         Assert.isTrue(5 == claims.size(), "Size doesn't match");
     }
-    
+
     @Test
     public void testReadExistingClaim() {
         Claim claim = claimDAO.getClaim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname");
@@ -67,14 +67,14 @@ public class ClaimDAOJPATest {
         Assert.isTrue("Description for firstname".equals(claim.getDescription()),
                       "Claim Description name doesn't match");
     }
-    
-    
+
+
     @Test(expected = EmptyResultDataAccessException.class)
     public void testTryReadNonexistingClaim() {
         claimDAO.getClaim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givennamenotexist");
     }
-    
-    
+
+
     @Test
     public void testAddNewClaim() {
         Claim claim5 = new Claim();
@@ -82,12 +82,12 @@ public class ClaimDAOJPATest {
         claim5.setDisplayName("Town");
         claim5.setDescription("Town Description");
         claimDAO.addClaim(claim5);
-        
+
         List<Claim> claims = claimDAO.getClaims(0, 999);
         Assert.isTrue(6 == claims.size(), "Size doesn't match. Claim not added");
     }
-    
-    
+
+
     @Test(expected = DataIntegrityViolationException.class)
     public void testTryAddExistingClaim() {
         Claim claim5 = new Claim();
@@ -96,20 +96,20 @@ public class ClaimDAOJPATest {
         claim5.setDescription("Description for firstname");
         claimDAO.addClaim(claim5);
     }
-    
-    
+
+
     @Test(expected = EmptyResultDataAccessException.class)
     public void testTryRemoveUnknownClaim() {
         claimDAO.deleteClaim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/town/WRONG");
     }
-    
-    
+
+
     @Test(expected = EmptyResultDataAccessException.class)
     public void testRemoveExistingClaim() {
         claimDAO.deleteClaim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/email");
-        
+
         claimDAO.getClaim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/email");
     }
-    
+
 
 }

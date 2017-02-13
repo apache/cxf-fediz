@@ -39,10 +39,10 @@ public class TrustedIdpProtocolSupportValidator implements ConstraintValidator<T
     // Qualifier workaround. See http://www.jayway.com/2013/11/03/spring-and-autowiring-of-generic-types/
     @Qualifier("trustedIdpProtocolControllerImpl")
     private ProtocolController<TrustedIdpProtocolHandler> trustedIdpProtocolHandlers;
-    
+
     @Override
     public boolean isValid(String object, ConstraintValidatorContext constraintContext) {
-        
+
         List<String> protocols = trustedIdpProtocolHandlers.getProtocols();
         return protocols.contains(object);
     }

@@ -31,7 +31,7 @@ import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.eclipse.jetty.server.UserIdentity;
 
 public class FederationUserIdentity implements UserIdentity {
-    
+
     private Subject subject;
     private Principal principal;
     private String[] roles;
@@ -60,7 +60,7 @@ public class FederationUserIdentity implements UserIdentity {
         if (scope != null && scope.getRoleRefMap() != null) {
             role = scope.getRoleRefMap().get(role);
         }
-        
+
         if (this.roles != null) {
             for (String r : this.roles) {
                 if (r.equals(role)) {
@@ -70,23 +70,23 @@ public class FederationUserIdentity implements UserIdentity {
         }
         return false;
     }
-    
+
     public Date getExpiryDate() {
         return fedResponse.getTokenExpires();
     }
-    
+
     public String getIssuer() {
         return fedResponse.getIssuer();
     }
-    
+
     public String getAudience() {
         return fedResponse.getAudience();
     }
-    
+
     public String getId() {
         return fedResponse.getUniqueTokenId();
     }
-    
+
     public Element getToken() {
         return fedResponse.getToken();
     }

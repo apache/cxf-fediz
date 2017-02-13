@@ -57,12 +57,12 @@ public interface TrustedIdpService {
     @POST
     @PreAuthorize("hasRole('TRUSTEDIDP_CREATE')")
     Response addTrustedIDP(@Context UriInfo ui, TrustedIdp trustedIdp);
-    
+
     @PUT
     @Path("{realm}")
     @PreAuthorize("hasRole('TRUSTEDIDP_UPDATE')")
     Response updateTrustedIDP(@Context UriInfo ui, @PathParam("realm") String realm, TrustedIdp trustedIdp);
-    
+
     @DELETE
     @Path("{realm}")
     @PreAuthorize("hasRole('TRUSTEDIDP_DELETE')")

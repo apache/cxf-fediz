@@ -52,25 +52,25 @@ public class IdpServiceImpl implements IdpService {
 
     @Autowired
     private IdpDAO idpDAO;
-    
+
     @Autowired
     private ApplicationDAO applicationDAO;
-    
+
     @Autowired
     private TrustedIdpDAO trustedIdpDAO;
-    
+
     @Autowired
     private ClaimDAO claimDAO;
-           
+
     @Override
     public Idps getIdps(int start, int size, List<String> expand, UriInfo uriInfo) {
         List<Idp> idps = idpDAO.getIdps(start, size, expand);
-        
+
         Idps list = new Idps();
         list.setIdps(idps);
         return list;
     }
-    
+
     @Override
     public Idp getIdp(String realm, List<String> expand) {
         Idp idp = idpDAO.getIdp(realm, expand);
@@ -81,7 +81,7 @@ public class IdpServiceImpl implements IdpService {
             return idp;
         }
     }
-    
+
     @Override
     public Response addIdp(UriInfo ui, Idp idp) {
         LOG.info("add IDP config");
@@ -94,13 +94,13 @@ public class IdpServiceImpl implements IdpService {
             throw new WebApplicationException(Status.BAD_REQUEST);
         }
         Idp createdIdp = idpDAO.addIdp(idp);
-        
+
         UriBuilder uriBuilder = UriBuilder.fromUri(ui.getRequestUri());
         uriBuilder.path("{index}");
         URI location = uriBuilder.build(createdIdp.getRealm());
         return Response.created(location).entity(idp).build();
     }
-    
+
     @Override
     public Response updateIdp(UriInfo ui, String realm, Idp idp) {
         if (!realm.equals(idp.getRealm().toString())) {
@@ -115,14 +115,14 @@ public class IdpServiceImpl implements IdpService {
             throw new WebApplicationException(Status.BAD_REQUEST);
         }
         idpDAO.updateIdp(realm, idp);
-        
+
         return Response.noContent().build();
     }
 
     @Override
     public Response deleteIdp(String realm) {
         idpDAO.deleteIdp(realm);
-        
+
         return Response.noContent().build();
     }
 
@@ -137,15 +137,15 @@ public class IdpServiceImpl implements IdpService {
         }
         Application application2 = applicationDAO.getApplication(application.getRealm(), null);
         idpDAO.addApplicationToIdp(idp, application2);
-        
+
         return Response.noContent().build();
     }
-    
+
     @Override
     public Response removeApplicationFromIdp(UriInfo ui, String realm,  String applicationRealm) {
         Idp idp = idpDAO.getIdp(realm, Arrays.asList("all"));
-        
-        Application foundItem = null; 
+
+        Application foundItem = null;
         for (Application item : idp.getApplications()) {
             if (item.getRealm().equals(applicationRealm)) {
                 foundItem = item;
@@ -157,13 +157,13 @@ public class IdpServiceImpl implements IdpService {
             throw new WebApplicationException(Status.NOT_FOUND);
         }
         idpDAO.removeApplicationFromIdp(idp, foundItem);
-        
+
         return Response.noContent().build();
     }
-    
-    
-    
-    
+
+
+
+
     @Override
     public Response addTrustedIdpToIdp(UriInfo ui, String realm, TrustedIdp trustedIdp) {
         Idp idp = idpDAO.getIdp(realm, Arrays.asList("all"));
@@ -174,17 +174,17 @@ public class IdpServiceImpl implements IdpService {
             }
         }
         TrustedIdp trustedIpd2 = trustedIdpDAO.getTrustedIDP(trustedIdp.getRealm());
-        
+
         idpDAO.addTrustedIdpToIdp(idp, trustedIpd2);
-        
+
         return Response.noContent().build();
     }
-    
+
     @Override
     public Response removeTrustedIdpFromIdp(UriInfo ui, String realm, String trustedIdpRealm) {
         Idp idp = idpDAO.getIdp(realm, Arrays.asList("all"));
-        
-        TrustedIdp foundItem = null; 
+
+        TrustedIdp foundItem = null;
         for (TrustedIdp item : idp.getTrustedIdps()) {
             if (item.getRealm().equals(trustedIdpRealm)) {
                 foundItem = item;
@@ -196,15 +196,15 @@ public class IdpServiceImpl implements IdpService {
             throw new WebApplicationException(Status.NOT_FOUND);
         }
         idpDAO.removeTrustedIdpFromIdp(idp, foundItem);
-        
+
         return Response.noContent().build();
-    }   
-    
+    }
+
     @Override
     public Response addClaimToIdp(UriInfo ui, String realm, Claim claim) {
         Idp idp = idpDAO.getIdp(realm, Arrays.asList("all"));
         for (Claim idpClaim : idp.getClaimTypesOffered()) {
-            if (idpClaim.getClaimType() != null 
+            if (idpClaim.getClaimType() != null
                 && idpClaim.getClaimType().toString().equals(claim.getClaimType().toString())) {
                 LOG.warn("Claim '" + claim.getClaimType() + "' already added");
                 throw new WebApplicationException(Status.CONFLICT);
@@ -212,15 +212,15 @@ public class IdpServiceImpl implements IdpService {
         }
         Claim claim2 = claimDAO.getClaim(claim.getClaimType().toString());
         idpDAO.addClaimToIdp(idp, claim2);
-        
+
         return Response.noContent().build();
     }
-    
+
     @Override
     public Response removeClaimFromIdp(UriInfo ui, String realm, String claimType) {
         Idp idp = idpDAO.getIdp(realm, Arrays.asList("all"));
-        
-        Claim foundItem = null; 
+
+        Claim foundItem = null;
         for (Claim item : idp.getClaimTypesOffered()) {
             if (item.getClaimType().toString().equals(claimType)) {
                 foundItem = item;
@@ -232,7 +232,7 @@ public class IdpServiceImpl implements IdpService {
             throw new WebApplicationException(Status.NOT_FOUND);
         }
         idpDAO.removeClaimFromIdp(idp, foundItem);
-                
+
         return Response.noContent().build();
     }
 

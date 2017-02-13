@@ -32,7 +32,7 @@ import org.apache.wss4j.common.cache.EHCacheManagerHolder;
 import org.apache.wss4j.common.util.Loader;
 
 /**
- * An in-memory EHCache implementation of the SPStateManager interface. 
+ * An in-memory EHCache implementation of the SPStateManager interface.
  * The default TTL is 5 minutes.
  */
 public class EHCacheSPStateManager implements SPStateManager {
@@ -40,34 +40,34 @@ public class EHCacheSPStateManager implements SPStateManager {
     public static final long DEFAULT_TTL = 60L * 5L;
     public static final String REQUEST_CACHE_KEY = "cxf.fediz.samlp.request.state.cache";
     public static final String RESPONSE_CACHE_KEY = "cxf.fediz.samlp.response.state.cache";
-    
+
     private Ehcache requestCache;
     private Ehcache responseCache;
     private CacheManager cacheManager;
     private long ttl = DEFAULT_TTL;
-    
+
     public EHCacheSPStateManager(String configFile) {
         this(getConfigFileURL(configFile));
     }
-    
+
     public EHCacheSPStateManager(URL configFileURL) {
         this(EHCacheManagerHolder.getCacheManager("", configFileURL));
     }
-    
+
     public EHCacheSPStateManager(CacheManager cacheManager) {
         this.cacheManager = cacheManager;
-        
+
         CacheConfiguration requestCC = EHCacheManagerHolder.getCacheConfiguration(REQUEST_CACHE_KEY, cacheManager);
 
         Ehcache newCache = new Cache(requestCC);
         requestCache = cacheManager.addCacheIfAbsent(newCache);
-        
+
         CacheConfiguration responseCC = EHCacheManagerHolder.getCacheConfiguration(RESPONSE_CACHE_KEY, cacheManager);
-        
+
         newCache = new Cache(responseCC);
         responseCache = cacheManager.addCacheIfAbsent(newCache);
     }
-    
+
     private static URL getConfigFileURL(Object o) {
         if (o instanceof String) {
             try {
@@ -80,11 +80,11 @@ public class EHCacheSPStateManager implements SPStateManager {
                 // Do nothing
             }
         } else if (o instanceof URL) {
-            return (URL)o;        
+            return (URL)o;
         }
         return null;
     }
-    
+
     /**
      * Set a new (default) TTL value in seconds
      * @param newTtl a new (default) TTL value in seconds
@@ -92,7 +92,7 @@ public class EHCacheSPStateManager implements SPStateManager {
     public void setTTL(long newTtl) {
         ttl = newTtl;
     }
-    
+
     /**
      * Get the (default) TTL value in seconds
      * @return the (default) TTL value in seconds
@@ -100,18 +100,18 @@ public class EHCacheSPStateManager implements SPStateManager {
     public long getTTL() {
         return ttl;
     }
-    
+
     public void setRequestState(String relayState, RequestState state) {
         if (relayState == null || "".equals(relayState)) {
             return;
         }
-        
+
         int parsedTTL = (int)ttl;
         if (ttl != (long)parsedTTL) {
             // Fall back to 60 minutes if the default TTL is set incorrectly
             parsedTTL = 3600;
         }
-        
+
         Element element = new Element(relayState, state);
         element.setTimeToLive(parsedTTL);
         element.setTimeToIdle(parsedTTL);
@@ -126,7 +126,7 @@ public class EHCacheSPStateManager implements SPStateManager {
         }
         return null;
     }
-    
+
     public ResponseState getResponseState(String securityContextKey) {
         Element element = responseCache.get(securityContextKey);
         if (element != null) {
@@ -152,7 +152,7 @@ public class EHCacheSPStateManager implements SPStateManager {
         if (securityContextKey == null || "".equals(securityContextKey)) {
             return;
         }
-        
+
         int parsedTTL = (int)ttl;
         if (ttl != (long)parsedTTL) {
             // Fall back to 5 minutes if the default TTL is set incorrectly
@@ -161,10 +161,10 @@ public class EHCacheSPStateManager implements SPStateManager {
         Element element = new Element(securityContextKey, state);
         element.setTimeToLive(parsedTTL);
         element.setTimeToIdle(parsedTTL);
-        
+
         responseCache.put(element);
     }
-    
+
     public void close() throws IOException {
         if (cacheManager != null) {
             cacheManager.shutdown();

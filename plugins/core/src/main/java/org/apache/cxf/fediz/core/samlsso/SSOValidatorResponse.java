@@ -38,14 +38,14 @@ public class SSOValidatorResponse {
     public void setAssertion(String assertion) {
         this.assertion = assertion;
     }
-    
+
     public Date getSessionNotOnOrAfter() {
         if (sessionNotOnOrAfter != null) {
             return new Date(sessionNotOnOrAfter.getTime());
         }
         return null;
     }
-    
+
     public void setSessionNotOnOrAfter(Date sessionNotOnOrAfter) {
         if (sessionNotOnOrAfter != null) {
             this.sessionNotOnOrAfter = new Date(sessionNotOnOrAfter.getTime());
@@ -53,15 +53,15 @@ public class SSOValidatorResponse {
             this.sessionNotOnOrAfter = null;
         }
     }
-    
+
     public String getResponseId() {
         return responseId;
     }
-    
+
     public void setResponseId(String responseId) {
         this.responseId = responseId;
     }
-    
+
     public Element getAssertionElement() {
         return assertionElement;
     }

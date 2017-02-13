@@ -42,10 +42,10 @@ public class TomcatTest extends AbstractTests {
 
     static String idpHttpsPort;
     static String rpHttpsPort;
-    
+
     private static Tomcat idpServer;
     private static Tomcat rpServer;
-    
+
     @BeforeClass
     public static void init() throws Exception {
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
@@ -55,8 +55,8 @@ public class TomcatTest extends AbstractTests {
         System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.webflow", "info");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.security.web", "info");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf.fediz", "info");
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf", "info");  
-        
+        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf", "info");
+
         idpHttpsPort = System.getProperty("idp.https.port");
         Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
         rpHttpsPort = System.getProperty("rp.https.port");
@@ -65,8 +65,8 @@ public class TomcatTest extends AbstractTests {
         idpServer = startServer(true, idpHttpsPort);
         rpServer = startServer(false, rpHttpsPort);
     }
-    
-    private static Tomcat startServer(boolean idp, String port) 
+
+    private static Tomcat startServer(boolean idp, String port)
         throws ServletException, LifecycleException, IOException {
         Tomcat server = new Tomcat();
         server.setPort(0);
@@ -101,13 +101,13 @@ public class TomcatTest extends AbstractTests {
         if (idp) {
             File stsWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp-sts");
             server.addWebapp("/fediz-idp-sts", stsWebapp.getAbsolutePath());
-    
+
             File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp");
             server.addWebapp("/fediz-idp", idpWebapp.getAbsolutePath());
         } else {
             File rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
             Context cxt = server.addWebapp("/fedizhelloworld", rpWebapp.getAbsolutePath());
-            
+
             // Substitute the IDP port. Necessary if running the test in eclipse where port filtering doesn't seem
             // to work
             File f = new File(currentDir + "/src/test/resources/fediz_config.xml");
@@ -116,13 +116,13 @@ public class TomcatTest extends AbstractTests {
             inputStream.close();
             if (content.contains("idp.https.port")) {
                 content = content.replaceAll("\\$\\{idp.https.port\\}", "" + idpHttpsPort);
-            
+
                 File f2 = new File(baseDir + "/test-classes/fediz_config.xml");
                 try (FileOutputStream outputStream = new FileOutputStream(f2)) {
                     IOUtils.write(content, outputStream, "UTF-8");
                 }
             }
-            
+
             FederationAuthenticator fa = new FederationAuthenticator();
             fa.setConfigFile(currentDir + File.separator + "target" + File.separator
                              + "test-classes" + File.separator + "fediz_config.xml");
@@ -133,13 +133,13 @@ public class TomcatTest extends AbstractTests {
 
         return server;
     }
-    
+
     @AfterClass
     public static void cleanup() {
         shutdownServer(idpServer);
         shutdownServer(rpServer);
     }
-    
+
     private static void shutdownServer(Tomcat server) {
         try {
             if (server != null && server.getServer() != null
@@ -163,10 +163,10 @@ public class TomcatTest extends AbstractTests {
     public String getRpHttpsPort() {
         return rpHttpsPort;
     }
-    
+
     @Override
     public String getServletContextName() {
         return "fedizhelloworld";
     }
-    
+
 }

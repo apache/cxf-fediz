@@ -155,7 +155,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             }
             el = DOMUtils.getNextElement(el);
         }
-        
+
         if (LOG.isDebugEnabled()) {
             if (rst != null) {
                 LOG.debug("RST: {}", DOM2Writer.nodeToString(rst));
@@ -165,7 +165,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             }
         }
         LOG.debug("Tokentype: {}", tt);
-        
+
         if (rst == null) {
             LOG.warn("RequestedSecurityToken element not found in wresult");
             throw new ProcessingException(TYPE.BAD_REQUEST);
@@ -209,8 +209,8 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         }
         testForReplayAttack(validatorResponse.getUniqueTokenId(), config, expires);
         testForMandatoryClaims(((FederationProtocol)config.getProtocol()).getRoleURI(),
-                              ((FederationProtocol)config.getProtocol()).getClaimTypesRequested(), 
-                              validatorResponse.getClaims(), 
+                              ((FederationProtocol)config.getProtocol()).getClaimTypesRequested(),
+                              validatorResponse.getClaims(),
                               validatorResponse.getRoles() != null && !validatorResponse.getRoles().isEmpty());
 
         Date created = validatorResponse.getCreated();
@@ -510,7 +510,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                 if (logoutRedirectToConstraint == null) {
                     LOG.debug("No regular expression constraint configured for logout. Ignoring wreply parameter");
                 } else {
-                    Matcher matcher = 
+                    Matcher matcher =
                         logoutRedirectToConstraint.matcher(request.getParameter(FederationConstants.PARAM_REPLY));
                     if (matcher.matches()) {
                         logoutRedirectTo = request.getParameter(FederationConstants.PARAM_REPLY);
@@ -520,11 +520,11 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                     }
                 }
             }
-            
+
             if (logoutRedirectTo == null || logoutRedirectTo.isEmpty()) {
                 logoutRedirectTo = config.getLogoutRedirectTo();
             }
-            
+
             if (logoutRedirectTo != null && !logoutRedirectTo.isEmpty()) {
                 if (logoutRedirectTo.startsWith("/")) {
                     logoutRedirectTo = extractFullContextPath(request).concat(logoutRedirectTo.substring(1));
@@ -536,7 +536,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                 sb.append('&').append(FederationConstants.PARAM_REPLY).append('=');
                 sb.append(URLEncoder.encode(logoutRedirectTo, "UTF-8"));
             }
-            
+
             String signOutQuery = resolveSignOutQuery(request, config);
             LOG.debug("SignIn Query: {}", signOutQuery);
 
@@ -544,7 +544,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             if (signOutQuery != null && signOutQuery.length() > 0) {
                 sb.append('&').append(signOutQuery);
             }
-            
+
             redirectURL = redirectURL + "?" + sb.toString();
         } catch (Exception ex) {
             LOG.error("Failed to create SignInRequest", ex);
@@ -585,7 +585,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         }
         return signInQuery;
     }
-    
+
     private String resolveSignOutQuery(HttpServletRequest request, FedizContext config) throws IOException,
         UnsupportedCallbackException, UnsupportedEncodingException {
         Object signOutQueryObj = ((FederationProtocol)config.getProtocol()).getSignOutQuery();
@@ -662,7 +662,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         LOG.debug("Users home realm will be set to {}", homeRealm);
         return homeRealm;
     }
-    
+
     private String resolveHomeRealm(Object cbh, HttpServletRequest request) {
         if (cbh instanceof CallbackHandler) {
             CallbackHandler hrCBH = (CallbackHandler)cbh;
@@ -716,7 +716,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         }
         return wReq;
     }
-    
+
     private String resolveReply(HttpServletRequest request, FedizContext config) throws IOException,
         UnsupportedCallbackException {
         Object replyObj = ((FederationProtocol)config.getProtocol()).getReply();
@@ -735,9 +735,9 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         }
         return reply;
     }
-    
+
     private void testForMandatoryClaims(String roleURI,
-                                        List<org.apache.cxf.fediz.core.config.Claim> requestedClaims, 
+                                        List<org.apache.cxf.fediz.core.config.Claim> requestedClaims,
                                         List<org.apache.cxf.fediz.core.Claim> receivedClaims,
                                         boolean foundRoles
     ) throws ProcessingException {
@@ -752,7 +752,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                         }
                     }
                     if (!found && foundRoles && roleURI != null && roleURI.equals(requestedClaim.getType())) {
-                        // Maybe the requested claim is a role, which has already been removed 
+                        // Maybe the requested claim is a role, which has already been removed
                         // from the claims collection
                         found = true;
                     }

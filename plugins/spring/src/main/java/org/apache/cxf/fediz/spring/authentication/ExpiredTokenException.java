@@ -25,9 +25,9 @@ import org.springframework.security.core.AuthenticationException;
  * To be called when a token has expired
  */
 public class ExpiredTokenException extends AuthenticationException {
-    
+
     private static final long serialVersionUID = 7639463618762010981L;
-    
+
     public ExpiredTokenException(String errorMessage) {
         super(errorMessage);
     }

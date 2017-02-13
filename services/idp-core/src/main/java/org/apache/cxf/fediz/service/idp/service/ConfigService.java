@@ -28,5 +28,5 @@ public interface ConfigService {
     void setIDP(Idp config);
 
     void removeIDP(String realm);
-    
+
 }

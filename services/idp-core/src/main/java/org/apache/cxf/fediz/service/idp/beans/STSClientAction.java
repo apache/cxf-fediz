@@ -61,20 +61,20 @@ import org.springframework.webflow.execution.RequestContext;
 
 public class STSClientAction {
 
-    private static final String HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_05_IDENTITY = 
+    private static final String HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_05_IDENTITY =
             "http://schemas.xmlsoap.org/ws/2005/05/identity";
 
-    private static final String HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER = 
+    private static final String HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER =
             "http://docs.oasis-open.org/ws-sx/ws-trust/200512/Bearer";
-    
-    private static final String HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_PUBLICKEY = 
+
+    private static final String HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_PUBLICKEY =
             "http://docs.oasis-open.org/ws-sx/ws-trust/200512/PublicKey";
 
     private static final String HTTP_WWW_W3_ORG_2005_08_ADDRESSING = "http://www.w3.org/2005/08/addressing";
 
-    private static final String HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512 = 
+    private static final String HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512 =
             "http://docs.oasis-open.org/ws-sx/ws-trust/200512/";
-    
+
     private static final String HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_02_TRUST =
         "http://schemas.xmlsoap.org/ws/2005/02/trust";
 
@@ -82,29 +82,29 @@ public class STSClientAction {
 
     private static final Logger LOG = LoggerFactory
             .getLogger(STSClientAction.class);
-    
+
     protected String namespace = HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512;
 
     protected String wsdlLocation;
 
     protected String wsdlEndpoint;
-    
+
     protected String wsdlService = SECURITY_TOKEN_SERVICE;
-  
+
     protected String tokenType = WSConstants.WSS_SAML2_TOKEN_TYPE;
-    
+
     protected Map<String, Object> properties;
-    
+
     protected boolean use200502Namespace;
-    
+
     protected int ttl = 1800;
-    
+
     protected Bus bus;
-    
+
     private boolean isPortSet;
-    
+
     private String keyType = HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER;
-    
+
     private String customSTSParameter;
 
 
@@ -132,7 +132,7 @@ public class STSClientAction {
     public void setWsdlEndpoint(String wsdlEndpoint) {
         this.wsdlEndpoint = wsdlEndpoint;
     }
-    
+
     public String getWsdlService() {
         return wsdlService;
     }
@@ -140,7 +140,7 @@ public class STSClientAction {
     public void setWsdlService(String wsdlService) {
         this.wsdlService = wsdlService;
     }
-    
+
     public String getNamespace() {
         return namespace;
     }
@@ -148,7 +148,7 @@ public class STSClientAction {
     public void setNamespace(String namespace) {
         this.namespace = namespace;
     }
-    
+
     public void setBus(Bus bus) {
         this.bus = bus;
     }
@@ -173,7 +173,7 @@ public class STSClientAction {
     public void setTtl(int ttl) {
         this.ttl = ttl;
     }
-    
+
     public String getCustomSTSParameter() {
         return customSTSParameter;
     }
@@ -181,7 +181,7 @@ public class STSClientAction {
     public void setCustomSTSParameter(String customSTSParameter) {
         this.customSTSParameter = customSTSParameter;
     }
-    
+
     /**
      * @param context the webflow request context
      * @param realm The client/application realm
@@ -190,7 +190,7 @@ public class STSClientAction {
      */
     public Element submit(RequestContext context, String realm, String homeRealm)
         throws Exception {
-        
+
         SecurityToken idpToken = getSecurityToken(context, homeRealm);
 
         Bus cxfBus = getBus();
@@ -198,13 +198,13 @@ public class STSClientAction {
 
         IdpSTSClient sts = new IdpSTSClient(cxfBus);
         sts.setAddressingNamespace(HTTP_WWW_W3_ORG_2005_08_ADDRESSING);
-        
+
         Application serviceConfig = idpConfig.findApplication(realm);
         if (serviceConfig == null) {
             LOG.warn("No service config found for " + realm);
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
-        
+
         // Parse wreq parameter - we only support parsing TokenType and KeyType for now
         String wreq = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_REQUEST);
         String stsTokenType = null;
@@ -216,12 +216,12 @@ public class STSClientAction {
                 if (wreqElement != null && "RequestSecurityToken".equals(wreqElement.getLocalName())
                     && (STSUtils.WST_NS_05_12.equals(wreqElement.getNamespaceURI())
                         || HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_02_TRUST.equals(wreqElement.getNamespaceURI()))) {
-                    Element tokenTypeElement = 
+                    Element tokenTypeElement =
                         DOMUtils.getFirstChildWithName(wreqElement, wreqElement.getNamespaceURI(), "TokenType");
                     if (tokenTypeElement != null) {
                         stsTokenType = tokenTypeElement.getTextContent();
                     }
-                    Element keyTypeElement = 
+                    Element keyTypeElement =
                         DOMUtils.getFirstChildWithName(wreqElement, wreqElement.getNamespaceURI(), "KeyType");
                     if (keyTypeElement != null) {
                         stsKeyType = keyTypeElement.getTextContent();
@@ -232,7 +232,7 @@ public class STSClientAction {
                 throw new ProcessingException(TYPE.BAD_REQUEST);
             }
         }
-        
+
         if (stsTokenType != null) {
             sts.setTokenType(stsTokenType);
         } else if (serviceConfig.getTokenType() != null && serviceConfig.getTokenType().length() > 0) {
@@ -240,18 +240,18 @@ public class STSClientAction {
         } else {
             sts.setTokenType(getTokenType());
         }
-        
+
         if (serviceConfig.getPolicyNamespace() != null && serviceConfig.getPolicyNamespace().length() > 0) {
             sts.setWspNamespace(serviceConfig.getPolicyNamespace());
         }
-        
+
         LOG.debug("TokenType {} set for realm {}", sts.getTokenType(), realm);
-        
+
         sts.setKeyType(stsKeyType);
         if (HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_PUBLICKEY.equals(stsKeyType)) {
             HttpServletRequest servletRequest = WebUtils.getHttpServletRequest(context);
             if (servletRequest != null) {
-                X509Certificate certs[] = 
+                X509Certificate certs[] =
                     (X509Certificate[])servletRequest.getAttribute("javax.servlet.request.X509Certificate");
                 if (certs != null && certs.length > 0) {
                     sts.setUseCertificateForConfirmationKeyInfo(true);
@@ -275,18 +275,18 @@ public class STSClientAction {
             addClaims(sts, serviceConfig.getRequestedClaims());
             LOG.debug("Requested claims set for {}", realm);
         }
-        
+
         sts.setEnableLifetime(true);
         setLifetime(sts, serviceConfig, realm);
-        
+
         sts.setEnableAppliesTo(serviceConfig.isEnableAppliesTo());
-        
+
         sts.setOnBehalfOf(idpToken.getToken());
-       
+
         if (properties != null) {
             sts.setProperties(properties);
         }
-        
+
         if (getCustomSTSParameter() != null) {
             String authRealmParameter = context.getRequestParameters().get(getCustomSTSParameter());
             LOG.debug("Found {} custom STS parameter {}", getCustomSTSParameter(), authRealmParameter);
@@ -294,13 +294,13 @@ public class STSClientAction {
                 sts.setCustomContent(authRealmParameter);
             }
         }
-        
+
         Element rpToken = null;
         try {
             rpToken = sts.requestSecurityTokenResponse(realm);
         } catch (SoapFault ex) {
             LOG.error("Error in retrieving a token", ex.getMessage());
-            if (ex.getFaultCode() != null 
+            if (ex.getFaultCode() != null
                 && "RequestFailed".equals(ex.getFaultCode().getLocalPart())) {
                 throw new ProcessingException(TYPE.BAD_REQUEST);
             }
@@ -309,23 +309,23 @@ public class STSClientAction {
 
         if (LOG.isInfoEnabled()) {
             String id = getIdFromToken(rpToken);
-            
+
             LOG.info("[RP_TOKEN={}] successfully created for realm [{}] on behalf of [IDP_TOKEN={}]",
                      id, realm, idpToken.getId());
         }
         return rpToken;
     }
-    
+
     private String getIdFromToken(Element token) throws IOException, XMLStreamException {
         if (token != null) {
             NodeList nd = token.getElementsByTagNameNS(WSConstants.SAML2_NS, "Assertion");
-            
+
             String identifier = "ID";
             if (nd.getLength() == 0) {
                 nd = token.getElementsByTagNameNS(WSConstants.SAML_NS, "Assertion");
                 identifier = "AssertionID";
             }
-            
+
             if (nd.getLength() > 0) {
                 Element e = (Element) nd.item(0);
                 if (e.hasAttributeNS(null, identifier)) {
@@ -333,7 +333,7 @@ public class STSClientAction {
                 }
             }
         }
-        
+
         return "";
     }
 
@@ -349,7 +349,7 @@ public class STSClientAction {
         }
         return idpToken;
     }
-    
+
 
     private void processWsdlLocation(RequestContext context) {
         if (!isPortSet) {
@@ -357,7 +357,7 @@ public class STSClientAction {
                 URL url = new URL(this.wsdlLocation);
                 URL updatedUrl = new URL(url.getProtocol(), url.getHost(),
                                          WebUtils.getHttpServletRequest(context).getLocalPort(), url.getFile());
-                
+
                 setSTSWsdlUrl(updatedUrl.toString());
                 LOG.info("STS WSDL URL updated to {}", updatedUrl.toString());
             } catch (MalformedURLException e) {
@@ -368,7 +368,7 @@ public class STSClientAction {
 
     private void addClaims(STSClient sts, List<RequestClaim> requestClaimList)
         throws ParserConfigurationException, XMLStreamException {
-        
+
         Element claims = createClaimsElement(requestClaimList);
         if (claims != null) {
             sts.setClaims(claims);
@@ -395,7 +395,7 @@ public class STSClientAction {
                 writer.writeStartElement("ic", "ClaimType",
                         HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_05_IDENTITY);
                 writer.writeAttribute("Uri", item.getClaimType().toString());
-                writer.writeAttribute("Optional", Boolean.toString(item.isOptional())); 
+                writer.writeAttribute("Optional", Boolean.toString(item.isOptional()));
                 writer.writeEndElement();
             }
         }
@@ -404,7 +404,7 @@ public class STSClientAction {
 
         return writer.getDocument().getDocumentElement();
     }
-    
+
     private synchronized void setSTSWsdlUrl(String wsdlUrl) {
         this.wsdlLocation = wsdlUrl;
         this.isPortSet = true;

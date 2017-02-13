@@ -37,7 +37,7 @@ public interface ApplicationDAO {
     void deleteApplication(String realm);
 
     void addClaimToApplication(Application application, RequestClaim claim);
-    
+
     void removeClaimFromApplication(Application application, RequestClaim claim);
 
 }

@@ -26,29 +26,29 @@ import javax.persistence.ManyToOne;
 @Entity(name = "Application_Claim")
 //@IdClass(ApplicationClaimId.class)
 public class ApplicationClaimEntity {
-    
+
     @Id
     private int id;
-    
+
     @ManyToOne
     @JoinColumn(name = "applicationid")
     private ApplicationEntity application;
- 
+
     @ManyToOne
     @JoinColumn(name = "claimid")
     private ClaimEntity claim;
- 
+
     private boolean optional;
-    
+
     public ApplicationClaimEntity() {
     }
-    
+
     public ApplicationClaimEntity(ApplicationEntity application, ClaimEntity claim) {
         super();
         this.application = application;
         this.claim = claim;
     }
-    
+
     public int getId() {
         return id;
     }

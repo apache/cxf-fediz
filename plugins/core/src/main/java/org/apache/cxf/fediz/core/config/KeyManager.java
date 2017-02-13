@@ -23,7 +23,7 @@ import org.apache.cxf.fediz.core.config.jaxb.KeyManagersType;
 import org.apache.wss4j.common.crypto.Crypto;
 
 public class KeyManager {
-    
+
     private KeyManagersType keyManagerType;
     private Crypto crypto;
     private String name;
@@ -32,7 +32,7 @@ public class KeyManager {
         super();
         this.keyManagerType = keyManager;
     }
-    
+
     public String getName() {
         if (name != null) {
             return name;
@@ -46,7 +46,7 @@ public class KeyManager {
         }
         return name;
     }
-    
+
     public Crypto getCrypto() {
         return crypto;
     }
@@ -58,10 +58,10 @@ public class KeyManager {
     public String getKeyAlias() {
         return keyManagerType.getKeyAlias();
     }
-    
+
     public String getKeyPassword() {
         return keyManagerType.getKeyPassword();
     }
-    
+
 
 }

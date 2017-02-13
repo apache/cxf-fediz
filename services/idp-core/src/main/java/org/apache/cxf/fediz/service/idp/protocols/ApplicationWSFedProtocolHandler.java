@@ -28,7 +28,7 @@ import org.springframework.webflow.execution.RequestContext;
 
 @Component
 public class ApplicationWSFedProtocolHandler implements ApplicationProtocolHandler {
-    
+
     public static final String PROTOCOL = "http://docs.oasis-open.org/wsfed/federation/200706";
 
     //private static final Logger LOG = LoggerFactory.getLogger(ApplicationWSFedProtocolHandler.class);

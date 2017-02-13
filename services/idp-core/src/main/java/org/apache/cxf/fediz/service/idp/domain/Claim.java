@@ -26,15 +26,15 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "claim", namespace = "http://org.apache.cxf.fediz/")
 public class Claim implements Serializable {
-    
+
     private static final long serialVersionUID = 2635896159019665467L;
-    
+
     protected URI claimType;
     protected String displayName;
     protected String description;
     protected int id;
     private URI href;
-    
+
     @XmlAttribute
     public URI getHref() {
         return href;
@@ -43,7 +43,7 @@ public class Claim implements Serializable {
     public void setHref(URI href) {
         this.href = href;
     }
-    
+
     @XmlAttribute
     public int getId() {
         return id;
@@ -52,11 +52,11 @@ public class Claim implements Serializable {
     public void setId(int id) {
         this.id = id;
     }
-    
+
     public void setClaimType(URI claimType) {
         this.claimType = claimType;
     }
-    
+
     public URI getClaimType() {
         return claimType;
     }

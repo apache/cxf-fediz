@@ -58,7 +58,7 @@ public class FederationLogoutSuccessHandler implements LogoutSuccessHandler {
         }
         FedizContext fedCtx = federationConfig.getFedizContext(contextName);
         try {
-            FedizProcessor wfProc = 
+            FedizProcessor wfProc =
                 FedizProcessorFactory.newFedizProcessor(fedCtx.getProtocol());
             RedirectionResponse redirectionResponse =
                 wfProc.createSignOutRequest(request, null, fedCtx); //TODO
@@ -70,7 +70,7 @@ public class FederationLogoutSuccessHandler implements LogoutSuccessHandler {
                         response.addHeader(entry.getKey(), entry.getValue());
                     }
                 }
-                
+
                 response.sendRedirect(redirectURL);
             } else {
                 LOG.warn("Failed to create SignOutRequest.");

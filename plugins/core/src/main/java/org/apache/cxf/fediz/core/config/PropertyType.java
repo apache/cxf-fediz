@@ -23,14 +23,14 @@ import org.apache.cxf.fediz.core.config.jaxb.ArgumentType;
 
 public enum PropertyType {
     CLASS("Class"),
-    
+
     STRING("String");
     private final String value;
 
     PropertyType(String v) {
         value = v;
     }
-    
+
     PropertyType(ArgumentType arg) {
         value = arg.value();
     }
@@ -48,5 +48,5 @@ public enum PropertyType {
         throw new IllegalArgumentException(v);
     }
 
-    
+
 }

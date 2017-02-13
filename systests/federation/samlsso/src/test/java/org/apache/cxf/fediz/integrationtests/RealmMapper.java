@@ -27,18 +27,18 @@ import java.util.Map;
  * Returns a static map of application realms to home realms
  */
 public final class RealmMapper {
-    
+
     private RealmMapper() {
         //
     }
-    
+
     public static Map<String, String> realms() {
         Map<String, String> realms = new HashMap<>();
         realms.put("urn:org:apache:cxf:fediz:fedizhelloworld:realm-B", "urn:org:apache:cxf:fediz:idp:realm-B");
         realms.put("urn:org:apache:cxf:fediz:fedizhelloworld:realm-C", "urn:org:apache:cxf:fediz:idp:realm-C");
         realms.put("urn:org:apache:cxf:fediz:fedizhelloworld:realm-D", "urn:org:apache:cxf:fediz:idp:realm-D");
-        
+
         return realms;
     }
-    
+
 }

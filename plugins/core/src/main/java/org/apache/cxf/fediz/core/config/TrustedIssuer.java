@@ -28,36 +28,36 @@ public class TrustedIssuer {
     private final TrustedIssuerType trustedIssuerType;
     private Pattern subject;
 
-        
+
     public TrustedIssuer(TrustedIssuerType trustedIssuerType) {
         super();
         this.trustedIssuerType = trustedIssuerType;
     }
-    
+
     public String getName() {
         return trustedIssuerType.getName();
     }
-    
+
     public void setName(String name) {
         trustedIssuerType.setName(name);
     }
-    
+
     public Pattern getCompiledSubject() {
         if (subject != null) {
             return subject;
         }
-        
+
         if (trustedIssuerType.getSubject() != null) {
             subject = Pattern.compile(trustedIssuerType.getSubject());
         }
-        
+
         return subject;
     }
-    
+
     public String getSubject() {
         return trustedIssuerType.getSubject();
     }
-    
+
     public void setSubject(String subject) {
         trustedIssuerType.setSubject(subject);
         this.subject = null;
@@ -75,7 +75,7 @@ public class TrustedIssuer {
             );
         }
     }
-    
+
     public void setCertificateValidationMethod(
             final CertificateValidationMethod validationMethod
     ) {
@@ -86,36 +86,36 @@ public class TrustedIssuer {
         } else {
             String error = "Not supported certificate validation type";
             if (validationMethod != null) {
-                error += ": " + validationMethod.value(); 
+                error += ": " + validationMethod.value();
             }
             throw new IllegalStateException(error);
         }
     }
-    
+
 
     public int hashCode() {
         return trustedIssuerType.hashCode();
     }
-    
+
     public boolean equals(Object obj) {
         if (!(obj instanceof TrustedIssuer)) {
             return false;
         }
-        
+
         TrustedIssuer that = (TrustedIssuer)obj;
         if (trustedIssuerType != null && !trustedIssuerType.equals(that.getTrustedIssuerType())) {
             return false;
         } else if (trustedIssuerType == null && that.getTrustedIssuerType() != null) {
             return false;
         }
-        
+
         return true;
     }
 
     public String toString() {
         return trustedIssuerType.toString();
     }
-    
+
     public TrustedIssuerType getTrustedIssuerType() {
         return trustedIssuerType;
     }

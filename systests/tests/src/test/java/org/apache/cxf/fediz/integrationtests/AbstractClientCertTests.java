@@ -39,7 +39,7 @@ import org.apache.wss4j.dom.engine.WSSConfig;
 import org.junit.Assert;
 
 public abstract class AbstractClientCertTests {
-    
+
     static {
         WSSConfig.init();
     }
@@ -49,7 +49,7 @@ public abstract class AbstractClientCertTests {
     }
 
     public abstract String getServletContextName();
-    
+
     public abstract String getIdpHttpsPort();
 
     public abstract String getRpHttpsPort();
@@ -57,7 +57,7 @@ public abstract class AbstractClientCertTests {
     @org.junit.Test
     public void testClientAuthentication() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
-        
+
         final WebClient webClient = new WebClient();
         webClient.getOptions().setUseInsecureSSL(true);
         webClient.getOptions().setSSLClientCertificate(
@@ -70,7 +70,7 @@ public abstract class AbstractClientCertTests {
 
         final HtmlForm form = idpPage.getFormByName("signinresponseform");
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
-        
+
         // Test the Subject Confirmation method here
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
 
@@ -81,7 +81,7 @@ public abstract class AbstractClientCertTests {
                 break;
             }
         }
-        Assert.assertTrue(wresult != null 
+        Assert.assertTrue(wresult != null
             && wresult.contains("urn:oasis:names:tc:SAML:2.0:cm:holder-of-key"));
 
         final HtmlPage rpPage = button.click();
@@ -98,7 +98,7 @@ public abstract class AbstractClientCertTests {
                           bodyTextContent.contains("role:Manager=false"));
         Assert.assertTrue("User " + user + " must have role User",
                           bodyTextContent.contains("role:User=true"));
-        
+
         String claim = ClaimTypes.FIRSTNAME.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
                           bodyTextContent.contains(claim + "=Alice"));
@@ -108,15 +108,15 @@ public abstract class AbstractClientCertTests {
         claim = ClaimTypes.EMAILADDRESS.toString();
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
                           bodyTextContent.contains(claim + "=alice@realma.org"));
-        
+
         // webClient.close();
     }
-    
+
     @org.junit.Test
     public void testDifferentClientCertificate() throws Exception {
         // Get the initial wresult from the IdP
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
-        
+
         CookieManager cookieManager = new CookieManager();
         final WebClient webClient = new WebClient();
         webClient.setCookieManager(cookieManager);
@@ -146,17 +146,17 @@ public abstract class AbstractClientCertTests {
             }
         }
         Assert.assertTrue(wctx != null && wtrealm != null);
-        Assert.assertTrue(wresult != null 
+        Assert.assertTrue(wresult != null
             && wresult.contains("urn:oasis:names:tc:SAML:2.0:cm:holder-of-key"));
         // webClient.close();
-        
+
         // Now invoke on the RP using the saved parameters above, but a different client cert!
         final WebClient webClient2 = new WebClient();
         webClient2.setCookieManager(cookieManager);
         webClient2.getOptions().setUseInsecureSSL(true);
         webClient2.getOptions().setSSLClientCertificate(
             this.getClass().getClassLoader().getResource("server.jks"), "tompass", "jks");
-        
+
         WebRequest request = new WebRequest(new URL(url), HttpMethod.POST);
 
         request.setRequestParameters(new ArrayList<NameValuePair>());

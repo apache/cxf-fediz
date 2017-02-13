@@ -28,17 +28,17 @@ import java.util.TimeZone;
  * Some Utility methods for manipulating cookies
  */
 public final class CookieUtils  {
-    
+
     private CookieUtils() {
         // complete
     }
 
-    public static String createCookie(String name, 
-                                  String value, 
+    public static String createCookie(String name,
+                                  String value,
                                   String path,
                                   String domain,
-                                  long stateTimeToLive) { 
-        
+                                  long stateTimeToLive) {
+
         String contextCookie = name + "=" + value;
         // Setting a specific path restricts the browsers
         // to return a cookie only to the web applications
@@ -46,25 +46,25 @@ public final class CookieUtils  {
         if (path != null) {
             contextCookie += ";Path=" + path;
         }
-        
+
         // Setting a specific domain further restricts the browsers
         // to return a cookie only to the web applications
         // listening on the specific context path within a particular domain
         if (domain != null) {
             contextCookie += ";Domain=" + domain;
         }
-        
+
         // Keep the cookie across the browser restarts until it actually expires.
-        // Note that the Expires property has been deprecated but apparently is 
-        // supported better than 'max-age' property by different browsers 
+        // Note that the Expires property has been deprecated but apparently is
+        // supported better than 'max-age' property by different browsers
         // (Firefox, IE, etc)
         Date expiresDate = new Date(System.currentTimeMillis() + stateTimeToLive);
         String cookieExpires = getHttpDateFormat().format(expiresDate);
         contextCookie += ";Expires=" + cookieExpires;
-        
+
         return contextCookie;
     }
-    
+
     public static SimpleDateFormat getHttpDateFormat() {
         SimpleDateFormat dateFormat =
             new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US);
@@ -72,15 +72,15 @@ public final class CookieUtils  {
         dateFormat.setTimeZone(tZone);
         return dateFormat;
     }
-    
+
     public static boolean isStateExpired(long stateCreatedAt, boolean detectExpiredTokens,
                                          long expiresAt, long stateTTL) {
         Date currentTime = new Date();
         if (currentTime.after(new Date(stateCreatedAt + stateTTL))) {
             return true;
         }
-        
+
         return detectExpiredTokens && expiresAt > 0 && currentTime.after(new Date(expiresAt));
     }
-    
+
 }

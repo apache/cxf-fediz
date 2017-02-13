@@ -44,11 +44,11 @@ public class FederationLoginService extends AbstractLifeCycle implements LoginSe
 
     protected IdentityService identityService = new FederationIdentityService();
     protected String name;
-    
+
 
     public FederationLoginService() {
     }
-    
+
     public FederationLoginService(String name) {
         this.name = name;
     }
@@ -62,7 +62,7 @@ public class FederationLoginService extends AbstractLifeCycle implements LoginSe
         if (isRunning()) {
             throw new IllegalStateException("Running");
         }
-        
+
         this.name = name;
     }
 
@@ -76,17 +76,17 @@ public class FederationLoginService extends AbstractLifeCycle implements LoginSe
      * username will be null since the credentials will contain all the relevant info
      */
     public UserIdentity login(String username, Object credentials, FedizContext config) {
-        
+
         try {
             FedizResponse wfRes = null;
             FedizRequest wfReq = (FedizRequest)credentials;
-            
+
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Process SignIn request");
                 LOG.debug("token=\n" + wfReq.getResponseToken());
             }
-            
-            FedizProcessor wfProc = 
+
+            FedizProcessor wfProc =
                 FedizProcessorFactory.newFedizProcessor(config.getProtocol());
             try {
                 wfRes = wfProc.processRequest(wfReq, config);
@@ -96,7 +96,7 @@ public class FederationLoginService extends AbstractLifeCycle implements LoginSe
             }
 
 
-            // Validate the AudienceRestriction in Security Token (e.g. SAML) 
+            // Validate the AudienceRestriction in Security Token (e.g. SAML)
             // against the configured list of audienceURIs
             if (wfRes.getAudience() != null) {
                 List<String> audienceURIs = config.getAudienceUris();
@@ -123,15 +123,15 @@ public class FederationLoginService extends AbstractLifeCycle implements LoginSe
                 roles = new ArrayList<>(roles);
                 roles.add("Authenticated");
             }
-            
+
             FederationUserPrincipal user = new FederationUserPrincipal(wfRes.getUsername(), wfRes);
 
             Subject subject = new Subject();
             subject.getPrincipals().add(user);
-            
+
             String[] aRoles = new String[roles.size()];
             roles.toArray(aRoles);
-            
+
             return identityService.newUserIdentity(subject, user, aRoles);
 
         } catch (Exception ex) {
@@ -161,8 +161,8 @@ public class FederationLoginService extends AbstractLifeCycle implements LoginSe
         identityService = service;
     }
 
-    public void logout(UserIdentity user) { 
-    
+    public void logout(UserIdentity user) {
+
     }
 
     @Override

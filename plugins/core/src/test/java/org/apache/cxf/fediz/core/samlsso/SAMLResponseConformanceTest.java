@@ -84,20 +84,20 @@ public class SAMLResponseConformanceTest {
     static final String TEST_REQUEST_URI = "/fedizhelloworld";
     static final String TEST_IDP_ISSUER = "http://url_to_the_issuer";
     static final String TEST_CLIENT_ADDRESS = "https://127.0.0.1";
-    
+
     private static final String CONFIG_FILE = "fediz_test_config_saml.xml";
-    
+
     private static Crypto crypto;
     private static CallbackHandler cbPasswordHandler;
     private static FedizConfigurator configurator;
     private static DocumentBuilderFactory docBuilderFactory;
-    
+
     static {
         docBuilderFactory = DocumentBuilderFactory.newInstance();
         docBuilderFactory.setNamespaceAware(true);
     }
-    
-    
+
+
     @BeforeClass
     public static void init() {
         try {
@@ -110,12 +110,12 @@ public class SAMLResponseConformanceTest {
         Assert.assertNotNull(configurator);
 
     }
-    
+
     @AfterClass
     public static void cleanup() {
         SecurityTestUtil.cleanup();
     }
-    
+
 
     private static FedizConfigurator getFederationConfigurator() {
         if (configurator != null) {
@@ -133,14 +133,14 @@ public class SAMLResponseConformanceTest {
             return null;
         }
     }
-    
+
     @org.junit.Test
     public void testWrongIssuerFormat() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        
+
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         RequestState requestState = new RequestState(TEST_REQUEST_URL,
                                                      TEST_IDP_ISSUER,
@@ -150,7 +150,7 @@ public class SAMLResponseConformanceTest {
                                                      null,
                                                      relayState,
                                                      System.currentTimeMillis());
-        
+
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setAlsoAddAuthnStatement(true);
@@ -158,13 +158,13 @@ public class SAMLResponseConformanceTest {
         callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
         callbackHandler.setIssuer(TEST_IDP_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
-        
+
         ConditionsBean cp = new ConditionsBean();
         AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
         audienceRestriction.getAudienceURIs().add(TEST_REQUEST_URL);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         // Subject Confirmation Data
         SubjectConfirmationDataBean subjectConfirmationData = new SubjectConfirmationDataBean();
         subjectConfirmationData.setAddress(TEST_CLIENT_ADDRESS);
@@ -172,31 +172,31 @@ public class SAMLResponseConformanceTest {
         subjectConfirmationData.setNotAfter(new DateTime().plusMinutes(5));
         subjectConfirmationData.setRecipient(TEST_REQUEST_URL);
         callbackHandler.setSubjectConfirmationData(subjectConfirmationData);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
+
         // The Issuer NameFormat must be "entity" if it is used at all
         String issuerNameFormat = "urn:oasis:names:tc:SAML:2.0:nameid-format:kerberos";
         Issuer issuer =
-            SAML2PResponseComponentBuilder.createIssuer(assertion.getIssuerString(), 
+            SAML2PResponseComponentBuilder.createIssuer(assertion.getIssuerString(),
                                                         issuerNameFormat);
-        
+
         Element response = createSamlResponse(assertion, "mystskey", true, requestId, issuer);
         String responseStr = encodeResponse(response);
-        
+
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
         EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
         EasyMock.replay(req);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setResponseToken(responseStr);
         wfReq.setState(relayState);
         wfReq.setRequest(req);
         wfReq.setRequestState(requestState);
-        
+
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
@@ -207,14 +207,14 @@ public class SAMLResponseConformanceTest {
             }
         }
     }
-    
+
     @org.junit.Test
     public void testRightIssuerFormat() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        
+
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         RequestState requestState = new RequestState(TEST_REQUEST_URL,
                                                      TEST_IDP_ISSUER,
@@ -224,7 +224,7 @@ public class SAMLResponseConformanceTest {
                                                      null,
                                                      relayState,
                                                      System.currentTimeMillis());
-        
+
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setAlsoAddAuthnStatement(true);
@@ -232,13 +232,13 @@ public class SAMLResponseConformanceTest {
         callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
         callbackHandler.setIssuer(TEST_IDP_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
-        
+
         ConditionsBean cp = new ConditionsBean();
         AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
         audienceRestriction.getAudienceURIs().add(TEST_REQUEST_URL);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         // Subject Confirmation Data
         SubjectConfirmationDataBean subjectConfirmationData = new SubjectConfirmationDataBean();
         subjectConfirmationData.setAddress(TEST_CLIENT_ADDRESS);
@@ -246,34 +246,34 @@ public class SAMLResponseConformanceTest {
         subjectConfirmationData.setNotAfter(new DateTime().plusMinutes(5));
         subjectConfirmationData.setRecipient(TEST_REQUEST_URL);
         callbackHandler.setSubjectConfirmationData(subjectConfirmationData);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
+
         // The Issuer NameFormat must be "entity" if it is used at all
         String issuerNameFormat = "urn:oasis:names:tc:SAML:2.0:nameid-format:entity";
         Issuer issuer =
-            SAML2PResponseComponentBuilder.createIssuer(assertion.getIssuerString(), 
+            SAML2PResponseComponentBuilder.createIssuer(assertion.getIssuerString(),
                                                         issuerNameFormat);
-        
+
         Element response = createSamlResponse(assertion, "mystskey", true, requestId, issuer);
         String responseStr = encodeResponse(response);
-        
+
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
         EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
         EasyMock.replay(req);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setResponseToken(responseStr);
         wfReq.setState(relayState);
         wfReq.setRequest(req);
         wfReq.setRequestState(requestState);
-        
+
         FedizProcessor wfProc = new SAMLProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        
+
         Assert.assertEquals("Principal name wrong", TEST_USER,
                             wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
@@ -281,14 +281,14 @@ public class SAMLResponseConformanceTest {
                             .size());
         Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
     }
-    
+
     @org.junit.Test
     public void testNoAuthnStatement() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        
+
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         RequestState requestState = new RequestState(TEST_REQUEST_URL,
                                                      TEST_IDP_ISSUER,
@@ -298,20 +298,20 @@ public class SAMLResponseConformanceTest {
                                                      null,
                                                      relayState,
                                                      System.currentTimeMillis());
-        
+
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
         callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
         callbackHandler.setIssuer(TEST_IDP_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
-        
+
         ConditionsBean cp = new ConditionsBean();
         AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
         audienceRestriction.getAudienceURIs().add(TEST_REQUEST_URL);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         // Subject Confirmation Data
         SubjectConfirmationDataBean subjectConfirmationData = new SubjectConfirmationDataBean();
         subjectConfirmationData.setAddress(TEST_CLIENT_ADDRESS);
@@ -319,24 +319,24 @@ public class SAMLResponseConformanceTest {
         subjectConfirmationData.setNotAfter(new DateTime().plusMinutes(5));
         subjectConfirmationData.setRecipient(TEST_REQUEST_URL);
         callbackHandler.setSubjectConfirmationData(subjectConfirmationData);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         Element response = createSamlResponse(assertion, "mystskey", true, requestId, null);
         String responseStr = encodeResponse(response);
-        
+
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
         EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
         EasyMock.replay(req);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setResponseToken(responseStr);
         wfReq.setState(relayState);
         wfReq.setRequest(req);
         wfReq.setRequestState(requestState);
-        
+
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
@@ -347,14 +347,14 @@ public class SAMLResponseConformanceTest {
             }
         }
     }
-    
+
     @org.junit.Test
     public void testAudienceRestriction() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        
+
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         RequestState requestState = new RequestState(TEST_REQUEST_URL,
                                                      TEST_IDP_ISSUER,
@@ -364,7 +364,7 @@ public class SAMLResponseConformanceTest {
                                                      null,
                                                      relayState,
                                                      System.currentTimeMillis());
-        
+
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setAlsoAddAuthnStatement(true);
@@ -372,10 +372,10 @@ public class SAMLResponseConformanceTest {
         callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
         callbackHandler.setIssuer(TEST_IDP_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
-        
+
         ConditionsBean cp = new ConditionsBean();
         callbackHandler.setConditions(cp);
-        
+
         // Subject Confirmation Data
         SubjectConfirmationDataBean subjectConfirmationData = new SubjectConfirmationDataBean();
         subjectConfirmationData.setAddress(TEST_CLIENT_ADDRESS);
@@ -383,24 +383,24 @@ public class SAMLResponseConformanceTest {
         subjectConfirmationData.setNotAfter(new DateTime().plusMinutes(5));
         subjectConfirmationData.setRecipient(TEST_REQUEST_URL);
         callbackHandler.setSubjectConfirmationData(subjectConfirmationData);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         Element response = createSamlResponse(assertion, "mystskey", true, requestId, null);
         String responseStr = encodeResponse(response);
-        
+
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
         EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
         EasyMock.replay(req);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setResponseToken(responseStr);
         wfReq.setState(relayState);
         wfReq.setRequest(req);
         wfReq.setRequestState(requestState);
-        
+
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
@@ -411,14 +411,14 @@ public class SAMLResponseConformanceTest {
             }
         }
     }
-    
+
     @org.junit.Test
     public void testNonMatchingAudienceRestriction() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        
+
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         RequestState requestState = new RequestState(TEST_REQUEST_URL,
                                                      TEST_IDP_ISSUER,
@@ -428,7 +428,7 @@ public class SAMLResponseConformanceTest {
                                                      null,
                                                      relayState,
                                                      System.currentTimeMillis());
-        
+
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setAlsoAddAuthnStatement(true);
@@ -436,13 +436,13 @@ public class SAMLResponseConformanceTest {
         callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
         callbackHandler.setIssuer(TEST_IDP_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
-        
+
         ConditionsBean cp = new ConditionsBean();
         AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
         audienceRestriction.getAudienceURIs().add(TEST_REQUEST_URL + "asf");
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         // Subject Confirmation Data
         SubjectConfirmationDataBean subjectConfirmationData = new SubjectConfirmationDataBean();
         subjectConfirmationData.setAddress(TEST_CLIENT_ADDRESS);
@@ -450,24 +450,24 @@ public class SAMLResponseConformanceTest {
         subjectConfirmationData.setNotAfter(new DateTime().plusMinutes(5));
         subjectConfirmationData.setRecipient(TEST_REQUEST_URL);
         callbackHandler.setSubjectConfirmationData(subjectConfirmationData);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         Element response = createSamlResponse(assertion, "mystskey", true, requestId, null);
         String responseStr = encodeResponse(response);
-        
+
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
         EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
         EasyMock.replay(req);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setResponseToken(responseStr);
         wfReq.setState(relayState);
         wfReq.setRequest(req);
         wfReq.setRequestState(requestState);
-        
+
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
@@ -478,14 +478,14 @@ public class SAMLResponseConformanceTest {
             }
         }
     }
-    
+
     @org.junit.Test
     public void testNoBearerSubjectConfirmation() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        
+
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         RequestState requestState = new RequestState(TEST_REQUEST_URL,
                                                      TEST_IDP_ISSUER,
@@ -495,7 +495,7 @@ public class SAMLResponseConformanceTest {
                                                      null,
                                                      relayState,
                                                      System.currentTimeMillis());
-        
+
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setAlsoAddAuthnStatement(true);
@@ -503,13 +503,13 @@ public class SAMLResponseConformanceTest {
         callbackHandler.setConfirmationMethod(SAML2Constants.CONF_SENDER_VOUCHES);
         callbackHandler.setIssuer(TEST_IDP_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
-        
+
         ConditionsBean cp = new ConditionsBean();
         AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
         audienceRestriction.getAudienceURIs().add(TEST_REQUEST_URL);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         // Subject Confirmation Data
         SubjectConfirmationDataBean subjectConfirmationData = new SubjectConfirmationDataBean();
         subjectConfirmationData.setAddress(TEST_CLIENT_ADDRESS);
@@ -517,24 +517,24 @@ public class SAMLResponseConformanceTest {
         subjectConfirmationData.setNotAfter(new DateTime().plusMinutes(5));
         subjectConfirmationData.setRecipient(TEST_REQUEST_URL);
         callbackHandler.setSubjectConfirmationData(subjectConfirmationData);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         Element response = createSamlResponse(assertion, "mystskey", true, requestId, null);
         String responseStr = encodeResponse(response);
-        
+
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
         EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
         EasyMock.replay(req);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setResponseToken(responseStr);
         wfReq.setState(relayState);
         wfReq.setRequest(req);
         wfReq.setRequestState(requestState);
-        
+
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
@@ -545,14 +545,14 @@ public class SAMLResponseConformanceTest {
             }
         }
     }
-    
+
     @org.junit.Test
     public void testNonMatchingRecipient() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        
+
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         RequestState requestState = new RequestState(TEST_REQUEST_URL,
                                                      TEST_IDP_ISSUER,
@@ -562,7 +562,7 @@ public class SAMLResponseConformanceTest {
                                                      null,
                                                      relayState,
                                                      System.currentTimeMillis());
-        
+
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setAlsoAddAuthnStatement(true);
@@ -570,13 +570,13 @@ public class SAMLResponseConformanceTest {
         callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
         callbackHandler.setIssuer(TEST_IDP_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
-        
+
         ConditionsBean cp = new ConditionsBean();
         AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
         audienceRestriction.getAudienceURIs().add(TEST_REQUEST_URL);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         // Subject Confirmation Data
         SubjectConfirmationDataBean subjectConfirmationData = new SubjectConfirmationDataBean();
         subjectConfirmationData.setAddress(TEST_CLIENT_ADDRESS);
@@ -584,24 +584,24 @@ public class SAMLResponseConformanceTest {
         subjectConfirmationData.setNotAfter(new DateTime().plusMinutes(5));
         subjectConfirmationData.setRecipient(TEST_REQUEST_URL + "asf");
         callbackHandler.setSubjectConfirmationData(subjectConfirmationData);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         Element response = createSamlResponse(assertion, "mystskey", true, requestId, null);
         String responseStr = encodeResponse(response);
-        
+
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
         EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
         EasyMock.replay(req);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setResponseToken(responseStr);
         wfReq.setState(relayState);
         wfReq.setRequest(req);
         wfReq.setRequestState(requestState);
-        
+
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
@@ -612,14 +612,14 @@ public class SAMLResponseConformanceTest {
             }
         }
     }
-    
+
     @org.junit.Test
     public void testNonMatchingInResponseTo() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        
+
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         RequestState requestState = new RequestState(TEST_REQUEST_URL,
                                                      TEST_IDP_ISSUER,
@@ -629,7 +629,7 @@ public class SAMLResponseConformanceTest {
                                                      null,
                                                      relayState,
                                                      System.currentTimeMillis());
-        
+
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setAlsoAddAuthnStatement(true);
@@ -637,13 +637,13 @@ public class SAMLResponseConformanceTest {
         callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
         callbackHandler.setIssuer(TEST_IDP_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
-        
+
         ConditionsBean cp = new ConditionsBean();
         AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
         audienceRestriction.getAudienceURIs().add(TEST_REQUEST_URL);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         // Subject Confirmation Data
         SubjectConfirmationDataBean subjectConfirmationData = new SubjectConfirmationDataBean();
         subjectConfirmationData.setAddress(TEST_CLIENT_ADDRESS);
@@ -651,24 +651,24 @@ public class SAMLResponseConformanceTest {
         subjectConfirmationData.setNotAfter(new DateTime().plusMinutes(5));
         subjectConfirmationData.setRecipient(TEST_REQUEST_URL);
         callbackHandler.setSubjectConfirmationData(subjectConfirmationData);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         Element response = createSamlResponse(assertion, "mystskey", true, requestId, null);
         String responseStr = encodeResponse(response);
-        
+
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
         EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
         EasyMock.replay(req);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setResponseToken(responseStr);
         wfReq.setState(relayState);
         wfReq.setRequest(req);
         wfReq.setRequestState(requestState);
-        
+
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
@@ -679,14 +679,14 @@ public class SAMLResponseConformanceTest {
             }
         }
     }
-    
+
     @org.junit.Test
     public void testNonMatchingAddress() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        
+
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         RequestState requestState = new RequestState(TEST_REQUEST_URL,
                                                      TEST_IDP_ISSUER,
@@ -696,7 +696,7 @@ public class SAMLResponseConformanceTest {
                                                      null,
                                                      relayState,
                                                      System.currentTimeMillis());
-        
+
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setAlsoAddAuthnStatement(true);
@@ -704,13 +704,13 @@ public class SAMLResponseConformanceTest {
         callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
         callbackHandler.setIssuer(TEST_IDP_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
-        
+
         ConditionsBean cp = new ConditionsBean();
         AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
         audienceRestriction.getAudienceURIs().add(TEST_REQUEST_URL);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         // Subject Confirmation Data
         SubjectConfirmationDataBean subjectConfirmationData = new SubjectConfirmationDataBean();
         subjectConfirmationData.setAddress(TEST_CLIENT_ADDRESS + "xyz");
@@ -718,24 +718,24 @@ public class SAMLResponseConformanceTest {
         subjectConfirmationData.setNotAfter(new DateTime().plusMinutes(5));
         subjectConfirmationData.setRecipient(TEST_REQUEST_URL);
         callbackHandler.setSubjectConfirmationData(subjectConfirmationData);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         Element response = createSamlResponse(assertion, "mystskey", true, requestId, null);
         String responseStr = encodeResponse(response);
-        
+
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
         EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
         EasyMock.replay(req);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setResponseToken(responseStr);
         wfReq.setState(relayState);
         wfReq.setRequest(req);
         wfReq.setRequestState(requestState);
-        
+
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
@@ -746,14 +746,14 @@ public class SAMLResponseConformanceTest {
             }
         }
     }
-    
+
     @org.junit.Test
     public void testNotBefore() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        
+
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         RequestState requestState = new RequestState(TEST_REQUEST_URL,
                                                      TEST_IDP_ISSUER,
@@ -763,7 +763,7 @@ public class SAMLResponseConformanceTest {
                                                      null,
                                                      relayState,
                                                      System.currentTimeMillis());
-        
+
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setAlsoAddAuthnStatement(true);
@@ -771,13 +771,13 @@ public class SAMLResponseConformanceTest {
         callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
         callbackHandler.setIssuer(TEST_IDP_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
-        
+
         ConditionsBean cp = new ConditionsBean();
         AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
         audienceRestriction.getAudienceURIs().add(TEST_REQUEST_URL);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         // Subject Confirmation Data
         SubjectConfirmationDataBean subjectConfirmationData = new SubjectConfirmationDataBean();
         subjectConfirmationData.setAddress(TEST_CLIENT_ADDRESS);
@@ -786,24 +786,24 @@ public class SAMLResponseConformanceTest {
         subjectConfirmationData.setNotAfter(new DateTime().plusMinutes(5));
         subjectConfirmationData.setRecipient(TEST_REQUEST_URL);
         callbackHandler.setSubjectConfirmationData(subjectConfirmationData);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         Element response = createSamlResponse(assertion, "mystskey", true, requestId, null);
         String responseStr = encodeResponse(response);
-        
+
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
         EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
         EasyMock.replay(req);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setResponseToken(responseStr);
         wfReq.setState(relayState);
         wfReq.setRequest(req);
         wfReq.setRequestState(requestState);
-        
+
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
@@ -814,14 +814,14 @@ public class SAMLResponseConformanceTest {
             }
         }
     }
-    
+
     @org.junit.Test
     public void testNotOnOfAfter() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        
+
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         RequestState requestState = new RequestState(TEST_REQUEST_URL,
                                                      TEST_IDP_ISSUER,
@@ -831,7 +831,7 @@ public class SAMLResponseConformanceTest {
                                                      null,
                                                      relayState,
                                                      System.currentTimeMillis());
-        
+
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setAlsoAddAuthnStatement(true);
@@ -839,37 +839,37 @@ public class SAMLResponseConformanceTest {
         callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
         callbackHandler.setIssuer(TEST_IDP_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
-        
+
         ConditionsBean cp = new ConditionsBean();
         AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
         audienceRestriction.getAudienceURIs().add(TEST_REQUEST_URL);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         // Subject Confirmation Data
         SubjectConfirmationDataBean subjectConfirmationData = new SubjectConfirmationDataBean();
         subjectConfirmationData.setAddress(TEST_CLIENT_ADDRESS);
         subjectConfirmationData.setInResponseTo(requestId);
         subjectConfirmationData.setRecipient(TEST_REQUEST_URL);
         callbackHandler.setSubjectConfirmationData(subjectConfirmationData);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
         Element response = createSamlResponse(assertion, "mystskey", true, requestId, null);
         String responseStr = encodeResponse(response);
-        
+
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
         EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
         EasyMock.replay(req);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setResponseToken(responseStr);
         wfReq.setState(relayState);
         wfReq.setRequest(req);
         wfReq.setRequestState(requestState);
-        
+
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
@@ -880,14 +880,14 @@ public class SAMLResponseConformanceTest {
             }
         }
     }
-    
+
     @org.junit.Test
     public void testFailingStatusWithValidAssertion() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        
+
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         RequestState requestState = new RequestState(TEST_REQUEST_URL,
                                                      TEST_IDP_ISSUER,
@@ -897,7 +897,7 @@ public class SAMLResponseConformanceTest {
                                                      null,
                                                      relayState,
                                                      System.currentTimeMillis());
-        
+
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setAlsoAddAuthnStatement(true);
@@ -905,13 +905,13 @@ public class SAMLResponseConformanceTest {
         callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
         callbackHandler.setIssuer(TEST_IDP_ISSUER);
         callbackHandler.setSubjectName(TEST_USER);
-        
+
         ConditionsBean cp = new ConditionsBean();
         AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
         audienceRestriction.getAudienceURIs().add(TEST_REQUEST_URL);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         // Subject Confirmation Data
         SubjectConfirmationDataBean subjectConfirmationData = new SubjectConfirmationDataBean();
         subjectConfirmationData.setAddress(TEST_CLIENT_ADDRESS);
@@ -919,11 +919,11 @@ public class SAMLResponseConformanceTest {
         subjectConfirmationData.setRecipient(TEST_REQUEST_URL);
         subjectConfirmationData.setNotAfter(new DateTime().plusMinutes(5));
         callbackHandler.setSubjectConfirmationData(subjectConfirmationData);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
+
         WSPasswordCallback[] cb = {
             new WSPasswordCallback("mystskey", WSPasswordCallback.SIGNATURE)
         };
@@ -939,12 +939,12 @@ public class SAMLResponseConformanceTest {
                 "urn:oasis:names:tc:SAML:2.0:status:Failure", null
             );
 
-        Issuer responseIssuer = 
+        Issuer responseIssuer =
             SAML2PResponseComponentBuilder.createIssuer(assertion.getIssuerString());
 
         Response response =
-            SAML2PResponseComponentBuilder.createSAMLResponse(requestId, 
-                                                              responseIssuer, 
+            SAML2PResponseComponentBuilder.createSAMLResponse(requestId,
+                                                              responseIssuer,
                                                               status);
 
         response.getAssertions().add(assertion.getSaml2());
@@ -953,18 +953,18 @@ public class SAMLResponseConformanceTest {
         doc.appendChild(policyElement);
 
         String responseStr = encodeResponse(policyElement);
-        
+
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
         EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
         EasyMock.replay(req);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setResponseToken(responseStr);
         wfReq.setState(relayState);
         wfReq.setRequest(req);
         wfReq.setRequestState(requestState);
-        
+
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
@@ -975,14 +975,14 @@ public class SAMLResponseConformanceTest {
             }
         }
     }
-    
+
     @org.junit.Test
     public void testIssuerEnforcementFailure() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        
+
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         RequestState requestState = new RequestState(TEST_REQUEST_URL,
                                                      TEST_IDP_ISSUER,
@@ -992,7 +992,7 @@ public class SAMLResponseConformanceTest {
                                                      null,
                                                      relayState,
                                                      System.currentTimeMillis());
-        
+
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setAlsoAddAuthnStatement(true);
@@ -1000,13 +1000,13 @@ public class SAMLResponseConformanceTest {
         callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
         callbackHandler.setIssuer(TEST_IDP_ISSUER + "/other-issuer");
         callbackHandler.setSubjectName(TEST_USER);
-        
+
         ConditionsBean cp = new ConditionsBean();
         AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
         audienceRestriction.getAudienceURIs().add(TEST_REQUEST_URL);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         // Subject Confirmation Data
         SubjectConfirmationDataBean subjectConfirmationData = new SubjectConfirmationDataBean();
         subjectConfirmationData.setAddress(TEST_CLIENT_ADDRESS);
@@ -1014,28 +1014,28 @@ public class SAMLResponseConformanceTest {
         subjectConfirmationData.setNotAfter(new DateTime().plusMinutes(5));
         subjectConfirmationData.setRecipient(TEST_REQUEST_URL);
         callbackHandler.setSubjectConfirmationData(subjectConfirmationData);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
+
         Issuer issuer =
             SAML2PResponseComponentBuilder.createIssuer(assertion.getIssuerString());
-        
+
         Element response = createSamlResponse(assertion, "mystskey", true, requestId, issuer);
         String responseStr = encodeResponse(response);
-        
+
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
         EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
         EasyMock.replay(req);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setResponseToken(responseStr);
         wfReq.setState(relayState);
         wfReq.setRequest(req);
         wfReq.setRequestState(requestState);
-        
+
         // Failure expected on an unknown issuer value
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
@@ -1047,14 +1047,14 @@ public class SAMLResponseConformanceTest {
             }
         }
     }
-    
+
     @org.junit.Test
     public void testIssuerEnforcementDisable() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        
+
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         RequestState requestState = new RequestState(TEST_REQUEST_URL,
                                                      TEST_IDP_ISSUER,
@@ -1064,7 +1064,7 @@ public class SAMLResponseConformanceTest {
                                                      null,
                                                      relayState,
                                                      System.currentTimeMillis());
-        
+
         // Create SAML Response
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setAlsoAddAuthnStatement(true);
@@ -1072,13 +1072,13 @@ public class SAMLResponseConformanceTest {
         callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
         callbackHandler.setIssuer(TEST_IDP_ISSUER + "/other-issuer");
         callbackHandler.setSubjectName(TEST_USER);
-        
+
         ConditionsBean cp = new ConditionsBean();
         AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
         audienceRestriction.getAudienceURIs().add(TEST_REQUEST_URL);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         // Subject Confirmation Data
         SubjectConfirmationDataBean subjectConfirmationData = new SubjectConfirmationDataBean();
         subjectConfirmationData.setAddress(TEST_CLIENT_ADDRESS);
@@ -1086,38 +1086,38 @@ public class SAMLResponseConformanceTest {
         subjectConfirmationData.setNotAfter(new DateTime().plusMinutes(5));
         subjectConfirmationData.setRecipient(TEST_REQUEST_URL);
         callbackHandler.setSubjectConfirmationData(subjectConfirmationData);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
+
         Issuer issuer =
             SAML2PResponseComponentBuilder.createIssuer(assertion.getIssuerString());
-        
+
         Element response = createSamlResponse(assertion, "mystskey", true, requestId, issuer);
         String responseStr = encodeResponse(response);
-        
+
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
         EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
         EasyMock.replay(req);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setResponseToken(responseStr);
         wfReq.setState(relayState);
         wfReq.setRequest(req);
         wfReq.setRequestState(requestState);
-        
+
         // Disable the issuer enforcement check
         FedizProcessor wfProc = new SAMLProcessorImpl();
         ((SAMLProtocol)config.getProtocol()).setDoNotEnforceKnownIssuer(true);
         Assert.assertTrue(((SAMLProtocol)config.getProtocol()).isDoNotEnforceKnownIssuer());
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
         Assert.assertEquals("Principal name wrong", TEST_USER, wfRes.getUsername());
-        
+
     }
-    
-    private Element createSamlResponse(SamlAssertionWrapper assertion, String alias, 
+
+    private Element createSamlResponse(SamlAssertionWrapper assertion, String alias,
                                       boolean sign, String requestID, Issuer issuer)
         throws IOException, UnsupportedCallbackException, WSSecurityException, Exception {
         WSPasswordCallback[] cb = {
@@ -1129,7 +1129,7 @@ public class SAMLResponseConformanceTest {
         if (sign) {
             assertion.signAssertion(alias, password, crypto, false);
         }
-        
+
         DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
         Document doc = docBuilder.newDocument();
 
@@ -1137,31 +1137,31 @@ public class SAMLResponseConformanceTest {
             SAML2PResponseComponentBuilder.createStatus(
                 "urn:oasis:names:tc:SAML:2.0:status:Success", null
             );
-        
+
         Issuer responseIssuer = issuer;
         if (responseIssuer == null) {
             responseIssuer = SAML2PResponseComponentBuilder.createIssuer(assertion.getIssuerString());
         }
         Response response =
-            SAML2PResponseComponentBuilder.createSAMLResponse(requestID, 
-                                                              responseIssuer, 
+            SAML2PResponseComponentBuilder.createSAMLResponse(requestID,
+                                                              responseIssuer,
                                                               status);
 
         response.getAssertions().add(assertion.getSaml2());
 
         Element policyElement = OpenSAMLUtil.toDom(response, doc);
         doc.appendChild(policyElement);
-        
+
         return policyElement;
     }
-    
+
 
     /**
      * Returns the first element that matches <code>name</code> and
      * <code>namespace</code>. <p/> This is a replacement for a XPath lookup
      * <code>//name</code> with the given namespace. It's somewhat faster than
      * XPath, and we do not deal with prefixes, just with the real namespace URI
-     * 
+     *
      * @param startNode Where to start the search
      * @param name Local name of the element
      * @param namespace Namespace URI of the element

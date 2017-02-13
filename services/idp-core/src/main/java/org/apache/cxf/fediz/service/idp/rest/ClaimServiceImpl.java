@@ -47,32 +47,32 @@ public class ClaimServiceImpl implements ClaimService {
     @Override
     public Response getClaims(int start, int size, UriInfo uriInfo) {
         List<Claim> claims = claimDAO.getClaims(start, size);
-        
+
         for (Claim c : claims) {
             URI self = uriInfo.getAbsolutePathBuilder().path(c.getClaimType().toString()).build();
             c.setHref(self);
         }
-        
+
         Claims list = new Claims();
         list.setClaims(claims);
-        
-        
+
+
         //return Response.ok(list).type(MediaType.APPLICATION_JSON_TYPE).build();
         return Response.ok(list).build();
     }
-    
+
     @Override
     public Response addClaim(UriInfo ui, Claim claim) {
         LOG.info("add Claim config");
-        
+
         Claim createdClaim = claimDAO.addClaim(claim);
-        
+
         UriBuilder uriBuilder = UriBuilder.fromUri(ui.getRequestUri());
         uriBuilder.path("{index}");
         URI location = uriBuilder.build(createdClaim.getClaimType().toString());
         return Response.created(location).entity(claim).build();
     }
-    
+
     @Override
     public Claim getClaim(String claimType) {
         Claim claim = claimDAO.getClaim(claimType);
@@ -89,18 +89,18 @@ public class ClaimServiceImpl implements ClaimService {
             throw new BadRequestException();
         }
         claimDAO.updateClaim(claimType, claim);
-        
+
         return Response.noContent().build();
     }
 
     @Override
     public Response deleteClaim(String claimType) {
         claimDAO.deleteClaim(claimType);
-        
+
         return Response.noContent().build();
     }
-           
-    
+
+
 
 
 }

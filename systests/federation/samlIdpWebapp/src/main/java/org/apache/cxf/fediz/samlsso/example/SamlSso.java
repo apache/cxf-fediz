@@ -69,40 +69,40 @@ import org.opensaml.saml.saml2.core.Status;
  */
 @Path("/samlsso")
 public class SamlSso {
-    
+
     static {
         OpenSAMLUtil.initSamlEngine();
     }
-    
+
     private final DocumentBuilderFactory docBuilderFactory;
     private MessageContext messageContext;
-    
+
     public SamlSso() {
         docBuilderFactory = DocumentBuilderFactory.newInstance();
         docBuilderFactory.setNamespaceAware(true);
     }
-    
+
     @POST
     public javax.ws.rs.core.Response login(@FormParam("SAMLRequest") String samlRequest,
         @FormParam("RelayState") String relayState) throws Exception {
-        
+
         return login(samlRequest, relayState, "POST");
     }
-    
+
     @GET
     public javax.ws.rs.core.Response login(@QueryParam("SAMLRequest") String samlRequest,
             @QueryParam("RelayState") String relayState, @QueryParam("binding") String binding) throws Exception {
-        
+
         AuthnRequest request = extractRequest(samlRequest);
 
         String racs = request.getAssertionConsumerServiceURL();
         String requestIssuer = request.getIssuer().getValue();
-        
+
         // Create the response
         Element response = createResponse(request.getID(), racs, requestIssuer);
         boolean redirect = "REDIRECT".equals(binding);
         String responseStr = encodeResponse(response, redirect);
-        
+
         if (redirect) {
             return redirectResponse(relayState, racs, responseStr);
         } else {
@@ -110,29 +110,29 @@ public class SamlSso {
         }
     }
 
-    @Context 
+    @Context
     public void setMessageContext(MessageContext mc) {
         this.messageContext = mc;
     }
-    
+
     protected Element createResponse(String requestID, String racs, String requestIssuer) throws Exception {
         DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
         Document doc = docBuilder.newDocument();
-        
-        Status status = 
+
+        Status status =
             SAML2PResponseComponentBuilder.createStatus(
                 "urn:oasis:names:tc:SAML:2.0:status:Success", null
             );
         String issuer = messageContext.getUriInfo().getAbsolutePath().toString();
-        Response response = 
+        Response response =
             SAML2PResponseComponentBuilder.createSAMLResponse(requestID, issuer, status);
-        
+
         // Create an AuthenticationAssertion
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setIssuer(issuer);
         String user = messageContext.getSecurityContext().getUserPrincipal().getName();
         callbackHandler.setSubjectName(user);
-        
+
         // Subject Confirmation Data
         SubjectConfirmationDataBean subjectConfirmationData = new SubjectConfirmationDataBean();
         subjectConfirmationData.setAddress(messageContext.getHttpServletRequest().getRemoteAddr());
@@ -140,28 +140,28 @@ public class SamlSso {
         subjectConfirmationData.setNotAfter(new DateTime().plusMinutes(5));
         subjectConfirmationData.setRecipient(racs);
         callbackHandler.setSubjectConfirmationData(subjectConfirmationData);
-        
+
         // Audience Restriction
         ConditionsBean conditions = new ConditionsBean();
         conditions.setTokenPeriodMinutes(5);
-        
+
         AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
         audienceRestriction.setAudienceURIs(Collections.singletonList(requestIssuer));
         conditions.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(conditions);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
+
         Crypto issuerCrypto = CryptoFactory.getInstance("stsKeystoreB.properties");
         assertion.signAssertion("realmb", "realmb", issuerCrypto, false);
-        
+
         response.getAssertions().add(assertion.getSaml2());
-        
+
         Element policyElement = OpenSAMLUtil.toDom(response, doc);
         doc.appendChild(policyElement);
-        
+
         return policyElement;
     }
 
@@ -179,15 +179,15 @@ public class SamlSso {
 
         return Base64Utility.encode(deflatedBytes);
     }
-    
-    protected AuthnRequest extractRequest(String samlRequest) throws Base64Exception, 
+
+    protected AuthnRequest extractRequest(String samlRequest) throws Base64Exception,
         DataFormatException, XMLStreamException, UnsupportedEncodingException, WSSecurityException {
         byte[] deflatedToken = Base64Utility.decode(samlRequest);
-        
+
         InputStream tokenStream = new DeflateEncoderDecoder().inflateToken(deflatedToken);
-        
+
         Document responseDoc = StaxUtils.read(new InputStreamReader(tokenStream, "UTF-8"));
-        AuthnRequest request = 
+        AuthnRequest request =
             (AuthnRequest)OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
         System.out.println(DOM2Writer.nodeToString(responseDoc));
         return request;
@@ -197,22 +197,22 @@ public class SamlSso {
         throws IOException {
         InputStream inputStream = this.getClass().getResourceAsStream("/TemplateSAMLResponse.xml");
         String responseTemplate = IOUtils.toString(inputStream, "UTF-8");
-        inputStream.close();        
-        
+        inputStream.close();
+
         // Perform Redirect to RACS
         responseTemplate = responseTemplate.replace("%RESPONSE_URL%", racs);
         responseTemplate = responseTemplate.replace("%SAMLResponse%", responseStr);
         responseTemplate = responseTemplate.replace("%RelayState%", relayState);
-        
+
         return javax.ws.rs.core.Response.ok(responseTemplate).type(MediaType.TEXT_HTML).build();
     }
-    
+
     protected javax.ws.rs.core.Response redirectResponse(String relayState, String racs, String responseStr) {
         // Perform Redirect to RACS
         UriBuilder ub = UriBuilder.fromUri(racs);
         ub.queryParam("SAMLResponse", responseStr);
         ub.queryParam("RelayState", relayState);
-        
+
         return javax.ws.rs.core.Response.seeOther(ub.build()).build();
     }
 

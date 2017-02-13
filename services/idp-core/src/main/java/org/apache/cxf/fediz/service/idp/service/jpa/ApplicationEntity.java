@@ -33,10 +33,10 @@ import org.apache.openjpa.persistence.jdbc.Index;
 
 @Entity(name = "Application")
 public class ApplicationEntity {
-    
+
     @Id
     private int id;
-    
+
     @Index
     @NotNull
     private String realm;  //wtrealm, whr
@@ -47,47 +47,47 @@ public class ApplicationEntity {
     @NotNull
     @ApplicationProtocolSupported
     private String protocol;
- 
+
     // Public key only
     // Could be read from Metadata, md:KeyDescriptor, use="encryption"
     private String encryptionCertificate;
-    
+
     // Certificate for Signature verification
     private String validatingCertificate;
-    
+
     // Could be read from Metadata, fed:ClaimTypesRequested
     @OneToMany(mappedBy = "application", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ApplicationClaimEntity> requestedClaims = new ArrayList<>();
-    
+
     //Could be read from Metadata, ServiceDisplayName
     //usage for list of application where user is logged in
     @NotNull
     private String serviceDisplayName;
-    
+
     //Could be read from Metadata, ServiceDescription
     //usage for list of application where user is logged in
     private String serviceDescription;
-    
+
     //Could be read from Metadata, RoleDescriptor
     //fed:ApplicationServiceType, fed:SecurityTokenServiceType
     private String role;
-    
+
     // Not in Metadata, configured in IDP or passed in wreq parameter
     @NotNull
     private String tokenType;
-    
+
     // Not in Metadata, configured in IDP or passed in wreq parameter
     @Min(value = 1)
     private int lifeTime;
-    
+
     // Request audience restriction in token for this application (default is true)
     private boolean enableAppliesTo = true;
-    
+
     // WS-Policy Namespace in SignIn Response
     private String policyNamespace;
-    
+
     private String passiveRequestorEndpoint;
-    
+
     // A regular expression constraint on the passiveRequestorEndpoint
     private String passiveRequestorEndpointConstraint;
 
@@ -98,8 +98,8 @@ public class ApplicationEntity {
 
     public void setId(int id) {
         this.id = id;
-    }    
-    
+    }
+
     public String getRealm() {
         return realm;
     }
@@ -171,7 +171,7 @@ public class ApplicationEntity {
     public void setLifeTime(int lifeTime) {
         this.lifeTime = lifeTime;
     }
-    
+
     public String getPolicyNamespace() {
         return policyNamespace;
     }
@@ -187,7 +187,7 @@ public class ApplicationEntity {
     public void setPassiveRequestorEndpoint(String passiveRequestorEndpoint) {
         this.passiveRequestorEndpoint = passiveRequestorEndpoint;
     }
-    
+
     public String getPassiveRequestorEndpointConstraint() {
         return passiveRequestorEndpointConstraint;
     }

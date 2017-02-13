@@ -47,19 +47,19 @@ public class RoleServiceImpl implements RoleService {
 
     @Autowired
     private RoleDAO roleDAO;
-    
+
     @Autowired
     private EntitlementDAO entitlementDAO;
-           
+
     @Override
     public Roles getRoles(int start, int size, List<String> expand, UriInfo uriInfo) {
         List<Role> roles = roleDAO.getRoles(start, size, expand);
-        
+
         Roles list = new Roles();
         list.setRoles(roles);
         return list;
     }
-    
+
     @Override
     public Role getRole(String name, List<String> expand) {
         Role role = roleDAO.getRole(name, expand);
@@ -69,7 +69,7 @@ public class RoleServiceImpl implements RoleService {
             return role;
         }
     }
-    
+
     @Override
     public Response addRole(UriInfo ui, Role role) {
         if (role.getEntitlements() != null && role.getEntitlements().size() > 0) {
@@ -77,15 +77,15 @@ public class RoleServiceImpl implements RoleService {
             throw new WebApplicationException(Status.BAD_REQUEST);
         }
         Role createdRole = roleDAO.addRole(role);
-        
+
         UriBuilder uriBuilder = UriBuilder.fromUri(ui.getRequestUri());
         uriBuilder.path("{index}");
         URI location = uriBuilder.build(createdRole.getName());
-        
+
         LOG.debug("Role '" + role.getName() + "' added");
         return Response.created(location).entity(role).build();
     }
-    
+
     @Override
     public Response updateRole(UriInfo ui, String name, Role role) {
         if (!name.equals(role.getName().toString())) {
@@ -96,37 +96,37 @@ public class RoleServiceImpl implements RoleService {
             throw new WebApplicationException(Status.BAD_REQUEST);
         }
         roleDAO.updateRole(name, role);
-        
+
         LOG.debug("Role '" + role.getName() + "' updated");
         return Response.noContent().build();
     }
- 
+
     @Override
     public Response deleteRole(String name) {
         roleDAO.deleteRole(name);
-        
+
         LOG.debug("Role '" + name + "' deleted");
         return Response.noContent().build();
     }
-    
+
     @Override
     public Response addEntitlementToRole(UriInfo ui, String name, Entitlement entitlement) {
         Role role = roleDAO.getRole(name, null);
-        
+
         Entitlement foundEntitlement = entitlementDAO.getEntitlement(entitlement.getName());
         roleDAO.addEntitlementToRole(role, foundEntitlement);
-        
+
         LOG.debug("Entitlement '" + entitlement.getName() + "' added to Role '" + name + "'");
         return Response.noContent().build();
     }
-    
+
     @Override
     public Response removeEntitlementFromRole(UriInfo ui, String name, String entitlementName) {
         Role role = roleDAO.getRole(name, null);
         Entitlement entitlement = entitlementDAO.getEntitlement(entitlementName);
-        
+
         roleDAO.removeEntitlementFromRole(role, entitlement);
-        
+
         LOG.debug("Entitlement '" + entitlementName + "' removed from Role '" + name + "'");
         return Response.noContent().build();
     }

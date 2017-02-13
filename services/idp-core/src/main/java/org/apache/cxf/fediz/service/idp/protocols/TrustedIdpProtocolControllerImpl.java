@@ -33,10 +33,10 @@ import org.springframework.stereotype.Component;
 public class TrustedIdpProtocolControllerImpl implements ProtocolController<TrustedIdpProtocolHandler> {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrustedIdpProtocolControllerImpl.class);
-    
+
     @Autowired
     private List<TrustedIdpProtocolHandler> protocolHandlers;
-    
+
     @Override
     public TrustedIdpProtocolHandler getProtocolHandler(String protocol) {
         for (TrustedIdpProtocolHandler protocolHandler : protocolHandlers) {
@@ -47,7 +47,7 @@ public class TrustedIdpProtocolControllerImpl implements ProtocolController<Trus
         LOG.warn("No protocol handler found for {}", protocol);
         return null;
     }
-    
+
     @Override
     public List<String> getProtocols() {
         List<String> protocols = new ArrayList<>();

@@ -37,23 +37,23 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 @Transactional
 public class EntitlementDAOJPAImpl implements EntitlementDAO {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(EntitlementDAOJPAImpl.class);
 
     private EntityManager em;
-    
+
     @PersistenceContext
     public void setEntityManager(EntityManager entityManager) {
         this.em = entityManager;
     }
-    
+
     @Override
     public List<Entitlement> getEntitlements(int start, int size) {
         List<Entitlement> list = new ArrayList<>();
-        
+
         Query query = null;
         query = em.createQuery("select e from Entitlement e");
-        
+
         //@SuppressWarnings("rawtypes")
         List<?> entitlementEntities = query
             .setFirstResult(start)
@@ -64,16 +64,16 @@ public class EntitlementDAOJPAImpl implements EntitlementDAO {
             EntitlementEntity entity = (EntitlementEntity) obj;
             list.add(entity2domain(entity));
         }
-        
+
         return list;
     }
-    
+
     @Override
     public Entitlement addEntitlement(Entitlement entitlement) {
         EntitlementEntity entity = new EntitlementEntity();
         domain2entity(entitlement, entity);
         em.persist(entity);
-        
+
         LOG.debug("Entitlement '{}' added", entitlement.getName());
         return entity2domain(entity);
     }
@@ -88,12 +88,12 @@ public class EntitlementDAOJPAImpl implements EntitlementDAO {
         Query query = null;
         query = em.createQuery("select e from Entitlement e where e.name=:name");
         query.setParameter("name", name);
-        
+
         //@SuppressWarnings("rawtypes")
         EntitlementEntity entitlementEntity = (EntitlementEntity)query.getSingleResult();
-        
+
         domain2entity(entitlement, entitlementEntity);
-        
+
         LOG.debug("Entitlement '{}' added", entitlement.getName());
         em.persist(entitlementEntity);
     }
@@ -103,23 +103,23 @@ public class EntitlementDAOJPAImpl implements EntitlementDAO {
         Query query = null;
         query = em.createQuery("select e from Entitlement e where e.name=:name");
         query.setParameter("name", name);
-        
+
         //@SuppressWarnings("rawtypes")
         Object entitlementObj = query.getSingleResult();
         em.remove(entitlementObj);
-        
+
         LOG.debug("Entitlement '{}' deleted", name);
     }
-    
+
     static EntitlementEntity getEntitlementEntity(String name, EntityManager em) {
         Query query = null;
         query = em.createQuery("select e from Entitlement e where e.name=:name");
         query.setParameter("name", name);
-        
+
         //@SuppressWarnings("rawtypes")
         return (EntitlementEntity)query.getSingleResult();
     }
-    
+
     public static void domain2entity(Entitlement entitlement, EntitlementEntity entity) {
         //The ID must not be updated if the entity has got an id already (update case)
         if (entitlement.getId() > 0) {
@@ -129,7 +129,7 @@ public class EntitlementDAOJPAImpl implements EntitlementDAO {
         entity.setName(entitlement.getName());
         entity.setDescription(entitlement.getDescription());
     }
-    
+
     public static Entitlement entity2domain(EntitlementEntity entity) {
         Entitlement entitlement = new Entitlement();
         entitlement.setId(entity.getId());

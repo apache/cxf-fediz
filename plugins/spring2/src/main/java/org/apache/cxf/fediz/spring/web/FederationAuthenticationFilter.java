@@ -54,17 +54,17 @@ import org.springframework.security.ui.FilterChainOrder;
 
 
 public class FederationAuthenticationFilter extends AbstractProcessingFilter {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(FederationAuthenticationFilter.class);
-                                                              
+
     private FederationConfig federationConfig;
-    
+
     public FederationAuthenticationFilter() {
         super();
     }
 
     /**
-     * 
+     *
      */
     @Override
     protected boolean requiresAuthentication(final HttpServletRequest request, final HttpServletResponse response) {
@@ -75,15 +75,15 @@ public class FederationAuthenticationFilter extends AbstractProcessingFilter {
         }
         return result;
     }
-    
+
     private boolean isTokenExpired() {
         SecurityContext context = SecurityContextHolder.getContext();
-        boolean detectExpiredTokens = 
+        boolean detectExpiredTokens =
             federationConfig != null && federationConfig.getFedizContext().isDetectExpiredTokens();
         if (context != null && detectExpiredTokens) {
             Authentication authentication = context.getAuthentication();
             if (authentication instanceof FederationAuthenticationToken) {
-                Date tokenExpires = 
+                Date tokenExpires =
                     ((FederationAuthenticationToken)authentication).getResponse().getTokenExpires();
                 if (tokenExpires == null) {
                     return false;
@@ -95,7 +95,7 @@ public class FederationAuthenticationFilter extends AbstractProcessingFilter {
                 }
             }
         }
-            
+
         return false;
     }
 
@@ -106,13 +106,13 @@ public class FederationAuthenticationFilter extends AbstractProcessingFilter {
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request) throws AuthenticationException {
-        
+
         if (isTokenExpired()) {
             throw new ExpiredTokenException("Token is expired");
         }
-        
+
         verifySavedState(request);
-        
+
         String wa = request.getParameter(FederationConstants.PARAM_ACTION);
         String responseToken = getResponseToken(request);
         FedizRequest wfReq = new FedizRequest();
@@ -120,18 +120,18 @@ public class FederationAuthenticationFilter extends AbstractProcessingFilter {
         wfReq.setResponseToken(responseToken);
         wfReq.setState(getState(request));
         wfReq.setRequest(request);
-        
-        X509Certificate certs[] = 
+
+        X509Certificate certs[] =
             (X509Certificate[])request.getAttribute("javax.servlet.request.X509Certificate");
         wfReq.setCerts(certs);
-        
+
         final UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(null, wfReq);
 
         authRequest.setDetails(authenticationDetailsSource.buildDetails(request));
 
         return this.getAuthenticationManager().authenticate(authRequest);
     }
-    
+
     private void verifySavedState(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session != null) {
@@ -143,17 +143,17 @@ public class FederationAuthenticationFilter extends AbstractProcessingFilter {
             }
         }
     }
-    
+
     private String getState(ServletRequest request) {
         if (request.getParameter(FederationConstants.PARAM_CONTEXT) != null) {
             return request.getParameter(FederationConstants.PARAM_CONTEXT);
         } else if (request.getParameter(SAMLSSOConstants.RELAY_STATE) != null) {
             return request.getParameter(SAMLSSOConstants.RELAY_STATE);
         }
-        
+
         return null;
     }
-    
+
     @Override
     public void onUnsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
                                              AuthenticationException authException) {
@@ -161,29 +161,29 @@ public class FederationAuthenticationFilter extends AbstractProcessingFilter {
             String redirectUrl = null;
             try {
                 FedizContext fedContext = federationConfig.getFedizContext();
-                FedizProcessor wfProc = 
+                FedizProcessor wfProc =
                     FedizProcessorFactory.newFedizProcessor(fedContext.getProtocol());
                 RedirectionResponse redirectionResponse =
                     wfProc.createSignInRequest(request, fedContext);
                 redirectUrl = redirectionResponse.getRedirectionURL();
-                
+
                 if (redirectUrl == null) {
                     LOG.warn("Failed to create SignInRequest. Redirect URL null");
                     throw new BadCredentialsException("Failed to create SignInRequest. Redirect URL null");
                 }
-                
+
                 Map<String, String> headers = redirectionResponse.getHeaders();
                 if (!headers.isEmpty()) {
                     for (Entry<String, String> entry : headers.entrySet()) {
                         response.addHeader(entry.getKey(), entry.getValue());
                     }
                 }
-                
+
             } catch (ProcessingException ex) {
                 LOG.warn("Failed to create SignInRequest", ex);
                 throw new BadCredentialsException("Failed to create SignInRequest: " + ex.getMessage());
             }
-            
+
             if (LOG.isInfoEnabled()) {
                 LOG.info("Redirecting to IDP: " + redirectUrl);
             }
@@ -193,21 +193,21 @@ public class FederationAuthenticationFilter extends AbstractProcessingFilter {
                 throw new BadCredentialsException(ex.getMessage(), ex);
             }
         }
-        
+
         try {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
         } catch (IOException e) {
             throw authException;
         }
     }
-    
+
     private String getResponseToken(ServletRequest request) {
         if (request.getParameter(FederationConstants.PARAM_RESULT) != null) {
             return request.getParameter(FederationConstants.PARAM_RESULT);
         } else if (request.getParameter(SAMLSSOConstants.SAML_RESPONSE) != null) {
             return request.getParameter(SAMLSSOConstants.SAML_RESPONSE);
         }
-        
+
         return null;
     }
 

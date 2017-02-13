@@ -53,10 +53,10 @@ public class TokenSerializer {
                 LOG.warn("nodeToString Transformer Exception");
             }
             String serializedToken = sw.toString();
-    
+
             return org.apache.commons.lang3.StringEscapeUtils.escapeXml11(serializedToken);
         }
-        
+
         return null;
     }
 }

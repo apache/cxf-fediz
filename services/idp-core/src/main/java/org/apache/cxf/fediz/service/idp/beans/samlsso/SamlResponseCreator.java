@@ -67,25 +67,25 @@ public class SamlResponseCreator {
     private boolean supportDeflateEncoding;
 
     public String createSAMLResponse(RequestContext context, Idp idp, Element rpToken,
-                                     String consumerURL, String requestId, String requestIssuer) 
+                                     String consumerURL, String requestId, String requestIssuer)
                                          throws ProcessingException {
-        List<Element> samlTokens = 
+        List<Element> samlTokens =
             DOMUtils.findAllElementsByTagNameNS(rpToken, WSConstants.SAML2_NS, "Assertion");
         if (samlTokens.isEmpty() || samlTokens.size() != 1) {
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
-        
+
         try {
             SamlAssertionWrapper wrapper = new SamlAssertionWrapper(samlTokens.get(0));
             if (wrapper.getSaml2() == null) {
                 throw new ProcessingException(TYPE.BAD_REQUEST);
             }
-            
+
             String remoteAddr = WebUtils.getHttpServletRequest(context).getRemoteAddr();
-            Assertion saml2Assertion = 
-                createSAML2Assertion(context, idp, wrapper, requestId, requestIssuer, 
+            Assertion saml2Assertion =
+                createSAML2Assertion(context, idp, wrapper, requestId, requestIssuer,
                                      remoteAddr, consumerURL);
-            
+
             Element response = createResponse(idp, requestId, saml2Assertion);
             return encodeResponse(response);
         } catch (Exception ex) {
@@ -93,17 +93,17 @@ public class SamlResponseCreator {
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
     }
-    
+
     private Assertion createSAML2Assertion(RequestContext context, Idp idp, SamlAssertionWrapper receivedToken,
-                                           String requestID, String requestIssuer, 
+                                           String requestID, String requestIssuer,
                                            String remoteAddr, String racs) throws Exception {
         // Create an AuthenticationAssertion
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setIssuer(idp.getRealm());
         callbackHandler.setSubject(receivedToken.getSaml2().getSubject());
-        
+
         // Test Subject against received Subject (if applicable)
-        SAMLAuthnRequest authnRequest = 
+        SAMLAuthnRequest authnRequest =
             (SAMLAuthnRequest)WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
         if (authnRequest.getSubjectNameId() != null && receivedToken.getSaml2().getSubject().getNameID() != null) {
             NameID issuedNameId = receivedToken.getSaml2().getSubject().getNameID();
@@ -113,7 +113,7 @@ public class SamlResponseCreator {
                 throw new ProcessingException(ProcessingException.TYPE.INVALID_REQUEST);
             }
         }
-        
+
         // Subject Confirmation Data
         SubjectConfirmationDataBean subjectConfirmationData = new SubjectConfirmationDataBean();
         subjectConfirmationData.setAddress(remoteAddr);
@@ -121,45 +121,45 @@ public class SamlResponseCreator {
         subjectConfirmationData.setNotAfter(new DateTime().plusMinutes(5));
         subjectConfirmationData.setRecipient(racs);
         callbackHandler.setSubjectConfirmationData(subjectConfirmationData);
-        
+
         // Audience Restriction
         ConditionsBean conditions = new ConditionsBean();
         conditions.setTokenPeriodMinutes(5);
-        
+
         AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
         audienceRestriction.setAudienceURIs(Collections.singletonList(requestIssuer));
         conditions.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(conditions);
-        
+
         // Attributes
         callbackHandler.setAttributeStatements(receivedToken.getSaml2().getAttributeStatements());
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
+
         Crypto issuerCrypto = CertsUtils.getCryptoFromCertificate(idp.getCertificate());
-        assertion.signAssertion(issuerCrypto.getDefaultX509Identifier(), idp.getCertificatePassword(), 
+        assertion.signAssertion(issuerCrypto.getDefaultX509Identifier(), idp.getCertificatePassword(),
                                 issuerCrypto, false);
-        
+
         return assertion.getSaml2();
     }
-    
+
     protected Element createResponse(Idp idp, String requestID, Assertion assertion) throws Exception {
         Document doc = DOMUtils.newDocument();
-        
-        Status status = 
+
+        Status status =
             SAML2PResponseComponentBuilder.createStatus(
                 "urn:oasis:names:tc:SAML:2.0:status:Success", null
             );
-        Response response = 
+        Response response =
             SAML2PResponseComponentBuilder.createSAMLResponse(requestID, idp.getRealm(), status);
-        
+
         response.getAssertions().add(assertion);
-        
+
         Element policyElement = OpenSAMLUtil.toDom(response, doc);
         doc.appendChild(policyElement);
-        
+
         return policyElement;
     }
 
@@ -173,10 +173,10 @@ public class SamlResponseCreator {
 
             return Base64Utility.encode(deflatedBytes);
         }
-        
+
         return Base64Utility.encode(responseMessage.getBytes());
     }
-    
+
     public boolean isSupportDeflateEncoding() {
         return supportDeflateEncoding;
     }

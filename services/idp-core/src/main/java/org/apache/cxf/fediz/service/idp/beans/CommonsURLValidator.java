@@ -37,7 +37,7 @@ public class CommonsURLValidator {
         if (endpointAddress == null) {
             return true;
         }
-        
+
         // The endpointAddress address must be a valid URL + start with http(s)
         // Validate it first using commons-validator
         UrlValidator urlValidator = new UrlValidator(new String[] {"http", "https"}, UrlValidator.ALLOW_LOCAL_URLS);
@@ -45,8 +45,8 @@ public class CommonsURLValidator {
             LOG.warn("The given endpointAddress parameter {} is not a valid URL", endpointAddress);
             return false;
         }
-        
+
         return true;
     }
-    
+
 }

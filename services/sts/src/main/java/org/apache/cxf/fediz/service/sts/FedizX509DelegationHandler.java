@@ -33,9 +33,9 @@ import org.slf4j.LoggerFactory;
  * A delegation handler to allow X.509 Certificates.
  */
 public class FedizX509DelegationHandler implements TokenDelegationHandler {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(FedizX509DelegationHandler.class);
-    
+
     public boolean canHandleToken(ReceivedToken delegateTarget) {
         Object token = delegateTarget.getToken();
         if (token instanceof Element) {
@@ -48,24 +48,24 @@ public class FedizX509DelegationHandler implements TokenDelegationHandler {
         }
         return false;
     }
-    
+
     public TokenDelegationResponse isDelegationAllowed(TokenDelegationParameters tokenParameters) {
         TokenDelegationResponse response = new TokenDelegationResponse();
         ReceivedToken delegateTarget = tokenParameters.getToken();
         response.setToken(delegateTarget);
-        
+
         if (!delegateTarget.isDOMElement()) {
             return response;
         }
-        
+
         if (delegateTarget.getState() == STATE.VALID && delegateTarget.getPrincipal() != null) {
             response.setDelegationAllowed(true);
             LOG.debug("Delegation is allowed for: " + delegateTarget.getPrincipal());
         } else {
             LOG.debug("Delegation is not allowed, as the token is invalid or the principal is null");
         }
-        
+
         return response;
     }
-    
+
 }

@@ -22,7 +22,7 @@ package org.apache.cxf.fediz.service.idp.service.jpa;
 public interface DBLoader {
 
     void load();
-    
+
     String getName();
 
 }

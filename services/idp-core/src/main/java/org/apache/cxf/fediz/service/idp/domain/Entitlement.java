@@ -27,14 +27,14 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "entitlement", namespace = "http://org.apache.cxf.fediz/")
 @XmlType(propOrder = {"name", "description", "internal", "id" })
 public class Entitlement implements Serializable {
-    
+
     private static final long serialVersionUID = 2635896159019665467L;
-    
+
     protected String name;
     protected String description;
     protected int id;
     protected boolean internal;
-    
+
     @XmlAttribute
     public int getId() {
         return id;
@@ -43,7 +43,7 @@ public class Entitlement implements Serializable {
     public void setId(int id) {
         this.id = id;
     }
-    
+
     public String getName() {
         return name;
     }

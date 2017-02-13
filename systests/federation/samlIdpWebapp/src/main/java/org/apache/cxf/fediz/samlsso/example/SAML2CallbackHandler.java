@@ -40,11 +40,11 @@ import org.apache.wss4j.common.saml.builder.SAML2Constants;
 
 /**
  * A Callback Handler implementation for a SAML 2 assertion for use by the SAML SSO IdP. By
- * default it creates a SAML 2.0 Assertion with an AuthenticationStatement. If a list of roles 
+ * default it creates a SAML 2.0 Assertion with an AuthenticationStatement. If a list of roles
  * are also supplied, it will insert them as part of an AttributeStatement.
  */
 public class SAML2CallbackHandler implements CallbackHandler {
-    
+
     private String subjectName;
     private String subjectQualifier;
     private String confirmationMethod = SAML2Constants.CONF_BEARER;
@@ -52,7 +52,7 @@ public class SAML2CallbackHandler implements CallbackHandler {
     private String subjectNameIDFormat;
     private ConditionsBean conditions;
     private SubjectConfirmationDataBean subjectConfirmationData;
-    
+
     private void createAndSetStatement(SAMLCallback callback) {
         AuthenticationStatementBean authBean = new AuthenticationStatementBean();
         authBean.setAuthenticationMethod("Password");
@@ -67,19 +67,19 @@ public class SAML2CallbackHandler implements CallbackHandler {
         } else if ("bob".equals(subjectName)) {
             roles.add("employee");
         }
-        
+
         if (!roles.isEmpty()) {
             AttributeStatementBean attrBean = new AttributeStatementBean();
             AttributeBean attributeBean = new AttributeBean();
             attributeBean.setQualifiedName("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role");
             attributeBean.setNameFormat(SAML2Constants.ATTRNAME_FORMAT_UNSPECIFIED);
             attributeBean.setAttributeValues(roles);
-                
+
             attrBean.setSamlAttributes(Collections.singletonList(attributeBean));
             callback.setAttributeStatementData(Collections.singletonList(attrBean));
         }
     }
-    
+
     public void handle(Callback[] callbacks)
         throws IOException, UnsupportedCallbackException {
         for (int i = 0; i < callbacks.length; i++) {
@@ -90,8 +90,8 @@ public class SAML2CallbackHandler implements CallbackHandler {
                 if (conditions != null) {
                     callback.setConditions(conditions);
                 }
-                
-                SubjectBean subjectBean = 
+
+                SubjectBean subjectBean =
                     new SubjectBean(
                         subjectName, subjectQualifier, confirmationMethod
                     );
@@ -107,23 +107,23 @@ public class SAML2CallbackHandler implements CallbackHandler {
             }
         }
     }
-    
+
     public void setSubjectConfirmationData(SubjectConfirmationDataBean subjectConfirmationData) {
         this.subjectConfirmationData = subjectConfirmationData;
     }
-    
+
     public void setConditions(ConditionsBean conditionsBean) {
         this.conditions = conditionsBean;
     }
-    
+
     public void setConfirmationMethod(String confMethod) {
         confirmationMethod = confMethod;
     }
-    
+
     public void setIssuer(String issuer) {
         this.issuer = issuer;
     }
-    
+
     public void setSubjectNameIDFormat(String subjectNameIDFormat) {
         this.subjectNameIDFormat = subjectNameIDFormat;
     }
@@ -143,5 +143,5 @@ public class SAML2CallbackHandler implements CallbackHandler {
     public void setSubjectQualifier(String subjectQualifier) {
         this.subjectQualifier = subjectQualifier;
     }
-    
+
 }

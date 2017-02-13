@@ -64,51 +64,51 @@ public interface IdpService {
     @POST
     @PreAuthorize("hasRole('IDP_CREATE')")
     Response addIdp(@Context UriInfo ui, Idp idp);
-    
+
     @PUT
     @Path("{realm}")
     @PreAuthorize("hasRole('IDP_UPDATE')")
     Response updateIdp(@Context UriInfo ui, @PathParam("realm") String realm, Idp idp);
-    
+
     @DELETE
     @Path("{realm}")
     @PreAuthorize("hasRole('IDP_DELETE')")
     Response deleteIdp(@PathParam("realm") String realm);
-    
+
     @POST
     @Path("{realm}/applications")
     @PreAuthorize("hasRole('IDP_UPDATE')")
     Response addApplicationToIdp(@Context UriInfo ui, @PathParam("realm") String realm,
                                  Application application);
-    
+
     @DELETE
     @Path("{realm}/applications/{realmApplication}")
     @PreAuthorize("hasRole('IDP_UPDATE')")
     Response removeApplicationFromIdp(@Context UriInfo ui, @PathParam("realm") String realm,
                                       @PathParam("realmApplication") String applicationRealm);
-    
+
     @POST
     @Path("{realm}/trusted-idps")
     @PreAuthorize("hasRole('IDP_UPDATE')")
     Response addTrustedIdpToIdp(@Context UriInfo ui, @PathParam("realm") String realm,
                                 TrustedIdp trustedIdp);
-    
+
     @DELETE
     @Path("{realm}/trusted-idps/{realmTrustedIdp}")
     @PreAuthorize("hasRole('IDP_UPDATE')")
     Response removeTrustedIdpFromIdp(@Context UriInfo ui, @PathParam("realm") String realm,
                                      @PathParam("realmTrustedIdp") String trustedIdpRealm);
-    
+
     @POST
     @Path("{realm}/claims")
     @PreAuthorize("hasRole('IDP_UPDATE')")
     Response addClaimToIdp(@Context UriInfo ui, @PathParam("realm") String realm,
                            Claim claim);
-    
+
     @DELETE
     @Path("{realm}/claims/{claimType}")
     @PreAuthorize("hasRole('IDP_UPDATE')")
     Response removeClaimFromIdp(@Context UriInfo ui, @PathParam("realm") String realm,
-                                @PathParam("claimType") String claimType);    
+                                @PathParam("claimType") String claimType);
 
 }

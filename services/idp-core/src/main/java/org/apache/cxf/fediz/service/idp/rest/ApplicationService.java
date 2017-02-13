@@ -63,22 +63,22 @@ public interface ApplicationService {
     @POST
     @PreAuthorize("hasRole('APPLICATION_CREATE')")
     Response addApplication(@Context UriInfo ui, Application service);
-    
+
     @PUT
     @Path("{realm}")
     @PreAuthorize("hasRole('APPLICATION_UPDATE')")
     Response updateApplication(@Context UriInfo ui, @PathParam("realm") String realm, Application application);
-    
+
     @DELETE
     @Path("{realm}")
     @PreAuthorize("hasRole('APPLICATION_DELETE')")
     Response deleteApplication(@PathParam("realm") String realm);
-    
+
     @POST
     @Path("{realm}/claims")
     @PreAuthorize("hasRole('APPLICATION_UPDATE')")
     Response addClaimToApplication(@Context UriInfo ui, @PathParam("realm") String realm, RequestClaim claim);
-    
+
     @DELETE
     @Path("{realm}/claims/{claimType}")
     @PreAuthorize("hasRole('APPLICATION_UPDATE')")

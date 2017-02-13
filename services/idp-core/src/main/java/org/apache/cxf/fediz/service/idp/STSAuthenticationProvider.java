@@ -49,49 +49,49 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
  */
 public abstract class STSAuthenticationProvider implements AuthenticationProvider {
 
-    public static final String HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER = 
+    public static final String HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER =
         "http://docs.oasis-open.org/ws-sx/ws-trust/200512/Bearer";
-    
-    public static final String HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512 = 
+
+    public static final String HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512 =
         "http://docs.oasis-open.org/ws-sx/ws-trust/200512/";
-    
+
     public static final String HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_02_TRUST =
         "http://schemas.xmlsoap.org/ws/2005/02/trust";
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(STSAuthenticationProvider.class);
 
     protected String wsdlLocation;
-    
+
     protected String namespace = HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512;
-    
+
     protected String wsdlService;
 
     protected String wsdlEndpoint;
 
     protected String appliesTo;
-    
+
     protected boolean use200502Namespace;
-    
+
     protected String tokenType;
-    
+
     protected Bus bus;
-    
+
     protected Integer lifetime;
-    
+
     //Required to get IDP roles to use the IDP application, used in future release
     protected String roleURI;
-    
+
     protected Map<String, Object> properties = new HashMap<>();
-    
+
     private String customSTSParameter;
-    
+
     protected List<GrantedAuthority> createAuthorities(SecurityToken token) throws WSSecurityException {
         List<GrantedAuthority> authorities = new ArrayList<>();
         //authorities.add(new SimpleGrantedAuthority("ROLE_AUTHENTICATED"));
         //Not needed because AuthenticatedVoter has been added for SecurityFlowExecutionListener
         if (roleURI != null) {
             SamlAssertionWrapper assertion = new SamlAssertionWrapper(token.getToken());
-            
+
             List<Claim> claims = parseClaimsInAssertion(assertion.getSaml2());
             for (Claim c : claims) {
                 if (c.getClaimType() != null && roleURI.equals(c.getClaimType().toString())) {
@@ -112,13 +112,13 @@ public abstract class STSAuthenticationProvider implements AuthenticationProvide
                 }
             }
         }
-        
+
         //Add IDP_LOGIN role to be able to access resource Idp, TrustedIdp, etc.
         authorities.add(new SimpleGrantedAuthority("ROLE_IDP_LOGIN"));
-        
+
         return authorities;
     }
-    
+
     public String getWsdlLocation() {
         return wsdlLocation;
     }
@@ -142,7 +142,7 @@ public abstract class STSAuthenticationProvider implements AuthenticationProvide
     public void setWsdlEndpoint(String wsdlEndpoint) {
         this.wsdlEndpoint = wsdlEndpoint;
     }
-    
+
     public String getNamespace() {
         return namespace;
     }
@@ -158,7 +158,7 @@ public abstract class STSAuthenticationProvider implements AuthenticationProvide
     public void setAppliesTo(String appliesTo) {
         this.appliesTo = appliesTo;
     }
-    
+
     public void setBus(Bus bus) {
         this.bus = bus;
     }
@@ -175,7 +175,7 @@ public abstract class STSAuthenticationProvider implements AuthenticationProvide
     public void setTokenType(String tokenType) {
         this.tokenType = tokenType;
     }
-    
+
     public Integer getLifetime() {
         return lifetime;
     }
@@ -202,7 +202,7 @@ public abstract class STSAuthenticationProvider implements AuthenticationProvide
             for (org.opensaml.saml.saml2.core.Attribute attribute : attributes) {
                 LOG.debug("parsing attribute: {}", attribute.getName());
                 Claim c = new Claim();
-                // Workaround for CXF-4484 
+                // Workaround for CXF-4484
                 // Value of Attribute Name not fully qualified
                 // if NameFormat is http://schemas.xmlsoap.org/ws/2005/05/identity/claims
                 // but ClaimType value must be fully qualified as Namespace attribute goes away
@@ -229,7 +229,7 @@ public abstract class STSAuthenticationProvider implements AuthenticationProvide
         return collection;
 
     }
-    
+
     protected void mergeClaimToMap(Map<String, Claim> claimsMap, Claim c,
                                    List<String> valueList) {
         Claim t = claimsMap.get(c.getClaimType().toString());
@@ -270,7 +270,7 @@ public abstract class STSAuthenticationProvider implements AuthenticationProvide
     public void setRoleURI(String roleURI) {
         this.roleURI = roleURI;
     }
-    
+
     public void setProperties(Map<String, Object> p) {
         properties.putAll(p);
     }
@@ -295,7 +295,7 @@ public abstract class STSAuthenticationProvider implements AuthenticationProvide
         this.customSTSParameter = customSTSParameter;
     }
 
-//May be uncommented for debugging    
+//May be uncommented for debugging
 //    private void setTimeout(Client client, Long timeout) {
 //        HTTPConduit conduit = (HTTPConduit) client.getConduit();
 //        HTTPClientPolicy httpClientPolicy = new HTTPClientPolicy();
@@ -303,5 +303,5 @@ public abstract class STSAuthenticationProvider implements AuthenticationProvide
 //        httpClientPolicy.setReceiveTimeout(timeout);
 //        conduit.setClient(httpClientPolicy);
 //    }
-    
+
 }

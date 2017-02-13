@@ -34,27 +34,27 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 
 public class ClientIdHomeRealmDiscovery implements CallbackHandler {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(ClientIdHomeRealmDiscovery.class);
 
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
         for (int i = 0; i < callbacks.length; i++) {
             if (callbacks[i] instanceof HomeRealmCallback) {
                 HomeRealmCallback callback = (HomeRealmCallback) callbacks[i];
-                
+
                 HttpServletRequest request = callback.getRequest();
                 String clientId = request.getParameter("client_id");
-                
+
                 if (clientId != null) {
                     ApplicationContext ctx = ApplicationContextProvider.getApplicationContext();
                     OAuthDataProvider dataManager = (OAuthDataProvider)ctx.getBean("oauthProvider");
-                    
+
                     Client client = dataManager.getClient(clientId);
                     callback.setHomeRealm(client.getHomeRealm());
                     LOG.debug("Retrieved home realm {}", callback.getHomeRealm());
-                    
+
                 }
-                
+
             } else {
                 LOG.warn("Callback is not an instance of HomeRealmCallback: {}", callbacks[i]);
             }

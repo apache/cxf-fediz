@@ -37,7 +37,7 @@ public interface RoleDAO {
     void deleteRole(String name);
 
     void addEntitlementToRole(Role role, Entitlement entitlement);
-    
+
     void removeEntitlementFromRole(Role role, Entitlement entitlement);
 
 }

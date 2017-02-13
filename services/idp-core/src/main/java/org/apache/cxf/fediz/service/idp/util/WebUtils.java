@@ -31,7 +31,7 @@ import org.springframework.webflow.execution.RequestContext;
  * Utility class to bind with webflow artifacts
  */
 public final class WebUtils {
-    
+
     private WebUtils() {
         super();
     }
@@ -79,7 +79,7 @@ public final class WebUtils {
 
     /**
      * put attribute in request or in session depending on storeInSession.
-     * 
+     *
      * @param context
      * @param attributeKey
      */
@@ -106,7 +106,7 @@ public final class WebUtils {
 
     /**
      * get attribute from request; if not found get it from session.
-     * 
+     *
      * @param context
      * @param attributeKey
      * @return the attribute from the request or session
@@ -133,7 +133,7 @@ public final class WebUtils {
 
     /**
      * remove attribute from request and session.
-     * 
+     *
      * @param context
      * @param attributeKey
      * @return the removed attribute

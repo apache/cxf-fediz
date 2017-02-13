@@ -41,7 +41,7 @@ public final class HTTPTestUtils {
     private HTTPTestUtils() {
         // complete
     }
-    
+
     public static String login(String url, String user, String password, String idpPort) throws IOException {
         final WebClient webClient = new WebClient();
         webClient.getOptions().setUseInsecureSSL(true);
@@ -64,7 +64,7 @@ public final class HTTPTestUtils {
         // webClient.close();
         return rpPage.getBody().getTextContent();
     }
-    
+
     public static String loginForSAMLSSO(String url, String user, String password, String idpPort) throws IOException {
         final WebClient webClient = new WebClient();
         webClient.getOptions().setUseInsecureSSL(true);
@@ -78,8 +78,8 @@ public final class HTTPTestUtils {
         // webClient.close();
         return rpPage.getBody().getTextContent();
     }
-    
-    public static String loginWithCookieManager(String url, String user, String password, 
+
+    public static String loginWithCookieManager(String url, String user, String password,
                                                 String idpPort, CookieManager cookieManager) throws IOException {
         final WebClient webClient = new WebClient();
         webClient.setCookieManager(cookieManager);
@@ -103,7 +103,7 @@ public final class HTTPTestUtils {
         // webClient.close();
         return rpPage.getBody().getTextContent();
     }
-    
+
     public static void logout(String url, CookieManager cookieManager) throws IOException {
         final WebClient webClient = new WebClient();
         webClient.setCookieManager(cookieManager);
@@ -125,10 +125,10 @@ public final class HTTPTestUtils {
             //we should get a fault if the image isn't available.
             webClient.getPage(imgSrc);
         }
-        
+
         // webClient.close();
     }
-    
+
     public static void logoutCleanup(String url, CookieManager cookieManager) throws IOException {
         final WebClient webClient = new WebClient();
         webClient.setCookieManager(cookieManager);
@@ -138,7 +138,7 @@ public final class HTTPTestUtils {
         Assert.assertEquals("IDP SignOut Response Page", idpPage.getTitleText());
 
         Assert.assertTrue(idpPage.asText().contains("CXF Fediz IDP successful logout"));
-        
+
         DomNodeList<DomElement> images = idpPage.getElementsByTagName("img");
         Assert.assertEquals(1, images.getLength());
         for (int i = 0; i < images.size(); i++) {
@@ -148,7 +148,7 @@ public final class HTTPTestUtils {
             //we should get a fault if the image isn't available.
             webClient.getPage(imgSrc);
         }
-        
+
         // webClient.close();
     }
 

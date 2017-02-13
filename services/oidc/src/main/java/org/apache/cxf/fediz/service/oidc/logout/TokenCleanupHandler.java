@@ -29,7 +29,7 @@ import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 public class TokenCleanupHandler implements LogoutHandler {
     private OAuthDataProvider dataProvider;
     private boolean removeTokensForAllClients;
-    
+
     @Override
     public void handleLogout(Client client, UserSubject subject) {
         if (removeTokensForAllClients) {
@@ -41,7 +41,7 @@ public class TokenCleanupHandler implements LogoutHandler {
             // Removing the access token should remove the refresh token which links to it
             // If necessary, refresh tokens can also be explicitly revoked
         }
-        
+
     }
 
     public void setDataProvider(OAuthDataProvider dataProvider) {

@@ -32,7 +32,7 @@ import org.apache.wss4j.common.principal.CustomTokenPrincipal;
 public class IdentityMapperImpl implements IdentityMapper {
 
     private static final Logger LOG = LogUtils.getL7dLogger(IdentityMapperImpl.class);
-    
+
     /**
      * Map a principal in the source realm to the target realm
      * @param sourceRealm the source realm of the Principal

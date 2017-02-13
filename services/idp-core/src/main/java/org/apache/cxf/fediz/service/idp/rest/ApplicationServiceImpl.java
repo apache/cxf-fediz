@@ -48,24 +48,24 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Autowired
     private ApplicationDAO applicationDAO;
-    
+
     @Autowired
     private ClaimDAO claimDAO;
-           
+
     @Override
     public Applications getApplications(int start, int size, List<String> expand, UriInfo uriInfo) {
         List<Application> applications = applicationDAO.getApplications(start, size, expand);
-        
+
         for (Application a : applications) {
             URI self = uriInfo.getAbsolutePathBuilder().path(a.getRealm()).build();
             a.setHref(self);
         }
-        
+
         Applications list = new Applications();
         list.setApplications(applications);
         return list;
     }
-    
+
     @Override
     public Application getApplication(String realm, List<String> expand) {
         Application application = applicationDAO.getApplication(realm, expand);
@@ -75,7 +75,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             return application;
         }
     }
-    
+
     @Override
     public Response addApplication(UriInfo ui, Application application) {
         LOG.info("add Service config");
@@ -84,13 +84,13 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new WebApplicationException(Status.BAD_REQUEST);
         }
         Application createdApplication = applicationDAO.addApplication(application);
-        
+
         UriBuilder uriBuilder = UriBuilder.fromUri(ui.getRequestUri());
         uriBuilder.path("{index}");
         URI location = uriBuilder.build(createdApplication.getRealm());
         return Response.created(location).entity(application).build();
     }
-    
+
     @Override
     public Response updateApplication(UriInfo ui, String realm, Application application) {
         if (!realm.equals(application.getRealm().toString())) {
@@ -101,17 +101,17 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new WebApplicationException(Status.BAD_REQUEST);
         }
         applicationDAO.updateApplication(realm, application);
-        
+
         return Response.noContent().build();
     }
- 
+
     @Override
     public Response deleteApplication(String realm) {
         applicationDAO.deleteApplication(realm);
-        
+
         return Response.noContent().build();
     }
-    
+
     @Override
     public Response addClaimToApplication(UriInfo ui, String realm, RequestClaim claim) {
         Application application = applicationDAO.getApplication(realm, null);
@@ -124,15 +124,15 @@ public class ApplicationServiceImpl implements ApplicationService {
         RequestClaim rc = new RequestClaim(foundClaim);
         application.getRequestedClaims().add(rc);
         applicationDAO.addClaimToApplication(application, claim);
-        
+
         return Response.noContent().build();
     }
-    
+
     @Override
     public Response removeClaimFromApplication(UriInfo ui, String realm,  String claimType) {
         Application application = applicationDAO.getApplication(realm, null);
-        
-        RequestClaim foundItem = null; 
+
+        RequestClaim foundItem = null;
         for (RequestClaim item : application.getRequestedClaims()) {
             if (item.getClaimType().toString().equals(claimType)) {
                 foundItem = item;
@@ -145,7 +145,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
         application.getRequestedClaims().remove(foundItem);
         applicationDAO.removeClaimFromApplication(application, foundItem);
-        
+
         return Response.noContent().build();
     }
 }

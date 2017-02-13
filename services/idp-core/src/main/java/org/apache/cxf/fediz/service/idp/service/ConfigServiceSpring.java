@@ -62,7 +62,7 @@ public class ConfigServiceSpring implements ConfigService {
             serviceConfigs.put(s.getRealm(), s);
         }
     }
-    
+
     public List<Idp> getIdpConfigs() {
         return new ArrayList<Idp>(idpConfigs.values());
     }

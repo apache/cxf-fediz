@@ -38,23 +38,23 @@ import org.springframework.web.filter.GenericFilterBean;
 public class STSPortFilter extends GenericFilterBean implements ApplicationContextAware {
 
     private static final Logger LOG = LoggerFactory.getLogger(STSPortFilter.class);
-    
+
     private ApplicationContext applicationContext;
     private STSAuthenticationProvider authenticationProvider;
-    
+
     private boolean isPortSet;
-    
+
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
         throws IOException, ServletException {
-        
+
         Assert.isTrue(applicationContext != null, "Application context must not be null");
         STSAuthenticationProvider authProvider = authenticationProvider;
         if (authProvider == null) {
             authProvider = applicationContext.getBean(STSAuthenticationProvider.class);
         }
         Assert.isTrue(authProvider != null, "STSAuthenticationProvider must be configured");
-        
+
         //Only update the port if HTTPS is used, otherwise ignored (like retrieving the WADL over HTTP)
         if (!isPortSet && request.isSecure()) {
             try {
@@ -70,7 +70,7 @@ public class STSPortFilter extends GenericFilterBean implements ApplicationConte
                 LOG.error("Invalid Url '" + authProvider.getWsdlLocation() + "': "  + e.getMessage());
             }
         }
-        
+
         chain.doFilter(request, response);
     }
 
@@ -78,7 +78,7 @@ public class STSPortFilter extends GenericFilterBean implements ApplicationConte
         authProvider.setWsdlLocation(wsdlUrl);
         this.isPortSet = true;
     }
-    
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;

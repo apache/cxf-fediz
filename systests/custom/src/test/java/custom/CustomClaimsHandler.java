@@ -41,7 +41,7 @@ import org.apache.wss4j.common.util.XMLUtils;
 public class CustomClaimsHandler implements ClaimsHandler {
 
     private static final Logger LOG = LogUtils.getL7dLogger(CustomClaimsHandler.class);
-    
+
     private Map<String, Map<String, String>> userClaims;
     private List<URI> supportedClaims;
     private String realm;
@@ -53,11 +53,11 @@ public class CustomClaimsHandler implements ClaimsHandler {
     public Map<String, Map<String, String>> getUserClaims() {
         return userClaims;
     }
-    
+
     public void setSupportedClaims(List<URI> supportedClaims) {
         this.supportedClaims = supportedClaims;
     }
-    
+
     public void setRealm(String realm) {
         this.realm = realm;
     }
@@ -65,17 +65,17 @@ public class CustomClaimsHandler implements ClaimsHandler {
     public String getRealm() {
         return realm;
     }
-    
+
     @Override
     public List<URI> getSupportedClaimTypes() {
         return Collections.unmodifiableList(this.supportedClaims);
     }
-    
+
 
     @Override
     public ProcessedClaimCollection retrieveClaimValues(ClaimCollection claims,
             ClaimsParameters parameters) {
-        
+
         // Insist that a "realm" Custom Content is available in the RST with a value equal to "custom-realm"
         List<Element> customContent = parameters.getTokenRequirements().getCustomContent();
         boolean foundRealm = false;
@@ -89,7 +89,7 @@ public class CustomClaimsHandler implements ClaimsHandler {
                 }
             }
         }
-        
+
         if (!foundRealm || parameters.getRealm() == null || !parameters.getRealm().equalsIgnoreCase(getRealm())) {
             LOG.fine("Realm '" + parameters.getRealm() + "' doesn't match with configured realm '" + getRealm() + "'");
             return new ProcessedClaimCollection();
@@ -113,7 +113,7 @@ public class CustomClaimsHandler implements ClaimsHandler {
 
         if (claims.size() > 0) {
             ProcessedClaimCollection claimCollection = new ProcessedClaimCollection();
-            for (Claim requestClaim : claims) { 
+            for (Claim requestClaim : claims) {
                 String claimValue = claimMap.get(requestClaim.getClaimType().toString());
                 if (claimValue != null) {
                     ProcessedClaim claim = new ProcessedClaim();
@@ -122,7 +122,7 @@ public class CustomClaimsHandler implements ClaimsHandler {
                     claim.setOriginalIssuer("Original Issuer");
                     claim.addValue(claimValue);
                     claimCollection.add(claim);
-                }   
+                }
             }
             return claimCollection;
         }

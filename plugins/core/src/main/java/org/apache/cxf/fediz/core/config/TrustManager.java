@@ -23,7 +23,7 @@ import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
 import org.apache.wss4j.common.crypto.Crypto;
 
 public class TrustManager {
-    
+
     private TrustManagersType trustManagerType;
     private Crypto crypto;
     private String name;
@@ -32,7 +32,7 @@ public class TrustManager {
         super();
         this.trustManagerType = trustManagerType;
     }
-    
+
     public TrustManager(Crypto crypto) {
         super();
         this.crypto = crypto;
@@ -53,7 +53,7 @@ public class TrustManager {
                 name = trustManagerType.getKeyStore().getResource();
             }
         }
-        
+
         return name;
     }
 
@@ -64,7 +64,7 @@ public class TrustManager {
     public void setCrypto(Crypto crypto) {
         this.crypto = crypto;
     }
-    
+
     public int hashCode() {
         if (trustManagerType == null) {
             return super.hashCode();
@@ -72,19 +72,19 @@ public class TrustManager {
             return trustManagerType.hashCode();
         }
     }
-    
+
     public boolean equals(Object obj) {
         if (!(obj instanceof TrustManager)) {
             return false;
         }
-        
+
         TrustManager that = (TrustManager)obj;
         if (trustManagerType != null && !trustManagerType.equals(that.getTrustManagersType())) {
             return false;
         } else if (trustManagerType == null && that.getTrustManagersType() != null) {
             return false;
         }
-        
+
         return true;
     }
 
@@ -95,7 +95,7 @@ public class TrustManager {
             return trustManagerType.toString();
         }
     }
-    
+
     public TrustManagersType getTrustManagersType() {
         return trustManagerType;
     }

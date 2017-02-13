@@ -36,16 +36,16 @@ import javax.xml.bind.annotation.XmlType;
                       "policyNamespace", "passiveRequestorEndpoint", "passiveRequestorEndpointConstraint", "id",
                       "validatingCertificate", "enableAppliesTo"})
 public class Application implements Serializable {
-        
+
     private static final long serialVersionUID = 5644327504861846964L;
 
-    
-    
+
+
     protected int id;
-    
-            
+
+
     //Could be imported from Metadata document or manually filled
-    
+
     //@Column(name = "REALM", nullable = true, length = FIELD_LENGTH)
     protected String realm;  //wtrealm, whr
 
@@ -53,52 +53,52 @@ public class Application implements Serializable {
     // "http://docs.oasis-open.org/wsfed/federation/200706"
     // Metadata could provide more than one but one must be chosen
     protected String protocol;
- 
+
     // Public key only
     // Could be read from Metadata, md:KeyDescriptor, use="encryption"
     protected String encryptionCertificate;
-    
+
     // Certificate for Signature verification
     protected String validatingCertificate;
-    
+
     // Could be read from Metadata, fed:ClaimTypesRequested
     protected List<RequestClaim> requestedClaims = new ArrayList<>();
-    
+
     //Could be read from Metadata, ServiceDisplayName
     //usage for list of application where user is logged in
     protected String serviceDisplayName;
-    
+
     //Could be read from Metadata, ServiceDescription
     //usage for list of application where user is logged in
     protected String serviceDescription;
-    
+
     //Could be read from Metadata, RoleDescriptor
     //fed:ApplicationServiceType, fed:SecurityTokenServiceType
     protected String role;
-        
+
     // Not in Metadata, configured in IDP or passed in wreq parameter
     protected String tokenType;
-    
+
     // Not in Metadata, configured in IDP or passed in wreq parameter
     protected int lifeTime;
-    
+
     // WS-Policy Namespace for AppliesTo element
     protected String policyNamespace;
-    
+
     // Request audience restriction in token for this application (default is true)
     private boolean enableAppliesTo = true;
-    
+
     private URI href;
-    
+
     //Could be read from Metadata, PassiveRequestorEndpoint
     //fed:ApplicationServiceType, fed:SecurityTokenServiceType
     private String passiveRequestorEndpoint;
-    
+
     // A regular expression constraint on the passiveRequestorEndpoint
     private String passiveRequestorEndpointConstraint;
     private Pattern compiledPassiveRequestorEndpointConstraint;
-    
-    
+
+
     @XmlAttribute
     public int getId() {
         return id;
@@ -107,7 +107,7 @@ public class Application implements Serializable {
     public void setId(int id) {
         this.id = id;
     }
-    
+
     @XmlAttribute
     public URI getHref() {
         return href;
@@ -219,11 +219,11 @@ public class Application implements Serializable {
             compiledPassiveRequestorEndpointConstraint = null;
         }
     }
-    
+
     public Pattern getCompiledPassiveRequestorEndpointConstraint() {
         return compiledPassiveRequestorEndpointConstraint;
     }
-    
+
     public String getValidatingCertificate() {
         return validatingCertificate;
     }

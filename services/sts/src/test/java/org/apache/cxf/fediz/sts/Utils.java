@@ -35,9 +35,9 @@ import org.apache.cxf.configuration.security.FiltersType;
 
 public final class Utils {
 
-    private Utils() {  
+    private Utils() {
     }
-    
+
     public static void initTLSClientParameters(TLSClientParameters tlsClientParameters, String keystoreFile,
                                                String keystorePassword, String keyPassword,
                                                String truststoreFile, String trustPassword)

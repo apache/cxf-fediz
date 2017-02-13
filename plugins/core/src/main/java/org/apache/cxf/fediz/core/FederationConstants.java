@@ -28,7 +28,7 @@ import java.util.Map;
  * Constants specific to WS-Federation
  */
 public final class FederationConstants extends FedizConstants {
-   
+
     public static final String WSFED_METHOD = "WSFED";
 
     /**
@@ -208,7 +208,7 @@ public final class FederationConstants extends FedizConstants {
         .create("http://docs.oasis-open.org/wsfed/authorization/200706/authntypes/smartcard");
 
     public static final String METADATA_PATH_URI = "FederationMetadata/2007-06/FederationMetadata.xml";
-    
+
     private FederationConstants() {
         super();
     }

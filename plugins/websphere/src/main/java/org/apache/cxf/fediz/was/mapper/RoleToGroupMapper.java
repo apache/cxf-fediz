@@ -26,9 +26,9 @@ import java.util.Properties;
  */
 public interface RoleToGroupMapper {
     /**
-     * Convenience Method to allow initialization of a GroupMapper 
+     * Convenience Method to allow initialization of a GroupMapper
      * from the Properties defined in the WAS Server configuration
-     * 
+     *
      */
     void initialize(Properties properties);
 
@@ -39,8 +39,8 @@ public interface RoleToGroupMapper {
 
     /**
      * Convenience Method to allow cleanup of allocated resources
-     * 
-     */ 
-    
+     *
+     */
+
     void cleanup();
 }

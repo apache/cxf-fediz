@@ -60,19 +60,19 @@ import org.springframework.webflow.execution.RequestContext;
  */
 @Component
 public class TrustedIdpFacebookProtocolHandler extends AbstractTrustedIdpOAuth2ProtocolHandler {
-    
+
     /**
      * The facebook API endpoint for querying claims (such as email address). If not specified
      * it defaults to "https://graph.facebook.com/v2.6".
      */
     public static final String API_ENDPOINT = "api.endpoint";
-    
+
     /**
-     * The Claim to use for the subject username to insert into the SAML Token. It defaults to 
+     * The Claim to use for the subject username to insert into the SAML Token. It defaults to
      * "email".
      */
     public static final String SUBJECT_CLAIM = "subject.claim";
-    
+
     public static final String PROTOCOL = "facebook-connect";
 
     private static final Logger LOG = LoggerFactory.getLogger(TrustedIdpFacebookProtocolHandler.class);
@@ -88,24 +88,24 @@ public class TrustedIdpFacebookProtocolHandler extends AbstractTrustedIdpOAuth2P
         String code = (String) WebUtils.getAttributeFromFlowScope(context,
                                                                   OAuthConstants.CODE_RESPONSE_TYPE);
         if (code != null && !code.isEmpty()) {
-            
+
             String tokenEndpoint = getProperty(trustedIdp, TOKEN_ENDPOINT);
             if (tokenEndpoint == null || tokenEndpoint.isEmpty()) {
                 tokenEndpoint = "https://graph.facebook.com/v2.6/oauth/access_token";
             }
-            
+
             String apiEndpoint = getProperty(trustedIdp, API_ENDPOINT);
             if (apiEndpoint == null || apiEndpoint.isEmpty()) {
                 apiEndpoint = "https://graph.facebook.com/v2.6";
             }
-            
+
             String clientId = getProperty(trustedIdp, CLIENT_ID);
             String clientSecret = getProperty(trustedIdp, CLIENT_SECRET);
             if (clientSecret == null || clientSecret.isEmpty()) {
                 LOG.warn("A CLIENT_SECRET must be configured to use the TrustedIdpFacebookProtocolHandler");
                 throw new IllegalStateException("No CLIENT_SECRET specified");
             }
-            
+
             // Here we need to get the AccessToken using the authorization code
             ClientAccessToken accessToken = getAccessTokenUsingCode(tokenEndpoint, code, clientId,
                                                                     clientSecret, idp.getIdpUrl().toString());
@@ -113,8 +113,8 @@ public class TrustedIdpFacebookProtocolHandler extends AbstractTrustedIdpOAuth2P
                 LOG.warn("No Access Token received from the Facebook IdP");
                 return null;
             }
-            
-            // Now we need to invoke on the API endpoint using the access token to get the 
+
+            // Now we need to invoke on the API endpoint using the access token to get the
             // user's claims
             String subjectName = getSubjectName(apiEndpoint, accessToken.getTokenKey(), trustedIdp);
             try {
@@ -123,25 +123,25 @@ public class TrustedIdpFacebookProtocolHandler extends AbstractTrustedIdpOAuth2P
                     LOG.warn("Home realm is null");
                     throw new IllegalStateException("Home realm is null");
                 }
-        
+
                 // Convert into a SAML Token
                 Date expires = new Date();
                 expires.setTime(expires.getTime() + (accessToken.getExpiresIn() * 1000L));
                 SecurityToken idpToken = new SecurityToken(IDGenerator.generateID(null), null, expires);
-                SamlAssertionWrapper assertion = 
+                SamlAssertionWrapper assertion =
                     createSamlAssertion(idp, trustedIdp, subjectName, null, expires);
                 Document doc = DOMUtils.createDocument();
                 Element token = assertion.toDOM(doc);
-        
-                // Create new Security token with new id. 
+
+                // Create new Security token with new id.
                 // Parameters for freshness computation are copied from original IDP_TOKEN
                 idpToken.setToken(token);
-        
+
                 LOG.info("[IDP_TOKEN={}] for user '{}' issued by home realm [{}]",
-                         assertion.getId(), assertion.getSaml2().getSubject().getNameID().getValue(), 
+                         assertion.getId(), assertion.getSaml2().getSubject().getNameID().getValue(),
                          whr);
                 LOG.debug("Expired date={}", expires);
-                
+
                 return idpToken;
             } catch (IllegalStateException ex) {
                 throw ex;
@@ -152,23 +152,23 @@ public class TrustedIdpFacebookProtocolHandler extends AbstractTrustedIdpOAuth2P
         }
         return null;
     }
-    
+
     private ClientAccessToken getAccessTokenUsingCode(String tokenEndpoint, String code, String clientId,
                                                       String clientSecret, String redirectURI) {
         // Here we need to get the AccessToken using the authorization code
         List<Object> providers = new ArrayList<>();
         providers.add(new OAuthJSONProvider());
-        
-        WebClient client = 
+
+        WebClient client =
             WebClient.create(tokenEndpoint, providers, "cxf-tls.xml");
-        
+
         ClientConfiguration config = WebClient.getConfig(client);
 
         if (LOG.isDebugEnabled()) {
             config.getOutInterceptors().add(new LoggingOutInterceptor());
             config.getInInterceptors().add(new LoggingInInterceptor());
         }
-        
+
         client.type("application/x-www-form-urlencoded");
         client.accept("application/json");
 
@@ -182,10 +182,10 @@ public class TrustedIdpFacebookProtocolHandler extends AbstractTrustedIdpOAuth2P
 
         return response.readEntity(ClientAccessToken.class);
     }
-    
+
     private String getSubjectName(String apiEndpoint, String accessToken, TrustedIdp trustedIdp) {
-        WebClient client = WebClient.create(apiEndpoint, 
-                                  Collections.singletonList(new JsonMapObjectProvider()), 
+        WebClient client = WebClient.create(apiEndpoint,
+                                  Collections.singletonList(new JsonMapObjectProvider()),
                                   "cxf-tls.xml");
         client.path("/me");
         ClientConfiguration config = WebClient.getConfig(client);
@@ -197,27 +197,27 @@ public class TrustedIdpFacebookProtocolHandler extends AbstractTrustedIdpOAuth2P
 
         client.accept("application/json");
         client.query("access_token", accessToken);
-        
+
         String subjectName = getProperty(trustedIdp, SUBJECT_CLAIM);
         if (subjectName == null || subjectName.isEmpty()) {
             subjectName = "email";
         }
         client.query("fields", subjectName);
         JsonMapObject mapObject = client.get(JsonMapObject.class);
-        
+
         String parsedSubjectName = (String)mapObject.getProperty(subjectName);
         if (subjectName.contains("email")) {
             parsedSubjectName = parsedSubjectName.replace("\\u0040", "@");
         }
         return parsedSubjectName;
     }
-    
+
     protected String getScope(TrustedIdp trustedIdp) {
         String scope = getProperty(trustedIdp, SCOPE);
         if (scope != null) {
             scope = scope.trim();
         }
-        
+
         if (scope == null || scope.isEmpty()) {
             scope = "email";
         }

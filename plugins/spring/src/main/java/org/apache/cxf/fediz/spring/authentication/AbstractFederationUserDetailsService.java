@@ -33,7 +33,7 @@ public abstract class AbstractFederationUserDetailsService
     }
 
     /**
-     * Protected template method for construct a {@link org.springframework.security.core.userdetails.UserDetails} 
+     * Protected template method for construct a {@link org.springframework.security.core.userdetails.UserDetails}
      * via the supplied FedizResponse
      *
      * @return the newly created UserDetails object.

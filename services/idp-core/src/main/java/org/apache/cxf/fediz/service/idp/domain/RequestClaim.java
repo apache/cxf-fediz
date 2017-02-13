@@ -22,15 +22,15 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "requestClaim", namespace = "http://org.apache.cxf.fediz/")
 public class RequestClaim extends Claim {
-    
+
     private static final long serialVersionUID = 8097560995225077866L;
-    
+
     protected boolean optional;
-    
+
     public RequestClaim() {
         super();
     }
-    
+
     public RequestClaim(Claim c) {
         super();
         this.setClaimType(c.getClaimType());
@@ -38,11 +38,11 @@ public class RequestClaim extends Claim {
         this.setDisplayName(c.getDisplayName());
         this.setId(c.getId());
     }
-      
+
     public void setOptional(boolean optional) {
         this.optional = optional;
     }
-    
+
     public boolean isOptional() {
         return optional;
     }

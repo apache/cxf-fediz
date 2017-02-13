@@ -28,12 +28,12 @@ import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.springframework.webflow.execution.RequestContext;
 
 public interface TrustedIdpProtocolHandler extends ProtocolHandler {
-    
+
     boolean canHandleRequest(HttpServletRequest request);
 
     // Only supports HTTP GET SignIn Requests
     URL mapSignInRequest(RequestContext context, Idp idp, TrustedIdp trustedIdp);
-    
+
     //Hook in <action-state id="validateToken"> of federation-signin-response.xml
     SecurityToken mapSignInResponse(RequestContext context, Idp idp, TrustedIdp trustedIdp);
 

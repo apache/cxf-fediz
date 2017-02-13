@@ -46,27 +46,27 @@ public class ApplicationDAOJPATest {
 
     @Autowired
     private ApplicationDAO applicationDAO;
-    
-    
+
+
     @BeforeClass
     public static void init() {
         System.setProperty("spring.profiles.active", "jpa");
     }
-    
-    
+
+
     @Test
     public void testReadAllApplications() {
         List<Application> applications = applicationDAO.getApplications(0, 999, null);
         // Application could have been removed, Order not given as per JUnit design
         Assert.isTrue(1 < applications.size(), "Size doesn't match [" + applications.size() + "]");
     }
-    
-    
+
+
     @Test
     public void testReadExistingApplicationEmbeddedAll() {
         Application application = applicationDAO.getApplication("urn:org:apache:cxf:fediz:fedizhelloworld",
                                                                 Arrays.asList("all"));
-        
+
         Assert.isTrue(application.getLifeTime() == 3600,
                       "LifeTime doesn't match");
         Assert.isTrue("http://docs.oasis-open.org/wsfed/federation/200706".equals(application.getProtocol()),
@@ -85,41 +85,41 @@ public class ApplicationDAOJPATest {
         Assert.isTrue(4 == application.getRequestedClaims().size(),
                       "Number of claims doesn't match [" + application.getRequestedClaims().size() + "]");
     }
-    
+
     @Test
     public void testReadExistingApplicationEmbeddedClaims() {
         Application application = applicationDAO.getApplication("urn:org:apache:cxf:fediz:fedizhelloworld",
                                                                 Arrays.asList("claims"));
-        
+
         Assert.isTrue(4 == application.getRequestedClaims().size(),
                       "Number of claims doesn't match");
     }
-    
+
     @Test
     public void testReadExistingApplicationEmbeddedNull() {
         Application application = applicationDAO.getApplication("urn:org:apache:cxf:fediz:fedizhelloworld",
                                                                 null);
-        
+
         Assert.isTrue(0 == application.getRequestedClaims().size(),
                       "Number of claims doesn't match");
     }
-    
-    
+
+
     @Test(expected = EmptyResultDataAccessException.class)
     public void testTryReadNonexistingApplication() {
         applicationDAO.getApplication("urn:org:apache:cxf:fediz:fedizhelloworld:NOTEXIST", null);
     }
-    
-    
+
+
     @Test
     public void testAddNewApplication() {
-        
+
         String realm = "urn:org:apache:cxf:fediz:application:testaddnew";
         Application application = createApplication(realm);
         applicationDAO.addApplication(application);
-        
+
         application = applicationDAO.getApplication(realm, null);
-        
+
         Assert.isTrue("".equals(application.getEncryptionCertificate()),
                       "EncryptionCertificate doesn't match");
         Assert.isTrue(application.getLifeTime() == 3600,
@@ -143,15 +143,15 @@ public class ApplicationDAOJPATest {
         Assert.isTrue(0 == application.getRequestedClaims().size(),
                       "Number of claims doesn't match");
     }
-    
+
     @Test
     public void testUpdateApplication() {
         String realm = "urn:org:apache:cxf:fediz:application:testupdate";
-        
+
         //Prepare
         Application application = createApplication(realm);
         applicationDAO.addApplication(application);
-        
+
         //Testcase
         application = new Application();
         application.setRealm(realm);
@@ -163,7 +163,7 @@ public class ApplicationDAOJPATest {
         application.setServiceDisplayName("UFedizhelloworld2");
         application.setTokenType("Uhttp://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV1.1");
         application.setPolicyNamespace("Uhttp://www.w3.org/ns/ws-policy");
-        
+
         Assert.isTrue("U".equals(application.getEncryptionCertificate()),
                       "EncryptionCertificate doesn't match");
         Assert.isTrue(application.getLifeTime() == 1800,
@@ -187,7 +187,7 @@ public class ApplicationDAOJPATest {
         Assert.isTrue(0 == application.getRequestedClaims().size(),
                       "Number of claims doesn't match");
     }
-    
+
     @Test(expected = DataIntegrityViolationException.class)
     public void testTryAddExistingApplication() {
         Application application = new Application();
@@ -199,29 +199,29 @@ public class ApplicationDAOJPATest {
         application.setServiceDescription("Fedizhelloworld description");
         application.setServiceDisplayName("Fedizhelloworld");
         application.setTokenType("http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0");
-        
+
         applicationDAO.addApplication(application);
     }
-    
-    
+
+
     @Test(expected = EmptyResultDataAccessException.class)
     public void testTryRemoveUnknownApplication() {
         applicationDAO.deleteApplication("urn:org:apache:cxf:fediz:fedizhelloworld:NOTEXIST");
     }
-    
-    
+
+
     @Test(expected = EmptyResultDataAccessException.class)
     public void testRemoveExistingApplication() {
         String realm = "urn:org:apache:cxf:fediz:app:testdelete";
         Application application = createApplication(realm);
-        
+
         applicationDAO.addApplication(application);
-        
+
         applicationDAO.deleteApplication(realm);
-        
+
         applicationDAO.getApplication(realm, null);
     }
-    
+
     @Test
     public void testAddClaimToApplication() {
         //Prepare step
@@ -234,47 +234,47 @@ public class ApplicationDAOJPATest {
         application.setServiceDescription("Fedizhelloworld description");
         application.setServiceDisplayName("Fedizhelloworld");
         application.setTokenType("http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0");
-        
+
         applicationDAO.addApplication(application);
-        
+
         //Testcase
         RequestClaim requestClaim = new RequestClaim();
         requestClaim.setOptional(false);
         requestClaim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"));
-        
+
         applicationDAO.addClaimToApplication(application, requestClaim);
-               
+
         application = applicationDAO.getApplication("urn:org:apache:cxf:fediz:fedizhelloworld:testaddclaim",
                                                     Arrays.asList("all"));
-        
+
         Assert.isTrue(1 == application.getRequestedClaims().size(), "requestedClaims size doesn't match");
     }
-    
+
     @Test(expected = DataIntegrityViolationException.class)
     public void testTryAddExistingClaimToApplication() {
         Application application = new Application();
         application.setRealm("urn:org:apache:cxf:fediz:fedizhelloworld");
-        
+
         RequestClaim requestClaim = new RequestClaim();
         requestClaim.setOptional(false);
         requestClaim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"));
-        
+
         applicationDAO.addClaimToApplication(application, requestClaim);
     }
-    
+
     @Test(expected = EmptyResultDataAccessException.class)
     public void testTryAddUnknownClaimToApplication() {
         Application application = new Application();
         application.setRealm("urn:org:apache:cxf:fediz:fedizhelloworld");
-        
+
         RequestClaim requestClaim = new RequestClaim();
         requestClaim.setOptional(false);
         requestClaim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/UNKOWN"));
-        
+
         applicationDAO.addClaimToApplication(application, requestClaim);
     }
-    
-    
+
+
     @Test
     public void testRemoveClaimFromApplication() {
         //Prepare step
@@ -287,50 +287,50 @@ public class ApplicationDAOJPATest {
         application.setServiceDescription("Fedizhelloworld description");
         application.setServiceDisplayName("Fedizhelloworld");
         application.setTokenType("http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0");
-        
+
         applicationDAO.addApplication(application);
-        
+
         RequestClaim requestClaim = new RequestClaim();
         requestClaim.setOptional(false);
         requestClaim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"));
-        
+
         applicationDAO.addClaimToApplication(application, requestClaim);
-               
+
         application = applicationDAO.getApplication("urn:org:apache:cxf:fediz:fedizhelloworld:testremoveclaim",
                                                     Arrays.asList("all"));
         Assert.isTrue(1 == application.getRequestedClaims().size(), "requestedClaims size doesn't match");
-        
+
         //Testcase
         applicationDAO.removeClaimFromApplication(application, requestClaim);
         application = applicationDAO.getApplication("urn:org:apache:cxf:fediz:fedizhelloworld:testremoveclaim",
                                                     Arrays.asList("all"));
         Assert.isTrue(0 == application.getRequestedClaims().size(), "requestedClaims size doesn't match");
     }
-    
+
     @Test(expected = JpaObjectRetrievalFailureException.class)
     public void testTryRemoveNotAssignedClaimFromApplication() {
         Application application = new Application();
         application.setRealm("urn:org:apache:cxf:fediz:fedizhelloworld");
-                
+
         RequestClaim requestClaim = new RequestClaim();
         requestClaim.setOptional(false);
         requestClaim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/city"));
-        
+
         applicationDAO.removeClaimFromApplication(application, requestClaim);
     }
-    
+
     @Test(expected = JpaObjectRetrievalFailureException.class)
     public void testTryRemoveUnknownClaimFromApplication() {
         Application application = new Application();
         application.setRealm("urn:org:apache:cxf:fediz:fedizhelloworld");
-                
+
         RequestClaim requestClaim = new RequestClaim();
         requestClaim.setOptional(false);
         requestClaim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/UNKNOWN"));
-        
+
         applicationDAO.removeClaimFromApplication(application, requestClaim);
     }
-    
+
     private static Application createApplication(String realm) {
         Application application = new Application();
         application.setRealm(realm);

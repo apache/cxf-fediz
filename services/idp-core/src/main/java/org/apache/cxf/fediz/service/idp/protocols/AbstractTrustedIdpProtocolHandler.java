@@ -27,7 +27,7 @@ import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 import org.apache.cxf.fediz.service.idp.spi.TrustedIdpProtocolHandler;
 
 public abstract class AbstractTrustedIdpProtocolHandler implements TrustedIdpProtocolHandler {
-    
+
     @Override
     public boolean canHandleRequest(HttpServletRequest request) {
         // TODO Auto-generated method stub
@@ -36,23 +36,23 @@ public abstract class AbstractTrustedIdpProtocolHandler implements TrustedIdpPro
 
     protected String getProperty(TrustedIdp trustedIdp, String property) {
         Map<String, String> parameters = trustedIdp.getParameters();
-        
+
         if (parameters != null && parameters.containsKey(property)) {
             return parameters.get(property);
         }
-        
+
         return null;
     }
-    
+
     // Is a property configured. Defaults to the boolean "defaultValue" if not
     protected boolean isBooleanPropertyConfigured(TrustedIdp trustedIdp, String property, boolean defaultValue) {
         Map<String, String> parameters = trustedIdp.getParameters();
-        
+
         if (parameters != null && parameters.containsKey(property)) {
             return Boolean.parseBoolean(parameters.get(property));
         }
-        
+
         return defaultValue;
     }
-    
+
 }

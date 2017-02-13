@@ -29,23 +29,23 @@ import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 /**
  * The SAML TokenDelegationHandler implementation. It disallows ActAs or OnBehalfOf for
  * all cases apart from the case of a Bearer SAML Token. It differs from the SAMLDelegationHandler
- * in the STS core, in that it doesn't require that the AppliesTo address match an 
+ * in the STS core, in that it doesn't require that the AppliesTo address match an
  * AudienceRestriction address in the token.
  */
-public class FedizSAMLDelegationHandler 
+public class FedizSAMLDelegationHandler
     extends org.apache.cxf.sts.token.delegation.SAMLDelegationHandler {
-    
+
     @Override
     public boolean canHandleToken(ReceivedToken delegateTarget) {
         return super.canHandleToken(delegateTarget);
     }
     @Override
-    public TokenDelegationResponse isDelegationAllowed(TokenDelegationParameters tokenParameters) { 
+    public TokenDelegationResponse isDelegationAllowed(TokenDelegationParameters tokenParameters) {
         return super.isDelegationAllowed(tokenParameters);
     }
     @Override
     protected List<String> getAudienceRestrictions(SamlAssertionWrapper assertion) {
         return Collections.emptyList();
     }
-    
+
 }

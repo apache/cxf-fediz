@@ -49,12 +49,12 @@ import org.slf4j.LoggerFactory;
 public final class SignatureUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(SignatureUtils.class);
-    
+
     private static final XMLSignatureFactory XML_SIGNATURE_FACTORY = XMLSignatureFactory.getInstance("DOM");
-    
+
     private SignatureUtils() {
     }
-    
+
     public static Document signMetaInfo(Crypto crypto, String keyAlias, String keyPassword,
                                               Document doc, String referenceID) throws Exception {
         if (keyAlias == null || "".equals(keyAlias)) {
@@ -62,17 +62,17 @@ public final class SignatureUtils {
         }
         X509Certificate cert = CertsUtils.getX509CertificateFromCrypto(crypto, keyAlias);
 //    }
-    
+
 /*    public static ByteArrayOutputStream signMetaInfo(FederationContext config, InputStream metaInfo,
         String referenceID)
         throws Exception {
 
         KeyManager keyManager = config.getSigningKey();
         String keyAlias = keyManager.getKeyAlias();
-        String keypass  = keyManager.getKeyPassword();
-        
+        String keypass = keyManager.getKeyPassword();
+
         // in case we did not specify the key alias, we assume there is only one key in the keystore ,
-        // we use this key's alias as default. 
+        // we use this key's alias as default.
         if (keyAlias == null || "".equals(keyAlias)) {
             //keyAlias = getDefaultX509Identifier(ks);
             keyAlias = keyManager.getCrypto().getDefaultX509Identifier();
@@ -86,7 +86,7 @@ public final class SignatureUtils {
                             + keyAlias);
         }
         X509Certificate cert = issuerCerts[0];
-*/        
+*/
         String signatureMethod = null;
         if ("SHA1withDSA".equals(cert.getSigAlgName())) {
             signatureMethod = SignatureMethod.DSA_SHA1;
@@ -98,12 +98,12 @@ public final class SignatureUtils {
             LOG.error("Unsupported signature method: " + cert.getSigAlgName());
             throw new RuntimeException("Unsupported signature method: " + cert.getSigAlgName());
         }
-        
+
         List<Transform> transformList = new ArrayList<>();
         transformList.add(XML_SIGNATURE_FACTORY.newTransform(Transform.ENVELOPED, (TransformParameterSpec)null));
         transformList.add(XML_SIGNATURE_FACTORY.newCanonicalizationMethod(CanonicalizationMethod.EXCLUSIVE,
                                                              (C14NMethodParameterSpec)null));
-        
+
         // Create a Reference to the enveloped document (in this case,
         // you are signing the whole document, so a URI of "" signifies
         // that, and also specify the SHA1 digest algorithm and
@@ -123,9 +123,9 @@ public final class SignatureUtils {
 
         // step 2
         // Load the KeyStore and get the signing key and certificate.
-        
+
         PrivateKey keyEntry = crypto.getPrivateKey(keyAlias, keyPassword);
-        
+
         // Create the KeyInfo containing the X509Data.
         KeyInfoFactory kif = XML_SIGNATURE_FACTORY.getKeyInfoFactory();
         List<Object> x509Content = new ArrayList<>();
@@ -151,8 +151,8 @@ public final class SignatureUtils {
 
         // step 4
         // Output the resulting document.
-        
+
         return doc;
     }
-    
+
 }

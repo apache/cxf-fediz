@@ -31,19 +31,19 @@ import org.slf4j.LoggerFactory;
 public class SAMLProtocol extends Protocol {
 
     private static final Logger LOG = LoggerFactory.getLogger(SAMLProtocol.class);
-    
+
     private SAMLPRequestBuilder samlpRequestBuilder;
-    
+
     public SAMLProtocol(ProtocolType protocolType) {
         super(protocolType);
-        
+
         // add SAMLTokenValidator as the last one
         // Fediz chooses the first validator in the list if its
         // canHandleToken or canHandleTokenType method return true
         SAMLTokenValidator validator = new SAMLTokenValidator();
         getTokenValidators().add(getTokenValidators().size(), validator);
     }
-    
+
     protected SamlProtocolType getSAMLProtocol() {
         return (SamlProtocolType)super.getProtocolType();
     }
@@ -59,12 +59,12 @@ public class SAMLProtocol extends Protocol {
     public void setSignRequest(boolean signRequest) {
         getSAMLProtocol().setSignRequest(signRequest);
     }
-    
+
     public SAMLPRequestBuilder getSAMLPRequestBuilder() {
         if (samlpRequestBuilder != null) {
             return samlpRequestBuilder;
         }
-        
+
         // See if we have a custom SAMLPRequestBuilder
         String samlpRequestBuilderStr = getSAMLProtocol().getAuthnRequestBuilder();
         if (samlpRequestBuilderStr != null && !"".equals(samlpRequestBuilderStr)) {
@@ -79,17 +79,17 @@ public class SAMLProtocol extends Protocol {
                 LOG.debug(ex.getMessage(), ex);
             }
         }
-        
+
         // Default implementation
         samlpRequestBuilder = new DefaultSAMLPRequestBuilder();
-        
+
         return samlpRequestBuilder;
     }
 
     public void setSAMLPRequestBuilder(SAMLPRequestBuilder requestBuilder) {
         this.samlpRequestBuilder = requestBuilder;
     }
-    
+
     public boolean isDisableDeflateEncoding() {
         return getSAMLProtocol().isDisableDeflateEncoding();
     }
@@ -97,7 +97,7 @@ public class SAMLProtocol extends Protocol {
     public void setDisableDeflateEncoding(boolean disableDeflateEncoding) {
         getSAMLProtocol().setDisableDeflateEncoding(disableDeflateEncoding);
     }
-    
+
     public boolean isDoNotEnforceKnownIssuer() {
         return getSAMLProtocol().isDoNotEnforceKnownIssuer();
     }
@@ -105,7 +105,7 @@ public class SAMLProtocol extends Protocol {
     public void setDoNotEnforceKnownIssuer(boolean doNotEnforceKnownIssuer) {
         getSAMLProtocol().setDoNotEnforceKnownIssuer(doNotEnforceKnownIssuer);
     }
-    
+
     public String getIssuerLogoutURL() {
         return getSAMLProtocol().getIssuerLogoutURL();
     }

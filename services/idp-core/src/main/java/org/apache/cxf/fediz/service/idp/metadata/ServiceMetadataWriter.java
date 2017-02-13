@@ -46,7 +46,7 @@ import static org.apache.cxf.fediz.core.FedizConstants.WS_ADDRESSING_NS;
 import static org.apache.cxf.fediz.core.FedizConstants.WS_FEDERATION_NS;
 
 public class ServiceMetadataWriter {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(ServiceMetadataWriter.class);
 
     //CHECKSTYLE:OFF
@@ -54,7 +54,7 @@ public class ServiceMetadataWriter {
 
         try {
             Crypto crypto = CertsUtils.getCryptoFromFile(config.getCertificate());
-            
+
             W3CDOMStreamWriter writer = new W3CDOMStreamWriter();
 
             writer.writeStartDocument("UTF-8", "1.0");
@@ -62,10 +62,10 @@ public class ServiceMetadataWriter {
             String referenceID = IDGenerator.generateID("_");
             writer.writeStartElement("md", "EntityDescriptor", SAML2_METADATA_NS);
             writer.writeAttribute("ID", referenceID);
-            
+
             String serviceURL = config.getIdpUrl().toString();
             writer.writeAttribute("entityID", config.getRealm());
-            
+
             writer.writeNamespace("md", SAML2_METADATA_NS);
             writer.writeNamespace("fed", WS_FEDERATION_NS);
             writer.writeNamespace("wsa", WS_ADDRESSING_NS);
@@ -77,11 +77,11 @@ public class ServiceMetadataWriter {
             } else if ("urn:oasis:names:tc:SAML:2.0:profiles:SSO:browser".equals(serviceConfig.getProtocol())) {
                 writeSAMLMetadata(writer, serviceConfig, serviceURL, crypto);
             }
-            
+
             writer.writeEndElement(); // EntityDescriptor
 
             writer.writeEndDocument();
-            
+
             writer.close();
 
             if (LOG.isDebugEnabled()) {
@@ -91,7 +91,7 @@ public class ServiceMetadataWriter {
                 LOG.debug("***************** unsigned ****************");
             }
 
-            Document result = SignatureUtils.signMetaInfo(crypto, null, config.getCertificatePassword(), 
+            Document result = SignatureUtils.signMetaInfo(crypto, null, config.getCertificatePassword(),
                                                           writer.getDocument(), referenceID);
             if (result != null) {
                 return result;
@@ -108,7 +108,7 @@ public class ServiceMetadataWriter {
     }
 
     private void writeFederationMetadata(
-        XMLStreamWriter writer, 
+        XMLStreamWriter writer,
         TrustedIdp config,
         String serviceURL
     ) throws XMLStreamException {
@@ -122,7 +122,7 @@ public class ServiceMetadataWriter {
 
         writer.writeStartElement("wsa", "Address", WS_ADDRESSING_NS);
         writer.writeCharacters(serviceURL);
-        
+
         writer.writeEndElement(); // Address
         writer.writeEndElement(); // EndpointReference
         writer.writeEndElement(); // ApplicationServiceEndpoint
@@ -146,68 +146,68 @@ public class ServiceMetadataWriter {
         writer.writeEndElement(); // PassiveRequestorEndpoint
         writer.writeEndElement(); // RoleDescriptor
     }
-    
+
     private void writeSAMLMetadata(
-        XMLStreamWriter writer, 
+        XMLStreamWriter writer,
         TrustedIdp config,
         String serviceURL,
         Crypto crypto
     ) throws Exception {
-        
+
         writer.writeStartElement("md", "SPSSODescriptor", SAML2_METADATA_NS);
-        boolean signRequest = 
+        boolean signRequest =
             isPropertyConfigured(config, TrustedIdpSAMLProtocolHandler.SIGN_REQUEST, true);
         writer.writeAttribute("AuthnRequestsSigned", Boolean.toString(signRequest));
         writer.writeAttribute("WantAssertionsSigned", "true");
         writer.writeAttribute("protocolSupportEnumeration", "urn:oasis:names:tc:SAML:2.0:protocol");
-        
+
         writer.writeStartElement("md", "AssertionConsumerService", SAML2_METADATA_NS);
         writer.writeAttribute("Location", serviceURL);
         writer.writeAttribute("index", "0");
         writer.writeAttribute("isDefault", "true");
         writer.writeAttribute("Binding", "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
         writer.writeEndElement(); // AssertionConsumerService
-        
+
         if (signRequest) {
             writer.writeStartElement("md", "KeyDescriptor", SAML2_METADATA_NS);
             writer.writeAttribute("use", "signing");
-            
+
             writer.writeStartElement("ds", "KeyInfo", "http://www.w3.org/2000/09/xmldsig#");
             writer.writeNamespace("ds", "http://www.w3.org/2000/09/xmldsig#");
             writer.writeStartElement("ds", "X509Data", "http://www.w3.org/2000/09/xmldsig#");
             writer.writeStartElement("ds", "X509Certificate", "http://www.w3.org/2000/09/xmldsig#");
 
             // Write the Base-64 encoded certificate
-            
+
             String keyAlias = crypto.getDefaultX509Identifier();
             X509Certificate cert = CertsUtils.getX509CertificateFromCrypto(crypto, keyAlias);
-            
+
             if (cert == null) {
                 throw new ProcessingException(
-                    "No signing certs were found to insert into the metadata using name: " 
+                    "No signing certs were found to insert into the metadata using name: "
                         + keyAlias);
             }
             byte data[] = cert.getEncoded();
             String encodedCertificate = Base64.encode(data);
             writer.writeCharacters(encodedCertificate);
-            
+
             writer.writeEndElement(); // X509Certificate
             writer.writeEndElement(); // X509Data
             writer.writeEndElement(); // KeyInfo
             writer.writeEndElement(); // KeyDescriptor
         }
-        
+
         writer.writeEndElement(); // SPSSODescriptor
     }
-    
+
     // Is a property configured. Defaults to "true" if not
     private boolean isPropertyConfigured(TrustedIdp trustedIdp, String property, boolean defaultValue) {
         Map<String, String> parameters = trustedIdp.getParameters();
-        
+
         if (parameters != null && parameters.containsKey(property)) {
             return Boolean.parseBoolean(parameters.get(property));
         }
-        
+
         return defaultValue;
     }
 

@@ -24,9 +24,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Number {
     private int number;
     private String description;
-    
+
     public Number() {
-        
+
     }
 
     public int getNumber() {
@@ -44,5 +44,5 @@ public class Number {
     public void setDescription(String description) {
         this.description = description;
     }
-    
+
 }

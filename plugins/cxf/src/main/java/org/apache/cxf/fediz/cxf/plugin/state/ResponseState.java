@@ -32,7 +32,7 @@ import org.apache.cxf.fediz.core.Claim;
 public class ResponseState implements Serializable {
 
     private static final long serialVersionUID = -3247188797004342462L;
-    
+
     private String assertion;
     private String state;
     private String webAppContext;
@@ -43,16 +43,16 @@ public class ResponseState implements Serializable {
     private String issuer;
     private List<Claim> claims;
     private String subject;
-    
+
     public ResponseState() {
-        
+
     }
-    
+
     public ResponseState(String assertion,
                          String state,
                          String webAppContext,
                          String webAppDomain,
-                         long createdAt, 
+                         long createdAt,
                          long expiresAt) {
         this.assertion = assertion;
         this.state = state;
@@ -65,7 +65,7 @@ public class ResponseState implements Serializable {
     public long getCreatedAt() {
         return createdAt;
     }
-    
+
     public long getExpiresAt() {
         return expiresAt;
     }
@@ -73,7 +73,7 @@ public class ResponseState implements Serializable {
     public String getState() {
         return state;
     }
-    
+
     public String getWebAppContext() {
         return webAppContext;
     }
@@ -81,7 +81,7 @@ public class ResponseState implements Serializable {
     public String getWebAppDomain() {
         return webAppDomain;
     }
-    
+
     public String getAssertion() {
         return assertion;
     }

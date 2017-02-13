@@ -83,10 +83,10 @@ public class FedizConfigurationTest {
     private static final String SUBJECT_VALUE_1 = ".*CN=www.sts1.com.*";
     private static final String SUBJECT_VALUE_2 = ".*CN=www.sts2.com.*";
     private static final String SUBJECT_VALUE_3 = ".*CN=www.sts3.com.*";
-    
+
 
     private static final String CONFIG_FILE = "./target/fedizconfig.xml";
-    
+
     @AfterClass
     public static void cleanup() {
         SecurityTestUtil.cleanup();
@@ -103,68 +103,68 @@ public class FedizConfigurationTest {
         config.setMaximumClockSkew(new BigInteger(CLOCK_SKEW));
 
         CertificateStores certStores = new CertificateStores();
-        
-        TrustManagersType tm0 = new TrustManagersType();       
+
+        TrustManagersType tm0 = new TrustManagersType();
         KeyStoreType ks0 = new KeyStoreType();
         ks0.setType("JKS");
         ks0.setPassword(KEYSTORE_PASSWORD_1);
         ks0.setResource(KEYSTORE_RESOURCE_PATH_1);
         tm0.setKeyStore(ks0);
-        
+
         certStores.getTrustManager().add(tm0);
-        
+
         TrustManagersType tm1 = new TrustManagersType();
         KeyStoreType ks1 = new KeyStoreType();
         ks1.setType("JKS");
         ks1.setPassword(KEYSTORE_PASSWORD_2);
         ks1.setResource(KEYSTORE_RESOURCE_PATH_2);
         tm1.setKeyStore(ks1);
-        
+
         certStores.getTrustManager().add(tm1);
-        
+
         TrustManagersType tm2 = new TrustManagersType();
         KeyStoreType ks2 = new KeyStoreType();
         ks2.setType("JKS");
         ks2.setPassword(KEYSTORE_PASSWORD_3);
         ks2.setResource(KEYSTORE_RESOURCE_PATH_3);
         tm2.setKeyStore(ks2);
-        
+
         certStores.getTrustManager().add(tm2);
-        
+
         config.setCertificateStores(certStores);
-        
+
         TrustedIssuers trustedIssuers = new TrustedIssuers();
-        
+
         TrustedIssuerType ti0 = new TrustedIssuerType();
         ti0.setCertificateValidation(ValidationType.CHAIN_TRUST);
         ti0.setName("issuer1");
         ti0.setSubject(SUBJECT_VALUE_1);
         trustedIssuers.getIssuer().add(ti0);
-        
+
         TrustedIssuerType ti1 = new TrustedIssuerType();
         ti1.setCertificateValidation(ValidationType.CHAIN_TRUST);
         ti1.setName("issuer1");
         ti1.setSubject(SUBJECT_VALUE_2);
         trustedIssuers.getIssuer().add(ti1);
-        
+
         TrustedIssuerType ti2 = new TrustedIssuerType();
         ti2.setCertificateValidation(ValidationType.CHAIN_TRUST);
         ti2.setName("issuer1");
         ti2.setSubject(SUBJECT_VALUE_3);
         trustedIssuers.getIssuer().add(ti2);
-        
+
         config.setTrustedIssuers(trustedIssuers);
-        
+
         ProtocolType protocol = null;
-        
+
         if (federation) {
             protocol = new FederationProtocolType();
-            
+
             CallbackType authType = new CallbackType();
             authType.setType(ArgumentType.STRING);
             authType.setValue(AUTH_TYPE_VALUE);
             ((FederationProtocolType)protocol).setAuthenticationType(authType);
-            
+
             CallbackType freshness = new CallbackType();
             freshness.setValue(FRESHNESS_VALUE);
             ((FederationProtocolType)protocol).setFreshness(freshness);
@@ -173,7 +173,7 @@ public class FedizConfigurationTest {
             homeRealm.setType(ArgumentType.CLASS);
             homeRealm.setValue(HOME_REALM_CLASS);
             ((FederationProtocolType)protocol).setHomeRealm(homeRealm);
-            
+
             CallbackType reply = new CallbackType();
             reply.setValue(REPLY);
             ((FederationProtocolType)protocol).setReply(reply);
@@ -182,7 +182,7 @@ public class FedizConfigurationTest {
             protocol = new SamlProtocolType();
         }
         config.setProtocol(protocol);
-        
+
         AudienceUris audienceUris = new AudienceUris();
         audienceUris.getAudienceItem().add(AUDIENCE_URI_1);
         audienceUris.getAudienceItem().add(AUDIENCE_URI_2);
@@ -208,7 +208,7 @@ public class FedizConfigurationTest {
         CallbackType realm = new CallbackType();
         realm.setValue(TARGET_REALM);
         protocol.setRealm(realm);
-        
+
         CallbackType issuer = new CallbackType();
         issuer.setValue(ISSUER);
         protocol.setIssuer(issuer);
@@ -226,11 +226,11 @@ public class FedizConfigurationTest {
 
         StringWriter writer = new StringWriter();
         jaxbContext.createMarshaller().marshal(configOut, writer);
-        
+
         StringReader reader = new StringReader(writer.toString());
         jaxbContext.createUnmarshaller().unmarshal(reader);
     }
-    
+
     @org.junit.Test
     public void readWriteConfigSAML() throws JAXBException {
 
@@ -240,7 +240,7 @@ public class FedizConfigurationTest {
 
         StringWriter writer = new StringWriter();
         jaxbContext.createMarshaller().marshal(configOut, writer);
-        
+
         StringReader reader = new StringReader(writer.toString());
         jaxbContext.createUnmarshaller().unmarshal(reader);
     }
@@ -254,7 +254,7 @@ public class FedizConfigurationTest {
         StringWriter writer = new StringWriter();
         jaxbContext.createMarshaller().marshal(configOut, writer);
         StringReader reader = new StringReader(writer.toString());
-        
+
         FedizConfigurator configurator = new FedizConfigurator();
         configurator.loadConfig(reader);
 
@@ -262,12 +262,12 @@ public class FedizConfigurationTest {
         f.createNewFile();
 
         configurator.saveConfiguration(f);
-        
+
         configurator = new FedizConfigurator();
         f = new File(CONFIG_FILE);
         configurator.loadConfig(f);
     }
-    
+
     @org.junit.Test
     public void testSaveAndLoadConfigSAML() throws JAXBException, IOException {
         final JAXBContext jaxbContext = JAXBContext
@@ -277,7 +277,7 @@ public class FedizConfigurationTest {
         StringWriter writer = new StringWriter();
         jaxbContext.createMarshaller().marshal(configOut, writer);
         StringReader reader = new StringReader(writer.toString());
-        
+
         FedizConfigurator configurator = new FedizConfigurator();
         configurator.loadConfig(reader);
 
@@ -285,7 +285,7 @@ public class FedizConfigurationTest {
         f.createNewFile();
 
         configurator.saveConfiguration(f);
-        
+
         configurator = new FedizConfigurator();
         f = new File(CONFIG_FILE);
         configurator.loadConfig(f);
@@ -315,7 +315,7 @@ public class FedizConfigurationTest {
         Assert.assertEquals(HOME_REALM_CLASS, fp.getHomeRealm().getValue());
 
     }
-    
+
     @org.junit.Test
     public void verifyConfigSAML() throws JAXBException {
 
@@ -336,74 +336,74 @@ public class FedizConfigurationTest {
         Assert.assertTrue(config.getProtocol() instanceof SamlProtocolType);
 
     }
-    
+
     @org.junit.Test
     public void testTokenReplayCacheFederation() throws JAXBException, IOException {
         FedizConfig config = createConfiguration(true);
-        
+
         // Test the default TokenReplayCache
         ReplayCache defaultReplayCache = parseConfigAndReturnTokenReplayCache(config);
         Assert.assertNotNull(defaultReplayCache);
         Assert.assertTrue(defaultReplayCache instanceof EHCacheReplayCache);
-        
+
         // Now test setting another TokenReplayCache
         ContextConfig contextConfig = config.getContextConfig().get(0);
         contextConfig.setTokenReplayCache("org.apache.wss4j.common.cache.MemoryReplayCache");
-        
+
         ReplayCache newReplayCache = parseConfigAndReturnTokenReplayCache(config);
         Assert.assertNotNull(newReplayCache);
         Assert.assertTrue(newReplayCache instanceof MemoryReplayCache);
-        
+
         // Now test setting another TokenReplayCache
         contextConfig.setTokenReplayCache("org.apache.wss4j.common.cache.EHCacheReplayCache");
-        
+
         newReplayCache = parseConfigAndReturnTokenReplayCache(config);
         Assert.assertNotNull(newReplayCache);
         Assert.assertTrue(newReplayCache instanceof EHCacheReplayCache);
     }
-    
+
     @org.junit.Test
     public void testTokenReplayCacheSAML() throws JAXBException, IOException {
         FedizConfig config = createConfiguration(false);
-        
+
         // Test the default TokenReplayCache
         ReplayCache defaultReplayCache = parseConfigAndReturnTokenReplayCache(config);
         Assert.assertNotNull(defaultReplayCache);
         Assert.assertTrue(defaultReplayCache instanceof EHCacheReplayCache);
-        
+
         // Now test setting another TokenReplayCache
         ContextConfig contextConfig = config.getContextConfig().get(0);
         contextConfig.setTokenReplayCache("org.apache.wss4j.common.cache.MemoryReplayCache");
-        
+
         ReplayCache newReplayCache = parseConfigAndReturnTokenReplayCache(config);
         Assert.assertNotNull(newReplayCache);
         Assert.assertTrue(newReplayCache instanceof MemoryReplayCache);
-        
+
         // Now test setting another TokenReplayCache
         contextConfig.setTokenReplayCache("org.apache.wss4j.common.cache.EHCacheReplayCache");
-        
+
         newReplayCache = parseConfigAndReturnTokenReplayCache(config);
         Assert.assertNotNull(newReplayCache);
         Assert.assertTrue(newReplayCache instanceof EHCacheReplayCache);
     }
-    
-    private ReplayCache parseConfigAndReturnTokenReplayCache(FedizConfig config) 
+
+    private ReplayCache parseConfigAndReturnTokenReplayCache(FedizConfig config)
         throws JAXBException {
         final JAXBContext jaxbContext = JAXBContext.newInstance(FedizConfig.class);
-        
+
         StringWriter writer = new StringWriter();
         jaxbContext.createMarshaller().marshal(config, writer);
         StringReader reader = new StringReader(writer.toString());
-        
+
         FedizConfigurator configurator = new FedizConfigurator();
         configurator.loadConfig(reader);
 
         FedizContext fedContext = configurator.getFedizContext(CONFIG_NAME);
         Assert.assertNotNull(fedContext);
-        
+
         return fedContext.getTokenReplayCache();
     }
-    
+
     @org.junit.Test
     public void testDefaultValues() throws JAXBException, IOException {
         ContextConfig config = new ContextConfig();

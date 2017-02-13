@@ -49,5 +49,5 @@ public class DoubleItService {
     public Number doubleItPost(@PathParam("numberToDouble") int numberToDouble) {
         return doubleIt(numberToDouble);
     }
-    
+
 }

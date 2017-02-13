@@ -32,11 +32,11 @@ public class IDPConfig extends Idp {
     public void setServices(Map<String, Application> applications) {
         this.applications = new ArrayList<>(applications.values());
     }
-    
+
     public void setTrustedIdps(Map<String, TrustedIDPConfig> trustedIdps) {
         this.trustedIdpList = new ArrayList<TrustedIdp>(trustedIdps.values());
     }
-    
+
     @Deprecated
     public void setTrustedIDPs(Map<String, TrustedIDPConfig> trustedIdps) {
         setTrustedIdps(trustedIdps);

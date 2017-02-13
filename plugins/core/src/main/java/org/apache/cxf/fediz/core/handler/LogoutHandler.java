@@ -66,7 +66,7 @@ public class LogoutHandler implements RequestHandler<Boolean> {
         }
         //Check for custom logout URL
         String logoutUrl = fedizConfig.getLogoutURL();
-        return logoutUrl != null && !logoutUrl.isEmpty() 
+        return logoutUrl != null && !logoutUrl.isEmpty()
             && servletContextPath != null && request.getRequestURI().equals(servletContextPath + logoutUrl);
     }
 
@@ -81,7 +81,7 @@ public class LogoutHandler implements RequestHandler<Boolean> {
             return customLogout(request, response);
         }
     }
-    
+
     protected boolean customLogout(HttpServletRequest request, HttpServletResponse response) {
         LOG.info("Custom Logout URL was invoked.");
         return signout(request, response);
@@ -90,10 +90,10 @@ public class LogoutHandler implements RequestHandler<Boolean> {
     protected boolean signoutCleanup(HttpServletRequest request, HttpServletResponse response) {
         LOG.info("SignOutCleanup request found. Terminating user session.");
         request.getSession().invalidate();
-        
+
         String wreply = request.getParameter(FederationConstants.PARAM_REPLY);
         Pattern logoutRedirectToConstraint = fedizConfig.getLogoutRedirectToConstraint();
-        
+
         if (wreply != null && !wreply.isEmpty()) {
             if (logoutRedirectToConstraint == null) {
                 LOG.debug("No regular expression constraint configured for logout. Ignoring wreply parameter");
@@ -113,7 +113,7 @@ public class LogoutHandler implements RequestHandler<Boolean> {
                 }
             }
         }
-        
+
         writeLogoutImage(response);
         return true;
     }

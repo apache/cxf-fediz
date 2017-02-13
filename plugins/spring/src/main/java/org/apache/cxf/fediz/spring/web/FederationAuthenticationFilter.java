@@ -45,9 +45,9 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationFa
 
 
 public class FederationAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
-    
+
     private FederationConfig federationConfig;
-    
+
     public FederationAuthenticationFilter() {
         super("/j_spring_fediz_security_check");
         setAuthenticationFailureHandler(new SimpleUrlAuthenticationFailureHandler());
@@ -60,37 +60,37 @@ public class FederationAuthenticationFilter extends AbstractAuthenticationProces
         if (isTokenExpired()) {
             throw new ExpiredTokenException("Token is expired");
         }
-        
+
         verifySavedState(request);
-        
+
         String wa = request.getParameter(FederationConstants.PARAM_ACTION);
         String responseToken = getResponseToken(request);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(wa);
         wfReq.setResponseToken(responseToken);
         wfReq.setState(getState(request));
         wfReq.setRequest(request);
-        
-        X509Certificate certs[] = 
+
+        X509Certificate certs[] =
             (X509Certificate[])request.getAttribute("javax.servlet.request.X509Certificate");
         wfReq.setCerts(certs);
-        
+
         final UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(null, wfReq);
 
         authRequest.setDetails(authenticationDetailsSource.buildDetails(request));
 
         return this.getAuthenticationManager().authenticate(authRequest);
     }
-        
+
     private boolean isTokenExpired() {
         SecurityContext context = SecurityContextHolder.getContext();
-        boolean detectExpiredTokens = 
+        boolean detectExpiredTokens =
             federationConfig != null && federationConfig.getFedizContext().isDetectExpiredTokens();
         if (context != null && detectExpiredTokens) {
             Authentication authentication = context.getAuthentication();
             if (authentication instanceof FederationAuthenticationToken) {
-                Date tokenExpires = 
+                Date tokenExpires =
                     ((FederationAuthenticationToken)authentication).getResponse().getTokenExpires();
                 if (tokenExpires == null) {
                     return false;
@@ -102,27 +102,27 @@ public class FederationAuthenticationFilter extends AbstractAuthenticationProces
                 }
             }
         }
-            
+
         return false;
     }
-    
+
     private String getResponseToken(ServletRequest request) {
         if (request.getParameter(FederationConstants.PARAM_RESULT) != null) {
             return request.getParameter(FederationConstants.PARAM_RESULT);
         } else if (request.getParameter(SAMLSSOConstants.SAML_RESPONSE) != null) {
             return request.getParameter(SAMLSSOConstants.SAML_RESPONSE);
         }
-        
+
         return null;
     }
-    
+
     private String getState(ServletRequest request) {
         if (request.getParameter(FederationConstants.PARAM_CONTEXT) != null) {
             return request.getParameter(FederationConstants.PARAM_CONTEXT);
         } else if (request.getParameter(SAMLSSOConstants.RELAY_STATE) != null) {
             return request.getParameter(SAMLSSOConstants.RELAY_STATE);
         }
-        
+
         return null;
     }
 
@@ -137,9 +137,9 @@ public class FederationAuthenticationFilter extends AbstractAuthenticationProces
             }
         }
     }
-    
+
     /**
-     * 
+     *
      */
     @Override
     protected boolean requiresAuthentication(final HttpServletRequest request, final HttpServletResponse response) {
@@ -158,5 +158,5 @@ public class FederationAuthenticationFilter extends AbstractAuthenticationProces
     public void setFederationConfig(FederationConfig fedConfig) {
         this.federationConfig = fedConfig;
     }
-    
+
 }

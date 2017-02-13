@@ -37,10 +37,10 @@ public class SpringTest extends AbstractTests {
 
     static String idpHttpsPort;
     static String rpHttpsPort;
-    
+
     private static Tomcat idpServer;
     private static Tomcat rpServer;
-    
+
     @BeforeClass
     public static void init() throws Exception {
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
@@ -59,13 +59,13 @@ public class SpringTest extends AbstractTests {
         idpServer = startServer(true, idpHttpsPort);
         rpServer = startServer(false, rpHttpsPort);
     }
-    
+
     @AfterClass
     public static void cleanup() {
         shutdownServer(idpServer);
         shutdownServer(rpServer);
     }
-    
+
     private static void shutdownServer(Tomcat server) {
         try {
             if (server != null && server.getServer() != null
@@ -79,8 +79,8 @@ public class SpringTest extends AbstractTests {
             e.printStackTrace();
         }
     }
-    
-    private static Tomcat startServer(boolean idp, String port) 
+
+    private static Tomcat startServer(boolean idp, String port)
         throws ServletException, LifecycleException, IOException {
         Tomcat server = new Tomcat();
         server.setPort(0);
@@ -115,11 +115,11 @@ public class SpringTest extends AbstractTests {
         if (idp) {
             File stsWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp-sts");
             server.addWebapp("/fediz-idp-sts", stsWebapp.getAbsolutePath());
-    
+
             File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp");
             server.addWebapp("/fediz-idp", idpWebapp.getAbsolutePath());
         } else {
-            File rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), 
+            File rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(),
                                      "fediz-systests-webapps-spring");
             server.addWebapp("/fedizhelloworld", rpWebapp.getAbsolutePath());
         }
@@ -138,22 +138,22 @@ public class SpringTest extends AbstractTests {
     public String getRpHttpsPort() {
         return rpHttpsPort;
     }
-    
+
     @Override
     public String getServletContextName() {
         return "fedizhelloworld";
     }
-    
+
     @Ignore("This tests is currently failing on Spring")
     @Override
     public void testConcurrentRequests() throws Exception {
         // super.testConcurrentRequests();
     }
-    
+
     @Override
     @org.junit.Test
     public void testCSRFAttack() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() 
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/j_spring_fediz_security_check";
         csrfAttackTest(url);
     }

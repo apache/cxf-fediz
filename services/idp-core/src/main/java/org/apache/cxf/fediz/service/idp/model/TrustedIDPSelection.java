@@ -23,7 +23,7 @@ import java.io.Serializable;
 public class TrustedIDPSelection implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    
+
     private String homeRealm;
 
     public String getHomeRealm() {

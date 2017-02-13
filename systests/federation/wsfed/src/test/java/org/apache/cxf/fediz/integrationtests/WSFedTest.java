@@ -54,7 +54,7 @@ import org.junit.BeforeClass;
 
 /**
  * This is a test for federation using a WS-Federation enabled web application. The web application is configured
- * to use a different realm to that of the IdP. The IdP then redirects to a third party IdP for authentication. 
+ * to use a different realm to that of the IdP. The IdP then redirects to a third party IdP for authentication.
  * The third party IdPs that are tested are as follows:
  *  - WS-Federation (Fediz)
  *  - SAML SSO (Fediz)
@@ -62,7 +62,7 @@ import org.junit.BeforeClass;
  *  - OIDC (custom webapp)
  */
 public class WSFedTest {
-    
+
     private enum ServerType {
         IDP, REALMB, SAMLSSO, OIDC, RP
     }
@@ -72,13 +72,13 @@ public class WSFedTest {
     static String idpSamlSSOHttpsPort;
     static String idpOIDCHttpsPort;
     static String rpHttpsPort;
-    
+
     private static Tomcat idpServer;
     private static Tomcat idpRealmbServer;
     private static Tomcat idpSamlSSOServer;
     private static Tomcat idpOIDCServer;
     private static Tomcat rpServer;
-    
+
     @BeforeClass
     public static void init() throws Exception {
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
@@ -88,8 +88,8 @@ public class WSFedTest {
         System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.webflow", "info");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.security.web", "info");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf.fediz", "info");
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf", "info");  
-        
+        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf", "info");
+
         idpHttpsPort = System.getProperty("idp.https.port");
         Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
         idpRealmbHttpsPort = System.getProperty("idp.realmb.https.port");
@@ -107,8 +107,8 @@ public class WSFedTest {
         idpOIDCServer = startServer(ServerType.OIDC, idpOIDCHttpsPort);
         rpServer = startServer(ServerType.RP, rpHttpsPort);
     }
-    
-    private static Tomcat startServer(ServerType serverType, String port) 
+
+    private static Tomcat startServer(ServerType serverType, String port)
         throws ServletException, LifecycleException, IOException {
         Tomcat server = new Tomcat();
         server.setPort(0);
@@ -149,13 +149,13 @@ public class WSFedTest {
         if (serverType == ServerType.IDP) {
             File stsWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp-sts");
             server.addWebapp("/fediz-idp-sts", stsWebapp.getAbsolutePath());
-    
+
             File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp");
             server.addWebapp("/fediz-idp", idpWebapp.getAbsolutePath());
         } else if (serverType == ServerType.REALMB) {
             File stsWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp-sts-realmb");
             server.addWebapp("/fediz-idp-sts-realmb", stsWebapp.getAbsolutePath());
-    
+
             File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp-realmb");
             server.addWebapp("/fediz-idp-realmb", idpWebapp.getAbsolutePath());
         } else if (serverType == ServerType.SAMLSSO) {
@@ -167,24 +167,24 @@ public class WSFedTest {
         } else {
             File rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
             Context cxt = server.addWebapp("/wsfed", rpWebapp.getAbsolutePath());
-            
+
             FederationAuthenticator fa = new FederationAuthenticator();
             fa.setConfigFile(currentDir + File.separator + "target" + File.separator
                              + "test-classes" + File.separator + "fediz_config_wsfed.xml");
             cxt.getPipeline().addValve(fa);
-            
+
             rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
             cxt = server.addWebapp("/samlsso", rpWebapp.getAbsolutePath());
             cxt.getPipeline().addValve(fa);
-            
+
             rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
             cxt = server.addWebapp("/samlssocustom", rpWebapp.getAbsolutePath());
             cxt.getPipeline().addValve(fa);
-            
+
             rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
             cxt = server.addWebapp("/samlssocustompost", rpWebapp.getAbsolutePath());
             cxt.getPipeline().addValve(fa);
-            
+
             rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
             cxt = server.addWebapp("/oidc", rpWebapp.getAbsolutePath());
             cxt.getPipeline().addValve(fa);
@@ -194,7 +194,7 @@ public class WSFedTest {
 
         return server;
     }
-    
+
     @AfterClass
     public static void cleanup() {
         shutdownServer(idpServer);
@@ -203,7 +203,7 @@ public class WSFedTest {
         shutdownServer(idpOIDCServer);
         shutdownServer(rpServer);
     }
-    
+
     private static void shutdownServer(Tomcat server) {
         try {
             if (server != null && server.getServer() != null
@@ -221,7 +221,7 @@ public class WSFedTest {
     public String getIdpHttpsPort() {
         return idpHttpsPort;
     }
-    
+
     public String getIdpRealmbHttpsPort() {
         return idpRealmbHttpsPort;
     }
@@ -229,11 +229,11 @@ public class WSFedTest {
     public String getRpHttpsPort() {
         return rpHttpsPort;
     }
-    
+
     public String getServletContextName() {
         return "fedizhelloworld";
     }
-    
+
     @org.junit.Test
     public void testWSFederation() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/wsfed/secure/fedservlet";
@@ -241,10 +241,10 @@ public class WSFedTest {
         // Thread.sleep(60 * 2 * 1000);
         String user = "ALICE";  // realm b credentials
         String password = "ECILA";
-        
-        final String bodyTextContent = 
+
+        final String bodyTextContent =
             login(url, user, password, getIdpRealmbHttpsPort(), idpHttpsPort);
-        
+
         Assert.assertTrue("Principal not alice",
                           bodyTextContent.contains("userPrincipal=alice"));
         Assert.assertTrue("User " + user + " does not have role Admin",
@@ -264,7 +264,7 @@ public class WSFedTest {
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
                           bodyTextContent.contains(claim + "=alice@realma.org"));
     }
-    
+
     @org.junit.Test
     public void testSAMLSSOFedizIdP() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/samlsso/secure/fedservlet";
@@ -272,10 +272,10 @@ public class WSFedTest {
         // Thread.sleep(60 * 2 * 1000);
         String user = "ALICE";  // realm b credentials
         String password = "ECILA";
-        
-        final String bodyTextContent = 
+
+        final String bodyTextContent =
             login(url, user, password, getIdpRealmbHttpsPort(), getIdpHttpsPort(), true);
-        
+
         Assert.assertTrue("Principal not alice",
                           bodyTextContent.contains("userPrincipal=alice"));
         Assert.assertTrue("User " + user + " does not have role Admin",
@@ -295,7 +295,7 @@ public class WSFedTest {
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
                           bodyTextContent.contains(claim + "=alice@realma.org"));
     }
-    
+
     @org.junit.Test
     public void testSAMLSSOCustom() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/samlssocustom/secure/fedservlet";
@@ -303,10 +303,10 @@ public class WSFedTest {
         // Thread.sleep(60 * 2 * 1000);
         String user = "ALICE";  // realm b credentials
         String password = "ECILA";
-        
-        final String bodyTextContent = 
+
+        final String bodyTextContent =
             login(url, user, password, idpSamlSSOHttpsPort, idpHttpsPort, false);
-        
+
         Assert.assertTrue("Principal not alice",
                           bodyTextContent.contains("userPrincipal=alice"));
         Assert.assertTrue("User " + user + " does not have role Admin",
@@ -326,7 +326,7 @@ public class WSFedTest {
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
                           bodyTextContent.contains(claim + "=alice@realma.org"));
     }
-    
+
     @org.junit.Test
     public void testSAMLSSOCustomPostBinding() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/samlssocustompost/secure/fedservlet";
@@ -334,10 +334,10 @@ public class WSFedTest {
         // Thread.sleep(60 * 2 * 1000);
         String user = "ALICE";  // realm b credentials
         String password = "ECILA";
-        
-        final String bodyTextContent = 
+
+        final String bodyTextContent =
             login(url, user, password, idpSamlSSOHttpsPort, idpHttpsPort, true);
-        
+
         Assert.assertTrue("Principal not alice",
                           bodyTextContent.contains("userPrincipal=alice"));
         Assert.assertTrue("User " + user + " does not have role Admin",
@@ -357,16 +357,16 @@ public class WSFedTest {
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
                           bodyTextContent.contains(claim + "=alice@realma.org"));
     }
-    
+
     @org.junit.Test
     public void testOIDC() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/oidc/secure/fedservlet";
         String user = "ALICE";  // realm b credentials
         String password = "ECILA";
-        
-        final String bodyTextContent = 
+
+        final String bodyTextContent =
             loginOIDC(url, user, password, idpOIDCHttpsPort, idpHttpsPort);
-        
+
         Assert.assertTrue("Principal not alice",
                           bodyTextContent.contains("userPrincipal=alice"));
         Assert.assertTrue("User " + user + " does not have role Admin",
@@ -386,8 +386,8 @@ public class WSFedTest {
         Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
                           bodyTextContent.contains(claim + "=alice@realma.org"));
     }
-    
-    private static String login(String url, String user, String password, 
+
+    private static String login(String url, String user, String password,
                                            String idpPort, String rpIdpPort) throws IOException {
         //
         // Access the RP + get redirected to the IdP for "realm a". Then get redirected to the IdP for
@@ -405,7 +405,7 @@ public class WSFedTest {
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
-        
+
         // For some reason, redirecting back to the IdP for "realm a" is not working with htmlunit. So extract
         // the parameters manually from the form, and access the IdP for "realm a" with them
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
@@ -430,21 +430,21 @@ public class WSFedTest {
         final WebClient webClient2 = new WebClient();
         webClient2.setCookieManager(cookieManager);
         webClient2.getOptions().setUseInsecureSSL(true);
-        
+
         String url2 = "https://localhost:" + rpIdpPort + "/fediz-idp/federation?";
         url2 += "wctx=" + wctx + "&";
         url2 += "wa=" + wa + "&";
         url2 += "wtrealm=" + URLEncoder.encode(wtrealm, "UTF8") + "&";
         url2 += "wresult=" + URLEncoder.encode(wresult, "UTF8") + "&";
-        
+
         webClient2.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage2 = webClient2.getPage(url2);
         webClient2.getOptions().setJavaScriptEnabled(true);
         Assert.assertEquals("IDP SignIn Response Form", idpPage2.getTitleText());
-        
+
         // Now redirect back to the RP
         final HtmlForm form2 = idpPage2.getFormByName("signinresponseform");
-        
+
         final HtmlSubmitInput button2 = form2.getInputByName("_eventId_submit");
 
         final HtmlPage rpPage = button2.click();
@@ -453,8 +453,8 @@ public class WSFedTest {
         webClient2.close();
         return rpPage.getBody().getTextContent();
     }
-    
-    private static String login(String url, String user, String password, 
+
+    private static String login(String url, String user, String password,
                                 String idpPort, String rpIdpPort, boolean postBinding) throws IOException {
         //
         // Access the RP + get redirected to the IdP for "realm a". Then get redirected to the IdP for
@@ -470,7 +470,7 @@ public class WSFedTest {
 
         webClient.getOptions().setJavaScriptEnabled(false);
         HtmlPage idpPage = webClient.getPage(url);
-        
+
         if (postBinding) {
             Assert.assertTrue("SAML IDP Response Form".equals(idpPage.getTitleText())
                                 || "IDP SignIn Response Form".equals(idpPage.getTitleText()));
@@ -482,7 +482,7 @@ public class WSFedTest {
                 }
             }
         }
-        
+
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // Now redirect back to the RP
@@ -496,8 +496,8 @@ public class WSFedTest {
         webClient.close();
         return rpPage.getBody().getTextContent();
     }
-    
-    private static String loginOIDC(String url, String user, String password, 
+
+    private static String loginOIDC(String url, String user, String password,
                                 String idpPort, String rpIdpPort) throws IOException {
         //
         // Access the RP + get redirected to the IdP for "realm a". Then get redirected to the IdP for
@@ -512,11 +512,11 @@ public class WSFedTest {
             new UsernamePasswordCredentials(user, password));
 
         webClient.getOptions().setJavaScriptEnabled(false);
-        
+
         // The decision page is returned as XML for some reason. So parse it and send a form response back.
         HtmlPage oidcIdpConfirmationPage = webClient.getPage(url);
         final HtmlForm oidcForm = oidcIdpConfirmationPage.getForms().get(0);
-        
+
         WebRequest request = new WebRequest(new URL(oidcForm.getActionAttribute()), HttpMethod.POST);
 
         request.setRequestParameters(new ArrayList<NameValuePair>());
@@ -533,7 +533,7 @@ public class WSFedTest {
         request.getRequestParameters().add(new NameValuePair("oauthDecision", "allow"));
 
         HtmlPage idpPage = webClient.getPage(request);
-        
+
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // Now redirect back to the RP

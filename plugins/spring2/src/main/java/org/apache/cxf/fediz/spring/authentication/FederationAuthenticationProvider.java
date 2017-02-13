@@ -52,15 +52,15 @@ import org.springframework.util.Assert;
  */
 public class FederationAuthenticationProvider implements AuthenticationProvider, InitializingBean, MessageSourceAware {
     private static final Logger LOG = LoggerFactory.getLogger(FederationAuthenticationProvider.class);
-    
+
     protected MessageSourceAccessor messages = SpringFedizMessageSource.getAccessor();
-    
+
     private AuthenticationUserDetailsService authenticationUserDetailsService;
     private FederationConfig federationConfig;
-    
+
     private final UserDetailsChecker userDetailsChecker = new AccountStatusUserDetailsChecker();
     //private GrantedAuthoritiesMapper authoritiesMapper = new NullAuthoritiesMapper();
-        
+
     public AuthenticationUserDetailsService getAuthenticationUserDetailsService() {
         return authenticationUserDetailsService;
     }
@@ -69,7 +69,7 @@ public class FederationAuthenticationProvider implements AuthenticationProvider,
         AuthenticationUserDetailsService authenticationUserDetailsService) {
         this.authenticationUserDetailsService = authenticationUserDetailsService;
     }
-    
+
     public FederationConfig getFederationConfig() {
         return federationConfig;
     }
@@ -77,7 +77,7 @@ public class FederationAuthenticationProvider implements AuthenticationProvider,
     public void setFederationConfig(FederationConfig federationConfig) {
         this.federationConfig = federationConfig;
     }
-    
+
 
 
     public void afterPropertiesSet() throws Exception {
@@ -102,7 +102,7 @@ public class FederationAuthenticationProvider implements AuthenticationProvider,
         }
 
         FederationAuthenticationToken result = null;
-        
+
         if (result == null) {
             result = this.authenticateNow(authentication);
             result.setDetails(authentication.getDetails());
@@ -116,7 +116,7 @@ public class FederationAuthenticationProvider implements AuthenticationProvider,
         try {
             FedizRequest wfReq = (FedizRequest)authentication.getCredentials();
             FedizContext context = federationConfig.getFedizContext();
-            FedizProcessor wfProc = 
+            FedizProcessor wfProc =
                 FedizProcessorFactory.newFedizProcessor(context.getProtocol());
             FedizResponse wfRes = wfProc.processRequest(wfReq, context);
 
@@ -153,7 +153,7 @@ public class FederationAuthenticationProvider implements AuthenticationProvider,
             return FederationAuthenticationToken.class.isAssignableFrom(authentication);
         }
     }
-    
+
     /*
     public void setAuthoritiesMapper(GrantedAuthoritiesMapper authoritiesMapper) {
         this.authoritiesMapper = authoritiesMapper;

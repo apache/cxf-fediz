@@ -40,9 +40,9 @@ public class Idp implements Serializable {
 
     private static final long serialVersionUID = -5570301342547139039L;
 
-    
+
     protected int id;
-    
+
     // Unique
     // fed:TargetScope
     protected String realm; // wtrealm, whr
@@ -111,13 +111,13 @@ public class Idp implements Serializable {
 
     // ServiceDescription
     protected String serviceDescription;
-    
+
     // The user/browser must explicitly confirm to logout from all applications
     private boolean rpSingleSignOutConfirmation;
-    
+
     // Is explicit confirmation required when the "cleanup" URL is called
     private boolean rpSingleSignOutCleanupConfirmation;
-    
+
     @XmlAttribute
     public int getId() {
         return id;
@@ -126,7 +126,7 @@ public class Idp implements Serializable {
     public void setId(int id) {
         this.id = id;
     }
-    
+
     public String getRealm() {
         return realm;
     }
@@ -216,7 +216,7 @@ public class Idp implements Serializable {
         }
         return null;
     }
-    
+
     @XmlElementWrapper(name = "applications")
     @XmlElementRef(name = "application")
     public List<Application> getApplications() {
@@ -235,7 +235,7 @@ public class Idp implements Serializable {
         }
         return null;
     }
-    
+
     @XmlElementWrapper(name = "trustedIdps")
     @XmlElementRef(name = "trustedIdp")
     public List<TrustedIdp> getTrustedIdps() {

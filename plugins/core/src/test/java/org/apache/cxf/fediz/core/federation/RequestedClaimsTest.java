@@ -105,7 +105,7 @@ public class RequestedClaimsTest {
 
     private static Crypto crypto;
     private static CallbackHandler cbPasswordHandler = new KeystoreCallbackHandler();
-    
+
     @BeforeClass
     public static void init() {
         try {
@@ -115,7 +115,7 @@ public class RequestedClaimsTest {
         }
 
     }
-    
+
     @AfterClass
     public static void cleanup() {
         SecurityTestUtil.cleanup();
@@ -132,26 +132,26 @@ public class RequestedClaimsTest {
         config.setMaximumClockSkew(new BigInteger(CLOCK_SKEW));
 
         CertificateStores certStores = new CertificateStores();
-        
-        TrustManagersType tm0 = new TrustManagersType();       
+
+        TrustManagersType tm0 = new TrustManagersType();
         KeyStoreType ks0 = new KeyStoreType();
         ks0.setType("JKS");
         ks0.setPassword("storepass");
         ks0.setResource("ststrust.jks");
         tm0.setKeyStore(ks0);
-        
+
         certStores.getTrustManager().add(tm0);
-        
+
         config.setCertificateStores(certStores);
-        
+
         TrustedIssuers trustedIssuers = new TrustedIssuers();
-        
+
         TrustedIssuerType ti0 = new TrustedIssuerType();
         ti0.setCertificateValidation(ValidationType.PEER_TRUST);
         trustedIssuers.getIssuer().add(ti0);
-        
+
         config.setTrustedIssuers(trustedIssuers);
-        
+
         ProtocolType protocol = new FederationProtocolType();
 
         CallbackType authType = new CallbackType();
@@ -172,9 +172,9 @@ public class RequestedClaimsTest {
         reply.setValue(REPLY);
         ((FederationProtocolType)protocol).setReply(reply);
         ((FederationProtocolType)protocol).setVersion(PROTOCOL_VERSION);
-        
+
         config.setProtocol(protocol);
-        
+
         AudienceUris audienceUris = new AudienceUris();
         audienceUris.getAudienceItem().add(AUDIENCE_URI_1);
         config.setAudienceUris(audienceUris);
@@ -198,7 +198,7 @@ public class RequestedClaimsTest {
         CallbackType realm = new CallbackType();
         realm.setValue(TARGET_REALM);
         protocol.setRealm(realm);
-        
+
         CallbackType issuer = new CallbackType();
         issuer.setValue(ISSUER);
         protocol.setIssuer(issuer);
@@ -219,46 +219,46 @@ public class RequestedClaimsTest {
         callbackHandler.setRoleAttributeName("role");
         callbackHandler.setCustomClaimName(CLAIM_TYPE_1);
         callbackHandler.setCustomAttributeValues(Collections.singletonList("xyz"));
-        
+
         ConditionsBean cp = new ConditionsBean();
         AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
         audienceRestriction.getAudienceURIs().add(AUDIENCE_URI_1);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
+
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         FedizConfig config = createConfiguration();
         StringWriter writer = new StringWriter();
         final JAXBContext jaxbContext = JAXBContext.newInstance(FedizConfig.class);
         jaxbContext.createMarshaller().marshal(config, writer);
         StringReader reader = new StringReader(writer.toString());
-        
+
         FedizConfigurator configurator = new FedizConfigurator();
         configurator.loadConfig(reader);
         FedizContext context = configurator.getFedizContext(CONFIG_NAME);
-        
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, context);
-        
+
         Object claimValue = null;
         for (Claim c : wfRes.getClaims()) {
             if (CLAIM_TYPE_1.equals(c.getClaimType().toString())) {
                 claimValue = c.getValue();
             }
         }
-        
+
         Assert.assertEquals("xyz", claimValue);
     }
-    
+
     @org.junit.Test
     public void testRequiredClaimNotIncluded() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -271,33 +271,33 @@ public class RequestedClaimsTest {
         callbackHandler.setRoleAttributeName("role");
         callbackHandler.setCustomClaimName(CLAIM_TYPE_2);
         callbackHandler.setCustomAttributeValues(Collections.singletonList("xyz"));
-        
+
         ConditionsBean cp = new ConditionsBean();
         AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
         audienceRestriction.getAudienceURIs().add(AUDIENCE_URI_1);
         cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
         callbackHandler.setConditions(cp);
-        
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
-        
+
         String rstr = createSamlToken(assertion, "mystskey", true);
-        
+
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
         wfReq.setResponseToken(rstr);
-        
+
         FedizConfig config = createConfiguration();
         StringWriter writer = new StringWriter();
         final JAXBContext jaxbContext = JAXBContext.newInstance(FedizConfig.class);
         jaxbContext.createMarshaller().marshal(config, writer);
         StringReader reader = new StringReader(writer.toString());
-        
+
         FedizConfigurator configurator = new FedizConfigurator();
         configurator.loadConfig(reader);
         FedizContext context = configurator.getFedizContext(CONFIG_NAME);
-        
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         try {
             wfProc.processRequest(wfReq, context);
@@ -306,12 +306,12 @@ public class RequestedClaimsTest {
             // expected
         }
     }
-    
+
     private String createSamlToken(SamlAssertionWrapper assertion, String alias, boolean sign)
         throws IOException, UnsupportedCallbackException, WSSecurityException, Exception {
         return createSamlToken(assertion, alias, sign, STSUtil.SAMPLE_RSTR_COLL_MSG);
     }
-    
+
     private String createSamlToken(SamlAssertionWrapper assertion, String alias, boolean sign, String rstr)
         throws IOException, UnsupportedCallbackException, WSSecurityException, Exception {
         WSPasswordCallback[] cb = {

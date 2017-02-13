@@ -34,9 +34,9 @@ public class ClientCertificatePreAuthSpringTest extends AbstractClientCertTests 
 
     static String idpHttpsPort;
     static String rpHttpsPort;
-    
+
     private static Server rpServer;
-    
+
     @BeforeClass
     public static void init() {
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
@@ -53,24 +53,24 @@ public class ClientCertificatePreAuthSpringTest extends AbstractClientCertTests 
         Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
         rpHttpsPort = System.getProperty("rp.https.port");
         Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
-        
+
         JettyUtils.initIdpServer();
         JettyUtils.startIdpServer();
-        
+
         try {
             Resource testServerConfig = Resource.newSystemResource("rp-client-cert-server.xml");
             XmlConfiguration configuration = new XmlConfiguration(testServerConfig.getInputStream());
-            rpServer = (Server)configuration.configure();   
+            rpServer = (Server)configuration.configure();
             rpServer.start();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     @AfterClass
     public static void cleanup() {
         JettyUtils.stopIdpServer();
-        
+
         if (rpServer != null && rpServer.isStarted()) {
             try {
                 rpServer.stop();
@@ -89,10 +89,10 @@ public class ClientCertificatePreAuthSpringTest extends AbstractClientCertTests 
     public String getRpHttpsPort() {
         return rpHttpsPort;
     }
-    
+
     @Override
     public String getServletContextName() {
         return "fedizspringhelloworld";
     }
-    
+
 }

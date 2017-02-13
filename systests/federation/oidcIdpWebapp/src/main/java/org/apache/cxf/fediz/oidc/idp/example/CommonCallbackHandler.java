@@ -43,7 +43,7 @@ public class CommonCallbackHandler implements CallbackHandler {
                     && pc.getIdentifier().startsWith("consumer-id")) {
                     pc.setPassword("this-is-a-secret");
                     break;
-                } 
+                }
             }
         }
     }

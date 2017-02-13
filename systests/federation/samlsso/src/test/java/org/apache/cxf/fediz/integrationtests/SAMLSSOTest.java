@@ -48,15 +48,15 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 
 /**
- * This is a test for federation using a SAML SSO enabled web application (using CXF interceptors). The web 
- * application is configured to use a different realm to that of the IdP. The IdP then redirects to a third party 
+ * This is a test for federation using a SAML SSO enabled web application (using CXF interceptors). The web
+ * application is configured to use a different realm to that of the IdP. The IdP then redirects to a third party
  * IdP for authentication. The third party IdPs that are tested are as follows:
  *  - WS-Federation (Fediz)
  *  - SAML SSO (Fediz)
  *  - OIDC (custom webapp)
  */
 public class SAMLSSOTest {
-    
+
     private enum ServerType {
         IDP, REALMB, OIDC, RP
     }
@@ -66,12 +66,12 @@ public class SAMLSSOTest {
     static String idpSamlSSOHttpsPort;
     static String idpOIDCHttpsPort;
     static String rpHttpsPort;
-    
+
     private static Tomcat idpServer;
     private static Tomcat idpRealmbServer;
     private static Tomcat idpOIDCServer;
     private static Tomcat rpServer;
-    
+
     @BeforeClass
     public static void init() throws Exception {
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
@@ -81,8 +81,8 @@ public class SAMLSSOTest {
         System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.webflow", "info");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.security.web", "info");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf.fediz", "info");
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf", "info");  
-        
+        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf", "info");
+
         idpHttpsPort = System.getProperty("idp.https.port");
         Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
         idpRealmbHttpsPort = System.getProperty("idp.realmb.https.port");
@@ -99,8 +99,8 @@ public class SAMLSSOTest {
         idpOIDCServer = startServer(ServerType.OIDC, idpOIDCHttpsPort);
         rpServer = startServer(ServerType.RP, rpHttpsPort);
     }
-    
-    private static Tomcat startServer(ServerType serverType, String port) 
+
+    private static Tomcat startServer(ServerType serverType, String port)
         throws ServletException, LifecycleException, IOException {
         Tomcat server = new Tomcat();
         server.setPort(0);
@@ -139,13 +139,13 @@ public class SAMLSSOTest {
         if (serverType == ServerType.IDP) {
             File stsWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp-sts");
             server.addWebapp("/fediz-idp-sts", stsWebapp.getAbsolutePath());
-    
+
             File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp");
             server.addWebapp("/fediz-idp", idpWebapp.getAbsolutePath());
         } else if (serverType == ServerType.REALMB) {
             File stsWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp-sts-realmb");
             server.addWebapp("/fediz-idp-sts-realmb", stsWebapp.getAbsolutePath());
-    
+
             File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp-realmb");
             server.addWebapp("/fediz-idp-realmb", idpWebapp.getAbsolutePath());
         } else if (serverType == ServerType.OIDC) {
@@ -160,7 +160,7 @@ public class SAMLSSOTest {
 
         return server;
     }
-    
+
     @AfterClass
     public static void cleanup() {
         shutdownServer(idpServer);
@@ -168,7 +168,7 @@ public class SAMLSSOTest {
         shutdownServer(idpOIDCServer);
         shutdownServer(rpServer);
     }
-    
+
     private static void shutdownServer(Tomcat server) {
         try {
             if (server != null && server.getServer() != null
@@ -186,7 +186,7 @@ public class SAMLSSOTest {
     public String getIdpHttpsPort() {
         return idpHttpsPort;
     }
-    
+
     public String getIdpRealmbHttpsPort() {
         return idpRealmbHttpsPort;
     }
@@ -194,27 +194,27 @@ public class SAMLSSOTest {
     public String getRpHttpsPort() {
         return rpHttpsPort;
     }
-    
+
     public String getServletContextName() {
         return "fedizhelloworld";
     }
-    
+
     @org.junit.Test
     public void testWSFederation() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/samlsso/app1/services/25";
         //System.out.println(url);
         //Thread.sleep(60 * 2 * 1000);
-        
+
         String user = "ALICE";  // realm b credentials
         String password = "ECILA";
-        
-        final String bodyTextContent = 
+
+        final String bodyTextContent =
             login(url, user, password, getIdpRealmbHttpsPort(), getIdpHttpsPort());
-        
+
         Assert.assertTrue(bodyTextContent.contains("This is the double number response"));
-        
+
     }
-    
+
     @org.junit.Test
     public void testSAMLSSOFedizIdP() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/samlsso/app2/services/25";
@@ -222,27 +222,27 @@ public class SAMLSSOTest {
         // Thread.sleep(60 * 2 * 1000);
         String user = "ALICE";  // realm b credentials
         String password = "ECILA";
-        
-        final String bodyTextContent = 
+
+        final String bodyTextContent =
             login(url, user, password, getIdpRealmbHttpsPort(), getIdpHttpsPort(), true);
-        
+
         Assert.assertTrue(bodyTextContent.contains("This is the double number response"));
     }
-    
+
     @org.junit.Test
     public void testOIDC() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/samlsso/app3/services/25";
         String user = "ALICE";  // realm b credentials
         String password = "ECILA";
-        
-        final String bodyTextContent = 
+
+        final String bodyTextContent =
             loginOIDC(url, user, password, idpOIDCHttpsPort, idpHttpsPort);
-        
+
         Assert.assertTrue(bodyTextContent.contains("This is the double number response"));
     }
-    
 
-    private static String login(String url, String user, String password, 
+
+    private static String login(String url, String user, String password,
                                 String idpPort, String rpIdpPort) throws IOException {
         //
         // Access the RP + get redirected to the IdP for "realm a". Then get redirected to the IdP for
@@ -258,7 +258,7 @@ public class SAMLSSOTest {
 
         webClient.getOptions().setJavaScriptEnabled(false);
         HtmlPage idpPage = webClient.getPage(url);
-        
+
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // Now redirect back to the IdP for Realm A
@@ -267,7 +267,7 @@ public class SAMLSSOTest {
         HtmlSubmitInput button = form.getInputByName("_eventId_submit");
 
         HtmlPage idpPageRealmA = button.click();
-        
+
         Assert.assertTrue("SAML IDP Response Form".equals(idpPage.getTitleText())
                           || "IDP SignIn Response Form".equals(idpPage.getTitleText()));
         form = idpPageRealmA.getFormByName("samlsigninresponseform");
@@ -276,12 +276,12 @@ public class SAMLSSOTest {
         button = form.getInputByName("_eventId_submit");
 
         XmlPage rpPage = button.click();
-        
+
         webClient.close();
         return rpPage.asXml();
     }
-    
-    private static String login(String url, String user, String password, 
+
+    private static String login(String url, String user, String password,
                                 String idpPort, String rpIdpPort, boolean postBinding) throws IOException {
         //
         // Access the RP + get redirected to the IdP for "realm a". Then get redirected to the IdP for
@@ -297,7 +297,7 @@ public class SAMLSSOTest {
 
         webClient.getOptions().setJavaScriptEnabled(false);
         HtmlPage idpPage = webClient.getPage(url);
-        
+
         if (postBinding) {
             Assert.assertTrue("SAML IDP Response Form".equals(idpPage.getTitleText())
                                 || "IDP SignIn Response Form".equals(idpPage.getTitleText()));
@@ -309,7 +309,7 @@ public class SAMLSSOTest {
                 }
             }
         }
-        
+
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // Now redirect back to the RP
@@ -322,8 +322,8 @@ public class SAMLSSOTest {
         webClient.close();
         return rpPage.asXml();
     }
-    
-    private static String loginOIDC(String url, String user, String password, 
+
+    private static String loginOIDC(String url, String user, String password,
                                     String idpPort, String rpIdpPort) throws IOException {
         //
         // Access the RP + get redirected to the IdP for "realm a". Then get redirected to the IdP for

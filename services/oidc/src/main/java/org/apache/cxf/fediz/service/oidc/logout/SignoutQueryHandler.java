@@ -32,7 +32,7 @@ import org.apache.cxf.fediz.core.spi.SignOutQueryCallback;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 
 /**
- * Set the client_id on the signout request to the IdP. This is needed after we redirect to the "finalize" method of 
+ * Set the client_id on the signout request to the IdP. This is needed after we redirect to the "finalize" method of
  * the LogoutService.
  */
 public class SignoutQueryHandler implements CallbackHandler {

@@ -57,14 +57,14 @@ import org.springframework.util.Assert;
  */
 public class FederationAuthenticationEntryPoint implements AuthenticationEntryPoint,
     InitializingBean, ApplicationContextAware {
-    
+
     /**
      * The key used to save the context of the request
      */
     public static final String SAVED_CONTEXT = "SAVED_CONTEXT";
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(FederationAuthenticationEntryPoint.class);
-    
+
     private ApplicationContext appContext;
     private FederationConfig federationConfig;
     //private String servletContext;
@@ -100,41 +100,41 @@ public class FederationAuthenticationEntryPoint implements AuthenticationEntryPo
     @Override
     public void commence(ServletRequest request, ServletResponse response,
                          AuthenticationException authException) throws IOException, ServletException {
-        
+
         HttpServletRequest hrequest = (HttpServletRequest)request;
         HttpServletResponse hresponse = (HttpServletResponse)response;
         FedizContext fedContext = federationConfig.getFedizContext();
         LOG.debug("Federation context: {}", fedContext);
-        
+
         // Check to see if it is a metadata request
         MetadataDocumentHandler mdHandler = new MetadataDocumentHandler(fedContext);
         if (mdHandler.canHandleRequest(hrequest)) {
             mdHandler.handleRequest(hrequest, hresponse);
             return;
         }
-        
+
         String redirectUrl = null;
         try {
-            FedizProcessor wfProc = 
+            FedizProcessor wfProc =
                 FedizProcessorFactory.newFedizProcessor(fedContext.getProtocol());
-            
+
             RedirectionResponse redirectionResponse =
                 wfProc.createSignInRequest(hrequest, fedContext);
             redirectUrl = redirectionResponse.getRedirectionURL();
-            
+
             if (redirectUrl == null) {
                 LOG.warn("Failed to create SignInRequest.");
                 hresponse.sendError(
                         HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignInRequest.");
             }
-            
+
             Map<String, String> headers = redirectionResponse.getHeaders();
             if (!headers.isEmpty()) {
                 for (Entry<String, String> entry : headers.entrySet()) {
                     hresponse.addHeader(entry.getKey(), entry.getValue());
                 }
             }
-            
+
             HttpSession session = ((HttpServletRequest)request).getSession(true);
             session.setAttribute(SAVED_CONTEXT, redirectionResponse.getRequestState().getState());
         } catch (ProcessingException ex) {
@@ -143,13 +143,13 @@ public class FederationAuthenticationEntryPoint implements AuthenticationEntryPo
             hresponse.sendError(
                                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create SignInRequest.");
         }
-        
+
         preCommence(hrequest, hresponse);
         if (LOG.isInfoEnabled()) {
             LOG.info("Redirecting to IDP: " + redirectUrl);
         }
         hresponse.sendRedirect(redirectUrl);
-        
+
     }
 
 }

@@ -39,15 +39,15 @@ public interface IdpDAO {
     void deleteIdp(String realm);
 
     void addApplicationToIdp(Idp idp, Application application);
-    
+
     void removeApplicationFromIdp(Idp idp, Application application);
-    
+
     void addTrustedIdpToIdp(Idp idp, TrustedIdp trustedIdp);
-    
+
     void removeTrustedIdpFromIdp(Idp idp, TrustedIdp trustedIdp);
-    
+
     void addClaimToIdp(Idp idp, Claim claim);
-    
+
     void removeClaimFromIdp(Idp idp, Claim claim);
 
 }

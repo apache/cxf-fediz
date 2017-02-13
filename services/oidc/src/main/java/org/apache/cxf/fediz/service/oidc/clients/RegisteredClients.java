@@ -30,6 +30,6 @@ public class RegisteredClients {
     public Collection<Client> getClients() {
         return clients;
     }
-    
+
 
 }

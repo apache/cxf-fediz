@@ -97,7 +97,7 @@ public class SigninHandler<T> implements RequestHandler<T> {
         throws ProcessingException {
         LOG.debug("Process SignIn request");
         LOG.debug("token=\n{}", responseToken);
-        
+
         FedizRequest federationRequest = new FedizRequest();
 
         String wa = req.getParameter(FederationConstants.PARAM_ACTION);
@@ -118,7 +118,7 @@ public class SigninHandler<T> implements RequestHandler<T> {
         List<String> audienceURIs = fedizContext.getAudienceUris();
         boolean validAudience = audienceURIs.isEmpty() && audience == null;
         if (!validAudience && audience != null) {
-            
+
             for (String a : audienceURIs) {
                 if (audience.startsWith(a)) {
                     validAudience = true;
@@ -126,12 +126,12 @@ public class SigninHandler<T> implements RequestHandler<T> {
                     break;
                 }
             }
-            
+
             if (!validAudience) {
                 LOG.warn("Token AudienceRestriction [{}] doesn't match with specified list of URIs.", audience);
                 LOG.debug("Authenticated URIs are: {}", audienceURIs);
             }
-            
+
             if (LOG.isDebugEnabled() && requestURL != null && requestURL.indexOf(audience) == -1) {
                 LOG.debug("Token AudienceRestriction doesn't match with request URL [{}]  [{}]", audience, requestURL);
             }

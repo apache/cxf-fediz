@@ -39,7 +39,7 @@ public class FedizConfigurator {
     private FedizConfig rootConfig;
 
     private JAXBContext jaxbContext;
-    
+
     private List<FedizContext> fedizContextList;
 
     public FedizConfig loadConfig(File f) throws JAXBException, IOException {
@@ -55,11 +55,11 @@ public class FedizConfigurator {
         parseFedizContextList();
         return rootConfig;
     }
-    
+
     private void parseFedizContextList() {
         fedizContextList = new ArrayList<>();
         for (ContextConfig config : rootConfig.getContextConfig()) {
-            fedizContextList.add(new FedizContext(config));            
+            fedizContextList.add(new FedizContext(config));
         }
     }
 
@@ -83,7 +83,7 @@ public class FedizConfigurator {
     public List<FedizContext> getFedizContextList() {
         return fedizContextList;
     }
-    
+
     public FedizContext getFedizContext(String contextName) {
         if (contextName == null) {
             throw new IllegalArgumentException("Context Name cannot be 'null'.");
@@ -100,7 +100,7 @@ public class FedizConfigurator {
                 return fedContext;
             }
         }
-        
+
         return null;
     }
 

@@ -37,13 +37,13 @@ public class IdpTokenExpiredAction {
 
     public boolean isTokenExpired(String homeRealm, RequestContext context)
         throws Exception {
-        
-        SecurityToken idpToken = 
+
+        SecurityToken idpToken =
             (SecurityToken) WebUtils.getAttributeFromExternalContext(context, homeRealm);
         if (idpToken == null) {
             return true;
         }
-        
+
         if (tokenExpirationValidation && idpToken.isExpired()) {
             LOG.info("[IDP_TOKEN=" + idpToken.getId() + "] is expired.");
             return true;
@@ -57,7 +57,7 @@ public class IdpTokenExpiredAction {
     }
 
     /**
-     * Set whether the token validation (e.g. lifetime) shall be performed on every request (true) or only 
+     * Set whether the token validation (e.g. lifetime) shall be performed on every request (true) or only
      * once at initial authentication (false). The default is "true" (note that the plugins default for this
      * configuration option is "true").
      * @param tokenExpirationValidation Whether to perform token expiration validation per request

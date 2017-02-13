@@ -27,5 +27,5 @@ public class InvalidRegistration {
     public String getMessage() {
         return message;
     }
-    
+
 }

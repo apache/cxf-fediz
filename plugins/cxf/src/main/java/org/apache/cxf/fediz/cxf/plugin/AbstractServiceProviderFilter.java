@@ -65,25 +65,25 @@ import org.slf4j.LoggerFactory;
 
 @PreMatching
 public abstract class AbstractServiceProviderFilter implements ContainerRequestFilter {
-    
-    public static final String SECURITY_CONTEXT_TOKEN = 
+
+    public static final String SECURITY_CONTEXT_TOKEN =
         "org.apache.fediz.SECURITY_TOKEN";
-    public static final String SECURITY_CONTEXT_STATE = 
+    public static final String SECURITY_CONTEXT_STATE =
         "org.apache.fediz.SECURITY_CONTEXT_STATE";
-    
-    protected static final ResourceBundle BUNDLE = 
+
+    protected static final ResourceBundle BUNDLE =
         BundleUtils.getBundle(AbstractServiceProviderFilter.class);
     private static final Logger LOG = LoggerFactory.getLogger(AbstractServiceProviderFilter.class);
-    
+
     private boolean addWebAppContext = true;
     private boolean addEndpointAddressToContext;
-    
+
     private FedizConfigurator configurator;
     private String configFile;
     private SPStateManager stateManager;
     private long stateTimeToLive = 120000;
     private String webAppDomain;
-    
+
     public String getConfigFile() {
         return configFile;
     }
@@ -91,7 +91,7 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
     public void setConfigFile(String configFile) {
         this.configFile = configFile;
     }
-    
+
     @PostConstruct
     public synchronized void configure() throws JAXBException, IOException {
         if (configurator == null) {
@@ -102,7 +102,7 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
             try {
                 File f = new File(actualConfigFile);
                 if (!f.exists()) {
-                    URL url = ResourceUtils.getResourceURL(actualConfigFile, 
+                    URL url = ResourceUtils.getResourceURL(actualConfigFile,
                                                         BusFactory.getThreadDefaultBus());
                     if (url == null) {
                         url = new URL(actualConfigFile);
@@ -125,12 +125,12 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
                 throw new IOException(e);
             }
         }
-        
+
         if (stateManager == null) {
             stateManager = new EHCacheSPStateManager("fediz-ehcache.xml");
-        } 
+        }
     }
-    
+
     @PreDestroy
     public synchronized void cleanup() throws IOException {
         if (configurator != null) {
@@ -145,21 +145,21 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
                 }
             }
         }
-        
+
         stateManager.close();
     }
-    
+
     protected boolean checkSecurityContext(FedizContext fedConfig, Message m, MultivaluedMap<String, String> params) {
         HttpHeaders headers = new HttpHeadersImpl(m);
         Map<String, Cookie> cookies = headers.getCookies();
-        
+
         Cookie securityContextCookie = cookies.get(SECURITY_CONTEXT_TOKEN);
-        
+
         ResponseState responseState = getValidResponseState(securityContextCookie, fedConfig, m);
         if (responseState == null) {
-            return false;    
+            return false;
         }
-        
+
         Cookie relayStateCookie = cookies.get(SECURITY_CONTEXT_STATE);
         if (relayStateCookie == null) {
             reportError("MISSING_RELAY_COOKIE");
@@ -171,41 +171,41 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
             reportError("INVALID_RELAY_STATE");
             return false;
         }
-        
+
         // Check to see if a CSRF-style attack is being mounted
         String state = getState(fedConfig, params);
         if (state != null && !state.equals(responseState.getState())) {
             LOG.error("wctx parameter does not match stored value");
             throw ExceptionUtils.toForbiddenException(null, null);
         }
-        
+
         // Create SecurityContext
         try {
-            Element token = 
+            Element token =
                 StaxUtils.read(new StringReader(responseState.getAssertion())).getDocumentElement();
             setSecurityContext(responseState, m, token);
         } catch (Exception ex) {
             reportError("INVALID_RESPONSE_STATE");
             return false;
         }
-        
+
         return true;
     }
-    
+
     protected void setSecurityContext(
         ResponseState responseState, Message m, Element token
     ) throws WSSecurityException {
-        CXFFedizPrincipal principal = 
-            new CXFFedizPrincipal(responseState.getSubject(), responseState.getClaims(), 
+        CXFFedizPrincipal principal =
+            new CXFFedizPrincipal(responseState.getSubject(), responseState.getClaims(),
                                   responseState.getRoles(), token);
-        
+
         SecurityTokenThreadLocal.setToken(principal.getLoginToken());
-        FedizSecurityContext context = 
+        FedizSecurityContext context =
             new FedizSecurityContext(principal, responseState.getRoles());
         m.put(SecurityContext.class, context);
     }
-    
-    protected ResponseState getValidResponseState(Cookie securityContextCookie, 
+
+    protected ResponseState getValidResponseState(Cookie securityContextCookie,
                                                   FedizContext fedConfig,
                                                   Message m) {
         if (securityContextCookie == null) {
@@ -218,22 +218,22 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
         }
         String contextKey = securityContextCookie.getValue();
         ResponseState responseState = stateManager.getResponseState(contextKey);
-        
+
         if (responseState == null) {
             reportError("MISSING_RESPONSE_STATE");
             return null;
         }
-        
+
         if (CookieUtils.isStateExpired(responseState.getCreatedAt(), fedConfig.isDetectExpiredTokens(),
                                        responseState.getExpiresAt(), getStateTimeToLive())) {
             reportError("EXPIRED_RESPONSE_STATE");
             stateManager.removeResponseState(contextKey);
             return null;
         }
-        
+
         String webAppContext = getWebAppContext(m);
-        if (webAppDomain != null 
-            && (responseState.getWebAppDomain() == null 
+        if (webAppDomain != null
+            && (responseState.getWebAppDomain() == null
                 || !webAppDomain.equals(responseState.getWebAppDomain()))
                 || responseState.getWebAppContext() == null
                 || !webAppContext.equals(responseState.getWebAppContext())) {
@@ -247,7 +247,7 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
         }
         return responseState;
     }
-    
+
     protected String getState(FedizContext fedConfig, MultivaluedMap<String, String> params) {
         if (params != null && fedConfig.getProtocol() instanceof FederationProtocol) {
             return params.getFirst(FederationConstants.PARAM_CONTEXT);
@@ -257,7 +257,7 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
 
         return null;
     }
-    
+
     protected FedizContext getFedizContext(Message message) {
         String contextName = getWebAppContext(message);
         String[] contextPath = contextName.split("/");
@@ -266,7 +266,7 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
         }
         return getContextConfiguration(contextName);
     }
-    
+
     protected synchronized FedizContext getContextConfiguration(String contextName) {
         if (configurator == null) {
             throw new IllegalStateException("No Fediz configuration available");
@@ -282,21 +282,21 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
 
         return config;
     }
-    
+
     protected void reportError(String code) {
-        org.apache.cxf.common.i18n.Message errorMsg = 
+        org.apache.cxf.common.i18n.Message errorMsg =
             new org.apache.cxf.common.i18n.Message(code, BUNDLE);
         LOG.warn(errorMsg.toString());
     }
-    
+
     protected void reportTrace(String code) {
         if (LOG.isDebugEnabled()) {
-            org.apache.cxf.common.i18n.Message errorMsg = 
+            org.apache.cxf.common.i18n.Message errorMsg =
                 new org.apache.cxf.common.i18n.Message(code, BUNDLE);
             LOG.debug(errorMsg.toString());
         }
     }
-    
+
     protected String getWebAppContext(Message m) {
         if (addWebAppContext) {
             if (addEndpointAddressToContext) {
@@ -309,11 +309,11 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
             return "/";
         }
     }
-  
+
     public void setAddWebAppContext(boolean addWebAppContext) {
         this.addWebAppContext = addWebAppContext;
     }
-        
+
     public SPStateManager getStateManager() {
         return stateManager;
     }

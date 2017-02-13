@@ -36,7 +36,7 @@ import org.eclipse.jetty.util.log.Logger;
  * This service handles only role reference maps passed in an
  * associated {@link org.eclipse.jetty.server.UserIdentity.Scope}.  If there are roles
  * refs present, then associate will wrap the UserIdentity with one
- * that uses the role references in the 
+ * that uses the role references in the
  * {@link org.eclipse.jetty.server.UserIdentity#isUserInRole(String, org.eclipse.jetty.server.UserIdentity.Scope)}
  * implementation. All other operations are effectively noops.
  *
@@ -48,8 +48,8 @@ public class FederationIdentityService implements IdentityService {
     }
 
 
-    /** 
-     * If there are roles refs present in the scope, then wrap the UserIdentity 
+    /**
+     * If there are roles refs present in the scope, then wrap the UserIdentity
      * with one that uses the role references in the
      * {@link UserIdentity#isUserInRole(String, org.eclipse.jetty.server.UserIdentity.Scope)}
      */
@@ -77,7 +77,7 @@ public class FederationIdentityService implements IdentityService {
 
     public UserIdentity newUserIdentity(
         final Subject subject, final Principal userPrincipal, final String[] roles) {
-        
+
         try {
             FederationUserPrincipal fup = (FederationUserPrincipal)userPrincipal;
             return new FederationUserIdentity(subject, userPrincipal, roles, fup.getFedizResponse());
@@ -85,8 +85,8 @@ public class FederationIdentityService implements IdentityService {
             LOG.warn("Principal must be instance of FederationUserPrincipal");
             throw new IllegalStateException("Principal must be instance of FederationUserPrincipal");
         }
-        
-        
+
+
     }
 
 }

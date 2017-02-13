@@ -48,21 +48,21 @@ public class Service {
     public String doGetAdmin(@Context UriInfo uriInfo) throws Exception {
         return doGet(uriInfo);
     }
-    
+
     @Path("/manager/fedservlet")
     @RolesAllowed("Manager")
     @GET
     public String doGetManager(@Context UriInfo uriInfo) throws Exception {
         return doGet(uriInfo);
     }
-    
+
     @Path("/user/fedservlet")
     @RolesAllowed({ "User", "Admin", "Manager" })
     @GET
     public String doGetUser(@Context UriInfo uriInfo) throws Exception {
         return doGet(uriInfo);
     }
-    
+
     @Path("/fedservlet")
     @RolesAllowed({ "User", "Admin", "Manager", "Authenticated", "Secretary" })
     @GET
@@ -70,7 +70,7 @@ public class Service {
     public String doGetSecure(@Context UriInfo uriInfo) throws Exception {
         return doGet(uriInfo);
     }
-    
+
     // Just used for testing purposes...
     @Path("/test.html")
     @RolesAllowed({ "User", "Admin", "Manager", "Authenticated" })
@@ -83,12 +83,12 @@ public class Service {
         out.append("<body>\n");
         out.append("<P><H3>Secure Test</H3><P></P>");
         out.append("</body>\n");
-        
+
         return out.toString();
     }
-    
+
     private String doGet(@Context UriInfo uriInfo) throws Exception {
-       
+
         StringBuilder out = new StringBuilder();
         out.append("<html>\n");
         out.append("<head><title>WS Federation Systests Examples</title></head>\n");
@@ -101,36 +101,36 @@ public class Service {
             out.append(p.getName());
         }
         out.append("</p>\n");
-        
+
         List<String> roleListToCheck = Arrays.asList("Admin", "Manager", "User", "Authenticated");
         for (String item: roleListToCheck) {
-            out.append("<p>role:" + item + "=" 
-                + ((messageContext.getSecurityContext().isUserInRole(item)) ? "true" : "false") 
+            out.append("<p>role:" + item + "="
+                + ((messageContext.getSecurityContext().isUserInRole(item)) ? "true" : "false")
                 + "</p>\n");
         }
 
         if (p instanceof FedizPrincipal) {
             FedizPrincipal fp = (FedizPrincipal)p;
-            
+
             ClaimCollection claims = fp.getClaims();
             for (Claim c: claims) {
                 out.append("<p>" + c.getClaimType().toString() + "=" + c.getValue() + "</p>\n");
             }
-            
+
             Element el = fp.getLoginToken();
             if (el != null) {
                 out.append("loginToken=FOUND{FedizPrincipal}<p>\n");
             }
-            
+
             el = SecurityTokenThreadLocal.getToken();
             if (el != null) {
                 out.append("loginToken=FOUND{SecurityTokenThreadLocal}<p>\n");
             }
-            
+
         }
-        
+
         out.append("</body>\n");
-        
+
         return out.toString();
     }
 }

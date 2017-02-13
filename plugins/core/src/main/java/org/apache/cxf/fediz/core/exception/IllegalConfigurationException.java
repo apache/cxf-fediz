@@ -22,7 +22,7 @@ package org.apache.cxf.fediz.core.exception;
 public class IllegalConfigurationException extends RuntimeException {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 6273022567957710601L;
 

@@ -37,23 +37,23 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 //CHECKSTYLE:OFF
 public class DBLoaderImpl implements DBLoader {
-    
+
     public static final String NAME = "DEMODBLOADER";
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(DBLoaderImpl.class);
-    
+
     private EntityManager em;
 
     @PersistenceContext
     public void setEntityManager(EntityManager entityManager) {
         this.em = entityManager;
     }
-    
+
     @Override
     public String getName() {
         return NAME;
     }
-    
+
     @Override
     public void load() {
 
@@ -63,26 +63,26 @@ public class DBLoaderImpl implements DBLoader {
             claimEntity1.setDisplayName("firstname");
             claimEntity1.setDescription("Description for firstname");
             em.persist(claimEntity1);
-    
+
             ClaimEntity claimEntity2 = new ClaimEntity();
             claimEntity2.setClaimType("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname");
             claimEntity2.setDisplayName("lastname");
             claimEntity2.setDescription("Description for lastname");
             em.persist(claimEntity2);
-    
+
             ClaimEntity claimEntity3 = new ClaimEntity();
             claimEntity3.setClaimType("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress");
             claimEntity3.setDisplayName("email");
             claimEntity3.setDescription("Description for email");
             em.persist(claimEntity3);
-    
+
             ClaimEntity claimEntity4 = new ClaimEntity();
             claimEntity4.setClaimType("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role");
             claimEntity4.setDisplayName("role");
             claimEntity4.setDescription("Description for role");
             em.persist(claimEntity4);
-            
-            
+
+
             ApplicationEntity entity = new ApplicationEntity();
             entity.setEncryptionCertificate("");
             entity.setLifeTime(3600);
@@ -111,8 +111,8 @@ public class DBLoaderImpl implements DBLoader {
             em.persist(ace4);
             entity.getRequestedClaims().add(ace4);
             em.persist(entity);
-            
-            
+
+
             TrustedIdpEntity entity3 = new TrustedIdpEntity();
             entity3.setCacheTokens(true);
             entity3.setCertificate("trusted cert");
@@ -124,7 +124,7 @@ public class DBLoaderImpl implements DBLoader {
             entity3.setTrustType(TrustType.PEER_TRUST);
             entity3.setUrl("https://localhost:12443/fediz-idp-remote/federation");
             em.persist(entity3);
-            
+
             IdpEntity idpEntity = new IdpEntity();
             idpEntity.getApplications().add(entity);
             idpEntity.getTrustedIdps().add(entity3);
@@ -154,7 +154,7 @@ public class DBLoaderImpl implements DBLoader {
             idpEntity.setTokenTypesOffered(tokenTypes);
             idpEntity.setUseCurrentIdp(true);
             em.persist(idpEntity);
-            
+
             em.flush();
         } catch (Exception ex) {
             LOG.warn("Failed to initialize DB with data", ex);

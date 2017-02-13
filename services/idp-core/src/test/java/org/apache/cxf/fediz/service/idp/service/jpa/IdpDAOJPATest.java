@@ -51,26 +51,26 @@ public class IdpDAOJPATest {
 
     @Autowired
     private IdpDAO idpDAO;
-    
-    
+
+
     @BeforeClass
     public static void init() {
         System.setProperty("spring.profiles.active", "jpa");
     }
-    
-    
+
+
     @Test
     public void testReadAllIdps() {
         List<Idp> idps = idpDAO.getIdps(0, 999, null);
         // Idp could have been removed, Order not given as per JUnit design
         Assert.isTrue(0 < idps.size(), "Size doesn't match [" + idps.size() + "]");
     }
-    
-    
+
+
     @Test
     public void testReadExistingIdpEmbeddedAll() throws MalformedURLException {
         Idp idp = idpDAO.getIdp("urn:org:apache:cxf:fediz:idp:realm-A", Arrays.asList("all"));
-        
+
         Assert.isTrue("stsKeystoreA.properties".equals(idp.getCertificate()),
                       "Certificate doesn't match");
         Assert.isTrue("realma".equals(idp.getCertificatePassword()),
@@ -80,7 +80,7 @@ public class IdpDAOJPATest {
         Assert.isTrue("IDP of Realm A".equals(idp.getServiceDescription()),
                       "ServiceDescription doesn't match");
         Assert.isTrue("REALM A".equals(idp.getServiceDisplayName()),
-                      "ServiceDisplayName doesn't match");        
+                      "ServiceDisplayName doesn't match");
         Assert.isTrue(new URL("https://localhost:9443/fediz-idp/federation").equals(idp.getIdpUrl()),
                       "IdpUrl doesn't match");
         Assert.isTrue(new URL("https://localhost:9443/fediz-idp-sts/REALMA").equals(idp.getStsUrl()),
@@ -104,53 +104,53 @@ public class IdpDAOJPATest {
         Assert.isTrue(4 == idp.getClaimTypesOffered().size(),
                       "Number of claims doesn't match");
     }
-    
+
     @Test
     public void testReadExistingIdpEmbeddedTrustedIdps() {
         Idp idp = idpDAO.getIdp("urn:org:apache:cxf:fediz:idp:realm-A",
                                                                 Arrays.asList("trusted-idps"));
-        
+
         Assert.isTrue(1 == idp.getTrustedIdps().size(),
                       "Number of trusted IDPs doesn't match");
     }
-    
+
     @Test
     public void testReadExistingIdpEmbeddedClaims() {
         Idp idp = idpDAO.getIdp("urn:org:apache:cxf:fediz:idp:realm-A",
                                                                 Arrays.asList("claims"));
-        
+
         Assert.isTrue(4 == idp.getClaimTypesOffered().size(),
                       "Number of claims doesn't match");
     }
-    
+
     @Test
     public void testReadExistingIdpEmbeddedApplications() {
         Idp idp = idpDAO.getIdp("urn:org:apache:cxf:fediz:idp:realm-A", Arrays.asList("applications"));
-        
+
         Assert.isTrue(2 == idp.getApplications().size(), "Number of applications doesn't match");
     }
-    
+
     @Test
     public void testReadExistingIdpEmbeddedNull() {
         Idp idp = idpDAO.getIdp("urn:org:apache:cxf:fediz:idp:realm-A",
                                                                 null);
-        
+
         Assert.isTrue(0 == idp.getClaimTypesOffered().size(),
                       "Number of claims doesn't match");
         Assert.isTrue(0 == idp.getApplications().size(),
                       "Number of applications doesn't match");
         Assert.isTrue(0 == idp.getTrustedIdps().size(),
                       "Number of trusted IDPs doesn't match");
-       
+
     }
-    
-    
+
+
     @Test(expected = EmptyResultDataAccessException.class)
     public void testTryReadNonexistingIdp() {
         idpDAO.getIdp("urn:org:apache:cxf:fediz:idp:NOTEXIST", null);
     }
-    
-    
+
+
     @Test
     public void testAddNewIdp() throws MalformedURLException {
         Idp idp = new Idp();
@@ -175,11 +175,11 @@ public class IdpDAOJPATest {
         tokenTypes.add(WSConstants.SAML_NS);
         idp.setTokenTypesOffered(tokenTypes);
         idp.setUseCurrentIdp(true);
-        
+
         idpDAO.addIdp(idp);
-        
+
         idp = idpDAO.getIdp("urn:org:apache:cxf:fediz:idp:testadd", null);
-        
+
         Assert.isTrue("stsKeystoreA.properties".equals(idp.getCertificate()),
                       "Certificate doesn't match");
         Assert.isTrue("realma".equals(idp.getCertificatePassword()),
@@ -189,7 +189,7 @@ public class IdpDAOJPATest {
         Assert.isTrue("IDP of New Realm".equals(idp.getServiceDescription()),
                       "ServiceDescription doesn't match");
         Assert.isTrue("NEW REALM".equals(idp.getServiceDisplayName()),
-                      "ServiceDisplayName doesn't match");        
+                      "ServiceDisplayName doesn't match");
         Assert.isTrue(new URL("https://localhost:9443/fediz-idp/federation").equals(idp.getIdpUrl()),
                       "IdpUrl doesn't match");
         Assert.isTrue(new URL("https://localhost:9443/fediz-idp-sts/REALMN").equals(idp.getStsUrl()),
@@ -214,39 +214,39 @@ public class IdpDAOJPATest {
                       "Number of claims doesn't match");
 
     }
-    
-    
+
+
     @Test(expected = DataIntegrityViolationException.class)
     public void testTryAddExistingIdp() throws MalformedURLException {
         Idp idp = createIdp("urn:org:apache:cxf:fediz:idp:realm-A");
         idpDAO.addIdp(idp);
     }
-    
-    
+
+
     @Test(expected = EmptyResultDataAccessException.class)
     public void testTryRemoveUnknownIdp() {
         idpDAO.deleteIdp("urn:org:apache:cxf:fediz:idp:NOTEXIST");
     }
-    
-    
+
+
     @Test(expected = EmptyResultDataAccessException.class)
     public void testRemoveExistingIdp() throws MalformedURLException {
         Idp idp = createIdp("urn:org:apache:cxf:fediz:idp:testdelete");
-        
+
         idpDAO.addIdp(idp);
-        
+
         idpDAO.deleteIdp("urn:org:apache:cxf:fediz:idp:testdelete");
-        
+
         idpDAO.getIdp("urn:org:apache:cxf:fediz:idp:testdelete", null);
     }
-    
+
     @Test
     public void testUpdateIdp() throws MalformedURLException {
         String realm = "urn:org:apache:cxf:fediz:idp:testupdate";
         //Prepare
         Idp idp = createIdp(realm);
         idpDAO.addIdp(idp);
-        
+
         //Testcase
         idp = new Idp();
         idp.setRealm(realm);
@@ -269,9 +269,9 @@ public class IdpDAOJPATest {
         idp.setTokenTypesOffered(tokenTypes);
         idp.setUseCurrentIdp(false);
         idpDAO.updateIdp(realm, idp);
-        
+
         idp = idpDAO.getIdp(realm, null);
-        
+
         Assert.isTrue("UstsKeystoreA.properties".equals(idp.getCertificate()),
                       "Certificate doesn't match");
         Assert.isTrue("Urealma".equals(idp.getCertificatePassword()),
@@ -281,7 +281,7 @@ public class IdpDAOJPATest {
         Assert.isTrue("UIDP of New Realm".equals(idp.getServiceDescription()),
                       "ServiceDescription doesn't match");
         Assert.isTrue("UNEW REALM".equals(idp.getServiceDisplayName()),
-                      "ServiceDisplayName doesn't match");        
+                      "ServiceDisplayName doesn't match");
         Assert.isTrue(new URL("https://localhost:9443/fediz-idp/federationUU").equals(idp.getIdpUrl()),
                       "IdpUrl doesn't match");
         Assert.isTrue(new URL("https://localhost:9443/fediz-idp-sts/REALMAUU").equals(idp.getStsUrl()),
@@ -304,17 +304,17 @@ public class IdpDAOJPATest {
                       "Number of trusted IDPs doesn't match");
         Assert.isTrue(0 == idp.getClaimTypesOffered().size(),
                       "Number of claims doesn't match");
-        
+
     }
-    
+
     @Test(expected = EmptyResultDataAccessException.class)
     public void testUpdateUnknownIdp() throws MalformedURLException {
         String realm = "urn:org:apache:cxf:fediz:idp:testupdate2";
-        
+
         //Prepare
         Idp idp = createIdp(realm);
         idpDAO.addIdp(idp);
-        
+
         //Testcase
         idp = new Idp();
         idp.setRealm(realm);
@@ -338,277 +338,277 @@ public class IdpDAOJPATest {
         idp.setUseCurrentIdp(false);
         idpDAO.updateIdp("urn:UNKNOWN", idp);
     }
-    
+
     @Test
     public void testAddClaimToIdp() throws MalformedURLException {
         String realm = "urn:org:apache:cxf:fediz:idp:testaddclaim";
-        
+
         //Prepare
         Idp idp = createIdp(realm);
         idpDAO.addIdp(idp);
-        
+
         //Testcase
         Claim claim = new Claim();
         claim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"));
-        
+
         idpDAO.addClaimToIdp(idp, claim);
-               
+
         idp = idpDAO.getIdp(realm, Arrays.asList("all"));
-        
+
         Assert.isTrue(1 == idp.getClaimTypesOffered().size(), "claimTypesOffered size doesn't match");
     }
-    
+
     @Test(expected = DataIntegrityViolationException.class)
     public void testTryAddExistingClaimToIdp() {
         Idp idp = new Idp();
         idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
-        
+
         Claim claim = new Claim();
         claim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"));
-        
+
         idpDAO.addClaimToIdp(idp, claim);
     }
-    
+
     @Test(expected = EmptyResultDataAccessException.class)
     public void testTryAddUnknownClaimToIdp() {
         Idp idp = new Idp();
         idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
-        
+
         Claim claim = new Claim();
         claim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/UNKOWN"));
-        
+
         idpDAO.addClaimToIdp(idp, claim);
-        
+
     }
-    
+
     @Test
     public void testRemoveClaimFromIdp() throws MalformedURLException {
         String realm = "urn:org:apache:cxf:fediz:fedizhelloworld:testremoveclaim";
         //Prepare step
         Idp idp = createIdp(realm);
         idpDAO.addIdp(idp);
-        
+
         Claim claim = new Claim();
         claim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"));
         idpDAO.addClaimToIdp(idp, claim);
-               
+
         idp = idpDAO.getIdp(realm, Arrays.asList("all"));
         Assert.isTrue(1 == idp.getClaimTypesOffered().size(),
                       "claimTypesOffered size doesn't match [" + idp.getClaimTypesOffered().size() + "]");
-        
+
         //Testcase
         idpDAO.removeClaimFromIdp(idp, claim);
         idp = idpDAO.getIdp(realm, Arrays.asList("all"));
         Assert.isTrue(0 == idp.getClaimTypesOffered().size(),
                       "claimTypesOffered size doesn't match [" + idp.getClaimTypesOffered().size() + "]");
     }
-    
+
     @Test(expected = JpaObjectRetrievalFailureException.class)
     public void testTryRemoveNotAssignedClaimFromIdp() {
         Idp idp = new Idp();
         idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
-                
+
         Claim claim = new Claim();
         claim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/city"));
-        
+
         idpDAO.removeClaimFromIdp(idp, claim);
     }
-    
+
     @Test(expected = EmptyResultDataAccessException.class)
     public void testTryRemoveUnknownClaimFromIdp() {
         Idp idp = new Idp();
         idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
-                
+
         Claim claim = new Claim();
         claim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/UNKNOWN"));
-        
+
         idpDAO.removeClaimFromIdp(idp, claim);
     }
-    
+
     @Test
     public void testAddApplicationToIdp() throws MalformedURLException {
         String realm = "urn:org:apache:cxf:fediz:app:testaddApplication";
-        
+
         //Prepare
         Idp idp = createIdp(realm);
         idpDAO.addIdp(idp);
-        
+
         //Testcase
         //Application app = createApplication(realm);
         Application app = new Application();
         app.setRealm("urn:org:apache:cxf:fediz:fedizhelloworld");
         idpDAO.addApplicationToIdp(idp, app);
-               
+
         idp = idpDAO.getIdp(realm, Arrays.asList("all"));
-        
+
         Assert.isTrue(1 == idp.getApplications().size(), "applications size doesn't match");
     }
-    
-    
+
+
     @Test(expected = DataIntegrityViolationException.class)
     public void testTryAddExistingApplicationToIdp() {
         Idp idp = new Idp();
         idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
-        
+
         Application app = new Application();
         app.setRealm("urn:org:apache:cxf:fediz:fedizhelloworld");
-        
+
         idpDAO.addApplicationToIdp(idp, app);
     }
-    
+
     @Test(expected = EmptyResultDataAccessException.class)
     public void testTryAddUnknownApplicationToIdp() {
         Idp idp = new Idp();
         idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
-        
+
         Application app = new Application();
         app.setRealm("urn:org:apache:cxf:fediz:UNKNOWN");
-        
+
         idpDAO.addApplicationToIdp(idp, app);
-        
+
     }
-    
+
     @Test
     public void testRemoveApplicationFromIdp() throws MalformedURLException {
         String realm = "urn:org:apache:cxf:fediz:fedizhelloworld:testremoveapp";
         //Prepare step
         Idp idp = createIdp(realm);
         idpDAO.addIdp(idp);
-        
+
         Application app = new Application();
         app.setRealm("urn:org:apache:cxf:fediz:fedizhelloworld");
         idpDAO.addApplicationToIdp(idp, app);
-               
+
         idp = idpDAO.getIdp(realm, Arrays.asList("all"));
         Assert.isTrue(1 == idp.getApplications().size(),
                       "applications size doesn't match [" + idp.getApplications().size() + "]");
-        
+
         //Testcase
         idpDAO.removeApplicationFromIdp(idp, app);
         idp = idpDAO.getIdp(realm, Arrays.asList("all"));
         Assert.isTrue(0 == idp.getApplications().size(),
                       "applications size doesn't match [" + idp.getApplications().size() + "]");
     }
-    
-    
+
+
     @Test(expected = JpaObjectRetrievalFailureException.class)
     public void testTryRemoveNotAssignedApplicationFromIdp() {
         Idp idp = new Idp();
         idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
-                
+
         Application app = new Application();
         app.setRealm("myrealm2");
-        
+
         idpDAO.removeApplicationFromIdp(idp, app);
     }
-    
-    
+
+
     @Test(expected = EmptyResultDataAccessException.class)
     public void testTryRemoveUnknownApplicationFromIdp() {
         Idp idp = new Idp();
         idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
-                
+
         Application app = new Application();
         app.setRealm("urn:org:apache:cxf:fediz:UNKNOWN");
-        
+
         idpDAO.removeApplicationFromIdp(idp, app);
     }
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
     @Test
     public void testAddTrustedIdpToIdp() throws MalformedURLException {
         String realm = "urn:org:apache:cxf:fediz:trusted-idp:testaddTrustedIdp";
-        
+
         //Prepare
         Idp idp = createIdp(realm);
         idpDAO.addIdp(idp);
-        
+
         //Testcase
         //Application app = createApplication(realm);
         TrustedIdp trustedIdp = new TrustedIdp();
         trustedIdp.setRealm("urn:org:apache:cxf:fediz:idp:realm-B");
         idpDAO.addTrustedIdpToIdp(idp, trustedIdp);
-               
+
         idp = idpDAO.getIdp(realm, Arrays.asList("all"));
-        
+
         Assert.isTrue(1 == idp.getTrustedIdps().size(), "applications size doesn't match");
     }
-    
+
     /*
     @Test(expected = DataIntegrityViolationException.class)
     public void testTryAddExistingTrustedIdpToIdp() {
         Idp idp = new Idp();
         idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
-        
+
         TrustedIdp trustedIdp = new TrustedIdp();
         trustedIdp.setRealm("urn:org:apache:cxf:fediz:idp:realm-B");
-        
+
         idpDAO.addTrustedIdpToIdp(idp, trustedIdp);
     }
-    
+
     @Test(expected = NoResultException.class)
     public void testTryAddUnknownTrustedIdpToIdp() {
         Idp idp = new Idp();
         idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
-        
+
         TrustedIdp trustedIdp = new TrustedIdp();
         trustedIdp.setRealm("urn:org:apache:cxf:fediz:UNKNOWN");
-        
+
         idpDAO.addTrustedIdpToIdp(idp, trustedIdp);
     }
-    
+
     @Test
     public void testRemoveTrustedIdpFromIdp() {
         String realm = "urn:org:apache:cxf:fediz:trustedidp:testremove";
         //Prepare step
         Idp idp = createIdp(realm);
         idpDAO.addIdp(idp);
-        
+
         TrustedIdp trustedIdp = new TrustedIdp();
         trustedIdp.setRealm("urn:org:apache:cxf:fediz:idp:realm-B");
         idpDAO.addTrustedIdpToIdp(idp, trustedIdp);
-               
+
         idp = idpDAO.getIdp(realm, Arrays.asList("all"));
         Assert.isTrue(1 == idp.getTrustedIdps().size(),
                       "trustedIdps size doesn't match [" + idp.getTrustedIdps().size() + "]");
-        
+
         //Testcase
         idpDAO.removeTrustedIdpFromIdp(idp, trustedIdp);
         idp = idpDAO.getIdp(realm, Arrays.asList("all"));
         Assert.isTrue(0 == idp.getTrustedIdps().size(),
                       "trustedIdps size doesn't match [" + idp.getTrustedIdps().size() + "]");
     }
-    
-    
+
+
     @Test(expected = EntityNotFoundException.class)
     public void testTryRemoveNotAssignedTrustedIdpFromIdp() {
         Idp idp = new Idp();
         idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
-                
+
         TrustedIdp trustedIdp = new TrustedIdp();
         trustedIdp.setRealm("trustedidp2realm");
-        
+
         idpDAO.removeTrustedIdpFromIdp(idp, trustedIdp);
     }
-    
-    
+
+
     @Test(expected = NoResultException.class)
     public void testTryRemoveUnknownTrustedIdpFromIdp() {
         Idp idp = new Idp();
         idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
-                
+
         TrustedIdp trustedIdp = new TrustedIdp();
         trustedIdp.setRealm("urn:org:apache:cxf:fediz:UNKNOWN");
-        
+
         idpDAO.removeTrustedIdpFromIdp(idp, trustedIdp);
     }
     */
-    
-    
+
+
     private static Idp createIdp(String realm) throws MalformedURLException {
         Idp idp = new Idp();
         idp.setRealm(realm);
@@ -648,6 +648,6 @@ public class IdpDAOJPATest {
         return application;
     }
     */
-    
+
 
 }

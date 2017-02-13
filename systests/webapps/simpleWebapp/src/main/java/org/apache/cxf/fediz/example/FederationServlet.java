@@ -48,7 +48,7 @@ import org.apache.cxf.fediz.core.SecurityTokenThreadLocal;
 public class FederationServlet extends HttpServlet {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = -9019993850246851112L;
 
@@ -69,7 +69,7 @@ public class FederationServlet extends HttpServlet {
             out.print(p.getName());
         }
         out.println("</p>");
-        
+
         List<String> roleListToCheck = Arrays.asList("Admin", "Manager", "User", "Authenticated");
         for (String item: roleListToCheck) {
             out.println("<p>role:" + item + "=" + ((request.isUserInRole(item)) ? "true" : "false") + "</p>");
@@ -77,17 +77,17 @@ public class FederationServlet extends HttpServlet {
 
         if (p instanceof FedizPrincipal) {
             FedizPrincipal fp = (FedizPrincipal)p;
-            
+
             ClaimCollection claims = fp.getClaims();
             for (Claim c: claims) {
                 out.println("<p>" + c.getClaimType().toString() + "=" + c.getValue() + "</p>");
             }
-            
+
             Element el = fp.getLoginToken();
             if (el != null) {
                 out.println("loginToken=FOUND{FedizPrincipal}<p>");
             }
-            
+
             el = SecurityTokenThreadLocal.getToken();
             if (el != null) {
                 out.println("loginToken=FOUND{SecurityTokenThreadLocal}<p>");
@@ -109,7 +109,7 @@ public class FederationServlet extends HttpServlet {
             }
 
         }
-        
+
         out.println("</body>");
     }
 

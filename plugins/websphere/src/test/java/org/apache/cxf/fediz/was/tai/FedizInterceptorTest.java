@@ -35,15 +35,15 @@ import static org.junit.Assert.assertNotNull;
 
 public class FedizInterceptorTest {
 
-    
+
     @Test
     public void testGroupMappingWithNull() throws WebTrustAssociationFailedException {
-        
+
         FedizResponse resp = EasyMock.createMock(FedizResponse.class);
         EasyMock.expect(resp.getRoles()).andReturn(null);
         EasyMock.expect(resp.getUsername()).andReturn("Test-User").anyTimes();
         EasyMock.replay(resp);
-        
+
         FedizInterceptor fedizInterceptor = new FedizInterceptor();
         Properties properties = new Properties();
         properties.put(Constants.PROPERTY_KEY_CONFIG_LOCATION, "src/test/resources/fediz_config.xml");
@@ -52,20 +52,20 @@ public class FedizInterceptorTest {
         assertNotNull(result);
         assertEquals(0, result.size());
     }
-    
+
     @Test
     public void testDirectGroupMapping() throws WebTrustAssociationFailedException {
-        
+
         FedizResponse resp = EasyMock.createMock(FedizResponse.class);
         EasyMock.expect(resp.getRoles()).andReturn(Arrays.asList("Admin", "Manager"));
         EasyMock.expect(resp.getUsername()).andReturn("Test-User").anyTimes();
         EasyMock.replay(resp);
-        
+
         FedizInterceptor fedizInterceptor = new FedizInterceptor();
         Properties properties = new Properties();
         properties.put(Constants.PROPERTY_KEY_CONFIG_LOCATION, "src/test/resources/fediz_config.xml");
         properties.put(Constants.PROPERTY_KEY_DIRECT_GROUP_MAPPING, "true");
-        
+
         fedizInterceptor.initialize(properties);
         List<String> result = fedizInterceptor.groupIdsFromTokenRoles(resp);
         assertNotNull(result);

@@ -29,21 +29,21 @@ import org.opensaml.saml.saml2.core.AuthnRequest;
  */
 public class SAMLAuthnRequest implements Serializable {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 4353024755428346545L;
-    
+
     private String issuer;
     private String consumerServiceURL;
     private String requestId;
     private boolean forceAuthn;
     private String subjectNameId;
-    
+
     public SAMLAuthnRequest(AuthnRequest authnRequest) {
         if (authnRequest.getIssuer() != null) {
             issuer = authnRequest.getIssuer().getValue();
         }
-        
+
         consumerServiceURL = authnRequest.getAssertionConsumerServiceURL();
         requestId = authnRequest.getID();
         forceAuthn = authnRequest.isForceAuthn().booleanValue();
@@ -51,23 +51,23 @@ public class SAMLAuthnRequest implements Serializable {
             subjectNameId = authnRequest.getSubject().getNameID().getValue();
         }
     }
-    
+
     public String getIssuer() {
         return issuer;
     }
-    
+
     public String getConsumerServiceURL() {
         return consumerServiceURL;
     }
-    
+
     public String getRequestId() {
         return requestId;
     }
-    
+
     public boolean isForceAuthn() {
         return forceAuthn;
     }
-    
+
     public String getSubjectNameId() {
         return subjectNameId;
     }

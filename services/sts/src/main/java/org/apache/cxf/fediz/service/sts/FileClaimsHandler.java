@@ -35,7 +35,7 @@ import org.apache.cxf.sts.claims.ProcessedClaimCollection;
  */
 public class FileClaimsHandler implements ClaimsHandler {
 
-    public static final URI ROLE = 
+    public static final URI ROLE =
         URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role");
 
     private Map<String, Map<String, String>> userClaims;
@@ -48,16 +48,16 @@ public class FileClaimsHandler implements ClaimsHandler {
     public Map<String, Map<String, String>> getUserClaims() {
         return userClaims;
     }
-    
+
     public void setSupportedClaims(List<URI> supportedClaims) {
         this.supportedClaims = supportedClaims;
     }
-    
+
     @Override
     public List<URI> getSupportedClaimTypes() {
         return Collections.unmodifiableList(this.supportedClaims);
     }
-    
+
 
     @Override
     public ProcessedClaimCollection retrieveClaimValues(ClaimCollection claims,
@@ -78,7 +78,7 @@ public class FileClaimsHandler implements ClaimsHandler {
 
         if (claims.size() > 0) {
             ProcessedClaimCollection claimCollection = new ProcessedClaimCollection();
-            for (Claim requestClaim : claims) { 
+            for (Claim requestClaim : claims) {
                 String claimValue = claimMap.get(requestClaim.getClaimType().toString());
                 if (claimValue != null) {
                     ProcessedClaim claim = new ProcessedClaim();
@@ -87,7 +87,7 @@ public class FileClaimsHandler implements ClaimsHandler {
                     claim.setOriginalIssuer("Original Issuer");
                     claim.addValue(claimValue);
                     claimCollection.add(claim);
-                }   
+                }
             }
             return claimCollection;
         }

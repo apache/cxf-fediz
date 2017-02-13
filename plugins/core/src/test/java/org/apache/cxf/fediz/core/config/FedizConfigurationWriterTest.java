@@ -74,7 +74,7 @@ public class FedizConfigurationWriterTest {
     private static final String KEYSTORE_PASSWORD = "storepass";
     private static final String KEY_PASSWORD = "stskpass";
     private static final String KEY_ALIAS = "mystskey";
-    
+
     private static final String AUDIENCE_URI_1 = "http://host_one:port/url";
 
     private static final String AUTH_TYPE_VALUE = "some auth type";
@@ -83,14 +83,14 @@ public class FedizConfigurationWriterTest {
     private static final String CLAIM_TYPE_2 = "another claim type";
 
     private static final String CONFIG_FILE = "./target/fediz_test_config.xml";
-    
-    private static final String TEST_WREQ = 
+
+    private static final String TEST_WREQ =
         "<RequestSecurityToken xmlns=\"http://docs.oasis-open.org/ws-sx/ws-trust/200512\">"
         + "<t:TokenType>http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV1.1</t:TokenType>"
         + "</RequestSecurityToken>";
-    
-    
-    
+
+
+
     @AfterClass
     public static void cleanup() {
         SecurityTestUtil.cleanup();
@@ -109,17 +109,17 @@ public class FedizConfigurationWriterTest {
         KeyManagersType sigManager = new KeyManagersType();
         sigManager.setKeyPassword(KEY_PASSWORD);
         sigManager.setKeyAlias(KEY_ALIAS);
-        
+
         KeyStoreType sigStore = new KeyStoreType();
         sigStore.setType(JKS_TYPE);
         sigStore.setPassword(KEYSTORE_PASSWORD);//integrity password
         sigStore.setFile(KEYSTORE_FILE);
         sigManager.setKeyStore(sigStore);
-        
+
         config.setSigningKey(sigManager);
-        
+
         TrustedIssuers trustedIssuers = new TrustedIssuers();
-             
+
         TrustedIssuerType trustedIssuer = new TrustedIssuerType();
         trustedIssuer.setCertificateValidation(ValidationType.CHAIN_TRUST);
         trustedIssuer.setName(TRUST_ISSUER_NAME);
@@ -129,7 +129,7 @@ public class FedizConfigurationWriterTest {
 
         CertificateStores certStores = new CertificateStores();
         TrustManagersType truststore = new TrustManagersType();
-        
+
         KeyStoreType ks1 = new KeyStoreType();
         ks1.setType(JKS_TYPE);
         ks1.setPassword(KEYSTORE_PASSWORD);
@@ -141,7 +141,7 @@ public class FedizConfigurationWriterTest {
         CallbackType authType = new CallbackType();
         authType.setType(ArgumentType.STRING);
         authType.setValue(AUTH_TYPE_VALUE);
-        
+
         CallbackType tokenRequest = new CallbackType();
         tokenRequest.setType(ArgumentType.STRING);
         tokenRequest.setValue(TEST_WREQ);
@@ -149,15 +149,15 @@ public class FedizConfigurationWriterTest {
         AudienceUris audienceUris = new AudienceUris();
         audienceUris.getAudienceItem().add(AUDIENCE_URI_1);
         config.setAudienceUris(audienceUris);
-        
+
         ProtocolType protocol = null;
-        
+
         if (federation) {
             protocol = new FederationProtocolType();
-            
+
             ((FederationProtocolType)protocol).setAuthenticationType(authType);
             ((FederationProtocolType)protocol).setRequest(tokenRequest);
-            
+
             CallbackType freshness = new CallbackType();
             freshness.setValue(FRESHNESS_VALUE);
             ((FederationProtocolType)protocol).setFreshness(freshness);
@@ -166,7 +166,7 @@ public class FedizConfigurationWriterTest {
             homeRealm.setType(ArgumentType.CLASS);
             homeRealm.setValue(HOME_REALM_CLASS);
             ((FederationProtocolType)protocol).setHomeRealm(homeRealm);
-            
+
             CallbackType reply = new CallbackType();
             reply.setValue(REPLY);
             ((FederationProtocolType)protocol).setReply(reply);
@@ -194,11 +194,11 @@ public class FedizConfigurationWriterTest {
         CallbackType realm = new CallbackType();
         realm.setValue(TARGET_REALM);
         protocol.setRealm(realm);
-        
+
         CallbackType issuer = new CallbackType();
         issuer.setValue(ISSUER);
         protocol.setIssuer(issuer);
-        
+
         TokenValidators x = new TokenValidators();
         x.getValidator().add("org.apache.cxf.fediz.CustomValidator");
         x.getValidator().add("org.apache.cxf.fediz.core.NonexistentCustomValidator");
@@ -221,7 +221,7 @@ public class FedizConfigurationWriterTest {
         StringReader reader = new StringReader(writer.toString());
         jaxbContext.createUnmarshaller().unmarshal(reader);
     }
-    
+
     @org.junit.Test
     public void readWriteConfigSAML() throws JAXBException {
 
@@ -252,12 +252,12 @@ public class FedizConfigurationWriterTest {
         f.createNewFile();
 
         configurator.saveConfiguration(f);
-        
+
         configurator = new FedizConfigurator();
         f = new File(CONFIG_FILE);
         configurator.loadConfig(f);
     }
-    
+
     @org.junit.Test
     public void testSaveAndLoadConfigSAML() throws JAXBException, IOException {
         final JAXBContext jaxbContext = JAXBContext
@@ -274,7 +274,7 @@ public class FedizConfigurationWriterTest {
         f.createNewFile();
 
         configurator.saveConfiguration(f);
-        
+
         configurator = new FedizConfigurator();
         f = new File(CONFIG_FILE);
         configurator.loadConfig(f);
@@ -285,7 +285,7 @@ public class FedizConfigurationWriterTest {
 
         final JAXBContext jaxbContext = JAXBContext
                 .newInstance(FedizConfig.class);
-        
+
         /**
          * Test JAXB part
          */
@@ -306,7 +306,7 @@ public class FedizConfigurationWriterTest {
 
         Assert.assertEquals(HOME_REALM_CLASS, fp.getHomeRealm().getValue());
         //Assert.assertEquals(config.getCertificateValidation(),ValidationType.CHAIN_TRUST);
-        
+
         /**
          * Check Runtime configuration
          */
@@ -315,15 +315,15 @@ public class FedizConfigurationWriterTest {
         Assert.assertTrue(protocol instanceof FederationProtocol);
         FederationProtocol fedProtocol = (FederationProtocol) protocol;
         Assert.assertEquals(TARGET_REALM, fedProtocol.getRealm());
-        
+
         Object auth = fedProtocol.getAuthenticationType();
         Assert.assertTrue(auth instanceof String);
         Assert.assertEquals((String)auth, AUTH_TYPE_VALUE);
-        
+
         Object wreq = fedProtocol.getRequest();
         Assert.assertTrue(wreq instanceof String);
         Assert.assertEquals((String)wreq, TEST_WREQ);
-        
+
         //Assert.assertEquals(ValidationMethod.CHAIN_TRUST, fedContext.getCertificateValidation());
         List<String> audienceUris = fedContext.getAudienceUris();
         Assert.assertEquals(1, audienceUris.size());
@@ -333,18 +333,18 @@ public class FedizConfigurationWriterTest {
         Assert.assertEquals(TRUST_ISSUER_NAME, issuer.getName());
         Assert.assertEquals(CertificateValidationMethod.CHAIN_TRUST, issuer.getCertificateValidationMethod());
         Assert.assertEquals(TRUST_ISSUER_CERT_CONSTRAINT, issuer.getSubject());
-        
+
         List<TrustManager> trustManagers = fedContext.getCertificateStores();
         Assert.assertEquals(1, trustManagers.size());
 
     }
-    
+
     @org.junit.Test
     public void verifyConfigSAML() throws JAXBException {
 
         final JAXBContext jaxbContext = JAXBContext
                 .newInstance(FedizConfig.class);
-        
+
         /**
          * Test JAXB part
          */
@@ -370,7 +370,7 @@ public class FedizConfigurationWriterTest {
         Assert.assertTrue(protocol instanceof SAMLProtocol);
         SAMLProtocol samlProtocol = (SAMLProtocol) protocol;
         Assert.assertEquals(TARGET_REALM, samlProtocol.getRealm());
-        
+
         List<String> audienceUris = fedContext.getAudienceUris();
         Assert.assertEquals(1, audienceUris.size());
         List<TrustedIssuer> trustedIssuers = fedContext.getTrustedIssuers();
@@ -379,7 +379,7 @@ public class FedizConfigurationWriterTest {
         Assert.assertEquals(TRUST_ISSUER_NAME, issuer.getName());
         Assert.assertEquals(CertificateValidationMethod.CHAIN_TRUST, issuer.getCertificateValidationMethod());
         Assert.assertEquals(TRUST_ISSUER_CERT_CONSTRAINT, issuer.getSubject());
-        
+
         List<TrustManager> trustManagers = fedContext.getCertificateStores();
         Assert.assertEquals(1, trustManagers.size());
 

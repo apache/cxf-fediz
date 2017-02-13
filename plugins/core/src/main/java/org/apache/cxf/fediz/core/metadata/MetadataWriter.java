@@ -56,9 +56,9 @@ import static org.apache.cxf.fediz.core.FedizConstants.SCHEMA_INSTANCE_NS;
 import static org.apache.cxf.fediz.core.FedizConstants.WS_ADDRESSING_NS;
 
 public class MetadataWriter {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(MetadataWriter.class);
-    
+
     private static final XMLOutputFactory XML_OUTPUT_FACTORY = XMLOutputFactory.newInstance();
 
     //CHECKSTYLE:OFF
@@ -77,14 +77,14 @@ public class MetadataWriter {
             String referenceID = IDGenerator.generateID("_");
             writer.writeStartElement("md", "EntityDescriptor", SAML2_METADATA_NS);
             writer.writeAttribute("ID", referenceID);
-            
+
             String serviceURL = protocol.getApplicationServiceURL();
             if (serviceURL == null) {
                 serviceURL = extractFullContextPath(request);
             }
-            
+
             writer.writeAttribute("entityID", serviceURL);
-            
+
             writer.writeNamespace("md", SAML2_METADATA_NS);
             writer.writeNamespace("fed", WS_FEDERATION_NS);
             writer.writeNamespace("wsa", WS_ADDRESSING_NS);
@@ -96,11 +96,11 @@ public class MetadataWriter {
             } else if (protocol instanceof SAMLProtocol) {
                 writeSAMLMetadata(writer, request, config, serviceURL);
             }
-            
+
             writer.writeEndElement(); // EntityDescriptor
 
             writer.writeEndDocument();
-            
+
             streamWriter.flush();
             bout.flush();
             //
@@ -124,7 +124,7 @@ public class MetadataWriter {
                 if (hasSigningKey) {
                     Document doc = DOMUtils.readXml(is);
                     Document result = SignatureUtils.signMetaInfo(
-                        config.getSigningKey().getCrypto(), config.getSigningKey().getKeyAlias(), config.getSigningKey().getKeyPassword(), 
+                        config.getSigningKey().getCrypto(), config.getSigningKey().getKeyAlias(), config.getSigningKey().getKeyPassword(),
                         doc, referenceID);
                     if (result != null) {
                         return result;
@@ -144,7 +144,7 @@ public class MetadataWriter {
     }
 
     private void writeFederationMetadata(
-        XMLStreamWriter writer, 
+        XMLStreamWriter writer,
         FedizContext config,
         String serviceURL
     ) throws XMLStreamException {
@@ -158,7 +158,7 @@ public class MetadataWriter {
 
         writer.writeStartElement("wsa", "Address", WS_ADDRESSING_NS);
         writer.writeCharacters(serviceURL);
-        
+
         writer.writeEndElement(); // Address
         writer.writeEndElement(); // EndpointReference
         writer.writeEndElement(); // ApplicationServiceEndpoint
@@ -214,24 +214,24 @@ public class MetadataWriter {
         writer.writeEndElement(); // PassiveRequestorEndpoint
         writer.writeEndElement(); // RoleDescriptor
     }
-    
+
     private void writeSAMLMetadata(
-        XMLStreamWriter writer, 
+        XMLStreamWriter writer,
         HttpServletRequest request,
         FedizContext config,
         String serviceURL
     ) throws Exception {
-        
+
         SAMLProtocol protocol = (SAMLProtocol)config.getProtocol();
-        
+
         writer.writeStartElement("md", "SPSSODescriptor", SAML2_METADATA_NS);
         writer.writeAttribute("AuthnRequestsSigned", Boolean.toString(protocol.isSignRequest()));
         writer.writeAttribute("WantAssertionsSigned", "true");
         writer.writeAttribute("protocolSupportEnumeration", "urn:oasis:names:tc:SAML:2.0:protocol");
-        
+
         if (config.getLogoutURL() != null) {
             writer.writeStartElement("md", "SingleLogoutService", SAML2_METADATA_NS);
-            
+
             String logoutURL = config.getLogoutURL();
             if (logoutURL.startsWith("/")) {
                 logoutURL = extractFullContextPath(request).concat(logoutURL.substring(1));
@@ -239,39 +239,39 @@ public class MetadataWriter {
                 logoutURL = extractFullContextPath(request).concat(logoutURL);
             }
             writer.writeAttribute("Location", logoutURL);
-            
+
             writer.writeAttribute("Binding", "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
             writer.writeEndElement(); // SingleLogoutService
         }
-        
+
         writer.writeStartElement("md", "AssertionConsumerService", SAML2_METADATA_NS);
         writer.writeAttribute("Location", serviceURL);
         writer.writeAttribute("index", "0");
         writer.writeAttribute("isDefault", "true");
         writer.writeAttribute("Binding", "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
         writer.writeEndElement(); // AssertionConsumerService
-        
+
         if (protocol.getClaimTypesRequested() != null && !protocol.getClaimTypesRequested().isEmpty()) {
             writer.writeStartElement("md", "AttributeConsumingService", SAML2_METADATA_NS);
             writer.writeAttribute("index", "0");
-            
+
             writer.writeStartElement("md", "ServiceName", SAML2_METADATA_NS);
             writer.writeAttribute("xml:lang", "en");
             writer.writeCharacters(config.getName());
             writer.writeEndElement(); // ServiceName
-            
+
             for (Claim claim : protocol.getClaimTypesRequested()) {
                 writer.writeStartElement("md", "RequestedAttribute", SAML2_METADATA_NS);
                 writer.writeAttribute("isRequired", Boolean.toString(claim.isOptional()));
                 writer.writeAttribute("Name", claim.getType());
-                writer.writeAttribute("NameFormat", 
+                writer.writeAttribute("NameFormat",
                                       "urn:oasis:names:tc:SAML:2.0:attrname-format:unspecified");
                 writer.writeEndElement(); // RequestedAttribute
             }
-            
+
             writer.writeEndElement(); // AttributeConsumingService
         }
-        
+
         boolean hasSigningKey = false;
         try {
             if (config.getSigningKey().getCrypto() != null) {
@@ -283,7 +283,7 @@ public class MetadataWriter {
         if (protocol.isSignRequest() && hasSigningKey) {
             writer.writeStartElement("md", "KeyDescriptor", SAML2_METADATA_NS);
             writer.writeAttribute("use", "signing");
-            
+
             writer.writeStartElement("ds", "KeyInfo", "http://www.w3.org/2000/09/xmldsig#");
             writer.writeNamespace("ds", "http://www.w3.org/2000/09/xmldsig#");
             writer.writeStartElement("ds", "X509Data", "http://www.w3.org/2000/09/xmldsig#");
@@ -294,23 +294,23 @@ public class MetadataWriter {
             if (keyAlias == null || "".equals(keyAlias)) {
                 keyAlias = config.getSigningKey().getCrypto().getDefaultX509Identifier();
             }
-            X509Certificate cert = 
+            X509Certificate cert =
                 CertsUtils.getX509CertificateFromCrypto(config.getSigningKey().getCrypto(), keyAlias);
             if (cert == null) {
                 throw new ProcessingException(
-                    "No signing certs were found to insert into the metadata using name: " 
+                    "No signing certs were found to insert into the metadata using name: "
                         + keyAlias);
             }
             byte data[] = cert.getEncoded();
             String encodedCertificate = Base64.encode(data);
             writer.writeCharacters(encodedCertificate);
-            
+
             writer.writeEndElement(); // X509Certificate
             writer.writeEndElement(); // X509Data
             writer.writeEndElement(); // KeyInfo
             writer.writeEndElement(); // KeyDescriptor
         }
-        
+
         writer.writeEndElement(); // SPSSODescriptor
     }
 

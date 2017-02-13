@@ -23,19 +23,19 @@ package org.apache.cxf.fediz.core;
  * Constants specific to SAML SSO
  */
 public final class SAMLSSOConstants extends FedizConstants {
-   
+
     public static final String FEDIZ_SAML_METADATA_PATH_URI = "SAML/Metadata.xml";
-    
+
     public static final String SAML_REQUEST = "SAMLRequest";
-    
-    public static final String SAML_RESPONSE = "SAMLResponse"; 
-    
+
+    public static final String SAML_RESPONSE = "SAMLResponse";
+
     public static final String RELAY_STATE = "RelayState";
-    
+
     public static final String SIG_ALG = "SigAlg";
-    
+
     public static final String SIGNATURE = "Signature";
-    
+
     private SAMLSSOConstants() {
         super();
     }

@@ -29,7 +29,7 @@ public class ClientTokens {
     private Client client;
     private List<ServerAccessToken> accessTokens = new LinkedList<ServerAccessToken>();
     private List<RefreshToken> refreshTokens = new LinkedList<RefreshToken>();
-    public ClientTokens(Client c, 
+    public ClientTokens(Client c,
                               List<ServerAccessToken> accessTokens,
                               List<RefreshToken> refreshTokens) {
         this.client = c;

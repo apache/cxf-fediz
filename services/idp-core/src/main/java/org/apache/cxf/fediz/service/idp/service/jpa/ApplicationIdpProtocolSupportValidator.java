@@ -39,10 +39,10 @@ public class ApplicationIdpProtocolSupportValidator
     @Autowired
     @Qualifier("applicationProtocolControllerImpl")
     private ProtocolController<ApplicationProtocolHandler> applicationProtocolHandlers;
-    
+
     @Override
     public boolean isValid(String object, ConstraintValidatorContext constraintContext) {
-        
+
         List<String> protocols = applicationProtocolHandlers.getProtocols();
         return protocols.contains(object);
     }

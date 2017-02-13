@@ -29,32 +29,32 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
 public class TestDBLoader implements DBLoader {
-    
+
     public static final String NAME = "UNITTESTDBLOADER";
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(TestDBLoader.class);
-    
+
     private EntityManager em;
 
     @PersistenceContext
     public void setEntityManager(EntityManager entityManager) {
         this.em = entityManager;
     }
-    
+
     @Override
     public String getName() {
         return NAME;
     }
-    
+
     public void load() {
-        
+
         try {
             ClaimEntity claimEntity5 = new ClaimEntity();
             claimEntity5.setClaimType("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/city");
             claimEntity5.setDisplayName("city");
             claimEntity5.setDescription("Description for city");
             em.persist(claimEntity5);
-                        
+
             ApplicationEntity entity2 = new ApplicationEntity();
             entity2.setEncryptionCertificate("my encryption cert2");
             entity2.setLifeTime(1800);
@@ -71,7 +71,7 @@ public class TestDBLoader implements DBLoader {
             em.persist(ace5);
             entity2.getRequestedClaims().add(ace5);
             em.persist(entity2);
-            
+
             TrustedIdpEntity entity4 = new TrustedIdpEntity();
             entity4.setCacheTokens(true);
             entity4.setCertificate("trusted cert");
@@ -83,9 +83,9 @@ public class TestDBLoader implements DBLoader {
             entity4.setTrustType(TrustType.PEER_TRUST);
             entity4.setUrl("https://localhost:${realmB.port}/fediz-idp-remote/federation");
             em.persist(entity4);
-            
+
             em.flush();
-            
+
         } catch (Exception ex) {
             LOG.warn("Failed to initialize DB with data", ex);
         }

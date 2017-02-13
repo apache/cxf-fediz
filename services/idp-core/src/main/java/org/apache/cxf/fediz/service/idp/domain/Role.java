@@ -29,15 +29,15 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "role", namespace = "http://org.apache.cxf.fediz/")
 @XmlType(propOrder = {"name", "description", "entitlements", "id" })
 public class Role implements Serializable {
-    
+
     private static final long serialVersionUID = 2635896159019665467L;
-    
+
     protected String name;
     protected String description;
     protected int id;
-    
+
     protected List<Entitlement> entitlements = new ArrayList<>();
-    
+
     @XmlAttribute
     public int getId() {
         return id;
@@ -46,7 +46,7 @@ public class Role implements Serializable {
     public void setId(int id) {
         this.id = id;
     }
-    
+
     public String getName() {
         return name;
     }

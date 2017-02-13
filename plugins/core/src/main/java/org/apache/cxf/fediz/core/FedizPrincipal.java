@@ -27,9 +27,9 @@ import org.w3c.dom.Element;
 public interface FedizPrincipal extends Principal {
 
     ClaimCollection getClaims();
-    
+
     Element getLoginToken();
-    
+
     List<String> getRoleClaims();
 
 }

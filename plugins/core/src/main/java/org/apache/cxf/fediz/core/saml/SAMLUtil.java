@@ -32,14 +32,14 @@ import org.apache.wss4j.common.saml.SamlAssertionWrapper;
  * Some SAML Utility methods
  */
 public final class SAMLUtil  {
-    
+
     private SAMLUtil() {
         // complete
     }
 
     /**
      * Check the holder-of-key requirements against the received assertion. The subject
-     * credential of the SAML Assertion must match a client certificate credential when 
+     * credential of the SAML Assertion must match a client certificate credential when
      * 2-way TLS is used.
      * @param assertionWrapper the SAML Assertion wrapper object
      * @param tlsCerts The client certificates
@@ -80,7 +80,7 @@ public final class SAMLUtil  {
         //
         // Try to match the TLS certs
         //
-        if (subjectCerts != null && subjectCerts.length > 0 
+        if (subjectCerts != null && subjectCerts.length > 0
             && tlsCerts[0].equals(subjectCerts[0])) {
             return true;
         } else if (subjectPublicKey != null

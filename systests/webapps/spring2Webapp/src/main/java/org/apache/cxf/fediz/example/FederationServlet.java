@@ -44,7 +44,7 @@ import org.springframework.security.context.SecurityContextHolder;
 public class FederationServlet extends HttpServlet {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = -9019993850246851112L;
 
@@ -68,11 +68,11 @@ public class FederationServlet extends HttpServlet {
 
         // Access Spring security context
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        
+
         if (auth instanceof FederationAuthenticationToken) {
             FederationAuthenticationToken fedToken = (FederationAuthenticationToken)auth;
             List<String> roleListToCheck = Arrays.asList("Admin", "Manager", "User", "Authenticated");
-            
+
             for (String item : roleListToCheck) {
                 boolean found = false;
                 for (GrantedAuthority ga : fedToken.getAuthorities()) {
@@ -83,26 +83,26 @@ public class FederationServlet extends HttpServlet {
                 }
                 out.println("<p>role:" + item + "=" + (found ? "true" : "false") + "</p>");
             }
-            
+
             ClaimCollection claims = fedToken.getClaims();
             for (Claim c : claims) {
                 out.println("<p>" + c.getClaimType().toString() + "=" + c.getValue() + "</p>");
             }
-            
+
             Element el = fedToken.getLoginToken();
             if (el != null) {
                 out.println("loginToken=FOUND{FedizPrincipal}<p>");
             }
-            
+
             el = SecurityTokenThreadLocal.getToken();
             if (el != null) {
                 out.println("loginToken=FOUND{SecurityTokenThreadLocal}<p>");
             }
-            
+
         }
-                
+
         out.println("</body>");
-        
+
     }
 
 }

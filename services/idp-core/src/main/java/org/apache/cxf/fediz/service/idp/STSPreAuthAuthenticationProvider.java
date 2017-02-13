@@ -51,7 +51,7 @@ public class STSPreAuthAuthenticationProvider extends STSAuthenticationProvider 
         if (!(authentication instanceof PreAuthenticatedAuthenticationToken)) {
             return null;
         }
-        
+
         Bus cxfBus = getBus();
         IdpSTSClient sts = new IdpSTSClient(cxfBus);
         sts.setAddressingNamespace("http://www.w3.org/2005/08/addressing");
@@ -64,20 +64,20 @@ public class STSPreAuthAuthenticationProvider extends STSAuthenticationProvider 
         sts.setWsdlLocation(wsdlLocation);
         sts.setServiceQName(new QName(namespace, wsdlService));
         sts.setEndpointQName(new QName(namespace, wsdlEndpoint));
-        
+
         sts.getProperties().putAll(properties);
         if (use200502Namespace) {
             sts.setNamespace(HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_02_TRUST);
         }
-        
+
         if (lifetime != null) {
             sts.setEnableLifetime(true);
             sts.setTtl(lifetime.intValue());
         }
-        
+
         return handlePreAuthenticated((PreAuthenticatedAuthenticationToken)authentication, sts);
     }
-    
+
     private Authentication handlePreAuthenticated(
         PreAuthenticatedAuthenticationToken preauthenticatedToken,
         IdpSTSClient sts
@@ -86,7 +86,7 @@ public class STSPreAuthAuthenticationProvider extends STSAuthenticationProvider 
         if (cert == null) {
             return null;
         }
-        
+
         // Convert the received certificate to a DOM Element to write it out "OnBehalfOf"
         Document doc = DOMUtils.createDocument();
         X509Data certElem = new X509Data(doc);
@@ -97,25 +97,25 @@ public class STSPreAuthAuthenticationProvider extends STSAuthenticationProvider 
             LOG.debug("Error parsing a client certificate", e);
             return null;
         }
-        
+
         try {
-            // Line below may be uncommented for debugging    
+            // Line below may be uncommented for debugging
             // setTimeout(sts.getClient(), 3600000L);
 
             SecurityToken token = sts.requestSecurityToken(this.appliesTo);
-            
+
             List<GrantedAuthority> authorities = createAuthorities(token);
-            
+
             STSUserDetails details = new STSUserDetails(preauthenticatedToken.getName(),
                                                         "",
                                                         authorities,
                                                         token);
-            
+
             preauthenticatedToken.setDetails(details);
-            
+
             LOG.debug("[IDP_TOKEN={}] provided for user '{}'", token.getId(), preauthenticatedToken.getName());
             return preauthenticatedToken;
-            
+
         } catch (Exception ex) {
             LOG.info("Failed to authenticate user '" + preauthenticatedToken.getName() + "'", ex);
             return null;
@@ -126,5 +126,5 @@ public class STSPreAuthAuthenticationProvider extends STSAuthenticationProvider 
     public boolean supports(Class<?> authentication) {
         return authentication.equals(PreAuthenticatedAuthenticationToken.class);
     }
-    
+
 }

@@ -51,7 +51,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 public class FederationServlet extends HttpServlet {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = -9019993850246851112L;
 

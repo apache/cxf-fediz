@@ -40,11 +40,11 @@ import org.opensaml.saml.saml2.core.RequestedAuthnContext;
  * Protocol AuthnRequest and LogoutRequest
  */
 public class DefaultSAMLPRequestBuilder implements SAMLPRequestBuilder {
-    
+
     private boolean forceAuthn;
     private boolean isPassive;
     private String protocolBinding = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST";
-    
+
     /**
      * Create a SAML 2.0 Protocol AuthnRequest
      */
@@ -54,12 +54,12 @@ public class DefaultSAMLPRequestBuilder implements SAMLPRequestBuilder {
     ) throws Exception {
         Issuer issuer =
             SamlpRequestComponentBuilder.createIssuer(issuerId);
-        
+
         NameIDPolicy nameIDPolicy =
             SamlpRequestComponentBuilder.createNameIDPolicy(
                 true, "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent", issuerId
             );
-        
+
         AuthnContextClassRef authnCtxClassRef =
             SamlpRequestComponentBuilder.createAuthnCtxClassRef(
                 "urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport"
@@ -69,19 +69,19 @@ public class DefaultSAMLPRequestBuilder implements SAMLPRequestBuilder {
                 AuthnContextComparisonTypeEnumeration.EXACT,
                 Collections.singletonList(authnCtxClassRef), null
             );
-        
+
         //CHECKSTYLE:OFF
         return SamlpRequestComponentBuilder.createAuthnRequest(
-                assertionConsumerServiceAddress, 
-                forceAuthn, 
+                assertionConsumerServiceAddress,
+                forceAuthn,
                 isPassive,
-                protocolBinding, 
+                protocolBinding,
                 SAMLVersion.VERSION_20,
-                issuer, 
-                nameIDPolicy, 
+                issuer,
+                nameIDPolicy,
                 authnCtx
         );
-        
+
     }
 
     public boolean isForceAuthn() {
@@ -116,24 +116,24 @@ public class DefaultSAMLPRequestBuilder implements SAMLPRequestBuilder {
     ) throws Exception {
         Issuer issuer =
             SamlpRequestComponentBuilder.createIssuer(issuerId);
-        
+
         NameID nameID = null;
         List<String> sessionIndices = new ArrayList<>();
-        
+
         if (authenticatedAssertion != null) {
             if (authenticatedAssertion.getSaml2() != null) {
-                org.opensaml.saml.saml2.core.Subject subject = 
+                org.opensaml.saml.saml2.core.Subject subject =
                     authenticatedAssertion.getSaml2().getSubject();
                 if (subject != null && subject.getNameID() != null) {
                     nameID = subject.getNameID();
                 }
             }
-            
+
             if (nameID != null) {
                 nameID.detach();
             }
-            
-            List<AuthnStatement> authnStatements = 
+
+            List<AuthnStatement> authnStatements =
                 authenticatedAssertion.getSaml2().getAuthnStatements();
             if (authnStatements != null && !authnStatements.isEmpty()) {
                 for (AuthnStatement authnStatement : authnStatements) {
@@ -143,7 +143,7 @@ public class DefaultSAMLPRequestBuilder implements SAMLPRequestBuilder {
                 }
             }
         }
-        
+
         //CHECKSTYLE:OFF
         return SamlpRequestComponentBuilder.createLogoutRequest(
             issuer,
@@ -152,5 +152,5 @@ public class DefaultSAMLPRequestBuilder implements SAMLPRequestBuilder {
             sessionIndices
         );
     }
-    
+
 }

@@ -58,16 +58,16 @@ public interface EntitlementService {
     @POST
     @PreAuthorize("hasRole('ENTITLEMENT_CREATE')")
     Response addEntitlement(@Context UriInfo ui, Entitlement entitlement);
-    
+
     @PUT
     @Path("{name}")
     @PreAuthorize("hasRole('ENTITLEMENT_UPDATE')")
     Response updateEntitlement(@Context UriInfo ui, @PathParam("name") String name, Entitlement entitlement);
-    
+
     @DELETE
     @Path("{name}")
     @PreAuthorize("hasRole('ENTITLEMENT_DELETE')")
     Response deleteEntitlement(@PathParam("name") String name);
-    
+
 
 }

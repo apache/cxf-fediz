@@ -39,10 +39,10 @@ public class ClientCertificateTest extends AbstractClientCertTests {
 
     static String idpHttpsPort;
     static String rpHttpsPort;
-    
+
     private static Server rpServer;
     private static Tomcat idpServer;
-    
+
     @BeforeClass
     public static void init() {
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
@@ -61,17 +61,17 @@ public class ClientCertificateTest extends AbstractClientCertTests {
         Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
 
         initIdp();
-        
+
         try {
             Resource testServerConfig = Resource.newSystemResource("rp-client-cert-server.xml");
             XmlConfiguration configuration = new XmlConfiguration(testServerConfig.getInputStream());
-            rpServer = (Server)configuration.configure();   
+            rpServer = (Server)configuration.configure();
             rpServer.start();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     @AfterClass
     public static void cleanup() {
         try {
@@ -85,7 +85,7 @@ public class ClientCertificateTest extends AbstractClientCertTests {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
         if (rpServer != null && rpServer.isStarted()) {
             try {
                 rpServer.stop();
@@ -94,7 +94,7 @@ public class ClientCertificateTest extends AbstractClientCertTests {
             }
         }
     }
-    
+
     private static void initIdp() {
         try {
             idpServer = new Tomcat();
@@ -102,11 +102,11 @@ public class ClientCertificateTest extends AbstractClientCertTests {
             String currentDir = new File(".").getCanonicalPath();
             String baseDir = currentDir + File.separator + "target";
             idpServer.setBaseDir(baseDir);
-            
+
             idpServer.getHost().setAppBase("tomcat/idp/webapps");
             idpServer.getHost().setAutoDeploy(true);
             idpServer.getHost().setDeployOnStartup(true);
-            
+
             Connector httpsConnector = new Connector();
             httpsConnector.setPort(Integer.parseInt(idpHttpsPort));
             httpsConnector.setSecure(true);
@@ -122,13 +122,13 @@ public class ClientCertificateTest extends AbstractClientCertTests {
             httpsConnector.setAttribute("SSLEnabled", true);
 
             idpServer.getService().addConnector(httpsConnector);
-            
+
             File stsWebapp = new File(baseDir + File.separator + idpServer.getHost().getAppBase(), "fediz-idp-sts");
             idpServer.addWebapp("/fediz-idp-sts", stsWebapp.getAbsolutePath());
-    
+
             File idpWebapp = new File(baseDir + File.separator + idpServer.getHost().getAppBase(), "fediz-idp");
             idpServer.addWebapp("/fediz-idp", idpWebapp.getAbsolutePath());
-            
+
             idpServer.start();
         } catch (Exception e) {
             e.printStackTrace();
@@ -145,10 +145,10 @@ public class ClientCertificateTest extends AbstractClientCertTests {
     public String getRpHttpsPort() {
         return rpHttpsPort;
     }
-    
+
     @Override
     public String getServletContextName() {
         return "fedizhelloworld";
     }
-    
+
 }

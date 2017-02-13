@@ -50,9 +50,9 @@ import org.apache.cxf.fediz.core.SecurityTokenThreadLocal;
 
 @Path("/")
 public class FederationService {
-    @Context 
+    @Context
     private UriInfo uriInfo;
-    @Context 
+    @Context
     private SecurityContext securityContext;
     @POST
     public Response getTokenInfoFromPost() {
@@ -80,7 +80,7 @@ public class FederationService {
         out.append("<br><b>Roles</b><p>");
         List<String> roleListToCheck = Arrays.asList("Admin", "Manager", "User", "Authenticated");
         for (String item: roleListToCheck) {
-            out.append("Has role '" + item + "': " 
+            out.append("Has role '" + item + "': "
                 + ((securityContext.isUserInRole(item)) ? "<b>yes</b>" : "no") + "<p>");
         }
 

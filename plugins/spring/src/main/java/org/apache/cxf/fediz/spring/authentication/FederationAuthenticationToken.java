@@ -47,7 +47,7 @@ public class FederationAuthenticationToken extends AbstractAuthenticationToken
     private final FedizResponse response;
     private List<String> roles = Collections.emptyList();
 
-    
+
     public FederationAuthenticationToken(final Object principal, final Object credentials,
         final Collection<? extends GrantedAuthority> authorities, final UserDetails userDetails,
         final FedizResponse response) {

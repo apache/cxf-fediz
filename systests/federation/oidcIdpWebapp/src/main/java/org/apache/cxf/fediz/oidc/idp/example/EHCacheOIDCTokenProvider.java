@@ -31,13 +31,13 @@ import org.apache.cxf.rs.security.oauth2.provider.OAuthServiceException;
  * Extend the DefaultEHCacheCodeDataProvider to allow OpenId
  */
 public class EHCacheOIDCTokenProvider extends DefaultEHCacheCodeDataProvider {
-    
+
     @Override
     public List<OAuthPermission> convertScopeToPermissions(Client client, List<String> requestedScopes) {
         if (requestedScopes.isEmpty()) {
             return Collections.emptyList();
         }
-        
+
         List<OAuthPermission> permissions = new ArrayList<>();
         for (String requestedScope : requestedScopes) {
             if ("openid".equals(requestedScope)) {
@@ -47,7 +47,7 @@ public class EHCacheOIDCTokenProvider extends DefaultEHCacheCodeDataProvider {
                 throw new OAuthServiceException("invalid_scope");
             }
         }
-        
+
         return permissions;
     }
 }

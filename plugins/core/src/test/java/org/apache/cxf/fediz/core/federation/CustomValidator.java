@@ -40,7 +40,7 @@ public class CustomValidator implements TokenValidator {
 
     @Override
     public TokenValidatorResponse validateAndProcessToken(
-        TokenValidatorRequest request, 
+        TokenValidatorRequest request,
         FedizContext config
     ) {
         return new TokenValidatorResponse(null,

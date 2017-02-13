@@ -53,28 +53,28 @@ public class FedizSubjectCreator implements SubjectCreator {
     private String issuer;
     private long defaultTimeToLive = 3600L;
     private Map<String, String> supportedClaims = Collections.emptyMap();
-    
+
     @Override
-    public UserSubject createUserSubject(MessageContext mc, 
+    public UserSubject createUserSubject(MessageContext mc,
                                          MultivaluedMap<String, String> params) throws OAuthServiceException {
         Principal principal = mc.getSecurityContext().getUserPrincipal();
-        
+
         if (!(principal instanceof FedizPrincipal)) {
             throw new OAuthServiceException("Unsupported Principal");
         }
-        FedizPrincipal fedizPrincipal = (FedizPrincipal)principal; 
-        
+        FedizPrincipal fedizPrincipal = (FedizPrincipal)principal;
+
         // In the future FedizPrincipal will likely have JWT claims already prepared,
-        // with IdToken being initialized here from those claims 
+        // with IdToken being initialized here from those claims
         OidcUserSubject oidcSub = new OidcUserSubject();
         oidcSub.setLogin(fedizPrincipal.getName());
-     
+
         // Subject ID - a locally unique and never reassigned identifier allocated to the end user
-        // REVISIT: 
+        // REVISIT:
         // Can it be allocated on per-session basis or is it something that is supposed to be created
         // by the authentication system (IDP/STS) once and reported every time a given user signs in ?
         oidcSub.setId(Base64UrlUtility.encode(CryptoUtils.generateSecureRandomBytes(16)));
-        
+
         IdToken idToken = convertToIdToken(fedizPrincipal.getLoginToken(),
                                            oidcSub.getLogin(),
                                            oidcSub.getId(),
@@ -84,26 +84,26 @@ public class FedizSubjectCreator implements SubjectCreator {
         oidcSub.setIdToken(idToken);
         // UserInfo can be populated and set on OidcUserSubject too.
         // UserInfoService will create it otherwise.
-        
+
         return oidcSub;
     }
-    
-    private IdToken convertToIdToken(Element samlToken, 
+
+    private IdToken convertToIdToken(Element samlToken,
             String subjectName,
             String subjectId,
             ClaimCollection claims,
             List<String> roles,
             String requestedClaims) {
         // The current SAML Assertion represents an authentication record.
-        // It has to be translated into IdToken (JWT) so that it can be returned 
+        // It has to be translated into IdToken (JWT) so that it can be returned
         // to client applications participating in various OIDC flows.
-        
+
         IdToken idToken = new IdToken();
-        
+
         //TODO: make the mapping between the subject name and IdToken claim configurable
         idToken.setPreferredUserName(subjectName);
         idToken.setSubject(subjectId);
-        
+
         Assertion saml2Assertion = getSaml2Assertion(samlToken);
         if (saml2Assertion != null) {
             // issueInstant
@@ -111,7 +111,7 @@ public class FedizSubjectCreator implements SubjectCreator {
             if (issueInstant != null) {
                 idToken.setIssuedAt(issueInstant.getMillis() / 1000);
             }
-        
+
             // expiryTime
             if (saml2Assertion.getConditions() != null) {
                 DateTime expires = saml2Assertion.getConditions().getNotOnOrAfter();
@@ -119,15 +119,15 @@ public class FedizSubjectCreator implements SubjectCreator {
                     idToken.setExpiryTime(expires.getMillis() / 1000);
                 }
             }
-        
+
             // authInstant
             if (!saml2Assertion.getAuthnStatements().isEmpty()) {
-                DateTime authInstant = 
+                DateTime authInstant =
                 saml2Assertion.getAuthnStatements().get(0).getAuthnInstant();
                 idToken.setAuthenticationTime(authInstant.getMillis() / 1000L);
             }
         }
-        // Check if default issuer, issuedAt and expiryTime values have to be set 
+        // Check if default issuer, issuedAt and expiryTime values have to be set
         if (issuer != null) {
             idToken.setIssuer(issuer);
         } else if (saml2Assertion != null) {
@@ -136,7 +136,7 @@ public class FedizSubjectCreator implements SubjectCreator {
                 idToken.setIssuer(assertionIssuer.getValue());
             }
         }
-        
+
         long currentTimeInSecs = System.currentTimeMillis() / 1000;
         if (idToken.getIssuedAt() == null) {
             idToken.setIssuedAt(currentTimeInSecs);
@@ -144,13 +144,13 @@ public class FedizSubjectCreator implements SubjectCreator {
         if (idToken.getExpiryTime() == null) {
             idToken.setExpiryTime(currentTimeInSecs + defaultTimeToLive);
         }
-        
+
         // Additional claims requested
         List<String> requestedClaimsList = Collections.emptyList();
         if (requestedClaims != null && !supportedClaims.isEmpty()) {
             requestedClaimsList = Arrays.asList(requestedClaims.trim().split(" "));
         }
-        
+
         // Map claims
         if (claims != null) {
             String firstName = null;
@@ -179,14 +179,14 @@ public class FedizSubjectCreator implements SubjectCreator {
                     && requestedClaimsList.contains(supportedClaims.get(c.getClaimType().toString()))) {
                     idToken.setClaim(supportedClaims.get(c.getClaimType().toString()), (String)c.getValue());
                 }
-            
+
             }
             if (firstName != null && lastName != null) {
                 idToken.setName(firstName + " " + lastName);
             }
         }
-        
-        if (roles != null && !roles.isEmpty() 
+
+        if (roles != null && !roles.isEmpty()
             && supportedClaims.containsKey(FedizConstants.DEFAULT_ROLE_URI.toString())
             && requestedClaimsList.contains(supportedClaims.get(FedizConstants.DEFAULT_ROLE_URI.toString()))) {
             if (roles.size() == 1) {
@@ -195,7 +195,7 @@ public class FedizSubjectCreator implements SubjectCreator {
                 idToken.setClaim(supportedClaims.get(FedizConstants.DEFAULT_ROLE_URI.toString()), roles);
             }
         }
-    
+
         return idToken;
     }
 
@@ -208,15 +208,15 @@ public class FedizSubjectCreator implements SubjectCreator {
         } catch (WSSecurityException ex) {
             throw new OAuthServiceException("Error converting SAML token", ex);
         }
-    
+
     }
 
 
     public void setIdTokenIssuer(String idTokenIssuer) {
         this.issuer = idTokenIssuer;
     }
-    
-    
+
+
     public void setIdTokenTimeToLive(long idTokenTimeToLive) {
         this.defaultTimeToLive = idTokenTimeToLive;
     }

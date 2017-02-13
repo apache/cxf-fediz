@@ -37,23 +37,23 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @Repository
 public class TrustedIdpDAOJPAImpl implements TrustedIdpDAO {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(TrustedIdpDAOJPAImpl.class);
 
     private EntityManager em;
-    
+
     @PersistenceContext
     public void setEntityManager(EntityManager entityManager) {
         this.em = entityManager;
     }
-    
+
     @Override
     public List<TrustedIdp> getTrustedIDPs(int start, int size) {
         List<TrustedIdp> list = new ArrayList<>();
-        
+
         Query query = null;
         query = em.createQuery("select t from TrustedIDP t");
-        
+
         List<?> idpEntities = query
             .setFirstResult(start)
             .setMaxResults(size)
@@ -63,7 +63,7 @@ public class TrustedIdpDAOJPAImpl implements TrustedIdpDAO {
             TrustedIdpEntity entity = (TrustedIdpEntity) obj;
             list.add(entity2domain(entity));
         }
-        
+
         return list;
     }
 
@@ -71,24 +71,24 @@ public class TrustedIdpDAOJPAImpl implements TrustedIdpDAO {
     public TrustedIdp getTrustedIDP(String realm) {
         return entity2domain(getTrustedIdpEntity(realm, em));
     }
-    
+
     @Override
     public TrustedIdp addTrustedIDP(TrustedIdp trustedIdp) {
         TrustedIdpEntity entity = new TrustedIdpEntity();
         domain2entity(trustedIdp, entity);
         em.persist(entity);
-        
+
         LOG.debug("Trusted IDP '" + trustedIdp.getRealm() + "' added");
         return entity2domain(entity);
     }
-    
+
     @Override
     public void updateTrustedIDP(String realm, TrustedIdp trustedIdp) {
         TrustedIdpEntity trustedIdpEntity = getTrustedIdpEntity(realm, em);
-        
+
         domain2entity(trustedIdp, trustedIdpEntity);
         em.persist(trustedIdpEntity);
-        
+
         LOG.debug("Trusted IDP '" + trustedIdp.getRealm() + "' updated");
     }
 
@@ -97,23 +97,23 @@ public class TrustedIdpDAOJPAImpl implements TrustedIdpDAO {
         Query query = null;
         query = em.createQuery("select t from TrustedIDP t where t.realm=:realm");
         query.setParameter("realm", realm);
-        
+
         //@SuppressWarnings("rawtypes")
         Object trustedIdpObj = query.getSingleResult();
         em.remove(trustedIdpObj);
-        
+
         LOG.debug("Trusted IDP '" + realm + "' deleted");
     }
-    
+
     static TrustedIdpEntity getTrustedIdpEntity(String realm, EntityManager em) {
         Query query = null;
         query = em.createQuery("select t from TrustedIDP t where t.realm=:realm");
         query.setParameter("realm", realm);
-        
+
         //@SuppressWarnings("rawtypes")
         return (TrustedIdpEntity)query.getSingleResult();
     }
-    
+
     public static void domain2entity(TrustedIdp trustedIDP, TrustedIdpEntity entity) {
         //The ID must not be updated if the entity has got an id already (update case)
         if (trustedIDP.getId() > 0) {
@@ -132,7 +132,7 @@ public class TrustedIdpDAOJPAImpl implements TrustedIdpDAO {
         entity.setUrl(trustedIDP.getUrl());
         entity.setParameters(trustedIDP.getParameters());
     }
-    
+
     public static TrustedIdp entity2domain(TrustedIdpEntity entity) {
         TrustedIdp trustedIDP = new TrustedIdp();
         trustedIDP.setId(entity.getId());

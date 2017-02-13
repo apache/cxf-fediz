@@ -31,7 +31,7 @@ public class JettyPreAuthSpringTest extends AbstractTests {
 
     static String idpHttpsPort;
     static String rpHttpsPort;
-    
+
     @BeforeClass
     public static void init() {
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
@@ -40,7 +40,7 @@ public class JettyPreAuthSpringTest extends AbstractTests {
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.commons.httpclient", "info");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.webflow", "info");
         System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.security.web", "info");
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf.fediz", "info"); 
+        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf.fediz", "info");
 
         idpHttpsPort = System.getProperty("idp.https.port");
         Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
@@ -52,7 +52,7 @@ public class JettyPreAuthSpringTest extends AbstractTests {
         JettyUtils.initRpServer();
         JettyUtils.startRpServer();
     }
-    
+
     @AfterClass
     public static void cleanup() {
         JettyUtils.stopIdpServer();
@@ -68,16 +68,16 @@ public class JettyPreAuthSpringTest extends AbstractTests {
     public String getRpHttpsPort() {
         return rpHttpsPort;
     }
-    
+
     @Override
     public String getServletContextName() {
         return "fedizspringhelloworld";
     }
-    
+
     @Ignore("This tests is currently failing on Jetty")
     @Override
     public void testConcurrentRequests() throws Exception {
         // super.testConcurrentRequests();
     }
-    
+
 }

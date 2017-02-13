@@ -50,7 +50,7 @@ public class FederationLogoutFilter extends LogoutFilter {
             // Default WS-Federation logout action
             return true;
         }
-        
+
         if (this.logoutUrl == null) {
             String contextName = request.getContextPath();
             if (contextName == null || contextName.isEmpty()) {

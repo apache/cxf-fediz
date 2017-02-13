@@ -29,7 +29,7 @@ import org.apache.cxf.fediz.service.idp.domain.Application;
 //@Table(name = "SERVICE")
 //@XmlRootElement(name = "Service", namespace = "http://org.apache.cxf.fediz")
 public class ServiceConfig extends Application {
-        
-    private static final long serialVersionUID = 585676715065240699L;       
+
+    private static final long serialVersionUID = 585676715065240699L;
 
 }

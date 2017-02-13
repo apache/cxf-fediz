@@ -93,11 +93,11 @@ public class ITCrossRealmTest extends AbstractSTSTest {
 
         Assert.assertTrue(SAML2_TOKEN_TYPE.equals(idpToken.getTokenType()));
         Assert.assertTrue(idpToken.getToken() != null);
-        
+
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(idpToken.getToken());
         validateIssuer(assertion, "STS Realm A");
 
-        
+
         List<String> claimsList = null;
         String claims = testProps.getProperty(PROPERTY_CLAIMS);
         if (claims != null && claims.length() > 0) {
@@ -107,10 +107,10 @@ public class ITCrossRealmTest extends AbstractSTSTest {
                 claimsList.add(st.nextToken());
             }
         }
-        
+
         // Need client auth for the second call
         tlsClientParameters = initTLSClientParameters(testProps, true);
-        
+
         SecurityToken rpToken = requestSecurityTokenOnbehalfOf(
                                                                SAML2_TOKEN_TYPE,
                                                                BEARER_KEYTYPE,
@@ -124,7 +124,7 @@ public class ITCrossRealmTest extends AbstractSTSTest {
 
         Assert.assertTrue(SAML2_TOKEN_TYPE.equals(rpToken.getTokenType()));
         Assert.assertTrue(rpToken.getToken() != null);
-        
+
         assertion = new SamlAssertionWrapper(rpToken.getToken());
         this.validateSubject(testProps, assertion);
         validateIssuer(assertion, "STS Realm B");
@@ -138,7 +138,7 @@ public class ITCrossRealmTest extends AbstractSTSTest {
 
         bus.shutdown(true);
     }
-    
+
     /**
      * Test issuing a token from REALM A and re-issue a token from REALM B
      */
@@ -179,11 +179,11 @@ public class ITCrossRealmTest extends AbstractSTSTest {
 
         Assert.assertTrue(SAML2_TOKEN_TYPE.equals(idpToken.getTokenType()));
         Assert.assertTrue(idpToken.getToken() != null);
-        
+
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(idpToken.getToken());
         validateIssuer(assertion, "STS Realm A");
 
-        
+
         List<String> claimsList = null;
         String claims = testProps.getProperty(PROPERTY_CLAIMS);
         if (claims != null && claims.length() > 0) {
@@ -193,10 +193,10 @@ public class ITCrossRealmTest extends AbstractSTSTest {
                 claimsList.add(st.nextToken());
             }
         }
-        
+
         // Need client auth for the second call
         tlsClientParameters = initTLSClientParameters(testProps, true);
-        
+
         SecurityToken rpToken = requestSecurityTokenOnbehalfOf(
                                                                SAML2_TOKEN_TYPE,
                                                                BEARER_KEYTYPE,
@@ -210,11 +210,11 @@ public class ITCrossRealmTest extends AbstractSTSTest {
 
         Assert.assertTrue(SAML2_TOKEN_TYPE.equals(rpToken.getTokenType()));
         Assert.assertTrue(rpToken.getToken() != null);
-        
+
         assertion = new SamlAssertionWrapper(rpToken.getToken());
         this.validateSubject(testProps, assertion);
         validateIssuer(assertion, "STS Realm B");
-        
+
         List<Attribute> attributes = assertion.getSaml2().getAttributeStatements().get(0).getAttributes();
         validateIssuedClaims(attributes, testProps);
 
@@ -227,5 +227,5 @@ public class ITCrossRealmTest extends AbstractSTSTest {
 
         bus.shutdown(true);
     }
-    
+
 }

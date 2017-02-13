@@ -44,7 +44,7 @@ import org.springframework.util.Assert;
 public class FederationServlet extends HttpServlet {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = -9019993850246851112L;
 
@@ -78,31 +78,31 @@ public class FederationServlet extends HttpServlet {
             for (Claim c : claims) {
                 out.println("<p>" + c.getClaimType().toString() + "=" + c.getValue() + "</p>");
             }
-            
+
             Element el = fp.getLoginToken();
             if (el != null) {
                 out.println("loginToken=FOUND{FedizPrincipal}<p>");
             }
-            
+
             el = SecurityTokenThreadLocal.getToken();
             if (el != null) {
                 out.println("loginToken=FOUND{SecurityTokenThreadLocal}<p>");
             }
         }
-        
+
         out.println("</body>");
-        
+
         // Access Spring security context
         Assert.notNull(SecurityContextHolder.getContext().getAuthentication(),
                        "SecurityContextHolder Authentication not null");
-        
+
         Authentication obj = SecurityContextHolder.getContext().getAuthentication();
         System.out.println("getCredentials: " + obj.getCredentials().toString());
         System.out.println("getDetails: " + obj.getDetails().toString());
         System.out.println("getName: " + obj.getName().toString());
         System.out.println("getAuthorities: " + obj.getAuthorities().toString());
         System.out.println("getPrincipal: " + obj.getPrincipal().toString());
-        
+
     }
 
 }

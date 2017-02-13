@@ -36,14 +36,14 @@ import org.apache.wss4j.dom.validate.Credential;
  * constraints.
  */
 public class SamlAssertionValidator extends org.apache.wss4j.dom.validate.SamlAssertionValidator {
-    
+
     private TrustType signatureTrustType = TrustType.CHAIN_TRUST;
-        
+
     /**
      * a collection of compiled regular expression patterns for the subject DN
      */
     private Collection<Pattern> subjectDNPatterns = new ArrayList<>();
-    
+
     /**
      * Set a list of Strings corresponding to regular expression constraints on
      * the subject DN of a certificate
@@ -54,7 +54,7 @@ public class SamlAssertionValidator extends org.apache.wss4j.dom.validate.SamlAs
             subjectDNPatterns.addAll(constraints);
         }
     }
-    
+
     /**
      * Set the kind of trust. The default is CHAIN_TRUST.
      */
@@ -79,13 +79,13 @@ public class SamlAssertionValidator extends org.apache.wss4j.dom.validate.SamlAs
         SAMLKeyInfo samlKeyInfo = assertion.getSignatureKeyInfo();
         credential.setPublicKey(samlKeyInfo.getPublicKey());
         credential.setCertificates(samlKeyInfo.getCerts());
-        
+
         FedizSignatureTrustValidator trustValidator = new FedizSignatureTrustValidator();
         trustValidator.setSignatureTrustType(signatureTrustType);
         trustValidator.setSubjectConstraints(subjectDNPatterns);
-        
+
         return trustValidator.validate(credential, data);
     }
 
-    
+
 }

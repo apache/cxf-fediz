@@ -47,29 +47,29 @@ public class FederationRequestTest {
     static final String TEST_REQUEST_URL = "https://localhost/fedizhelloworld/";
     static final String TEST_REQUEST_URI = "/fedizhelloworld";
     static final String TEST_IDP_ISSUER = "http://url_to_the_issuer";
-    
+
     private static final String CONFIG_FILE = "fediz_test_config.xml";
-    
+
     private static FedizConfigurator configurator;
     private static DocumentBuilderFactory docBuilderFactory;
-    
+
     static {
         docBuilderFactory = DocumentBuilderFactory.newInstance();
         docBuilderFactory.setNamespaceAware(true);
     }
-    
-    
+
+
     @BeforeClass
     public static void init() {
         getFederationConfigurator();
         Assert.assertNotNull(configurator);
     }
-    
+
     @AfterClass
     public static void cleanup() {
         SecurityTestUtil.cleanup();
     }
-    
+
 
     private static FedizConfigurator getFederationConfigurator() {
         if (configurator != null) {
@@ -87,22 +87,22 @@ public class FederationRequestTest {
             return null;
         }
     }
-    
+
     @org.junit.Test
     public void createFederationSignInRequest() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_HOME_REALM)).andReturn(null);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL)).times(1, 2);
         EasyMock.expect(req.getContextPath()).andReturn(TEST_REQUEST_URI);
         EasyMock.expect(req.getQueryString()).andReturn(null);
         EasyMock.replay(req);
-        
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         RedirectionResponse response = wfProc.createSignInRequest(req, config);
-        
+
         String redirectionURL = response.getRedirectionURL();
         Assert.assertTrue(redirectionURL.startsWith(TEST_IDP_ISSUER));
         Assert.assertTrue(redirectionURL.contains("wa=wsignin1.0"));
@@ -112,7 +112,7 @@ public class FederationRequestTest {
         Assert.assertTrue(redirectionURL.contains("wtrealm=target+realm"));
         Assert.assertTrue(redirectionURL.contains("wreply="));
     }
-    
+
     @org.junit.Test
     public void createFederationSignInRequestWithUrlDefinedHomeRealm() throws Exception {
         // Mock up a Request
@@ -140,24 +140,24 @@ public class FederationRequestTest {
         Assert.assertTrue(redirectionURL.contains("whr="
                                                 + URLEncoder.encode("urn:org:apache:cxf:fediz:idp:realm-A", "UTF-8")));
     }
-    
+
     @org.junit.Test
     public void createFederationSignOutRequest() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_REPLY)).andReturn(null);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL)).times(1, 2);
         EasyMock.expect(req.getContextPath()).andReturn(TEST_REQUEST_URI);
         EasyMock.replay(req);
-        
+
         FedizProcessor wfProc = new FederationProcessorImpl();
         RedirectionResponse response = wfProc.createSignOutRequest(req, null, config);
-        
+
         String redirectionURL = response.getRedirectionURL();
         Assert.assertTrue(redirectionURL.startsWith(TEST_IDP_ISSUER));
         Assert.assertTrue(redirectionURL.contains("wa=wsignout1.0"));
     }
-    
+
 }

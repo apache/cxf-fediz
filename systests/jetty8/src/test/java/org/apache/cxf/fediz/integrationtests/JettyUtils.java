@@ -27,34 +27,34 @@ public final class JettyUtils {
 
     private static Server idpServer;
     private static Server rpServer;
-    
+
     private JettyUtils() {
     }
-        
+
     public static void initIdpServer() {
         if (idpServer == null) {
             try {
                 Resource testServerConfig = Resource.newSystemResource("idp-server.xml");
                 XmlConfiguration configuration = new XmlConfiguration(testServerConfig.getInputStream());
-                idpServer = (Server)configuration.configure();   
-                
+                idpServer = (Server)configuration.configure();
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
-    
+
     public static void startIdpServer() {
         if (idpServer != null && !idpServer.isStarted()) {
             try {
                 idpServer.start();
-                
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
-    
+
     public static void stopIdpServer() {
         if (idpServer != null && idpServer.isStarted()) {
             try {
@@ -64,24 +64,24 @@ public final class JettyUtils {
             }
         }
     }
-    
+
     public static void initRpServer() {
         initRpServer("rp-server.xml");
     }
-    
+
     public static void initRpServer(String configurationFile) {
         if (rpServer == null) {
             try {
                 Resource testServerConfig = Resource.newSystemResource(configurationFile);
                 XmlConfiguration configuration = new XmlConfiguration(testServerConfig.getInputStream());
-                rpServer = (Server)configuration.configure();   
-                
+                rpServer = (Server)configuration.configure();
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
-    
+
     public static void startRpServer() {
         if (rpServer != null && !rpServer.isStarted()) {
             try {
@@ -91,7 +91,7 @@ public final class JettyUtils {
             }
         }
     }
-    
+
     public static void stopRpServer() {
         if (rpServer != null && rpServer.isStarted()) {
             try {
@@ -101,5 +101,5 @@ public final class JettyUtils {
             }
         }
     }
-    
+
 }

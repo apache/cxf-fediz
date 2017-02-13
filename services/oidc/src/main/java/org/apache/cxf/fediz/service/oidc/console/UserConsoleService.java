@@ -34,18 +34,18 @@ public class UserConsoleService {
     private SecurityContext sc;
 
     private ClientRegistrationService clientRegService;
-    
+
     @Context
     public void setSecurityContext(SecurityContext securityContext) {
         this.sc = securityContext;
         clientRegService.setSecurityContext(securityContext);
     }
-     
-    
+
+
     @GET
     @Produces(MediaType.TEXT_HTML)
     public UserConsole getConsole() {
-        return new UserConsole(getUserName()); 
+        return new UserConsole(getUserName());
     }
     private String getUserName() {
         return sc.getUserPrincipal().getName();

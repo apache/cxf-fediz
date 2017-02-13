@@ -73,14 +73,14 @@ public class ClientRegistrationService {
     private Map<String, String> homeRealms = new LinkedHashMap<String, String>();
     private boolean protectIdTokenWithClientSecret;
     private Map<String, String> clientScopes;
-    
+
     private SecurityContext sc;
 
     @Context
     public void setSecurityContext(SecurityContext securityContext) {
         this.sc = securityContext;
     }
-    
+
     @GET
     @Produces(MediaType.TEXT_HTML)
     @Path("/register")
@@ -106,14 +106,14 @@ public class ClientRegistrationService {
         }
         return null;
     }
-    
-    
+
+
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_HTML)
     @Path("/{id}/remove")
     public RegisteredClients removeClient(@PathParam("id") String id) {
-        Collection<Client> clients = getClientRegistrations(); 
+        Collection<Client> clients = getClientRegistrations();
         for (Iterator<Client> it = clients.iterator(); it.hasNext();) {
             Client c = it.next();
             if (c.getClientId().equals(id)) {
@@ -140,7 +140,7 @@ public class ClientRegistrationService {
         clientProvider.setClient(c);
         return c;
     }
-    
+
     @GET
     @Produces(MediaType.TEXT_HTML)
     @Path("/{id}/tokens")
@@ -148,14 +148,14 @@ public class ClientRegistrationService {
         Client c = getRegisteredClient(id);
         return doGetClientIssuedTokens(c);
     }
-    
+
     protected ClientTokens doGetClientIssuedTokens(Client c) {
         Comparator<ServerAccessToken> tokenComp = new TokenComparator();
         UserSubject subject = new OidcUserSubject(getUserName());
-        List<ServerAccessToken> accessTokens = 
+        List<ServerAccessToken> accessTokens =
             new ArrayList<ServerAccessToken>(dataProvider.getAccessTokens(c, subject));
         Collections.sort(accessTokens, tokenComp);
-        List<RefreshToken> refreshTokens = 
+        List<RefreshToken> refreshTokens =
                 new ArrayList<RefreshToken>(dataProvider.getRefreshTokens(c, subject));
         Collections.sort(refreshTokens, tokenComp);
         return new ClientTokens(c, accessTokens, refreshTokens);
@@ -168,7 +168,7 @@ public class ClientRegistrationService {
                                                       @PathParam("tokenId") String tokenId) {
         return doRevokeClientToken(clientId, tokenId, OAuthConstants.ACCESS_TOKEN);
     }
-    
+
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_HTML)
@@ -177,7 +177,7 @@ public class ClientRegistrationService {
                                                       @PathParam("tokenId") String tokenId) {
         return doRevokeClientToken(clientId, tokenId, OAuthConstants.REFRESH_TOKEN);
     }
-    
+
     protected ClientTokens doRevokeClientToken(String clientId,
                                                      String tokenId,
                                                      String tokenType) {
@@ -185,7 +185,7 @@ public class ClientRegistrationService {
         dataProvider.revokeToken(c, tokenId, tokenType);
         return doGetClientIssuedTokens(c);
     }
-    
+
     @GET
     @Produces(MediaType.TEXT_HTML)
     @Path("/{id}/codes")
@@ -200,7 +200,7 @@ public class ClientRegistrationService {
         }
         return null;
     }
-    
+
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_HTML)
@@ -213,13 +213,13 @@ public class ClientRegistrationService {
         }
         return null;
     }
-    
+
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_HTML)
     @Path("/")
     public Response registerForm(@FormParam("client_name") String appName,
-                                 @FormParam("client_type") String appType, 
+                                 @FormParam("client_type") String appType,
                                  @FormParam("client_audience") String audience,
                                  @FormParam("client_redirectURI") String redirectURI,
                                  @FormParam("client_logoutURI") String logoutURI,
@@ -244,17 +244,17 @@ public class ClientRegistrationService {
             String clientSecret = isConfidential
                 ? generateClientSecret()
                 : null;
-    
+
             Client newClient = new Client(clientId, clientSecret, isConfidential, appName);
-            
+
             // User who registered this client
             String userName = sc.getUserPrincipal().getName();
             UserSubject userSubject = new OidcUserSubject(userName);
             newClient.setResourceOwnerSubject(userSubject);
-    
+
             // Client Registration Time
             newClient.setRegisteredAt(System.currentTimeMillis() / 1000);
-            
+
             // Client Realm
             if (homeRealm != null) {
                 newClient.setHomeRealm(homeRealm);
@@ -262,7 +262,7 @@ public class ClientRegistrationService {
                     newClient.getProperties().put("homeRealmAlias", homeRealms.get(homeRealm));
                 }
             }
-            
+
             // Client Redirect URIs
             if (!StringUtils.isEmpty(redirectURI)) {
                 String[] allUris = redirectURI.trim().split(" ");
@@ -285,7 +285,7 @@ public class ClientRegistrationService {
                 //TODO: replace this code with newClient.setLogoutUri() once it becomes available
                 newClient.getProperties().put("client_logout_uri", logoutURI);
             }
-            
+
             // Client Audience URIs
             if (!StringUtils.isEmpty(audience)) {
                 String[] auds = audience.trim().split(" ");
@@ -300,7 +300,7 @@ public class ClientRegistrationService {
                 }
                 newClient.setRegisteredAudiences(registeredAuds);
             }
-            
+
             // Client Scopes
             if (clientScopes != null && !clientScopes.isEmpty()) {
                 newClient.setRegisteredScopes(new ArrayList<String>(clientScopes.keySet()));
@@ -311,16 +311,16 @@ public class ClientRegistrationService {
             return Response.ok(new InvalidRegistration(ex.getMessage())).build();
         }
     }
-    
-    
+
+
     private void throwInvalidRegistrationException(String error) {
         throw new InvalidRegistrationException(error);
     }
 
     private boolean isValidURI(String uri, boolean requireHttps) {
-        
+
         UrlValidator urlValidator = null;
-        
+
         if (requireHttps) {
             String[] schemes = {"https"};
             urlValidator = new UrlValidator(schemes, UrlValidator.ALLOW_LOCAL_URLS);
@@ -328,11 +328,11 @@ public class ClientRegistrationService {
             urlValidator = new UrlValidator(UrlValidator.ALLOW_LOCAL_URLS
                                                      + UrlValidator.ALLOW_ALL_SCHEMES);
         }
-        
+
         if (!urlValidator.isValid(uri)) {
             return false;
         }
-        
+
         // Do additional checks on the URI
         try {
             URI parsedURI = new URI(uri);
@@ -343,7 +343,7 @@ public class ClientRegistrationService {
         } catch (URISyntaxException ex) {
             return false;
         }
-        
+
         return true;
     }
 
@@ -381,7 +381,7 @@ public class ClientRegistrationService {
             newClient.setApplicationName(newName + nextNumber);
         }
         names.add(newClient.getApplicationName());
-        
+
         clientProvider.setClient(newClient);
         Collection<Client> clientRegistrations = getClientRegistrations();
         clientRegistrations.add(newClient);
@@ -445,7 +445,7 @@ public class ClientRegistrationService {
     public void setClientProvider(ClientRegistrationProvider clientProvider) {
         this.clientProvider = clientProvider;
     }
-    
+
     private static class ClientComparator implements Comparator<Client> {
 
         @Override
@@ -454,7 +454,7 @@ public class ClientRegistrationService {
             // example, Sort Clients By Name/Date/etc
             return c1.getApplicationName().compareTo(c2.getApplicationName());
         }
-        
+
     }
     private static class TokenComparator implements Comparator<ServerAccessToken> {
 
@@ -462,7 +462,7 @@ public class ClientRegistrationService {
         public int compare(ServerAccessToken t1, ServerAccessToken t2) {
             return Long.compare(t1.getIssuedAt(), t2.getIssuedAt());
         }
-        
+
     }
     private static class CodeGrantComparator implements Comparator<ServerAuthorizationCodeGrant> {
 
@@ -470,6 +470,6 @@ public class ClientRegistrationService {
         public int compare(ServerAuthorizationCodeGrant g1, ServerAuthorizationCodeGrant g2) {
             return Long.compare(g1.getIssuedAt(), g2.getIssuedAt());
         }
-        
+
     }
 }

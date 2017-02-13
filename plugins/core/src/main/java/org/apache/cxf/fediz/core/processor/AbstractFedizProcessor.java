@@ -38,7 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class AbstractFedizProcessor implements FedizProcessor {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(AbstractFedizProcessor.class);
 
     protected String resolveIssuer(HttpServletRequest request, FedizContext config) throws IOException,
@@ -74,8 +74,8 @@ public abstract class AbstractFedizProcessor implements FedizProcessor {
         }
         return wtRealm;
     }
-    
-    protected void testForReplayAttack(String tokenId, FedizContext config, Date expires) 
+
+    protected void testForReplayAttack(String tokenId, FedizContext config, Date expires)
         throws ProcessingException {
         // Check whether token already used for signin
         if (tokenId != null && config.isDetectReplayedTokens()) {
@@ -118,5 +118,5 @@ public abstract class AbstractFedizProcessor implements FedizProcessor {
         }
         return result;
     }
-    
+
 }

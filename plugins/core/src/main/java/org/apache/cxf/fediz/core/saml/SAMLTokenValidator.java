@@ -67,7 +67,7 @@ import org.slf4j.LoggerFactory;
 public class SAMLTokenValidator implements TokenValidator {
 
     private static final Logger LOG = LoggerFactory.getLogger(SAMLTokenValidator.class);
-    
+
 
     @Override
     public boolean canHandleTokenType(String tokenType) {
@@ -80,12 +80,12 @@ public class SAMLTokenValidator implements TokenValidator {
         String ns = token.getNamespaceURI();
         return WSConstants.SAML2_NS.equals(ns) || WSConstants.SAML_NS.equals(ns);
     }
-    
+
     public TokenValidatorResponse validateAndProcessToken(TokenValidatorRequest request,
             FedizContext config) throws ProcessingException {
 
         Element token = request.getToken();
-        try {          
+        try {
             RequestData requestData = new RequestData();
             WSSConfig wssConfig = WSSConfig.getNewInstance();
             requestData.setWssConfig(wssConfig);
@@ -102,16 +102,16 @@ public class SAMLTokenValidator implements TokenValidator {
             WSDocInfo docInfo = new WSDocInfo(token.getOwnerDocument());
             Signature sig = assertion.getSignature();
             KeyInfo keyInfo = sig.getKeyInfo();
-            SAMLKeyInfo samlKeyInfo = 
+            SAMLKeyInfo samlKeyInfo =
                 org.apache.wss4j.common.saml.SAMLUtil.getCredentialFromKeyInfo(
-                    keyInfo.getDOM(), new WSSSAMLKeyInfoProcessor(requestData, docInfo), 
+                    keyInfo.getDOM(), new WSSSAMLKeyInfoProcessor(requestData, docInfo),
                     requestData.getSigVerCrypto()
                 );
             assertion.verifySignature(samlKeyInfo);
-            
+
             // Parse the subject if it exists
             assertion.parseSubject(
-                new WSSSAMLKeyInfoProcessor(requestData, docInfo), requestData.getSigVerCrypto(), 
+                new WSSSAMLKeyInfoProcessor(requestData, docInfo), requestData.getSigVerCrypto(),
                 requestData.getCallbackHandler()
             );
 
@@ -123,10 +123,10 @@ public class SAMLTokenValidator implements TokenValidator {
 
             SamlAssertionValidator trustValidator = new SamlAssertionValidator();
             trustValidator.setFutureTTL(config.getMaximumClockSkew().intValue());
-            
+
             boolean trusted = false;
             String assertionIssuer = assertion.getIssuerString();
-            
+
             List<TrustedIssuer> trustedIssuers = config.getTrustedIssuers();
             for (TrustedIssuer ti : trustedIssuers) {
                 Pattern subjectConstraint = ti.getCompiledSubject();
@@ -134,14 +134,14 @@ public class SAMLTokenValidator implements TokenValidator {
                 if (subjectConstraint != null) {
                     subjectConstraints.add(subjectConstraint);
                 }
-                
+
                 if (ti.getCertificateValidationMethod().equals(CertificateValidationMethod.CHAIN_TRUST)) {
                     trustValidator.setSubjectConstraints(subjectConstraints);
                     trustValidator.setSignatureTrustType(TrustType.CHAIN_TRUST_CONSTRAINTS);
                 } else if (ti.getCertificateValidationMethod().equals(CertificateValidationMethod.PEER_TRUST)) {
                     trustValidator.setSignatureTrustType(TrustType.PEER_TRUST);
                 } else {
-                    throw new IllegalStateException("Unsupported certificate validation method: " 
+                    throw new IllegalStateException("Unsupported certificate validation method: "
                                                     + ti.getCertificateValidationMethod());
                 }
                 try {
@@ -159,7 +159,7 @@ public class SAMLTokenValidator implements TokenValidator {
                     if (trusted) {
                         break;
                     }
-                    
+
                 } catch (Exception ex) {
                     if (LOG.isInfoEnabled()) {
                         LOG.info("Issuer '" + assertionIssuer + "' doesn't match trusted issuer '" + ti.getName()
@@ -167,7 +167,7 @@ public class SAMLTokenValidator implements TokenValidator {
                     }
                 }
             }
-            
+
             if (!trusted) {
                 // Condition already checked in SamlAssertionValidator
                 // Minor performance impact on untrusted and expired tokens
@@ -179,7 +179,7 @@ public class SAMLTokenValidator implements TokenValidator {
                     throw new ProcessingException(TYPE.ISSUER_NOT_TRUSTED);
                 }
             }
-            
+
             // Now check for HolderOfKey requirements
             if (!SAMLUtil.checkHolderOfKey(assertion, request.getCerts())) {
                 LOG.warn("Assertion fails holder-of-key requirements");
@@ -198,9 +198,9 @@ public class SAMLTokenValidator implements TokenValidator {
             } else {
                 claims = Collections.emptyList();
             }
-            
+
             List<String> roles = parseRoles(config, claims);
-            
+
             SAMLTokenPrincipal p = new SAMLTokenPrincipalImpl(assertion);
 
             TokenValidatorResponse response = new TokenValidatorResponse(
@@ -208,7 +208,7 @@ public class SAMLTokenValidator implements TokenValidator {
                     new ClaimCollection(claims), audience);
             response.setExpires(getExpires(assertion));
             response.setCreated(getCreated(assertion));
-            
+
             return response;
 
         } catch (WSSecurityException ex) {
@@ -216,7 +216,7 @@ public class SAMLTokenValidator implements TokenValidator {
             throw new ProcessingException(TYPE.TOKEN_INVALID);
         }
     }
-    
+
     protected List<String> parseRoles(FedizContext config, List<Claim> claims) {
         List<String> roles = null;
         Protocol protocol = config.getProtocol();
@@ -245,7 +245,7 @@ public class SAMLTokenValidator implements TokenValidator {
                 }
             }
         }
-        
+
         return roles;
     }
 
@@ -332,7 +332,7 @@ public class SAMLTokenValidator implements TokenValidator {
                     LOG.debug("parsing attribute: " + attribute.getName());
                 }
                 Claim c = new Claim();
-                // Workaround for CXF-4484 
+                // Workaround for CXF-4484
                 // Value of Attribute Name not fully qualified
                 // if NameFormat is http://schemas.xmlsoap.org/ws/2005/05/identity/claims
                 // but ClaimType value must be fully qualified as Namespace attribute goes away
@@ -344,7 +344,7 @@ public class SAMLTokenValidator implements TokenValidator {
                     c.setClaimType(URI.create(attribute.getName()));
                 }
                 c.setIssuer(assertion.getIssuer().getNameQualifier());
-                
+
                 List<String> valueList = new ArrayList<>();
                 for (XMLObject attributeValue : attribute.getAttributeValues()) {
                     Element attributeValueElement = attributeValue.getDOM();
@@ -392,7 +392,7 @@ public class SAMLTokenValidator implements TokenValidator {
             claimsMap.put(c.getClaimType().toString(), c);
         }
     }
-    
+
     protected List<String> parseRoles(String value, String delim) {
         List<String> roles = new ArrayList<>();
         StringTokenizer st = new StringTokenizer(value, delim);
@@ -429,7 +429,7 @@ public class SAMLTokenValidator implements TokenValidator {
 
     }
 
-    
+
     private Date getExpires(SamlAssertionWrapper assertion) {
         DateTime validTill = null;
         if (assertion.getSamlVersion().equals(SAMLVersion.VERSION_20)) {
@@ -437,13 +437,13 @@ public class SAMLTokenValidator implements TokenValidator {
         } else {
             validTill = assertion.getSaml1().getConditions().getNotOnOrAfter();
         }
-        
+
         if (validTill == null) {
             return null;
         }
         return validTill.toDate();
     }
-    
+
     private Date getCreated(SamlAssertionWrapper assertion) {
         DateTime validFrom = null;
         if (assertion.getSamlVersion().equals(SAMLVersion.VERSION_20)) {
@@ -451,13 +451,13 @@ public class SAMLTokenValidator implements TokenValidator {
         } else {
             validFrom = assertion.getSaml1().getConditions().getNotBefore();
         }
-        
+
         if (validFrom == null) {
             return null;
         }
         return validFrom.toDate();
     }
-    
+
     /**
      * Check the Conditions of the Assertion.
      */
@@ -473,7 +473,7 @@ public class SAMLTokenValidator implements TokenValidator {
             validFrom = assertion.getSaml1().getConditions().getNotBefore();
             validTill = assertion.getSaml1().getConditions().getNotOnOrAfter();
         }
-        
+
         if (validFrom != null) {
             DateTime currentTime = new DateTime();
             currentTime = currentTime.plusSeconds(maxClockSkew);
@@ -489,6 +489,6 @@ public class SAMLTokenValidator implements TokenValidator {
         }
         return true;
     }
-    
+
 
 }

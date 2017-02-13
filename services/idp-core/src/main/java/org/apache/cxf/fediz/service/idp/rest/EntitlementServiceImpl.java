@@ -47,25 +47,25 @@ public class EntitlementServiceImpl implements EntitlementService {
     @Override
     public Entitlements getEntitlements(int start, int size, UriInfo uriInfo) {
         List<Entitlement> entitlements = entitlementDAO.getEntitlements(start, size);
-        
+
         Entitlements list = new Entitlements();
         list.setEntitlements(entitlements);
-        
+
         return list;
     }
-    
+
     @Override
     public Response addEntitlement(UriInfo ui, Entitlement entitlement) {
         Entitlement createdEntitlement = entitlementDAO.addEntitlement(entitlement);
-        
+
         UriBuilder uriBuilder = UriBuilder.fromUri(ui.getRequestUri());
         uriBuilder.path("{index}");
         URI location = uriBuilder.build(createdEntitlement.getName());
-        
+
         LOG.debug("Entitlement '" + createdEntitlement.getName() + "' added");
         return Response.created(location).entity(entitlement).build();
     }
-    
+
     @Override
     public Entitlement getEntitlement(String name) {
         Entitlement entitlement = entitlementDAO.getEntitlement(name);
@@ -82,7 +82,7 @@ public class EntitlementServiceImpl implements EntitlementService {
             throw new BadRequestException();
         }
         entitlementDAO.updateEntitlement(name, entitlement);
-        
+
         LOG.debug("Entitlement '" + entitlement.getName() + "' updated");
         return Response.noContent().build();
     }
@@ -90,7 +90,7 @@ public class EntitlementServiceImpl implements EntitlementService {
     @Override
     public Response deleteEntitlement(String name) {
         entitlementDAO.deleteEntitlement(name);
-        
+
         LOG.debug("Entitlement '" + name + "' deleted");
         return Response.noContent().build();
     }

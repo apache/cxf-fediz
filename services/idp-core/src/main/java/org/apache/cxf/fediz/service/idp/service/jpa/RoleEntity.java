@@ -30,18 +30,18 @@ import org.apache.openjpa.persistence.jdbc.Index;
 
 @Entity(name = "Role")
 public class RoleEntity {
-    
+
     @Id
     private int id;
-    
+
     @Index
     private String name;
-    
+
     private String description;
-    
+
     @ManyToMany(cascade = CascadeType.ALL)
     private List<EntitlementEntity> entitlements = new ArrayList<>();
-    
+
     public int getId() {
         return id;
     }
@@ -49,7 +49,7 @@ public class RoleEntity {
     public void setId(int id) {
         this.id = id;
     }
-    
+
     public String getName() {
         return name;
     }
@@ -65,7 +65,7 @@ public class RoleEntity {
     public void setDescription(String description) {
         this.description = description;
     }
-    
+
     public List<EntitlementEntity> getEntitlements() {
         return entitlements;
     }

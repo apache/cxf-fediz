@@ -27,7 +27,7 @@ import org.opensaml.saml.saml2.core.LogoutRequest;
  * This interface defines a methods to create a SAML 2.0 Protocol AuthnRequest and LogoutRequest.
  */
 public interface SAMLPRequestBuilder {
-    
+
     /**
      * Create a SAML 2.0 Protocol AuthnRequest
      */
@@ -35,7 +35,7 @@ public interface SAMLPRequestBuilder {
         String issuerId,
         String assertionConsumerServiceAddress
     ) throws Exception;
-    
+
     /**
      * Create a SAML 2.0 Protocol LogoutRequest
      */

@@ -33,10 +33,10 @@ import org.springframework.stereotype.Component;
 public class ApplicationProtocolControllerImpl implements ProtocolController<ApplicationProtocolHandler> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ApplicationProtocolControllerImpl.class);
-    
+
     @Autowired
     private List<ApplicationProtocolHandler> protocolHandlers;
-    
+
     @Override
     public ApplicationProtocolHandler getProtocolHandler(String protocol) {
         for (ApplicationProtocolHandler protocolHandler : protocolHandlers) {
@@ -47,7 +47,7 @@ public class ApplicationProtocolControllerImpl implements ProtocolController<App
         LOG.warn("No protocol handler found for {}", protocol);
         return null;
     }
-    
+
     @Override
     public List<String> getProtocols() {
         List<String> protocols = new ArrayList<>();

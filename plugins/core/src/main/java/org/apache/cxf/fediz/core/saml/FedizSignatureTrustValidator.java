@@ -38,25 +38,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class verifies trust in a signature.. 
+ * This class verifies trust in a signature..
  */
 public class FedizSignatureTrustValidator implements Validator {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(FedizSignatureTrustValidator.class);
-    
+
     public enum TrustType { CHAIN_TRUST, CHAIN_TRUST_CONSTRAINTS, PEER_TRUST }
-    
+
     /**
      * Defines the kind of trust which is required
      */
     private TrustType signatureTrustType = TrustType.CHAIN_TRUST;
-        
+
     /**
      * a collection of compiled regular expression patterns for the subject DN
      */
     private Collection<Pattern> subjectDNPatterns = new ArrayList<>();
-    
-    
+
+
     /**
      * Set the kind of trust. The default is CHAIN_TRUST.
      */
@@ -74,12 +74,12 @@ public class FedizSignatureTrustValidator implements Validator {
             subjectDNPatterns.addAll(constraints);
         }
     }
-    
+
     /**
      * Validate the credential argument. It must contain either some Certificates or a PublicKey.
-     * 
+     *
      * A Crypto and a CallbackHandler implementation is required to be set.
-     * 
+     *
      * @param credential the Credential to be validated
      * @param data the RequestData associated with the request
      * @throws WSSecurityException on a failed validation
@@ -90,12 +90,12 @@ public class FedizSignatureTrustValidator implements Validator {
                 && credential.getPublicKey() == null)) {
             throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "noCredential");
         }
-        
+
         verifyTrust(credential, data);
-        
+
         return credential;
     }
-    
+
     /**
      * Verify trust in the credential.
      * @param credential the Credential to be validated
@@ -113,7 +113,7 @@ public class FedizSignatureTrustValidator implements Validator {
         if (crypto == null) {
             throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "noSigCryptoFile");
         }
-        
+
         if (certs != null && certs.length > 0) {
             validateCertificates(certs);
             verifyTrustInCerts(certs, crypto, data, data.isRevocationEnabled());
@@ -143,7 +143,7 @@ public class FedizSignatureTrustValidator implements Validator {
      * Validate the certificates by checking the validity of each cert
      * @throws WSSecurityException
      */
-    protected void validateCertificates(X509Certificate[] certificates) 
+    protected void validateCertificates(X509Certificate[] certificates)
         throws WSSecurityException {
         try {
             for (int i = 0; i < certificates.length; i++) {
@@ -159,10 +159,10 @@ public class FedizSignatureTrustValidator implements Validator {
             );
         }
     }
-    
+
     /**
      * Evaluate whether the given certificate chain should be trusted.
-     * 
+     *
      * @param certificates the certificate chain that should be validated against the keystore
      * @param crypto A Crypto instance
      * @param data A RequestData instance
@@ -170,13 +170,13 @@ public class FedizSignatureTrustValidator implements Validator {
      * @throws WSSecurityException if the certificate chain is not trusted
      */
     protected void verifyTrustInCerts(
-        X509Certificate[] certificates, 
+        X509Certificate[] certificates,
         Crypto crypto,
         RequestData data,
         boolean enableRevocation
     ) throws WSSecurityException {
         //
-        // Use the validation method from the crypto to check whether the subjects' 
+        // Use the validation method from the crypto to check whether the subjects'
         // certificate was really signed by the issuer stated in the certificate
         //
         crypto.verifyTrust(certificates, enableRevocation, null);
@@ -187,16 +187,16 @@ public class FedizSignatureTrustValidator implements Validator {
             );
         }
     }
-    
+
     /**
      * Validate a public key
      * @throws WSSecurityException
      */
-    protected void validatePublicKey(PublicKey publicKey, Crypto crypto) 
+    protected void validatePublicKey(PublicKey publicKey, Crypto crypto)
         throws WSSecurityException {
         crypto.verifyTrust(publicKey);
     }
-    
+
     /**
      * @return true if the certificate's SubjectDN matches the constraints
      *         defined in the subject DNConstraints; false, otherwise. The
@@ -224,5 +224,5 @@ public class FedizSignatureTrustValidator implements Validator {
 
         return true;
     }
-    
+
 }

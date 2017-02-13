@@ -43,13 +43,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class CertsUtils {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(CertsUtils.class);
-    
+
     private CertsUtils() {
         super();
     }
-    
+
     /**
      * Load an X.509 Certificate from a certificate file
      */
@@ -57,16 +57,16 @@ public final class CertsUtils {
         return getX509CertificateFromFile(filename,
                                   Thread.currentThread().getContextClassLoader());
     }
-    
+
     /**
      * Load an X.509 Certificate from a certificate file
      */
-    public static X509Certificate getX509CertificateFromFile(String filename, ClassLoader classLoader) 
+    public static X509Certificate getX509CertificateFromFile(String filename, ClassLoader classLoader)
         throws CertificateException {
         if (filename == null) {
             return null;
         }
-        
+
         ClassLoader cl = classLoader;
         if (cl == null) {
             cl = Thread.currentThread().getContextClassLoader();
@@ -87,7 +87,7 @@ public final class CertsUtils {
                 if (bis.available() > 0) {
                     LOG.warn("There are more certificates configured in " + filename + ". Only first is parsed");
                 }
-                return (X509Certificate)cert;    
+                return (X509Certificate)cert;
             } else  {
                 LOG.error("No bytes can be read in certificate file " + filename);
                 throw new RuntimeException("No bytes can be read in certificate file " + filename);
@@ -100,20 +100,20 @@ public final class CertsUtils {
             throw new RuntimeException("Failed to read keystore");
         }
     }
-    
+
     /**
      * Load an X.509 Certificate from a WSS4J Crypto instance using a keystore alias
      */
-    public static X509Certificate getX509CertificateFromCrypto(Crypto crypto, String keyAlias) 
+    public static X509Certificate getX509CertificateFromCrypto(Crypto crypto, String keyAlias)
         throws WSSecurityException {
         if (keyAlias == null || "".equals(keyAlias)) {
             keyAlias = crypto.getDefaultX509Identifier();
         }
-        
+
         if (keyAlias == null) {
             throw new RuntimeException("No keystore alias was specified to sign the metadata");
         }
-        
+
         CryptoType cryptoType = new CryptoType(CryptoType.TYPE.ALIAS);
         cryptoType.setAlias(keyAlias);
         X509Certificate[] issuerCerts = crypto.getX509Certificates(cryptoType);
@@ -124,17 +124,17 @@ public final class CertsUtils {
         }
         return issuerCerts[0];
     }
-    
+
     /**
      * Parse a String parameter into an X.509 Certificate. The parameter can be either the encoded cert, or else
      * a filename containing the certificate.
      */
-    public static X509Certificate parseX509Certificate(String certificate) 
+    public static X509Certificate parseX509Certificate(String certificate)
         throws CertificateException, WSSecurityException, ProcessingException, Base64DecodingException, IOException {
         if (certificate == null) {
             return null;
         }
-        
+
         boolean isCertificateLocation = !certificate.startsWith("-----BEGIN CERTIFICATE");
         if (isCertificateLocation) {
             try {
@@ -146,8 +146,8 @@ public final class CertsUtils {
                     return CertsUtils.getX509CertificateFromCrypto(crypto, null);
                 }
             }
-        } 
-        
+        }
+
         // Here the certificate is encoded in the configuration file
         try {
             return CertsUtils.parseCertificate(certificate);
@@ -156,7 +156,7 @@ public final class CertsUtils {
             throw new ProcessingException("Failed to parse trusted certificate");
         }
     }
-   
+
     /**
      * Get a Crypto instance from a file
      */
@@ -177,7 +177,7 @@ public final class CertsUtils {
         }
         return crypto;
     }
-    
+
     /**
      * Get a crypto instance using a certificate
      */
@@ -185,7 +185,7 @@ public final class CertsUtils {
         if (certificate == null) {
             return null;
         }
-        
+
         boolean isCertificateLocation = !certificate.startsWith("-----BEGIN CERTIFICATE");
         if (isCertificateLocation) {
             try {
@@ -198,8 +198,8 @@ public final class CertsUtils {
                 // Maybe it's a WSS4J properties file...
                 return CertsUtils.getCryptoFromFile(certificate);
             }
-        } 
-        
+        }
+
         // Here the certificate is encoded in the configuration file
         X509Certificate cert;
         try {
@@ -210,10 +210,10 @@ public final class CertsUtils {
         }
         return new CertificateStore(Collections.singletonList(cert).toArray(new X509Certificate[0]));
     }
-    
+
     private static X509Certificate parseCertificate(String certificate)
         throws CertificateException, Base64DecodingException, IOException {
-        
+
         //before decoding we need to get rid off the prefix and suffix
         byte[] decoded = Base64.decode(certificate.replaceAll("-----BEGIN CERTIFICATE-----", "").
                                         replaceAll("-----END CERTIFICATE-----", ""));
@@ -222,5 +222,5 @@ public final class CertsUtils {
             return (X509Certificate)CertificateFactory.getInstance("X.509").generateCertificate(is);
         }
     }
-    
+
 }

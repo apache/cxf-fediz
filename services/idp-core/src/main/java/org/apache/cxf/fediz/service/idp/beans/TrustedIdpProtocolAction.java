@@ -40,28 +40,28 @@ import org.springframework.webflow.execution.RequestContext;
 public class TrustedIdpProtocolAction {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrustedIdpProtocolAction.class);
-    
+
     private static final String IDP_CONFIG = "idpConfig";
-    
+
     @Autowired
     // Qualifier workaround. See http://www.jayway.com/2013/11/03/spring-and-autowiring-of-generic-types/
     @Qualifier("trustedIdpProtocolControllerImpl")
     private ProtocolController<TrustedIdpProtocolHandler> trustedIdpProtocolHandlers;
-    
+
     public String mapSignInRequest(RequestContext requestContext, String trustedIdpRealm) {
         LOG.info("Prepare redirect to Trusted IDP '{}'", trustedIdpRealm);
-        
+
         Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(requestContext, IDP_CONFIG);
-        
+
         TrustedIdp trustedIdp = idpConfig.findTrustedIdp(trustedIdpRealm);
         if (trustedIdp == null) {
             LOG.error("TrustedIdp '{}' not configured", trustedIdpRealm);
             throw new IllegalStateException("TrustedIdp '" + trustedIdpRealm + "'");
         }
-        
+
         String protocol = trustedIdp.getProtocol();
         LOG.debug("TrustedIdp '{}' supports protocol {}", trustedIdpRealm, protocol);
-        
+
         TrustedIdpProtocolHandler protocolHandler = trustedIdpProtocolHandlers.getProtocolHandler(protocol);
         if (protocolHandler == null) {
             LOG.error("No ProtocolHandler found for {}", protocol);
@@ -71,21 +71,21 @@ public class TrustedIdpProtocolAction {
         LOG.info("Redirect url {}", redirectUrl.toString());
         return redirectUrl.toString();
     }
-    
+
     public SecurityToken mapSignInResponse(RequestContext requestContext, String trustedIdpRealm) {
         LOG.info("Prepare validate SignInResponse of Trusted IDP '{}'", trustedIdpRealm);
-        
+
         Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(requestContext, IDP_CONFIG);
-        
+
         TrustedIdp trustedIdp = idpConfig.findTrustedIdp(trustedIdpRealm);
         if (trustedIdp == null) {
             LOG.error("TrustedIdp '{}' not configured", trustedIdpRealm);
             throw new IllegalStateException("TrustedIdp '" + trustedIdpRealm + "'");
         }
-        
+
         String protocol = trustedIdp.getProtocol();
         LOG.debug("TrustedIdp '{}' supports protocol {}", trustedIdpRealm, protocol);
-        
+
         TrustedIdpProtocolHandler protocolHandler = trustedIdpProtocolHandlers.getProtocolHandler(protocol);
         if (protocolHandler == null) {
             LOG.error("No ProtocolHandler found for {}", protocol);

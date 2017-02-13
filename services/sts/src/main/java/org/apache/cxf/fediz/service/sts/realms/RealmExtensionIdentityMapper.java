@@ -39,7 +39,7 @@ public class RealmExtensionIdentityMapper implements IdentityMapper {
 
     /**
      * Map a principal in the source realm to the target realm
-     * 
+     *
      * @param sourceRealm the source realm of the Principal
      * @param sourcePrincipal the principal in the source realm
      * @param targetRealm the target realm of the Principal

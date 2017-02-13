@@ -36,7 +36,7 @@ import org.apache.cxf.fediz.core.handler.SigninHandler;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
 
 public class TestSigninHandler extends SigninHandler<FedizPrincipal> {
-        
+
     public TestSigninHandler(FedizContext fedizContext) {
         super(fedizContext);
     }
@@ -56,14 +56,14 @@ public class TestSigninHandler extends SigninHandler<FedizPrincipal> {
 
         return principal;
     }
-    
+
     private static class FederationPrincipalImpl implements FedizPrincipal {
 
         protected ClaimCollection claims;
         protected Element loginToken;
         private String username;
         private List<String> roles = new ArrayList<>();
-        
+
         FederationPrincipalImpl(String username, List<String> roles,
                 List<Claim> claims, Element loginToken) {
             this.claims = new ClaimCollection(claims);
@@ -73,11 +73,11 @@ public class TestSigninHandler extends SigninHandler<FedizPrincipal> {
                 this.roles = roles;
             }
         }
-        
+
         public ClaimCollection getClaims() {
             return this.claims;
         }
-        
+
         @Override
         public Element getLoginToken() {
             return loginToken;

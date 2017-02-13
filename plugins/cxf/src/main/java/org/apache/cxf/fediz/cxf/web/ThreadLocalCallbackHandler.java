@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
 /**
  * This CallbackHandler implementation obtains the security token from
  * the thread local storage to be used as the delegation token.
- */ 
+ */
 public class ThreadLocalCallbackHandler implements CallbackHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(ThreadLocalCallbackHandler.class);
@@ -58,7 +58,7 @@ public class ThreadLocalCallbackHandler implements CallbackHandler {
                         LOG.debug(DOM2Writer.nodeToString(token));
                         LOG.debug("****************** END TOKEN *******************");
                     }
-                    callback.setToken(token);     
+                    callback.setToken(token);
                 }
 
             } else {

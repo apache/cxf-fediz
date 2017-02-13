@@ -32,7 +32,7 @@ public class SamlRealmCodec implements SAMLRealmCodec {
     private static final Logger LOG = LoggerFactory.getLogger(SamlRealmCodec.class);
 
     private boolean uppercase = true;
-    
+
     @Override
     public String getRealmFromToken(SamlAssertionWrapper assertion) {
         SAMLKeyInfo ki = assertion.getSignatureKeyInfo();
@@ -45,7 +45,7 @@ public class SamlRealmCodec implements SAMLRealmCodec {
     protected String parseCNValue(String name) {
         int len = name.indexOf(",") > 0 ? name.indexOf(",") : name.length();
         String realm = name.substring(name.indexOf("CN=") + 3, len);
-        
+
         if (uppercase) {
             realm = realm.toUpperCase();
         }

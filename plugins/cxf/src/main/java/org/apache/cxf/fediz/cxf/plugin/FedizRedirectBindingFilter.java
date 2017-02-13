@@ -73,18 +73,18 @@ import org.slf4j.LoggerFactory;
 
 public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
     implements ContainerResponseFilter {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(FedizRedirectBindingFilter.class);
-    
-    @Context 
+
+    @Context
     private MessageContext messageContext;
 
     private boolean redirectOnInitialSignIn;
-    
+
     public void filter(ContainerRequestContext context) {
         Message m = JAXRSUtils.getCurrentMessage();
         FedizContext fedConfig = getFedizContext(m);
-        
+
         // See if it is a Metadata request
         if (isMetadataRequest(context, fedConfig)) {
             return;
@@ -92,7 +92,7 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
 
         String httpMethod = context.getMethod();
         MultivaluedMap<String, String> params = null;
-        
+
         try {
             if (HttpMethod.GET.equals(httpMethod)) {
                 params = context.getUriInfo().getQueryParameters();
@@ -104,7 +104,7 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
             LOG.debug(ex.getMessage(), ex);
             throw ExceptionUtils.toInternalServerErrorException(ex, null);
         }
-        
+
         // See if it is a Logout request first
         if (isLogoutRequest(context, fedConfig, m, params) || isSignoutCleanupRequest(fedConfig, m, params)) {
             return;
@@ -119,7 +119,7 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
             throw ExceptionUtils.toBadRequestException(null, null);
         }
     }
-    
+
     private void processSignInRequest(ContainerRequestContext context, FedizContext fedConfig,
                                       Message m, MultivaluedMap<String, String> params) {
         String responseToken = getResponseToken(fedConfig, params);
@@ -137,7 +137,7 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
                 LOG.debug("token=\n" + responseToken);
             }
 
-            FedizResponse wfRes = 
+            FedizResponse wfRes =
                 validateSignInRequest(fedConfig, params, responseToken, state);
 
             // Validate AudienceRestriction
@@ -170,12 +170,12 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
 
             String webAppContext = getWebAppContext(m);
 
-            ResponseState responseState = 
+            ResponseState responseState =
                 new ResponseState(token,
-                                  state, 
+                                  state,
                                   webAppContext,
                                   webAppDomain,
-                                  currentTime, 
+                                  currentTime,
                                   expiresAt);
             responseState.setClaims(wfRes.getClaims());
             responseState.setRoles(roles);
@@ -192,7 +192,7 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
 
             // Redirect with cookie set
             if (isRedirectOnInitialSignIn()) {
-                ResponseBuilder response = 
+                ResponseBuilder response =
                     Response.seeOther(new UriInfoImpl(m).getAbsolutePath());
                 response.header(HttpHeaders.SET_COOKIE, contextCookie);
 
@@ -206,17 +206,17 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
                 }
             }
         }
-        
+
     }
 
     private void processSignInRequired(ContainerRequestContext context, FedizContext fedConfig) {
      // Unauthenticated -> redirect
-        FedizProcessor processor = 
+        FedizProcessor processor =
             FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
 
         HttpServletRequest request = messageContext.getHttpServletRequest();
         try {
-            RedirectionResponse redirectionResponse = 
+            RedirectionResponse redirectionResponse =
                 processor.createSignInRequest(request, fedConfig);
             String redirectURL = redirectionResponse.getRedirectionURL();
             if (redirectURL != null) {
@@ -233,7 +233,7 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
                 if (requestState != null && requestState.getState() != null) {
                     getStateManager().setRequestState(requestState.getState(), requestState);
 
-                    String contextCookie = 
+                    String contextCookie =
                         CookieUtils.createCookie(SECURITY_CONTEXT_STATE,
                                                  requestState.getState(),
                                                  request.getRequestURI(),
@@ -251,7 +251,7 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
             LOG.debug(ex.getMessage(), ex);
             throw ExceptionUtils.toInternalServerErrorException(ex, null);
         }
-        
+
     }
 
     private boolean isMetadataRequest(ContainerRequestContext context, FedizContext fedConfig) {
@@ -262,26 +262,26 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
             if (LOG.isInfoEnabled()) {
                 LOG.info("Metadata document requested");
             }
-            
-            FedizProcessor wfProc = 
+
+            FedizProcessor wfProc =
                 FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
             try {
                 HttpServletRequest request = messageContext.getHttpServletRequest();
                 Document metadata = wfProc.getMetaData(request, fedConfig);
                 String metadataStr = DOM2Writer.nodeToString(metadata);
-                
+
                 ResponseBuilder response = Response.ok(metadataStr, "text/xml");
                 context.abortWith(response.build());
                 return true;
             } catch (Exception ex) {
                 LOG.error("Failed to get metadata document: " + ex.getMessage());
                 throw ExceptionUtils.toInternalServerErrorException(ex, null);
-            }            
+            }
         }
-        
+
         return false;
     }
-    
+
     private boolean isLogoutRequest(ContainerRequestContext context, FedizContext fedConfig,
                                     Message message, MultivaluedMap<String, String> params) {
 
@@ -297,16 +297,16 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
                 signout = true;
             }
         }
-        
+
         if (signout) {
             cleanupContext(message);
 
             try {
-                FedizProcessor processor = 
+                FedizProcessor processor =
                     FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
 
                 HttpServletRequest request = messageContext.getHttpServletRequest();
-                RedirectionResponse redirectionResponse = 
+                RedirectionResponse redirectionResponse =
                     processor.createSignOutRequest(request, null, fedConfig); //TODO
                 String redirectURL = redirectionResponse.getRedirectionURL();
                 if (redirectURL != null) {
@@ -327,10 +327,10 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
                 throw ExceptionUtils.toInternalServerErrorException(ex, null);
             }
         }
-        
+
         return false;
     }
-    
+
     private void cleanupContext(Message message) {
         HttpHeaders headers = new HttpHeadersImpl(message);
         Map<String, Cookie> cookies = headers.getCookies();
@@ -343,7 +343,7 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
             getStateManager().removeRequestState(contextKey);
         }
     }
-    
+
     private String getMetadataURI(FedizContext fedConfig) {
         if (fedConfig.getProtocol().getMetadataURI() != null) {
             return fedConfig.getProtocol().getMetadataURI();
@@ -352,10 +352,10 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
         } else if (fedConfig.getProtocol() instanceof SAMLProtocol) {
             return SAMLSSOConstants.FEDIZ_SAML_METADATA_PATH_URI;
         }
-        
+
         return FederationConstants.METADATA_PATH_URI;
     }
-    
+
     private boolean isSignInRequired(FedizContext fedConfig, MultivaluedMap<String, String> params) {
         if (params != null && fedConfig.getProtocol() instanceof FederationProtocol
             && params.getFirst(FederationConstants.PARAM_ACTION) == null) {
@@ -364,11 +364,11 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
             && params.getFirst(SAMLSSOConstants.RELAY_STATE) == null) {
             return true;
         }
-        
+
         return false;
     }
-    
-    private boolean isSignInRequest(FedizContext fedConfig, MultivaluedMap<String, String> params) { 
+
+    private boolean isSignInRequest(FedizContext fedConfig, MultivaluedMap<String, String> params) {
         if (params != null && fedConfig.getProtocol() instanceof FederationProtocol
             && FederationConstants.ACTION_SIGNIN.equals(
                 params.getFirst(FederationConstants.PARAM_ACTION))) {
@@ -377,12 +377,12 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
             && params.getFirst(SAMLSSOConstants.RELAY_STATE) != null) {
             return true;
         }
-        
+
         return false;
     }
-    
-    private boolean isSignoutCleanupRequest(FedizContext fedConfig, Message m, MultivaluedMap<String, String> params) { 
-        
+
+    private boolean isSignoutCleanupRequest(FedizContext fedConfig, Message m, MultivaluedMap<String, String> params) {
+
         boolean signoutCleanup = false;
         if (params != null && fedConfig.getProtocol() instanceof FederationProtocol
             && FederationConstants.ACTION_SIGNOUT_CLEANUP.equals(
@@ -392,14 +392,14 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
             && params.getFirst(SAMLSSOConstants.RELAY_STATE) != null) {
             signoutCleanup = true;
         }*/
-        
+
         if (signoutCleanup) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("SignOutCleanup request found");
                 LOG.debug("SignOutCleanup action...");
             }
             cleanupContext(m);
-            
+
             HttpServletResponse response = messageContext.getHttpServletResponse();
             try {
                 final ServletOutputStream responseOutputStream = response.getOutputStream();
@@ -419,20 +419,20 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
                 LOG.debug(ex.getMessage(), ex);
                 throw ExceptionUtils.toInternalServerErrorException(ex, null);
             }
-            
+
             return true;
         }
-        
+
         return false;
     }
-    
+
     private String getResponseToken(FedizContext fedConfig, MultivaluedMap<String, String> params) {
         if (params != null && fedConfig.getProtocol() instanceof FederationProtocol) {
             return params.getFirst(FederationConstants.PARAM_RESULT);
         } else if (params != null && fedConfig.getProtocol() instanceof SAMLProtocol) {
             return params.getFirst(SAMLSSOConstants.SAML_RESPONSE);
         }
-        
+
         return null;
     }
 
@@ -445,34 +445,34 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(params.getFirst(FederationConstants.PARAM_ACTION));
         wfReq.setResponseToken(responseToken);
-        
+
         if (state == null || state.getBytes().length <= 0) {
             LOG.error("Invalid RelayState/WCTX");
             throw ExceptionUtils.toBadRequestException(null, null);
         }
-        
+
         wfReq.setState(state);
         wfReq.setRequestState(getStateManager().removeRequestState(state));
-        
+
         if (wfReq.getRequestState() == null) {
             LOG.error("Missing Request State");
             throw ExceptionUtils.toBadRequestException(null, null);
         }
-        
-        if (CookieUtils.isStateExpired(wfReq.getRequestState().getCreatedAt(), false, 0, 
+
+        if (CookieUtils.isStateExpired(wfReq.getRequestState().getCreatedAt(), false, 0,
                                        getStateTimeToLive())) {
             LOG.error("EXPIRED_REQUEST_STATE");
             throw ExceptionUtils.toBadRequestException(null, null);
         }
-        
+
         HttpServletRequest request = messageContext.getHttpServletRequest();
         wfReq.setRequest(request);
 
-        X509Certificate certs[] = 
+        X509Certificate certs[] =
             (X509Certificate[])request.getAttribute("javax.servlet.request.X509Certificate");
         wfReq.setCerts(certs);
 
-        FedizProcessor wfProc = 
+        FedizProcessor wfProc =
             FedizProcessorFactory.newFedizProcessor(fedConfig.getProtocol());
         try {
             return wfProc.processRequest(wfReq, fedConfig);
@@ -481,13 +481,13 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
             throw ExceptionUtils.toNotAuthorizedException(ex, null);
         }
     }
-    
+
     private void validateAudienceRestrictions(
-        FedizResponse wfRes, 
+        FedizResponse wfRes,
         List<String> audienceURIs,
         HttpServletRequest request
     ) {
-        // Validate the AudienceRestriction in Security Token (e.g. SAML) 
+        // Validate the AudienceRestriction in Security Token (e.g. SAML)
         // against the configured list of audienceURIs
         if (wfRes.getAudience() != null) {
             boolean validAudience = false;
@@ -497,13 +497,13 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
                     break;
                 }
             }
-            
+
             if (!validAudience) {
                 LOG.warn("Token AudienceRestriction [" + wfRes.getAudience()
                          + "] doesn't match with specified list of URIs.");
                 throw ExceptionUtils.toForbiddenException(null, null);
             }
-            
+
             if (LOG.isDebugEnabled() && request.getRequestURL().indexOf(wfRes.getAudience()) == -1) {
                 LOG.debug("Token AudienceRestriction doesn't match with request URL ["
                         + wfRes.getAudience() + "]  ["
@@ -527,7 +527,7 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
         if (tokenContext != null) {
             responseContext.getHeaders().add(HttpHeaders.SET_COOKIE, tokenContext);
         }
-        
+
     }
-    
+
 }

@@ -38,7 +38,7 @@ import org.apache.cxf.sts.claims.ProcessedClaimCollection;
 public class RealmFileClaimsHandler implements ClaimsHandler {
 
     private static final Logger LOG = LogUtils.getL7dLogger(RealmFileClaimsHandler.class);
-    
+
     private Map<String, Map<String, String>> userClaims;
     private List<URI> supportedClaims;
     private String realm;
@@ -50,11 +50,11 @@ public class RealmFileClaimsHandler implements ClaimsHandler {
     public Map<String, Map<String, String>> getUserClaims() {
         return userClaims;
     }
-    
+
     public void setSupportedClaims(List<URI> supportedClaims) {
         this.supportedClaims = supportedClaims;
     }
-    
+
     public void setRealm(String realm) {
         this.realm = realm;
     }
@@ -62,17 +62,17 @@ public class RealmFileClaimsHandler implements ClaimsHandler {
     public String getRealm() {
         return realm;
     }
-    
+
     @Override
     public List<URI> getSupportedClaimTypes() {
         return Collections.unmodifiableList(this.supportedClaims);
     }
-    
+
 
     @Override
     public ProcessedClaimCollection retrieveClaimValues(ClaimCollection claims,
             ClaimsParameters parameters) {
-        
+
         if (parameters.getRealm() == null || !parameters.getRealm().equalsIgnoreCase(getRealm())) {
             LOG.fine("Realm '" + parameters.getRealm() + "' doesn't match with configured realm '" + getRealm() + "'");
             return new ProcessedClaimCollection();
@@ -96,7 +96,7 @@ public class RealmFileClaimsHandler implements ClaimsHandler {
 
         if (claims.size() > 0) {
             ProcessedClaimCollection claimCollection = new ProcessedClaimCollection();
-            for (Claim requestClaim : claims) { 
+            for (Claim requestClaim : claims) {
                 String claimValue = claimMap.get(requestClaim.getClaimType().toString());
                 if (claimValue != null) {
                     ProcessedClaim claim = new ProcessedClaim();
@@ -105,7 +105,7 @@ public class RealmFileClaimsHandler implements ClaimsHandler {
                     claim.setOriginalIssuer("Original Issuer");
                     claim.addValue(claimValue);
                     claimCollection.add(claim);
-                }   
+                }
             }
             return claimCollection;
         }

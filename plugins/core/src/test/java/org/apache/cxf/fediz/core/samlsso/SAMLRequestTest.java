@@ -57,29 +57,29 @@ public class SAMLRequestTest {
     static final String TEST_REQUEST_URI = "/fedizhelloworld";
     static final String TEST_IDP_ISSUER = "http://url_to_the_issuer";
     static final String TEST_CLIENT_ADDRESS = "https://127.0.0.1";
-    
+
     private static final String CONFIG_FILE = "fediz_test_config_saml.xml";
-    
+
     private static FedizConfigurator configurator;
     private static DocumentBuilderFactory docBuilderFactory;
-    
+
     static {
         docBuilderFactory = DocumentBuilderFactory.newInstance();
         docBuilderFactory.setNamespaceAware(true);
     }
-    
-    
+
+
     @BeforeClass
     public static void init() {
         getFederationConfigurator();
         Assert.assertNotNull(configurator);
     }
-    
+
     @AfterClass
     public static void cleanup() {
         SecurityTestUtil.cleanup();
     }
-    
+
 
     private static FedizConfigurator getFederationConfigurator() {
         if (configurator != null) {
@@ -97,78 +97,78 @@ public class SAMLRequestTest {
             return null;
         }
     }
-    
+
     @org.junit.Test
     public void createSAMLAuthnRequest() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL)).times(1, 2);
         EasyMock.expect(req.getContextPath()).andReturn(TEST_REQUEST_URI);
         EasyMock.expect(req.getRequestURI()).andReturn(TEST_REQUEST_URI).times(1, 2);
         EasyMock.replay(req);
-        
+
         FedizProcessor wfProc = new SAMLProcessorImpl();
         RedirectionResponse response = wfProc.createSignInRequest(req, config);
-        
+
         String redirectionURL = response.getRedirectionURL();
         Assert.assertTrue(redirectionURL.startsWith(TEST_IDP_ISSUER));
         Assert.assertTrue(redirectionURL.contains("SAMLRequest="));
         Assert.assertTrue(redirectionURL.contains("RelayState="));
-        
+
         Map<String, String> headers = response.getHeaders();
         Assert.assertNotNull(headers);
         Assert.assertFalse(headers.isEmpty());
         Assert.assertTrue("no-cache, no-store".equals(headers.get("Cache-Control")));
         Assert.assertTrue("no-cache".equals(headers.get("Pragma")));
     }
-    
+
     @org.junit.Test
     public void testAuthnRelayState() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL)).times(1, 2);
         EasyMock.expect(req.getContextPath()).andReturn(TEST_REQUEST_URI);
         EasyMock.expect(req.getRequestURI()).andReturn(TEST_REQUEST_URI).times(1, 2);
         EasyMock.replay(req);
-        
+
         FedizProcessor wfProc = new SAMLProcessorImpl();
         RedirectionResponse response = wfProc.createSignInRequest(req, config);
-        
+
         String redirectionURL = response.getRedirectionURL();
-        String relayState = 
+        String relayState =
             redirectionURL.substring(redirectionURL.indexOf("RelayState=") + "RelayState=".length());
         Assert.assertNotNull(relayState);
-        
+
         RequestState requestState = response.getRequestState();
-        
+
         Assert.assertEquals(TEST_IDP_ISSUER, requestState.getIdpServiceAddress());
         Assert.assertEquals(TEST_REQUEST_URL, requestState.getIssuerId());
         Assert.assertEquals(TEST_REQUEST_URL, requestState.getTargetAddress());
     }
-    
+
     @org.junit.Test
     public void testSAMLAuthnRequest() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL)).times(1, 2);
         EasyMock.expect(req.getContextPath()).andReturn(TEST_REQUEST_URI);
         EasyMock.expect(req.getRequestURI()).andReturn(TEST_REQUEST_URI).times(1, 2);
         EasyMock.replay(req);
-        
+
         FedizProcessor wfProc = new SAMLProcessorImpl();
         RedirectionResponse response = wfProc.createSignInRequest(req, config);
-        
+
         String redirectionURL = response.getRedirectionURL();
-        String samlRequest = 
+        String samlRequest =
             redirectionURL.substring(redirectionURL.indexOf("SAMLRequest=") + "SAMLRequest=".length(),
                                      redirectionURL.indexOf("RelayState=") - 1);
-        
+
         byte[] deflatedToken = Base64.decode(URLDecoder.decode(samlRequest, "UTF-8"));
         InputStream tokenStream = CompressionUtils.inflate(deflatedToken);
 
@@ -179,46 +179,46 @@ public class SAMLRequestTest {
         Assert.assertEquals(TEST_REQUEST_URL, request.getIssuer().getValue());
         Assert.assertEquals(TEST_REQUEST_URL, request.getAssertionConsumerServiceURL());
     }
-    
+
     @org.junit.Test
     public void testSignedSAMLAuthnRequest() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("SIGNED_ROOT");
-        
+
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL)).times(1, 2);
         EasyMock.expect(req.getContextPath()).andReturn(TEST_REQUEST_URI);
         EasyMock.expect(req.getRequestURI()).andReturn(TEST_REQUEST_URI).times(1, 2);
         EasyMock.replay(req);
-        
+
         FedizProcessor wfProc = new SAMLProcessorImpl();
         RedirectionResponse response = wfProc.createSignInRequest(req, config);
-        
+
         String redirectionURL = response.getRedirectionURL();
-        String signature = 
+        String signature =
             redirectionURL.substring(redirectionURL.indexOf("Signature=") + "Signature=".length());
         Assert.assertTrue(signature != null && signature.length() > 0);
     }
-    
+
     @org.junit.Test
     public void createSAMLLogoutRequest() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
-        
+
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL)).times(1, 2);
         EasyMock.expect(req.getContextPath()).andReturn(TEST_REQUEST_URI);
         EasyMock.expect(req.getRequestURI()).andReturn(TEST_REQUEST_URI).times(1, 2);
         EasyMock.replay(req);
-        
+
         FedizProcessor wfProc = new SAMLProcessorImpl();
         RedirectionResponse response = wfProc.createSignOutRequest(req, null, config);
-        
+
         String redirectionURL = response.getRedirectionURL();
-        String samlRequest = 
+        String samlRequest =
             redirectionURL.substring(redirectionURL.indexOf("SAMLRequest=") + "SAMLRequest=".length(),
                                      redirectionURL.indexOf("RelayState=") - 1);
-        
+
         byte[] deflatedToken = Base64.decode(URLDecoder.decode(samlRequest, "UTF-8"));
         InputStream tokenStream = CompressionUtils.inflate(deflatedToken);
 
@@ -228,23 +228,23 @@ public class SAMLRequestTest {
 
         Assert.assertEquals(TEST_REQUEST_URL, request.getIssuer().getValue());
     }
-    
+
     @org.junit.Test
     public void testSignedSAMLLogoutRequest() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("SIGNED_ROOT");
-        
+
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL)).times(1, 2);
         EasyMock.expect(req.getContextPath()).andReturn(TEST_REQUEST_URI);
         EasyMock.expect(req.getRequestURI()).andReturn(TEST_REQUEST_URI).times(1, 2);
         EasyMock.replay(req);
-        
+
         FedizProcessor wfProc = new SAMLProcessorImpl();
         RedirectionResponse response = wfProc.createSignOutRequest(req, null, config);
-        
+
         String redirectionURL = response.getRedirectionURL();
-        String signature = 
+        String signature =
             redirectionURL.substring(redirectionURL.indexOf("Signature=") + "Signature=".length());
         Assert.assertTrue(signature != null && signature.length() > 0);
     }

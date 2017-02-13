@@ -33,25 +33,25 @@ import org.springframework.util.Assert;
 public class MetadataWriterTest {
 
     private static ApplicationContext applicationContext;
-    
+
     @BeforeClass
     public static void init() {
         applicationContext = new ClassPathXmlApplicationContext("/idp-config.xml");
     }
-    
+
     @Test
     public void testWriteIDPMetadata() {
         ConfigService config = (ConfigService)applicationContext.getBean("config");
         Assert.notNull(config, "ConfigService must not be null");
         Idp idpConfig = config.getIDP("urn:org:apache:cxf:fediz:idp:realm-A");
         Assert.notNull(idpConfig, "IDPConfig must not be null");
-        
+
         IdpMetadataWriter writer = new IdpMetadataWriter();
         Document doc = writer.getMetaData(idpConfig);
         Assert.notNull(doc, "doc must not be null");
-        
+
         System.out.println(DOM2Writer.nodeToString(doc));
-        
+
     }
-    
+
 }

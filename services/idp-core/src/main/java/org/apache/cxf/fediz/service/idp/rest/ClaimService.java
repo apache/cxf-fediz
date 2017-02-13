@@ -49,7 +49,7 @@ public interface ClaimService {
     Response getClaims(@QueryParam("start") int start,
                        @QueryParam("size") @DefaultValue("2") int size,
                        @Context UriInfo uriInfo);
-    
+
     @GET
     @Path("{claimType}")
     @PreAuthorize("hasRole('CLAIM_READ')")
@@ -58,12 +58,12 @@ public interface ClaimService {
     @POST
     @PreAuthorize("hasRole('CLAIM_CREATE')")
     Response addClaim(@Context UriInfo ui, Claim claim);
-    
+
     @PUT
     @Path("{claimType}")
     @PreAuthorize("hasRole('CLAIM_UPDATE')")
     Response updateClaim(@Context UriInfo ui, @PathParam("claimType") String claimType, Claim claim);
-    
+
     @DELETE
     @Path("{claimType}")
     @PreAuthorize("hasRole('CLAIM_DELETE')")

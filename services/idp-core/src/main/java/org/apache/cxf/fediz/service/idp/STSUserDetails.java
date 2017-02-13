@@ -25,18 +25,18 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
 public class STSUserDetails extends User {
-    
+
     private static final long serialVersionUID = 1975259365978165675L;
-    
+
     private SecurityToken token;
-    
+
     public STSUserDetails(String username, String password, boolean enabled, boolean accountNonExpired,
                           boolean credentialsNonExpired, boolean accountNonLocked,
                           Collection<? extends GrantedAuthority> authorities) {
         super(username, password, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked, authorities);
     }
-    
-    public STSUserDetails(String username, String password, 
+
+    public STSUserDetails(String username, String password,
                           Collection<? extends GrantedAuthority> authorities, SecurityToken token) {
         super(username, password, true, true, true, true, authorities);
         this.token = token;
@@ -51,23 +51,23 @@ public class STSUserDetails extends User {
         if (!(object instanceof STSUserDetails)) {
             return false;
         }
-        
+
         if (token != null && !token.equals(((STSUserDetails)object).token)) {
             return false;
         } else  if (token == null && ((STSUserDetails)object).token != null) {
             return false;
         }
-        
+
         return super.equals(object);
     }
-    
+
     @Override
     public int hashCode() {
         int hashCode = 17;
         if (token != null) {
             hashCode *= 31 * token.hashCode();
         }
-        
+
         return hashCode * super.hashCode();
     }
 }

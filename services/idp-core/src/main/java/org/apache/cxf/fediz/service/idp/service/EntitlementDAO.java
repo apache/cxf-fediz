@@ -26,13 +26,13 @@ import org.apache.cxf.fediz.service.idp.domain.Entitlement;
 public interface EntitlementDAO {
 
     List<Entitlement> getEntitlements(int start, int size);
-    
+
     Entitlement getEntitlement(String name);
-    
+
     Entitlement addEntitlement(Entitlement entitlement);
-    
+
     void updateEntitlement(String name, Entitlement entitlement);
-    
+
     void deleteEntitlement(String name);
 
 }

@@ -35,7 +35,7 @@ public class TokenValidatorResponse {
 
 
 
-    public TokenValidatorResponse(String uniqueTokenId, String username, String issuer, 
+    public TokenValidatorResponse(String uniqueTokenId, String username, String issuer,
                                   List<String> roles, List<Claim> claims, String audience) {
         this.username = username;
         this.issuer = issuer;

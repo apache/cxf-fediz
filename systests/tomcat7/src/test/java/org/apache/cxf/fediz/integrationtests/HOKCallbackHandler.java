@@ -29,11 +29,11 @@ import org.apache.cxf.fediz.core.spi.WReqCallback;
 
 public class HOKCallbackHandler implements CallbackHandler {
 
-    static final String HOK_WREQ = 
+    static final String HOK_WREQ =
         "<RequestSecurityToken xmlns=\"http://docs.oasis-open.org/ws-sx/ws-trust/200512\">"
         + "<KeyType>http://docs.oasis-open.org/ws-sx/ws-trust/200512/PublicKey</KeyType>"
         + "</RequestSecurityToken>";
-    
+
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
         for (int i = 0; i < callbacks.length; i++) {
             if (callbacks[i] instanceof WReqCallback) {
