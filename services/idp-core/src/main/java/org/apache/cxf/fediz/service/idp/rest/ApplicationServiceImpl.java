@@ -79,7 +79,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     public Response addApplication(UriInfo ui, Application application) {
         LOG.info("add Service config");
-        if (application.getRequestedClaims() != null && application.getRequestedClaims().size() > 0) {
+        if (application.getRequestedClaims() != null && !application.getRequestedClaims().isEmpty()) {
             LOG.warn("Application resource contains sub resource 'claims'");
             throw new WebApplicationException(Status.BAD_REQUEST);
         }
@@ -96,7 +96,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (!realm.equals(application.getRealm().toString())) {
             throw new BadRequestException();
         }
-        if (application.getRequestedClaims() != null && application.getRequestedClaims().size() > 0) {
+        if (application.getRequestedClaims() != null && !application.getRequestedClaims().isEmpty()) {
             LOG.warn("Application resource contains sub resource 'claims'");
             throw new WebApplicationException(Status.BAD_REQUEST);
         }

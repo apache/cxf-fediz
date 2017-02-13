@@ -81,20 +81,20 @@ public class RealmFileClaimsHandler implements ClaimsHandler {
             return new ProcessedClaimCollection();
         }
 
-        if (claims == null || claims.size() == 0) {
+        if (claims == null || claims.isEmpty()) {
             LOG.fine("No claims requested");
             return new ProcessedClaimCollection();
         }
 
         Map<String, String> claimMap = getUserClaims().get(parameters.getPrincipal().getName());
-        if (claimMap == null || claimMap.size() == 0) {
+        if (claimMap == null || claimMap.isEmpty()) {
             LOG.fine("Claims requested for principal '" + parameters.getPrincipal().getName()
                      + "' but not found");
             return new ProcessedClaimCollection();
         }
         LOG.fine("Claims found for principal '" + parameters.getPrincipal().getName() + "'");
 
-        if (claims.size() > 0) {
+        if (!claims.isEmpty()) {
             ProcessedClaimCollection claimCollection = new ProcessedClaimCollection();
             for (Claim requestClaim : claims) {
                 String claimValue = claimMap.get(requestClaim.getClaimType().toString());

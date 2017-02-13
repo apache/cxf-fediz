@@ -117,7 +117,7 @@ public class FederationLoginService extends AbstractLifeCycle implements LoginSe
 
             // Add "Authenticated" role
             List<String> roles = wfRes.getRoles();
-            if (roles == null || roles.size() == 0) {
+            if (roles == null || roles.isEmpty()) {
                 roles = Collections.singletonList("Authenticated");
             } else if (config.isAddAuthenticatedRole()) {
                 roles = new ArrayList<>(roles);

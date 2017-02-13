@@ -41,7 +41,7 @@ public class UsernamePasswordCallbackHandler implements CallbackHandler {
 
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
 
-        if (getPasswords() == null || getPasswords().size() == 0) {
+        if (getPasswords() == null || getPasswords().isEmpty()) {
             return;
         }
 

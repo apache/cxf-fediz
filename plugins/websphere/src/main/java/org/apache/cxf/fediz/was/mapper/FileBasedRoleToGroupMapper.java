@@ -140,7 +140,7 @@ public class FileBasedRoleToGroupMapper implements RoleToGroupMapper {
                     throw new FileNotFoundException(groupMappingFilename);
                 }
                 boolean update = false;
-                if (mappings.size() == 0) {
+                if (mappings.isEmpty()) {
                     mappingFileLastModificationDate = mappingFile.lastModified();
                     update = true;
                 } else {

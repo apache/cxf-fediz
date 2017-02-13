@@ -85,11 +85,11 @@ public class IdpServiceImpl implements IdpService {
     @Override
     public Response addIdp(UriInfo ui, Idp idp) {
         LOG.info("add IDP config");
-        if (idp.getApplications() != null && idp.getApplications().size() > 0) {
+        if (idp.getApplications() != null && !idp.getApplications().isEmpty()) {
             LOG.warn("IDP resource contains sub resource 'applications'");
             throw new WebApplicationException(Status.BAD_REQUEST);
         }
-        if (idp.getTrustedIdps() != null && idp.getTrustedIdps().size() > 0) {
+        if (idp.getTrustedIdps() != null && !idp.getTrustedIdps().isEmpty()) {
             LOG.warn("IDP resource contains sub resource 'trusted-idps'");
             throw new WebApplicationException(Status.BAD_REQUEST);
         }
@@ -106,11 +106,11 @@ public class IdpServiceImpl implements IdpService {
         if (!realm.equals(idp.getRealm().toString())) {
             throw new BadRequestException();
         }
-        if (idp.getApplications() != null && idp.getApplications().size() > 0) {
+        if (idp.getApplications() != null && !idp.getApplications().isEmpty()) {
             LOG.warn("IDP resource contains sub resource 'applications'");
             throw new WebApplicationException(Status.BAD_REQUEST);
         }
-        if (idp.getTrustedIdps() != null && idp.getTrustedIdps().size() > 0) {
+        if (idp.getTrustedIdps() != null && !idp.getTrustedIdps().isEmpty()) {
             LOG.warn("IDP resource contains sub resource 'trusted-idps'");
             throw new WebApplicationException(Status.BAD_REQUEST);
         }

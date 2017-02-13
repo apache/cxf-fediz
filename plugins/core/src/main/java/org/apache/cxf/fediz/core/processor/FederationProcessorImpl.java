@@ -284,11 +284,11 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         data.setCallbackHandler(new DecryptionCallbackHandler(keyPassword));
         try {
             List<WSSecurityEngineResult> result = proc.handleToken(encryptedRST, data, docInfo);
-            if (result.size() > 0) {
+            if (!result.isEmpty()) {
                 @SuppressWarnings("unchecked")
                 List<WSDataRef> dataRefs = (List<WSDataRef>)result.get(result.size() - 1)
                     .get(WSSecurityEngineResult.TAG_DATA_REF_URIS);
-                if (dataRefs != null && dataRefs.size() > 0) {
+                if (dataRefs != null && !dataRefs.isEmpty()) {
                     return dataRefs.get(0).getProtectedElement();
                 }
             }

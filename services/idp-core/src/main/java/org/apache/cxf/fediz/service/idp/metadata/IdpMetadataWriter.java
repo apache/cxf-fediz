@@ -160,7 +160,7 @@ public class IdpMetadataWriter {
 
 
         // create ClaimsType section
-        if (config.getClaimTypesOffered() != null && config.getClaimTypesOffered().size() > 0) {
+        if (config.getClaimTypesOffered() != null && !config.getClaimTypesOffered().isEmpty()) {
             writer.writeStartElement("fed", "ClaimTypesOffered", WS_FEDERATION_NS);
             for (Claim claim : config.getClaimTypesOffered()) {
 

@@ -271,7 +271,7 @@ public class STSClientAction {
             sts.setNamespace(HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_02_TRUST);
         }
 
-        if (serviceConfig.getRequestedClaims() != null && serviceConfig.getRequestedClaims().size() > 0) {
+        if (serviceConfig.getRequestedClaims() != null && !serviceConfig.getRequestedClaims().isEmpty()) {
             addClaims(sts, serviceConfig.getRequestedClaims());
             LOG.debug("Requested claims set for {}", realm);
         }
@@ -377,7 +377,7 @@ public class STSClientAction {
 
     private Element createClaimsElement(List<RequestClaim> realmClaims)
         throws ParserConfigurationException, XMLStreamException {
-        if (realmClaims == null || realmClaims.size() == 0) {
+        if (realmClaims == null || realmClaims.isEmpty()) {
             return null;
         }
 
@@ -389,7 +389,7 @@ public class STSClientAction {
         writer.writeAttribute("Dialect",
                 HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_05_IDENTITY);
 
-        if (realmClaims.size() > 0) {
+        if (!realmClaims.isEmpty()) {
             for (RequestClaim item : realmClaims) {
                 LOG.debug("  {}", item.getClaimType().toString());
                 writer.writeStartElement("ic", "ClaimType",

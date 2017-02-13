@@ -180,7 +180,7 @@ public class MetadataWriter {
 
         FederationProtocol protocol = (FederationProtocol)config.getProtocol();
         List<Claim> claims = protocol.getClaimTypesRequested();
-        if (claims != null && claims.size() > 0) {
+        if (claims != null && !claims.isEmpty()) {
 
             // create ClaimsType section
             writer.writeStartElement("fed", "ClaimTypesRequested", WS_FEDERATION_NS);

@@ -46,7 +46,7 @@ public class TestSigninHandler extends SigninHandler<FedizPrincipal> {
         FedizResponse wfRes) {
 
         List<String> roles = wfRes.getRoles();
-        if (roles == null || roles.size() == 0) {
+        if (roles == null || roles.isEmpty()) {
             roles = Collections.singletonList("Authenticated");
         }
 

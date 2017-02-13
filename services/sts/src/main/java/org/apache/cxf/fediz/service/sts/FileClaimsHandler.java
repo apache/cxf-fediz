@@ -67,16 +67,16 @@ public class FileClaimsHandler implements ClaimsHandler {
             return new ProcessedClaimCollection();
         }
 
-        if (claims == null || claims.size() == 0) {
+        if (claims == null || claims.isEmpty()) {
             return new ProcessedClaimCollection();
         }
 
         Map<String, String> claimMap = getUserClaims().get(parameters.getPrincipal().getName());
-        if (claimMap == null || claimMap.size() == 0) {
+        if (claimMap == null || claimMap.isEmpty()) {
             return new ProcessedClaimCollection();
         }
 
-        if (claims.size() > 0) {
+        if (!claims.isEmpty()) {
             ProcessedClaimCollection claimCollection = new ProcessedClaimCollection();
             for (Claim requestClaim : claims) {
                 String claimValue = claimMap.get(requestClaim.getClaimType().toString());

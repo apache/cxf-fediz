@@ -189,7 +189,7 @@ public abstract class AbstractSTSTest {
     }
 
     protected Element createClaimsElement(List<String> realmClaims) throws Exception {
-        if (realmClaims == null || realmClaims.size() == 0) {
+        if (realmClaims == null || realmClaims.isEmpty()) {
             return null;
         }
 
@@ -199,7 +199,7 @@ public abstract class AbstractSTSTest {
         writer.writeNamespace("ic", "http://schemas.xmlsoap.org/ws/2005/05/identity");
         writer.writeAttribute("Dialect", "http://schemas.xmlsoap.org/ws/2005/05/identity");
 
-        if (realmClaims != null && realmClaims.size() > 0) {
+        if (realmClaims != null && !realmClaims.isEmpty()) {
             for (String item : realmClaims) {
                 writer.writeStartElement("ic", "ClaimType", "http://schemas.xmlsoap.org/ws/2005/05/identity");
                 writer.writeAttribute("Uri", item);

@@ -161,7 +161,7 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
             String token = DOM2Writer.nodeToString(wfRes.getToken());
             // Add "Authenticated" role
             List<String> roles = wfRes.getRoles();
-            if (roles == null || roles.size() == 0) {
+            if (roles == null || roles.isEmpty()) {
                 roles = Collections.singletonList("Authenticated");
             } else if (fedConfig.isAddAuthenticatedRole()) {
                 roles = new ArrayList<>(roles);

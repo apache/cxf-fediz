@@ -72,7 +72,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public Response addRole(UriInfo ui, Role role) {
-        if (role.getEntitlements() != null && role.getEntitlements().size() > 0) {
+        if (role.getEntitlements() != null && !role.getEntitlements().isEmpty()) {
             LOG.warn("Role resource contains sub resource 'entitlements'");
             throw new WebApplicationException(Status.BAD_REQUEST);
         }
@@ -91,7 +91,7 @@ public class RoleServiceImpl implements RoleService {
         if (!name.equals(role.getName().toString())) {
             throw new BadRequestException();
         }
-        if (role.getEntitlements() != null && role.getEntitlements().size() > 0) {
+        if (role.getEntitlements() != null && !role.getEntitlements().isEmpty()) {
             LOG.warn("Role resource contains sub resource 'entitlements'");
             throw new WebApplicationException(Status.BAD_REQUEST);
         }

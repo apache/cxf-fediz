@@ -52,7 +52,7 @@ public class TomcatSigninHandler extends SigninHandler<FedizPrincipal> {
         FedizResponse wfRes) {
         // Add "Authenticated" role
         List<String> roles = wfRes.getRoles();
-        if (roles == null || roles.size() == 0) {
+        if (roles == null || roles.isEmpty()) {
             roles = Collections.singletonList("Authenticated");
         } else if (getFedizContext().isAddAuthenticatedRole()) {
             roles = new ArrayList<>(roles);
