@@ -192,6 +192,7 @@ public final class WebUtils {
         Cookie cookie = new Cookie(cookieName, cookieValue);
         cookie.setSecure(true);
         cookie.setMaxAge(-1);
+        cookie.setPath("/fediz-idp");
         httpServletResponse.addCookie(cookie);
     }
 
