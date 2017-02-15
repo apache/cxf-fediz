@@ -68,43 +68,18 @@ public class LogoutService {
                 handler.handleLogout(client, subject);
             }
         }
-        // Clear OIDC session now if core IDP will itself redirect to the client logout URI
+        // Clear OIDC session now
+        mc.getHttpServletRequest().getSession().invalidate();
 
         // Redirect to the core IDP
         URI idpLogoutUri = getAbsoluteIdpLogoutUri(client);
         return Response.seeOther(idpLogoutUri).build();
     }
 
-    @GET
-    @Path("/finalize")
-    public Response finalizeLogoutGet() {
-        // This method won't be needed if IDP will itself redirect to the client logout URI
-        return doFinalizeLogout(mc.getUriInfo().getQueryParameters());
-    }
-    @POST
-    @Path("/finalize")
-    public Response finalizeLogoutPost(MultivaluedMap<String, String> params) {
-     // This method won't be needed if IDP will itself redirect to the client logout URI
-        return doFinalizeLogout(params);
-    }
-    protected Response doFinalizeLogout(MultivaluedMap<String, String> params) {
-
-        // This method won't be needed if IDP will itself redirect to the client logout URI
-
-
-        // Ensure this method is not called by skipping the initiate logout which is
-        // why it may be simpler let IDP redirect directly to the client logout uri ?
-
-        // Clear the OIDC session
-
-        Client client = getClient(params);
-        URI clientLogoutUri = getClientLogoutUri(client);
-        return Response.seeOther(clientLogoutUri).build();
-    }
-
     private URI getClientLogoutUri(Client client) {
         return URI.create(client.getProperties().get(CLIENT_LOGOUT_URI));
     }
+    
     private Client getClient(MultivaluedMap<String, String> params) {
         String clientId = params.getFirst(OAuthConstants.CLIENT_ID);
         if (clientId == null) {
@@ -123,14 +98,8 @@ public class LogoutService {
     private URI getAbsoluteIdpLogoutUri(Client client) {
         UriBuilder ub = mc.getUriInfo().getAbsolutePathBuilder();
         ub.path(relativeIdpLogoutUri);
-        //TODO: include a logout uri as a uri parameter, either
-        // 1. "/finalize" URI for the IDP to redirect to this service again
-        // or
-        // 2. may be let IDP redirect straight to getClientLogoutUri(client) ?
-
-        UriBuilder ub2 = mc.getUriInfo().getAbsolutePathBuilder();
-        ub2.path("finalize");
-        ub.queryParam("wreply", ub2.build());
+        ub.queryParam("wreply", getClientLogoutUri(client));
+        ub.queryParam(OAuthConstants.CLIENT_ID, client.getClientId());
 
         return ub.build();
     }

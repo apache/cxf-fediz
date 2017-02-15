@@ -52,7 +52,7 @@
 			</claimTypesRequested>
 		</protocol>
         <logoutURL>/secure/logout</logoutURL>
-        <logoutRedirectToConstraint>https://localhost.*/fediz-oidc/.*</logoutRedirectToConstraint>
+        <logoutRedirectToConstraint type="Class">org.apache.cxf.fediz.service.oidc.logout.LogoutRedirectConstraintHandler</logoutRedirectToConstraint>
 	</contextConfig>
 </FedizConfig>
 

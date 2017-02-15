@@ -20,34 +20,42 @@
 package org.apache.cxf.fediz.service.oidc.logout;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.regex.Pattern;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.cxf.fediz.core.spi.SignOutQueryCallback;
+import org.apache.cxf.fediz.core.spi.ReplyConstraintCallback;
+import org.apache.cxf.fediz.service.oidc.handler.hrd.ApplicationContextProvider;
+import org.apache.cxf.rs.security.oauth2.common.Client;
+import org.apache.cxf.rs.security.oauth2.provider.OAuthDataProvider;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
+import org.springframework.context.ApplicationContext;
 
-/**
- * Set the client_id on the signout request to the IdP. This is needed after we redirect to the "finalize" method of
- * the LogoutService.
- */
-public class SignoutQueryHandler implements CallbackHandler {
+public class LogoutRedirectConstraintHandler implements CallbackHandler {
+    
+    private static final String CLIENT_LOGOUT_URI = "client_logout_uri";
 
     @Override
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
         if (callbacks != null) {
             for (Callback callback : callbacks) {
-                if (callback instanceof SignOutQueryCallback) {
-                    SignOutQueryCallback signOutQueryCallback = (SignOutQueryCallback)callback;
-                    HttpServletRequest request = signOutQueryCallback.getRequest();
+                if (callback instanceof ReplyConstraintCallback) {
+                    ReplyConstraintCallback replyConstraintCallback = (ReplyConstraintCallback)callback;
+                    HttpServletRequest request = replyConstraintCallback.getRequest();
                     if (request != null && request.getParameter(OAuthConstants.CLIENT_ID) != null) {
-                        Map<String, String> signOutQueryMap = new HashMap<>();
-                        signOutQueryMap.put(OAuthConstants.CLIENT_ID, request.getParameter(OAuthConstants.CLIENT_ID));
-                        signOutQueryCallback.setSignOutQueryParamMap(signOutQueryMap);
+                        String clientId = request.getParameter(OAuthConstants.CLIENT_ID);
+
+                        ApplicationContext ctx = ApplicationContextProvider.getApplicationContext();
+                        OAuthDataProvider dataManager = (OAuthDataProvider)ctx.getBean("oauthProvider");
+
+                        Client client = dataManager.getClient(clientId);
+                        String logoutUri = client.getProperties().get(CLIENT_LOGOUT_URI);
+                        if (logoutUri != null) {
+                            replyConstraintCallback.setReplyConstraint(Pattern.compile(logoutUri));
+                        }
                     }
                 }
             }
