@@ -200,7 +200,7 @@ public class LogoutHandler implements RequestHandler<Boolean> {
             }
             responseOutputStream.flush();
         } catch (IOException e) {
-            LOG.error("Could  not send logout image: {}", e.getMessage());
+            LOG.error("Could not send logout image: {}", e.getMessage());
         } finally {
             try {
                 inputStream.close();

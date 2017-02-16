@@ -54,7 +54,7 @@ public class STSUserDetails extends User {
 
         if (token != null && !token.equals(((STSUserDetails)object).token)) {
             return false;
-        } else  if (token == null && ((STSUserDetails)object).token != null) {
+        } else if (token == null && ((STSUserDetails)object).token != null) {
             return false;
         }
 
