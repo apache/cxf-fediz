@@ -136,6 +136,8 @@ public class IdpEntity {
     private String serviceDescription;
 
     private boolean rpSingleSignOutCleanupConfirmation;
+    
+    private boolean automaticRedirectToRpAfterLogout;
 
 
     public int getId() {
@@ -296,6 +298,14 @@ public class IdpEntity {
 
     public void setRpSingleSignOutCleanupConfirmation(boolean rpSingleSignOutCleanupConfirmation) {
         this.rpSingleSignOutCleanupConfirmation = rpSingleSignOutCleanupConfirmation;
+    }
+
+    public boolean isAutomaticRedirectToRpAfterLogout() {
+        return automaticRedirectToRpAfterLogout;
+    }
+
+    public void setAutomaticRedirectToRpAfterLogout(boolean automaticRedirectToRpAfterLogout) {
+        this.automaticRedirectToRpAfterLogout = automaticRedirectToRpAfterLogout;
     }
 
 }

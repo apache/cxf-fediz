@@ -232,9 +232,9 @@
     </view-state>
 
     <view-state id="redirect" view="externalRedirect:#{flowScope.wreply}" />
-
+    
     <!-- normal exit point for logout -->
-    <end-state id="invalidateSessionAction" view="signoutresponse">
+    <decision-state id="invalidateSessionAction">
         <on-entry>
             <!-- store the realmConfigMap in the request map before we invalidate the session below.
             Its needed in the signoutresponse.jsp page -->
@@ -247,7 +247,13 @@
             <evaluate expression="homeRealmReminder.removeCookie(flowRequestContext)" />
             <evaluate expression="logoutAction.submit(flowRequestContext)" />
         </on-entry>
-    </end-state>
+        <if test="flowScope.idpConfig.isAutomaticRedirectToRpAfterLogout()"
+            then="redirectToRPLogoutPage" else="showLogoutResponsePage" />
+    </decision-state>
+    
+    <end-state id="showLogoutResponsePage" view="signoutresponse" />
+    
+    <end-state id="redirectToRPLogoutPage" view="externalRedirect:#{flowScope.wreply}" />
 
     <!-- redirect to remote idp -->
     <end-state id="redirectToTrustedIDP" view="externalRedirect:#{flowScope.remoteIdpUrl}">
