@@ -48,19 +48,26 @@ public class LogoutRedirectConstraintHandler implements CallbackHandler {
                     if (request != null && request.getParameter(OAuthConstants.CLIENT_ID) != null) {
                         String clientId = request.getParameter(OAuthConstants.CLIENT_ID);
 
-                        ApplicationContext ctx = ApplicationContextProvider.getApplicationContext();
-                        OAuthDataProvider dataManager = (OAuthDataProvider)ctx.getBean("oauthProvider");
-
-                        Client client = dataManager.getClient(clientId);
-                        String logoutUri = client.getProperties().get(CLIENT_LOGOUT_URI);
-                        if (logoutUri != null) {
-                            replyConstraintCallback.setReplyConstraint(Pattern.compile(logoutUri));
-                        }
+                        replyConstraintCallback.setReplyConstraint(getLogoutRedirectConstraint(clientId));
                     }
                 }
             }
         }
     }
 
+    private Pattern getLogoutRedirectConstraint(String clientId) {
+        ApplicationContext ctx = ApplicationContextProvider.getApplicationContext();
+        OAuthDataProvider dataManager = (OAuthDataProvider)ctx.getBean("oauthProvider");
+
+        Client client = dataManager.getClient(clientId);
+        if (client != null) {
+            String logoutUri = client.getProperties().get(CLIENT_LOGOUT_URI);
+            if (logoutUri != null) {
+                return Pattern.compile(logoutUri);
+            }
+        }
+        
+        return null;
+    }
 
 }
