@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriBuilder;
 
 import org.w3c.dom.Element;
 
@@ -75,7 +76,8 @@ public class FedizSubjectCreator implements SubjectCreator {
         // by the authentication system (IDP/STS) once and reported every time a given user signs in ?
         oidcSub.setId(Base64UrlUtility.encode(CryptoUtils.generateSecureRandomBytes(16)));
 
-        IdToken idToken = convertToIdToken(fedizPrincipal.getLoginToken(),
+        IdToken idToken = convertToIdToken(mc,
+                                           fedizPrincipal.getLoginToken(),
                                            oidcSub.getLogin(),
                                            oidcSub.getId(),
                                            fedizPrincipal.getClaims(),
@@ -88,7 +90,8 @@ public class FedizSubjectCreator implements SubjectCreator {
         return oidcSub;
     }
 
-    private IdToken convertToIdToken(Element samlToken,
+    private IdToken convertToIdToken(MessageContext mc,
+            Element samlToken,
             String subjectName,
             String subjectId,
             ClaimCollection claims,
@@ -129,7 +132,14 @@ public class FedizSubjectCreator implements SubjectCreator {
         }
         // Check if default issuer, issuedAt and expiryTime values have to be set
         if (issuer != null) {
-            idToken.setIssuer(issuer);
+            String realIssuer = null;
+            if (issuer.startsWith("/")) {
+                UriBuilder ub = mc.getUriInfo().getBaseUriBuilder();
+                realIssuer = ub.path(issuer).build().toString();
+            } else {
+                realIssuer = issuer;
+            }
+            idToken.setIssuer(realIssuer);
         } else if (saml2Assertion != null) {
             Issuer assertionIssuer = saml2Assertion.getIssuer();
             if (assertionIssuer != null) {
