@@ -19,7 +19,9 @@
 package org.apache.cxf.fediz.service.oidc.logout;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.ws.rs.BadRequestException;
@@ -40,7 +42,8 @@ import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 
 @Path("/logout")
 public class LogoutService {
-    private static final String CLIENT_LOGOUT_URI = "client_logout_uri";
+    private static final String CLIENT_LOGOUT_URI = "post_logout_redirect_uri";
+    private static final String CLIENT_LOGOUT_URIS = "post_logout_redirect_uris";
     @Context
     private MessageContext mc;
     private String relativeIdpLogoutUri;
@@ -72,12 +75,27 @@ public class LogoutService {
         mc.getHttpServletRequest().getSession().invalidate();
 
         // Redirect to the core IDP
-        URI idpLogoutUri = getAbsoluteIdpLogoutUri(client);
+        URI idpLogoutUri = getAbsoluteIdpLogoutUri(client, params);
         return Response.seeOther(idpLogoutUri).build();
     }
 
-    private URI getClientLogoutUri(Client client) {
-        return URI.create(client.getProperties().get(CLIENT_LOGOUT_URI));
+    private URI getClientLogoutUri(Client client, MultivaluedMap<String, String> params) {
+        String logoutUriProp = client.getProperties().get(CLIENT_LOGOUT_URIS);
+        // logoutUriProp is guaranteed to be not null at this point
+        String[] uris = logoutUriProp.split(" ");
+        String uriStr = null;
+        if (uris.length > 1) {
+            String clientLogoutUriParam = params.getFirst(CLIENT_LOGOUT_URI);
+            if (clientLogoutUriParam == null 
+                    || !new HashSet<>(Arrays.asList(uris)).contains(clientLogoutUriParam)) {
+                throw new BadRequestException();    
+            }
+            uriStr = clientLogoutUriParam;
+        } else {
+            uriStr = uris[0];
+        }
+        
+        return URI.create(client.getProperties().get(uriStr));
     }
     
     private Client getClient(MultivaluedMap<String, String> params) {
@@ -89,16 +107,16 @@ public class LogoutService {
         if (c == null) {
             throw new BadRequestException();
         }
-        if (c.getProperties().get(CLIENT_LOGOUT_URI) == null) {
+        if (c.getProperties().get(CLIENT_LOGOUT_URIS) == null) {
             //TODO: Possibly default to something ?
             throw new BadRequestException();
         }
         return c;
     }
-    private URI getAbsoluteIdpLogoutUri(Client client) {
+    private URI getAbsoluteIdpLogoutUri(Client client, MultivaluedMap<String, String> params) {
         UriBuilder ub = mc.getUriInfo().getAbsolutePathBuilder();
         ub.path(relativeIdpLogoutUri);
-        ub.queryParam("wreply", getClientLogoutUri(client));
+        ub.queryParam("wreply", getClientLogoutUri(client, params));
         ub.queryParam(OAuthConstants.CLIENT_ID, client.getClientId());
 
         return ub.build();

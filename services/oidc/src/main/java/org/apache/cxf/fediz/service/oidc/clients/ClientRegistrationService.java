@@ -283,7 +283,7 @@ public class ClientRegistrationService {
                     throwInvalidRegistrationException("An invalid logout URI was specified: " + logoutURI);
                 }
                 //TODO: replace this code with newClient.setLogoutUri() once it becomes available
-                newClient.getProperties().put("client_logout_uri", logoutURI);
+                newClient.getProperties().put("post_logout_redirect_uris", logoutURI);
             }
 
             // Client Audience URIs
