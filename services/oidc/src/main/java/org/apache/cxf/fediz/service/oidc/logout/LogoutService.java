@@ -94,8 +94,12 @@ public class LogoutService {
         } else {
             uriStr = uris[0];
         }
-        
-        return URI.create(client.getProperties().get(uriStr));
+        UriBuilder ub = UriBuilder.fromUri(uriStr);
+        String state = params.getFirst(OAuthConstants.STATE);
+        if (state != null) {
+            ub.queryParam(OAuthConstants.STATE, state);
+        }
+        return ub.build();
     }
     
     private Client getClient(MultivaluedMap<String, String> params) {
@@ -118,7 +122,6 @@ public class LogoutService {
         ub.path(relativeIdpLogoutUri);
         ub.queryParam("wreply", getClientLogoutUri(client, params));
         ub.queryParam(OAuthConstants.CLIENT_ID, client.getClientId());
-
         return ub.build();
     }
 
