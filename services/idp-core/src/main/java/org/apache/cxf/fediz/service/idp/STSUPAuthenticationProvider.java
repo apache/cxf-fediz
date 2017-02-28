@@ -135,10 +135,10 @@ public class STSUPAuthenticationProvider extends STSAuthenticationProvider {
         if (getCustomSTSParameter() != null) {
             HttpServletRequest request =
                     ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-            HttpServletResponse response =
-                    ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getResponse();
             authRealmParameter = request.getParameter(getCustomSTSParameter());
             if (authRealmParameter == null) {
+                HttpServletResponse response =
+                        ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getResponse();
                 SavedRequest savedRequest = requestCache.getRequest(request, response);
                 String[] parameterValues = savedRequest.getParameterValues(this.getCustomSTSParameter());
                 if (parameterValues != null && parameterValues.length > 0) {
