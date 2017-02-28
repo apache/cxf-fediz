@@ -21,6 +21,7 @@ package org.apache.cxf.fediz.service.idp;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 
 import org.apache.cxf.Bus;
@@ -33,6 +34,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.savedrequest.RequestCache;
+import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -42,6 +46,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 public class STSUPAuthenticationProvider extends STSAuthenticationProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(STSUPAuthenticationProvider.class);
+
+    private RequestCache requestCache = new HttpSessionRequestCache();
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -85,15 +91,7 @@ public class STSUPAuthenticationProvider extends STSAuthenticationProvider {
 
         try {
 
-            if (getCustomSTSParameter() != null) {
-                HttpServletRequest request =
-                    ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-                String authRealmParameter = request.getParameter(getCustomSTSParameter());
-                LOG.debug("Found {} custom STS parameter {}", getCustomSTSParameter(), authRealmParameter);
-                if (authRealmParameter != null) {
-                    sts.setCustomContent(authRealmParameter);
-                }
-            }
+            sts.setCustomContent(getCustomSTSParameterValue());
 
             // Line below may be uncommented for debugging
             // setTimeout(sts.getClient(), 3600000L);
@@ -123,9 +121,41 @@ public class STSUPAuthenticationProvider extends STSAuthenticationProvider {
 
     }
 
+    /**
+     * If customSTSParameter has been set, this method will lookup :
+     * <ul>
+     *     <ol> in http parameters</ol>
+     *     <ol> if not found in the requestCache from Spring Security.
+     *     This lookup is necessary whenever you use Spring Security form-login since
+     *     it redirects you to an login-url and stores original request in the requestCache.</ol>
+     * </ul>
+     */
+    private String getCustomSTSParameterValue() {
+        String authRealmParameter = null;
+        if (getCustomSTSParameter() != null) {
+            HttpServletRequest request =
+                    ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+            HttpServletResponse response =
+                    ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getResponse();
+            authRealmParameter = request.getParameter(getCustomSTSParameter());
+            if (authRealmParameter == null) {
+                SavedRequest savedRequest = requestCache.getRequest(request, response);
+                String[] parameterValues = savedRequest.getParameterValues(this.getCustomSTSParameter());
+                if (parameterValues != null && parameterValues.length > 0) {
+                    authRealmParameter = parameterValues[0];
+                }
+            }
+            LOG.debug("Found {} custom STS parameter {}", getCustomSTSParameter(), authRealmParameter);
+        }
+        return authRealmParameter;
+    }
+
     @Override
     public boolean supports(Class<?> authentication) {
         return authentication.equals(UsernamePasswordAuthenticationToken.class);
     }
 
+    public void setRequestCache(RequestCache requestCache) {
+        this.requestCache = requestCache;
+    }
 }
