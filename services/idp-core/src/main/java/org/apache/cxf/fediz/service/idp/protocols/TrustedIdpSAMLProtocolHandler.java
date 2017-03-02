@@ -205,10 +205,7 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
                      id, validatorResponse.getResponseId(), whr);
             LOG.debug("Created date={}", validatorResponse.getCreated());
             LOG.debug("Expired date={}", validatorResponse.getSessionNotOnOrAfter());
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Validated: "
-                    + System.getProperty("line.separator") + validatorResponse.getAssertion());
-            }
+            LOG.debug("Validated: {}{}", System.getProperty("line.separator"), validatorResponse.getAssertion());
             return idpToken;
         } catch (BadRequestException ex) {
             throw ex;
@@ -221,9 +218,7 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
     private String encodeAuthnRequest(Element authnRequest) throws IOException {
         String requestMessage = DOM2Writer.nodeToString(authnRequest);
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(requestMessage);
-        }
+        LOG.debug(requestMessage);
 
         DeflateEncoderDecoder encoder = new DeflateEncoderDecoder();
         byte[] deflatedBytes = encoder.deflateToken(requestMessage.getBytes("UTF-8"));

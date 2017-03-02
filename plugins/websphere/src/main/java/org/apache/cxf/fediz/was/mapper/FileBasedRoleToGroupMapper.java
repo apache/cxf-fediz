@@ -176,9 +176,7 @@ public class FileBasedRoleToGroupMapper implements RoleToGroupMapper {
             Iterator<SamlToJ2EE> i = localmappings.getSamlToJ2EE().iterator();
             while (i.hasNext()) {
                 SamlToJ2EE mapping = i.next();
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("{} mapped to {} entries", mapping.getClaim(), mapping.getGroups().getJ2EeGroup().size());
-                }
+                LOG.debug("{} mapped to {} entries", mapping.getClaim(), mapping.getGroups().getJ2EeGroup().size());
                 map.put(mapping.getClaim(), mapping.getGroups().getJ2EeGroup());
             }
         }

@@ -441,9 +441,7 @@ public class STSClientAction {
         } else {
             sts.setTtl(this.ttl);
             sts.setEnableLifetime(this.ttl > 0);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Lifetime set to {} seconds for realm {}", this.ttl, wtrealm);
-            }
+            LOG.debug("Lifetime set to {} seconds for realm {}", this.ttl, wtrealm);
         }
     }
 

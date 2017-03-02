@@ -126,16 +126,12 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
         String state = getState(fedConfig, params);
 
         if (responseToken == null) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("SignIn request must contain a response token from the IdP");
-            }
+            LOG.debug("SignIn request must contain a response token from the IdP");
             throw ExceptionUtils.toBadRequestException(null, null);
         } else {
             // processSignInRequest
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Process SignIn request");
-                LOG.debug("token=\n" + responseToken);
-            }
+            LOG.debug("Process SignIn request");
+            LOG.debug("token=\n{}", responseToken);
 
             FedizResponse wfRes =
                 validateSignInRequest(fedConfig, params, responseToken, state);
@@ -394,10 +390,8 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
         }*/
 
         if (signoutCleanup) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("SignOutCleanup request found");
-                LOG.debug("SignOutCleanup action...");
-            }
+            LOG.debug("SignOutCleanup request found");
+            LOG.debug("SignOutCleanup action...");
             cleanupContext(m);
 
             HttpServletResponse response = messageContext.getHttpServletResponse();

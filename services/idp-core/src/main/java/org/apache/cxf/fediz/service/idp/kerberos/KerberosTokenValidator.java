@@ -101,8 +101,8 @@ public class KerberosTokenValidator {
             try {
                 String jaasAuth = System.getProperty("java.security.auth.login.config");
                 String krbConf = System.getProperty("java.security.krb5.conf");
-                LOG.debug("KerberosTokenValidator - Using JAAS auth login file: " + jaasAuth);
-                LOG.debug("KerberosTokenValidator - Using KRB conf file: " + krbConf);
+                LOG.debug("KerberosTokenValidator - Using JAAS auth login file: {}", jaasAuth);
+                LOG.debug("KerberosTokenValidator - Using KRB conf file: {}", krbConf);
             } catch (SecurityException ex) {
                 LOG.debug(ex.getMessage(), ex);
             }
@@ -116,9 +116,7 @@ public class KerberosTokenValidator {
             loginContext = new LoginContext(getContextName());
         }
         loginContext.login();
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Successfully authenticated to the TGT");
-        }
+        LOG.debug("Successfully authenticated to the TGT");
 
         // Get the service name to use - fall back on the principal
         Subject subject = loginContext.getSubject();
@@ -138,9 +136,7 @@ public class KerberosTokenValidator {
                                                isUsernameServiceNameForm(), spnego);
         KerberosServiceContext krbServiceCtx = Subject.doAs(subject, action);
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Successfully validated a ticket");
-        }
+        LOG.debug("Successfully validated a ticket");
 
         return krbServiceCtx;
     }

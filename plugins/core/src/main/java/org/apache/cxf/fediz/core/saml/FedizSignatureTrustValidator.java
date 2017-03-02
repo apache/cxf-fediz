@@ -180,12 +180,10 @@ public class FedizSignatureTrustValidator implements Validator {
         // certificate was really signed by the issuer stated in the certificate
         //
         crypto.verifyTrust(certificates, enableRevocation, null);
-        if (LOG.isDebugEnabled()) {
-            String subjectString = certificates[0].getSubjectX500Principal().getName();
-            LOG.debug(
-                "Certificate path has been verified for certificate with subject " + subjectString
-            );
-        }
+        String subjectString = certificates[0].getSubjectX500Principal().getName();
+        LOG.debug(
+            "Certificate path has been verified for certificate with subject {}", subjectString
+        );
     }
 
     /**

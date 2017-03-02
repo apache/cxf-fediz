@@ -328,9 +328,7 @@ public class SAMLTokenValidator implements TokenValidator {
             List<org.opensaml.saml.saml2.core.Attribute> attributes = statement
                     .getAttributes();
             for (org.opensaml.saml.saml2.core.Attribute attribute : attributes) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("parsing attribute: " + attribute.getName());
-                }
+                LOG.debug("parsing attribute: {}", attribute.getName());
                 Claim c = new Claim();
                 // Workaround for CXF-4484
                 // Value of Attribute Name not fully qualified

@@ -154,10 +154,7 @@ public class TrustedIdpWSFedProtocolHandler extends AbstractTrustedIdpProtocolHa
                      id, wfResp.getUsername(), wfResp.getUniqueTokenId(), whr, wfResp.getIssuer());
             LOG.debug("Created date={}", wfResp.getTokenCreated());
             LOG.debug("Expired date={}", wfResp.getTokenExpires());
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Validated 'wresult' : "
-                    + System.getProperty("line.separator") + wresult);
-            }
+            LOG.debug("Validated 'wresult' : {}{}", System.getProperty("line.separator"), wresult);
             return idpToken;
         } catch (IllegalStateException ex) {
             throw ex;
