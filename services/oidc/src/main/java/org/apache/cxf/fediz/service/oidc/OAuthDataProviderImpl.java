@@ -18,7 +18,6 @@
  */
 package org.apache.cxf.fediz.service.oidc;
 
-import java.lang.reflect.Method;
 import java.security.Principal;
 import java.util.Collections;
 import java.util.List;
@@ -29,6 +28,7 @@ import org.apache.cxf.rs.security.oauth2.common.OAuthPermission;
 import org.apache.cxf.rs.security.oauth2.grants.code.DefaultEHCacheCodeDataProvider;
 import org.apache.cxf.rs.security.oauth2.provider.OAuthServiceException;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
+import org.apache.cxf.rs.security.oauth2.utils.OAuthUtils;
 import org.apache.cxf.rs.security.oidc.utils.OidcUtils;
 
 public class OAuthDataProviderImpl extends DefaultEHCacheCodeDataProvider {
@@ -113,13 +113,7 @@ public class OAuthDataProviderImpl extends DefaultEHCacheCodeDataProvider {
     public void setMessageContext(MessageContext mc) {
         super.setMessageContext(mc);
         if (authenticationStrategy != null) {
-            try {
-                Method contextMethod = authenticationStrategy.getClass().getMethod("setMessageContext",
-                                                                              new Class[]{MessageContext.class});
-                contextMethod.invoke(authenticationStrategy, new Object[]{mc});
-            } catch (Throwable t) {
-                // ignore
-            }    
+            OAuthUtils.injectContextIntoOAuthProvider(mc, authenticationStrategy);
         }
     }
 }
