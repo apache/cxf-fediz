@@ -43,7 +43,7 @@
         <commons.lang.version>3.5</commons.lang.version>
         <commons.logging.version>1.2</commons.logging.version>
         <commons.io.version>2.5</commons.io.version>
-        <commons.validator.version>1.5.1</commons.validator.version>
+        <commons.validator.version>1.6</commons.validator.version>
         <cxf.version>3.1.11-SNAPSHOT</cxf.version>
         <cxf.build-utils.version>3.2.0</cxf.build-utils.version>
         <dbcp.version>2.1.1</dbcp.version>
