@@ -21,7 +21,6 @@ package org.apache.cxf.fediz.service.oidc;
 import java.util.List;
 
 import org.apache.cxf.rs.security.oauth2.common.Client;
-import org.apache.cxf.rs.security.oauth2.common.OAuthPermission;
 import org.apache.cxf.rs.security.oauth2.grants.code.DefaultEHCacheCodeDataProvider;
 import org.apache.cxf.rs.security.oauth2.provider.OAuthServiceException;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
@@ -30,7 +29,7 @@ import org.apache.cxf.rs.security.oidc.utils.OidcUtils;
 public class OAuthDataProviderImpl extends DefaultEHCacheCodeDataProvider {
 
     @Override
-    public List<OAuthPermission> convertScopeToPermissions(Client client, List<String> requestedScopes) {
+    protected void checkRequestedScopes(Client client, List<String> requestedScopes) {
         //TODO: push this code into the abstract class
         //NOTE: if OIDC-registered clients will be allowed to support not only code/implicit
         // (as it is now) but also client credentials/etc then the check below will need to be more strict
@@ -40,6 +39,5 @@ public class OAuthDataProviderImpl extends DefaultEHCacheCodeDataProvider {
             && !requestedScopes.contains(OidcUtils.OPENID_SCOPE)) {
             throw new OAuthServiceException("Required scopes are missing");
         }
-        return super.convertScopeToPermissions(client, requestedScopes);
     }
 }
