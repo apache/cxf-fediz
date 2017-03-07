@@ -18,7 +18,10 @@
  */
 package org.apache.cxf.fediz.service.oidc;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.cxf.rs.security.oauth2.common.Client;
 import org.apache.cxf.rs.security.oauth2.grants.code.DefaultEHCacheCodeDataProvider;
@@ -27,15 +30,14 @@ import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 import org.apache.cxf.rs.security.oidc.utils.OidcUtils;
 
 public class OAuthDataProviderImpl extends DefaultEHCacheCodeDataProvider {
+    private static final Set<String> NON_REDIRECTION_FLOWS = 
+        new HashSet<>(Arrays.asList(OAuthConstants.CLIENT_CREDENTIALS_GRANT, 
+                                    OAuthConstants.RESOURCE_OWNER_GRANT));
 
     @Override
     protected void checkRequestedScopes(Client client, List<String> requestedScopes) {
-        //TODO: push this code into the abstract class
-        //NOTE: if OIDC-registered clients will be allowed to support not only code/implicit
-        // (as it is now) but also client credentials/etc then the check below will need to be more strict
-        // with the help of getMessageContext().get(OAuthConstants.GRANT_TYPE)
-        if (!client.getAllowedGrantTypes().contains(OAuthConstants.CLIENT_CREDENTIALS_GRANT)
-            && !client.getAllowedGrantTypes().contains(OAuthConstants.RESOURCE_OWNER_GRANT)    
+        String grantType = super.getCurrentRequestedGrantType();
+        if (grantType != null && !NON_REDIRECTION_FLOWS.contains(grantType)    
             && !requestedScopes.contains(OidcUtils.OPENID_SCOPE)) {
             throw new OAuthServiceException("Required scopes are missing");
         }
