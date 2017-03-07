@@ -652,6 +652,45 @@ public class OIDCTest {
 
         webClient.close();
     }
+    
+    @org.junit.Test
+    public void testCreateClientWithSupportedTLD() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/console/clients";
+        String user = "alice";
+        String password = "ecila";
+
+        // Login to the client page successfully
+        WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
+        HtmlPage loginPage = login(url, webClient);
+        final String bodyTextContent = loginPage.getBody().getTextContent();
+        Assert.assertTrue(bodyTextContent.contains("Registered Clients"));
+
+        // Register a client with a supported TLD
+        HtmlPage registeredClientPage = registerNewClient(webClient, url, "tld1", "https://www.apache.corp",
+            "https://cxf.apache.org");
+        String registeredClientPageBody = registeredClientPage.getBody().getTextContent();
+        Assert.assertTrue(registeredClientPageBody.contains("Registered Clients"));
+        Assert.assertTrue(registeredClientPageBody.contains("tld1"));
+        Assert.assertTrue(registeredClientPageBody.contains("https://www.apache.corp"));
+        
+        HtmlTable table = registeredClientPage.getHtmlElementById("registered_clients");
+        String clientId = table.getCellAt(3, 1).asText().trim();
+        
+        // Register a client with an unsupported TLD
+        try {
+            HtmlPage errorPage = registerNewClient(webClient, url, "tld2", "https://www.apache.corp2",
+                                                   "https://cxf.apache.org");
+            Assert.assertTrue(errorPage.asText().contains("Invalid Client Registration"));
+        } catch (Exception ex) {
+            // expected
+        }
+        
+        // Delete the first client above
+        deleteClient(webClient, url, clientId);
+
+
+        webClient.close();
+    }
 
     private static WebClient setupWebClient(String user, String password, String idpPort) {
         final WebClient webClient = new WebClient();

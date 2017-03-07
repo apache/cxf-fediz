@@ -148,6 +148,13 @@
             <entry key="urn:org:apache:cxf:fediz:idp:realm-B" value="IDP of Realm B" />
           </map>
        </property>
+       <property name="additionalTLDs">
+           <list>
+               <value>domain123</value>
+               <value>corp</value>
+               <value>domain456</value>
+           </list>
+       </property>
     </bean>
     
     <!-- Console linking to the client registration service -->
