@@ -22,6 +22,7 @@ package org.apache.cxf.fediz.service.oidc.clients;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -35,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
@@ -48,7 +50,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
+import org.apache.commons.validator.routines.DomainValidator;
+import org.apache.commons.validator.routines.DomainValidator.ArrayType;
 import org.apache.commons.validator.routines.UrlValidator;
+import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.common.util.Base64UrlUtility;
 import org.apache.cxf.common.util.StringUtils;
 import org.apache.cxf.rs.security.oauth2.common.Client;
@@ -65,6 +70,8 @@ import org.apache.cxf.rt.security.crypto.CryptoUtils;
 
 @Path("/")
 public class ClientRegistrationService {
+    
+    private static final Logger LOG = LogUtils.getL7dLogger(ClientRegistrationService.class);
 
     private Map<String, Collection<Client>> registrations = new HashMap<String, Collection<Client>>();
     private Map<String, Set<String>> clientNames = new HashMap<String, Set<String>>();
@@ -434,7 +441,20 @@ public class ClientRegistrationService {
     public void setClientProvider(ClientRegistrationProvider clientProvider) {
         this.clientProvider = clientProvider;
     }
-    
+
+    public void setAdditionalTLDs(List<String> additionalTLDs) {
+        // Support additional top level domains
+        if (additionalTLDs != null && !additionalTLDs.isEmpty()) {
+            try {
+                String[] tldsToAddArray = additionalTLDs.toArray(new String[additionalTLDs.size()]);
+                LOG.info("Adding the following additional Top Level Domains: " + Arrays.toString(tldsToAddArray));
+                DomainValidator.updateTLDOverride(ArrayType.GENERIC_PLUS, tldsToAddArray);
+            } catch (IllegalStateException ex) {
+                //
+            }
+        }
+    }
+
     private static class ClientComparator implements Comparator<Client> {
 
         @Override
