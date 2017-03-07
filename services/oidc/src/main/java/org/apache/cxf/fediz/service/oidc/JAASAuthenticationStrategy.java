@@ -28,6 +28,7 @@ import javax.security.auth.login.LoginException;
 
 import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.interceptor.security.NamePasswordCallbackHandler;
+import org.apache.cxf.rs.security.oauth2.provider.ProviderAuthenticationStrategy;
 
 public class JAASAuthenticationStrategy implements ProviderAuthenticationStrategy {
     private static final Logger LOG = LogUtils.getL7dLogger(JAASAuthenticationStrategy.class);

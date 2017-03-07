@@ -18,49 +18,16 @@
  */
 package org.apache.cxf.fediz.service.oidc;
 
-import java.security.Principal;
-import java.util.Collections;
 import java.util.List;
 
-import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.rs.security.oauth2.common.Client;
 import org.apache.cxf.rs.security.oauth2.common.OAuthPermission;
 import org.apache.cxf.rs.security.oauth2.grants.code.DefaultEHCacheCodeDataProvider;
 import org.apache.cxf.rs.security.oauth2.provider.OAuthServiceException;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
-import org.apache.cxf.rs.security.oauth2.utils.OAuthUtils;
 import org.apache.cxf.rs.security.oidc.utils.OidcUtils;
 
 public class OAuthDataProviderImpl extends DefaultEHCacheCodeDataProvider {
-
-    private boolean checkOnlyRegisteredClients;
-    private boolean persistUnregisteredClients = true;
-    private ProviderAuthenticationStrategy authenticationStrategy;
-    
-    @Override
-    public Client getClient(String clientId) {
-        Client client = super.getClient(clientId);
-        if (client != null || checkOnlyRegisteredClients) {
-            return client;
-        }
-
-        String grantType = getCurrentRequestedGrantType();
-        if (OAuthConstants.CLIENT_CREDENTIALS_GRANT.equals(grantType)) {
-            // Pre-registering the OAuth2 Client representations for
-            // "client_credentials" can be difficult.
-            String clientSecret = (String)getMessageContext().get(OAuthConstants.CLIENT_SECRET);
-            if (clientSecret != null) {
-                // Direct authentication with the back-end storage
-                return authenticateClient(clientId, clientSecret);
-            } else {
-                Principal p = super.getMessageContext().getSecurityContext().getUserPrincipal();
-                if (clientId.equals(p.getName())) {
-                    return createClientCredClient(clientId, null);
-                }
-            }
-        }
-        return null;
-    }
 
     @Override
     public List<OAuthPermission> convertScopeToPermissions(Client client, List<String> requestedScopes) {
@@ -74,46 +41,5 @@ public class OAuthDataProviderImpl extends DefaultEHCacheCodeDataProvider {
             throw new OAuthServiceException("Required scopes are missing");
         }
         return super.convertScopeToPermissions(client, requestedScopes);
-    }
-
-    public void setCheckOnlyRegisteredClients(boolean checkOnlyRegisteredClients) {
-        this.checkOnlyRegisteredClients = checkOnlyRegisteredClients;
-    }
-
-    public void setPersistUnregisteredClients(boolean persistUnregisteredClients) {
-        this.persistUnregisteredClients = persistUnregisteredClients;
-    }
-
-    public void setAuthenticationStrategy(ProviderAuthenticationStrategy authenticationStrategy) {
-        this.authenticationStrategy = authenticationStrategy;
-    }
-    
-    protected Client authenticateClient(String clientId, String clientSecret) {
-        if (doAuthenticate(clientId, clientSecret)) {
-            return createClientCredClient(clientId, clientSecret);
-        }
-        return null;
-    }
-    
-    protected Client createClientCredClient(String clientId, String password) {
-        Client c = new Client(clientId, password, true);
-        c.setAllowedGrantTypes(Collections.singletonList(OAuthConstants.CLIENT_CREDENTIALS_GRANT));
-        if (persistUnregisteredClients) {
-            // It will enable seeing these clients and their tokens in the OIDC management console
-            super.setClient(c);
-        }
-        return c;
-    }
-
-    protected boolean doAuthenticate(String id, String password) {
-        return authenticationStrategy != null
-            && authenticationStrategy.authenticate(id, password);
-    }
-    @Override
-    public void setMessageContext(MessageContext mc) {
-        super.setMessageContext(mc);
-        if (authenticationStrategy != null) {
-            OAuthUtils.injectContextIntoOAuthProvider(mc, authenticationStrategy);
-        }
     }
 }
