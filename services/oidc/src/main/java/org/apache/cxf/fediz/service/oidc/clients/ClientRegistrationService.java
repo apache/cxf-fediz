@@ -73,8 +73,8 @@ public class ClientRegistrationService {
     
     private static final Logger LOG = LogUtils.getL7dLogger(ClientRegistrationService.class);
 
-    private Map<String, Collection<Client>> registrations = new HashMap<String, Collection<Client>>();
-    private Map<String, Set<String>> clientNames = new HashMap<String, Set<String>>();
+    private Map<String, Collection<Client>> registrations = new HashMap<>();
+    private Map<String, Set<String>> clientNames = new HashMap<>();
     private OAuthDataProvider dataProvider;
     private ClientRegistrationProvider clientProvider;
     private Map<String, String> homeRealms = new LinkedHashMap<String, String>();
