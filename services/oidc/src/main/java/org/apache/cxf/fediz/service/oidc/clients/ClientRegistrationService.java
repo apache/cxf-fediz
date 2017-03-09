@@ -422,14 +422,16 @@ public class ClientRegistrationService {
 
     public void init() {
         for (Client c : clientProvider.getClients(null)) {
-            String userName = c.getResourceOwnerSubject().getLogin();
-            getClientRegistrations(userName).add(c);
-            Set<String> names = clientNames.get(userName);
-            if (names == null) {
-                names = new HashSet<>();
-                clientNames.put(userName, names);
+            if (c.getResourceOwnerSubject() != null) {
+                String userName = c.getResourceOwnerSubject().getLogin();
+                getClientRegistrations(userName).add(c);
+                Set<String> names = clientNames.get(userName);
+                if (names == null) {
+                    names = new HashSet<>();
+                    clientNames.put(userName, names);
+                }
+                names.add(c.getApplicationName());
             }
-            names.add(c.getApplicationName());
         }
     }
 
