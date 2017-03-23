@@ -43,7 +43,7 @@
 							}
 		</style>
 	</head>
-	<body onload='document.signinform.username.focus();'>
+	<body onload='documentLoaded()'>
 		<img src="<c:url value='/images/apache-logo.png' />" alt="Apache Logo" style="margin:5px auto">
 		
 		<c:if test="${param.error != null}">
@@ -56,7 +56,7 @@
 		
 		<h1>Fediz IDP Login</h1>
 		
-		<form:form method="POST" id="signinform" name="signinform" action="login.do" >
+		<form:form method="POST" id="signinform" name="signinform" action="login.do">
 			<div id="login_form">
 				<label for="username">UserId</label>
 				<input type="text" id="username" name="username" placeholder="username" />
@@ -69,4 +69,31 @@
 			</div>
 		</form:form>
 	</body>
+	<script language="javascript">
+	    function documentLoaded() {
+	        var form = document.signinform;
+	        form.username.focus();
+	        propagateUriFragment(form);
+	    }
+	    /**
+         * Prepares the form for submission by appending any URI
+         * fragment (hash) to the form action in order to propagate it
+         * through the re-direct
+         * @param form The login form object.
+         * @returns the form.
+         */
+        function propagateUriFragment(form) {
+            // Extract the fragment from the browser's current location.
+            var hash = decodeURIComponent(self.document.location.hash);
+
+            // The fragment value may not contain a leading # symbol
+            if (hash && hash.indexOf("#") === -1) {
+                hash = "#" + hash;
+            }
+
+            // Append the fragment to the current action so that it persists to the redirected URL.
+            form.action = form.action + hash;
+            return form;
+        }
+	</script>
 </html>
