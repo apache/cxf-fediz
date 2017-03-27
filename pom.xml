@@ -68,7 +68,7 @@
         <spring.version>4.3.5.RELEASE</spring.version>
         <spring.security.version>3.2.10.RELEASE</spring.security.version>
         <tomcat7.version>7.0.75</tomcat7.version>
-        <tomcat8.version>8.0.41</tomcat8.version>
+        <tomcat8.version>8.5.12</tomcat8.version>
         <wss4j.version>2.1.9-SNAPSHOT</wss4j.version>
 
         <tomcat.url>http://localhost:8080/manager/text</tomcat.url>

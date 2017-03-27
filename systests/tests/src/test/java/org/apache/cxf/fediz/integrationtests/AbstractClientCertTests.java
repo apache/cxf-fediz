@@ -170,9 +170,7 @@ public abstract class AbstractClientCertTests {
             Assert.fail("Exception expected");
         } catch (FailingHttpStatusCodeException ex) {
             // expected
-            Assert.assertTrue(ex.getMessage().contains("401 Unauthorized")
-                              || ex.getMessage().contains("401 Authentication Failed")
-                              || ex.getMessage().contains("403 Forbidden"));
+            Assert.assertTrue(401 == ex.getStatusCode() || 403 == ex.getStatusCode());
         }
 
         // webClient2.close();

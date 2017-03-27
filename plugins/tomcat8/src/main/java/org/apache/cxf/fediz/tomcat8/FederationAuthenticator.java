@@ -226,6 +226,10 @@ public class FederationAuthenticator extends FormAuthenticator {
         return false;
     }
 
+    public boolean doAuthenticate(Request request, HttpServletResponse response) throws IOException {
+        return authenticate(request, response);
+    }
+
     protected void resumeRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String contextId = request.getParameter(FederationConstants.PARAM_CONTEXT);
         if (contextId == null) {
