@@ -80,7 +80,7 @@ public class STSKrbAuthenticationProvider extends STSAuthenticationProvider {
             sts.setTokenType(WSConstants.WSS_SAML2_TOKEN_TYPE);
         }
         sts.setKeyType(HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER);
-        sts.setWsdlLocation(wsdlLocation);
+        sts.setWsdlLocation(getWsdlLocation());
         sts.setServiceQName(new QName(namespace, wsdlService));
         sts.setEndpointQName(new QName(namespace, wsdlEndpoint));
 

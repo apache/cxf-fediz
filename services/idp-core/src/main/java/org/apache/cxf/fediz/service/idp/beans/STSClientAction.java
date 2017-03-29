@@ -20,8 +20,6 @@ package org.apache.cxf.fediz.service.idp.beans;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +32,7 @@ import javax.xml.stream.XMLStreamException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.binding.soap.SoapFault;
@@ -45,6 +44,7 @@ import org.apache.cxf.fediz.service.idp.IdpSTSClient;
 import org.apache.cxf.fediz.service.idp.domain.Application;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.RequestClaim;
+import org.apache.cxf.fediz.service.idp.util.LocalServerResolver;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.staxutils.W3CDOMStreamWriter;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
@@ -76,12 +76,11 @@ public class STSClientAction {
             "http://docs.oasis-open.org/ws-sx/ws-trust/200512/";
 
     private static final String HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_02_TRUST =
-        "http://schemas.xmlsoap.org/ws/2005/02/trust";
+            "http://schemas.xmlsoap.org/ws/2005/02/trust";
 
     private static final String SECURITY_TOKEN_SERVICE = "SecurityTokenService";
 
-    private static final Logger LOG = LoggerFactory
-            .getLogger(STSClientAction.class);
+    private static final Logger LOG = LoggerFactory.getLogger(STSClientAction.class);
 
     protected String namespace = HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512;
 
@@ -107,21 +106,15 @@ public class STSClientAction {
 
     private String customSTSParameter;
 
-
     public String getWsdlLocation() {
         return wsdlLocation;
     }
 
     public void setWsdlLocation(String wsdlLocation) {
         this.wsdlLocation = wsdlLocation;
-        try {
-            URL url = new URL(wsdlLocation);
-            isPortSet = url.getPort() != 0;
-            if (!isPortSet) {
-                LOG.info("Port is 0 for 'wsdlLocation'. Port evaluated when processing first request.");
-            }
-        } catch (MalformedURLException e) {
-            LOG.error("Invalid Url '" + wsdlLocation + "': "  + e.getMessage());
+        isPortSet = !LocalServerResolver.isLocal(wsdlLocation);
+        if (!isPortSet) {
+            LOG.info("Port is 0 for 'wsdlLocation'. Port evaluated when processing first request.");
         }
     }
 
@@ -149,13 +142,13 @@ public class STSClientAction {
         this.namespace = namespace;
     }
 
-    public void setBus(Bus bus) {
-        this.bus = bus;
-    }
-
     public Bus getBus() {
         // do not store a referance to the default bus
         return (bus != null) ? bus : BusFactory.getDefaultBus();
+    }
+
+    public void setBus(Bus bus) {
+        this.bus = bus;
     }
 
     public String getTokenType() {
@@ -188,13 +181,12 @@ public class STSClientAction {
      * @return a RP security token
      * @throws Exception
      */
-    public Element submit(RequestContext context, String realm, String homeRealm)
-        throws Exception {
+    public Element submit(RequestContext context, String realm, String homeRealm) throws Exception {
 
         SecurityToken idpToken = getSecurityToken(context, homeRealm);
 
         Bus cxfBus = getBus();
-        Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(context, "idpConfig");
+        Idp idpConfig = (Idp)WebUtils.getAttributeFromFlowScope(context, "idpConfig");
 
         IdpSTSClient sts = new IdpSTSClient(cxfBus);
         sts.setAddressingNamespace(HTTP_WWW_W3_ORG_2005_08_ADDRESSING);
@@ -216,13 +208,13 @@ public class STSClientAction {
                 if (wreqElement != null && "RequestSecurityToken".equals(wreqElement.getLocalName())
                     && (STSUtils.WST_NS_05_12.equals(wreqElement.getNamespaceURI())
                         || HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_02_TRUST.equals(wreqElement.getNamespaceURI()))) {
-                    Element tokenTypeElement =
-                        DOMUtils.getFirstChildWithName(wreqElement, wreqElement.getNamespaceURI(), "TokenType");
+                    Element tokenTypeElement = DOMUtils
+                        .getFirstChildWithName(wreqElement, wreqElement.getNamespaceURI(), "TokenType");
                     if (tokenTypeElement != null) {
                         stsTokenType = tokenTypeElement.getTextContent();
                     }
-                    Element keyTypeElement =
-                        DOMUtils.getFirstChildWithName(wreqElement, wreqElement.getNamespaceURI(), "KeyType");
+                    Element keyTypeElement = DOMUtils
+                        .getFirstChildWithName(wreqElement, wreqElement.getNamespaceURI(), "KeyType");
                     if (keyTypeElement != null) {
                         stsKeyType = keyTypeElement.getTextContent();
                     }
@@ -251,8 +243,8 @@ public class STSClientAction {
         if (HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_PUBLICKEY.equals(stsKeyType)) {
             HttpServletRequest servletRequest = WebUtils.getHttpServletRequest(context);
             if (servletRequest != null) {
-                X509Certificate certs[] =
-                    (X509Certificate[])servletRequest.getAttribute("javax.servlet.request.X509Certificate");
+                X509Certificate certs[] = (X509Certificate[])servletRequest
+                    .getAttribute("javax.servlet.request.X509Certificate");
                 if (certs != null && certs.length > 0) {
                     sts.setUseCertificateForConfirmationKeyInfo(true);
                     sts.setUseKeyCertificate(certs[0]);
@@ -300,8 +292,7 @@ public class STSClientAction {
             rpToken = sts.requestSecurityTokenResponse(realm);
         } catch (SoapFault ex) {
             LOG.error("Error in retrieving a token", ex.getMessage());
-            if (ex.getFaultCode() != null
-                && "RequestFailed".equals(ex.getFaultCode().getLocalPart())) {
+            if (ex.getFaultCode() != null && "RequestFailed".equals(ex.getFaultCode().getLocalPart())) {
                 throw new ProcessingException(TYPE.BAD_REQUEST);
             }
             throw ex;
@@ -310,8 +301,8 @@ public class STSClientAction {
         if (LOG.isInfoEnabled()) {
             String id = getIdFromToken(rpToken);
 
-            LOG.info("[RP_TOKEN={}] successfully created for realm [{}] on behalf of [IDP_TOKEN={}]",
-                     id, realm, idpToken.getId());
+            LOG.info("[RP_TOKEN={}] successfully created for realm [{}] on behalf of [IDP_TOKEN={}]", id,
+                     realm, idpToken.getId());
         }
         return rpToken;
     }
@@ -327,7 +318,7 @@ public class STSClientAction {
             }
 
             if (nd.getLength() > 0) {
-                Element e = (Element) nd.item(0);
+                Element e = (Element)nd.item(0);
                 if (e.hasAttributeNS(null, identifier)) {
                     return e.getAttributeNS(null, identifier);
                 }
@@ -337,12 +328,13 @@ public class STSClientAction {
         return "";
     }
 
-    private SecurityToken getSecurityToken(RequestContext context, String homeRealm) throws ProcessingException {
+    private SecurityToken getSecurityToken(RequestContext context, String homeRealm)
+        throws ProcessingException {
 
-        SecurityToken idpToken = (SecurityToken) WebUtils.getAttributeFromFlowScope(context, "idpToken");
+        SecurityToken idpToken = (SecurityToken)WebUtils.getAttributeFromFlowScope(context, "idpToken");
         if (idpToken != null) {
-            LOG.debug("[IDP_TOKEN={} successfully retrieved from cache for home realm [{}]",
-                          idpToken.getId(), homeRealm);
+            LOG.debug("[IDP_TOKEN={} successfully retrieved from cache for home realm [{}]", idpToken.getId(),
+                      homeRealm);
         } else {
             LOG.error("IDP_TOKEN not found");
             throw new ProcessingException(TYPE.BAD_REQUEST);
@@ -350,19 +342,11 @@ public class STSClientAction {
         return idpToken;
     }
 
-
     private void processWsdlLocation(RequestContext context) {
         if (!isPortSet) {
-            try {
-                URL url = new URL(this.wsdlLocation);
-                URL updatedUrl = new URL(url.getProtocol(), url.getHost(),
-                                         WebUtils.getHttpServletRequest(context).getLocalPort(), url.getFile());
-
-                setSTSWsdlUrl(updatedUrl.toString());
-                LOG.info("STS WSDL URL updated to {}", updatedUrl.toString());
-            } catch (MalformedURLException e) {
-                LOG.error("Invalid Url '{}': {}", this.wsdlLocation, e.getMessage());
-            }
+            String updatedUrl = LocalServerResolver.resolve(this.wsdlLocation, context);
+            setSTSWsdlUrl(updatedUrl);
+            LOG.info("STS WSDL URL updated to {}", updatedUrl.toString());
         }
     }
 
@@ -384,16 +368,13 @@ public class STSClientAction {
         W3CDOMStreamWriter writer = new W3CDOMStreamWriter();
         writer.writeStartElement("wst", "Claims", STSUtils.WST_NS_05_12);
         writer.writeNamespace("wst", STSUtils.WST_NS_05_12);
-        writer.writeNamespace("ic",
-                HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_05_IDENTITY);
-        writer.writeAttribute("Dialect",
-                HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_05_IDENTITY);
+        writer.writeNamespace("ic", HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_05_IDENTITY);
+        writer.writeAttribute("Dialect", HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_05_IDENTITY);
 
         if (!realmClaims.isEmpty()) {
             for (RequestClaim item : realmClaims) {
                 LOG.debug("  {}", item.getClaimType().toString());
-                writer.writeStartElement("ic", "ClaimType",
-                        HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_05_IDENTITY);
+                writer.writeStartElement("ic", "ClaimType", HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_05_IDENTITY);
                 writer.writeAttribute("Uri", item.getClaimType().toString());
                 writer.writeAttribute("Optional", Boolean.toString(item.isOptional()));
                 writer.writeEndElement();
