@@ -116,7 +116,7 @@ public class STSClientAction {
         this.wsdlLocation = wsdlLocation;
         try {
             URL url = new URL(wsdlLocation);
-            isPortSet = url.getPort() > 0;
+            isPortSet = url.getPort() != 0;
             if (!isPortSet) {
                 LOG.info("Port is 0 for 'wsdlLocation'. Port evaluated when processing first request.");
             }
