@@ -24,7 +24,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.util.Assert;
-import org.springframework.webflow.context.servlet.ServletExternalContext;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
@@ -38,12 +37,12 @@ public final class WebUtils {
 
     public static HttpServletRequest getHttpServletRequest(
             final RequestContext context) {
-        Assert.isInstanceOf(ServletExternalContext.class,
-                context.getExternalContext(),
+        Object request =  context.getExternalContext().getNativeRequest();
+        Assert.isInstanceOf(HttpServletRequest.class,
+                request,
                 "Cannot obtain HttpServletRequest from event of type: "
                         + context.getExternalContext().getClass().getName());
-        return (HttpServletRequest) context.getExternalContext()
-                .getNativeRequest();
+        return (HttpServletRequest) request;
     }
 
     public static HttpSession getHttpSession(final RequestContext context) {
@@ -53,12 +52,12 @@ public final class WebUtils {
 
     public static HttpServletResponse getHttpServletResponse(
             final RequestContext context) {
-        Assert.isInstanceOf(ServletExternalContext.class,
-                context.getExternalContext(),
+        Object response =  context.getExternalContext().getNativeResponse();
+        Assert.isInstanceOf(HttpServletResponse.class,
+                response,
                 "Cannot obtain HttpServletResponse from event of type: "
                         + context.getExternalContext().getClass().getName());
-        return (HttpServletResponse) context.getExternalContext()
-                .getNativeResponse();
+        return (HttpServletResponse) response;
     }
 
     public static String getHttpHeader(RequestContext requestContext, String headerName) {
