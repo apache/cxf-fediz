@@ -29,9 +29,9 @@ import org.w3c.dom.Element;
 
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
-//import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimTypes;
+import org.apache.cxf.fediz.service.idp.util.LocalServerResolver;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
@@ -41,8 +41,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-//import org.apache.cxf.transport.http.HTTPConduit;
-//import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 
 /**
  * A base class for authenticating credentials to the STS
@@ -50,45 +48,34 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 public abstract class STSAuthenticationProvider implements AuthenticationProvider {
 
     public static final String HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_BEARER =
-        "http://docs.oasis-open.org/ws-sx/ws-trust/200512/Bearer";
+            "http://docs.oasis-open.org/ws-sx/ws-trust/200512/Bearer";
 
     public static final String HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512 =
-        "http://docs.oasis-open.org/ws-sx/ws-trust/200512/";
+            "http://docs.oasis-open.org/ws-sx/ws-trust/200512/";
 
     public static final String HTTP_SCHEMAS_XMLSOAP_ORG_WS_2005_02_TRUST =
-        "http://schemas.xmlsoap.org/ws/2005/02/trust";
+            "http://schemas.xmlsoap.org/ws/2005/02/trust";
 
     private static final Logger LOG = LoggerFactory.getLogger(STSAuthenticationProvider.class);
-
-    protected String wsdlLocation;
-
     protected String namespace = HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512;
-
     protected String wsdlService;
-
     protected String wsdlEndpoint;
-
     protected String appliesTo;
-
     protected boolean use200502Namespace;
-
     protected String tokenType;
-
     protected Bus bus;
-
     protected Integer lifetime;
-
-    //Required to get IDP roles to use the IDP application, used in future release
+    // Required to get IDP roles to use the IDP application, used in future release
     protected String roleURI;
-
     protected Map<String, Object> properties = new HashMap<>();
-
+    private String wsdlLocation;
+    private boolean isPortSet;
     private String customSTSParameter;
 
     protected List<GrantedAuthority> createAuthorities(SecurityToken token) throws WSSecurityException {
         List<GrantedAuthority> authorities = new ArrayList<>();
-        //authorities.add(new SimpleGrantedAuthority("ROLE_AUTHENTICATED"));
-        //Not needed because AuthenticatedVoter has been added for SecurityFlowExecutionListener
+        // authorities.add(new SimpleGrantedAuthority("ROLE_AUTHENTICATED"));
+        // Not needed because AuthenticatedVoter has been added for SecurityFlowExecutionListener
         if (roleURI != null) {
             SamlAssertionWrapper assertion = new SamlAssertionWrapper(token.getToken());
 
@@ -98,7 +85,7 @@ public abstract class STSAuthenticationProvider implements AuthenticationProvide
                     Object oValue = c.getValue();
                     if ((oValue instanceof List<?>) && !((List<?>)oValue).isEmpty()) {
                         List<?> values = (List<?>)oValue;
-                        for (Object role: values) {
+                        for (Object role : values) {
                             if (role instanceof String) {
                                 authorities.add(new SimpleGrantedAuthority((String)role));
                             }
@@ -113,18 +100,27 @@ public abstract class STSAuthenticationProvider implements AuthenticationProvide
             }
         }
 
-        //Add IDP_LOGIN role to be able to access resource Idp, TrustedIdp, etc.
+        // Add IDP_LOGIN role to be able to access resource Idp, TrustedIdp, etc.
         authorities.add(new SimpleGrantedAuthority("ROLE_IDP_LOGIN"));
 
         return authorities;
     }
 
     public String getWsdlLocation() {
+        if (!isPortSet) {
+            setSTSWsdlUrl(LocalServerResolver.resolve(this.wsdlLocation));
+        }
         return wsdlLocation;
     }
 
     public void setWsdlLocation(String wsdlLocation) {
         this.wsdlLocation = wsdlLocation;
+        this.isPortSet = !LocalServerResolver.isLocal(this.wsdlLocation);
+    }
+
+    private synchronized void setSTSWsdlUrl(String wsdlUrl) {
+        this.wsdlLocation = wsdlUrl;
+        this.isPortSet = true;
     }
 
     public String getWsdlService() {
@@ -159,13 +155,13 @@ public abstract class STSAuthenticationProvider implements AuthenticationProvide
         this.appliesTo = appliesTo;
     }
 
-    public void setBus(Bus bus) {
-        this.bus = bus;
-    }
-
     public Bus getBus() {
         // do not store a referance to the default bus
         return (bus != null) ? bus : BusFactory.getDefaultBus();
+    }
+
+    public void setBus(Bus bus) {
+        this.bus = bus;
     }
 
     public String getTokenType() {
@@ -186,7 +182,7 @@ public abstract class STSAuthenticationProvider implements AuthenticationProvide
 
     protected List<Claim> parseClaimsInAssertion(org.opensaml.saml.saml2.core.Assertion assertion) {
         List<org.opensaml.saml.saml2.core.AttributeStatement> attributeStatements = assertion
-        .getAttributeStatements();
+            .getAttributeStatements();
         if (attributeStatements == null || attributeStatements.isEmpty()) {
             LOG.debug("No attribute statements found");
             return Collections.emptyList();
@@ -197,8 +193,7 @@ public abstract class STSAuthenticationProvider implements AuthenticationProvide
 
         for (org.opensaml.saml.saml2.core.AttributeStatement statement : attributeStatements) {
             LOG.debug("parsing statement: {}", statement.getElementQName());
-            List<org.opensaml.saml.saml2.core.Attribute> attributes = statement
-            .getAttributes();
+            List<org.opensaml.saml.saml2.core.Attribute> attributes = statement.getAttributes();
             for (org.opensaml.saml.saml2.core.Attribute attribute : attributes) {
                 LOG.debug("parsing attribute: {}", attribute.getName());
                 Claim c = new Claim();
@@ -230,20 +225,19 @@ public abstract class STSAuthenticationProvider implements AuthenticationProvide
 
     }
 
-    protected void mergeClaimToMap(Map<String, Claim> claimsMap, Claim c,
-                                   List<String> valueList) {
+    protected void mergeClaimToMap(Map<String, Claim> claimsMap, Claim c, List<String> valueList) {
         Claim t = claimsMap.get(c.getClaimType().toString());
         if (t != null) {
-            //same SAML attribute already processed. Thus Claim object already created.
+            // same SAML attribute already processed. Thus Claim object already created.
             Object oValue = t.getValue();
             if (oValue instanceof String) {
-                //one child element AttributeValue only
+                // one child element AttributeValue only
                 List<String> values = new ArrayList<>();
-                values.add((String)oValue); //add existing value
+                values.add((String)oValue); // add existing value
                 values.addAll(valueList);
                 t.setValue(values);
             } else if (oValue instanceof List<?>) {
-                //more than one child element AttributeValue
+                // more than one child element AttributeValue
                 @SuppressWarnings("unchecked")
                 List<String> values = (List<String>)oValue;
                 values.addAll(valueList);
@@ -271,12 +265,12 @@ public abstract class STSAuthenticationProvider implements AuthenticationProvide
         this.roleURI = roleURI;
     }
 
-    public void setProperties(Map<String, Object> p) {
-        properties.putAll(p);
-    }
-
     public Map<String, Object> getProperties() {
         return properties;
+    }
+
+    public void setProperties(Map<String, Object> p) {
+        properties.putAll(p);
     }
 
     public boolean isUse200502Namespace() {
@@ -295,13 +289,13 @@ public abstract class STSAuthenticationProvider implements AuthenticationProvide
         this.customSTSParameter = customSTSParameter;
     }
 
-//May be uncommented for debugging
-//    private void setTimeout(Client client, Long timeout) {
-//        HTTPConduit conduit = (HTTPConduit) client.getConduit();
-//        HTTPClientPolicy httpClientPolicy = new HTTPClientPolicy();
-//        httpClientPolicy.setConnectionTimeout(timeout);
-//        httpClientPolicy.setReceiveTimeout(timeout);
-//        conduit.setClient(httpClientPolicy);
-//    }
+    // May be uncommented for debugging
+    // private void setTimeout(Client client, Long timeout) {
+    // HTTPConduit conduit = (HTTPConduit) client.getConduit();
+    // HTTPClientPolicy httpClientPolicy = new HTTPClientPolicy();
+    // httpClientPolicy.setConnectionTimeout(timeout);
+    // httpClientPolicy.setReceiveTimeout(timeout);
+    // conduit.setClient(httpClientPolicy);
+    // }
 
 }
