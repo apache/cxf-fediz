@@ -20,6 +20,8 @@
 package org.apache.cxf.fediz.service.oidc.logout;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.security.auth.callback.Callback;
@@ -27,6 +29,7 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.fediz.core.spi.ReplyConstraintCallback;
 import org.apache.cxf.fediz.service.oidc.handler.hrd.ApplicationContextProvider;
 import org.apache.cxf.rs.security.oauth2.common.Client;
@@ -36,7 +39,7 @@ import org.springframework.context.ApplicationContext;
 
 public class LogoutRedirectConstraintHandler implements CallbackHandler {
     
-    private static final String CLIENT_LOGOUT_URI = "client_logout_uri";
+    private static final String POST_LOGOUT_REDIRECT_URIS = "post_logout_redirect_uris";
 
     @Override
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
@@ -61,9 +64,13 @@ public class LogoutRedirectConstraintHandler implements CallbackHandler {
 
         Client client = dataManager.getClient(clientId);
         if (client != null) {
-            String logoutUri = client.getProperties().get(CLIENT_LOGOUT_URI);
+            String logoutUri = client.getProperties().get(POST_LOGOUT_REDIRECT_URIS);
             if (logoutUri != null) {
-                return Pattern.compile(logoutUri);
+                List<String> uris = Arrays.asList(logoutUri.split(" "));
+                for (int i = 0; i < uris.size(); i++) {
+                    uris.set(i, "\\Q" + uris.get(i) + "\\E");
+                }
+                return Pattern.compile("(" + StringUtils.join(uris, "|") + ")");
             }
         }
         

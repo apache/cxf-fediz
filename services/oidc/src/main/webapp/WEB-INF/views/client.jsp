@@ -156,8 +156,8 @@
 <b>Logout URL</b>
 </td>
 <td>
-<% if (client.getProperties().get("client_logout_uri") != null) { %>
-           <%=    client.getProperties().get("client_logout_uri") %>
+<% if (client.getProperties().get("post_logout_redirect_uris") != null) { %>
+           <%=    client.getProperties().get("post_logout_redirect_uris") %>
 <% } %>
 </td>
 </tr>
