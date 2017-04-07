@@ -25,11 +25,13 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 
 import org.apache.cxf.Bus;
+import org.apache.cxf.service.factory.ServiceConstructionException;
 import org.apache.cxf.ws.security.SecurityConstants;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.wss4j.dom.WSConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -114,6 +116,12 @@ public class STSUPAuthenticationProvider extends STSAuthenticationProvider {
             LOG.debug("[IDP_TOKEN={}] provided for user '{}'", token.getId(), usernamePasswordToken.getName());
             return upat;
 
+        } catch (ServiceConstructionException ex) {
+            // Explictly catch ServiceConstructionException here - this allows us to handle the case of
+            // the STS being down separately
+            LOG.info("Failed to authenticate user '" + usernamePasswordToken.getName() + "'", ex);
+            throw new AuthenticationServiceException("Failed to authenticate user '"
+                + usernamePasswordToken.getName(), ex);
         } catch (Exception ex) {
             LOG.info("Failed to authenticate user '" + usernamePasswordToken.getName() + "'", ex);
             return null;
