@@ -75,7 +75,7 @@
 		       }
 		   %>
            <td>
-               <form action="/fediz-oidc/console/clients/<%= client.getClientId() + "/codes/" + token.getCode() + "/revoke"%>" method="POST">
+               <form action="<%=basePath%>console/clients/<%= client.getClientId() + "/codes/" + token.getCode() + "/revoke"%>" method="POST">
 		         <input type="submit" value="Delete"/>
                </form>
            </td>

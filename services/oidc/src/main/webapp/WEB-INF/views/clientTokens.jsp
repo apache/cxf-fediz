@@ -19,7 +19,7 @@
     } 
     SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss", Locale.US);
     dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-       
+
 %>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -110,7 +110,7 @@
 	          }
 	       %>
            <td>
-               <form action="/fediz-oidc/console/clients/<%= client.getClientId() + "/at/" + token.getTokenKey() + "/revoke"%>" method="POST">
+               <form action="<%=basePath%>console/clients/<%= client.getClientId() + "/at/" + token.getTokenKey() + "/revoke"%>" method="POST">
 		           <input type="submit" value="Delete"/>  
                </form>
            </td>
@@ -169,7 +169,7 @@
            </td>    
 	       
            <td>
-               <form action="/fediz-oidc/console/clients/<%= client.getClientId() + "/rt/" + token.getTokenKey() + "/revoke"%>" method="POST">
+               <form action="<%=basePath%>console/clients/<%= client.getClientId() + "/rt/" + token.getTokenKey() + "/revoke"%>" method="POST">
 		         <input type="submit" value="Delete"/>
                </form>
            </td>
