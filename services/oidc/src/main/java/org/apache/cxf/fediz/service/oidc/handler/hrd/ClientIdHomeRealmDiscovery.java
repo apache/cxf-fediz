@@ -50,8 +50,10 @@ public class ClientIdHomeRealmDiscovery implements CallbackHandler {
                     OAuthDataProvider dataManager = (OAuthDataProvider)ctx.getBean("oauthProvider");
 
                     Client client = dataManager.getClient(clientId);
-                    callback.setHomeRealm(client.getHomeRealm());
-                    LOG.debug("Retrieved home realm {}", callback.getHomeRealm());
+                    if (client != null) {
+                        callback.setHomeRealm(client.getHomeRealm());
+                        LOG.debug("Retrieved home realm {}", callback.getHomeRealm());
+                    }
 
                 }
 
