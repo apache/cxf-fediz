@@ -35,7 +35,10 @@ import org.apache.cxf.bus.spring.SpringBusFactory;
 import org.apache.cxf.fediz.service.idp.domain.Application;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.RequestClaim;
+import org.apache.cxf.fediz.service.idp.rest.Claims;
+import org.apache.cxf.fediz.service.idp.rest.Entitlements;
 import org.apache.cxf.fediz.service.idp.rest.Idps;
+import org.apache.cxf.fediz.service.idp.rest.Roles;
 import org.apache.xml.security.utils.Base64;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -212,7 +215,37 @@ public class RestITTest {
         Assert.assertEquals("Claims size should be 1 instead of " + application.getRequestedClaims().size(),
                             1, application.getRequestedClaims().size());
     }
-    
+
+    @Test
+    public void testGetAllClaims() throws UnsupportedEncodingException, MalformedURLException {
+        String address = "https://localhost:" + idpHttpsPort + "/" + getContextName() + "/services/rs";
+        Client client = ClientBuilder.newClient();
+        Claims claims = client.target(address).path("claims")
+            .request("application/xml").header("Authorization", getBasicAuthentication("admin", "password"))
+            .get(Claims.class);
+        Assert.assertEquals(2, claims.getClaims().size());
+    }
+
+    @Test
+    public void testGetAllEntitlements() throws UnsupportedEncodingException, MalformedURLException {
+        String address = "https://localhost:" + idpHttpsPort + "/" + getContextName() + "/services/rs";
+        Client client = ClientBuilder.newClient();
+        Entitlements entitlements = client.target(address).path("entitlements")
+            .request("application/xml").header("Authorization", getBasicAuthentication("admin", "password"))
+            .get(Entitlements.class);
+        Assert.assertEquals(5, entitlements.getEntitlements().size());
+    }
+
+    @Test
+    public void testGetAllRoles() throws UnsupportedEncodingException, MalformedURLException {
+        String address = "https://localhost:" + idpHttpsPort + "/" + getContextName() + "/services/rs";
+        Client client = ClientBuilder.newClient();
+        Roles roles = client.target(address).path("roles")
+            .request("application/xml").header("Authorization", getBasicAuthentication("admin", "password"))
+            .get(Roles.class);
+        Assert.assertEquals(2, roles.getRoles().size());
+    }
+
     private String getBasicAuthentication(String username, String password) throws UnsupportedEncodingException {
         String token = username + ":" + password;
         return "Basic " + Base64.encode(token.getBytes());
