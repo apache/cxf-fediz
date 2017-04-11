@@ -56,6 +56,7 @@
     <security:http pattern="/federation" use-expressions="true" entry-point-ref="fedizEntryPoint">
         <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
+        <security:intercept-url pattern="/FederationMetadata/2007-06/FederationMetadata.xml" access="isAnonymous() or isAuthenticated()" />
     </security:http>
     
     <!-- Main entry point for SAML SSO -->

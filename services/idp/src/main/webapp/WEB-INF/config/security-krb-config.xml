@@ -46,6 +46,7 @@
     </bean>
     
     <security:http pattern="/federation/krb" use-expressions="true" entry-point-ref="kerberosEntryPoint">
+        <security:intercept-url requires-channel="https" pattern="/federation/krb/login*" access="isAuthenticated()" />
         <security:custom-filter after="CHANNEL_FILTER" ref="stsKrbPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
 
@@ -54,6 +55,7 @@
     </security:http>
     
     <security:http pattern="/saml/krb" use-expressions="true" entry-point-ref="kerberosEntryPoint">
+        <security:intercept-url requires-channel="https" pattern="/saml/krb/login*" access="isAuthenticated()" />
         <security:custom-filter after="CHANNEL_FILTER" ref="stsKrbPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
 

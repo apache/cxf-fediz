@@ -38,6 +38,7 @@
 
     <!-- SSL Client Cert entry point for WS-Federation -->
     <security:http pattern="/federation/clientcert" use-expressions="true">
+        <security:intercept-url requires-channel="https" pattern="/federation/clientcert/login*" access="isAuthenticated()" />
         <security:custom-filter after="CHANNEL_FILTER" ref="stsClientCertPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
 
@@ -47,6 +48,7 @@
     
     <!-- SSL Client Cert entry point for SAML SSO -->
     <security:http pattern="/saml/clientcert" use-expressions="true">
+        <security:intercept-url requires-channel="https" pattern="/saml/clientcert/login*" access="isAuthenticated()" />
         <security:custom-filter after="CHANNEL_FILTER" ref="stsClientCertPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
 

@@ -40,7 +40,7 @@
     
     <!-- HTTP/BA entry point for WS-Federation -->
     <security:http pattern="/federation/up/**" use-expressions="true">
-		<security:intercept-url requires-channel="https" pattern="/federation/up/login*" access="isAnonymous() or isAuthenticated()" />
+		<security:intercept-url requires-channel="https" pattern="/federation/up/login*" access="isAuthenticated()" />
         <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
         <security:custom-filter before="BASIC_AUTH_FILTER" ref="requestContextFilter"/>
@@ -62,7 +62,7 @@
     
     <!-- HTTP/BA entry point for SAML SSO -->
     <security:http pattern="/saml/up/**" use-expressions="true">
-		<security:intercept-url requires-channel="https" pattern="/saml/up/login*" access="isAnonymous() or isAuthenticated()" />
+		<security:intercept-url requires-channel="https" pattern="/saml/up/login*" access="isAuthenticated()" />
         <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
 
