@@ -122,6 +122,9 @@
     <bean id="stsPortFilter" class="org.apache.cxf.fediz.service.idp.STSPortFilter" />
     
     <bean id="entitlementsEnricher" class="org.apache.cxf.fediz.service.idp.service.security.GrantedAuthorityEntitlements" />
+
+    <bean id="commonsURLValidator"
+          class="org.apache.cxf.fediz.service.idp.beans.CommonsURLValidator" />
 	
     <bean id="stsAuthProvider" class="org.apache.cxf.fediz.service.idp.STSUPAuthenticationProvider">
         <property name="wsdlLocation" value="https://localhost:0/fediz-idp-sts-realmb/${realm.STS_URI}/STSServiceTransportUT?wsdl"/>
