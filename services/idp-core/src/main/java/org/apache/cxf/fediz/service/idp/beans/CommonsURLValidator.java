@@ -22,8 +22,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.validator.routines.DomainValidator;
-import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.commons.validator.routines.DomainValidator.ArrayType;
+import org.apache.commons.validator.routines.UrlValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.webflow.execution.RequestContext;
