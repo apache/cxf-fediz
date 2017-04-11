@@ -18,16 +18,19 @@
  */
 package org.apache.cxf.fediz.service.idp.beans;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.commons.validator.routines.DomainValidator;
 import org.apache.commons.validator.routines.UrlValidator;
+import org.apache.commons.validator.routines.DomainValidator.ArrayType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
  * Validate a URL using Commons Validator
  */
-@Component
 public class CommonsURLValidator {
 
     private static final Logger LOG = LoggerFactory.getLogger(CommonsURLValidator.class);
@@ -49,4 +52,16 @@ public class CommonsURLValidator {
         return true;
     }
 
+    public void setAdditionalTLDs(List<String> additionalTLDs) {
+        // Support additional top level domains
+        if (additionalTLDs != null && !additionalTLDs.isEmpty()) {
+            try {
+                String[] tldsToAddArray = additionalTLDs.toArray(new String[additionalTLDs.size()]);
+                LOG.info("Adding the following additional Top Level Domains: " + Arrays.toString(tldsToAddArray));
+                DomainValidator.updateTLDOverride(ArrayType.GENERIC_PLUS, tldsToAddArray);
+            } catch (IllegalStateException ex) {
+                //
+            }
+        }
+    }
 }
