@@ -207,7 +207,7 @@
         <property name="issuer" value="Fediz STS" />
         <property name="realmParser" ref="customRealmParser" />
         <property name="signatureCryptoProperties" value="stsTruststore.properties" />
-        <property name="encryptionCryptoProperties" value="stsEncryption.properties"/>
+        <property name="encryptionCryptoProperties" value="stsTruststore.properties"/>
         <property name="relationships" ref="relationships" />
     </bean>
 
