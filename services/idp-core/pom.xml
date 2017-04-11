@@ -28,6 +28,10 @@
     <artifactId>fediz-idp-core</artifactId>
     <name>Apache Fediz IDP Core</name>
     <packaging>jar</packaging>
+
+    <properties>
+        <spring.security.version>3.2.10.RELEASE</spring.security.version>
+    </properties>
     
     <dependencyManagement>
         <dependencies>

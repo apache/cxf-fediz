@@ -143,8 +143,7 @@ public class FederationAuthenticationFilter extends AbstractAuthenticationProces
      */
     @Override
     protected boolean requiresAuthentication(final HttpServletRequest request, final HttpServletResponse response) {
-        boolean result = request.getRequestURI().contains(getFilterProcessesUrl());
-        result |= isTokenExpired();
+        boolean result = isTokenExpired() || super.requiresAuthentication(request, response);
         if (logger.isDebugEnabled()) {
             logger.debug("requiresAuthentication = " + result);
         }
