@@ -126,24 +126,21 @@ public class LogoutHandler implements RequestHandler<Boolean> {
         writeLogoutImage(response);
         return true;
     }
-    
-    private Pattern resolveLogoutRedirectToConstraint(HttpServletRequest request, FedizContext config) 
+
+    private Pattern resolveLogoutRedirectToConstraint(HttpServletRequest request, FedizContext config)
         throws IOException, UnsupportedCallbackException {
         Object logoutConstraintObj = config.getLogoutRedirectToConstraint();
-        Pattern logoutConstraint = null;
-        if (logoutConstraintObj != null) {
-            if (logoutConstraintObj instanceof Pattern) {
-                logoutConstraint = (Pattern)logoutConstraintObj;
-            } else if (logoutConstraintObj instanceof CallbackHandler) {
-                CallbackHandler frCB = (CallbackHandler)logoutConstraintObj;
-                ReplyConstraintCallback callback = new ReplyConstraintCallback(request);
-                frCB.handle(new Callback[] {
-                    callback
-                });
-                logoutConstraint = callback.getReplyConstraint();
-            }
+        if (logoutConstraintObj instanceof Pattern) {
+            return (Pattern)logoutConstraintObj;
+        } else if (logoutConstraintObj instanceof CallbackHandler) {
+            CallbackHandler frCB = (CallbackHandler)logoutConstraintObj;
+            ReplyConstraintCallback callback = new ReplyConstraintCallback(request);
+            frCB.handle(new Callback[] {
+                                        callback
+            });
+            return callback.getReplyConstraint();
         }
-        return logoutConstraint;
+        return null;
     }
 
     public void setToken(Element token) {
