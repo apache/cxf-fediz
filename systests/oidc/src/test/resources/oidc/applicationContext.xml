@@ -76,10 +76,21 @@
          <property name="services" ref="oidcServices"/>
     </bean>
     
+    <bean id="tokenCleanupHandler" class="org.apache.cxf.fediz.service.oidc.logout.TokenCleanupHandler">
+         <property name="dataProvider" ref="oauthProvider"/>
+    </bean>
+    
+    <bean id="logoutService" class="org.apache.cxf.fediz.service.oidc.logout.LogoutService">
+         <property name="dataProvider" ref="oauthProvider"/>
+         <property name="relativeIdpLogoutUri" value="../../secure/logout"/>
+         <property name="logoutHandlers" ref="tokenCleanupHandler"/>
+    </bean>
+    
     <!-- Service supporting all OIDC Core flows -->
     <jaxrs:server address="/idp">
         <jaxrs:serviceBeans>
            <ref bean="authorizationService"/>
+           <ref bean="logoutService"/>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
             <ref bean="viewProvider"/>

@@ -230,7 +230,7 @@ public class OIDCTest {
         // Now try to register a new client
         HtmlPage registeredClientPage =
             registerNewClient(webClient, url, "new-client", "https://127.0.0.1",
-                              "https://cxf.apache.org");
+                              "https://cxf.apache.org", "https://localhost:12345");
         String registeredClientPageBody = registeredClientPage.getBody().getTextContent();
         Assert.assertTrue(registeredClientPageBody.contains("Registered Clients"));
         Assert.assertTrue(registeredClientPageBody.contains("new-client"));
@@ -243,7 +243,7 @@ public class OIDCTest {
         // Try to register another new client
         registeredClientPage =
             registerNewClient(webClient, url, "new-client2", "https://127.0.1.1",
-                              "https://ws.apache.org");
+                              "https://ws.apache.org", "https://localhost:12345");
         registeredClientPageBody = registeredClientPage.getBody().getTextContent();
         Assert.assertTrue(registeredClientPageBody.contains("Registered Clients"));
         Assert.assertTrue(registeredClientPageBody.contains("new-client"));
@@ -263,7 +263,8 @@ public class OIDCTest {
 
     private static HtmlPage registerNewClient(WebClient webClient, String url,
                                             String clientName, String redirectURI,
-                                            String clientAudience) throws Exception {
+                                            String clientAudience,
+                                            String logoutURI) throws Exception {
         HtmlPage registerPage = webClient.getPage(url + "/register");
 
         final HtmlForm form = registerPage.getForms().get(0);
@@ -277,6 +278,8 @@ public class OIDCTest {
         redirectURIInput.setValueAttribute(redirectURI);
         final HtmlTextInput clientAudienceURIInput = form.getInputByName("client_audience");
         clientAudienceURIInput.setValueAttribute(clientAudience);
+        final HtmlTextInput clientLogoutURI = form.getInputByName("client_logoutURI");
+        clientLogoutURI.setValueAttribute(logoutURI);
 
         final HtmlButton button = form.getButtonByName("submit_button");
         return button.click();
@@ -551,7 +554,7 @@ public class OIDCTest {
         // Now try to register a new client
         try {
             HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1//",
-                              "https://cxf.apache.org");
+                              "https://cxf.apache.org", "https://localhost:12345");
             Assert.assertTrue(errorPage.asText().contains("Invalid Client Registration"));
         } catch (Exception ex) {
             // expected
@@ -575,7 +578,7 @@ public class OIDCTest {
         // Now try to register a new client
         try {
             HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1#fragment",
-                              "https://cxf.apache.org");
+                              "https://cxf.apache.org", "https://localhost:12345");
             Assert.assertTrue(errorPage.asText().contains("Invalid Client Registration"));
         } catch (Exception ex) {
             // expected
@@ -599,7 +602,31 @@ public class OIDCTest {
         // Now try to register a new client
         try {
             HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1/",
-                              "https://cxf.apache.org//");
+                              "https://cxf.apache.org//", "https://localhost:12345");
+            Assert.assertTrue(errorPage.asText().contains("Invalid Client Registration"));
+        } catch (Exception ex) {
+            // expected
+        }
+
+        webClient.close();
+    }
+
+    @org.junit.Test
+    public void testCreateClientWithInvalidLogoutURI() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/console/clients";
+        String user = "alice";
+        String password = "ecila";
+
+        // Login to the client page successfully
+        WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
+        HtmlPage loginPage = login(url, webClient);
+        final String bodyTextContent = loginPage.getBody().getTextContent();
+        Assert.assertTrue(bodyTextContent.contains("Registered Clients"));
+
+        // Now try to register a new client
+        try {
+            HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1/",
+                              "https://cxf.apache.org/", "https://localhost:12345//");
             Assert.assertTrue(errorPage.asText().contains("Invalid Client Registration"));
         } catch (Exception ex) {
             // expected
@@ -623,7 +650,7 @@ public class OIDCTest {
         // Now try to register a new client
         try {
             HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1",
-                              "https://cxf.apache.org#fragment");
+                              "https://cxf.apache.org#fragment", "https://localhost:12345");
             Assert.assertTrue(errorPage.asText().contains("Invalid Client Registration"));
         } catch (Exception ex) {
             // expected
@@ -652,7 +679,7 @@ public class OIDCTest {
 
         webClient.close();
     }
-    
+
     @org.junit.Test
     public void testCreateClientWithSupportedTLD() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/console/clients";
@@ -667,27 +694,80 @@ public class OIDCTest {
 
         // Register a client with a supported TLD
         HtmlPage registeredClientPage = registerNewClient(webClient, url, "tld1", "https://www.apache.corp",
-            "https://cxf.apache.org");
+            "https://cxf.apache.org", "https://localhost:12345");
         String registeredClientPageBody = registeredClientPage.getBody().getTextContent();
         Assert.assertTrue(registeredClientPageBody.contains("Registered Clients"));
         Assert.assertTrue(registeredClientPageBody.contains("tld1"));
         Assert.assertTrue(registeredClientPageBody.contains("https://www.apache.corp"));
-        
+
         HtmlTable table = registeredClientPage.getHtmlElementById("registered_clients");
         String clientId = table.getCellAt(3, 1).asText().trim();
-        
+
         // Register a client with an unsupported TLD
         try {
             HtmlPage errorPage = registerNewClient(webClient, url, "tld2", "https://www.apache.corp2",
-                                                   "https://cxf.apache.org");
+                                                   "https://cxf.apache.org", "https://localhost:12345");
             Assert.assertTrue(errorPage.asText().contains("Invalid Client Registration"));
         } catch (Exception ex) {
             // expected
         }
-        
+
         // Delete the first client above
         deleteClient(webClient, url, clientId);
 
+
+        webClient.close();
+    }
+
+    @org.junit.Test
+    public void testLogout() throws Exception {
+        // 1. Log in
+        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/idp/authorize?";
+        url += "client_id=" + storedClientId;
+        url += "&response_type=code";
+        url += "&scope=openid";
+        String user = "alice";
+        String password = "ecila";
+
+        // Login to the OIDC token endpoint + get the authorization code
+        WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
+        String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
+        Assert.assertNotNull(authorizationCode);
+
+        // 2. Get another authorization code without username/password. This should work as we are
+        // logged on
+        webClient.getCredentialsProvider().clear();
+        CodeWebConnectionWrapper wrapper = new CodeWebConnectionWrapper(webClient);
+
+        try {
+            webClient.getPage(url);
+        } catch (Throwable t) {
+            // expected
+        }
+
+        wrapper.close();
+        authorizationCode = wrapper.getCode();
+        Assert.assertNotNull(authorizationCode);
+
+        // 3. Log out
+        String logoutUrl = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/idp/logout?";
+        logoutUrl += "client_id=" + storedClientId;
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        try {
+            webClient.getPage(logoutUrl);
+        } catch (Exception ex) {
+            Assert.assertTrue(ex.getMessage().contains("Connect to localhost:12345"));
+        }
+
+        // 4. Get another authorization code without username/password. This should fail as we have
+        // logged out
+        try {
+            loginAndGetAuthorizationCode(url, webClient);
+            Assert.fail("Failure expected after logout");
+        } catch (Exception ex) {
+            Assert.assertTrue(ex.getMessage().contains("401"));
+        }
 
         webClient.close();
     }
