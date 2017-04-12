@@ -135,9 +135,7 @@ public class LogoutHandler implements RequestHandler<Boolean> {
         } else if (logoutConstraintObj instanceof CallbackHandler) {
             CallbackHandler frCB = (CallbackHandler)logoutConstraintObj;
             ReplyConstraintCallback callback = new ReplyConstraintCallback(request);
-            frCB.handle(new Callback[] {
-                                        callback
-            });
+            frCB.handle(new Callback[] {callback});
             return callback.getReplyConstraint();
         }
         return null;
