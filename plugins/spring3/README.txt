@@ -1,4 +1,4 @@
-Fediz configuration for Spring Security 4
+Fediz configuration for Spring Security 3
 ---------------------------------------
 
 The Servlet Container installation doesn't have to be updated before a Web Application can be deployed.

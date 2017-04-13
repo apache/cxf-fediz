@@ -35,6 +35,7 @@
       <module>springPreauthWebapp</module>
       <module>springWebapp</module>
       <module>spring2Webapp</module>
+      <module>spring3Webapp</module>
       <module>cxfWebapp</module>
    </modules>
 

@@ -38,6 +38,7 @@
       <module>jetty9</module>
       <module>spring</module>
       <module>spring2</module>
+      <module>spring3</module>
       <module>cxf</module>
    </modules>
    
