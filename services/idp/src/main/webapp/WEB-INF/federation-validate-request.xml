@@ -40,7 +40,7 @@
         </on-entry>
         <if
             test="requestParameters.wa == 'wsignout1.0' or requestParameters.wa == 'wsignoutcleanup1.0'"
-            then="selectSignOutProcess" />
+            then="validateWReplyForSignout" />
         <if
             test="requestParameters.wa == 'wsignin1.0'" then="selectWsFedProcess" 
             else="selectSAMLProcess" /> 
@@ -63,15 +63,16 @@
     </decision-state>
     
     <action-state id="validateWReplyForSignout">
-        <evaluate expression="commonsURLValidator.isValid(flowRequestContext, flowScope.wreply)"/>
-        <transition on="yes" to="selectSignOutProcess" />
-        <transition on="no" to="viewBadRequest" />
-    </action-state>
-	
-    <decision-state id="selectSignOutProcess">
         <on-entry>
             <evaluate expression="@org.apache.cxf.fediz.service.idp.util.WebUtils@getHttpHeader(flowRequestContext, 'Referer')" result="flowScope.wreply"/>
         </on-entry>
+        <evaluate expression="commonsURLValidator.isValid(flowRequestContext, flowScope.wreply)
+                              and endpointAddressValidator.isValidSignoutAddress(flowRequestContext, flowScope.wreply, flowScope.wtrealm)"/>
+        <transition on="yes" to="selectSignOutProcess" />
+        <transition on="no" to="viewBadRequestAndLogout" />
+    </action-state>
+	
+    <decision-state id="selectSignOutProcess">
         <if
             test="requestParameters.wa == 'wsignout1.0' and flowScope.idpConfig.rpSingleSignOutConfirmation == true
             or requestParameters.wa == 'wsignoutcleanup1.0' and flowScope.idpConfig.rpSingleSignOutCleanupConfirmation == true"
@@ -184,6 +185,16 @@
             <!--<set name="requestScope.reason" value="flowRequestContext.currentTransition" />-->
         </on-entry>
     </end-state>
+
+	<end-state id="viewBadRequestAndLogout" view="genericerror">
+		<on-entry>
+			<evaluate expression="homeRealmReminder.removeCookie(flowRequestContext)" />
+			<evaluate expression="logoutAction.submit(flowRequestContext)" />
+			<evaluate
+				expression="externalContext.nativeResponse.setStatus(400,flowRequestContext.currentTransition.toString())" />
+			<!--<set name="requestScope.reason" value="flowRequestContext.currentTransition" />-->
+		</on-entry>
+	</end-state>
 
     <!-- abnormal exit point : Http 500 Internal Server Error -->
     <end-state id="scInternalServerError" view="genericerror">

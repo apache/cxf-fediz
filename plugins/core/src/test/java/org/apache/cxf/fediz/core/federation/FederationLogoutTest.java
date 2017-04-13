@@ -105,8 +105,9 @@ public class FederationLogoutTest {
         Assert.assertTrue(logoutHandler.canHandleRequest(req));
         
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
-        String expectedRedirectToIdP = 
-            "http://url_to_the_issuer?wa=wsignout1.0&wreply=https%3A%2F%2Flocalhost%2Fsecure%2Flogout%2Findex.html";
+        String expectedRedirectToIdP =
+            "http://url_to_the_issuer?wa=wsignout1.0&wreply=https%3A%2F%2Flocalhost%2Fsecure%2Flogout%2Findex.html"
+            + "&wtrealm=target+realm";
         resp.sendRedirect(expectedRedirectToIdP);
         EasyMock.expectLastCall();
         EasyMock.replay(resp);
@@ -119,7 +120,7 @@ public class FederationLogoutTest {
         
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_ACTION)).andReturn(null).anyTimes();
-        EasyMock.expect(req.getParameter(FederationConstants.PARAM_REPLY)).andReturn(REPLY_URI).anyTimes();
+        EasyMock.expect(req.getParameter(FederationConstants.PARAM_REPLY)).andReturn(REPLY_URL).anyTimes();
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(LOGOUT_URL));
         EasyMock.expect(req.getRequestURI()).andReturn(LOGOUT_URI);
         EasyMock.expect(req.getContextPath()).andReturn(LOGOUT_URI);
@@ -129,8 +130,9 @@ public class FederationLogoutTest {
         Assert.assertTrue(logoutHandler.canHandleRequest(req));
         
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
-        String expectedRedirectToIdP = 
-            "http://url_to_the_issuer?wa=wsignout1.0&wreply=https%3A%2F%2Flocalhost%2Fsecure%2Flogout%2Fwreply.html";
+        String expectedRedirectToIdP =
+            "http://url_to_the_issuer?wa=wsignout1.0&wreply=" + URLEncoder.encode(REPLY_URL, "UTF-8")
+            + "&wtrealm=target+realm";
         resp.sendRedirect(expectedRedirectToIdP);
         EasyMock.expectLastCall();
         EasyMock.replay(resp);
@@ -153,14 +155,15 @@ public class FederationLogoutTest {
         Assert.assertTrue(logoutHandler.canHandleRequest(req));
         
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
-        String expectedRedirectToIdP = 
-            "http://url_to_the_issuer?wa=wsignout1.0&wreply=https%3A%2F%2Flocalhost%2Fsecure%2Flogout%2Findex.html";
+        String expectedRedirectToIdP =
+            "http://url_to_the_issuer?wa=wsignout1.0&wreply=https%3A%2F%2Flocalhost%2Fsecure%2Flogout%2Findex.html"
+            + "&wtrealm=target+realm";
         resp.sendRedirect(expectedRedirectToIdP);
         EasyMock.expectLastCall();
         EasyMock.replay(resp);
         logoutHandler.handleRequest(req, resp);
     }
-    
+
     @org.junit.Test
     public void testSignoutCustomURLWithNoConfiguredConstraint() throws Exception {
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT2");
@@ -177,8 +180,9 @@ public class FederationLogoutTest {
         Assert.assertTrue(logoutHandler.canHandleRequest(req));
         
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
-        String expectedRedirectToIdP = 
-            "http://url_to_the_issuer?wa=wsignout1.0&wreply=https%3A%2F%2Flocalhost%2Fsecure%2Flogout%2Findex.html";
+        String expectedRedirectToIdP =
+            "http://url_to_the_issuer?wa=wsignout1.0&wreply=https%3A%2F%2Flocalhost%2Fsecure%2Flogout%2Findex.html"
+            + "&wtrealm=target+realm";
         resp.sendRedirect(expectedRedirectToIdP);
         EasyMock.expectLastCall();
         EasyMock.replay(resp);
@@ -202,8 +206,9 @@ public class FederationLogoutTest {
         Assert.assertTrue(logoutHandler.canHandleRequest(req));
         
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
-        String expectedRedirectToIdP = 
-            "http://url_to_the_issuer?wa=wsignout1.0&wreply=https%3A%2F%2Flocalhost%2Fsecure%2Findex.html";
+        String expectedRedirectToIdP =
+            "http://url_to_the_issuer?wa=wsignout1.0&wreply=https%3A%2F%2Flocalhost%2Fsecure%2Findex.html"
+            + "&wtrealm=target+realm";
         resp.sendRedirect(expectedRedirectToIdP);
         EasyMock.expectLastCall();
         EasyMock.replay(resp);
@@ -217,7 +222,7 @@ public class FederationLogoutTest {
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_ACTION))
             .andReturn(FederationConstants.ACTION_SIGNOUT).anyTimes();
-        EasyMock.expect(req.getParameter(FederationConstants.PARAM_REPLY)).andReturn(REPLY_URI).anyTimes();
+        EasyMock.expect(req.getParameter(FederationConstants.PARAM_REPLY)).andReturn(REPLY_URL).anyTimes();
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer("https://localhost/fedizhelloworld/secure"));
         EasyMock.expect(req.getRequestURI()).andReturn("/secure");
         EasyMock.expect(req.getContextPath()).andReturn("/secure");
@@ -227,8 +232,9 @@ public class FederationLogoutTest {
         Assert.assertTrue(logoutHandler.canHandleRequest(req));
         
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
-        String expectedRedirectToIdP = 
-            "http://url_to_the_issuer?wa=wsignout1.0&wreply=https%3A%2F%2Flocalhost%2Fsecure%2Fwreply.html";
+        String expectedRedirectToIdP =
+            "http://url_to_the_issuer?wa=wsignout1.0&wreply=" + URLEncoder.encode(REPLY_URL, "UTF-8")
+            + "&wtrealm=target+realm";
         resp.sendRedirect(expectedRedirectToIdP);
         EasyMock.expectLastCall();
         EasyMock.replay(resp);
@@ -252,8 +258,9 @@ public class FederationLogoutTest {
         Assert.assertTrue(logoutHandler.canHandleRequest(req));
         
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
-        String expectedRedirectToIdP = 
-            "http://url_to_the_issuer?wa=wsignout1.0&wreply=https%3A%2F%2Flocalhost%2Fsecure%2Findex.html";
+        String expectedRedirectToIdP =
+            "http://url_to_the_issuer?wa=wsignout1.0&wreply=https%3A%2F%2Flocalhost%2Fsecure%2Findex.html"
+            + "&wtrealm=target+realm";
         resp.sendRedirect(expectedRedirectToIdP);
         EasyMock.expectLastCall();
         EasyMock.replay(resp);
@@ -277,8 +284,9 @@ public class FederationLogoutTest {
         Assert.assertTrue(logoutHandler.canHandleRequest(req));
         
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
-        String expectedRedirectToIdP = 
-            "http://url_to_the_issuer?wa=wsignout1.0&wreply=https%3A%2F%2Flocalhost%2Fsecure%2Findex.html";
+        String expectedRedirectToIdP =
+            "http://url_to_the_issuer?wa=wsignout1.0&wreply=https%3A%2F%2Flocalhost%2Fsecure%2Findex.html"
+            + "&wtrealm=target+realm";
         resp.sendRedirect(expectedRedirectToIdP);
         EasyMock.expectLastCall();
         EasyMock.replay(resp);

@@ -85,6 +85,11 @@ public class ApplicationEntity {
     // A regular expression constraint on the passiveRequestorEndpoint
     private String passiveRequestorEndpointConstraint;
 
+    private String logoutEndpoint;
+
+    // A regular expression constraint on the logoutEndpoint
+    private String logoutEndpointConstraint;
+
 
     public int getId() {
         return id;
@@ -190,4 +195,19 @@ public class ApplicationEntity {
         this.passiveRequestorEndpointConstraint = passiveRequestorEndpointConstraint;
     }
 
+    public String getLogoutEndpoint() {
+        return logoutEndpoint;
+    }
+
+    public void setLogoutEndpoint(String logoutEndpoint) {
+        this.logoutEndpoint = logoutEndpoint;
+    }
+
+    public String getLogoutEndpointConstraint() {
+        return logoutEndpointConstraint;
+    }
+
+    public void setLogoutEndpointConstraint(String logoutEndpointConstraint) {
+        this.logoutEndpointConstraint = logoutEndpointConstraint;
+    }
 }

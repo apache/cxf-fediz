@@ -108,6 +108,7 @@
         <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0" />
         <property name="lifeTime" value="3600" />
         <property name="passiveRequestorEndpointConstraint" value="https://localhost:(\d)*/(\w)*helloworld(\w)*/secure/.*"/>
+        <property name="logoutEndpointConstraint" value="https://localhost:(\d)*" />
     </bean>
     
     <bean id="srv-fedizhelloworld2" class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationEntity">
@@ -132,6 +133,7 @@
         <property name="lifeTime" value="3600" />
         <property name="passiveRequestorEndpoint" 
                   value="https://localhost:${rp.https.port}/fedizhelloworld/secure/fedservlet" />
+        <property name="logoutEndpoint" value="https://localhost:12345" />
     </bean>
     
     <bean id="srv-fedizhelloworld4" class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationEntity">

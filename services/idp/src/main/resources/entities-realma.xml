@@ -105,6 +105,20 @@
         <property name="lifeTime" value="3600" />
         <property name="passiveRequestorEndpointConstraint" 
                   value="https://localhost:?(\d)*/.*" />
+        <property name="logoutEndpointConstraint" value="https://localhost:?(\d)*/.*" />
+    </bean>
+	
+	<bean id="srv-oidc" class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationEntity">
+        <property name="realm" value="urn:org:apache:cxf:fediz:oidc" />
+        <property name="protocol" value="http://docs.oasis-open.org/wsfed/federation/200706" />
+        <property name="serviceDisplayName" value="OIDC Provider" />
+        <property name="serviceDescription" value="OpenID Connect Provider" />
+        <property name="role" value="ApplicationServiceType" />
+        <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0" />
+        <property name="lifeTime" value="3600" />
+        <property name="passiveRequestorEndpointConstraint" value="https://localhost:?(\d)*/fediz-oidc/.*" />
+        <property name="logoutEndpointConstraint" value="https://localhost:?(\d)*/.*" />
+>>>>>>> 5eba7a0... FEDIZ-200 - Make one of logoutEndpoint or logoutEndpointConstraint mandatory in the IDP
     </bean>
     
     <bean class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationClaimEntity">
