@@ -29,11 +29,14 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNodeList;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 import org.apache.catalina.LifecycleException;
@@ -41,6 +44,7 @@ import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.commons.io.IOUtils;
+import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -697,7 +701,7 @@ public class IdpTest {
             Assert.assertEquals(ex.getStatusCode(), 400);
         }
     }
-    
+
     @Test
     public void testIdPLogout() throws Exception {
 
@@ -725,7 +729,6 @@ public class IdpTest {
         HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
-        webClient.close();
 
         // 2. now we logout from IdP
         String idpLogoutUrl = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?wa="
@@ -742,8 +745,6 @@ public class IdpTest {
         HtmlSubmitInput button = form.getInputByName("_eventId_submit");
         button.click();
 
-        webClient.close();
-
         // 3. now we try to access the idp without authentication but with the existing cookies
         // to see if we are really logged out
         webClient = new WebClient();
@@ -754,7 +755,6 @@ public class IdpTest {
 
         Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
 
-        webClient.close();
     }
 
     @Test
@@ -784,7 +784,6 @@ public class IdpTest {
         HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
-        webClient.close();
 
         // 2. now we logout from IdP
         String idpLogoutUrl = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?wa="
@@ -797,8 +796,6 @@ public class IdpTest {
 
         Assert.assertEquals("IDP SignOut Response Page", idpPage.getTitleText());
 
-        webClient.close();
-
         // 3. now we try to access the idp without authentication but with the existing cookies
         // to see if we are really logged out
         webClient = new WebClient();
@@ -808,8 +805,6 @@ public class IdpTest {
         idpPage = webClient.getPage(url);
 
         Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
-
-        webClient.close();
     }
 
     @Test
@@ -839,7 +834,6 @@ public class IdpTest {
         HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
-        webClient.close();
 
         // 2. now we logout from IdP using a bad wreply
         String badWReply = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
@@ -858,8 +852,6 @@ public class IdpTest {
             Assert.assertEquals(ex.getStatusCode(), 400);
         }
 
-        webClient.close();
-
         // 3. now we try to access the idp without authentication but with the existing cookies
         // to see if we are really logged out. Even though an error was thrown on a bad wreply, we should still
         // be logged out
@@ -871,7 +863,6 @@ public class IdpTest {
 
         Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
 
-        webClient.close();
     }
 
     @Test
@@ -901,7 +892,6 @@ public class IdpTest {
         HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
-        webClient.close();
 
         // 2. now we logout from IdP
         String logoutWReply = "https://localhost:12345";
@@ -920,8 +910,6 @@ public class IdpTest {
         HtmlSubmitInput button = form.getInputByName("_eventId_submit");
         button.click();
 
-        webClient.close();
-
         // 3. now we try to access the idp without authentication but with the existing cookies
         // to see if we are really logged out
         webClient = new WebClient();
@@ -931,8 +919,6 @@ public class IdpTest {
         idpPage = webClient.getPage(url);
 
         Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
-
-        webClient.close();
     }
 
     @Test
@@ -962,7 +948,6 @@ public class IdpTest {
         HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
-        webClient.close();
 
         // 2. now we logout from IdP
         String logoutWReply = "https://localhost:12345/badlogout";
@@ -980,7 +965,6 @@ public class IdpTest {
             Assert.assertEquals(ex.getStatusCode(), 400);
         }
 
-        webClient.close();
     }
 
     @Test
@@ -1010,7 +994,6 @@ public class IdpTest {
         HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
-        webClient.close();
 
         // 2. now we logout from IdP
         String logoutWReply = "https://localhost:12345";
@@ -1027,7 +1010,6 @@ public class IdpTest {
             Assert.assertEquals(ex.getStatusCode(), 400);
         }
 
-        webClient.close();
     }
 
     @Test
@@ -1057,7 +1039,6 @@ public class IdpTest {
         HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
-        webClient.close();
 
         // 2. now we logout from IdP
         String logoutWReply = "https://localhost:12345";
@@ -1076,8 +1057,6 @@ public class IdpTest {
         HtmlSubmitInput button = form.getInputByName("_eventId_submit");
         button.click();
 
-        webClient.close();
-
         // 3. now we try to access the idp without authentication but with the existing cookies
         // to see if we are really logged out
         webClient = new WebClient();
@@ -1087,8 +1066,6 @@ public class IdpTest {
         idpPage = webClient.getPage(url);
 
         Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
-
-        webClient.close();
     }
 
     @Test
@@ -1118,7 +1095,6 @@ public class IdpTest {
         HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
-        webClient.close();
 
         // 2. now we logout from IdP
         String logoutWReply = "https://localhost:12345/badlogout";
@@ -1135,8 +1111,6 @@ public class IdpTest {
         } catch (FailingHttpStatusCodeException ex) {
             Assert.assertEquals(ex.getStatusCode(), 400);
         }
-
-        webClient.close();
     }
 
     @Test
@@ -1166,7 +1140,6 @@ public class IdpTest {
         HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
-        webClient.close();
 
         // 2. now we logout from IdP
         String logoutWReply = "https://localhost:12345";
@@ -1183,9 +1156,6 @@ public class IdpTest {
         } catch (FailingHttpStatusCodeException ex) {
             Assert.assertEquals(ex.getStatusCode(), 400);
         }
-
-        webClient.close();
     }
 
->>>>>>> 5eba7a0... FEDIZ-200 - Make one of logoutEndpoint or logoutEndpointConstraint mandatory in the IDP
 }

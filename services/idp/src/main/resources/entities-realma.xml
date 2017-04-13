@@ -118,7 +118,6 @@
         <property name="lifeTime" value="3600" />
         <property name="passiveRequestorEndpointConstraint" value="https://localhost:?(\d)*/fediz-oidc/.*" />
         <property name="logoutEndpointConstraint" value="https://localhost:?(\d)*/.*" />
->>>>>>> 5eba7a0... FEDIZ-200 - Make one of logoutEndpoint or logoutEndpointConstraint mandatory in the IDP
     </bean>
     
     <bean class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationClaimEntity">

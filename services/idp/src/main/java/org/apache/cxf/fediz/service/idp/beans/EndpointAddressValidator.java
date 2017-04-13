@@ -64,6 +64,11 @@ public class EndpointAddressValidator {
             return true;
         }
 
+        if (realm == null) {
+            LOG.warn("No service config found for " + realm);
+            return false;
+        }
+        
         Application serviceConfig = idpConfig.findApplication(realm);
         if (serviceConfig == null) {
             LOG.warn("No service config found for " + realm);

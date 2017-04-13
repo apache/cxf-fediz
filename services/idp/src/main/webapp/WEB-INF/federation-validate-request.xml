@@ -40,7 +40,7 @@
         </on-entry>
         <if
             test="requestParameters.wa == 'wsignout1.0' or requestParameters.wa == 'wsignoutcleanup1.0'"
-            then="validateWReplyForSignout" />
+            then="parseLogoutWreply" />
         <if
             test="requestParameters.wa == 'wsignin1.0'" then="selectWsFedProcess" 
             else="selectSAMLProcess" /> 
@@ -62,10 +62,18 @@
             then="viewBadRequest" else="signinResponse" />
     </decision-state>
     
-    <action-state id="validateWReplyForSignout">
+    <action-state id="parseLogoutWreply">
         <on-entry>
-            <evaluate expression="@org.apache.cxf.fediz.service.idp.util.WebUtils@getHttpHeader(flowRequestContext, 'Referer')" result="flowScope.wreply"/>
+            <evaluate expression="@org.apache.cxf.fediz.service.idp.util.WebUtils@getHttpHeader(flowRequestContext, 'Referer')" result="flowScope.referer"/>
         </on-entry>
+        <evaluate expression="flowScope.referer == null" />
+        <transition on="yes" to="validateWReplyForSignout" />
+        <transition on="no" to="validateWReplyForSignout" >
+            <set name="flowScope.wreply" value="flowScope.referer" />
+        </transition>
+    </action-state>
+    
+    <action-state id="validateWReplyForSignout">
         <evaluate expression="commonsURLValidator.isValid(flowRequestContext, flowScope.wreply)
                               and endpointAddressValidator.isValidSignoutAddress(flowRequestContext, flowScope.wreply, flowScope.wtrealm)"/>
         <transition on="yes" to="selectSignOutProcess" />

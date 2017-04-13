@@ -33,8 +33,8 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "application", namespace = "http://org.apache.cxf.fediz/")
 @XmlType(propOrder = {"realm", "role", "serviceDisplayName", "serviceDescription", "protocol",
                       "tokenType", "lifeTime", "encryptionCertificate", "requestedClaims",
-                      "policyNamespace", "passiveRequestorEndpoint", "passiveRequestorEndpointConstraint", "id" })
-                      "logoutEndpoint", "logoutEndpointConstraint"})
+                      "policyNamespace", "passiveRequestorEndpoint", "passiveRequestorEndpointConstraint", "id",
+                      "logoutEndpoint", "logoutEndpointConstraint" })
 public class Application implements Serializable {
         
     private static final long serialVersionUID = 5644327504861846964L;

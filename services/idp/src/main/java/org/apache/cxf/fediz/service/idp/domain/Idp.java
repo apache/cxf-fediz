@@ -36,7 +36,7 @@ import javax.xml.bind.annotation.XmlType;
                      "certificate", "certificatePassword", "provideIdpList", "useCurrentIdp", "hrds",
                      "rpSingleSignOutConfirmation", "supportedProtocols", "tokenTypesOffered", "claimTypesOffered",
                      "authenticationURIs", "applications", "trustedIdps", "id", "rpSingleSignOutCleanupConfirmation",
-                     "disableLogoutAddressValidation"})
+                     "disableLogoutAddressValidation" })
 public class Idp implements Serializable {
 
     private static final long serialVersionUID = -5570301342547139039L;
