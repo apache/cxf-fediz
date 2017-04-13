@@ -33,34 +33,59 @@ import org.springframework.webflow.execution.RequestContext;
  * AssertionConsumer URL address for SAML SSO, by comparing it to a regular expression.
  */
 @Component
-public class PassiveRequestorValidator {
+public class EndpointAddressValidator {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PassiveRequestorValidator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(EndpointAddressValidator.class);
 
-    public boolean isValid(RequestContext context, String endpointAddress, String realm)
+    public boolean isValidSigninAddress(RequestContext context, String endpointAddress, String realm)
         throws Exception {
         if (endpointAddress == null) {
             return true;
         }
-        
+
         Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(context, "idpConfig");
         Application serviceConfig = idpConfig.findApplication(realm);
         if (serviceConfig == null) {
             LOG.warn("No service config found for " + realm);
             return false;
         }
-        
-        if (serviceConfig.getPassiveRequestorEndpoint() == null 
+
+        return validateSigninEndpointAddress(serviceConfig, endpointAddress);
+    }
+
+    public boolean isValidSignoutAddress(RequestContext context, String endpointAddress, String realm)
+        throws Exception {
+        System.out.println("EA: " + endpointAddress + " " + realm);
+        if (endpointAddress == null) {
+            return true;
+        }
+
+        Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(context, "idpConfig");
+        if (idpConfig.isDisableLogoutAddressValidation()) {
+            return true;
+        }
+
+        Application serviceConfig = idpConfig.findApplication(realm);
+        if (serviceConfig == null) {
+            LOG.warn("No service config found for " + realm);
+            return false;
+        }
+
+        return validateSignoutEndpointAddress(serviceConfig, endpointAddress);
+    }
+
+    private boolean validateSigninEndpointAddress(Application serviceConfig, String endpointAddress) {
+        if (serviceConfig.getPassiveRequestorEndpoint() == null
             && serviceConfig.getCompiledPassiveRequestorEndpointConstraint() == null) {
             LOG.error("Either the 'passiveRequestorEndpoint' or the 'passiveRequestorEndpointConstraint' "
                 + "configuration values must be specified for the application");
-        } else if (serviceConfig.getPassiveRequestorEndpoint() != null 
+        } else if (serviceConfig.getPassiveRequestorEndpoint() != null
             && serviceConfig.getPassiveRequestorEndpoint().equals(endpointAddress)) {
-            LOG.debug("The supplied endpoint address {} matches the configured passive requestor endpoint value", 
+            LOG.debug("The supplied endpoint address {} matches the configured passive requestor endpoint value",
                       endpointAddress);
             return true;
         } else if (serviceConfig.getCompiledPassiveRequestorEndpointConstraint() != null) {
-            Matcher matcher = 
+            Matcher matcher =
                 serviceConfig.getCompiledPassiveRequestorEndpointConstraint().matcher(endpointAddress);
             if (matcher.matches()) {
                 return true;
@@ -69,8 +94,35 @@ public class PassiveRequestorValidator {
                           endpointAddress);
             }
         }
-        
+
         return false;
     }
-    
+
+    private boolean validateSignoutEndpointAddress(Application serviceConfig, String endpointAddress) {
+        System.out.println("HERE");
+        if (serviceConfig.getLogoutEndpoint() == null
+            && serviceConfig.getCompiledLogoutEndpointConstraint() == null) {
+            LOG.error("Either the 'logoutEndpoint' or the 'logoutEndpointConstraint' "
+                + "configuration values must be specified for the application");
+        } else if (serviceConfig.getLogoutEndpoint() != null
+            && serviceConfig.getLogoutEndpoint().equals(endpointAddress)) {
+            LOG.debug("The supplied endpoint address {} matches the configured logout endpoint value",
+                      endpointAddress);
+            return true;
+        } else if (serviceConfig.getCompiledLogoutEndpointConstraint() != null) {
+            Matcher matcher =
+                serviceConfig.getCompiledLogoutEndpointConstraint().matcher(endpointAddress);
+            if (matcher.matches()) {
+                return true;
+            } else {
+                LOG.error("The endpointAddress value of {} does not match any of the logout address values",
+                          endpointAddress);
+            }
+        }
+        
+        System.out.println("RET FALSE");
+
+        return false;
+    }
+
 }

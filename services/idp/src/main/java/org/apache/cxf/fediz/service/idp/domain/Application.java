@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(propOrder = {"realm", "role", "serviceDisplayName", "serviceDescription", "protocol",
                       "tokenType", "lifeTime", "encryptionCertificate", "requestedClaims",
                       "policyNamespace", "passiveRequestorEndpoint", "passiveRequestorEndpointConstraint", "id",
-                      "validatingCertificate", "enableAppliesTo"})
+                      "validatingCertificate", "enableAppliesTo", "logoutEndpoint", "logoutEndpointConstraint"})
 public class Application implements Serializable {
         
     private static final long serialVersionUID = 5644327504861846964L;
@@ -97,8 +97,13 @@ public class Application implements Serializable {
     // A regular expression constraint on the passiveRequestorEndpoint
     private String passiveRequestorEndpointConstraint;
     private Pattern compiledPassiveRequestorEndpointConstraint;
-    
-    
+
+    private String logoutEndpoint;
+
+    // A regular expression constraint on the logoutEndpoint
+    private String logoutEndpointConstraint;
+    private Pattern compiledLogoutEndpointConstraint;
+
     @XmlAttribute
     public int getId() {
         return id;
@@ -238,5 +243,30 @@ public class Application implements Serializable {
 
     public void setEnableAppliesTo(boolean useAudienceRestriction) {
         this.enableAppliesTo = useAudienceRestriction;
+    }
+
+    public String getLogoutEndpoint() {
+        return logoutEndpoint;
+    }
+
+    public void setLogoutEndpoint(String logoutEndpoint) {
+        this.logoutEndpoint = logoutEndpoint;
+    }
+
+    public String getLogoutEndpointConstraint() {
+        return logoutEndpointConstraint;
+    }
+
+    public void setLogoutEndpointConstraint(String logoutEndpointConstraint) {
+        this.logoutEndpointConstraint = logoutEndpointConstraint;
+        if (logoutEndpointConstraint != null) {
+            compiledLogoutEndpointConstraint = Pattern.compile(logoutEndpointConstraint);
+        } else {
+            compiledLogoutEndpointConstraint = null;
+        }
+    }
+
+    public Pattern getCompiledLogoutEndpointConstraint() {
+        return compiledLogoutEndpointConstraint;
     }
 }

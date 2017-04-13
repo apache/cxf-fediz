@@ -35,7 +35,8 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(propOrder = {"realm", "uri", "serviceDisplayName", "serviceDescription", "idpUrl", "stsUrl",
                      "certificate", "certificatePassword", "provideIdpList", "useCurrentIdp", "hrds",
                      "rpSingleSignOutConfirmation", "supportedProtocols", "tokenTypesOffered", "claimTypesOffered",
-                     "authenticationURIs", "applications", "trustedIdps", "id", "rpSingleSignOutCleanupConfirmation" })
+                     "authenticationURIs", "applications", "trustedIdps", "id", "rpSingleSignOutCleanupConfirmation",
+                     "disableLogoutAddressValidation"})
 public class Idp implements Serializable {
 
     private static final long serialVersionUID = -5570301342547139039L;
@@ -117,7 +118,9 @@ public class Idp implements Serializable {
     
     // Is explicit confirmation required when the "cleanup" URL is called
     private boolean rpSingleSignOutCleanupConfirmation;
-    
+
+    private boolean disableLogoutAddressValidation;
+
     @XmlAttribute
     public int getId() {
         return id;
@@ -299,6 +302,14 @@ public class Idp implements Serializable {
 
     public void setRpSingleSignOutCleanupConfirmation(boolean rpSingleSignOutCleanupConfirmation) {
         this.rpSingleSignOutCleanupConfirmation = rpSingleSignOutCleanupConfirmation;
+    }
+
+    public boolean isDisableLogoutAddressValidation() {
+        return disableLogoutAddressValidation;
+    }
+
+    public void setDisableLogoutAddressValidation(boolean disableLogoutAddressValidation) {
+        this.disableLogoutAddressValidation = disableLogoutAddressValidation;
     }
 
 }

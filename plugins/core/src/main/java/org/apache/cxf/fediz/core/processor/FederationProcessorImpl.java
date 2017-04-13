@@ -534,6 +534,13 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                 sb.append(URLEncoder.encode(logoutRedirectTo, "UTF-8"));
             }
 
+            String realm = resolveWTRealm(request, config);
+            LOG.debug("wtrealm={}", realm);
+
+            // add wtrealm parameter
+            sb.append('&').append(FederationConstants.PARAM_TREALM).append('=').append(URLEncoder
+                                                                                           .encode(realm, "UTF-8"));
+
             redirectURL = redirectURL + "?" + sb.toString();
         } catch (Exception ex) {
             LOG.error("Failed to create SignInRequest", ex);

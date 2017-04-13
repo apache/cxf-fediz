@@ -203,6 +203,8 @@ public class ApplicationDAOJPAImpl implements ApplicationDAO {
         entity.setPassiveRequestorEndpoint(application.getPassiveRequestorEndpoint());
         entity.setPassiveRequestorEndpointConstraint(application.getPassiveRequestorEndpointConstraint());
         entity.setEnableAppliesTo(application.isEnableAppliesTo());
+        entity.setLogoutEndpoint(application.getLogoutEndpoint());
+        entity.setLogoutEndpointConstraint(entity.getLogoutEndpointConstraint());
     }
     
     public static Application entity2domain(ApplicationEntity entity, List<String> expandList) {
@@ -221,7 +223,9 @@ public class ApplicationDAOJPAImpl implements ApplicationDAO {
         application.setPassiveRequestorEndpoint(entity.getPassiveRequestorEndpoint());
         application.setPassiveRequestorEndpointConstraint(entity.getPassiveRequestorEndpointConstraint());
         application.setEnableAppliesTo(entity.isEnableAppliesTo());
-        
+        application.setLogoutEndpoint(entity.getLogoutEndpoint());
+        application.setLogoutEndpointConstraint(entity.getLogoutEndpointConstraint());
+
         if (expandList != null && (expandList.contains("all") || expandList.contains("claims"))) {
             for (ApplicationClaimEntity item : entity.getRequestedClaims()) {
                 RequestClaim claim = entity2domain(item);

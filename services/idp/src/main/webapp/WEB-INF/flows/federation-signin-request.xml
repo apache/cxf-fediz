@@ -103,7 +103,7 @@
     
     <action-state id="validateWReply">
         <evaluate expression="commonsURLValidator.isValid(flowRequestContext, flowScope.wreply)
-                              and passiveRequestorValidator.isValid(flowRequestContext, flowScope.wreply, flowScope.wtrealm)"/>
+                              and endpointAddressValidator.isValidSigninAddress(flowRequestContext, flowScope.wreply, flowScope.wtrealm)"/>
         <transition on="yes" to="requestRpToken" />
         <transition on="no" to="viewBadRequest" />
     </action-state>
