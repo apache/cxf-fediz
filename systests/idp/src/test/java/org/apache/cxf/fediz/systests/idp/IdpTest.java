@@ -965,7 +965,7 @@ public class IdpTest {
         webClient.close();
 
         // 2. now we logout from IdP
-        String logoutWReply = "https://localhost:123456";
+        String logoutWReply = "https://localhost:12345/badlogout";
         String idpLogoutUrl = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?wa="
             + FederationConstants.ACTION_SIGNOUT + "&wreply=" + logoutWReply
             + "&wtrealm=urn:org:apache:cxf:fediz:fedizhelloworld";
@@ -1121,7 +1121,7 @@ public class IdpTest {
         webClient.close();
 
         // 2. now we logout from IdP
-        String logoutWReply = "https://localhost:123456";
+        String logoutWReply = "https://localhost:12345/badlogout";
         String idpLogoutUrl = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?wa="
             + FederationConstants.ACTION_SIGNOUT + "&wreply=" + logoutWReply
             + "&wtrealm=urn:org:apache:cxf:fediz:fedizhelloworld3";
