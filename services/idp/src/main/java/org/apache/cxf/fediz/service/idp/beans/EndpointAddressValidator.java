@@ -55,7 +55,6 @@ public class EndpointAddressValidator {
 
     public boolean isValidSignoutAddress(RequestContext context, String endpointAddress, String realm)
         throws Exception {
-        System.out.println("EA: " + endpointAddress + " " + realm);
         if (endpointAddress == null) {
             return true;
         }
@@ -99,7 +98,6 @@ public class EndpointAddressValidator {
     }
 
     private boolean validateSignoutEndpointAddress(Application serviceConfig, String endpointAddress) {
-        System.out.println("HERE");
         if (serviceConfig.getLogoutEndpoint() == null
             && serviceConfig.getCompiledLogoutEndpointConstraint() == null) {
             LOG.error("Either the 'logoutEndpoint' or the 'logoutEndpointConstraint' "
@@ -120,8 +118,6 @@ public class EndpointAddressValidator {
             }
         }
         
-        System.out.println("RET FALSE");
-
         return false;
     }
 
