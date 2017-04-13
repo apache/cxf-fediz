@@ -84,7 +84,7 @@
     
     <action-state id="validateReturnAddress">
         <evaluate expression="commonsURLValidator.isValid(flowRequestContext, flowScope.return_address)
-                              and passiveRequestorValidator.isValid(flowRequestContext, flowScope.return_address, flowScope.realm)"/>
+                              and endpointAddressValidator.isValidSigninAddress(flowRequestContext, flowScope.return_address, flowScope.realm)"/>
         <transition on="yes" to="requestRpToken" />
         <transition on="no" to="viewBadRequest" />
     </action-state>

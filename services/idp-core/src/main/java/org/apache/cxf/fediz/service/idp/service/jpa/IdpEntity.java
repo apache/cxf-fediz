@@ -136,8 +136,10 @@ public class IdpEntity {
     private String serviceDescription;
 
     private boolean rpSingleSignOutCleanupConfirmation;
-    
+
     private boolean automaticRedirectToRpAfterLogout;
+
+    private boolean disableLogoutAddressValidation;
 
 
     public int getId() {
@@ -306,6 +308,14 @@ public class IdpEntity {
 
     public void setAutomaticRedirectToRpAfterLogout(boolean automaticRedirectToRpAfterLogout) {
         this.automaticRedirectToRpAfterLogout = automaticRedirectToRpAfterLogout;
+    }
+
+    public boolean isDisableLogoutAddressValidation() {
+        return disableLogoutAddressValidation;
+    }
+
+    public void setDisableLogoutAddressValidation(boolean disableLogoutAddressValidation) {
+        this.disableLogoutAddressValidation = disableLogoutAddressValidation;
     }
 
 }

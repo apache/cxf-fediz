@@ -295,6 +295,7 @@ public class IdpDAOJPAImpl implements IdpDAO {
         entity.setRpSingleSignOutConfirmation(idp.isRpSingleSignOutConfirmation());
         entity.setRpSingleSignOutCleanupConfirmation(idp.isRpSingleSignOutCleanupConfirmation());
         entity.setAutomaticRedirectToRpAfterLogout(idp.isAutomaticRedirectToRpAfterLogout());
+        entity.setDisableLogoutAddressValidation(idp.isDisableLogoutAddressValidation());
 
         entity.getAuthenticationURIs().clear();
         for (Map.Entry<String, String> item : idp.getAuthenticationURIs().entrySet()) {
@@ -330,6 +331,7 @@ public class IdpDAOJPAImpl implements IdpDAO {
         idp.setRpSingleSignOutConfirmation(entity.isRpSingleSignOutConfirmation());
         idp.setRpSingleSignOutCleanupConfirmation(entity.isRpSingleSignOutCleanupConfirmation());
         idp.setAutomaticRedirectToRpAfterLogout(entity.isAutomaticRedirectToRpAfterLogout());
+        idp.setDisableLogoutAddressValidation(entity.isDisableLogoutAddressValidation());
 
         if (expandList != null && (expandList.contains("all") || expandList.contains("applications"))) {
             for (ApplicationEntity item : entity.getApplications()) {

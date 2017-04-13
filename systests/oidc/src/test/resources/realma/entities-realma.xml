@@ -37,6 +37,7 @@
         <property name="idpUrl" value="https://localhost:${idp.https.port}/fediz-idp/federation" />
         <property name="rpSingleSignOutConfirmation" value="false"/>
         <property name="automaticRedirectToRpAfterLogout" value="true"/>
+        <property name="disableLogoutAddressValidation" value="true"/>
         <property name="supportedProtocols">
             <util:list>
                 <value>http://docs.oasis-open.org/wsfed/federation/200706
