@@ -370,7 +370,29 @@ public class OIDCTest {
         
         webClient.close();
     }
-    
+
+    // Test that "bob" can't see the clients created by "alice"
+    @org.junit.Test
+    public void testRegisteredClientsAsBob() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/console/clients";
+        String user = "bob";
+        String password = "bob";
+
+        // Login to the client page successfully
+        WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
+        HtmlPage loginPage = login(url, webClient);
+        final String bodyTextContent = loginPage.getBody().getTextContent();
+        Assert.assertTrue(bodyTextContent.contains("Registered Clients"));
+
+        // Get the new client identifier
+        HtmlTable table = loginPage.getHtmlElementById("registered_clients");
+
+        // 2 clients
+        Assert.assertEquals(table.getRows().size(), 1);
+
+        webClient.close();
+    }
+
     @org.junit.Test
     public void testOIDCLoginForClient1() throws Exception {
         
