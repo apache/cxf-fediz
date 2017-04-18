@@ -38,6 +38,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
@@ -56,6 +57,9 @@ import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.common.util.Base64UrlUtility;
 import org.apache.cxf.common.util.StringUtils;
+import org.apache.cxf.fediz.service.oidc.CSRFUtils;
+import org.apache.cxf.message.Message;
+import org.apache.cxf.phase.PhaseInterceptorChain;
 import org.apache.cxf.rs.security.oauth2.common.Client;
 import org.apache.cxf.rs.security.oauth2.common.ServerAccessToken;
 import org.apache.cxf.rs.security.oauth2.common.UserSubject;
@@ -67,10 +71,11 @@ import org.apache.cxf.rs.security.oauth2.tokens.refresh.RefreshToken;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 import org.apache.cxf.rs.security.oidc.idp.OidcUserSubject;
 import org.apache.cxf.rt.security.crypto.CryptoUtils;
+import org.apache.cxf.transport.http.AbstractHTTPDestination;
 
 @Path("/")
 public class ClientRegistrationService {
-    
+
     private static final Logger LOG = LogUtils.getL7dLogger(ClientRegistrationService.class);
 
     private Map<String, Collection<Client>> registrations = new HashMap<>();
@@ -119,7 +124,11 @@ public class ClientRegistrationService {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_HTML)
     @Path("/{id}/remove")
-    public RegisteredClients removeClient(@PathParam("id") String id) {
+    public RegisteredClients removeClient(@PathParam("id") String id,
+                                          @FormParam("client_csrfToken") String csrfToken) {
+        // CSRF
+        checkCSRFToken(csrfToken);
+
         Collection<Client> clients = getClientRegistrations();
         for (Iterator<Client> it = clients.iterator(); it.hasNext();) {
             Client c = it.next();
@@ -139,7 +148,11 @@ public class ClientRegistrationService {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_HTML)
     @Path("/{id}/reset")
-    public Client resetClient(@PathParam("id") String id) {
+    public Client resetClient(@PathParam("id") String id,
+                              @FormParam("client_csrfToken") String csrfToken) {
+        // CSRF
+        checkCSRFToken(csrfToken);
+
         Client c = getRegisteredClient(id);
         if (c.isConfidential()) {
             c.setClientSecret(generateClientSecret());
@@ -172,7 +185,11 @@ public class ClientRegistrationService {
     @Produces(MediaType.TEXT_HTML)
     @Path("/{id}/at/{tokenId}/revoke")
     public ClientTokens revokeClientAccessToken(@PathParam("id") String clientId,
-                                                      @PathParam("tokenId") String tokenId) {
+                                                      @PathParam("tokenId") String tokenId,
+                                                      @FormParam("client_csrfToken") String csrfToken) {
+        // CSRF
+        checkCSRFToken(csrfToken);
+
         return doRevokeClientToken(clientId, tokenId, OAuthConstants.ACCESS_TOKEN);
     }
 
@@ -181,7 +198,11 @@ public class ClientRegistrationService {
     @Produces(MediaType.TEXT_HTML)
     @Path("/{id}/rt/{tokenId}/revoke")
     public ClientTokens revokeClientRefreshToken(@PathParam("id") String clientId,
-                                                      @PathParam("tokenId") String tokenId) {
+                                                      @PathParam("tokenId") String tokenId,
+                                                      @FormParam("client_csrfToken") String csrfToken) {
+        // CSRF
+        checkCSRFToken(csrfToken);
+
         return doRevokeClientToken(clientId, tokenId, OAuthConstants.REFRESH_TOKEN);
     }
 
@@ -213,7 +234,11 @@ public class ClientRegistrationService {
     @Produces(MediaType.TEXT_HTML)
     @Path("/{id}/codes/{code}/revoke")
     public ClientCodeGrants revokeClientCodeGrant(@PathParam("id") String id,
-                                                  @PathParam("code") String code) {
+                                                  @PathParam("code") String code,
+                                                  @FormParam("client_csrfToken") String csrfToken) {
+        // CSRF
+        checkCSRFToken(csrfToken);
+
         if (dataProvider instanceof AuthorizationCodeDataProvider) {
             ((AuthorizationCodeDataProvider)dataProvider).removeCodeGrant(code);
             return getClientCodeGrants(id);
@@ -230,9 +255,13 @@ public class ClientRegistrationService {
                                  @FormParam("client_audience") String audience,
                                  @FormParam("client_redirectURI") String redirectURI,
                                  @FormParam("client_logoutURI") String logoutURI,
-                                 @FormParam("client_homeRealm") String homeRealm
+                                 @FormParam("client_homeRealm") String homeRealm,
+                                 @FormParam("client_csrfToken") String csrfToken
     ) {
         try {
+            // CSRF
+            checkCSRFToken(csrfToken);
+
             // Client Name
             if (StringUtils.isEmpty(appName)) {
                 throwInvalidRegistrationException("The client name must not be empty");
@@ -322,13 +351,23 @@ public class ClientRegistrationService {
         }
     }
 
+    private void checkCSRFToken(String csrfToken) {
+        // CSRF
+        Message message = PhaseInterceptorChain.getCurrentMessage();
+        HttpServletRequest httpRequest = (HttpServletRequest) message.get(AbstractHTTPDestination.HTTP_REQUEST);
+        String savedToken = CSRFUtils.getCSRFToken(httpRequest, false);
+        if (StringUtils.isEmpty(csrfToken) || StringUtils.isEmpty(savedToken)
+            || !savedToken.equals(csrfToken)) {
+            throwInvalidRegistrationException("Invalid CSRF Token");
+        }
+    }
 
     private void throwInvalidRegistrationException(String error) {
         throw new InvalidRegistrationException(error);
     }
 
     private boolean isValidURI(String uri, boolean requireHttps) {
-        
+
         UrlValidator urlValidator = null;
 
         if (requireHttps) {

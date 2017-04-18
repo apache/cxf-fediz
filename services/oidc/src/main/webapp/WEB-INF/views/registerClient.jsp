@@ -1,11 +1,16 @@
 <%@ page
-	import="javax.servlet.http.HttpServletRequest,java.util.Map,java.util.Iterator,org.apache.cxf.fediz.service.oidc.clients.RegisterClient"%>
+	import="javax.servlet.http.HttpServletRequest,java.util.Map,java.util.Iterator,org.apache.cxf.fediz.service.oidc.clients.RegisterClient,
+	org.apache.cxf.fediz.service.oidc.CSRFUtils"
+%>
 <%
     RegisterClient reg = (RegisterClient)request.getAttribute("data");
     String basePath = request.getContextPath() + request.getServletPath();
     if (!basePath.endsWith("/")) {
         basePath += "/";
     }
+
+    // Get or generate the CSRF token
+    String csrfToken = CSRFUtils.getCSRFToken(request, true);
 %>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -112,6 +117,9 @@ input, select, button {
 						}
 					%>
 				</select>
+			</div>
+			<div class="form-line">
+				<input type="hidden" value="<%=csrfToken%>" name="client_csrfToken" />
 			</div>
 			<div data-type="control_button" class="form-line">
 				<button name="submit_button" class="form-submit-button" type="submit">Register API Client</button>
