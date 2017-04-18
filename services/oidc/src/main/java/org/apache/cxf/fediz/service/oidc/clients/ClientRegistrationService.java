@@ -85,14 +85,14 @@ public class ClientRegistrationService {
     private Map<String, String> homeRealms = new LinkedHashMap<String, String>();
     private boolean protectIdTokenWithClientSecret;
     private Map<String, String> clientScopes;
-    
+
     private SecurityContext sc;
 
     @Context
     public void setSecurityContext(SecurityContext securityContext) {
         this.sc = securityContext;
     }
-    
+
     @GET
     @Produces(MediaType.TEXT_HTML)
     @Path("/register")
@@ -118,8 +118,8 @@ public class ClientRegistrationService {
         }
         return null;
     }
-    
-    
+
+
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_HTML)
@@ -128,7 +128,7 @@ public class ClientRegistrationService {
                                           @FormParam("client_csrfToken") String csrfToken) {
         // CSRF
         if (!checkCSRFToken(csrfToken)) {
-            throw new InvalidRegistration("Invalid CSRF Token");
+            throw new InvalidRegistrationException("Invalid CSRF Token");
         }
 
         Collection<Client> clients = getClientRegistrations();
@@ -154,7 +154,7 @@ public class ClientRegistrationService {
                               @FormParam("client_csrfToken") String csrfToken) {
         // CSRF
         if (!checkCSRFToken(csrfToken)) {
-            throw new InvalidRegistration("Invalid CSRF Token");
+            throw new InvalidRegistrationException("Invalid CSRF Token");
         }
 
         Client c = getRegisteredClient(id);
@@ -164,7 +164,7 @@ public class ClientRegistrationService {
         clientProvider.setClient(c);
         return c;
     }
-    
+
     @GET
     @Produces(MediaType.TEXT_HTML)
     @Path("/{id}/tokens")
@@ -172,14 +172,14 @@ public class ClientRegistrationService {
         Client c = getRegisteredClient(id);
         return doGetClientIssuedTokens(c);
     }
-    
+
     protected ClientTokens doGetClientIssuedTokens(Client c) {
         Comparator<ServerAccessToken> tokenComp = new TokenComparator();
         UserSubject subject = new OidcUserSubject(getUserName());
-        List<ServerAccessToken> accessTokens = 
+        List<ServerAccessToken> accessTokens =
             new ArrayList<ServerAccessToken>(dataProvider.getAccessTokens(c, subject));
         Collections.sort(accessTokens, tokenComp);
-        List<RefreshToken> refreshTokens = 
+        List<RefreshToken> refreshTokens =
                 new ArrayList<RefreshToken>(dataProvider.getRefreshTokens(c, subject));
         Collections.sort(refreshTokens, tokenComp);
         return new ClientTokens(c, accessTokens, refreshTokens);
@@ -193,12 +193,12 @@ public class ClientRegistrationService {
                                                       @FormParam("client_csrfToken") String csrfToken) {
         // CSRF
         if (!checkCSRFToken(csrfToken)) {
-            throw new InvalidRegistration("Invalid CSRF Token");
+            throw new InvalidRegistrationException("Invalid CSRF Token");
         }
 
         return doRevokeClientToken(clientId, tokenId, OAuthConstants.ACCESS_TOKEN);
     }
-    
+
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_HTML)
@@ -208,12 +208,12 @@ public class ClientRegistrationService {
                                                       @FormParam("client_csrfToken") String csrfToken) {
         // CSRF
         if (!checkCSRFToken(csrfToken)) {
-            throw new InvalidRegistration("Invalid CSRF Token");
+            throw new InvalidRegistrationException("Invalid CSRF Token");
         }
 
         return doRevokeClientToken(clientId, tokenId, OAuthConstants.REFRESH_TOKEN);
     }
-    
+
     protected ClientTokens doRevokeClientToken(String clientId,
                                                      String tokenId,
                                                      String tokenType) {
@@ -221,7 +221,7 @@ public class ClientRegistrationService {
         dataProvider.revokeToken(c, tokenId, tokenType);
         return doGetClientIssuedTokens(c);
     }
-    
+
     @GET
     @Produces(MediaType.TEXT_HTML)
     @Path("/{id}/codes")
@@ -236,7 +236,7 @@ public class ClientRegistrationService {
         }
         return null;
     }
-    
+
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_HTML)
@@ -246,7 +246,7 @@ public class ClientRegistrationService {
                                                   @FormParam("client_csrfToken") String csrfToken) {
         // CSRF
         if (!checkCSRFToken(csrfToken)) {
-            throw new InvalidRegistration("Invalid CSRF Token");
+            throw new InvalidRegistrationException("Invalid CSRF Token");
         }
 
         if (dataProvider instanceof AuthorizationCodeDataProvider) {
@@ -255,7 +255,8 @@ public class ClientRegistrationService {
         }
         return null;
     }
-    
+
+    //CHECKSTYLE:OFF
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_HTML)
@@ -269,19 +270,19 @@ public class ClientRegistrationService {
     ) {
         // CSRF
         if (!checkCSRFToken(csrfToken)) {
-            return invalidRegistrationException("Invalid CSRF Token");
+            return invalidRegistrationResponse("Invalid CSRF Token");
         }
 
         // Client Name
         if (StringUtils.isEmpty(appName)) {
-            return invalidRegistrationException("The client name must not be empty");
+            return invalidRegistrationResponse("The client name must not be empty");
         }
         // Client Type
         if (StringUtils.isEmpty(appType)) {
-            return invalidRegistrationException("The client type must not be empty");
+            return invalidRegistrationResponse("The client type must not be empty");
         }
         if (!("confidential".equals(appType) || "public".equals(appType))) {
-            return invalidRegistrationException("An invalid client type was specified: " + appType);
+            return invalidRegistrationResponse("An invalid client type was specified: " + appType);
         }
         // Client ID
         String clientId = generateClientId();
@@ -311,7 +312,7 @@ public class ClientRegistrationService {
 
         // Client Registration Time
         newClient.setRegisteredAt(System.currentTimeMillis() / 1000);
-        
+
         // Client Realm
         if (homeRealm != null) {
             newClient.setHomeRealm(homeRealm);
@@ -319,7 +320,7 @@ public class ClientRegistrationService {
                 newClient.getProperties().put("homeRealmAlias", homeRealms.get(homeRealm));
             }
         }
-        
+
         // Client Redirect URIs
         if (!StringUtils.isEmpty(redirectURI)) {
             String[] allUris = redirectURI.trim().split(" ");
@@ -334,7 +335,7 @@ public class ClientRegistrationService {
             }
             newClient.setRedirectUris(redirectUris);
         }
-        
+
         // Client Audience URIs
         if (!StringUtils.isEmpty(audience)) {
             String[] auds = audience.trim().split(" ");
@@ -349,15 +350,16 @@ public class ClientRegistrationService {
             }
             newClient.setRegisteredAudiences(registeredAuds);
         }
-        
+
         // Client Scopes
         if (clientScopes != null && !clientScopes.isEmpty()) {
             newClient.setRegisteredScopes(new ArrayList<String>(clientScopes.keySet()));
         }
-        
+
         return Response.ok(registerNewClient(newClient)).build();
     }
-    
+    //CHECKSTYLE:ON
+
     private Response invalidRegistrationResponse(String error) {
         return Response.ok(new InvalidRegistration(error)).build();
     }
@@ -367,18 +369,14 @@ public class ClientRegistrationService {
         Message message = PhaseInterceptorChain.getCurrentMessage();
         HttpServletRequest httpRequest = (HttpServletRequest) message.get(AbstractHTTPDestination.HTTP_REQUEST);
         String savedToken = CSRFUtils.getCSRFToken(httpRequest, false);
-        if (StringUtils.isEmpty(csrfToken) || StringUtils.isEmpty(savedToken)
-            || !savedToken.equals(csrfToken)) {
-            return false;
-        }
-
-        return true;
+        return !(StringUtils.isEmpty(csrfToken) || StringUtils.isEmpty(savedToken)
+            || !savedToken.equals(csrfToken));
     }
 
     private boolean isValidURI(String uri, boolean requireHttps) {
 
         UrlValidator urlValidator = null;
-        
+
         if (requireHttps) {
             String[] schemes = {"https"};
             urlValidator = new UrlValidator(schemes, UrlValidator.ALLOW_LOCAL_URLS);
@@ -386,11 +384,11 @@ public class ClientRegistrationService {
             urlValidator = new UrlValidator(UrlValidator.ALLOW_LOCAL_URLS
                                                      + UrlValidator.ALLOW_ALL_SCHEMES);
         }
-        
+
         if (!urlValidator.isValid(uri)) {
             return false;
         }
-        
+
         // Do additional checks on the URI
         try {
             URI parsedURI = new URI(uri);
@@ -401,7 +399,7 @@ public class ClientRegistrationService {
         } catch (URISyntaxException ex) {
             return false;
         }
-        
+
         return true;
     }
 
@@ -439,7 +437,7 @@ public class ClientRegistrationService {
             newClient.setApplicationName(newName + nextNumber);
         }
         names.add(newClient.getApplicationName());
-        
+
         clientProvider.setClient(newClient);
         Collection<Client> clientRegistrations = getClientRegistrations();
         clientRegistrations.add(newClient);
@@ -527,7 +525,7 @@ public class ClientRegistrationService {
             // example, Sort Clients By Name/Date/etc
             return c1.getApplicationName().compareTo(c2.getApplicationName());
         }
-        
+
     }
     private static class TokenComparator implements Comparator<ServerAccessToken> {
 
@@ -535,7 +533,7 @@ public class ClientRegistrationService {
         public int compare(ServerAccessToken t1, ServerAccessToken t2) {
             return Long.compare(t1.getIssuedAt(), t2.getIssuedAt());
         }
-        
+
     }
     private static class CodeGrantComparator implements Comparator<ServerAuthorizationCodeGrant> {
 
@@ -543,6 +541,6 @@ public class ClientRegistrationService {
         public int compare(ServerAuthorizationCodeGrant g1, ServerAuthorizationCodeGrant g2) {
             return Long.compare(g1.getIssuedAt(), g2.getIssuedAt());
         }
-        
+
     }
 }
