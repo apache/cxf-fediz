@@ -4,6 +4,7 @@
 <%@ page import="java.util.Locale"%>
 <%@ page import="java.util.TimeZone"%>
 <%@ page import="javax.servlet.http.HttpServletRequest" %>
+<%@ page import="org.apache.cxf.fediz.service.oidc.CSRFUtils" %>
 <%@ page import="org.owasp.esapi.ESAPI" %>
 
 <%
@@ -16,7 +17,10 @@
     String basePath = request.getContextPath() + request.getServletPath();
     if (!basePath.endsWith("/")) {
         basePath += "/";
-    } 
+    }
+    
+    // Get or generate the CSRF token
+    String token = CSRFUtils.getCSRFToken(request, true);
 %>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -168,6 +172,9 @@
 %>
 <td class="td_no_border">
 <form name="resetSecretForm" action="<%=basePath%>console/clients/<%= client.getClientId() + "/reset"%>" method="POST">
+    <div class="form-line">
+        <input type="hidden" value="<%=token%>" name="client_csrfToken" />
+    </div>
      <div data-type="control_button" class="form-line">
 	<button name="submit_reset_button" class="form-submit-button" type="submit">Reset Client Secret</button>
 </form>
@@ -178,6 +185,9 @@
 %>
 <td class="td_no_border">
 <form name="deleteForm" action="<%=basePath%>console/clients/<%= client.getClientId() + "/remove"%>" method="POST">
+    <div class="form-line">
+        <input type="hidden" value="<%=token%>" name="client_csrfToken" />
+    </div>
         <div data-type="control_button" class="form-line">
 	<button name="submit_delete_button" class="form-submit-button" type="submit">Delete Client</button>
         </div>

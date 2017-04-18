@@ -714,6 +714,38 @@ public class OIDCTest {
         webClient.close();
     }
 
+    // Test that the form has the correct CSRF token in it when creating a client
+    @org.junit.Test
+    public void testCSRFClientRegistration() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/console/clients";
+        String user = "alice";
+        String password = "ecila";
+
+        // Login to the client page successfully
+        WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
+        HtmlPage loginPage = login(url, webClient);
+        final String bodyTextContent = loginPage.getBody().getTextContent();
+        Assert.assertTrue(bodyTextContent.contains("Registered Clients"));
+
+        // Register a new client
+
+        WebRequest request = new WebRequest(new URL(url), HttpMethod.POST);
+        request.setRequestParameters(new ArrayList<NameValuePair>());
+
+        request.getRequestParameters().add(new NameValuePair("client_name", "bad_client"));
+        request.getRequestParameters().add(new NameValuePair("client_type", "confidential"));
+        request.getRequestParameters().add(new NameValuePair("client_redirectURI", "https://127.0.0.1"));
+        request.getRequestParameters().add(new NameValuePair("client_audience", ""));
+        request.getRequestParameters().add(new NameValuePair("client_logoutURI", ""));
+        request.getRequestParameters().add(new NameValuePair("client_homeRealm", ""));
+        request.getRequestParameters().add(new NameValuePair("client_csrfToken", "12345"));
+
+        HtmlPage registeredClientPage = webClient.getPage(request);
+        Assert.assertTrue(registeredClientPage.asXml().contains("Invalid CSRF Token"));
+
+        webClient.close();
+    }
+
     private static WebClient setupWebClient(String user, String password, String idpPort) {
         final WebClient webClient = new WebClient();
         webClient.getOptions().setUseInsecureSSL(true);

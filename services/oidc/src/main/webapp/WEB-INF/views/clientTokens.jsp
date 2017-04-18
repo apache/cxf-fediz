@@ -7,6 +7,7 @@
 <%@ page import="java.util.Locale"%>
 <%@ page import="java.util.TimeZone"%>
 <%@ page import="javax.servlet.http.HttpServletRequest" %>
+<%@ page import="org.apache.cxf.fediz.service.oidc.CSRFUtils" %>
 <%@ page import="org.apache.cxf.fediz.service.oidc.clients.ClientTokens" %>
 <%@ page import="org.owasp.esapi.ESAPI" %>
 
@@ -19,7 +20,9 @@
     } 
     SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss", Locale.US);
     dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-
+    
+    // Get or generate the CSRF token
+    String csrfToken = CSRFUtils.getCSRFToken(request, true);
 %>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -111,6 +114,7 @@
 	       %>
            <td>
                <form action="<%=basePath%>console/clients/<%= client.getClientId() + "/at/" + token.getTokenKey() + "/revoke"%>" method="POST">
+                   <input type="hidden" value="<%=csrfToken%>" name="client_csrfToken" />
 		           <input type="submit" value="Delete"/>  
                </form>
            </td>
@@ -170,6 +174,7 @@
 	       
            <td>
                <form action="<%=basePath%>console/clients/<%= client.getClientId() + "/rt/" + token.getTokenKey() + "/revoke"%>" method="POST">
+                 <input type="hidden" value="<%=csrfToken%>" name="client_csrfToken" />
 		         <input type="submit" value="Delete"/>
                </form>
            </td>

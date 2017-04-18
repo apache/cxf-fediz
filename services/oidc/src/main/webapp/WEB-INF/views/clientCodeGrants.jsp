@@ -6,6 +6,7 @@
 <%@ page import="java.util.Locale"%>
 <%@ page import="java.util.TimeZone"%>
 <%@ page import="javax.servlet.http.HttpServletRequest" %>
+<%@ page import="org.apache.cxf.fediz.service.oidc.CSRFUtils" %>
 <%@ page import="org.apache.cxf.fediz.service.oidc.clients.ClientCodeGrants" %>
 <%@ page import="org.owasp.esapi.ESAPI" %>
 
@@ -15,7 +16,10 @@
     String basePath = request.getContextPath() + request.getServletPath();
     if (!basePath.endsWith("/")) {
         basePath += "/";
-    } 
+    }
+    
+    // Get or generate the CSRF token
+    String csrfToken = CSRFUtils.getCSRFToken(request, true);
 %>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -76,6 +80,7 @@
 		   %>
            <td>
                <form action="<%=basePath%>console/clients/<%= client.getClientId() + "/codes/" + token.getCode() + "/revoke"%>" method="POST">
+                 <input type="hidden" value="<%=csrfToken%>" name="client_csrfToken" />
 		         <input type="submit" value="Delete"/>
                </form>
            </td>
