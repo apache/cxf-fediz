@@ -362,8 +362,10 @@ public class ClientRegistrationService {
 
     private void checkSecurityContext() {
         SecurityContext sc = mc.getSecurityContext();
-        if (sc == null || sc.getUserPrincipal() == null 
-            || userRole != null && !sc.isUserInRole(userRole)) {
+        if (sc == null || sc.getUserPrincipal() == null) {
+            throw ExceptionUtils.toNotAuthorizedException(null,  null); 
+        }
+        if (userRole != null && !sc.isUserInRole(userRole)) {
             throw ExceptionUtils.toForbiddenException(null,  null); 
         }
     }
