@@ -59,6 +59,7 @@ import org.apache.cxf.common.util.Base64UrlUtility;
 import org.apache.cxf.common.util.StringUtils;
 import org.apache.cxf.fediz.service.oidc.CSRFUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.apache.cxf.jaxrs.utils.ExceptionUtils;
 import org.apache.cxf.rs.security.oauth2.common.Client;
 import org.apache.cxf.rs.security.oauth2.common.ServerAccessToken;
 import org.apache.cxf.rs.security.oauth2.common.UserSubject;
@@ -85,6 +86,7 @@ public class ClientRegistrationService {
     private Map<String, String> clientScopes;
 
     private MessageContext mc;
+    private String userRole;
 
     @Context
     public void setMessageContext(MessageContext messageContext) {
@@ -95,6 +97,7 @@ public class ClientRegistrationService {
     @Produces(MediaType.TEXT_HTML)
     @Path("/register")
     public RegisterClient registerStart() {
+        checkSecurityContext();
         return new RegisterClient(homeRealms);
     }
 
@@ -102,6 +105,7 @@ public class ClientRegistrationService {
     @Produces(MediaType.TEXT_HTML)
     @Path("/")
     public RegisteredClients getClients() {
+        checkSecurityContext();
         return new RegisteredClients(getClientRegistrations());
     }
 
@@ -109,6 +113,7 @@ public class ClientRegistrationService {
     @Produces(MediaType.TEXT_HTML)
     @Path("/{id}")
     public Client getRegisteredClient(@PathParam("id") String id) {
+        checkSecurityContext();
         for (Client c : getClientRegistrations()) {
             if (c.getClientId().equals(id)) {
                 return c;
@@ -126,7 +131,8 @@ public class ClientRegistrationService {
                                           @FormParam("client_csrfToken") String csrfToken) {
         // CSRF
         checkCSRFToken(csrfToken);
-
+        checkSecurityContext();
+        
         Collection<Client> clients = getClientRegistrations();
         for (Iterator<Client> it = clients.iterator(); it.hasNext();) {
             Client c = it.next();
@@ -150,6 +156,7 @@ public class ClientRegistrationService {
                               @FormParam("client_csrfToken") String csrfToken) {
         // CSRF
         checkCSRFToken(csrfToken);
+        checkSecurityContext();
 
         Client c = getRegisteredClient(id);
         if (c.isConfidential()) {
@@ -163,6 +170,7 @@ public class ClientRegistrationService {
     @Produces(MediaType.TEXT_HTML)
     @Path("/{id}/tokens")
     public ClientTokens getClientIssuedTokens(@PathParam("id") String id) {
+        checkSecurityContext();
         Client c = getRegisteredClient(id);
         return doGetClientIssuedTokens(c);
     }
@@ -185,10 +193,8 @@ public class ClientRegistrationService {
     public ClientTokens revokeClientAccessToken(@PathParam("id") String clientId,
                                                       @PathParam("tokenId") String tokenId,
                                                       @FormParam("client_csrfToken") String csrfToken) {
-        // CSRF
-        checkCSRFToken(csrfToken);
-
-        return doRevokeClientToken(clientId, tokenId, OAuthConstants.ACCESS_TOKEN);
+        
+        return doRevokeClientToken(clientId, csrfToken, tokenId, OAuthConstants.ACCESS_TOKEN);
     }
 
     @POST
@@ -198,15 +204,17 @@ public class ClientRegistrationService {
     public ClientTokens revokeClientRefreshToken(@PathParam("id") String clientId,
                                                       @PathParam("tokenId") String tokenId,
                                                       @FormParam("client_csrfToken") String csrfToken) {
-        // CSRF
-        checkCSRFToken(csrfToken);
-
-        return doRevokeClientToken(clientId, tokenId, OAuthConstants.REFRESH_TOKEN);
+        return doRevokeClientToken(clientId, csrfToken, tokenId, OAuthConstants.REFRESH_TOKEN);
     }
 
     protected ClientTokens doRevokeClientToken(String clientId,
-                                                     String tokenId,
-                                                     String tokenType) {
+                                               String csrfToken,
+                                               String tokenId,
+                                               String tokenType) {
+        // CSRF
+        checkCSRFToken(csrfToken);
+        checkSecurityContext();
+
         Client c = getRegisteredClient(clientId);
         dataProvider.revokeToken(c, tokenId, tokenType);
         return doGetClientIssuedTokens(c);
@@ -216,6 +224,7 @@ public class ClientRegistrationService {
     @Produces(MediaType.TEXT_HTML)
     @Path("/{id}/codes")
     public ClientCodeGrants getClientCodeGrants(@PathParam("id") String id) {
+        checkSecurityContext();
         if (dataProvider instanceof AuthorizationCodeDataProvider) {
             Client c = getRegisteredClient(id);
             UserSubject subject = new OidcUserSubject(getUserName());
@@ -236,6 +245,7 @@ public class ClientRegistrationService {
                                                   @FormParam("client_csrfToken") String csrfToken) {
         // CSRF
         checkCSRFToken(csrfToken);
+        checkSecurityContext();
 
         if (dataProvider instanceof AuthorizationCodeDataProvider) {
             ((AuthorizationCodeDataProvider)dataProvider).removeCodeGrant(code);
@@ -259,6 +269,7 @@ public class ClientRegistrationService {
         try {
             // CSRF
             checkCSRFToken(csrfToken);
+            checkSecurityContext();
 
             // Client Name
             if (StringUtils.isEmpty(appName)) {
@@ -282,8 +293,7 @@ public class ClientRegistrationService {
             Client newClient = new Client(clientId, clientSecret, isConfidential, appName);
 
             // User who registered this client
-            SecurityContext sc = mc.getSecurityContext();
-            String userName = sc.getUserPrincipal().getName();
+            String userName = getUserName();
             UserSubject userSubject = new OidcUserSubject(userName);
             newClient.setResourceOwnerSubject(userSubject);
 
@@ -350,6 +360,13 @@ public class ClientRegistrationService {
         }
     }
 
+    private void checkSecurityContext() {
+        SecurityContext sc = mc.getSecurityContext();
+        if (sc == null || sc.getUserPrincipal() == null 
+            || userRole != null && !sc.isUserInRole(userRole)) {
+            throw ExceptionUtils.toForbiddenException(null,  null); 
+        }
+    }
     private void checkCSRFToken(String csrfToken) {
         // CSRF
         HttpServletRequest httpRequest = mc.getHttpServletRequest();
@@ -507,6 +524,10 @@ public class ClientRegistrationService {
                 //
             }
         }
+    }
+
+    public void setUserRole(String userRole) {
+        this.userRole = userRole;
     }
 
     private static class ClientComparator implements Comparator<Client> {
