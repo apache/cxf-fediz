@@ -58,8 +58,7 @@ import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.common.util.Base64UrlUtility;
 import org.apache.cxf.common.util.StringUtils;
 import org.apache.cxf.fediz.service.oidc.CSRFUtils;
-import org.apache.cxf.message.Message;
-import org.apache.cxf.phase.PhaseInterceptorChain;
+import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.rs.security.oauth2.common.Client;
 import org.apache.cxf.rs.security.oauth2.common.ServerAccessToken;
 import org.apache.cxf.rs.security.oauth2.common.UserSubject;
@@ -71,7 +70,6 @@ import org.apache.cxf.rs.security.oauth2.tokens.refresh.RefreshToken;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 import org.apache.cxf.rs.security.oidc.idp.OidcUserSubject;
 import org.apache.cxf.rt.security.crypto.CryptoUtils;
-import org.apache.cxf.transport.http.AbstractHTTPDestination;
 
 @Path("/")
 public class ClientRegistrationService {
@@ -86,11 +84,11 @@ public class ClientRegistrationService {
     private boolean protectIdTokenWithClientSecret;
     private Map<String, String> clientScopes;
 
-    private SecurityContext sc;
+    private MessageContext mc;
 
     @Context
-    public void setSecurityContext(SecurityContext securityContext) {
-        this.sc = securityContext;
+    public void setMessageContext(MessageContext messageContext) {
+        this.mc = messageContext;
     }
 
     @GET
@@ -284,6 +282,7 @@ public class ClientRegistrationService {
             Client newClient = new Client(clientId, clientSecret, isConfidential, appName);
 
             // User who registered this client
+            SecurityContext sc = mc.getSecurityContext();
             String userName = sc.getUserPrincipal().getName();
             UserSubject userSubject = new OidcUserSubject(userName);
             newClient.setResourceOwnerSubject(userSubject);
@@ -353,8 +352,7 @@ public class ClientRegistrationService {
 
     private void checkCSRFToken(String csrfToken) {
         // CSRF
-        Message message = PhaseInterceptorChain.getCurrentMessage();
-        HttpServletRequest httpRequest = (HttpServletRequest) message.get(AbstractHTTPDestination.HTTP_REQUEST);
+        HttpServletRequest httpRequest = mc.getHttpServletRequest();
         String savedToken = CSRFUtils.getCSRFToken(httpRequest, false);
         if (StringUtils.isEmpty(csrfToken) || StringUtils.isEmpty(savedToken)
             || !savedToken.equals(csrfToken)) {
@@ -452,6 +450,7 @@ public class ClientRegistrationService {
     }
 
     private String getUserName() {
+        SecurityContext sc = mc.getSecurityContext();
         if (sc == null || sc.getUserPrincipal() == null) {
             return null;
         }

@@ -27,18 +27,19 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 
 import org.apache.cxf.fediz.service.oidc.clients.ClientRegistrationService;
+import org.apache.cxf.jaxrs.ext.MessageContext;
 
 @Path("/")
 public class UserConsoleService {
 
-    private SecurityContext sc;
+    private MessageContext mc;
 
     private ClientRegistrationService clientRegService;
 
     @Context
-    public void setSecurityContext(SecurityContext securityContext) {
-        this.sc = securityContext;
-        clientRegService.setSecurityContext(securityContext);
+    public void setMessageContext(MessageContext messageContext) {
+        this.mc = messageContext;
+        clientRegService.setMessageContext(messageContext);
     }
 
 
@@ -48,6 +49,7 @@ public class UserConsoleService {
         return new UserConsole(getUserName());
     }
     private String getUserName() {
+        SecurityContext sc = mc.getSecurityContext();
         return sc.getUserPrincipal().getName();
     }
     @Path("clients")
