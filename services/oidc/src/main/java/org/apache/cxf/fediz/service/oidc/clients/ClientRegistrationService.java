@@ -256,7 +256,6 @@ public class ClientRegistrationService {
         return null;
     }
 
-    //CHECKSTYLE:OFF
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_HTML)
@@ -268,22 +267,11 @@ public class ClientRegistrationService {
                                  @FormParam("client_homeRealm") String homeRealm,
                                  @FormParam("client_csrfToken") String csrfToken
     ) {
-        // CSRF
-        if (!checkCSRFToken(csrfToken)) {
-            return invalidRegistrationResponse("Invalid CSRF Token");
+        InvalidRegistration invalidRegistration = checkForm(csrfToken, appName, appType);
+        if (invalidRegistration != null) {
+            return Response.ok(invalidRegistration).build();
         }
 
-        // Client Name
-        if (StringUtils.isEmpty(appName)) {
-            return invalidRegistrationResponse("The client name must not be empty");
-        }
-        // Client Type
-        if (StringUtils.isEmpty(appType)) {
-            return invalidRegistrationResponse("The client type must not be empty");
-        }
-        if (!("confidential".equals(appType) || "public".equals(appType))) {
-            return invalidRegistrationResponse("An invalid client type was specified: " + appType);
-        }
         // Client ID
         String clientId = generateClientId();
         boolean isConfidential = "confidential".equals(appType);
@@ -358,7 +346,27 @@ public class ClientRegistrationService {
 
         return Response.ok(registerNewClient(newClient)).build();
     }
-    //CHECKSTYLE:ON
+
+    private InvalidRegistration checkForm(String csrfToken, String appName, String appType) {
+        // CSRF
+        if (!checkCSRFToken(csrfToken)) {
+            return new InvalidRegistration("Invalid CSRF Token");
+        }
+
+        // Client Name
+        if (StringUtils.isEmpty(appName)) {
+            return new InvalidRegistration("The client name must not be empty");
+        }
+        // Client Type
+        if (StringUtils.isEmpty(appType)) {
+            return new InvalidRegistration("The client type must not be empty");
+        }
+        if (!("confidential".equals(appType) || "public".equals(appType))) {
+            return new InvalidRegistration("An invalid client type was specified: " + appType);
+        }
+
+        return null;
+    }
 
     private Response invalidRegistrationResponse(String error) {
         return Response.ok(new InvalidRegistration(error)).build();
