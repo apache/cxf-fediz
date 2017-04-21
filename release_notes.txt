@@ -1,4 +1,4 @@
-Apache CXF Fediz 1.2.2 Release Notes
+Apache CXF Fediz 1.2.4 Release Notes
 ------------------------------------
 
 1. Overview
@@ -62,28 +62,6 @@ N.A.
 
 
 8. Specific issues, features, and improvements fixed in this version
-
-Release Notes - CXF-Fediz - Version 1.3.2
-
-Bug
-
-    [FEDIZ-185] - Make one of passiveRequestorEndpoint or passiveRequestorEndpointConstraint mandatory in the IDP
-    [FEDIZ-189] - Add support for absolute URLs in the logoutRedirectTo parameter
-    [FEDIZ-191] - The HomeRealmReminder cookie is not deleted after logout in the IdP
-    [FEDIZ-194] - NPE when restarting Fediz OIDC after using dynamic registration
-
-Improvement
-
-    [FEDIZ-173] - Cors support for js OIDC Implicit Flow
-    [FEDIZ-183] - Support logging out in the plugins via the "wa" parameter
-    [FEDIZ-186] - Add new logoutRedirectToConstraint plugin configuration parameter
-    [FEDIZ-193] - Add a way to support additional top level domains when registering OIDC clients
-    [FEDIZ-200] - Make one of logoutEndpoint or logoutEndpointConstraint mandatory in the IDP
-
-Task
-
-    [FEDIZ-174] - Update CXF version to 3.1.8-SNAPSHOT
-
 
 Release Notes - CXF-Fediz - Version 1.2.4
 
