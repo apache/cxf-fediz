@@ -20,11 +20,11 @@
 package org.apache.cxf.fediz.core.config;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,7 +43,7 @@ public class FedizConfigurator {
     private List<FedizContext> fedizContextList;
 
     public FedizConfig loadConfig(File f) throws JAXBException, IOException {
-        try (InputStream input = new FileInputStream(f)) {
+        try (InputStream input = Files.newInputStream(f.toPath())) {
             rootConfig = (FedizConfig) getJaxbContext().createUnmarshaller().unmarshal(input);
         }
         parseFedizContextList();
