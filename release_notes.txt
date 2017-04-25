@@ -65,6 +65,46 @@ N.A.
 
 8. Specific issues, features, and improvements fixed in this version
 
+Release Notes - CXF-Fediz - Version 1.4.0
+
+Bug
+
+    [FEDIZ-185] - Make one of passiveRequestorEndpoint or passiveRequestorEndpointConstraint mandatory in the IDP
+    [FEDIZ-189] - Add support for absolute URLs in the logoutRedirectTo parameter
+    [FEDIZ-191] - The HomeRealmReminder cookie is not deleted after logout in the IdP
+    [FEDIZ-192] - SAML customSTSParameter not propagated when using form-login
+
+Improvement
+
+    [FEDIZ-155] - Move .java components out of idp webapp and into a separate JAR
+    [FEDIZ-175] - Refactor STS configuration to make the Fediz STS easier to customize.
+    [FEDIZ-176] - Refactor IdP configuration to make the Fediz IdP easier to customize.
+    [FEDIZ-177] - Upgrade dbcp to 2.1.1
+    [FEDIZ-178] - Update Webflow to 2.4.x
+    [FEDIZ-179] - Update IdP to Spring Security 3.2
+    [FEDIZ-180] - Support WS-Federation Trusted Third Party IdPs for the SAML SSO interface in the IdP
+    [FEDIZ-181] - Support SAML SSO Trusted Third Party IdPs for the SAML SSO interface in the IdP
+    [FEDIZ-182] - Support OIDC Trusted Third Party IdPs for the SAML SSO interface in the IdP
+    [FEDIZ-183] - Support logging out in the plugins via the "wa" parameter
+    [FEDIZ-184] - Remove OGNL parser from the IdP
+    [FEDIZ-186] - Add new logoutRedirectToConstraint plugin configuration parameter
+    [FEDIZ-188] - Make "Reply" a CallbackType in the Fediz plugin configuration
+    [FEDIZ-190] - Make the logoutRedirectToConstraint a CallbackType
+    [FEDIZ-193] - Add a way to support additional top level domains when registering OIDC clients
+    [FEDIZ-195] - OIDC: propagate URI fragment during authentication
+    [FEDIZ-197] - STSClientAction shouldn't change wsdlLocation when no port is set
+    [FEDIZ-199] - Update the Spring plugin to spring security 4
+    [FEDIZ-200] - Make one of logoutEndpoint or logoutEndpointConstraint mandatory in the IDP
+
+New Feature
+
+    [FEDIZ-187] - Initial OIDC Logout Support
+
+Task
+
+    [FEDIZ-196] - Add support for Apache Tomcat 8.5.x
+
+
 Release Notes - CXF-Fediz - Version 1.3.2
 
 Bug
