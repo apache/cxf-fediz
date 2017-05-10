@@ -28,14 +28,11 @@
 
     <fileSets>
         <fileSet>
-            <directory>target/maven-shared-archive-resources/META-INF</directory>
+            <directory>src/main/release</directory>
             <outputDirectory>apache-fediz-${project.version}</outputDirectory>
             <includes>
                 <include>*</include>
             </includes>
-            <excludes>
-                <exclude>DEPENDENCIES</exclude>
-            </excludes>
         </fileSet>
         <fileSet>
             <directory>../examples</directory>
