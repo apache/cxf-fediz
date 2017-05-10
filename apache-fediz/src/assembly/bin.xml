@@ -32,6 +32,7 @@
             <outputDirectory>apache-fediz-${project.version}</outputDirectory>
             <includes>
                 <include>*</include>
+                <include>licenses/*</include>
             </includes>
         </fileSet>
         <fileSet>
