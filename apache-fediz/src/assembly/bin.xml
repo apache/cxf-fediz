@@ -130,6 +130,7 @@
             <excludes>
                 <exclude>org.apache.cxf.fediz:fediz-idp</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-idp-sts</exclude>
+                <exclude>org.apache.cxf.fediz:fediz-oidc</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-jetty8</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-jetty9</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-cxf</exclude>
@@ -147,6 +148,7 @@
             <excludes>
                 <exclude>org.apache.cxf.fediz:fediz-idp</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-idp-sts</exclude>
+                <exclude>org.apache.cxf.fediz:fediz-oidc</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-jetty8</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-jetty9</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-cxf</exclude>
@@ -164,6 +166,7 @@
             <excludes>
                 <exclude>org.apache.cxf.fediz:fediz-idp</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-idp-sts</exclude>
+                <exclude>org.apache.cxf.fediz:fediz-oidc</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-tomcat7</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-tomcat8</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-jetty9</exclude>
@@ -181,6 +184,7 @@
             <excludes>
                 <exclude>org.apache.cxf.fediz:fediz-idp</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-idp-sts</exclude>
+                <exclude>org.apache.cxf.fediz:fediz-oidc</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-tomcat7</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-tomcat8</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-jetty8</exclude>
@@ -198,6 +202,7 @@
             <excludes>
                 <exclude>org.apache.cxf.fediz:fediz-idp</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-idp-sts</exclude>
+                <exclude>org.apache.cxf.fediz:fediz-oidc</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-tomcat7</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-tomcat8</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-jetty8</exclude>
@@ -215,6 +220,7 @@
             <excludes>
                 <exclude>org.apache.cxf.fediz:fediz-idp</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-idp-sts</exclude>
+                <exclude>org.apache.cxf.fediz:fediz-oidc</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-tomcat7</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-tomcat8</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-jetty8</exclude>
@@ -232,6 +238,7 @@
             <excludes>
                 <exclude>org.apache.cxf.fediz:fediz-idp</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-idp-sts</exclude>
+                <exclude>org.apache.cxf.fediz:fediz-oidc</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-tomcat7</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-tomcat8</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-jetty8</exclude>
@@ -249,6 +256,7 @@
             <excludes>
                 <exclude>org.apache.cxf.fediz:fediz-idp</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-idp-sts</exclude>
+                <exclude>org.apache.cxf.fediz:fediz-oidc</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-tomcat7</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-tomcat8</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-jetty8</exclude>
