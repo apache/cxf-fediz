@@ -210,3 +210,15 @@ This project bundles SLF4J (MIT license):
 
 This project bundles BouncyCastle (MIT license):
  - See licenses/LICENSE-bouncycastle.txt 
+
+This project bundles AOP alliance (public domain license)
+
+This project bundles the Stax2 API (BSD license):
+ - See licenses/LICENSE-bsd.txt
+
+This project bundles the javax.annotation API (CDDL 1.0 + GPLv2 with classpath exception license)
+ - See licenses/LICENSE-cddl-gpl-10.txt
+
+This project bundles the javax.ws.rs-api (CDDL 1.1 + GPLv2 with classpath exception license)
+ - See licenses/LICENSE-cddl-gpl-11.txt
+
