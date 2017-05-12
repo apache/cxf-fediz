@@ -11,8 +11,10 @@ Project (http://www.springframework.org/security).
 This product includes software developed by the Spring LDAP
 Project (http://www.springframework.org/ldap).
 
+This product includes software from the Spring Framework, under the Apache
+License 2.0
+
 Portions of the included XmlSchema library are Copyright 2006 International Business Machines Corp.
 
 Portions of the included XmlSchema library are Copyright (C) World Wide Web
 Consortium 2006, 2007 and licensed under the three-part BSD license.
-
