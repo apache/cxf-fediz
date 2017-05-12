@@ -222,3 +222,15 @@ This project bundles the javax.annotation API (CDDL 1.0 + GPLv2 with classpath e
 This project bundles the javax.ws.rs-api (CDDL 1.1 + GPLv2 with classpath exception license)
  - See licenses/LICENSE-cddl-gpl-11.txt
 
+This project bundles ASM core (BSD license):
+ - See licenses/LICENSE-asm.txt
+
+This project bundles WSDL4J (CPL license):
+ - See licenses/LICENSE-wsdl4j.txt
+
+This project bundles JAXB core (CDDL 1.1 + GPLv2 with classpath exception license)
+ - See licenses/LICENSE-cddl-gpl-11.txt
+
+This project bundles the Sun JAXB Reference Implementation Runtime (CDDL 1.1 + GPLv2 with classpath exception license)
+ - See licenses/LICENSE-cddl-gpl-11.txt
+
