@@ -21,8 +21,6 @@ package org.apache.cxf.fediz.integrationtests;
 
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 
@@ -40,18 +38,9 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
-import org.apache.commons.io.IOUtils;
 import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.tomcat7.FederationAuthenticator;
-import org.apache.directory.server.annotations.CreateKdcServer;
-import org.apache.directory.server.annotations.CreateTransport;
-import org.apache.directory.server.core.annotations.ApplyLdifFiles;
-import org.apache.directory.server.core.annotations.CreateDS;
-import org.apache.directory.server.core.annotations.CreateIndex;
-import org.apache.directory.server.core.annotations.CreatePartition;
-import org.apache.directory.server.core.integ.AbstractLdapTestUnit;
-import org.apache.directory.server.core.integ.FrameworkRunner;
-import org.apache.directory.server.core.kerberos.KeyDerivationInterceptor;
+import org.apache.kerby.kerberos.kerb.server.SimpleKdcServer;
 import org.apache.wss4j.dom.engine.WSSConfig;
 import org.apache.xml.security.utils.Base64;
 import org.ietf.jgss.GSSContext;
@@ -61,59 +50,24 @@ import org.ietf.jgss.GSSName;
 import org.ietf.jgss.Oid;
 import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
 
 /**
  * A test that sends a Kerberos ticket to the IdP for authentication. The IdP must be configured
  * to validate the Kerberos ticket, and in turn get a delegation token to authenticate to the
  * STS + retrieve claims etc.
  *
- * This test uses an Apache DS instance as the KDC
+ * This test uses an Apache Kerby instance as the KDC
  */
-
-@RunWith(FrameworkRunner.class)
-
-//Define the DirectoryService
-@CreateDS(name = "KerberosTest-class",
-    enableAccessControl = false,
-    allowAnonAccess = false,
-    enableChangeLog = true,
-    partitions = {
-        @CreatePartition(
-            name = "example",
-            suffix = "dc=example,dc=com",
-            indexes = {
-                @CreateIndex(attribute = "objectClass"),
-                @CreateIndex(attribute = "dc"),
-                @CreateIndex(attribute = "ou")
-            }
-        ) },
-    additionalInterceptors = {
-        KeyDerivationInterceptor.class
-        }
-)
-
-@CreateKdcServer(
-    transports = {
-        @CreateTransport(protocol = "KRB", address = "127.0.0.1")
-        },
-    primaryRealm = "service.ws.apache.org",
-    kdcPrincipal = "krbtgt/service.ws.apache.org@service.ws.apache.org"
-)
-
-//Inject an file containing entries
-@ApplyLdifFiles("kerberos.ldif")
-
-public class KerberosTest extends AbstractLdapTestUnit {
+public class KerberosTest extends org.junit.Assert {
 
     static String idpHttpsPort;
     static String rpHttpsPort;
 
     private static Tomcat idpServer;
     private static Tomcat rpServer;
-    private static boolean portUpdated;
+    
+    private static SimpleKdcServer kerbyServer;
 
     @BeforeClass
     public static void init() throws Exception {
@@ -132,37 +86,37 @@ public class KerberosTest extends AbstractLdapTestUnit {
         Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
 
         WSSConfig.init();
+        
+        String basedir = System.getProperty("basedir");
+        if (basedir == null) {
+            basedir = new File(".").getCanonicalPath();
+        }
+
+        // System.setProperty("sun.security.krb5.debug", "true");
+        System.setProperty("java.security.auth.login.config", basedir + "/target/test-classes/kerberos.jaas");
+        System.setProperty("java.security.krb5.conf", basedir + "/target/krb5.conf");
+
+        kerbyServer = new SimpleKdcServer();
+
+        kerbyServer.setKdcRealm("service.ws.apache.org");
+        kerbyServer.setAllowUdp(false);
+        kerbyServer.setWorkDir(new File(basedir + "/target"));
+
+        //kerbyServer.setInnerKdcImpl(new NettyKdcServerImpl(kerbyServer.getKdcSetting()));
+
+        kerbyServer.init();
+
+        // Create principals
+        String alice = "alice@service.ws.apache.org";
+        String bob = "bob/service.ws.apache.org@service.ws.apache.org";
+
+        kerbyServer.createPrincipal(alice, "alice");
+        kerbyServer.createPrincipal(bob, "bob");
+
+        kerbyServer.start();
 
         idpServer = startServer(true, idpHttpsPort);
         rpServer = startServer(false, rpHttpsPort);
-    }
-
-    @Before
-    public void updatePort() throws Exception {
-        if (!portUpdated) {
-            String basedir = System.getProperty("basedir");
-            if (basedir == null) {
-                basedir = new File(".").getCanonicalPath();
-            }
-
-            // Read in krb5.conf and substitute in the correct port
-            File f = new File(basedir + "/src/test/resources/krb5.conf");
-
-            FileInputStream inputStream = new FileInputStream(f);
-            String content = IOUtils.toString(inputStream, "UTF-8");
-            inputStream.close();
-            content = content.replaceAll("port", "" + super.getKdcServer().getTransports()[0].getPort());
-
-            File f2 = new File(basedir + "/target/test-classes/fediz.kerberos.krb5.conf");
-            try (FileOutputStream outputStream = new FileOutputStream(f2)) {
-                IOUtils.write(content, outputStream, "UTF-8");
-            }
-
-            System.setProperty("java.security.krb5.conf", f2.getPath());
-            portUpdated = true;
-        }
-
-        System.setProperty("java.security.auth.login.config", "src/test/resources/kerberos.jaas");
     }
 
     private static Tomcat startServer(boolean idp, String port)
