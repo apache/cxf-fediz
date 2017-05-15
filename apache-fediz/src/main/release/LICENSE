@@ -234,3 +234,6 @@ This project bundles JAXB core (CDDL 1.1 + GPLv2 with classpath exception licens
 This project bundles the Sun JAXB Reference Implementation Runtime (CDDL 1.1 + GPLv2 with classpath exception license)
  - See licenses/LICENSE-cddl-gpl-11.txt
 
+This project bundles JSTL (CDDL 1.1 + GPLv2 with classpath exception license)
+ - See licenses/LICENSE-cddl-gpl-11.txt
+
