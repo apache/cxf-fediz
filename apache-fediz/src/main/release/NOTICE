@@ -18,3 +18,20 @@ Portions of the included XmlSchema library are Copyright 2006 International Busi
 
 Portions of the included XmlSchema library are Copyright (C) World Wide Web
 Consortium 2006, 2007 and licensed under the three-part BSD license.
+
+Portions of the included Apache Bval library includes software developed by
+Agimatec GmbH. Copyright 2007-2010 Agimatec GmbH. All rights reserved.
+
+OpenJPA includes software developed by the SERP project
+Copyright (c) 2002-2006, A. Abram White. All rights reserved.
+
+OpenJPA includes the persistence and orm schemas from the JPA specifications.
+Copyright 2005-2009 Sun Microsystems, Inc. All rights reserved.
+OpenJPA elects to include this software in this distribution under the
+CDDL license.  You can obtain a copy of the License at:
+    https://glassfish.dev.java.net/public/CDDL+GPL.html
+The source code is available at:
+    https://glassfish.dev.java.net/source/browse/glassfish/
+
+OpenJPA includes software written by Miroslav Nachev
+
