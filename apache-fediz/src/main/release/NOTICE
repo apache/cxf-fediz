@@ -35,3 +35,17 @@ The source code is available at:
 
 OpenJPA includes software written by Miroslav Nachev
 
+This project bundles Batik, which contains code from the World Wide Web
+Consortium (W3C) for the Document Object Model API (DOM API) and SVG Document
+Type Definition (DTD).
+
+This project bundles Batik which contains code from the International
+Organisation for Standardization for the definition of character entities used
+in the software's documentation.
+
+This project bundles Batik which includes images from the Tango Desktop Project
+(http://tango.freedesktop.org/).
+
+This product bundles Batik which includes images from the Pasodoble Icon Theme
+(http://www.jesusda.com/projects/pasodoble).
+
