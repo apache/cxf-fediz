@@ -9,7 +9,7 @@
 <%@ page import="javax.servlet.http.HttpServletRequest" %>
 <%@ page import="org.apache.cxf.fediz.service.oidc.CSRFUtils" %>
 <%@ page import="org.apache.cxf.fediz.service.oidc.clients.ClientTokens" %>
-<%@ page import="org.owasp.esapi.ESAPI" %>
+<%@ page import="org.apache.commons.lang3.StringEscapeUtils" %>
 
 <%
 	ClientTokens tokens = (ClientTokens)request.getAttribute("data");
@@ -48,7 +48,7 @@
 	</STYLE>
 </head>
 <body>
-<h1>Tokens issued to <%= ESAPI.encoder().encodeForHTML(client.getApplicationName()) + " (" + client.getClientId() + ")"%></h1>
+<h1>Tokens issued to <%= StringEscapeUtils.escapeHtml4(client.getApplicationName()) + " (" + client.getClientId() + ")"%></h1>
 <br/>
 <div class="padded">
 <h2>Access Tokens</h2>

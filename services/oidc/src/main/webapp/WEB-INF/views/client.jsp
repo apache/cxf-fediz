@@ -5,7 +5,7 @@
 <%@ page import="java.util.TimeZone"%>
 <%@ page import="javax.servlet.http.HttpServletRequest" %>
 <%@ page import="org.apache.cxf.fediz.service.oidc.CSRFUtils" %>
-<%@ page import="org.owasp.esapi.ESAPI" %>
+<%@ page import="org.apache.commons.lang3.StringEscapeUtils" %>
 
 <%
 	Client client = (Client)request.getAttribute("data");
@@ -77,7 +77,7 @@
 </head>
 <body>
 <div class="padded">
-<h1><%= ESAPI.encoder().encodeForHTML(client.getApplicationName()) %></h1>
+<h1><%= StringEscapeUtils.escapeHtml4(client.getApplicationName()) %></h1>
 <br/>
 <table border="1" id=client>
     <%

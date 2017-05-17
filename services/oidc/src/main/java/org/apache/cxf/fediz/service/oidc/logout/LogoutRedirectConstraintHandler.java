@@ -29,7 +29,7 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.fediz.core.spi.ReplyConstraintCallback;
 import org.apache.cxf.fediz.service.oidc.handler.hrd.ApplicationContextProvider;
 import org.apache.cxf.rs.security.oauth2.common.Client;
