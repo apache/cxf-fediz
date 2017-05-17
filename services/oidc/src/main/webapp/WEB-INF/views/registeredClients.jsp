@@ -6,7 +6,7 @@
 <%@ page import="java.util.TimeZone"%>
 <%@ page import="javax.servlet.http.HttpServletRequest" %>
 <%@ page import="org.apache.cxf.fediz.service.oidc.clients.RegisteredClients" %>
-<%@ page import="org.owasp.esapi.ESAPI" %>
+<%@ page import="org.apache.commons.lang3.StringEscapeUtils" %>
 
 <%
 	Collection<Client> regs = ((RegisteredClients)request.getAttribute("data")).getClients();
@@ -52,7 +52,7 @@
     %>
        <tr>
            <td><a href="<%= basePath + "console/clients/" + client.getClientId() %>"><%= 
-               ESAPI.encoder().encodeForHTML(client.getApplicationName()) %></a></td>
+               StringEscapeUtils.escapeHtml4(client.getApplicationName()) %></a></td>
            <td>
               <%= client.getClientId() %>
            </td>
