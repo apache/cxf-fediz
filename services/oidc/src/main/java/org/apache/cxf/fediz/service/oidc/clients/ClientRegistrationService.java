@@ -51,6 +51,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.validator.routines.DomainValidator;
 import org.apache.commons.validator.routines.DomainValidator.ArrayType;
 import org.apache.commons.validator.routines.UrlValidator;
@@ -280,7 +281,8 @@ public class ClientRegistrationService {
                 throwInvalidRegistrationException("The client type must not be empty");
             }
             if (!("confidential".equals(appType) || "public".equals(appType))) {
-                throwInvalidRegistrationException("An invalid client type was specified: " + appType);
+                throwInvalidRegistrationException("An invalid client type was specified: "
+                    + StringEscapeUtils.escapeHtml4(appType));
             }
             // Client ID
             String clientId = generateClientId();
@@ -315,7 +317,8 @@ public class ClientRegistrationService {
                 for (String uri : allUris) {
                     if (!StringUtils.isEmpty(uri)) {
                         if (!isValidURI(uri, false)) {
-                            throwInvalidRegistrationException("An invalid redirect URI was specified: " + uri);
+                            throwInvalidRegistrationException("An invalid redirect URI was specified: "
+                                + StringEscapeUtils.escapeHtml4(uri));
                         }
                         redirectUris.add(uri);
                     }
@@ -327,7 +330,8 @@ public class ClientRegistrationService {
                 String[] logoutUris = logoutURI.split(" ");
                 for (String uri : logoutUris) {
                     if (!isValidURI(uri, false)) {
-                        throwInvalidRegistrationException("An invalid logout URI was specified: " + uri);
+                        throwInvalidRegistrationException("An invalid logout URI was specified: "
+                            + StringEscapeUtils.escapeHtml4(uri));
                     }
                 }
                 //TODO: replace this code with newClient.setLogoutUri() once it becomes available
@@ -341,7 +345,8 @@ public class ClientRegistrationService {
                 for (String aud : auds) {
                     if (!StringUtils.isEmpty(aud)) {
                         if (!isValidURI(aud, true)) {
-                            throwInvalidRegistrationException("An invalid audience URI was specified: " + aud);
+                            throwInvalidRegistrationException("An invalid audience URI was specified: "
+                                + StringEscapeUtils.escapeHtml4(aud));
                         }
                         registeredAuds.add(aud);
                     }
