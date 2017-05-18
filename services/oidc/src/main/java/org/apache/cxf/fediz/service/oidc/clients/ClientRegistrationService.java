@@ -51,6 +51,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.validator.routines.DomainValidator;
 import org.apache.commons.validator.routines.DomainValidator.ArrayType;
 import org.apache.commons.validator.routines.UrlValidator;
@@ -315,7 +316,8 @@ public class ClientRegistrationService {
             for (String uri : allUris) {
                 if (!StringUtils.isEmpty(uri)) {
                     if (!isValidURI(uri, false)) {
-                        return invalidRegistrationResponse("An invalid redirect URI was specified: " + uri);
+                        return invalidRegistrationResponse("An invalid redirect URI was specified: "
+                            + StringEscapeUtils.escapeHtml4(uri));
                     }
                     redirectUris.add(uri);
                 }
@@ -330,7 +332,8 @@ public class ClientRegistrationService {
             for (String aud : auds) {
                 if (!StringUtils.isEmpty(aud)) {
                     if (!isValidURI(aud, true)) {
-                        return invalidRegistrationResponse("An invalid audience URI was specified: " + aud);
+                        return invalidRegistrationResponse("An invalid audience URI was specified: "
+                                + StringEscapeUtils.escapeHtml4(aud));
                     }
                     registeredAuds.add(aud);
                 }
