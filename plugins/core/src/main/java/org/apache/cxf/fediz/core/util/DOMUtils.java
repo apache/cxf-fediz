@@ -25,11 +25,8 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
@@ -55,36 +52,37 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Few simple utils to read DOM. This is originally from the Jakarta Commons Modeler.
  *
  * @author Costin Manolache
  */
 public final class DOMUtils {
+    private static final Logger LOG = LoggerFactory.getLogger(DOMUtils.class);
+    
     private static final String XMLNAMESPACE = "xmlns";
 
-    private static final Map<ClassLoader, DocumentBuilder> DOCUMENT_BUILDERS = Collections
-        .synchronizedMap(new WeakHashMap<ClassLoader, DocumentBuilder>());
+    private static final DocumentBuilderFactory DBF = DocumentBuilderFactory.newInstance();
+    
+    static {
+        try {
+            DBF.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 
-    private DOMUtils() {
+            DBF.setValidating(false);
+            DBF.setIgnoringComments(false);
+            DBF.setIgnoringElementContentWhitespace(true);
+            DBF.setNamespaceAware(true);
+            // DBF.setCoalescing(true);
+            // DBF.setExpandEntityReferences(true);
+        } catch (ParserConfigurationException ex) {
+            LOG.error("Error configuring DocumentBuilderFactory", ex);
+        }
     }
 
-    private static DocumentBuilder getBuilder() throws ParserConfigurationException {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        if (loader == null) {
-            loader = DOMUtils.class.getClassLoader();
-        }
-        if (loader == null) {
-            DocumentBuilderFactory dbf = createDocumentBuilderFactory();
-            return dbf.newDocumentBuilder();
-        }
-        DocumentBuilder builder = DOCUMENT_BUILDERS.get(loader);
-        if (builder == null) {
-            DocumentBuilderFactory dbf = createDocumentBuilderFactory();
-            builder = dbf.newDocumentBuilder();
-            DOCUMENT_BUILDERS.put(loader, builder);
-        }
-        return builder;
+    private DOMUtils() {
     }
 
     /**
@@ -424,32 +422,18 @@ public final class DOMUtils {
         }
     }
 
-    private static DocumentBuilderFactory createDocumentBuilderFactory() throws ParserConfigurationException {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-
-        dbf.setValidating(false);
-        dbf.setIgnoringComments(false);
-        dbf.setIgnoringElementContentWhitespace(true);
-        dbf.setNamespaceAware(true);
-        // dbf.setCoalescing(true);
-        // dbf.setExpandEntityReferences(true);
-
-        return dbf;
-    }
-
     /**
      * Read XML as DOM.
      */
     public static Document readXml(InputStream is) throws SAXException, IOException,
         ParserConfigurationException {
-        DocumentBuilder db = getBuilder();
+        DocumentBuilder db = DBF.newDocumentBuilder();
         return db.parse(is);
     }
 
     public static Document readXml(Reader is) throws SAXException, IOException, ParserConfigurationException {
         InputSource ips = new InputSource(is);
-        DocumentBuilder db = getBuilder();
+        DocumentBuilder db = DBF.newDocumentBuilder();
         return db.parse(ips);
     }
 
@@ -460,7 +444,7 @@ public final class DOMUtils {
         is2.setByteStream(is.getInputStream());
         is2.setCharacterStream(is.getReader());
 
-        DocumentBuilder db = getBuilder();
+        DocumentBuilder db = DBF.newDocumentBuilder();
         return db.parse(is2);
     }
 
@@ -475,7 +459,7 @@ public final class DOMUtils {
 
     public static DocumentBuilder createDocumentBuilder() {
         try {
-            return getBuilder();
+            return DBF.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
             throw new RuntimeException("Couldn't find a DOM parser.", e);
         }
@@ -483,7 +467,7 @@ public final class DOMUtils {
 
     public static Document createDocument() {
         try {
-            return getBuilder().newDocument();
+            return DBF.newDocumentBuilder().newDocument();
         } catch (ParserConfigurationException e) {
             throw new RuntimeException("Couldn't find a DOM parser.", e);
         }
