@@ -123,7 +123,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             el = doc.getDocumentElement();
 
         } catch (Exception e) {
-            LOG.warn("Failed to parse wresult: " + e.getMessage());
+            LOG.warn("Failed to parse wresult: " + e.getMessage(), e);
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
 
