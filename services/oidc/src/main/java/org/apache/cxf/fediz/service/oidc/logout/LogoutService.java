@@ -36,16 +36,17 @@ import javax.ws.rs.core.UriBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.fediz.service.oidc.FedizSubjectCreator;
 import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.apache.cxf.rs.security.jose.common.JoseException;
+import org.apache.cxf.rs.security.jose.jwt.JoseJwtConsumer;
 import org.apache.cxf.rs.security.jose.jwt.JwtToken;
 import org.apache.cxf.rs.security.oauth2.common.Client;
 import org.apache.cxf.rs.security.oauth2.provider.OAuthDataProvider;
-import org.apache.cxf.rs.security.oauth2.provider.OAuthJoseJwtConsumer;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 import org.apache.cxf.rs.security.oidc.common.IdToken;
 import org.apache.cxf.rs.security.oidc.idp.OidcUserSubject;
 
 @Path("/logout")
-public class LogoutService extends OAuthJoseJwtConsumer {
+public class LogoutService extends JoseJwtConsumer {
     private static final String CLIENT_LOGOUT_URI = "post_logout_redirect_uri";
     private static final String CLIENT_LOGOUT_URIS = "post_logout_redirect_uris";
     private static final String ID_TOKEN_HINT = "id_token_hint";
@@ -94,9 +95,12 @@ public class LogoutService extends OAuthJoseJwtConsumer {
         if (tokenHint == null) {
             return null;
         }
-        JwtToken token = super.getJwtToken(tokenHint);
-        // At this moment this token has been possibly decrypted and/or had its
-        // signature verified where the encryptor/signer has been OIDC itself
+        JwtToken token = null;
+        try {
+            token = super.getJwtToken(tokenHint);
+        } catch (JoseException ex) {
+            throw new BadRequestException(ex);
+        }
         return new IdToken(token.getClaims());
     }
     private URI getClientLogoutUri(Client client, MultivaluedMap<String, String> params) {
