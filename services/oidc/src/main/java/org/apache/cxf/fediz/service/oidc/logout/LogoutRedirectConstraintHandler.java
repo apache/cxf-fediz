@@ -48,8 +48,11 @@ public class LogoutRedirectConstraintHandler implements CallbackHandler {
                 if (callback instanceof ReplyConstraintCallback) {
                     ReplyConstraintCallback replyConstraintCallback = (ReplyConstraintCallback)callback;
                     HttpServletRequest request = replyConstraintCallback.getRequest();
-                    if (request != null && request.getParameter(OAuthConstants.CLIENT_ID) != null) {
+                    if (request != null) {
                         String clientId = request.getParameter(OAuthConstants.CLIENT_ID);
+                        if (clientId == null) {
+                            clientId = (String)request.getAttribute(OAuthConstants.CLIENT_ID);
+                        }
 
                         replyConstraintCallback.setReplyConstraint(getLogoutRedirectConstraint(clientId));
                     }

@@ -36,15 +36,20 @@ import javax.ws.rs.core.UriBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.fediz.service.oidc.FedizSubjectCreator;
 import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.apache.cxf.rs.security.jose.jwt.JwtToken;
 import org.apache.cxf.rs.security.oauth2.common.Client;
-import org.apache.cxf.rs.security.oauth2.common.UserSubject;
 import org.apache.cxf.rs.security.oauth2.provider.OAuthDataProvider;
+import org.apache.cxf.rs.security.oauth2.provider.OAuthJoseJwtConsumer;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
+import org.apache.cxf.rs.security.oidc.common.IdToken;
+import org.apache.cxf.rs.security.oidc.idp.OidcUserSubject;
 
 @Path("/logout")
-public class LogoutService {
+public class LogoutService extends OAuthJoseJwtConsumer {
     private static final String CLIENT_LOGOUT_URI = "post_logout_redirect_uri";
     private static final String CLIENT_LOGOUT_URIS = "post_logout_redirect_uris";
+    private static final String ID_TOKEN_HINT = "id_token_hint";
+    
     @Context
     private MessageContext mc;
     private String relativeIdpLogoutUri;
@@ -63,9 +68,12 @@ public class LogoutService {
     }
 
     protected Response doInitiateLogout(MultivaluedMap<String, String> params) {
-        Client client = getClient(params);
-        UserSubject subject = subjectCreator.createUserSubject(mc, params);
-
+        
+        IdToken idTokenHint = getIdTokenHint(params);
+        OidcUserSubject subject = subjectCreator.createUserSubject(mc, params);
+        
+        Client client = getClient(params, idTokenHint);
+        
         if (logoutHandlers != null) {
 
             for (LogoutHandler handler : logoutHandlers) {
@@ -80,6 +88,17 @@ public class LogoutService {
         return Response.seeOther(idpLogoutUri).build();
     }
 
+    
+    private IdToken getIdTokenHint(MultivaluedMap<String, String> params) {
+        String tokenHint = params.getFirst(ID_TOKEN_HINT);
+        if (tokenHint == null) {
+            return null;
+        }
+        JwtToken token = super.getJwtToken(tokenHint);
+        // At this moment this token has been possibly decrypted and/or had its
+        // signature verified where the encryptor/signer has been OIDC itself
+        return new IdToken(token.getClaims());
+    }
     private URI getClientLogoutUri(Client client, MultivaluedMap<String, String> params) {
         String logoutUriProp = client.getProperties().get(CLIENT_LOGOUT_URIS);
         // logoutUriProp is guaranteed to be not null at this point
@@ -106,8 +125,12 @@ public class LogoutService {
         return ub.build();
     }
     
-    private Client getClient(MultivaluedMap<String, String> params) {
+    private Client getClient(MultivaluedMap<String, String> params, IdToken idTokenHint) {
         String clientId = params.getFirst(OAuthConstants.CLIENT_ID);
+        if (clientId == null && idTokenHint != null) {
+            clientId = idTokenHint.getAudience();
+            mc.getHttpServletRequest().setAttribute(OAuthConstants.CLIENT_ID, clientId);
+        }
         if (clientId == null) {
             throw new BadRequestException();
         }

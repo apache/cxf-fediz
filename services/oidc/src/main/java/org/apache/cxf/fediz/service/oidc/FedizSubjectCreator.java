@@ -36,7 +36,6 @@ import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.core.FedizConstants;
 import org.apache.cxf.fediz.core.FedizPrincipal;
 import org.apache.cxf.jaxrs.ext.MessageContext;
-import org.apache.cxf.rs.security.oauth2.common.UserSubject;
 import org.apache.cxf.rs.security.oauth2.provider.OAuthServiceException;
 import org.apache.cxf.rs.security.oauth2.provider.SubjectCreator;
 import org.apache.cxf.rs.security.oidc.common.IdToken;
@@ -56,7 +55,7 @@ public class FedizSubjectCreator implements SubjectCreator {
     private Map<String, String> supportedClaims = Collections.emptyMap();
 
     @Override
-    public UserSubject createUserSubject(MessageContext mc,
+    public OidcUserSubject createUserSubject(MessageContext mc,
                                          MultivaluedMap<String, String> params) throws OAuthServiceException {
         Principal principal = mc.getSecurityContext().getUserPrincipal();
 
