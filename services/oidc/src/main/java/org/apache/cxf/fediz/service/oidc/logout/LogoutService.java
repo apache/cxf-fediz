@@ -33,6 +33,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.fediz.service.oidc.FedizSubjectCreator;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.rs.security.oauth2.common.Client;
@@ -84,14 +85,17 @@ public class LogoutService {
         // logoutUriProp is guaranteed to be not null at this point
         String[] uris = logoutUriProp.split(" ");
         String uriStr = null;
+        String clientLogoutUriParam = params.getFirst(CLIENT_LOGOUT_URI);
         if (uris.length > 1) {
-            String clientLogoutUriParam = params.getFirst(CLIENT_LOGOUT_URI);
             if (clientLogoutUriParam == null 
-                    || !new HashSet<>(Arrays.asList(uris)).contains(clientLogoutUriParam)) {
+                || !new HashSet<>(Arrays.asList(uris)).contains(clientLogoutUriParam)) {
                 throw new BadRequestException();    
             }
             uriStr = clientLogoutUriParam;
         } else {
+            if (clientLogoutUriParam != null && !uris[0].equals(clientLogoutUriParam)) {
+                throw new BadRequestException();    
+            }
             uriStr = uris[0];
         }
         UriBuilder ub = UriBuilder.fromUri(uriStr);
@@ -111,8 +115,7 @@ public class LogoutService {
         if (c == null) {
             throw new BadRequestException();
         }
-        if (c.getProperties().get(CLIENT_LOGOUT_URIS) == null) {
-            //TODO: Possibly default to something ?
+        if (StringUtils.isEmpty(c.getProperties().get(CLIENT_LOGOUT_URIS))) {
             throw new BadRequestException();
         }
         return c;
