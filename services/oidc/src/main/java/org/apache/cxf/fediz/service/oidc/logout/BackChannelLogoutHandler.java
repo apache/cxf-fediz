@@ -47,7 +47,7 @@ public class BackChannelLogoutHandler extends JoseJwtProducer {
     private OAuthDataProvider dataProvider;
         
     public void handleLogout(Client client, OidcUserSubject subject, IdToken idTokenHint) {
-        // At the moment the only to find out which RPs a given User is logged in is
+        // At the moment the only way to find out which RPs a given User is logged in is
         // to check the access tokens - it can not offer a complete solution, for ex
         // in cases when ATs have expired or been revoked or Implicit id_token flow is used.
         // Most likely a 'visited sites' cookie as suggested by the spec will need to be used.
