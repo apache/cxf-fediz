@@ -75,7 +75,7 @@ public class LogoutService extends JoseJwtConsumer {
         
         Client client = getClient(params, idTokenHint);
         if (backChannelLogoutHandler != null) {
-            backChannelLogoutHandler.handleLogout(client, subject);
+            backChannelLogoutHandler.handleLogout(client, subject, idTokenHint);
         }
         if (logoutHandlers != null) {
 
