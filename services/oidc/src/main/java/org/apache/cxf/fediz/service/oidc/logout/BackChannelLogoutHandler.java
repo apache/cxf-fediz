@@ -19,7 +19,9 @@
 package org.apache.cxf.fediz.service.oidc.logout;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -52,15 +54,20 @@ public class BackChannelLogoutHandler extends JoseJwtProducer {
         // in cases when ATs have expired or been revoked or Implicit id_token flow is used.
         // Most likely a 'visited sites' cookie as suggested by the spec will need to be used.
         List<ServerAccessToken> accessTokens = dataProvider.getAccessTokens(client,  subject);
+        Set<String> processedClients = new HashSet<String>();
         for (ServerAccessToken at : accessTokens) {
-            if (client.getClientId().equals(at.getClient().getClientId())) {
+            if (client.getClientId().equals(at.getClient().getClientId())
+                || processedClients.contains(client.getClientId())) {
                 continue;
             }
             String uri = client.getProperties().get(BACK_CHANNEL_LOGOUT_URI);
             if (uri != null) {
+                processedClients.add(client.getClientId());
                 submitBackChannelLogoutRequest(client, subject, idTokenHint, uri);
             }
         }
+        
+        
 
     }
 
@@ -82,7 +89,11 @@ public class BackChannelLogoutHandler extends JoseJwtProducer {
 
             @Override
             public void run() {
-                wc.form(new Form().param(LOGOUT_TOKEN, logoutToken));
+                try {
+                    wc.form(new Form().param(LOGOUT_TOKEN, logoutToken));
+                } catch (Exception ex) {
+                    // nothing else can be done
+                }
             }
         
         });
