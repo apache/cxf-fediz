@@ -56,7 +56,7 @@ public class LogoutService extends JoseJwtConsumer {
     private String relativeIdpLogoutUri;
     private OAuthDataProvider dataProvider;
     private FedizSubjectCreator subjectCreator = new FedizSubjectCreator();
-
+    private BackChannelLogoutHandler backChannelLogoutHandler;
     private List<LogoutHandler> logoutHandlers;
 
     @POST
@@ -74,7 +74,9 @@ public class LogoutService extends JoseJwtConsumer {
         OidcUserSubject subject = subjectCreator.createUserSubject(mc, params);
         
         Client client = getClient(params, idTokenHint);
-        
+        if (backChannelLogoutHandler != null) {
+            backChannelLogoutHandler.handleLogout(client, subject);
+        }
         if (logoutHandlers != null) {
 
             for (LogoutHandler handler : logoutHandlers) {
@@ -170,5 +172,14 @@ public class LogoutService extends JoseJwtConsumer {
     }
     public void setSubjectCreator(FedizSubjectCreator subjectCreator) {
         this.subjectCreator = subjectCreator;
+    }
+    public void setBackChannelLogoutHandler(BackChannelLogoutHandler handler) {
+        this.backChannelLogoutHandler = handler;
+    }
+    
+    public void close() {
+        if (backChannelLogoutHandler != null) {
+            backChannelLogoutHandler.close();
+        }
     }
 }
