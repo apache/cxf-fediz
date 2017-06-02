@@ -56,14 +56,15 @@ public class BackChannelLogoutHandler extends JoseJwtProducer {
         List<ServerAccessToken> accessTokens = dataProvider.getAccessTokens(client,  subject);
         Set<String> processedClients = new HashSet<String>();
         for (ServerAccessToken at : accessTokens) {
-            if (client.getClientId().equals(at.getClient().getClientId())
-                || processedClients.contains(client.getClientId())) {
+            Client atClient = at.getClient();
+            if (client.getClientId().equals(atClient.getClientId())
+                || processedClients.contains(atClient.getClientId())) {
                 continue;
             }
-            String uri = client.getProperties().get(BACK_CHANNEL_LOGOUT_URI);
+            String uri = atClient.getProperties().get(BACK_CHANNEL_LOGOUT_URI);
             if (uri != null) {
-                processedClients.add(client.getClientId());
-                submitBackChannelLogoutRequest(client, subject, idTokenHint, uri);
+                processedClients.add(atClient.getClientId());
+                submitBackChannelLogoutRequest(atClient, subject, idTokenHint, uri);
             }
         }
         
