@@ -794,6 +794,66 @@ public class OIDCTest {
         webClient.close();
     }
 
+    @org.junit.Test
+    public void testLogoutViaTokenHint() throws Exception {
+        // 1. Log in
+        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/idp/authorize?";
+        url += "client_id=" + storedClientId;
+        url += "&response_type=code";
+        url += "&scope=openid";
+        String user = "alice";
+        String password = "ecila";
+
+        // Login to the OIDC token endpoint + get the authorization code
+        WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
+        String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
+        Assert.assertNotNull(authorizationCode);
+        webClient.getCredentialsProvider().clear();
+
+        // Now use the code to get an IdToken
+        WebClient webClient2 = setupWebClient(user, password, getIdpHttpsPort());
+        String tokenUrl = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/oauth2/token";
+        WebRequest request = new WebRequest(new URL(tokenUrl), HttpMethod.POST);
+
+        request.setRequestParameters(new ArrayList<NameValuePair>());
+        request.getRequestParameters().add(new NameValuePair("client_id", storedClientId));
+        request.getRequestParameters().add(new NameValuePair("grant_type", "authorization_code"));
+        request.getRequestParameters().add(new NameValuePair("code", authorizationCode));
+
+        webClient2.getOptions().setJavaScriptEnabled(false);
+        final UnexpectedPage responsePage = webClient2.getPage(request);
+        String response = responsePage.getWebResponse().getContentAsString();
+
+        // Check the IdToken
+        String idToken = getIdToken(response);
+        Assert.assertNotNull(idToken);
+        validateIdToken(idToken, storedClientId);
+
+        webClient2.close();
+
+        // 2. Log out using the token hint
+        String logoutUrl = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/idp/logout?";
+        logoutUrl += "id_token_hint=" + idToken;
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        try {
+            webClient.getPage(logoutUrl);
+        } catch (Exception ex) {
+            Assert.assertTrue(ex.getMessage().contains("Connect to localhost:12345"));
+        }
+
+        // 3. Get another authorization code without username/password. This should fail as we have
+        // logged out
+        try {
+            loginAndGetAuthorizationCode(url, webClient);
+            Assert.fail("Failure expected after logout");
+        } catch (Exception ex) {
+            Assert.assertTrue(ex.getMessage().contains("401"));
+        }
+
+        webClient.close();
+    }
+
     // Test that the form has the correct CSRF token in it when creating a client
     @org.junit.Test
     public void testCSRFClientRegistration() throws Exception {
