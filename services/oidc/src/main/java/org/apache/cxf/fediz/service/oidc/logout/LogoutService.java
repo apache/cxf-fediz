@@ -50,7 +50,7 @@ public class LogoutService extends JoseJwtConsumer {
     private static final String CLIENT_LOGOUT_URI = "post_logout_redirect_uri";
     private static final String CLIENT_LOGOUT_URIS = "post_logout_redirect_uris";
     private static final String ID_TOKEN_HINT = "id_token_hint";
-    
+
     @Context
     private MessageContext mc;
     private String relativeIdpLogoutUri;
@@ -69,10 +69,10 @@ public class LogoutService extends JoseJwtConsumer {
     }
 
     protected Response doInitiateLogout(MultivaluedMap<String, String> params) {
-        
+
         IdToken idTokenHint = getIdTokenHint(params);
         OidcUserSubject subject = subjectCreator.createUserSubject(mc, params);
-        
+
         Client client = getClient(params, idTokenHint);
         if (backChannelLogoutHandler != null) {
             backChannelLogoutHandler.handleLogout(client, subject, idTokenHint);
@@ -91,7 +91,7 @@ public class LogoutService extends JoseJwtConsumer {
         return Response.seeOther(idpLogoutUri).build();
     }
 
-    
+
     private IdToken getIdTokenHint(MultivaluedMap<String, String> params) {
         String tokenHint = params.getFirst(ID_TOKEN_HINT);
         if (tokenHint == null) {
@@ -112,14 +112,14 @@ public class LogoutService extends JoseJwtConsumer {
         String uriStr = null;
         String clientLogoutUriParam = params.getFirst(CLIENT_LOGOUT_URI);
         if (uris.length > 1) {
-            if (clientLogoutUriParam == null 
+            if (clientLogoutUriParam == null
                 || !new HashSet<>(Arrays.asList(uris)).contains(clientLogoutUriParam)) {
-                throw new BadRequestException();    
+                throw new BadRequestException();
             }
             uriStr = clientLogoutUriParam;
         } else {
             if (clientLogoutUriParam != null && !uris[0].equals(clientLogoutUriParam)) {
-                throw new BadRequestException();    
+                throw new BadRequestException();
             }
             uriStr = uris[0];
         }
@@ -128,9 +128,9 @@ public class LogoutService extends JoseJwtConsumer {
         if (state != null) {
             ub.queryParam(OAuthConstants.STATE, state);
         }
-        return ub.build();
+        return ub.build().normalize();
     }
-    
+
     private Client getClient(MultivaluedMap<String, String> params, IdToken idTokenHint) {
         String clientId = params.getFirst(OAuthConstants.CLIENT_ID);
         if (clientId == null && idTokenHint != null) {
@@ -154,7 +154,7 @@ public class LogoutService extends JoseJwtConsumer {
         ub.path(relativeIdpLogoutUri);
         ub.queryParam("wreply", getClientLogoutUri(client, params));
         ub.queryParam(OAuthConstants.CLIENT_ID, client.getClientId());
-        return ub.build();
+        return ub.build().normalize();
     }
 
     public void setRelativeIdpLogoutUri(String relativeIdpLogoutUri) {
@@ -176,7 +176,7 @@ public class LogoutService extends JoseJwtConsumer {
     public void setBackChannelLogoutHandler(BackChannelLogoutHandler handler) {
         this.backChannelLogoutHandler = handler;
     }
-    
+
     public void close() {
         if (backChannelLogoutHandler != null) {
             backChannelLogoutHandler.close();
