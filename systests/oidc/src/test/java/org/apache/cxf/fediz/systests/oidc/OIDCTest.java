@@ -25,6 +25,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -62,6 +63,7 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.cxf.fediz.tomcat8.FederationAuthenticator;
 import org.apache.cxf.rs.security.jose.jwa.SignatureAlgorithm;
@@ -88,6 +90,7 @@ public class OIDCTest {
 
     private static String storedClientId;
     private static String storedClient2Id;
+    private static String storedClientPassword;
 
     @BeforeClass
     public static void init() throws Exception {
@@ -239,6 +242,11 @@ public class OIDCTest {
         HtmlTable table = registeredClientPage.getHtmlElementById("registered_clients");
         storedClientId = table.getCellAt(1, 1).asText().trim();
         Assert.assertNotNull(storedClientId);
+
+        // Get the password
+        registeredClientPage = webClient.getPage(url + "/" + storedClientId);
+        table = registeredClientPage.getHtmlElementById("client");
+        storedClientPassword = table.getCellAt(1, 2).asText().trim();
 
         // Try to register another new client
         registeredClientPage =
@@ -812,6 +820,9 @@ public class OIDCTest {
 
         // Now use the code to get an IdToken
         WebClient webClient2 = setupWebClient(user, password, getIdpHttpsPort());
+        String data = storedClientId + ":" + storedClientPassword;
+        String authorizationHeader = "Basic " + Base64.encodeBase64String(data.getBytes(StandardCharsets.UTF_8));
+        webClient2.addRequestHeader("Authorization", authorizationHeader);
         String tokenUrl = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/oauth2/token";
         WebRequest request = new WebRequest(new URL(tokenUrl), HttpMethod.POST);
 
