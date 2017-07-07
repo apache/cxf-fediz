@@ -69,6 +69,7 @@
           init-method="init" destroy-method="close">
         <!-- List of accepted scopes -->  
         <property name="supportedScopes" ref="supportedScopes"/>
+
         <!-- 
              List of scopes that the consent/authorization form should make 
              selected by default. For example, asking a user to do an extra click
@@ -90,6 +91,8 @@
     <!-- Custom SubjectCreator where IdToken is created -->    
     <bean id="subjectCreator" class="org.apache.cxf.fediz.service.oidc.FedizSubjectCreator">
         <property name="idTokenIssuer" value="accounts.fediz.com"/>
+        <!-- List of additional claims which can be optionally added to IdToken -->  
+        <property name="supportedClaims" ref="supportedClaims"/>
     </bean>
          
 </beans>
