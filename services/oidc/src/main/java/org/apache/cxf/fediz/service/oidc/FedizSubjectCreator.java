@@ -195,17 +195,12 @@ public class FedizSubjectCreator implements SubjectCreator {
             }
         }
 
-        if (roles != null && !roles.isEmpty()
+        if (roles != null && !roles.isEmpty() 
             && supportedClaims.containsKey(FedizConstants.DEFAULT_ROLE_URI)) {
             
             String roleClaimName = supportedClaims.get(FedizConstants.DEFAULT_ROLE_URI);
-
             if (requestedClaimsList.contains(roleClaimName)) {
-                if (roles.size() == 1) {
-                    idToken.setClaim(roleClaimName, roles.get(0));
-                } else {
-                    idToken.setClaim(roleClaimName, roles);
-                }    
+                idToken.setClaim(roleClaimName, roles);
             }            
         }
 
