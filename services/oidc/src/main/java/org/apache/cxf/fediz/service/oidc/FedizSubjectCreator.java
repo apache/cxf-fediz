@@ -196,13 +196,17 @@ public class FedizSubjectCreator implements SubjectCreator {
         }
 
         if (roles != null && !roles.isEmpty()
-            && supportedClaims.containsKey(FedizConstants.DEFAULT_ROLE_URI.toString())
-            && requestedClaimsList.contains(supportedClaims.get(FedizConstants.DEFAULT_ROLE_URI.toString()))) {
-            if (roles.size() == 1) {
-                idToken.setClaim(supportedClaims.get(FedizConstants.DEFAULT_ROLE_URI.toString()), roles.get(0));
-            } else {
-                idToken.setClaim(supportedClaims.get(FedizConstants.DEFAULT_ROLE_URI.toString()), roles);
-            }
+            && supportedClaims.containsKey(FedizConstants.DEFAULT_ROLE_URI)) {
+            
+            String roleClaimName = supportedClaims.get(FedizConstants.DEFAULT_ROLE_URI);
+
+            if (requestedClaimsList.contains(roleClaimName)) {
+                if (roles.size() == 1) {
+                    idToken.setClaim(roleClaimName, roles.get(0));
+                } else {
+                    idToken.setClaim(roleClaimName, roles);
+                }    
+            }            
         }
 
         return idToken;
