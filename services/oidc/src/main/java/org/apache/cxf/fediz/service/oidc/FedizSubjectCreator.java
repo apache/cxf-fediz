@@ -196,9 +196,9 @@ public class FedizSubjectCreator implements SubjectCreator {
         }
 
         if (roles != null && !roles.isEmpty() 
-            && supportedClaims.containsKey(FedizConstants.DEFAULT_ROLE_URI)) {
+            && supportedClaims.containsKey(FedizConstants.DEFAULT_ROLE_URI.toString())) {
             
-            String roleClaimName = supportedClaims.get(FedizConstants.DEFAULT_ROLE_URI);
+            String roleClaimName = supportedClaims.get(FedizConstants.DEFAULT_ROLE_URI.toString());
             if (requestedClaimsList.contains(roleClaimName)) {
                 idToken.setClaim(roleClaimName, roles);
             }            
