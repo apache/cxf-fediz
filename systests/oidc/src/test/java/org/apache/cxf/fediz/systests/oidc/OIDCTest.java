@@ -35,6 +35,7 @@ import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -897,6 +898,45 @@ public class OIDCTest {
         webClient.close();
     }
 
+    @org.junit.Test
+    public void testOIDCLoginForClient1WithRoles() throws Exception {
+
+        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/idp/authorize?";
+        url += "client_id=" + storedClientId;
+        url += "&response_type=code";
+        url += "&scope=openid";
+        url += "&claims=roles";
+        String user = "alice";
+        String password = "ecila";
+
+        // Login to the OIDC token endpoint + get the authorization code
+        WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
+        String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
+        Assert.assertNotNull(authorizationCode);
+
+        // Now use the code to get an IdToken
+
+        url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/oauth2/token";
+        WebRequest request = new WebRequest(new URL(url), HttpMethod.POST);
+
+        request.setRequestParameters(new ArrayList<NameValuePair>());
+        request.getRequestParameters().add(new NameValuePair("client_id", storedClientId));
+        request.getRequestParameters().add(new NameValuePair("grant_type", "authorization_code"));
+        request.getRequestParameters().add(new NameValuePair("code", authorizationCode));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        final UnexpectedPage responsePage = webClient.getPage(request);
+        String response = responsePage.getWebResponse().getContentAsString();
+
+        // Check the IdToken
+        String idToken = getIdToken(response);
+        Assert.assertNotNull(idToken);
+        validateIdToken(idToken, storedClientId, "User");
+
+        webClient.close();
+    }
+
+
     private static WebClient setupWebClient(String user, String password, String idpPort) {
         final WebClient webClient = new WebClient();
         webClient.getOptions().setUseInsecureSSL(true);
@@ -984,6 +1024,11 @@ public class OIDCTest {
 
     private void validateIdToken(String idToken, String audience)
         throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+        validateIdToken(idToken, audience, null);
+    }
+
+    private void validateIdToken(String idToken, String audience, String role)
+        throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
         JwsJwtCompactConsumer jwtConsumer = new JwsJwtCompactConsumer(idToken);
         JwtToken jwt = jwtConsumer.getJwtToken();
 
@@ -993,6 +1038,14 @@ public class OIDCTest {
         Assert.assertEquals(audience, jwt.getClaim(JwtConstants.CLAIM_AUDIENCE));
         Assert.assertNotNull(jwt.getClaim(JwtConstants.CLAIM_EXPIRY));
         Assert.assertNotNull(jwt.getClaim(JwtConstants.CLAIM_ISSUED_AT));
+
+        // Check role
+        if (role != null) {
+            List<?> roles = (List<?>)jwt.getClaim("roles");
+            Assert.assertNotNull(roles);
+            Assert.assertFalse(roles.isEmpty());
+            Assert.assertEquals(role, roles.get(0));
+        }
 
         KeyStore keystore = KeyStore.getInstance("JKS");
         keystore.load(Loader.getResource("oidc.jks").openStream(), "password".toCharArray());
