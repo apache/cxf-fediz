@@ -73,7 +73,7 @@
         <tomcat.url>http://localhost:8080/manager/text</tomcat.url>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <jdk.version>1.7</jdk.version>
+        <jdk.version>1.8</jdk.version>
         <compiler.fork>false</compiler.fork>
 
         <fediz.protect-xmlschema-collections>false</fediz.protect-xmlschema-collections>
