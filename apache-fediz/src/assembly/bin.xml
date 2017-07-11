@@ -124,24 +124,6 @@
             <scope>runtime</scope>
         </dependencySet>
         <dependencySet>
-            <outputDirectory>apache-fediz-${project.version}/plugins/tomcat7/lib</outputDirectory>
-            <unpack>false</unpack>
-            <useTransitiveFiltering>true</useTransitiveFiltering>
-            <excludes>
-                <exclude>org.apache.cxf.fediz:fediz-idp</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-idp-sts</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-oidc</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-jetty8</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-jetty9</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-cxf</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-spring</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-spring2</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-spring3</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-tomcat8</exclude>
-            </excludes>
-            <scope>runtime</scope>
-        </dependencySet>
-        <dependencySet>
             <outputDirectory>apache-fediz-${project.version}/plugins/tomcat8/lib</outputDirectory>
             <unpack>false</unpack>
             <useTransitiveFiltering>true</useTransitiveFiltering>
@@ -149,30 +131,9 @@
                 <exclude>org.apache.cxf.fediz:fediz-idp</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-idp-sts</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-oidc</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-jetty8</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-jetty9</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-cxf</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-spring</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-spring2</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-spring3</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-tomcat7</exclude>
-            </excludes>
-            <scope>runtime</scope>
-        </dependencySet>
-        <dependencySet>
-            <outputDirectory>apache-fediz-${project.version}/plugins/jetty8/lib</outputDirectory>
-            <unpack>false</unpack>
-            <useTransitiveFiltering>true</useTransitiveFiltering>
-            <excludes>
-                <exclude>org.apache.cxf.fediz:fediz-idp</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-idp-sts</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-oidc</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-tomcat7</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-tomcat8</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-jetty9</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-cxf</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-spring</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-spring2</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-spring3</exclude>
             </excludes>
             <scope>runtime</scope>
@@ -185,12 +146,9 @@
                 <exclude>org.apache.cxf.fediz:fediz-idp</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-idp-sts</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-oidc</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-tomcat7</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-tomcat8</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-jetty8</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-cxf</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-spring</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-spring2</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-spring3</exclude>
             </excludes>
             <scope>runtime</scope>
@@ -203,12 +161,9 @@
                 <exclude>org.apache.cxf.fediz:fediz-idp</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-idp-sts</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-oidc</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-tomcat7</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-tomcat8</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-jetty8</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-jetty9</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-cxf</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-spring2:jar</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-spring3:jar</exclude>
             </excludes>
             <scope>runtime</scope>
@@ -221,31 +176,10 @@
                 <exclude>org.apache.cxf.fediz:fediz-idp</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-idp-sts</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-oidc</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-tomcat7</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-tomcat8</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-jetty8</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-jetty9</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-cxf</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-spring:jar</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-spring2:jar</exclude>
-            </excludes>
-            <scope>runtime</scope>
-        </dependencySet>
-        <dependencySet>
-            <outputDirectory>apache-fediz-${project.version}/plugins/spring2/lib</outputDirectory>
-            <unpack>false</unpack>
-            <useTransitiveFiltering>true</useTransitiveFiltering>
-            <excludes>
-                <exclude>org.apache.cxf.fediz:fediz-idp</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-idp-sts</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-oidc</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-tomcat7</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-tomcat8</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-jetty8</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-jetty9</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-cxf</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-spring:jar</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-spring3:jar</exclude>
             </excludes>
             <scope>runtime</scope>
         </dependencySet>
@@ -257,12 +191,9 @@
                 <exclude>org.apache.cxf.fediz:fediz-idp</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-idp-sts</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-oidc</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-tomcat7</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-tomcat8</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-jetty8</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-jetty9</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-spring</exclude>
-                <exclude>org.apache.cxf.fediz:fediz-spring2</exclude>
                 <exclude>org.apache.cxf.fediz:fediz-spring3</exclude>
             </excludes>
             <scope>runtime</scope>

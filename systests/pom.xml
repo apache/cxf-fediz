@@ -35,9 +35,7 @@
       <module>idp</module>
       <module>webapps</module>
       <module>custom</module>
-      <module>jetty8</module>
       <module>jetty9</module>
-      <module>tomcat7</module>
       <module>tomcat8</module>
       <module>spring</module>
       <module>cxf</module>

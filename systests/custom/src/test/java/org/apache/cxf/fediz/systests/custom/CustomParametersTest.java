@@ -41,7 +41,7 @@ import org.apache.catalina.startup.Tomcat;
 import org.apache.commons.io.IOUtils;
 import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.integrationtests.HTTPTestUtils;
-import org.apache.cxf.fediz.tomcat7.FederationAuthenticator;
+import org.apache.cxf.fediz.tomcat8.FederationAuthenticator;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.wss4j.dom.engine.WSSConfig;
