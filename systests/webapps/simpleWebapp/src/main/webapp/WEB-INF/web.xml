@@ -68,6 +68,9 @@
 		<role-name>User</role-name>
 	</security-role>
 	<security-role>
+		<role-name>USER</role-name>
+	</security-role>
+	<security-role>
 		<role-name>Admin</role-name>
 	</security-role>
 	<security-role>
