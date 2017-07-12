@@ -936,7 +936,45 @@ public class OIDCTest {
         webClient.close();
     }
 
+    @org.junit.Test
+    public void testOIDCLoginForClient1WithRolesScope() throws Exception {
 
+        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/idp/authorize?";
+        url += "client_id=" + storedClientId;
+        url += "&response_type=code";
+        url += "&scope=openid%20roles";
+        String user = "alice";
+        String password = "ecila";
+
+        // Login to the OIDC token endpoint + get the authorization code
+        WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
+        String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
+        Assert.assertNotNull(authorizationCode);
+
+        // Now use the code to get an IdToken
+
+        url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/oauth2/token";
+        WebRequest request = new WebRequest(new URL(url), HttpMethod.POST);
+
+        request.setRequestParameters(new ArrayList<NameValuePair>());
+        request.getRequestParameters().add(new NameValuePair("client_id", storedClientId));
+        request.getRequestParameters().add(new NameValuePair("grant_type", "authorization_code"));
+        request.getRequestParameters().add(new NameValuePair("code", authorizationCode));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        final UnexpectedPage responsePage = webClient.getPage(request);
+        String response = responsePage.getWebResponse().getContentAsString();
+
+        // Check the IdToken
+        String idToken = getIdToken(response);
+        Assert.assertNotNull(idToken);
+        validateIdToken(idToken, storedClientId, "User");
+
+        webClient.close();
+    }
+
+    
+    
     private static WebClient setupWebClient(String user, String password, String idpPort) {
         final WebClient webClient = new WebClient();
         webClient.getOptions().setUseInsecureSSL(true);
@@ -1041,7 +1079,7 @@ public class OIDCTest {
 
         // Check role
         if (role != null) {
-            List<?> roles = (List<?>)jwt.getClaim("roles");
+            List<String> roles = jwt.getClaims().getListStringProperty("roles");
             Assert.assertNotNull(roles);
             Assert.assertFalse(roles.isEmpty());
             Assert.assertEquals(role, roles.get(0));

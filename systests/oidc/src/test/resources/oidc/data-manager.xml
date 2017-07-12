@@ -32,6 +32,7 @@
     <!-- List of accepted scopes -->
     <util:map id="supportedScopes">
         <entry key="openid" value="Access the authentication claims" />
+        <entry key="roles" value="Access the user roles" />
         <entry key="refreshToken" value="Refresh access tokens" />
     </util:map>
 

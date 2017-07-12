@@ -47,10 +47,14 @@
     <import resource="data-manager.xml" />
     
     <!-- Supports OIDC Authorization Code flow -->
+    <util:list id="scopesRequiringNoConsent">
+        <value>openid</value>
+        <value>roles</value>
+    </util:list>
     <bean id="oidcAuthorizationService" class="org.apache.cxf.rs.security.oidc.idp.OidcAuthorizationCodeService">
          <property name="dataProvider" ref="oauthProvider"/>
          <property name="subjectCreator" ref="subjectCreator"/>
-         <property name="skipAuthorizationWithOidcScope" value="true"/>
+         <property name="scopesRequiringNoConsent" ref="scopesRequiringNoConsent"/>
          <!--
          <property name="useAllClientScopes" value="true"/>
          -->
@@ -60,7 +64,7 @@
     <bean id="oidcHybridService" class="org.apache.cxf.rs.security.oidc.idp.OidcHybridService">
          <property name="dataProvider" ref="oauthProvider"/>
          <property name="subjectCreator" ref="subjectCreator"/>
-         <property name="skipAuthorizationWithOidcScope" value="true"/>
+         <property name="scopesRequiringNoConsent" ref="scopesRequiringNoConsent"/>
          <property name="responseFilter" ref="idTokenFilter"/>
          <property name="codeService" ref="oidcAuthorizationService"/>
     </bean>
