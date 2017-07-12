@@ -36,6 +36,7 @@
         <module>oidcIdpWebapp</module>
         <module>wsfed</module>
         <module>samlsso</module>
+        <module>unknown-subject</module>
     </modules>
 
 </project>
