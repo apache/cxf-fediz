@@ -224,7 +224,7 @@
                                 <java.util.logging.config.file>${basedir}/target/test-classes/logging.properties</java.util.logging.config.file>
                             </systemPropertyVariables>
                             <includes>
-                                <include>**/integrationtests/**</include>
+                                <include>**/systests/**</include>
                             </includes>
                             <argLine>-Xms512m -Xmx1024m
                                 -XX:MaxPermSize=256m</argLine>
@@ -238,16 +238,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <inherited>true</inherited>
-                <configuration>
-                    <excludes>
-                        <exclude>**/integrationtests/**</exclude>
-                    </excludes>
-                </configuration>
             </plugin>
         </plugins>
     </build>

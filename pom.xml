@@ -551,6 +551,7 @@
                         <!-- do not exclude **/Abstract*Test.java **/Abstract*TestCase.java -->
                         <excludes>
                             <exclude>**/*$*</exclude>
+                            <exclude>**/systests/**</exclude>
                         </excludes>
                         <!--disableXmlReport>true</disableXmlReport-->
                         <runOrder>alphabetical</runOrder>

@@ -79,7 +79,7 @@
                 <ref bean="claim_email" />
             </util:list>
         </property>
-        <property name="hrds" value="T(org.apache.cxf.fediz.integrationtests.RealmMapper).realms()
+        <property name="hrds" value="T(org.apache.cxf.fediz.systests.federation.samlsso.RealmMapper).realms()
                                      .get(getFlowScope().get('saml_authn_request').issuer)" />
     </bean>
     

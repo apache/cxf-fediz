@@ -51,7 +51,7 @@
     </bean>
     
     <bean id="kerberosCallbackHandler" 
-          class="org.apache.cxf.fediz.integrationtests.KerberosServicePasswordCallback" />
+          class="org.apache.cxf.fediz.systests.kerberos.KerberosServicePasswordCallback" />
           
     <bean id="kerberosValidator" class="org.apache.wss4j.dom.validate.KerberosTokenValidator">
         <property name="contextName" value="bob"/>
