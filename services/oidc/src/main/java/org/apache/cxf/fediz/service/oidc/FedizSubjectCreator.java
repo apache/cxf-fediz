@@ -19,6 +19,7 @@
 package org.apache.cxf.fediz.service.oidc;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -38,8 +39,10 @@ import org.apache.cxf.fediz.core.FedizPrincipal;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.rs.security.oauth2.provider.OAuthServiceException;
 import org.apache.cxf.rs.security.oauth2.provider.SubjectCreator;
+import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 import org.apache.cxf.rs.security.oidc.common.IdToken;
 import org.apache.cxf.rs.security.oidc.idp.OidcUserSubject;
+import org.apache.cxf.rs.security.oidc.utils.OidcUtils;
 import org.apache.cxf.rt.security.crypto.CryptoUtils;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
@@ -49,7 +52,7 @@ import org.opensaml.saml.saml2.core.Issuer;
 
 
 public class FedizSubjectCreator implements SubjectCreator {
-
+    private static final String ROLES_SCOPE = "roles";
     private String issuer;
     private long defaultTimeToLive = 3600L;
     private Map<String, String> supportedClaims = Collections.emptyMap();
@@ -81,7 +84,7 @@ public class FedizSubjectCreator implements SubjectCreator {
                                            oidcSub.getId(),
                                            fedizPrincipal.getClaims(),
                                            fedizPrincipal.getRoleClaims(),
-                                           params.getFirst("claims"));
+                                           params);
         oidcSub.setIdToken(idToken);
         // UserInfo can be populated and set on OidcUserSubject too.
         // UserInfoService will create it otherwise.
@@ -95,7 +98,7 @@ public class FedizSubjectCreator implements SubjectCreator {
             String subjectId,
             ClaimCollection claims,
             List<String> roles,
-            String requestedClaims) {
+            MultivaluedMap<String, String> params) {
         // The current SAML Assertion represents an authentication record.
         // It has to be translated into IdToken (JWT) so that it can be returned
         // to client applications participating in various OIDC flows.
@@ -154,10 +157,24 @@ public class FedizSubjectCreator implements SubjectCreator {
             idToken.setExpiryTime(currentTimeInSecs + defaultTimeToLive);
         }
 
+        List<String> requestedClaimsList = new ArrayList<String>();
+        //Derive claims from scope
+        String requestedScope = params.getFirst(OAuthConstants.SCOPE);
+        if (requestedScope != null && !requestedScope.isEmpty()) {
+            String[] scopes = requestedScope.split(" ");
+            //TODO: Note that if the consent screen enabled then it is feasible
+            // that the claims added in this code after mapping the scopes to claims
+            // may need to be removed if the user disapproves the related scope
+            
+            // standard scope to claims mapping:
+            requestedClaimsList.addAll(OidcUtils.getScopeClaims(scopes));
+            // custom scopes to claims mapping
+            requestedClaimsList.addAll(getCustomScopeClaims(scopes));
+        }
         // Additional claims requested
-        List<String> requestedClaimsList = Collections.emptyList();
-        if (requestedClaims != null && !supportedClaims.isEmpty()) {
-            requestedClaimsList = Arrays.asList(requestedClaims.trim().split(" "));
+        String requestedClaims = params.getFirst("claims");
+        if (requestedClaims != null && !requestedClaims.isEmpty()) {
+            requestedClaimsList.addAll(Arrays.asList(requestedClaims.trim().split(" ")));
         }
 
         // Map claims
@@ -176,14 +193,6 @@ public class FedizSubjectCreator implements SubjectCreator {
                     lastName = (String)c.getValue();
                 } else if (ClaimTypes.EMAILADDRESS.equals(c.getClaimType())) {
                     idToken.setEmail((String)c.getValue());
-                } else if (ClaimTypes.DATEOFBIRTH.equals(c.getClaimType())) {
-                    idToken.setBirthDate((String)c.getValue());
-                } else if (ClaimTypes.HOMEPHONE.equals(c.getClaimType())) {
-                    idToken.setPhoneNumber((String)c.getValue());
-                } else if (ClaimTypes.GENDER.equals(c.getClaimType())) {
-                    idToken.setGender((String)c.getValue());
-                } else if (ClaimTypes.WEB_PAGE.equals(c.getClaimType())) {
-                    idToken.setWebsite((String)c.getValue());
                 } else if (supportedClaims.containsKey(c.getClaimType().toString())
                     && requestedClaimsList.contains(supportedClaims.get(c.getClaimType().toString()))) {
                     idToken.setClaim(supportedClaims.get(c.getClaimType().toString()), (String)c.getValue());
@@ -207,6 +216,18 @@ public class FedizSubjectCreator implements SubjectCreator {
         return idToken;
     }
 
+
+    private List<String> getCustomScopeClaims(String[] scopes) {
+        // For now the only custom scope (to claims) mapping Fediz supports is
+        // roles where the scope name is expected to be 'roles' and the role name must be configured
+        String roleClaimName = supportedClaims.get(FedizConstants.DEFAULT_ROLE_URI.toString());
+        if (roleClaimName != null && Arrays.asList(scopes).contains(ROLES_SCOPE)) {
+            return Collections.singletonList(roleClaimName);    
+        } else {
+            return Collections.emptyList();
+        }
+        
+    }
 
     private Assertion getSaml2Assertion(Element samlToken) {
         // Should a null assertion lead to the exception ?
