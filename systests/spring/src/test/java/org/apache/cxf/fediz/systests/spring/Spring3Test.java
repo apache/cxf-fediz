@@ -45,14 +45,6 @@ public class Spring3Test extends AbstractTests {
 
     @BeforeClass
     public static void init() throws Exception {
-        System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
-
-        System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
-
-        System.setProperty("org.apache.commons.logging.simplelog.log.httpclient.wire", "debug");
-
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.commons.httpclient", "debug");
-
         idpHttpsPort = System.getProperty("idp.https.port");
         Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
         rpHttpsPort = System.getProperty("rp.https.port");
