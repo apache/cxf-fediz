@@ -191,7 +191,6 @@ public class WSFedTest {
         final String bodyTextContent =
             login(url, user, password, getIdpRealmbHttpsPort(), idpHttpsPort);
 
-        System.out.println("CONTENT: " + bodyTextContent);
         // Test for "realm b" principal here
         Assert.assertTrue("Principal not ALICE",
                           bodyTextContent.contains("userPrincipal=ALICE"));
@@ -251,8 +250,6 @@ public class WSFedTest {
         url2 += "wtrealm=" + URLEncoder.encode(wtrealm, "UTF8") + "&";
         url2 += "wresult=" + URLEncoder.encode(wresult, "UTF8");
         
-        System.out.println("RES: " + wresult);
-
         webClient2.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage2 = webClient2.getPage(url2);
         webClient2.getOptions().setJavaScriptEnabled(true);
