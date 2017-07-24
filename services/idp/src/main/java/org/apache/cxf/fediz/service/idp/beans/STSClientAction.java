@@ -182,6 +182,10 @@ public class STSClientAction {
         throws Exception {
         
         SecurityToken idpToken = getSecurityToken(context, homeRealm);
+        if (idpToken == null || idpToken.getToken() == null) {
+            LOG.warn("No IdPToken is found");
+            throw new ProcessingException(TYPE.BAD_REQUEST);
+        }
 
         Bus cxfBus = getBus();
         Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(context, "idpConfig");
