@@ -86,6 +86,7 @@ public class FedizSubjectCreator implements SubjectCreator {
                                            fedizPrincipal.getRoleClaims(),
                                            params);
         oidcSub.setIdToken(idToken);
+        oidcSub.setRoles(fedizPrincipal.getRoleClaims());
         // UserInfo can be populated and set on OidcUserSubject too.
         // UserInfoService will create it otherwise.
 
