@@ -27,6 +27,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.cert.X509Certificate;
@@ -221,7 +222,7 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
         LOG.debug(requestMessage);
 
         DeflateEncoderDecoder encoder = new DeflateEncoderDecoder();
-        byte[] deflatedBytes = encoder.deflateToken(requestMessage.getBytes("UTF-8"));
+        byte[] deflatedBytes = encoder.deflateToken(requestMessage.getBytes(StandardCharsets.UTF_8));
 
         return Base64Utility.encode(deflatedBytes);
     }
@@ -275,7 +276,7 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
             + SSOConstants.RELAY_STATE + "=" + relayState + "&"
             + SSOConstants.SIG_ALG + "=" + URLEncoder.encode(sigAlgo, "UTF-8");
 
-        signature.update(requestToSign.getBytes("UTF-8"));
+        signature.update(requestToSign.getBytes(StandardCharsets.UTF_8));
         byte[] signBytes = signature.sign();
 
         String encodedSignature = Base64.encode(signBytes);
@@ -303,16 +304,12 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
                 throw ExceptionUtils.toBadRequestException(ex, null);
             }
         } else {
-            try {
-                tokenStream = new ByteArrayInputStream(samlResponseDecoded.getBytes("UTF-8"));
-            } catch (UnsupportedEncodingException ex) {
-                throw ExceptionUtils.toBadRequestException(ex, null);
-            }
+            tokenStream = new ByteArrayInputStream(samlResponseDecoded.getBytes(StandardCharsets.UTF_8));
         }
 
         Document responseDoc = null;
         try {
-            responseDoc = StaxUtils.read(new InputStreamReader(tokenStream, "UTF-8"));
+            responseDoc = StaxUtils.read(new InputStreamReader(tokenStream, StandardCharsets.UTF_8));
         } catch (Exception ex) {
             throw new WebApplicationException(400);
         }

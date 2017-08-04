@@ -19,6 +19,7 @@
 package org.apache.cxf.fediz.service.idp.beans.samlsso;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 
@@ -169,7 +170,7 @@ public class SamlResponseCreator {
 
         if (supportDeflateEncoding) {
             DeflateEncoderDecoder encoder = new DeflateEncoderDecoder();
-            byte[] deflatedBytes = encoder.deflateToken(responseMessage.getBytes("UTF-8"));
+            byte[] deflatedBytes = encoder.deflateToken(responseMessage.getBytes(StandardCharsets.UTF_8));
 
             return Base64Utility.encode(deflatedBytes);
         }

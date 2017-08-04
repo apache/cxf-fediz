@@ -181,7 +181,7 @@ public class AuthnRequestParser {
              ? new DeflateEncoderDecoder().inflateToken(deflatedToken)
                  : new ByteArrayInputStream(deflatedToken);
 
-        Document responseDoc = StaxUtils.read(new InputStreamReader(tokenStream, "UTF-8"));
+        Document responseDoc = StaxUtils.read(new InputStreamReader(tokenStream, StandardCharsets.UTF_8));
         AuthnRequest request =
             (AuthnRequest)OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
         if (LOG.isDebugEnabled()) {

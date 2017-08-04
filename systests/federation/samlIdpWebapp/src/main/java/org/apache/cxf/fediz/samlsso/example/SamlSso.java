@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.zip.DataFormatException;
 
@@ -172,9 +173,9 @@ public class SamlSso {
         byte[] deflatedBytes = null;
         if (redirect) {
             DeflateEncoderDecoder encoder = new DeflateEncoderDecoder();
-            deflatedBytes = encoder.deflateToken(responseMessage.getBytes("UTF-8"));
+            deflatedBytes = encoder.deflateToken(responseMessage.getBytes(StandardCharsets.UTF_8));
         } else {
-            deflatedBytes = responseMessage.getBytes("UTF-8");
+            deflatedBytes = responseMessage.getBytes(StandardCharsets.UTF_8);
         }
 
         return Base64Utility.encode(deflatedBytes);
@@ -186,7 +187,7 @@ public class SamlSso {
 
         InputStream tokenStream = new DeflateEncoderDecoder().inflateToken(deflatedToken);
 
-        Document responseDoc = StaxUtils.read(new InputStreamReader(tokenStream, "UTF-8"));
+        Document responseDoc = StaxUtils.read(new InputStreamReader(tokenStream, StandardCharsets.UTF_8));
         AuthnRequest request =
             (AuthnRequest)OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
         System.out.println(DOM2Writer.nodeToString(responseDoc));
@@ -196,7 +197,7 @@ public class SamlSso {
     protected javax.ws.rs.core.Response postBindingResponse(String relayState, String racs, String responseStr)
         throws IOException {
         InputStream inputStream = this.getClass().getResourceAsStream("/TemplateSAMLResponse.xml");
-        String responseTemplate = IOUtils.toString(inputStream, "UTF-8");
+        String responseTemplate = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
         inputStream.close();
 
         // Perform Redirect to RACS
