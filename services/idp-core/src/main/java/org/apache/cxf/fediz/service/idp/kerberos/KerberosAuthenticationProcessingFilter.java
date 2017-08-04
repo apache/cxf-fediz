@@ -34,6 +34,7 @@
 package org.apache.cxf.fediz.service.idp.kerberos;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -98,7 +99,7 @@ public class KerberosAuthenticationProcessingFilter extends GenericFilterBean {
             if (logger.isDebugEnabled()) {
                 logger.debug("Received Negotiate Header for request " + request.getRequestURL() + ": " + header);
             }
-            byte[] base64Token = header.substring(10).getBytes("UTF-8");
+            byte[] base64Token = header.substring(10).getBytes(StandardCharsets.UTF_8);
             byte[] kerberosTicket = Base64.decode(base64Token);
             KerberosServiceRequestToken authenticationRequest = new KerberosServiceRequestToken(kerberosTicket);
             authenticationRequest.setDetails(authenticationDetailsSource.buildDetails(request));

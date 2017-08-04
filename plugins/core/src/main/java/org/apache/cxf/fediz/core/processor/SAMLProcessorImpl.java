@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.security.Signature;
 import java.util.Date;
@@ -395,7 +396,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
         sb.append("&" + SAMLSSOConstants.SIG_ALG).append('=').append(URLEncoder.encode(sigAlgo, "UTF-8"));
         String requestToSign = sb.toString();
 
-        signature.update(requestToSign.getBytes("UTF-8"));
+        signature.update(requestToSign.getBytes(StandardCharsets.UTF_8));
         byte[] signBytes = signature.sign();
 
         String encodedSignature = Base64.encode(signBytes);
@@ -406,7 +407,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
     protected String encodeAuthnRequest(Element authnRequest) throws IOException {
         String requestMessage = DOM2Writer.nodeToString(authnRequest);
 
-        byte[] deflatedBytes = CompressionUtils.deflate(requestMessage.getBytes("UTF-8"));
+        byte[] deflatedBytes = CompressionUtils.deflate(requestMessage.getBytes(StandardCharsets.UTF_8));
 
         return Base64.encode(deflatedBytes);
     }

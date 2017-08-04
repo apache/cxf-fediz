@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -172,7 +173,7 @@ public class SAMLRequestTest {
         byte[] deflatedToken = Base64.decode(URLDecoder.decode(samlRequest, "UTF-8"));
         InputStream tokenStream = CompressionUtils.inflate(deflatedToken);
 
-        Document requestDoc = DOMUtils.readXml(new InputStreamReader(tokenStream, "UTF-8"));
+        Document requestDoc = DOMUtils.readXml(new InputStreamReader(tokenStream, StandardCharsets.UTF_8));
         AuthnRequest request =
             (AuthnRequest)OpenSAMLUtil.fromDom(requestDoc.getDocumentElement());
 
@@ -222,7 +223,7 @@ public class SAMLRequestTest {
         byte[] deflatedToken = Base64.decode(URLDecoder.decode(samlRequest, "UTF-8"));
         InputStream tokenStream = CompressionUtils.inflate(deflatedToken);
 
-        Document requestDoc = DOMUtils.readXml(new InputStreamReader(tokenStream, "UTF-8"));
+        Document requestDoc = DOMUtils.readXml(new InputStreamReader(tokenStream, StandardCharsets.UTF_8));
         LogoutRequest request =
             (LogoutRequest)OpenSAMLUtil.fromDom(requestDoc.getDocumentElement());
 

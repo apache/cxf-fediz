@@ -374,8 +374,20 @@ public class FederationAuthenticator extends FormAuthenticator {
     protected boolean checkUserAuthentication(Request request, HttpServletResponse response, FedizContext fedCtx) {
         // Have we already authenticated someone?
         Principal principal = request.getUserPrincipal();
+        Session session = request.getSessionInternal();
         // String ssoId = (String) request.getNote(Constants.REQ_SSOID_NOTE);
-        if (principal != null) {
+        if (principal != null && session != null) {
+            if (!session.isValid()) {
+                // Session has expired
+                LOG.warn("Session has expired. Clean up and redirect");
+
+                session.removeNote(FEDERATION_NOTE);
+                session.setPrincipal(null);
+                request.getSession().removeAttribute(SECURITY_TOKEN);
+
+                return false;
+            }
+
             LOG.debug("Already authenticated '{}'", principal.getName());
 
             // Associate the session with any existing SSO session
@@ -396,28 +408,23 @@ public class FederationAuthenticator extends FormAuthenticator {
 
     protected boolean validateToken(Request request, HttpServletResponse response, FedizContext fedConfig) {
         Session session = request.getSessionInternal();
-        if (session != null) {
-
-            FedizResponse wfRes = (FedizResponse)session.getNote(FEDERATION_NOTE);
-            Date tokenExpires = wfRes.getTokenExpires();
-            if (tokenExpires == null) {
-                LOG.debug("Token doesn't expire");
-                return true;
-            }
-
-            Date currentTime = new Date();
-            if (!currentTime.after(tokenExpires)) {
-                return true;
-            } else {
-                LOG.warn("Token already expired. Clean up and redirect");
-
-                session.removeNote(FEDERATION_NOTE);
-                session.setPrincipal(null);
-                request.getSession().removeAttribute(SECURITY_TOKEN);
-            }
-        } else {
-            LOG.debug("Session should not be null after authentication");
+        FedizResponse wfRes = (FedizResponse)session.getNote(FEDERATION_NOTE);
+        Date tokenExpires = wfRes.getTokenExpires();
+        if (tokenExpires == null) {
+            LOG.debug("Token doesn't expire");
+            return true;
         }
+
+        Date currentTime = new Date();
+        if (!currentTime.after(tokenExpires)) {
+            return true;
+        }
+
+        LOG.warn("Token already expired. Clean up and redirect");
+
+        session.removeNote(FEDERATION_NOTE);
+        session.setPrincipal(null);
+        request.getSession().removeAttribute(SECURITY_TOKEN);
         return false;
     }
 

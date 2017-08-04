@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -1379,7 +1380,7 @@ public class SAMLResponseTest {
     private String encodeResponse(Element response) throws IOException {
         String responseMessage = DOM2Writer.nodeToString(response);
 
-        byte[] deflatedBytes = CompressionUtils.deflate(responseMessage.getBytes("UTF-8"));
+        byte[] deflatedBytes = CompressionUtils.deflate(responseMessage.getBytes(StandardCharsets.UTF_8));
 
         return Base64.encode(deflatedBytes);
     }

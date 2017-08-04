@@ -26,6 +26,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
@@ -67,7 +68,7 @@ public class MetadataWriter {
     ) throws ProcessingException {
 
         try (ByteArrayOutputStream bout = new ByteArrayOutputStream(4096)) {
-            Writer streamWriter = new OutputStreamWriter(bout, "UTF-8");
+            Writer streamWriter = new OutputStreamWriter(bout, StandardCharsets.UTF_8);
             XMLStreamWriter writer = XML_OUTPUT_FACTORY.createXMLStreamWriter(streamWriter);
 
             Protocol protocol = config.getProtocol();
