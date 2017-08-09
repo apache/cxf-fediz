@@ -22,6 +22,7 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,9 +41,9 @@ import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.rs.security.oauth2.provider.OAuthServiceException;
 import org.apache.cxf.rs.security.oauth2.provider.SubjectCreator;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
+import org.apache.cxf.rs.security.oidc.common.AbstractUserInfo;
 import org.apache.cxf.rs.security.oidc.common.IdToken;
 import org.apache.cxf.rs.security.oidc.idp.OidcUserSubject;
-import org.apache.cxf.rs.security.oidc.utils.OidcUtils;
 import org.apache.cxf.rt.security.crypto.CryptoUtils;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
@@ -53,6 +54,39 @@ import org.opensaml.saml.saml2.core.Issuer;
 
 public class FedizSubjectCreator implements SubjectCreator {
     private static final String ROLES_SCOPE = "roles";
+
+    private static final String PROFILE_SCOPE = "profile";
+    private static final String EMAIL_SCOPE = "email";
+    private static final String ADDRESS_SCOPE = "address";
+    private static final String PHONE_SCOPE = "phone";
+    private static final List<String> PROFILE_CLAIMS = Arrays.asList(AbstractUserInfo.NAME_CLAIM,
+                                                                    AbstractUserInfo.FAMILY_NAME_CLAIM,
+                                                                    AbstractUserInfo.GIVEN_NAME_CLAIM,
+                                                                    AbstractUserInfo.MIDDLE_NAME_CLAIM,
+                                                                    AbstractUserInfo.NICKNAME_CLAIM,
+                                                                    AbstractUserInfo.PREFERRED_USERNAME_CLAIM,
+                                                                    AbstractUserInfo.PROFILE_CLAIM,
+                                                                    AbstractUserInfo.PICTURE_CLAIM,
+                                                                    AbstractUserInfo.WEBSITE_CLAIM,
+                                                                    AbstractUserInfo.GENDER_CLAIM,
+                                                                    AbstractUserInfo.BIRTHDATE_CLAIM,
+                                                                    AbstractUserInfo.ZONEINFO_CLAIM,
+                                                                    AbstractUserInfo.LOCALE_CLAIM,
+                                                                    AbstractUserInfo.UPDATED_AT_CLAIM);
+    private static final List<String> EMAIL_CLAIMS = Arrays.asList(AbstractUserInfo.EMAIL_CLAIM,
+                                                                  AbstractUserInfo.EMAIL_VERIFIED_CLAIM);
+    private static final List<String> ADDRESS_CLAIMS = Arrays.asList(AbstractUserInfo.ADDRESS_CLAIM);
+    private static final List<String> PHONE_CLAIMS = Arrays.asList(AbstractUserInfo.PHONE_CLAIM);
+
+    private static final Map<String, List<String>> SCOPES_MAP;
+    static {
+        SCOPES_MAP = new HashMap<>();
+        SCOPES_MAP.put(PHONE_SCOPE, PHONE_CLAIMS);
+        SCOPES_MAP.put(EMAIL_SCOPE, EMAIL_CLAIMS);
+        SCOPES_MAP.put(ADDRESS_SCOPE, ADDRESS_CLAIMS);
+        SCOPES_MAP.put(PROFILE_SCOPE, PROFILE_CLAIMS);
+    }
+
     private String issuer;
     private long defaultTimeToLive = 3600L;
     private Map<String, String> supportedClaims = Collections.emptyMap();
@@ -166,9 +200,9 @@ public class FedizSubjectCreator implements SubjectCreator {
             //TODO: Note that if the consent screen enabled then it is feasible
             // that the claims added in this code after mapping the scopes to claims
             // may need to be removed if the user disapproves the related scope
-            
+
             // standard scope to claims mapping:
-            requestedClaimsList.addAll(OidcUtils.getScopeClaims(scopes));
+            requestedClaimsList.addAll(getScopeClaims(scopes));
             // custom scopes to claims mapping
             requestedClaimsList.addAll(getCustomScopeClaims(scopes));
         }
@@ -205,16 +239,28 @@ public class FedizSubjectCreator implements SubjectCreator {
             }
         }
 
-        if (roles != null && !roles.isEmpty() 
+        if (roles != null && !roles.isEmpty()
             && supportedClaims.containsKey(FedizConstants.DEFAULT_ROLE_URI.toString())) {
-            
+
             String roleClaimName = supportedClaims.get(FedizConstants.DEFAULT_ROLE_URI.toString());
             if (requestedClaimsList.contains(roleClaimName)) {
                 idToken.setClaim(roleClaimName, roles);
-            }            
+            }
         }
 
         return idToken;
+    }
+
+    private static List<String> getScopeClaims(String... scope) {
+        List<String> claims = new ArrayList<>();
+        if (scope != null) {
+            for (String s : scope) {
+                if (SCOPES_MAP.containsKey(s)) {
+                    claims.addAll(SCOPES_MAP.get(s));
+                }
+            }
+        }
+        return claims;
     }
 
 
@@ -223,11 +269,11 @@ public class FedizSubjectCreator implements SubjectCreator {
         // roles where the scope name is expected to be 'roles' and the role name must be configured
         String roleClaimName = supportedClaims.get(FedizConstants.DEFAULT_ROLE_URI.toString());
         if (roleClaimName != null && Arrays.asList(scopes).contains(ROLES_SCOPE)) {
-            return Collections.singletonList(roleClaimName);    
+            return Collections.singletonList(roleClaimName);
         } else {
             return Collections.emptyList();
         }
-        
+
     }
 
     private Assertion getSaml2Assertion(Element samlToken) {
