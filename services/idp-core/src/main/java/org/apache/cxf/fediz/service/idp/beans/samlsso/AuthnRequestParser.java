@@ -131,6 +131,16 @@ public class AuthnRequestParser {
         }
 
         LOG.debug("No AuthnRequest available to be parsed");
+
+        Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(context, "idpConfig");
+        String realm = retrieveRealm(context);
+        Application serviceConfig = idpConfig.findApplication(realm);
+        if (serviceConfig != null) {
+            String racs = serviceConfig.getPassiveRequestorEndpoint();
+            LOG.debug("Attempting to use the configured passive requestor endpoint instead: {}", racs);
+            return racs;
+        }
+
         return null;
     }
 
