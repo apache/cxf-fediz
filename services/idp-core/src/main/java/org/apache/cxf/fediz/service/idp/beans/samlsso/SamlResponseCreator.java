@@ -66,6 +66,7 @@ public class SamlResponseCreator {
 
     private static final Logger LOG = LoggerFactory.getLogger(SamlResponseCreator.class);
     private boolean supportDeflateEncoding;
+    private boolean useRealmForIssuer;
 
     public String createSAMLResponse(RequestContext context, Idp idp, Element rpToken,
                                      String consumerURL, String requestId, String requestIssuer)
@@ -100,7 +101,8 @@ public class SamlResponseCreator {
                                            String remoteAddr, String racs) throws Exception {
         // Create an AuthenticationAssertion
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
-        callbackHandler.setIssuer(idp.getIdpUrl().toString());
+        String issuer = useRealmForIssuer ? idp.getRealm() : idp.getIdpUrl().toString();
+        callbackHandler.setIssuer(issuer);
         callbackHandler.setSubject(receivedToken.getSaml2().getSubject());
 
         // Test Subject against received Subject (if applicable)
@@ -153,8 +155,9 @@ public class SamlResponseCreator {
             SAML2PResponseComponentBuilder.createStatus(
                 "urn:oasis:names:tc:SAML:2.0:status:Success", null
             );
+        String issuer = useRealmForIssuer ? idp.getRealm() : idp.getIdpUrl().toString();
         Response response =
-            SAML2PResponseComponentBuilder.createSAMLResponse(requestID, idp.getIdpUrl().toString(), status);
+            SAML2PResponseComponentBuilder.createSAMLResponse(requestID, issuer, status);
 
         response.getAssertions().add(assertion);
 
@@ -184,5 +187,13 @@ public class SamlResponseCreator {
 
     public void setSupportDeflateEncoding(boolean supportDeflateEncoding) {
         this.supportDeflateEncoding = supportDeflateEncoding;
+    }
+
+    public boolean isUseRealmForIssuer() {
+        return useRealmForIssuer;
+    }
+
+    public void setUseRealmForIssuer(boolean useRealmForIssuer) {
+        this.useRealmForIssuer = useRealmForIssuer;
     }
 }
