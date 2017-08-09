@@ -63,15 +63,25 @@ public class MetadataServlet extends HttpServlet {
         Idp idpConfig = cs.getIDP(realm);
         try {
             if (request.getServletPath() != null && request.getServletPath().startsWith("/metadata")) {
-                String serviceRealm =
+                String parsedRealm =
                     request.getRequestURI().substring(request.getRequestURI().indexOf("/metadata")
                                                       + "/metadata".length());
-                if (serviceRealm != null && serviceRealm.charAt(0) == '/') {
-                    serviceRealm = serviceRealm.substring(1);
+                if (parsedRealm != null && !parsedRealm.isEmpty() && parsedRealm.charAt(0) == '/') {
+                    parsedRealm = parsedRealm.substring(1);
                 }
-                TrustedIdp trustedIdp = idpConfig.findTrustedIdp(serviceRealm);
+
+                // Default to writing out the metadata for the IdP
+                if (idpConfig.getRealm().equals(parsedRealm) || parsedRealm == null || parsedRealm.isEmpty()) {
+                    IdpMetadataWriter mw = new IdpMetadataWriter();
+                    Document metadata = mw.getMetaData(idpConfig);
+                    out.write(DOM2Writer.nodeToString(metadata));
+                    return;
+                }
+
+                // Otherwise try to find the metadata for the trusted third party IdP
+                TrustedIdp trustedIdp = idpConfig.findTrustedIdp(parsedRealm);
                 if (trustedIdp == null) {
-                    LOG.error("No TrustedIdp found for desired realm: " + serviceRealm);
+                    LOG.error("No TrustedIdp found for desired realm: " + parsedRealm);
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                     return;
                 }
