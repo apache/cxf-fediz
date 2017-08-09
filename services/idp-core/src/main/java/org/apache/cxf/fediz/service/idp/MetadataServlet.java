@@ -52,7 +52,6 @@ public class MetadataServlet extends HttpServlet {
     private ApplicationContext applicationContext;
     private String realm;
 
-
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException,
         IOException {
@@ -62,6 +61,8 @@ public class MetadataServlet extends HttpServlet {
         ConfigService cs = (ConfigService)getApplicationContext().getBean("config");
         Idp idpConfig = cs.getIDP(realm);
         try {
+            boolean isSamlRequest = request.getQueryString() != null
+                && request.getQueryString().contains("protocol=saml");
             if (request.getServletPath() != null && request.getServletPath().startsWith("/metadata")) {
                 String parsedRealm =
                     request.getRequestURI().substring(request.getRequestURI().indexOf("/metadata")
@@ -73,7 +74,7 @@ public class MetadataServlet extends HttpServlet {
                 // Default to writing out the metadata for the IdP
                 if (idpConfig.getRealm().equals(parsedRealm) || parsedRealm == null || parsedRealm.isEmpty()) {
                     IdpMetadataWriter mw = new IdpMetadataWriter();
-                    Document metadata = mw.getMetaData(idpConfig);
+                    Document metadata = mw.getMetaData(idpConfig, isSamlRequest);
                     out.write(DOM2Writer.nodeToString(metadata));
                     return;
                 }
@@ -92,7 +93,7 @@ public class MetadataServlet extends HttpServlet {
                 // Otherwise return the Metadata for the Idp
                 LOG.debug(idpConfig.toString());
                 IdpMetadataWriter mw = new IdpMetadataWriter();
-                Document metadata = mw.getMetaData(idpConfig);
+                Document metadata = mw.getMetaData(idpConfig, isSamlRequest);
                 out.write(DOM2Writer.nodeToString(metadata));
             }
         } catch (Exception ex) {
@@ -117,5 +118,7 @@ public class MetadataServlet extends HttpServlet {
         }
         return applicationContext;
     }
+
+
 
 }

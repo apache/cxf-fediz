@@ -37,6 +37,7 @@ import javax.servlet.ServletException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
@@ -47,6 +48,7 @@ import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNodeList;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleState;
@@ -68,10 +70,12 @@ import org.apache.wss4j.common.crypto.CryptoType;
 import org.apache.wss4j.common.saml.OpenSAMLUtil;
 import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.wss4j.dom.engine.WSSConfig;
+import org.apache.xml.security.signature.XMLSignature;
 import org.apache.xml.security.utils.Base64;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Test;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.saml.common.SAMLVersion;
 import org.opensaml.saml.common.SignableSAMLObject;
@@ -225,6 +229,40 @@ public class IdpTest {
 
     }
     */
+
+    @Test
+    public void testIdPMetadata() throws Exception {
+        String url = "https://localhost:" + getIdpHttpsPort()
+            + "/fediz-idp/metadata?protocol=saml";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getOptions().setSSLClientCertificate(
+            this.getClass().getClassLoader().getResource("client.jks"), "storepass", "jks");
+
+        final XmlPage rpPage = webClient.getPage(url);
+        final String xmlContent = rpPage.asXml();
+        Assert.assertTrue(xmlContent.startsWith("<md:EntityDescriptor"));
+
+        // Now validate the Signature
+        Document doc = rpPage.getXmlDocument();
+
+        doc.getDocumentElement().setIdAttributeNS(null, "ID", true);
+
+        Node signatureNode =
+            DOMUtils.getChild(doc.getDocumentElement(), "Signature");
+        Assert.assertNotNull(signatureNode);
+
+        XMLSignature signature = new XMLSignature((Element)signatureNode, "");
+        org.apache.xml.security.keys.KeyInfo ki = signature.getKeyInfo();
+        Assert.assertNotNull(ki);
+        Assert.assertNotNull(ki.getX509Certificate());
+
+        Assert.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
+
+        webClient.close();
+    }
+
     @org.junit.Test
     public void testSuccessfulInvokeOnIdP() throws Exception {
         OpenSAMLUtil.initSamlEngine();
