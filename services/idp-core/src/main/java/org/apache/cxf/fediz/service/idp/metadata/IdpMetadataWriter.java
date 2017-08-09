@@ -46,8 +46,11 @@ public class IdpMetadataWriter {
 
     private static final Logger LOG = LoggerFactory.getLogger(IdpMetadataWriter.class);
 
-    //CHECKSTYLE:OFF
-    public Document getMetaData(Idp config) throws RuntimeException {
+    public Document getMetaData(Idp config) {
+        return getMetaData(config, false);
+    }
+
+    public Document getMetaData(Idp config, boolean saml) {
         try {
             //Return as text/xml
             Crypto crypto = CertsUtils.getCryptoFromFile(config.getCertificate());
@@ -63,12 +66,13 @@ public class IdpMetadataWriter {
             writer.writeAttribute("entityID", config.getIdpUrl().toString());
 
             writer.writeNamespace("md", SAML2_METADATA_NS);
-            writer.writeNamespace("fed", WS_FEDERATION_NS);
-            writer.writeNamespace("wsa", WS_ADDRESSING_NS);
-            writer.writeNamespace("auth", WS_FEDERATION_NS);
             writer.writeNamespace("xsi", SCHEMA_INSTANCE_NS);
 
-            writeFederationMetadata(writer, config, crypto);
+            if (saml) {
+                writeSAMLSSOMetadata(writer, config, crypto);
+            } else {
+                writeFederationMetadata(writer, config, crypto);
+            }
 
             writer.writeEndElement(); // EntityDescriptor
 
@@ -101,13 +105,17 @@ public class IdpMetadataWriter {
         XMLStreamWriter writer, Idp config, Crypto crypto
     ) throws XMLStreamException {
 
+        writer.writeNamespace("fed", WS_FEDERATION_NS);
+        writer.writeNamespace("wsa", WS_ADDRESSING_NS);
+        writer.writeNamespace("auth", WS_FEDERATION_NS);
+
         writer.writeStartElement("md", "RoleDescriptor", WS_FEDERATION_NS);
         writer.writeAttribute(SCHEMA_INSTANCE_NS, "type", "fed:SecurityTokenServiceType");
         writer.writeAttribute("protocolSupportEnumeration", WS_FEDERATION_NS);
-        if (config.getServiceDescription() != null && config.getServiceDescription().length() > 0 ) {
+        if (config.getServiceDescription() != null && config.getServiceDescription().length() > 0) {
             writer.writeAttribute("ServiceDescription", config.getServiceDescription());
         }
-        if (config.getServiceDisplayName() != null && config.getServiceDisplayName().length() > 0 ) {
+        if (config.getServiceDisplayName() != null && config.getServiceDisplayName().length() > 0) {
             writer.writeAttribute("ServiceDisplayName", config.getServiceDisplayName());
         }
 
@@ -115,11 +123,12 @@ public class IdpMetadataWriter {
         //missing organization, contactperson
 
         //KeyDescriptor
-        writer.writeStartElement("", "KeyDescriptor", SAML2_METADATA_NS);
+        writer.writeStartElement("md", "KeyDescriptor", SAML2_METADATA_NS);
         writer.writeAttribute("use", "signing");
-        writer.writeStartElement("", "KeyInfo", "http://www.w3.org/2000/09/xmldsig#");
-        writer.writeStartElement("", "X509Data", "http://www.w3.org/2000/09/xmldsig#");
-        writer.writeStartElement("", "X509Certificate", "http://www.w3.org/2000/09/xmldsig#");
+        writer.writeStartElement("ds", "KeyInfo", "http://www.w3.org/2000/09/xmldsig#");
+        writer.writeNamespace("ds", "http://www.w3.org/2000/09/xmldsig#");
+        writer.writeStartElement("ds", "X509Data", "http://www.w3.org/2000/09/xmldsig#");
+        writer.writeStartElement("ds", "X509Certificate", "http://www.w3.org/2000/09/xmldsig#");
 
         try {
             String keyAlias = crypto.getDefaultX509Identifier();
@@ -176,5 +185,61 @@ public class IdpMetadataWriter {
         writer.writeEndElement(); // RoleDescriptor
     }
 
+    private void writeSAMLSSOMetadata(
+        XMLStreamWriter writer, Idp config, Crypto crypto
+    ) throws XMLStreamException {
+
+        writer.writeStartElement("md", "IDPSSODescriptor", SAML2_METADATA_NS);
+        writer.writeAttribute("WantAuthnRequestsSigned", "true");
+        writer.writeAttribute("protocolSupportEnumeration", "urn:oasis:names:tc:SAML:2.0:protocol");
+
+        //KeyDescriptor
+        writer.writeStartElement("md", "KeyDescriptor", SAML2_METADATA_NS);
+        writer.writeAttribute("use", "signing");
+        writer.writeStartElement("ds", "KeyInfo", "http://www.w3.org/2000/09/xmldsig#");
+        writer.writeNamespace("ds", "http://www.w3.org/2000/09/xmldsig#");
+        writer.writeStartElement("ds", "X509Data", "http://www.w3.org/2000/09/xmldsig#");
+        writer.writeStartElement("ds", "X509Certificate", "http://www.w3.org/2000/09/xmldsig#");
+
+        try {
+            String keyAlias = crypto.getDefaultX509Identifier();
+            X509Certificate cert = CertsUtils.getX509CertificateFromCrypto(crypto, keyAlias);
+            writer.writeCharacters(Base64.encode(cert.getEncoded()));
+        } catch (Exception ex) {
+            LOG.error("Failed to add certificate information to metadata. Metadata incomplete", ex);
+        }
+
+        writer.writeEndElement(); // X509Certificate
+        writer.writeEndElement(); // X509Data
+        writer.writeEndElement(); // KeyInfo
+        writer.writeEndElement(); // KeyDescriptor
+
+
+        writer.writeStartElement("md", "NameIDFormat", SAML2_METADATA_NS);
+        writer.writeCharacters("urn:oasis:names:tc:SAML:2.0:nameid-format:persistent");
+        writer.writeEndElement(); // NameIDFormat
+
+        writer.writeStartElement("md", "NameIDFormat", SAML2_METADATA_NS);
+        writer.writeCharacters("urn:oasis:names:tc:SAML:2.0:nameid-format:unspecified");
+        writer.writeEndElement(); // NameIDFormat
+
+        writer.writeStartElement("md", "NameIDFormat", SAML2_METADATA_NS);
+        writer.writeCharacters("urn:oasis:names:tc:SAML:2.0:nameid-format:emailAddress");
+        writer.writeEndElement(); // NameIDFormat
+
+        // SingleSignOnService
+        writer.writeStartElement("md", "SingleSignOnService", SAML2_METADATA_NS);
+        writer.writeAttribute("Binding", "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect");
+        writer.writeAttribute("Location", config.getIdpUrl().toString());
+        writer.writeEndElement(); // SingleSignOnService
+
+        // SingleSignOnService
+        writer.writeStartElement("md", "SingleSignOnService", SAML2_METADATA_NS);
+        writer.writeAttribute("Binding", "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
+        writer.writeAttribute("Location", config.getIdpUrl().toString());
+        writer.writeEndElement(); // SingleSignOnService
+
+        writer.writeEndElement(); // IDPSSODescriptor
+    }
 
 }
