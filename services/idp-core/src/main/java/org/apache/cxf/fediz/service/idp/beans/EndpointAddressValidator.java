@@ -46,7 +46,7 @@ public class EndpointAddressValidator {
         Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(context, "idpConfig");
         Application serviceConfig = idpConfig.findApplication(realm);
         if (serviceConfig == null) {
-            LOG.warn("No service config found for " + realm);
+            LOG.warn("No service config found for {}", realm);
             return false;
         }
 
@@ -66,7 +66,7 @@ public class EndpointAddressValidator {
 
         Application serviceConfig = idpConfig.findApplication(realm);
         if (serviceConfig == null) {
-            LOG.warn("No service config found for " + realm);
+            LOG.warn("No service config found for {}", realm);
             return false;
         }
 
