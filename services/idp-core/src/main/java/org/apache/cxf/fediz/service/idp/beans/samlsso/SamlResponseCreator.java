@@ -100,7 +100,7 @@ public class SamlResponseCreator {
                                            String remoteAddr, String racs) throws Exception {
         // Create an AuthenticationAssertion
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
-        callbackHandler.setIssuer(idp.getRealm());
+        callbackHandler.setIssuer(idp.getIdpUrl().toString());
         callbackHandler.setSubject(receivedToken.getSaml2().getSubject());
 
         // Test Subject against received Subject (if applicable)
@@ -154,7 +154,7 @@ public class SamlResponseCreator {
                 "urn:oasis:names:tc:SAML:2.0:status:Success", null
             );
         Response response =
-            SAML2PResponseComponentBuilder.createSAMLResponse(requestID, idp.getRealm(), status);
+            SAML2PResponseComponentBuilder.createSAMLResponse(requestID, idp.getIdpUrl().toString(), status);
 
         response.getAssertions().add(assertion);
 
