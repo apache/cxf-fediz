@@ -37,4 +37,8 @@
         <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0" />
     </bean>
 
+    <bean id="samlResponseCreator" class="org.apache.cxf.fediz.service.idp.beans.samlsso.SamlResponseCreator">
+        <property name="useRealmForIssuer" value="true"/>
+    </bean>
+
 </beans>
