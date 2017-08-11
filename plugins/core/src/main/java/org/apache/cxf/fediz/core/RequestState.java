@@ -52,14 +52,14 @@ public class RequestState implements Serializable {
                         String webAppDomain,
                         String state,
                         long createdAt) {
-        setTargetAddress(targetAddress);
-        setIdpServiceAddress(idpServiceAddress);
-        setRequestId(requestId);
-        setIssuerId(issuerId);
-        setWebAppContext(webAppContext);
-        setWebAppDomain(webAppDomain);
-        setState(state);
-        setCreatedAt(createdAt);
+        this.targetAddress = targetAddress;
+        this.idpServiceAddress = idpServiceAddress;
+        this.requestId = requestId;
+        this.issuerId = issuerId;
+        this.webAppContext = webAppContext;
+        this.webAppDomain = webAppDomain;
+        this.state = state;
+        this.createdAt = createdAt;
     }
 
 
