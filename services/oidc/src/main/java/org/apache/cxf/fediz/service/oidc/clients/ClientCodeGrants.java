@@ -29,7 +29,7 @@ public class ClientCodeGrants {
     private List<ServerAuthorizationCodeGrant> codeGrants = new LinkedList<ServerAuthorizationCodeGrant>();
     public ClientCodeGrants(Client c, List<ServerAuthorizationCodeGrant> codeGrants) {
         this.client = c;
-        this.setCodeGrants(codeGrants);
+        this.codeGrants = codeGrants;
     }
     public Client getClient() {
         return client;
