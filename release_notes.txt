@@ -1,4 +1,4 @@
-Apache CXF Fediz 1.4.0 Release Notes
+Apache CXF Fediz 1.4.1 Release Notes
 ------------------------------------
 
 1. Overview
@@ -64,6 +64,22 @@ N.A.
 
 
 8. Specific issues, features, and improvements fixed in this version
+
+Release Notes - CXF-Fediz - Version 1.4.1
+
+Bug
+
+    [FEDIZ-201] - Spring3 plugin does not include jars in the distribution
+    [FEDIZ-202] - OIDC war files are being included in the plugin directories in the distribution
+
+Improvement
+
+    [FEDIZ-205] - Support creating IdP Metadata for SAML SSO
+
+New Feature
+
+    [FEDIZ-203] - Support "roles" scope
+
 
 Release Notes - CXF-Fediz - Version 1.4.0
 
