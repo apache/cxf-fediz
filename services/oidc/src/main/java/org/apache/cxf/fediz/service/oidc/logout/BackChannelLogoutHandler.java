@@ -24,11 +24,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Logger;
 
 import javax.ws.rs.core.Form;
 
+import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.common.util.Base64UrlUtility;
 import org.apache.cxf.jaxrs.client.WebClient;
+import org.apache.cxf.jaxrs.utils.ExceptionUtils;
 import org.apache.cxf.rs.security.jose.jwt.JoseJwtProducer;
 import org.apache.cxf.rs.security.jose.jwt.JwtClaims;
 import org.apache.cxf.rs.security.jose.jwt.JwtToken;
@@ -40,6 +43,8 @@ import org.apache.cxf.rs.security.oidc.idp.OidcUserSubject;
 import org.apache.cxf.rt.security.crypto.CryptoUtils;
 
 public class BackChannelLogoutHandler extends JoseJwtProducer {
+    private static final Logger LOG = LogUtils.getL7dLogger(BackChannelLogoutHandler.class);
+
     private static final String BACK_CHANNEL_LOGOUT_URI = "backchannel_logout_uri";
     private static final String LOGOUT_TOKEN = "logout_token";
     private static final String EVENTS_PROPERTY = "events";
@@ -72,8 +77,8 @@ public class BackChannelLogoutHandler extends JoseJwtProducer {
 
     }
 
-    private void submitBackChannelLogoutRequest(Client client, OidcUserSubject subject,
-            IdToken idTokenHint, String uri) {
+    private void submitBackChannelLogoutRequest(final Client client, final OidcUserSubject subject,
+            final IdToken idTokenHint, final String uri) {
         // Application context is expected to contain HttpConduit HTTPS configuration
         final WebClient wc = WebClient.create(uri);
         IdToken idToken = idTokenHint != null ? idTokenHint : subject.getIdToken(); 
@@ -93,7 +98,9 @@ public class BackChannelLogoutHandler extends JoseJwtProducer {
                 try {
                     wc.form(new Form().param(LOGOUT_TOKEN, logoutToken));
                 } catch (Exception ex) {
-                    // nothing else can be done
+                    LOG.info(String.format("Back channel request to %s to log out %s from client %s has failed",
+                        uri, subject.getLogin(), client.getClientId()));
+                    LOG.fine(String.format("%s connection failure", ExceptionUtils.getStackTrace(ex)));
                 }
             }
         
