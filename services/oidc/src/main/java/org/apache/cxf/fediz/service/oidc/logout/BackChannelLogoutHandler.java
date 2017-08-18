@@ -100,7 +100,7 @@ public class BackChannelLogoutHandler extends JoseJwtProducer {
                 } catch (Exception ex) {
                     LOG.info(String.format("Back channel request to %s to log out %s from client %s has failed",
                         uri, subject.getLogin(), client.getClientId()));
-                    LOG.fine(String.format("%s connection failure", ExceptionUtils.getStackTrace(ex)));
+                    LOG.fine(String.format("%s request failure: %s", uri, ExceptionUtils.getStackTrace(ex)));
                 }
             }
         
