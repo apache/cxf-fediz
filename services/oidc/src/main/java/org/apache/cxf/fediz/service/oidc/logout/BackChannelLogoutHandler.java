@@ -88,8 +88,12 @@ public class BackChannelLogoutHandler extends JoseJwtProducer {
         claims.setAudience(client.getClientId());
         claims.setIssuedAt(System.currentTimeMillis() / 1000);
         claims.setTokenId(Base64UrlUtility.encode(CryptoUtils.generateSecureRandomBytes(16)));
-        claims.setProperty(EVENTS_PROPERTY, 
+        claims.setClaim(EVENTS_PROPERTY, 
                 Collections.singletonMap(BACK_CHANNEL_LOGOUT_EVENT, Collections.emptyMap()));
+        if (idToken.getName() != null) {
+            claims.setClaim(IdToken.NAME_CLAIM, idToken.getName());    
+        }
+        
         final String logoutToken = super.processJwt(new JwtToken(claims));
         executorService.submit(new Runnable() {
 
