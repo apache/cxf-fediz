@@ -30,7 +30,6 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.w3c.dom.Element;
 
-import org.apache.cxf.common.util.Base64UrlUtility;
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.ClaimTypes;
@@ -43,7 +42,6 @@ import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 import org.apache.cxf.rs.security.oidc.common.IdToken;
 import org.apache.cxf.rs.security.oidc.idp.OidcUserSubject;
 import org.apache.cxf.rs.security.oidc.utils.OidcUtils;
-import org.apache.cxf.rt.security.crypto.CryptoUtils;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.joda.time.DateTime;
@@ -72,11 +70,8 @@ public class FedizSubjectCreator implements SubjectCreator {
         OidcUserSubject oidcSub = new OidcUserSubject();
         oidcSub.setLogin(fedizPrincipal.getName());
 
-        // Subject ID - a locally unique and never reassigned identifier allocated to the end user
-        // REVISIT:
-        // Can it be allocated on per-session basis or is it something that is supposed to be created
-        // by the authentication system (IDP/STS) once and reported every time a given user signs in ?
-        oidcSub.setId(Base64UrlUtility.encode(CryptoUtils.generateSecureRandomBytes(16)));
+        // REVISIT: use fedizPrincipal.getId() to guarantee the uniqueness once FEDIZ-207 is resolved
+        oidcSub.setId(fedizPrincipal.getName());
 
         IdToken idToken = convertToIdToken(mc,
                                            fedizPrincipal.getLoginToken(),
