@@ -126,7 +126,7 @@ public class OIDCTest {
         httpsConnector.setPort(Integer.parseInt(port));
         httpsConnector.setSecure(true);
         httpsConnector.setScheme("https");
-        //httpsConnector.setAttribute("keyAlias", keyAlias);
+        httpsConnector.setAttribute("keyAlias", "mytomidpkey");
         httpsConnector.setAttribute("keystorePass", "tompass");
         httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
         httpsConnector.setAttribute("truststorePass", "tompass");
@@ -964,8 +964,8 @@ public class OIDCTest {
         webClient.close();
     }
 
-    
-    
+
+
     private static WebClient setupWebClient(String user, String password, String idpPort) {
         final WebClient webClient = new WebClient();
         webClient.getOptions().setUseInsecureSSL(true);

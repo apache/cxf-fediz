@@ -66,7 +66,7 @@ public class KerberosTest extends org.junit.Assert {
 
     private static Tomcat idpServer;
     private static Tomcat rpServer;
-    
+
     private static SimpleKdcServer kerbyServer;
 
     @BeforeClass
@@ -77,7 +77,7 @@ public class KerberosTest extends org.junit.Assert {
         Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
 
         WSSConfig.init();
-        
+
         String basedir = System.getProperty("basedir");
         if (basedir == null) {
             basedir = new File(".").getCanonicalPath();
@@ -130,7 +130,7 @@ public class KerberosTest extends org.junit.Assert {
         httpsConnector.setPort(Integer.parseInt(port));
         httpsConnector.setSecure(true);
         httpsConnector.setScheme("https");
-        //httpsConnector.setAttribute("keyAlias", keyAlias);
+        httpsConnector.setAttribute("keyAlias", "mytomidpkey");
         httpsConnector.setAttribute("keystorePass", "tompass");
         httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
         httpsConnector.setAttribute("truststorePass", "tompass");
