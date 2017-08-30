@@ -104,8 +104,8 @@ public class FedizSubjectCreator implements SubjectCreator {
         OidcUserSubject oidcSub = new OidcUserSubject();
         oidcSub.setLogin(fedizPrincipal.getName());
 
-        // REVISIT: use fedizPrincipal.getId() to guarantee the uniqueness once FEDIZ-207 is resolved
-        oidcSub.setId(fedizPrincipal.getName());
+        String principalId = fedizPrincipal.getId();
+        oidcSub.setId(principalId != null ? principalId : fedizPrincipal.getName());
 
         IdToken idToken = convertToIdToken(mc,
                                            fedizPrincipal.getLoginToken(),

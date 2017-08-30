@@ -22,6 +22,7 @@ package org.apache.cxf.fediz.spring.authentication;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import org.w3c.dom.Element;
 import org.apache.cxf.fediz.core.ClaimCollection;
@@ -39,6 +40,7 @@ public class FederationAuthenticationToken extends AbstractAuthenticationToken
 
     private static final long serialVersionUID = 1L;
 
+    private String principalId;
     private final Object credentials;
     private final Object principal;
     private final UserDetails userDetails;
@@ -64,6 +66,7 @@ public class FederationAuthenticationToken extends AbstractAuthenticationToken
         if (response.getRoles() != null) {
             this.roles = response.getRoles();
         }
+        principalId = UUID.randomUUID().toString();
     }
 
     public Object getCredentials() {
@@ -103,5 +106,10 @@ public class FederationAuthenticationToken extends AbstractAuthenticationToken
 
     public List<String> getRoleClaims() {
         return Collections.unmodifiableList(roles);
+    }
+
+    @Override
+    public String getId() {
+        return principalId;
     }
 }
