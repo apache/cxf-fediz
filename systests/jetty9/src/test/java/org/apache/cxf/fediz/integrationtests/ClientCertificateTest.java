@@ -111,7 +111,7 @@ public class ClientCertificateTest extends AbstractClientCertTests {
             httpsConnector.setPort(Integer.parseInt(idpHttpsPort));
             httpsConnector.setSecure(true);
             httpsConnector.setScheme("https");
-            //httpsConnector.setAttribute("keyAlias", keyAlias);
+            httpsConnector.setAttribute("keyAlias", "mytomidpkey");
             httpsConnector.setAttribute("keystorePass", "tompass");
             httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
             httpsConnector.setAttribute("truststorePass", "tompass");
