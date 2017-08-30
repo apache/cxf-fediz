@@ -51,7 +51,7 @@ import org.junit.BeforeClass;
  * This is a test for federation using a WS-Federation enabled web application. The web application is configured
  * to use a different realm to that of the IdP. The IdP then redirects to a third party IdP for authentication.
  * The subject of the trusted third party IdP is not known to the local STS of "realm A" however. Normally this
- * would result in failure, however the STS is configured to allow unknown principals for the realm of this 
+ * would result in failure, however the STS is configured to allow unknown principals for the realm of this
  * specific TTP IdP.
  */
 public class WSFedTest {
@@ -113,7 +113,7 @@ public class WSFedTest {
         httpsConnector.setPort(Integer.parseInt(port));
         httpsConnector.setSecure(true);
         httpsConnector.setScheme("https");
-        //httpsConnector.setAttribute("keyAlias", keyAlias);
+        httpsConnector.setAttribute("keyAlias", "mytomidpkey");
         httpsConnector.setAttribute("keystorePass", "tompass");
         httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
         httpsConnector.setAttribute("truststorePass", "tompass");
@@ -188,7 +188,7 @@ public class WSFedTest {
     public String getServletContextName() {
         return "fedizhelloworld";
     }
-    
+
     @org.junit.Test
     public void testWSFederationUnknownSubject() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/wsfed/secure/fedservlet";
@@ -196,7 +196,7 @@ public class WSFedTest {
         // Thread.sleep(60 * 2 * 1000);
         String user = "ALICE";  // realm b credentials
         String password = "ECILA";
-        
+
         final String bodyTextContent =
             login(url, user, password, getIdpRealmbHttpsPort(), idpHttpsPort);
 
@@ -258,7 +258,7 @@ public class WSFedTest {
         url2 += "wa=" + wa + "&";
         url2 += "wtrealm=" + URLEncoder.encode(wtrealm, "UTF8") + "&";
         url2 += "wresult=" + URLEncoder.encode(wresult, "UTF8");
-        
+
         webClient2.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage2 = webClient2.getPage(url2);
         webClient2.getOptions().setJavaScriptEnabled(true);
