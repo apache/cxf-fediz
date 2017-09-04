@@ -60,7 +60,7 @@
         <jetty8.version>8.1.22.v20160922</jetty8.version>
         <jetty9.version>9.3.9.v20160517</jetty9.version>
         <junit.version>4.12</junit.version>
-        <kerby.version>1.0.0</kerby.version>
+        <kerby.version>1.0.1</kerby.version>
         <log4j.version>1.2.17</log4j.version>
         <openjpa.version>2.4.2</openjpa.version>
         <servlet.version>2.5</servlet.version>
@@ -69,7 +69,7 @@
         <spring.security.version>4.2.3.RELEASE</spring.security.version>
         <tomcat7.version>7.0.81</tomcat7.version>
         <tomcat8.version>8.5.20</tomcat8.version>
-        <wss4j.version>2.1.10</wss4j.version>
+        <wss4j.version>2.1.11</wss4j.version>
 
         <tomcat.url>http://localhost:8080/manager/text</tomcat.url>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
