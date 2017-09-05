@@ -21,7 +21,6 @@ package org.apache.cxf.fediz.jetty9;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 import org.w3c.dom.Element;
 
@@ -30,7 +29,6 @@ import org.apache.cxf.fediz.core.FedizPrincipal;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
 
 public class FederationUserPrincipal implements FedizPrincipal {
-    private String principalId;
     private String name;
     private ClaimCollection claims;
     private FedizResponse response;
@@ -43,7 +41,6 @@ public class FederationUserPrincipal implements FedizPrincipal {
         if (response.getRoles() != null) {
             this.roles = response.getRoles();
         }
-        principalId = UUID.randomUUID().toString();
     }
 
     @Override
@@ -72,8 +69,4 @@ public class FederationUserPrincipal implements FedizPrincipal {
         return Collections.unmodifiableList(roles);
     }
 
-    @Override
-    public String getId() {
-        return principalId;
-    }
 }

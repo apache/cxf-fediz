@@ -92,12 +92,7 @@ public class TestSigninHandler extends SigninHandler<FedizPrincipal> {
             return roles;
         }
 
-        @Override
-        public String getId() {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
+ 
     }
 
 }

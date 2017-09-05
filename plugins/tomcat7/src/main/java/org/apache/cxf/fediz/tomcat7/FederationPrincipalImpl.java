@@ -21,7 +21,6 @@ package org.apache.cxf.fediz.tomcat7;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 import org.w3c.dom.Element;
 import org.apache.catalina.realm.GenericPrincipal;
@@ -31,7 +30,6 @@ import org.apache.cxf.fediz.core.FedizPrincipal;
 
 public class FederationPrincipalImpl extends GenericPrincipal implements FedizPrincipal {
 
-    protected String principalId;
     protected ClaimCollection claims;
     protected Element loginToken;
     private List<String> roles = Collections.emptyList();
@@ -44,7 +42,6 @@ public class FederationPrincipalImpl extends GenericPrincipal implements FedizPr
         if (roles != null) {
             this.roles = roles;
         }
-        principalId = UUID.randomUUID().toString();
     }
 
     public ClaimCollection getClaims() {
@@ -58,10 +55,6 @@ public class FederationPrincipalImpl extends GenericPrincipal implements FedizPr
 
     public List<String> getRoleClaims() {
         return Collections.unmodifiableList(roles);
-    }
-
-    public String getId() {
-        return principalId;
     }
 
 }

@@ -20,7 +20,6 @@ package org.apache.cxf.fediz.cxf.plugin;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 import org.w3c.dom.Element;
 import org.apache.cxf.fediz.core.Claim;
@@ -29,7 +28,6 @@ import org.apache.cxf.fediz.core.FedizPrincipal;
 
 public class CXFFedizPrincipal implements FedizPrincipal {
 
-    private String principalId;
     private final String subject;
     private final List<Claim> claims;
     private Element token;
@@ -43,7 +41,6 @@ public class CXFFedizPrincipal implements FedizPrincipal {
         if (roles != null) {
             this.roles = roles;
         }
-        principalId = UUID.randomUUID().toString();
     }
 
     @Override
@@ -65,8 +62,4 @@ public class CXFFedizPrincipal implements FedizPrincipal {
         return Collections.unmodifiableList(roles);
     }
 
-    @Override
-    public String getId() {
-        return principalId;
-    }
 }

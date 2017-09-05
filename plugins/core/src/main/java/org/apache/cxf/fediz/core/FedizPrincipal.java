@@ -32,5 +32,4 @@ public interface FedizPrincipal extends Principal {
 
     List<String> getRoleClaims();
 
-    String getId();
 }
