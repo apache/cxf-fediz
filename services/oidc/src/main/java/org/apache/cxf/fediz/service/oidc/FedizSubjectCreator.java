@@ -18,6 +18,7 @@
  */
 package org.apache.cxf.fediz.service.oidc;
 
+import java.net.URI;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,6 +52,7 @@ import org.opensaml.saml.saml2.core.Issuer;
 
 public class FedizSubjectCreator implements SubjectCreator {
     private static final String ROLES_SCOPE = "roles";
+    private boolean stripPathFromIssuerUri;
     private String issuer;
     private long defaultTimeToLive = 3600L;
     private Map<String, String> supportedClaims = Collections.emptyMap();
@@ -133,7 +135,17 @@ public class FedizSubjectCreator implements SubjectCreator {
             String realIssuer = null;
             if (issuer.startsWith("/")) {
                 UriBuilder ub = mc.getUriInfo().getBaseUriBuilder();
-                realIssuer = ub.path(issuer).build().toString();
+                URI uri = ub.path(issuer).build();
+                if (this.stripPathFromIssuerUri) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(uri.getScheme()).append("://").append(uri.getHost());
+                    if (uri.getPort() != -1) {
+                        sb.append(':').append(uri.getPort());
+                    }
+                    realIssuer = sb.toString();
+                } else {
+                    realIssuer = uri.toString();
+                }
             } else {
                 realIssuer = issuer;
             }
@@ -255,6 +267,10 @@ public class FedizSubjectCreator implements SubjectCreator {
      */
     public void setSupportedClaims(Map<String, String> supportedClaims) {
         this.supportedClaims = supportedClaims;
+    }
+
+    public void setStripPathFromIssuerUri(boolean stripPathFromIssuerUri) {
+        this.stripPathFromIssuerUri = stripPathFromIssuerUri;
     }
 
 }
