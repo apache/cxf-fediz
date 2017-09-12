@@ -1,4 +1,4 @@
-Apache CXF Fediz 1.4.1 Release Notes
+Apache CXF Fediz 1.4.2 Release Notes
 ------------------------------------
 
 1. Overview
@@ -64,6 +64,13 @@ N.A.
 
 
 8. Specific issues, features, and improvements fixed in this version
+
+Release Notes - CXF-Fediz - Version 1.4.2
+
+Improvement
+
+    [FEDIZ-206] - Revert FedizSubjectCreator changes
+    [FEDIZ-209] - Make FedizResponse properly serializable
 
 Release Notes - CXF-Fediz - Version 1.4.1
 
