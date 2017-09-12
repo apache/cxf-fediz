@@ -240,8 +240,7 @@
                             <includes>
                                 <include>**/systests/**</include>
                             </includes>
-                            <argLine>-Xms512m -Xmx1024m
-                                -XX:MaxPermSize=256m</argLine>
+                            <argLine>-Xms512m -Xmx1024m</argLine>
                         </configuration>
                     </execution>
                     <execution>

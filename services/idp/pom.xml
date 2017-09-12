@@ -301,7 +301,6 @@
                             <includes>
                                 <include>**/integrationtests/**</include>
                             </includes>
-                            <argLine>-XX:MaxPermSize=512M</argLine>
                         </configuration>
                     </execution>
                     <execution>

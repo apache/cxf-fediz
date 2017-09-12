@@ -193,7 +193,6 @@
                             <includes>
                                 <include>**/systests/**</include>
                             </includes>
-                            <argLine>-XX:MaxPermSize=512M</argLine>
                         </configuration>
                     </execution>
                     <execution>
