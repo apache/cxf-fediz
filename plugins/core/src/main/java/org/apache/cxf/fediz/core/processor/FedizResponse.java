@@ -19,14 +19,24 @@
 
 package org.apache.cxf.fediz.core.processor;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.io.StringReader;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
+
 import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 import org.apache.cxf.fediz.core.Claim;
+import org.apache.cxf.fediz.core.util.DOMUtils;
+import org.apache.wss4j.common.util.DOM2Writer;
 
 public class FedizResponse implements Serializable {
 
@@ -38,6 +48,7 @@ public class FedizResponse implements Serializable {
     private String issuer;
     private List<Claim> claims;
     private transient Element token;
+    private String tokenStr;
     private String uniqueTokenId;
 
     /**
@@ -116,5 +127,19 @@ public class FedizResponse implements Serializable {
         return token;
     }
 
+    private void writeObject(ObjectOutputStream stream) throws IOException {
+        if (token != null && tokenStr == null) {
+            tokenStr = DOM2Writer.nodeToString(token);
+        }
+        stream.defaultWriteObject();
+    }
 
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException,
+        XMLStreamException, SAXException, ParserConfigurationException {
+        in.defaultReadObject();
+
+        if (token == null && tokenStr != null) {
+            token = DOMUtils.readXml(new StringReader(tokenStr)).getDocumentElement();
+        }
+    }
 }
