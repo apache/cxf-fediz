@@ -86,6 +86,37 @@
     </dependencies>
 
     <build>
+        <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
+        <testSourceDirectory>${basedir}/src/test/java</testSourceDirectory>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+        </resources>
+        <testResources>
+            <testResource>
+                <directory>src/test/java</directory>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -183,31 +214,18 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.mortbay.jetty</groupId>
+                <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <version>8.1.16.v20140903</version>
+                <version>${jetty9.version}</version>
                 <inherited>true</inherited>
                 <configuration>
                     <webApp>
                         <contextPath>/fediz-idp-sts</contextPath>
                     </webApp>
-                    <scanIntervalSeconds>0</scanIntervalSeconds>
-                    <connectors>
-                        <connector implementation="org.eclipse.jetty.server.ssl.SslSelectChannelConnector">
-                            <port>${sts.https.port}</port>
-                            <maxIdleTime>60000</maxIdleTime>
-                            <keystore>${project.build.directory}/test-classes/jetty-ssl.keystore</keystore>
-                            <password>jettypw</password>
-                            <keyPassword>jettypw</keyPassword>
-                            <truststore>${project.build.directory}/test-classes/jetty-ssl.keystore</truststore>
-                            <trustPassword>jettypw</trustPassword>
-                            <wantClientAuth>true</wantClientAuth>
-                        </connector>
-                    </connectors>
+                    <jettyXml>${project.build.directory}/test-classes/jetty.xml,${project.build.directory}/test-classes/jetty-ssl-context.xml,
+                    ${project.build.directory}/test-classes/jetty-ssl.xml,${project.build.directory}/test-classes/jetty-https.xml</jettyXml>
                     <stopPort>${jetty.port}</stopPort>
                     <stopKey>STOP</stopKey>
-                    <systemProperties>
-                    </systemProperties>
                     <skip>${skipTests}</skip>
                 </configuration>
                 <executions>

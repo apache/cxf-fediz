@@ -74,6 +74,21 @@
                 </excludes>
             </resource>
         </resources>
+        <testResources>
+            <testResource>
+                <directory>src/test/java</directory>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
         <plugins>
             <plugin>
                 <!--for mvn tomcat:deploy/:undeploy/:redeploy -->
@@ -193,7 +208,6 @@
                         <configuration>
                             <portNames>
                                 <portName>idp.https.port</portName>
-                                <portName>idp.http.port</portName>
                                 <portName>idp.stop.port</portName>
                             </portNames>
                         </configuration>
@@ -221,33 +235,23 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.mortbay.jetty</groupId>
+                <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <version>8.1.16.v20140903</version>
+                <version>${jetty9.version}</version>
+                <inherited>true</inherited>
                 <configuration>
                     <skip>${skipTests}</skip>
                     <stopPort>${idp.stop.port}</stopPort>
                     <stopKey>STOP</stopKey>
-                    <connectors>
-                        <connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
-                            <port>${idp.http.port}</port>
-                            <maxIdleTime>30000</maxIdleTime>
-                        </connector>
-                        <connector implementation="org.eclipse.jetty.server.ssl.SslSelectChannelConnector">
-                            <port>${idp.https.port}</port>
-                            <maxIdleTime>30000</maxIdleTime>
-                            <keystore>${basedir}/../../examples/samplekeys/idp-ssl-key.jks</keystore>
-                            <keyPassword>tompass</keyPassword>
-                            <password>tompass</password>
-                        </connector>
-                    </connectors>
+                    <jettyXml>${project.build.directory}/test-classes/jetty.xml,${project.build.directory}/test-classes/jetty-ssl-context.xml,
+                    ${project.build.directory}/test-classes/jetty-ssl.xml,${project.build.directory}/test-classes/jetty-https.xml</jettyXml>
                     <contextHandlers>
-                        <contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
+                        <contextHandler implementation="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
                             <war>${basedir}/target/fediz-idp-sts.war</war>
                             <contextPath>/fediz-idp-sts</contextPath>
                             <throwUnavailableOnStartupException>false</throwUnavailableOnStartupException>
                         </contextHandler>
-                        <contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
+                        <contextHandler implementation="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
                             <war>${basedir}/target/fediz-idp.war</war>
                             <contextPath>/fediz-idp</contextPath>
                         </contextHandler>
@@ -258,7 +262,7 @@
                         <id>start-jetty</id>
                         <phase>pre-integration-test</phase>
                         <goals>
-                            <goal>run-war</goal>
+                            <goal>deploy-war</goal>
                         </goals>
                         <configuration>
                             <scanIntervalSeconds>0</scanIntervalSeconds>
@@ -348,7 +352,6 @@
             <properties>
                 <jpa.url>jdbc:hsqldb:target/db/realma/myDB;shutdown=true</jpa.url>
                 <idp.https.port>9443</idp.https.port>
-                <idp.http.port>9080</idp.http.port>
                 <realm>realm-a</realm>
             </properties>
             <build>
@@ -357,11 +360,11 @@
                 </filters>
                 <plugins>
                     <plugin>
-                        <groupId>org.mortbay.jetty</groupId>
+                        <groupId>org.eclipse.jetty</groupId>
                         <artifactId>jetty-maven-plugin</artifactId>
                         <configuration>
                             <contextHandlers>
-                                <contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
+                                <contextHandler implementation="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
                                     <war>${basedir}/target/fediz-idp.war</war>
                                     <contextPath>/fediz-idp</contextPath>
                                 </contextHandler>
@@ -376,7 +379,6 @@
             <properties>
                 <jpa.url>jdbc:hsqldb:target/db/realmb/myDB;shutdown=true</jpa.url>
                 <idp.https.port>12346</idp.https.port>
-                <idp.http.port>12345</idp.http.port>
                 <realm>realm-b</realm>
             </properties>
             <build>
@@ -385,11 +387,11 @@
                 </filters>
                 <plugins>
                     <plugin>
-                        <groupId>org.mortbay.jetty</groupId>
+                        <groupId>org.eclipse.jetty</groupId>
                         <artifactId>jetty-maven-plugin</artifactId>
                         <configuration>
                             <contextHandlers>
-                                <contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
+                                <contextHandler implementation="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
                                     <war>${basedir}/target/fediz-idp-remote.war</war>
                                     <contextPath>/fediz-idp-remote</contextPath>
                                 </contextHandler>
@@ -444,11 +446,11 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>org.mortbay.jetty</groupId>
+                        <groupId>org.eclipse.jetty</groupId>
                         <artifactId>jetty-maven-plugin</artifactId>
                         <configuration>
                             <contextHandlers combine.children="append">
-                                <contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
+                                <contextHandler implementation="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
                                     <war>${basedir}/target/fediz-idp-sts.war</war>
                                     <contextPath>/fediz-idp-sts</contextPath>
                                 </contextHandler>
