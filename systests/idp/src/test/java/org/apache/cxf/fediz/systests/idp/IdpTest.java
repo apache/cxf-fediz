@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
+import java.util.Base64;
 
 import javax.servlet.ServletException;
 
@@ -52,7 +53,6 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.wss4j.dom.engine.WSSConfig;
 import org.apache.xml.security.keys.KeyInfo;
 import org.apache.xml.security.signature.XMLSignature;
-import org.apache.xml.security.utils.Base64;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -204,7 +204,8 @@ public class IdpTest {
 
         final WebClient webClient = new WebClient();
         webClient.getOptions().setUseInsecureSSL(true);
-        webClient.addRequestHeader("Authorization", "Basic " + Base64.encode((user + ":" + password).getBytes()));
+        webClient.addRequestHeader("Authorization", "Basic "
+            + Base64.getEncoder().encodeToString((user + ":" + password).getBytes()));
 
         //
         // First invocation
@@ -233,7 +234,8 @@ public class IdpTest {
         //
 
         webClient.removeRequestHeader("Authorization");
-        webClient.addRequestHeader("Authorization", "Basic " + Base64.encode(("mallory" + ":" + password).getBytes()));
+        webClient.addRequestHeader("Authorization", "Basic "
+            + Base64.getEncoder().encodeToString(("mallory" + ":" + password).getBytes()));
 
         webClient.getOptions().setJavaScriptEnabled(false);
         idpPage = webClient.getPage(url);

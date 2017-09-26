@@ -59,7 +59,6 @@ import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
-import org.apache.xml.security.exceptions.Base64DecodingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -267,8 +266,7 @@ public class TrustedIdpOIDCProtocolHandler extends AbstractTrustedIdpOAuth2Proto
     }
 
     private boolean validateSignature(TrustedIdp trustedIdp, JwsJwtCompactConsumer jwtConsumer)
-        throws CertificateException, WSSecurityException, Base64DecodingException,
-            ProcessingException, IOException {
+        throws CertificateException, WSSecurityException, ProcessingException, IOException {
 
         // Validate the Signature
         String sigAlgo = getProperty(trustedIdp, SIGNATURE_ALGORITHM);

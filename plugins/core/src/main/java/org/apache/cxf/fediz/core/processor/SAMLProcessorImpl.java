@@ -26,6 +26,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.security.Signature;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -58,8 +59,6 @@ import org.apache.wss4j.common.saml.OpenSAMLUtil;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.wss4j.dom.WSConstants;
-import org.apache.xml.security.exceptions.Base64DecodingException;
-import org.apache.xml.security.utils.Base64;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.AuthnRequest;
@@ -128,15 +127,13 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
 
         InputStream tokenStream = null;
         try {
-            byte[] deflatedToken = Base64.decode(request.getResponseToken());
+            byte[] deflatedToken = Base64.getDecoder().decode(request.getResponseToken());
             if (protocol.isDisableDeflateEncoding()) {
                 tokenStream = new ByteArrayInputStream(deflatedToken);
             } else {
                 tokenStream = CompressionUtils.inflate(deflatedToken);
             }
         } catch (DataFormatException ex) {
-            throw new ProcessingException(TYPE.INVALID_REQUEST);
-        } catch (Base64DecodingException e) {
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
 
@@ -399,7 +396,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
         signature.update(requestToSign.getBytes(StandardCharsets.UTF_8));
         byte[] signBytes = signature.sign();
 
-        String encodedSignature = Base64.encode(signBytes);
+        String encodedSignature = Base64.getEncoder().encodeToString(signBytes);
 
         return URLEncoder.encode(encodedSignature, "UTF-8");
     }
@@ -409,7 +406,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
 
         byte[] deflatedBytes = CompressionUtils.deflate(requestMessage.getBytes(StandardCharsets.UTF_8));
 
-        return Base64.encode(deflatedBytes);
+        return Base64.getEncoder().encodeToString(deflatedBytes);
     }
 
     @Override

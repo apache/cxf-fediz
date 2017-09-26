@@ -20,6 +20,7 @@
 package org.apache.cxf.fediz.service.idp.metadata;
 
 import java.security.cert.X509Certificate;
+import java.util.Base64;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -33,7 +34,6 @@ import org.apache.cxf.staxutils.W3CDOMStreamWriter;
 import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.xml.security.stax.impl.util.IDGenerator;
-import org.apache.xml.security.utils.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -133,7 +133,7 @@ public class IdpMetadataWriter {
         try {
             String keyAlias = crypto.getDefaultX509Identifier();
             X509Certificate cert = CertsUtils.getX509CertificateFromCrypto(crypto, keyAlias);
-            writer.writeCharacters(Base64.encode(cert.getEncoded()));
+            writer.writeCharacters(Base64.getEncoder().encodeToString(cert.getEncoded()));
         } catch (Exception ex) {
             LOG.error("Failed to add certificate information to metadata. Metadata incomplete", ex);
         }
@@ -204,7 +204,7 @@ public class IdpMetadataWriter {
         try {
             String keyAlias = crypto.getDefaultX509Identifier();
             X509Certificate cert = CertsUtils.getX509CertificateFromCrypto(crypto, keyAlias);
-            writer.writeCharacters(Base64.encode(cert.getEncoded()));
+            writer.writeCharacters(Base64.getEncoder().encodeToString(cert.getEncoded()));
         } catch (Exception ex) {
             LOG.error("Failed to add certificate information to metadata. Metadata incomplete", ex);
         }

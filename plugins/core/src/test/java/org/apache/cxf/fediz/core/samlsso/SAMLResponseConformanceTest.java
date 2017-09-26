@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.UUID;
 
@@ -63,7 +64,6 @@ import org.apache.wss4j.common.saml.bean.ConditionsBean;
 import org.apache.wss4j.common.saml.bean.SubjectConfirmationDataBean;
 import org.apache.wss4j.common.saml.builder.SAML2Constants;
 import org.apache.wss4j.common.util.DOM2Writer;
-import org.apache.xml.security.utils.Base64;
 import org.easymock.EasyMock;
 import org.joda.time.DateTime;
 import org.junit.AfterClass;
@@ -1220,7 +1220,7 @@ public class SAMLResponseConformanceTest {
 
         byte[] deflatedBytes = CompressionUtils.deflate(responseMessage.getBytes(StandardCharsets.UTF_8));
 
-        return Base64.encode(deflatedBytes);
+        return Base64.getEncoder().encodeToString(deflatedBytes);
     }
 
 

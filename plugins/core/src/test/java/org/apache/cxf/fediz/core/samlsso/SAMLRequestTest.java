@@ -25,6 +25,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,7 +42,6 @@ import org.apache.cxf.fediz.core.processor.RedirectionResponse;
 import org.apache.cxf.fediz.core.processor.SAMLProcessorImpl;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.wss4j.common.saml.OpenSAMLUtil;
-import org.apache.xml.security.utils.Base64;
 import org.easymock.EasyMock;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -170,7 +170,7 @@ public class SAMLRequestTest {
             redirectionURL.substring(redirectionURL.indexOf("SAMLRequest=") + "SAMLRequest=".length(),
                                      redirectionURL.indexOf("RelayState=") - 1);
 
-        byte[] deflatedToken = Base64.decode(URLDecoder.decode(samlRequest, "UTF-8"));
+        byte[] deflatedToken = Base64.getDecoder().decode(URLDecoder.decode(samlRequest, "UTF-8"));
         InputStream tokenStream = CompressionUtils.inflate(deflatedToken);
 
         Document requestDoc = DOMUtils.readXml(new InputStreamReader(tokenStream, StandardCharsets.UTF_8));
@@ -220,7 +220,7 @@ public class SAMLRequestTest {
             redirectionURL.substring(redirectionURL.indexOf("SAMLRequest=") + "SAMLRequest=".length(),
                                      redirectionURL.indexOf("RelayState=") - 1);
 
-        byte[] deflatedToken = Base64.decode(URLDecoder.decode(samlRequest, "UTF-8"));
+        byte[] deflatedToken = Base64.getDecoder().decode(URLDecoder.decode(samlRequest, "UTF-8"));
         InputStream tokenStream = CompressionUtils.inflate(deflatedToken);
 
         Document requestDoc = DOMUtils.readXml(new InputStreamReader(tokenStream, StandardCharsets.UTF_8));

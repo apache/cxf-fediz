@@ -27,6 +27,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Properties;
 
@@ -37,8 +38,6 @@ import org.apache.wss4j.common.crypto.CryptoFactory;
 import org.apache.wss4j.common.crypto.CryptoType;
 import org.apache.wss4j.common.crypto.Merlin;
 import org.apache.wss4j.common.ext.WSSecurityException;
-import org.apache.xml.security.exceptions.Base64DecodingException;
-import org.apache.xml.security.utils.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,7 +129,7 @@ public final class CertsUtils {
      * a filename containing the certificate.
      */
     public static X509Certificate parseX509Certificate(String certificate)
-        throws CertificateException, WSSecurityException, ProcessingException, Base64DecodingException, IOException {
+        throws CertificateException, WSSecurityException, ProcessingException, IOException {
         if (certificate == null) {
             return null;
         }
@@ -212,10 +211,10 @@ public final class CertsUtils {
     }
 
     private static X509Certificate parseCertificate(String certificate)
-        throws CertificateException, Base64DecodingException, IOException {
+        throws CertificateException, IOException {
 
         //before decoding we need to get rid off the prefix and suffix
-        byte[] decoded = Base64.decode(certificate.replaceAll("-----BEGIN CERTIFICATE-----", "").
+        byte[] decoded = Base64.getDecoder().decode(certificate.replaceAll("-----BEGIN CERTIFICATE-----", "").
                                         replaceAll("-----END CERTIFICATE-----", ""));
 
         try (InputStream is = new ByteArrayInputStream(decoded)) {

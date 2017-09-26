@@ -28,6 +28,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
+import java.util.Base64;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -47,7 +48,6 @@ import org.apache.cxf.fediz.core.util.CertsUtils;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.cxf.fediz.core.util.SignatureUtils;
 import org.apache.xml.security.stax.impl.util.IDGenerator;
-import org.apache.xml.security.utils.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -303,7 +303,7 @@ public class MetadataWriter {
                         + keyAlias);
             }
             byte data[] = cert.getEncoded();
-            String encodedCertificate = Base64.encode(data);
+            String encodedCertificate = Base64.getEncoder().encodeToString(data);
             writer.writeCharacters(encodedCertificate);
 
             writer.writeEndElement(); // X509Certificate

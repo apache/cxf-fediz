@@ -34,6 +34,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -64,7 +65,6 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.cxf.fediz.tomcat8.FederationAuthenticator;
 import org.apache.cxf.rs.security.jose.jwa.SignatureAlgorithm;
@@ -813,7 +813,8 @@ public class OIDCTest {
         // Now use the code to get an IdToken
         WebClient webClient2 = setupWebClient(user, password, getIdpHttpsPort());
         String data = storedClientId + ":" + storedClientPassword;
-        String authorizationHeader = "Basic " + Base64.encodeBase64String(data.getBytes(StandardCharsets.UTF_8));
+        String authorizationHeader = "Basic "
+            + Base64.getEncoder().encodeToString(data.getBytes(StandardCharsets.UTF_8));
         webClient2.addRequestHeader("Authorization", authorizationHeader);
         String tokenUrl = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/oauth2/token";
         WebRequest request = new WebRequest(new URL(tokenUrl), HttpMethod.POST);

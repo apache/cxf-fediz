@@ -23,6 +23,7 @@ package org.apache.cxf.fediz.systests.kerberos;
 import java.io.File;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
+import java.util.Base64;
 
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginContext;
@@ -42,7 +43,6 @@ import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.tomcat8.FederationAuthenticator;
 import org.apache.kerby.kerberos.kerb.server.SimpleKdcServer;
 import org.apache.wss4j.dom.engine.WSSConfig;
-import org.apache.xml.security.utils.Base64;
 import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.GSSManager;
@@ -313,7 +313,7 @@ public class KerberosTest extends org.junit.Assert {
         lc.login();
 
         byte[] ticket = (byte[])Subject.doAs(lc.getSubject(), new CreateServiceTicketAction(context, token));
-        return Base64.encode(ticket);
+        return Base64.getEncoder().encodeToString(ticket);
     }
 
     private final class CreateServiceTicketAction implements PrivilegedExceptionAction<byte[]> {

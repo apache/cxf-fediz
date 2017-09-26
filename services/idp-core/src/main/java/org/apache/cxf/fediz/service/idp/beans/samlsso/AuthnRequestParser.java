@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
+import java.util.Base64;
 import java.util.Collections;
 
 import org.w3c.dom.Document;
@@ -54,7 +55,6 @@ import org.apache.wss4j.dom.saml.WSSSAMLKeyInfoProcessor;
 import org.apache.wss4j.dom.validate.Credential;
 import org.apache.wss4j.dom.validate.SignatureTrustValidator;
 import org.apache.wss4j.dom.validate.Validator;
-import org.apache.xml.security.utils.Base64;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.security.impl.SAMLSignatureProfileValidator;
 import org.opensaml.security.credential.BasicCredential;
@@ -260,7 +260,7 @@ public class AuthnRequestParser {
 
                 sig.update(requestToSign.getBytes(StandardCharsets.UTF_8));
 
-                if (!sig.verify(Base64.decode(signature))) {
+                if (!sig.verify(Base64.getDecoder().decode(signature))) {
                     LOG.debug("Signature validation failed");
                     throw new ProcessingException(TYPE.BAD_REQUEST);
                 }

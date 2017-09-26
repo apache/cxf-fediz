@@ -20,6 +20,7 @@
 package org.apache.cxf.fediz.service.idp.metadata;
 
 import java.security.cert.X509Certificate;
+import java.util.Base64;
 import java.util.Map;
 
 import javax.xml.stream.XMLStreamException;
@@ -36,7 +37,6 @@ import org.apache.cxf.staxutils.W3CDOMStreamWriter;
 import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.xml.security.stax.impl.util.IDGenerator;
-import org.apache.xml.security.utils.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -188,7 +188,7 @@ public class ServiceMetadataWriter {
                         + keyAlias);
             }
             byte data[] = cert.getEncoded();
-            String encodedCertificate = Base64.encode(data);
+            String encodedCertificate = Base64.getEncoder().encodeToString(data);
             writer.writeCharacters(encodedCertificate);
 
             writer.writeEndElement(); // X509Certificate

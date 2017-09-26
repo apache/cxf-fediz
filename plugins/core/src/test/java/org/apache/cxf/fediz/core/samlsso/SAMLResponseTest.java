@@ -25,6 +25,7 @@ import java.math.BigInteger;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -75,7 +76,6 @@ import org.apache.wss4j.common.saml.bean.SubjectConfirmationDataBean;
 import org.apache.wss4j.common.saml.builder.SAML2Constants;
 import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.wss4j.dom.WSConstants;
-import org.apache.xml.security.utils.Base64;
 import org.easymock.EasyMock;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -220,7 +220,7 @@ public class SAMLResponseTest {
         EasyMock.replay(req);
 
         FedizRequest wfReq = new FedizRequest();
-        wfReq.setResponseToken(DOM2Writer.nodeToString(doc));
+        wfReq.setResponseToken(encodeResponse(doc.getDocumentElement()));
         wfReq.setState(relayState);
         wfReq.setRequest(req);
         wfReq.setRequestState(requestState);
@@ -1382,7 +1382,7 @@ public class SAMLResponseTest {
 
         byte[] deflatedBytes = CompressionUtils.deflate(responseMessage.getBytes(StandardCharsets.UTF_8));
 
-        return Base64.encode(deflatedBytes);
+        return Base64.getEncoder().encodeToString(deflatedBytes);
     }
 
 

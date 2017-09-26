@@ -22,6 +22,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Base64;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -39,7 +40,6 @@ import org.apache.cxf.fediz.service.idp.rest.Claims;
 import org.apache.cxf.fediz.service.idp.rest.Entitlements;
 import org.apache.cxf.fediz.service.idp.rest.Idps;
 import org.apache.cxf.fediz.service.idp.rest.Roles;
-import org.apache.xml.security.utils.Base64;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -248,7 +248,7 @@ public class RestITTest {
 
     private String getBasicAuthentication(String username, String password) throws UnsupportedEncodingException {
         String token = username + ":" + password;
-        return "Basic " + Base64.encode(token.getBytes());
+        return "Basic " + Base64.getEncoder().encodeToString(token.getBytes());
     }
 
     private String getContextName() {

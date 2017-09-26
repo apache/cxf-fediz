@@ -20,6 +20,7 @@
 package org.apache.cxf.fediz.service.idp.kerberos;
 
 import java.util.Arrays;
+import java.util.Base64;
 
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.cxf.ws.security.kerberos.KerberosClient;
@@ -28,7 +29,6 @@ import org.apache.wss4j.common.util.KeyUtils;
 import org.apache.wss4j.dom.WSConstants;
 import org.apache.wss4j.dom.engine.WSSConfig;
 import org.apache.wss4j.dom.message.token.KerberosSecurity;
-import org.apache.xml.security.utils.Base64;
 
 /**
  * Override the default CXF KerberosClient just to create a BinarySecurityToken from a
@@ -55,7 +55,7 @@ public class PassThroughKerberosClient extends KerberosClient {
         securityToken.setToken(bst.getElement());
         securityToken.setWsuId(bst.getID());
         securityToken.setData(bst.getToken());
-        String sha1 = Base64.encode(KeyUtils.generateDigest(bst.getToken()));
+        String sha1 = Base64.getEncoder().encodeToString(KeyUtils.generateDigest(bst.getToken()));
         securityToken.setSHA1(sha1);
         securityToken.setTokenType(bst.getValueType());
 
