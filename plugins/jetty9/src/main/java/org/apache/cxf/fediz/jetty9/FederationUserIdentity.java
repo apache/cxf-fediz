@@ -21,8 +21,8 @@ package org.apache.cxf.fediz.jetty9;
 
 
 import java.security.Principal;
+import java.time.Instant;
 import java.util.Arrays;
-import java.util.Date;
 
 import javax.security.auth.Subject;
 
@@ -71,7 +71,7 @@ public class FederationUserIdentity implements UserIdentity {
         return false;
     }
 
-    public Date getExpiryDate() {
+    public Instant getExpiryDate() {
         return fedResponse.getTokenExpires();
     }
 

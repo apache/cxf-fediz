@@ -26,8 +26,8 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.security.Signature;
+import java.time.Instant;
 import java.util.Base64;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.zip.DataFormatException;
@@ -206,7 +206,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
         }
 
         // Check whether token already used for signin
-        Date expires = validatorResponse.getExpires();
+        Instant expires = validatorResponse.getExpires();
         if (expires == null) {
             expires = ssoValidatorResponse.getSessionNotOnOrAfter();
         }

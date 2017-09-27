@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.cert.X509Certificate;
-import java.util.Date;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -414,14 +414,14 @@ public class FederationAuthenticator extends LoginAuthenticator {
         if (fedConfig.isDetectExpiredTokens()) {
             try {
                 FederationUserIdentity fui = (FederationUserIdentity)userIdentity;
-                Date tokenExpires = fui.getExpiryDate();
+                Instant tokenExpires = fui.getExpiryDate();
                 if (tokenExpires == null) {
                     LOG.debug("Token doesn't expire");
                     return false;
                 }
 
-                Date currentTime = new Date();
-                if (!currentTime.after(tokenExpires)) {
+                Instant currentTime = Instant.now();
+                if (!currentTime.isAfter(tokenExpires)) {
                     return false;
                 } else {
                     LOG.warn("Token already expired. Clean up and redirect");

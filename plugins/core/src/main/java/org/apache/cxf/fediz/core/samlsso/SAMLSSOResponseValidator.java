@@ -18,6 +18,7 @@
  */
 package org.apache.cxf.fediz.core.samlsso;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 
@@ -101,7 +102,7 @@ public class SAMLSSOResponseValidator {
 
         // Validate Assertions
         org.opensaml.saml.saml2.core.Assertion validAssertion = null;
-        Date sessionNotOnOrAfter = null;
+        Instant sessionNotOnOrAfter = null;
         for (org.opensaml.saml.saml2.core.Assertion assertion : samlResponse.getAssertions()) {
             // Check the Issuer
             if (assertion.getIssuer() == null) {
@@ -125,7 +126,7 @@ public class SAMLSSOResponseValidator {
                     // Store Session NotOnOrAfter
                     for (AuthnStatement authnStatment : assertion.getAuthnStatements()) {
                         if (authnStatment.getSessionNotOnOrAfter() != null) {
-                            sessionNotOnOrAfter = authnStatment.getSessionNotOnOrAfter().toDate();
+                            sessionNotOnOrAfter = authnStatment.getSessionNotOnOrAfter().toDate().toInstant();
                         }
                     }
                 }

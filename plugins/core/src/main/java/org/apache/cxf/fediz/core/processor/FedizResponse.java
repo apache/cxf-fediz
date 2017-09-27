@@ -24,8 +24,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.io.StringReader;
+import java.time.Instant;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -54,27 +54,23 @@ public class FedizResponse implements Serializable {
     /**
      * Created time
      */
-    private Date tokenCreated;
+    private Instant tokenCreated;
 
     /**
      * Expiration time
      */
-    private Date tokenExpires;
+    private Instant tokenExpires;
 
     //CHECKSTYLE:OFF
     public FedizResponse(String username, String issuer, List<String> roles, List<Claim> claims, String audience,
-        Date created, Date expires, Element token, String uniqueTokenId) {
+        Instant created, Instant expires, Element token, String uniqueTokenId) {
         this.username = username;
         this.issuer = issuer;
         this.roles = roles;
         this.claims = claims;
         this.audience = audience;
-        if (created != null) {
-            this.tokenCreated = new Date(created.getTime());
-        }
-        if (expires != null) {
-            this.tokenExpires = new Date(expires.getTime());
-        }
+        this.tokenCreated = created;
+        this.tokenExpires = expires;
         this.token = token;
         this.uniqueTokenId = uniqueTokenId;
     }
@@ -109,18 +105,12 @@ public class FedizResponse implements Serializable {
         return Collections.unmodifiableList(claims);
     }
 
-    public Date getTokenCreated() {
-        if (tokenCreated != null) {
-            return new Date(tokenCreated.getTime());
-        }
-        return null;
+    public Instant getTokenCreated() {
+        return tokenCreated;
     }
 
-    public Date getTokenExpires() {
-        if (tokenExpires != null) {
-            return new Date(tokenExpires.getTime());
-        }
-        return null;
+    public Instant getTokenExpires() {
+        return tokenExpires;
     }
 
     public Element getToken() {

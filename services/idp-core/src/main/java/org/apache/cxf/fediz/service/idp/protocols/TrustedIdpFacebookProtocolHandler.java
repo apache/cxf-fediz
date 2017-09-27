@@ -19,9 +19,9 @@
 
 package org.apache.cxf.fediz.service.idp.protocols;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import javax.ws.rs.core.Form;
@@ -125,8 +125,7 @@ public class TrustedIdpFacebookProtocolHandler extends AbstractTrustedIdpOAuth2P
                 }
 
                 // Convert into a SAML Token
-                Date expires = new Date();
-                expires.setTime(expires.getTime() + (accessToken.getExpiresIn() * 1000L));
+                Instant expires = Instant.now().plusSeconds(accessToken.getExpiresIn());
                 SecurityToken idpToken = new SecurityToken(IDGenerator.generateID(null), null, expires);
                 SamlAssertionWrapper assertion =
                     createSamlAssertion(idp, trustedIdp, subjectName, null, expires);

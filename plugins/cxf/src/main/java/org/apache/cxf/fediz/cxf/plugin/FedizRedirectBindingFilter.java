@@ -22,9 +22,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.security.cert.X509Certificate;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -145,10 +145,10 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
             String securityContextKey = UUID.randomUUID().toString();
 
             long currentTime = System.currentTimeMillis();
-            Date notOnOrAfter = wfRes.getTokenExpires();
+            Instant notOnOrAfter = wfRes.getTokenExpires();
             long expiresAt = 0;
             if (notOnOrAfter != null) {
-                expiresAt = notOnOrAfter.getTime();
+                expiresAt = notOnOrAfter.toEpochMilli();
             } else {
                 expiresAt = currentTime + getStateTimeToLive();
             }

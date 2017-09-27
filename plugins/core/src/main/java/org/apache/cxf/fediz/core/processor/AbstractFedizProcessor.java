@@ -22,7 +22,7 @@ package org.apache.cxf.fediz.core.processor;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Date;
+import java.time.Instant;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -75,7 +75,7 @@ public abstract class AbstractFedizProcessor implements FedizProcessor {
         return wtRealm;
     }
 
-    protected void testForReplayAttack(String tokenId, FedizContext config, Date expires)
+    protected void testForReplayAttack(String tokenId, FedizContext config, Instant expires)
         throws ProcessingException {
         // Check whether token already used for signin
         if (tokenId != null && config.isDetectReplayedTokens()) {
@@ -84,9 +84,9 @@ public abstract class AbstractFedizProcessor implements FedizProcessor {
             if (!config.getTokenReplayCache().contains(tokenId)) {
                 // not cached
                 if (expires != null) {
-                    Date currentTime = new Date();
-                    long ttl = expires.getTime() - currentTime.getTime();
-                    config.getTokenReplayCache().add(tokenId, ttl / 1000L);
+                    Instant now = Instant.now();
+                    long ttl = expires.getEpochSecond() - now.getEpochSecond();
+                    config.getTokenReplayCache().add(tokenId, ttl);
                 } else {
                     config.getTokenReplayCache().add(tokenId);
                 }

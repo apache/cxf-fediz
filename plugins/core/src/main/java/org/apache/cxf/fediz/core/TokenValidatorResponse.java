@@ -19,7 +19,7 @@
 
 package org.apache.cxf.fediz.core;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 public class TokenValidatorResponse {
@@ -30,8 +30,8 @@ public class TokenValidatorResponse {
     private String issuer;
     private String audience;
     private List<Claim> claims;
-    private Date expires;
-    private Date created;
+    private Instant expires;
+    private Instant created;
 
 
 
@@ -65,36 +65,20 @@ public class TokenValidatorResponse {
         return claims;
     }
 
-    public Date getExpires() {
-        if (expires != null) {
-            return new Date(expires.getTime());
-        }
-        return null;
+    public Instant getExpires() {
+        return expires;
     }
 
-    public void setExpires(Date expires) {
-        if (expires != null) {
-            this.expires = new Date(expires.getTime());
-        } else {
-            this.expires = null;
-        }
+    public void setExpires(Instant expires) {
+        this.expires = expires;
     }
 
-
-    public Date getCreated() {
-        if (created != null) {
-            return new Date(created.getTime());
-        }
-        return null;
+    public Instant getCreated() {
+        return created;
     }
 
-
-    public void setCreated(Date created) {
-        if (created != null) {
-            this.created = new Date(created.getTime());
-        } else {
-            this.created = null;
-        }
+    public void setCreated(Instant created) {
+        this.created = created;
     }
 
 

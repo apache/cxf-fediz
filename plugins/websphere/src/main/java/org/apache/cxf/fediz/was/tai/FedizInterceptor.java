@@ -21,8 +21,8 @@ package org.apache.cxf.fediz.was.tai;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -483,14 +483,14 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
             return false;
         }
 
-        Date tokenExpires = wfRes.getTokenExpires();
+        Instant tokenExpires = wfRes.getTokenExpires();
         if (tokenExpires == null) {
             LOG.debug("Token doesn't expire");
             return true;
         }
 
-        Date currentTime = new Date();
-        if (!currentTime.after(tokenExpires)) {
+        Instant currentTime = Instant.now();
+        if (!currentTime.isAfter(tokenExpires)) {
             return true;
         } else {
             LOG.warn("Token already expired since {}", tokenExpires);

@@ -22,7 +22,7 @@ package org.apache.cxf.fediz.tomcat8;
 import java.io.File;
 import java.io.IOException;
 import java.security.Principal;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -399,14 +399,14 @@ public class FederationAuthenticator extends FormAuthenticator {
         if (session != null) {
 
             FedizResponse wfRes = (FedizResponse)session.getNote(FEDERATION_NOTE);
-            Date tokenExpires = wfRes.getTokenExpires();
+            Instant tokenExpires = wfRes.getTokenExpires();
             if (tokenExpires == null) {
                 LOG.debug("Token doesn't expire");
                 return true;
             }
 
-            Date currentTime = new Date();
-            if (!currentTime.after(tokenExpires)) {
+            Instant currentTime = Instant.now();
+            if (!currentTime.isAfter(tokenExpires)) {
                 return true;
             } else {
                 LOG.warn("Token already expired. Clean up and redirect");

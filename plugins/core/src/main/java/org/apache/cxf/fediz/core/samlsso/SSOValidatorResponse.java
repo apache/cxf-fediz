@@ -18,7 +18,7 @@
  */
 package org.apache.cxf.fediz.core.samlsso;
 
-import java.util.Date;
+import java.time.Instant;
 
 import org.w3c.dom.Element;
 
@@ -26,7 +26,7 @@ import org.w3c.dom.Element;
  * Some information that encapsulates a successful validation by the SAMLSSOResponseValidator
  */
 public class SSOValidatorResponse {
-    private Date sessionNotOnOrAfter;
+    private Instant sessionNotOnOrAfter;
     private String responseId;
     private String assertion;
     private Element assertionElement;
@@ -39,19 +39,12 @@ public class SSOValidatorResponse {
         this.assertion = assertion;
     }
 
-    public Date getSessionNotOnOrAfter() {
-        if (sessionNotOnOrAfter != null) {
-            return new Date(sessionNotOnOrAfter.getTime());
-        }
-        return null;
+    public Instant getSessionNotOnOrAfter() {
+        return sessionNotOnOrAfter;
     }
 
-    public void setSessionNotOnOrAfter(Date sessionNotOnOrAfter) {
-        if (sessionNotOnOrAfter != null) {
-            this.sessionNotOnOrAfter = new Date(sessionNotOnOrAfter.getTime());
-        } else {
-            this.sessionNotOnOrAfter = null;
-        }
+    public void setSessionNotOnOrAfter(Instant sessionNotOnOrAfter) {
+        this.sessionNotOnOrAfter = sessionNotOnOrAfter;
     }
 
     public String getResponseId() {

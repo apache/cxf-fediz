@@ -22,8 +22,8 @@ package org.apache.cxf.fediz.service.idp.protocols;
 import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -188,13 +188,13 @@ public class TrustedIdpOIDCProtocolHandler extends AbstractTrustedIdpOAuth2Proto
                 // Make sure the received token is valid according to the spec
                 validateToken(jwt, clientId);
 
-                Date created = new Date((long)jwt.getClaim(JwtConstants.CLAIM_ISSUED_AT) * 1000L);
-                Date notBefore = null;
+                Instant created = Instant.ofEpochSecond((long)jwt.getClaim(JwtConstants.CLAIM_ISSUED_AT));
+                Instant notBefore = null;
                 if (jwt.getClaim(JwtConstants.CLAIM_NOT_BEFORE) != null) {
-                    notBefore = new Date((long)jwt.getClaim(JwtConstants.CLAIM_NOT_BEFORE) * 1000L);
+                    notBefore = Instant.ofEpochSecond((long)jwt.getClaim(JwtConstants.CLAIM_NOT_BEFORE));
                 }
 
-                Date expires = new Date((long)jwt.getClaim(JwtConstants.CLAIM_EXPIRY) * 1000L);
+                Instant expires = Instant.ofEpochSecond((long)jwt.getClaim(JwtConstants.CLAIM_EXPIRY));
 
                 // Subject
                 String subjectName = getProperty(trustedIdp, SUBJECT_CLAIM);

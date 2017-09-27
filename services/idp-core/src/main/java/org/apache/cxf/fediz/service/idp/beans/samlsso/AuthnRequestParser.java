@@ -318,9 +318,10 @@ public class AuthnRequestParser {
         if (keyInfo != null) {
             try {
                 Document doc = signature.getDOM().getOwnerDocument();
+                requestData.setWsDocInfo(new WSDocInfo(doc));
                 samlKeyInfo =
                     SAMLUtil.getCredentialFromKeyInfo(
-                        keyInfo.getDOM(), new WSSSAMLKeyInfoProcessor(requestData, new WSDocInfo(doc)), sigCrypto
+                        keyInfo.getDOM(), new WSSSAMLKeyInfoProcessor(requestData), sigCrypto
                     );
             } catch (WSSecurityException ex) {
                 LOG.debug("Error in getting KeyInfo from SAML AuthnRequest: {}", ex.getMessage(), ex);

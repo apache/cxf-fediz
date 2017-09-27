@@ -159,6 +159,7 @@ public class SAMLProtocolResponseValidator {
         RequestData requestData = new RequestData();
         WSSConfig wssConfig = WSSConfig.getNewInstance();
         requestData.setWssConfig(wssConfig);
+        requestData.setWsDocInfo(new WSDocInfo(doc));
 
         SAMLKeyInfo samlKeyInfo = null;
 
@@ -167,7 +168,7 @@ public class SAMLProtocolResponseValidator {
             try {
                 samlKeyInfo =
                     SAMLUtil.getCredentialFromKeyInfo(
-                        keyInfo.getDOM(), new WSSSAMLKeyInfoProcessor(requestData, new WSDocInfo(doc)),
+                        keyInfo.getDOM(), new WSSSAMLKeyInfoProcessor(requestData),
                         requestData.getSigVerCrypto()
                     );
             } catch (WSSecurityException ex) {

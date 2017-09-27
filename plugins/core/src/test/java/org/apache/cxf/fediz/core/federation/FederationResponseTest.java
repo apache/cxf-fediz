@@ -1630,7 +1630,7 @@ public class FederationResponseTest {
         }
         e.appendChild(token);
 
-        WSSecEncrypt builder = new WSSecEncrypt();
+        WSSecEncrypt builder = new WSSecEncrypt(token.getOwnerDocument());
         builder.setUserInfo("mystskey");
 
         builder.setKeyIdentifierType(WSConstants.ISSUER_SERIAL);
@@ -1642,7 +1642,7 @@ public class FederationResponseTest {
         encryptionPart.setElement(token);
 
         Crypto encrCrypto = CryptoFactory.getInstance("signature.properties");
-        builder.prepare(token.getOwnerDocument(), encrCrypto);
+        builder.prepare(encrCrypto);
         builder.encryptForRef(null, Collections.singletonList(encryptionPart));
 
         // return doc.getDocumentElement();

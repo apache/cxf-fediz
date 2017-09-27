@@ -21,7 +21,7 @@ package org.apache.cxf.fediz.spring.web;
 
 import java.io.IOException;
 import java.security.cert.X509Certificate;
-import java.util.Date;
+import java.time.Instant;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
@@ -90,14 +90,14 @@ public class FederationAuthenticationFilter extends AbstractAuthenticationProces
         if (context != null && detectExpiredTokens) {
             Authentication authentication = context.getAuthentication();
             if (authentication instanceof FederationAuthenticationToken) {
-                Date tokenExpires =
+                Instant tokenExpires =
                     ((FederationAuthenticationToken)authentication).getResponse().getTokenExpires();
                 if (tokenExpires == null) {
                     return false;
                 }
 
-                Date currentTime = new Date();
-                if (currentTime.after(tokenExpires)) {
+                Instant currentTime = Instant.now();
+                if (currentTime.isAfter(tokenExpires)) {
                     return true;
                 }
             }

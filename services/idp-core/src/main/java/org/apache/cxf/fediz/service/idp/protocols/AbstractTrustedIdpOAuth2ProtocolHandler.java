@@ -24,6 +24,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.time.Instant;
 import java.util.Date;
 
 import javax.security.auth.callback.Callback;
@@ -115,8 +116,8 @@ public abstract class AbstractTrustedIdpOAuth2ProtocolHandler extends AbstractTr
     }
 
     protected SamlAssertionWrapper createSamlAssertion(Idp idp, TrustedIdp trustedIdp, String subjectName,
-                                                     Date notBefore,
-                                                     Date expires) throws Exception {
+                                                     Instant notBefore,
+                                                     Instant expires) throws Exception {
         SamlCallbackHandler callbackHandler = new SamlCallbackHandler();
         String issuer = idp.getServiceDisplayName();
         if (issuer == null) {
@@ -133,9 +134,9 @@ public abstract class AbstractTrustedIdpOAuth2ProtocolHandler extends AbstractTr
 
         // Conditions
         ConditionsBean conditionsBean = new ConditionsBean();
-        conditionsBean.setNotAfter(new DateTime(expires));
+        conditionsBean.setNotAfter(new DateTime(Date.from(expires)));
         if (notBefore != null) {
-            DateTime notBeforeDT = new DateTime(notBefore);
+            DateTime notBeforeDT = new DateTime(Date.from(notBefore));
             conditionsBean.setNotBefore(notBeforeDT);
         } else {
             conditionsBean.setNotBefore(new DateTime());

@@ -77,10 +77,11 @@ public class CustomClaimsHandler implements ClaimsHandler {
             ClaimsParameters parameters) {
 
         // Insist that a "realm" Custom Content is available in the RST with a value equal to "custom-realm"
-        List<Element> customContent = parameters.getTokenRequirements().getCustomContent();
+        List<Object> customContent = parameters.getTokenRequirements().getCustomContent();
         boolean foundRealm = false;
-        for (Element customContentElement : customContent) {
-            Element customRealm = XMLUtils.findElement(customContentElement, "realm", "http://cxf.apache.org/custom");
+        for (Object customContentElement : customContent) {
+            Element customRealm =
+                XMLUtils.findElement((Element)customContentElement, "realm", "http://cxf.apache.org/custom");
             if (customRealm != null) {
                 String realmStr = customRealm.getTextContent();
                 if ("custom-realm".equals(realmStr)) {

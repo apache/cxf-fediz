@@ -20,9 +20,9 @@
 package org.apache.cxf.fediz.core.saml;
 
 import java.net.URI;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,6 +89,7 @@ public class SAMLTokenValidator implements TokenValidator {
             RequestData requestData = new RequestData();
             WSSConfig wssConfig = WSSConfig.getNewInstance();
             requestData.setWssConfig(wssConfig);
+            requestData.setWsDocInfo(new WSDocInfo(token.getOwnerDocument()));
             // not needed as no private key must be read
             // requestData.setCallbackHandler(new
             // PasswordCallbackHandler(password));
@@ -99,19 +100,18 @@ public class SAMLTokenValidator implements TokenValidator {
                 throw new ProcessingException(TYPE.TOKEN_NO_SIGNATURE);
             }
             // Verify the signature
-            WSDocInfo docInfo = new WSDocInfo(token.getOwnerDocument());
             Signature sig = assertion.getSignature();
             KeyInfo keyInfo = sig.getKeyInfo();
             SAMLKeyInfo samlKeyInfo =
                 org.apache.wss4j.common.saml.SAMLUtil.getCredentialFromKeyInfo(
-                    keyInfo.getDOM(), new WSSSAMLKeyInfoProcessor(requestData, docInfo),
+                    keyInfo.getDOM(), new WSSSAMLKeyInfoProcessor(requestData),
                     requestData.getSigVerCrypto()
                 );
             assertion.verifySignature(samlKeyInfo);
 
             // Parse the subject if it exists
             assertion.parseSubject(
-                new WSSSAMLKeyInfoProcessor(requestData, docInfo), requestData.getSigVerCrypto(),
+                new WSSSAMLKeyInfoProcessor(requestData), requestData.getSigVerCrypto(),
                 requestData.getCallbackHandler()
             );
 
@@ -428,7 +428,7 @@ public class SAMLTokenValidator implements TokenValidator {
     }
 
 
-    private Date getExpires(SamlAssertionWrapper assertion) {
+    private Instant getExpires(SamlAssertionWrapper assertion) {
         DateTime validTill = null;
         if (assertion.getSamlVersion().equals(SAMLVersion.VERSION_20)) {
             validTill = assertion.getSaml2().getConditions().getNotOnOrAfter();
@@ -439,10 +439,10 @@ public class SAMLTokenValidator implements TokenValidator {
         if (validTill == null) {
             return null;
         }
-        return validTill.toDate();
+        return validTill.toDate().toInstant();
     }
 
-    private Date getCreated(SamlAssertionWrapper assertion) {
+    private Instant getCreated(SamlAssertionWrapper assertion) {
         DateTime validFrom = null;
         if (assertion.getSamlVersion().equals(SAMLVersion.VERSION_20)) {
             validFrom = assertion.getSaml2().getConditions().getNotBefore();
@@ -453,7 +453,7 @@ public class SAMLTokenValidator implements TokenValidator {
         if (validFrom == null) {
             return null;
         }
-        return validFrom.toDate();
+        return validFrom.toDate().toInstant();
     }
 
     /**

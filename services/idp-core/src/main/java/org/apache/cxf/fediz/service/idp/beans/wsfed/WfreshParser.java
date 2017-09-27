@@ -18,7 +18,7 @@
  */
 package org.apache.cxf.fediz.service.idp.beans.wsfed;
 
-import java.util.Date;
+import java.time.Instant;
 
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
@@ -61,11 +61,10 @@ public class WfreshParser {
 
         long ttlMs = ttl * 60L * 1000L;
         if (ttlMs > 0) {
-            Date createdDate = idpToken.getCreated();
+            Instant createdDate = idpToken.getCreated();
             if (createdDate != null) {
-                Date expiryDate = new Date();
-                expiryDate.setTime(createdDate.getTime() + ttlMs);
-                if (expiryDate.before(new Date())) {
+                Instant expiryDate = createdDate.plusMillis(ttlMs);
+                if (expiryDate.isBefore(Instant.now())) {
                     LOG.info("[IDP_TOKEN="
                             + idpToken.getId()
                             + "] is valid but relying party requested new authentication caused by wfresh="

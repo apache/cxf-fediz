@@ -56,7 +56,7 @@
     <bean id="jsonProvider" class="com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider" />
     
     <!-- CXF Swagger2Feature -->
-    <bean id="swagger2Serializers" class="org.apache.cxf.jaxrs.swagger.DefaultSwagger2Serializers">
+    <bean id="swagger2Customizer" class="org.apache.cxf.jaxrs.swagger.Swagger2Customizer">
         <property name="replaceTags" value="true" />
     </bean> 
     <bean id="swagger2Feature" class="org.apache.cxf.jaxrs.swagger.Swagger2Feature">
@@ -68,7 +68,7 @@
         <property name="resourcePackage" value="org.apache.cxf.fediz.service.idp.rest" />
         <property name="scanAllResources" value="true" />
 
-        <property name="swagger2Serializers" ref="swagger2Serializers" />
+        <property name="customizer" ref="swagger2Customizer" />
         <property name="prettyPrint" value="true" />
     </bean>
     

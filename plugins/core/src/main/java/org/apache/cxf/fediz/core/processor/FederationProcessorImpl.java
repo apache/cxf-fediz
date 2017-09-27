@@ -26,8 +26,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.cert.Certificate;
-import java.text.DateFormat;
-import java.text.ParseException;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -68,6 +70,7 @@ import org.apache.wss4j.common.ext.WSPasswordCallback;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.apache.wss4j.common.util.DOM2Writer;
+import org.apache.wss4j.common.util.DateUtil;
 import org.apache.wss4j.dom.WSConstants;
 import org.apache.wss4j.dom.WSDataRef;
 import org.apache.wss4j.dom.WSDocInfo;
@@ -76,7 +79,6 @@ import org.apache.wss4j.dom.engine.WSSecurityEngineResult;
 import org.apache.wss4j.dom.handler.RequestData;
 import org.apache.wss4j.dom.processor.EncryptedDataProcessor;
 import org.apache.wss4j.dom.processor.Processor;
-import org.apache.wss4j.dom.util.XmlSchemaDateFormat;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -177,13 +179,13 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         }
 
         if (lifeTime != null) {
-            Date currentDate = new Date();
-            if (currentDate.after(lifeTime.getExpires())) {
+            Instant rightNow = Instant.now();
+            if (rightNow.isAfter(lifeTime.getExpires())) {
                 LOG.warn("RSTR Lifetime expired");
                 throw new ProcessingException(TYPE.TOKEN_EXPIRED);
             }
             DateTime currentTime = new DateTime();
-            DateTime validFrom = new DateTime(lifeTime.created);
+            DateTime validFrom = new DateTime(Date.from(lifeTime.created));
             currentTime = currentTime.plusSeconds(config.getMaximumClockSkew().intValue());
             if (validFrom.isAfter(currentTime)) {
                 LOG.debug("RSTR Lifetime not yet valid");
@@ -202,7 +204,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         TokenValidatorResponse validatorResponse = validateToken(rst, tt, config, request.getCerts());
 
         // Check whether token already used for signin
-        Date expires = null;
+        Instant expires = null;
         if (lifeTime != null && lifeTime.getExpires() != null) {
             expires = lifeTime.getExpires();
         } else {
@@ -214,7 +216,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                               validatorResponse.getClaims(),
                               validatorResponse.getRoles() != null && !validatorResponse.getRoles().isEmpty());
 
-        Date created = validatorResponse.getCreated();
+        Instant created = validatorResponse.getCreated();
         if (lifeTime != null && lifeTime.getCreated() != null) {
             created = lifeTime.getCreated();
         }
@@ -274,6 +276,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         EncryptedDataProcessor proc = new EncryptedDataProcessor();
         WSDocInfo docInfo = new WSDocInfo(encryptedRST.getOwnerDocument());
         RequestData data = new RequestData();
+        data.setWsDocInfo(docInfo);
 
         // Disable WSS4J processing of the (decrypted) SAML Token
         WSSConfig wssConfig = WSSConfig.getNewInstance();
@@ -284,7 +287,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         data.setDecCrypto(decryptionKeyManager.getCrypto());
         data.setCallbackHandler(new DecryptionCallbackHandler(keyPassword));
         try {
-            List<WSSecurityEngineResult> result = proc.handleToken(encryptedRST, data, docInfo);
+            List<WSSecurityEngineResult> result = proc.handleToken(encryptedRST, data);
             if (!result.isEmpty()) {
                 @SuppressWarnings("unchecked")
                 List<WSDataRef> dataRefs = (List<WSDataRef>)result.get(result.size() - 1)
@@ -301,55 +304,34 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
     }
 
     private LifeTime processLifeTime(Element lifetimeElem) throws ProcessingException {
-        try {
-            Element createdElem = DOMUtils.getFirstChildWithName(lifetimeElem, WSConstants.WSU_NS,
-                                                                 WSConstants.CREATED_LN);
-            DateFormat zulu = new XmlSchemaDateFormat();
+        Element createdElem = DOMUtils.getFirstChildWithName(lifetimeElem, WSConstants.WSU_NS,
+                                                             WSConstants.CREATED_LN);
 
-            Date created = zulu.parse(DOMUtils.getContent(createdElem));
+        ZonedDateTime createdDateTime = ZonedDateTime.parse(DOMUtils.getContent(createdElem));
 
-            Element expiresElem = DOMUtils.getFirstChildWithName(lifetimeElem, WSConstants.WSU_NS,
-                                                                 WSConstants.EXPIRES_LN);
-            Date expires = zulu.parse(DOMUtils.getContent(expiresElem));
+        Element expiresElem = DOMUtils.getFirstChildWithName(lifetimeElem, WSConstants.WSU_NS,
+                                                             WSConstants.EXPIRES_LN);
+        ZonedDateTime expiresDateTime = ZonedDateTime.parse(DOMUtils.getContent(expiresElem));
 
-            return new LifeTime(created, expires);
-
-        } catch (ParseException e) {
-            LOG.error("Failed to parse lifetime element in wresult: {}", e.getMessage());
-            throw new ProcessingException(TYPE.BAD_REQUEST);
-        }
+        return new LifeTime(createdDateTime.toInstant(), expiresDateTime.toInstant());
     }
 
     public static class LifeTime {
 
-        private final Date created;
-        private final Date expires;
+        private final Instant created;
+        private final Instant expires;
 
-        public LifeTime(Date created, Date expires) {
-            if (created != null) {
-                this.created = new Date(created.getTime());
-            } else {
-                this.created = null;
-            }
-            if (expires != null) {
-                this.expires = new Date(expires.getTime());
-            } else {
-                this.expires = null;
-            }
+        public LifeTime(Instant created, Instant expires) {
+            this.created = created;
+            this.expires = expires;
         }
 
-        public Date getCreated() {
-            if (created != null) {
-                return new Date(created.getTime());
-            }
-            return null;
+        public Instant getCreated() {
+            return created;
         }
 
-        public Date getExpires() {
-            if (expires != null) {
-                return new Date(expires.getTime());
-            }
-            return null;
+        public Instant getExpires() {
+            return expires;
         }
 
     }
@@ -457,9 +439,9 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             }
 
             // add current time parameter wct
-            Date creationTime = new Date();
-            XmlSchemaDateFormat fmt = new XmlSchemaDateFormat();
-            String wct = fmt.format(creationTime);
+            Instant now = Instant.now();
+            DateTimeFormatter formatter = DateUtil.getDateTimeFormatter(true);
+            String wct = now.atZone(ZoneOffset.UTC).format(formatter);
             sb.append('&').append(FederationConstants.PARAM_CURRENT_TIME).append('=')
                 .append(URLEncoder.encode(wct, "UTF-8"));
 
@@ -812,7 +794,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
     private static class NOOpProcessor implements Processor {
 
         @Override
-        public List<WSSecurityEngineResult> handleToken(Element arg0, RequestData arg1, WSDocInfo arg2)
+        public List<WSSecurityEngineResult> handleToken(Element arg0, RequestData arg1)
             throws WSSecurityException {
             return Collections.emptyList();
         }

@@ -179,7 +179,7 @@ public class FedizSignatureTrustValidator implements Validator {
         // Use the validation method from the crypto to check whether the subjects'
         // certificate was really signed by the issuer stated in the certificate
         //
-        crypto.verifyTrust(certificates, enableRevocation, null);
+        crypto.verifyTrust(certificates, enableRevocation, null, null);
         String subjectString = certificates[0].getSubjectX500Principal().getName();
         LOG.debug(
             "Certificate path has been verified for certificate with subject {}", subjectString

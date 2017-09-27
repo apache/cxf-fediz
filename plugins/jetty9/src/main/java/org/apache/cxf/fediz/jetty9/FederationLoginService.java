@@ -19,9 +19,9 @@
 
 package org.apache.cxf.fediz.jetty9;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import javax.security.auth.Subject;
@@ -145,7 +145,7 @@ public class FederationLoginService extends AbstractLifeCycle implements LoginSe
     public boolean validate(UserIdentity user) {
         try {
             FederationUserIdentity fui = (FederationUserIdentity)user;
-            return fui.getExpiryDate().after(new Date());
+            return fui.getExpiryDate().isAfter(Instant.now());
         } catch (ClassCastException ex) {
             LOG.warn("UserIdentity must be instance of FederationUserIdentity");
             throw new IllegalStateException("UserIdentity must be instance of FederationUserIdentity");
