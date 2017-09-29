@@ -22,6 +22,16 @@
     xsi:schemaLocation="http://www.springframework.org/schema/webflow
                           http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd">
 
+    <decision-state id="checkParameterSize">
+        <on-entry>
+            <set name="flowScope.idpConfig" value="config.getIDP(fedizEntryPoint.getRealm())" />
+            <evaluate expression="parameterSizeChecker.submit(flowScope.idpConfig, flowRequestContext)"
+                      result="flowScope.parametersOK"/>
+        </on-entry>
+        <if test="flowScope.parametersOK "
+            then="evaluateProtocol" else="viewBadRequest" />
+    </decision-state>
+    
     <decision-state id="evaluateProtocol">
         <on-entry>
             <set name="flowScope.idpConfig" value="config.getIDP(fedizEntryPoint.getRealm())" />

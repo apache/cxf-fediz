@@ -765,6 +765,72 @@ public class IdpTest {
         webClient.close();
     }
 
+    // Send a query parameter that's too big
+    @org.junit.Test
+    public void testLargeQueryParameterRejected() throws Exception {
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
+        url += "wa=wsignin1.0";
+        url += "&whr=urn:org:apache:cxf:fediz:idp:realm-A";
+        url += "&wtrealm=urn:org:apache:cxf:fediz:fedizhelloworld";
+
+        StringBuilder sb = new StringBuilder("https://localhost:" + getRpHttpsPort() + "/"
+                + getServletContextName() + "/secure/fedservlet");
+        for (int i = 0; i < 100; i++) {
+            sb.append("aaaaaaaaaa");
+        }
+
+        url += "&wreply=" + sb.toString();
+
+        String user = "alice";
+        String password = "ecila";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        try {
+            webClient.getPage(url);
+            Assert.fail("Failure expected on a bad wreply value");
+        } catch (FailingHttpStatusCodeException ex) {
+            Assert.assertEquals(ex.getStatusCode(), 400);
+        }
+
+        webClient.close();
+    }
+
+    // Send a query parameter that's bigger than the accepted default, but is allowed by configuration
+    @org.junit.Test
+    public void testLargeQueryParameterAccepted() throws Exception {
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
+        url += "wa=wsignin1.0";
+        url += "&whr=urn:org:apache:cxf:fediz:idp:realm-A";
+        url += "&wtrealm=urn:org:apache:cxf:fediz:fedizhelloworld";
+
+        StringBuilder sb = new StringBuilder("https://localhost:" + getRpHttpsPort()
+                + "/" + getServletContextName() + "/secure/fedservlet");
+        for (int i = 0; i < 50; i++) {
+            sb.append("aaaaaaaaaa");
+        }
+
+        url += "&wreply=" + sb.toString();
+
+        String user = "alice";
+        String password = "ecila";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        webClient.getPage(url);
+
+        webClient.close();
+    }
 
     @Test
     public void testIdPLogout() throws Exception {
