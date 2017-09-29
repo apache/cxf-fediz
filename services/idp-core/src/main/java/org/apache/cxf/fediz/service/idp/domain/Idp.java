@@ -36,7 +36,7 @@ import javax.xml.bind.annotation.XmlType;
                      "certificate", "certificatePassword", "provideIdpList", "useCurrentIdp", "hrds",
                      "rpSingleSignOutConfirmation", "supportedProtocols", "tokenTypesOffered", "claimTypesOffered",
                      "authenticationURIs", "applications", "trustedIdps", "id", "rpSingleSignOutCleanupConfirmation",
-                     "automaticRedirectToRpAfterLogout", "disableLogoutAddressValidation"})
+                     "automaticRedirectToRpAfterLogout", "disableLogoutAddressValidation", "maxParameterSize"})
 public class Idp implements Serializable {
 
     private static final long serialVersionUID = -5570301342547139039L;
@@ -122,6 +122,8 @@ public class Idp implements Serializable {
     private boolean automaticRedirectToRpAfterLogout;
 
     private boolean disableLogoutAddressValidation;
+
+    private int maxParameterSize = 500;
 
     @XmlAttribute
     public int getId() {
@@ -320,6 +322,14 @@ public class Idp implements Serializable {
 
     public void setDisableLogoutAddressValidation(boolean disableLogoutAddressValidation) {
         this.disableLogoutAddressValidation = disableLogoutAddressValidation;
+    }
+
+    public int getMaxParameterSize() {
+        return maxParameterSize;
+    }
+
+    public void setMaxParameterSize(int maxParameterSize) {
+        this.maxParameterSize = maxParameterSize;
     }
 
 }

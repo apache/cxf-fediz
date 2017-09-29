@@ -141,6 +141,8 @@ public class IdpEntity {
 
     private boolean disableLogoutAddressValidation;
 
+    private int maxParameterSize = 500;
+
 
     public int getId() {
         return id;
@@ -316,6 +318,14 @@ public class IdpEntity {
 
     public void setDisableLogoutAddressValidation(boolean disableLogoutAddressValidation) {
         this.disableLogoutAddressValidation = disableLogoutAddressValidation;
+    }
+
+    public int getMaxParameterSize() {
+        return maxParameterSize;
+    }
+
+    public void setMaxParameterSize(int maxParameterSize) {
+        this.maxParameterSize = maxParameterSize;
     }
 
 }

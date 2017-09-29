@@ -36,6 +36,7 @@
         <property name="stsUrl" value="https://localhost:${idp.https.port}/fediz-idp-sts/REALMA" />
         <property name="idpUrl" value="https://localhost:${idp.https.port}/fediz-idp/federation" />
         <property name="rpSingleSignOutConfirmation" value="true"/>
+        <property name="maxParameterSize" value="600"/>
         <property name="supportedProtocols">
             <util:list>
                 <value>http://docs.oasis-open.org/wsfed/federation/200706
