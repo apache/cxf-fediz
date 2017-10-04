@@ -61,45 +61,6 @@
         <logoutURL>/secure/logout</logoutURL>
         <logoutRedirectTo>/index.html</logoutRedirectTo>
 	</contextConfig>
-	<contextConfig name="/fedizhelloworld_spring2">
-		<audienceUris>
-			<audienceItem>urn:org:apache:cxf:fediz:fedizhelloworld</audienceItem>
-		</audienceUris>
-		<certificateStores>
-			<trustManager>
-				<keyStore file="clienttrust.jks" password="storepass" type="JKS" />
-			</trustManager>
-		</certificateStores>
-		<trustedIssuers>
-			<issuer certificateValidation="PeerTrust" />
-		</trustedIssuers>
-		<maximumClockSkew>1000</maximumClockSkew>
-		<signingKey keyAlias="mytomidpkey" keyPassword="tompass">
-            <keyStore file="server.jks" password="tompass" type="JKS" />
-        </signingKey>
-		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-			xsi:type="federationProtocolType" version="1.0.0">
-			<realm>urn:org:apache:cxf:fediz:fedizhelloworld</realm>
-			<issuer>https://localhost:${idp.https.port}/fediz-idp/federation</issuer>
-			<roleDelimiter>,</roleDelimiter>
-			<roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
-            <reply>/j_spring_fediz_security_check</reply>
-			<!--<authenticationType type="String">some auth type</authenticationType>-->
-			<!--<homeRealm type="Class">org.apache.fediz.realm.MyHomeRealm</homeRealm>-->
-			<!--<freshness>0</freshness>-->
-			<!--<reply>reply value</reply>-->
-			<!--<request>REQUEST</request>-->
-			<homeRealm type="String">urn:org:apache:cxf:fediz:idp:realm-A</homeRealm>
-			<claimTypesRequested>
-				<claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role" optional="false" />
-				<claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname" optional="true" />
-				<claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname" optional="true" />
-				<claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress" optional="true" />
-			</claimTypesRequested>
-		</protocol>
-        <logoutURL>/secure/logout</logoutURL>
-        <logoutRedirectTo>/index.html</logoutRedirectTo>
-	</contextConfig>
 	<contextConfig name="/fedizhelloworld_spring3">
 		<audienceUris>
 			<audienceItem>urn:org:apache:cxf:fediz:fedizhelloworld</audienceItem>
