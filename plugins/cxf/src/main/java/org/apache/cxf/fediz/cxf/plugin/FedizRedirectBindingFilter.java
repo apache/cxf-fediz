@@ -97,7 +97,7 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
             if (HttpMethod.GET.equals(httpMethod)) {
                 params = context.getUriInfo().getQueryParameters();
             } else if (HttpMethod.POST.equals(httpMethod)) {
-                String strForm = IOUtils.toString(context.getEntityStream());
+                String strForm = IOUtils.toString(context.getEntityStream(), "UTF-8");
                 params = JAXRSUtils.getStructuredParams(strForm, "&", true, false);
             }
         } catch (Exception ex) {

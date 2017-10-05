@@ -393,7 +393,7 @@ public abstract class AbstractTests {
         // 4. now we try to access the RP and idp without authentication but with the existing cookies
         // to see if we are really logged out
 
-        // webClient.close();
+        webClient.close();
         webClient = new WebClient();
         webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);
@@ -436,7 +436,7 @@ public abstract class AbstractTests {
         // 4. now we try to access the RP and idp without authentication but with the existing cookies
         // to see if we are really logged out
 
-        // webClient.close();
+        webClient.close();
         webClient = new WebClient();
         webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);
@@ -479,7 +479,7 @@ public abstract class AbstractTests {
         // 4. now we try to access the RP and idp without authentication but with the existing cookies
         // to see if we are really logged out
 
-        // webClient.close();
+        webClient.close();
         webClient = new WebClient();
         webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);
@@ -522,7 +522,7 @@ public abstract class AbstractTests {
         // 4. now we try to access the RP and idp without authentication but with the existing cookies
         // to see if we are really logged out
 
-        // webClient.close();
+        webClient.close();
         webClient = new WebClient();
         webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);
@@ -699,7 +699,8 @@ public abstract class AbstractTests {
         // Parse the form to get the token (wresult)
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
 
-        String entity = IOUtils.toString(this.getClass().getClassLoader().getResource("entity.xml").openStream());
+        String entity =
+            IOUtils.toString(this.getClass().getClassLoader().getResource("entity.xml").openStream(), "UTF-8");
         String reference = "&m;";
 
         for (DomElement result : results) {
