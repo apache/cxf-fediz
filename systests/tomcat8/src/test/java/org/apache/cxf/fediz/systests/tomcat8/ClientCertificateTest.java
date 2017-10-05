@@ -101,18 +101,18 @@ public class ClientCertificateTest extends AbstractClientCertTests {
             server.addWebapp("/fediz-idp", idpWebapp.getAbsolutePath());
         } else {
             File rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
-            Context cxt = server.addWebapp("/fedizhelloworld", rpWebapp.getAbsolutePath());
+            Context cxt = server.addWebapp("/fedizhelloworld_client_cert", rpWebapp.getAbsolutePath());
 
             // Substitute the IDP port. Necessary if running the test in eclipse where port filtering doesn't seem
             // to work
-            File f = new File(currentDir + "/src/test/resources/fediz_config_client_cert.xml");
+            File f = new File(currentDir + "/src/test/resources/fediz_config.xml");
             FileInputStream inputStream = new FileInputStream(f);
             String content = IOUtils.toString(inputStream, "UTF-8");
             inputStream.close();
             if (content.contains("idp.https.port")) {
                 content = content.replaceAll("\\$\\{idp.https.port\\}", "" + idpHttpsPort);
 
-                File f2 = new File(baseDir + "/test-classes/fediz_config_client_cert.xml");
+                File f2 = new File(baseDir + "/test-classes/fediz_config.xml");
                 try (FileOutputStream outputStream = new FileOutputStream(f2)) {
                     IOUtils.write(content, outputStream, "UTF-8");
                 }
@@ -120,7 +120,7 @@ public class ClientCertificateTest extends AbstractClientCertTests {
 
             FederationAuthenticator fa = new FederationAuthenticator();
             fa.setConfigFile(currentDir + File.separator + "target" + File.separator
-                             + "test-classes" + File.separator + "fediz_config_client_cert.xml");
+                             + "test-classes" + File.separator + "fediz_config.xml");
             cxt.getPipeline().addValve(fa);
         }
 
@@ -158,7 +158,7 @@ public class ClientCertificateTest extends AbstractClientCertTests {
     }
 
     public String getServletContextName() {
-        return "fedizhelloworld";
+        return "fedizhelloworld_client_cert";
     }
 
 }

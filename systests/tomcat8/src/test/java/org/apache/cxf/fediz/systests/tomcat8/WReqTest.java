@@ -110,18 +110,18 @@ public class WReqTest {
             server.addWebapp("/fediz-idp", idpWebapp.getAbsolutePath());
         } else {
             File rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
-            Context cxt = server.addWebapp("/fedizhelloworld", rpWebapp.getAbsolutePath());
+            Context cxt = server.addWebapp("/fedizhelloworld_wreq", rpWebapp.getAbsolutePath());
 
             // Substitute the IDP port. Necessary if running the test in eclipse where port filtering doesn't seem
             // to work
-            File f = new File(currentDir + "/src/test/resources/fediz_config_wreq.xml");
+            File f = new File(currentDir + "/src/test/resources/fediz_config.xml");
             FileInputStream inputStream = new FileInputStream(f);
             String content = IOUtils.toString(inputStream, "UTF-8");
             inputStream.close();
             if (content.contains("idp.https.port")) {
                 content = content.replaceAll("\\$\\{idp.https.port\\}", "" + idpHttpsPort);
 
-                File f2 = new File(baseDir + "/test-classes/fediz_config_wreq.xml");
+                File f2 = new File(baseDir + "/test-classes/fediz_config.xml");
                 try (FileOutputStream outputStream = new FileOutputStream(f2)) {
                     IOUtils.write(content, outputStream, "UTF-8");
                 }
@@ -129,7 +129,7 @@ public class WReqTest {
 
             FederationAuthenticator fa = new FederationAuthenticator();
             fa.setConfigFile(currentDir + File.separator + "target" + File.separator
-                             + "test-classes" + File.separator + "fediz_config_wreq.xml");
+                             + "test-classes" + File.separator + "fediz_config.xml");
             cxt.getPipeline().addValve(fa);
         }
 
@@ -166,13 +166,9 @@ public class WReqTest {
         return rpHttpsPort;
     }
 
-    public String getServletContextName() {
-        return "fedizhelloworld";
-    }
-
     @org.junit.Test
     public void testSAML1TokenViaWReq() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld_wreq/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
 

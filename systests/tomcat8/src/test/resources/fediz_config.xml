@@ -57,5 +57,139 @@
         <logoutURL>/secure/logout</logoutURL>
         <logoutRedirectTo>/index.html</logoutRedirectTo>
     </contextConfig>
+    <contextConfig name="/fedizhelloworld_wreq">
+        <audienceUris>
+            <audienceItem>urn:org:apache:cxf:fediz:fedizhelloworld</audienceItem>
+        </audienceUris>
+        <certificateStores>
+            <trustManager>
+                <keyStore file="test-classes/clienttrust.jks"
+                          password="storepass" type="JKS" />
+            </trustManager>
+        </certificateStores>
+        <trustedIssuers>
+            <issuer certificateValidation="PeerTrust" />
+        </trustedIssuers>
+        <maximumClockSkew>1000</maximumClockSkew>
+        <protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:type="federationProtocolType" version="1.0.0">
+            <realm>urn:org:apache:cxf:fediz:fedizhelloworld</realm>
+            <issuer>https://localhost:${idp.https.port}/fediz-idp/federation</issuer>
+            <roleDelimiter>,</roleDelimiter>
+            <roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
+            <freshness>10</freshness>
+            <homeRealm type="String">urn:org:apache:cxf:fediz:idp:realm-A</homeRealm>
+            <claimTypesRequested>
+                <claimType type="a particular claim type"
+                           optional="true" />
+            </claimTypesRequested>
+            <request type="Class">org.apache.cxf.fediz.systests.tomcat8.TestCallbackHandler</request>
+        </protocol>
+        <logoutURL>/secure/logout</logoutURL>
+        <logoutRedirectTo>/index.html</logoutRedirectTo>
+    </contextConfig>
+    <contextConfig name="/fedizhelloworld_hok">
+        <audienceUris>
+            <audienceItem>urn:org:apache:cxf:fediz:fedizhelloworld</audienceItem>
+        </audienceUris>
+        <certificateStores>
+            <trustManager>
+                <keyStore file="test-classes/clienttrust.jks"
+                          password="storepass" type="JKS" />
+            </trustManager>
+        </certificateStores>
+        <trustedIssuers>
+            <issuer certificateValidation="PeerTrust" />
+        </trustedIssuers>
+        <maximumClockSkew>1000</maximumClockSkew>
+        <protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:type="federationProtocolType" version="1.0.0">
+            <realm>urn:org:apache:cxf:fediz:fedizhelloworld</realm>
+            <issuer>https://localhost:${idp.https.port}/fediz-idp/federation</issuer>
+            <roleDelimiter>,</roleDelimiter>
+            <roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
+            <freshness>10</freshness>
+            <homeRealm type="String">urn:org:apache:cxf:fediz:idp:realm-A</homeRealm>
+            <claimTypesRequested>
+                <claimType type="a particular claim type"
+                           optional="true" />
+            </claimTypesRequested>
+            <request type="Class">org.apache.cxf.fediz.systests.tomcat8.HOKCallbackHandler</request>
+        </protocol>
+        <logoutURL>/secure/logout</logoutURL>
+        <logoutRedirectTo>/index.html</logoutRedirectTo>
+    </contextConfig>
+    <contextConfig name="/fedizhelloworld_client_cert">
+        <audienceUris>
+            <audienceItem>urn:org:apache:cxf:fediz:fedizhelloworld</audienceItem>
+        </audienceUris>
+        <certificateStores>
+            <trustManager>
+                <keyStore file="test-classes/clienttrust.jks"
+                          password="storepass" type="JKS" />
+            </trustManager>
+        </certificateStores>
+        <trustedIssuers>
+            <issuer certificateValidation="PeerTrust" />
+        </trustedIssuers>
+        <maximumClockSkew>1000</maximumClockSkew>
+        <signingKey keyAlias="mytomidpkey" keyPassword="tompass">
+            <keyStore file="test-classes/server.jks" password="tompass" type="JKS" />
+        </signingKey>
+        <protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:type="federationProtocolType" version="1.0.0">
+            <realm>urn:org:apache:cxf:fediz:fedizhelloworld</realm>
+            <issuer>https://localhost:${idp.https.port}/fediz-idp/federation</issuer>
+            <roleDelimiter>,</roleDelimiter>
+            <roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
+            <freshness>10</freshness>
+            <homeRealm type="String">urn:org:apache:cxf:fediz:idp:realm-A</homeRealm>
+            <claimTypesRequested>
+                <claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role" optional="false" />
+				<claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname" optional="true" />
+				<claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname" optional="true" />
+				<claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress" optional="true" />
+            </claimTypesRequested>
+            <authenticationType>http://docs.oasis-open.org/wsfed/authorization/200706/authntypes/Ssl</authenticationType>
+            <request type="Class">org.apache.cxf.fediz.systests.tomcat8.HOKCallbackHandler</request>
+        </protocol>
+        <logoutURL>/secure/logout</logoutURL>
+        <logoutRedirectTo>/index.html</logoutRedirectTo>
+    </contextConfig>
+     <contextConfig name="/fedizhelloworld_audrestr">
+        <audienceUris>
+            <audienceItem>urn:org:apache:cxf:fediz:fedizhelloworld2</audienceItem>
+        </audienceUris>
+        <certificateStores>
+            <trustManager>
+                <keyStore file="test-classes/clienttrust.jks"
+                          password="storepass" type="JKS" />
+            </trustManager>
+        </certificateStores>
+        <trustedIssuers>
+            <issuer certificateValidation="PeerTrust" />
+        </trustedIssuers>
+        <maximumClockSkew>1000</maximumClockSkew>
+        <signingKey keyAlias="mytomidpkey" keyPassword="tompass">
+            <keyStore file="test-classes/server.jks" password="tompass" type="JKS" />
+        </signingKey>
+        <protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:type="federationProtocolType" version="1.0.0">
+            <realm>urn:org:apache:cxf:fediz:fedizhelloworld</realm>
+            <issuer>https://localhost:${idp.https.port}/fediz-idp/federation</issuer>
+            <roleDelimiter>,</roleDelimiter>
+            <roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
+            <freshness>10</freshness>
+            <homeRealm type="String">urn:org:apache:cxf:fediz:idp:realm-A</homeRealm>
+            <claimTypesRequested>
+                <claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role" optional="false" />
+				<claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname" optional="true" />
+				<claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname" optional="true" />
+				<claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress" optional="true" />
+            </claimTypesRequested>
+        </protocol>
+        <logoutURL>/secure/logout</logoutURL>
+        <logoutRedirectTo>/index.html</logoutRedirectTo>
+    </contextConfig>
 </FedizConfig>
 
