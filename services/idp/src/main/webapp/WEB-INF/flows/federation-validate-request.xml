@@ -127,9 +127,7 @@
             <set name="flowScope.whr" value="currentEvent.attributes.home_realm" />
             <set name="flowScope.trusted_idp_context" value="currentEvent.attributes.trusted_idp_context"/>
         </transition>
-        <transition on="redirectToLocalIDP" to="redirectToLocalIDP">
-            <set name="flowScope.wctx" value="currentEvent.attributes.wctx" />
-        </transition>
+        <transition on="redirectToLocalIDP" to="redirectToLocalIDP" />
     </subflow-state>
 
     <subflow-state id="signinResponse" subflow="signinResponse">
