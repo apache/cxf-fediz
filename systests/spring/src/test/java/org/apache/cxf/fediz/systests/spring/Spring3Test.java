@@ -152,4 +152,12 @@ public class Spring3Test extends AbstractTests {
         csrfAttackTest(url);
     }
 
+    @Override
+    @org.junit.Test
+    public void testCSRFAttack2() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
+            + "/j_spring_fediz_security_check";
+        csrfAttackTest2(url);
+    }
+
 }

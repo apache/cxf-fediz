@@ -801,4 +801,57 @@ public abstract class AbstractTests {
 
     }
 
+    @org.junit.Test
+    public void testCSRFAttack2() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
+        csrfAttackTest2(url);
+    }
+
+    protected void csrfAttackTest2(String rpURL) throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
+
+        // 1. Log in as "bob" using another WebClient
+        WebClient webClient2 = new WebClient();
+        webClient2.getOptions().setUseInsecureSSL(true);
+        webClient2.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials("bob", "bob"));
+
+        webClient2.getOptions().setJavaScriptEnabled(false);
+        final HtmlPage idpPage2 = webClient2.getPage(url);
+        webClient2.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage2.getTitleText());
+
+        // 2. Now instead of clicking on the form, send the form via alice's WebClient instead
+
+        // Send with context...
+        WebRequest request = new WebRequest(new URL(rpURL), HttpMethod.POST);
+        request.setRequestParameters(new ArrayList<NameValuePair>());
+
+        DomNodeList<DomElement> results = idpPage2.getElementsByTagName("input");
+
+        for (DomElement result : results) {
+            if ("wresult".equals(result.getAttributeNS(null, "name"))
+                || "wa".equals(result.getAttributeNS(null, "name"))
+                || "wctx".equals(result.getAttributeNS(null, "name"))) {
+                String value = result.getAttributeNS(null, "value");
+                request.getRequestParameters().add(new NameValuePair(result.getAttributeNS(null, "name"), value));
+            }
+        }
+
+        WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+
+        try {
+            webClient.getPage(request);
+            Assert.fail("Failure expected on a CSRF attack");
+        } catch (FailingHttpStatusCodeException ex) {
+            // expected
+        }
+
+        webClient.close();
+        webClient2.close();
+
+    }
+
 }
