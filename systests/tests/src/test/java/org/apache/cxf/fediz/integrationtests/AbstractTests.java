@@ -847,8 +847,8 @@ public abstract class AbstractTests {
             // expected
         }
 
-        webClient.close();
-        webClient2.close();
+        // webClient.close();
+        // webClient2.close();
 
     }
 
