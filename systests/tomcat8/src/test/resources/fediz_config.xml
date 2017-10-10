@@ -225,6 +225,7 @@
         </protocol>
         <logoutURL>/secure/logout</logoutURL>
         <logoutRedirectTo>/index.html</logoutRedirectTo>
+        <tokenExpirationValidation>true</tokenExpirationValidation>
     </contextConfig>
 </FedizConfig>
 

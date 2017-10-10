@@ -182,6 +182,14 @@
                                     <outputDirectory>target/tomcat/rp/webapps/cxfWebapp</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
+                                    <groupId>org.apache.cxf.fediz.systests.webapps</groupId>
+                                    <artifactId>fediz-systests-webapps-cxf</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>war</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target/tomcat/rp/webapps/cxfWebappExpiry</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
                                     <groupId>org.apache.cxf.fediz.systests</groupId>
                                     <artifactId>fediz-systests-tests</artifactId>
                                     <version>${project.version}</version>
@@ -222,6 +230,64 @@
                       </resources>              
                     </configuration>            
                   </execution>
+                  <execution>
+                    <id>copy-resources2</id>
+                    <phase>pre-integration-test</phase>
+                    <goals>
+                      <goal>copy-resources</goal>
+                    </goals>
+                    <configuration>
+                      <outputDirectory>${basedir}/target/tomcat/rp/webapps/cxfWebappExpiry/WEB-INF/classes/</outputDirectory>
+                      <resources>          
+                        <resource>
+                          <directory>${basedir}/target/test-classes/expiry</directory>
+                          <includes>
+                            <include>fediz_config.xml</include>
+                          </includes>
+                          <filtering>true</filtering>
+                        </resource>
+                      </resources>              
+                    </configuration>            
+                  </execution>
+                  <execution>
+                        <id>copy-entities-to-idp</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/tomcat/idp/webapps/fediz-idp/WEB-INF/classes</outputDirectory>
+                            <resources>          
+                                <resource>
+                                    <directory>${basedir}/src/test/resources/realma</directory>
+                                    <includes>
+                                        <include>entities-realma.xml</include>
+                                    </includes>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>              
+                        </configuration>            
+                    </execution>
+                    <execution>
+                        <id>copy-customised-sts-config</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/tomcat/idp/webapps/fediz-idp-sts/WEB-INF</outputDirectory>
+                            <resources>          
+                                <resource>
+                                    <directory>${basedir}/src/test/resources/realma</directory>
+                                    <includes>
+                                        <include>fediz-sts.xml</include>
+                                    </includes>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>              
+                            <overwrite>true</overwrite>       
+                        </configuration>            
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
