@@ -25,22 +25,19 @@ import java.io.IOException;
 
 import javax.servlet.ServletException;
 
-import com.gargoylesoftware.htmlunit.CookieManager;
-import com.gargoylesoftware.htmlunit.WebClient;
-
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
-import org.apache.cxf.fediz.systests.common.HTTPTestUtils;
+import org.apache.cxf.fediz.systests.common.AbstractExpiryTests;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 
 /**
- * Test what happens when the IdP token expires. This is "mocked" by setting wfresh to "0" in the plugin configuration.
+ * Some token expiry tests
  */
-public class TokenExpiryTest {
+public class TokenExpiryTest extends AbstractExpiryTests {
 
     static String idpHttpsPort;
     static String rpHttpsPort;
@@ -136,28 +133,9 @@ public class TokenExpiryTest {
         return rpHttpsPort;
     }
 
-
-    @org.junit.Test
-    public void testTokenExpiry() throws Exception {
-        // 1. Login
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld_wfresh"
-            + "/secure/fedservlet";
-        String user = "alice";
-        String password = "ecila";
-
-        CookieManager cookieManager = new CookieManager();
-
-        // 1. Login
-        HTTPTestUtils.loginWithCookieManager(url, user, password, getIdpHttpsPort(), cookieManager);
-
-        // 2. Sign out of the service (but not the Idp)
-        final WebClient webClient = new WebClient();
-        webClient.setCookieManager(cookieManager);
-        webClient.getOptions().setUseInsecureSSL(true);
-        webClient.getPage(url + "?wa=wsignoutcleanup1.0");
-        webClient.close();
-
-        // 3. Sign back in to the service provider. This time it will get a new IdP token due to wfresh=0.
-        HTTPTestUtils.loginWithCookieManager(url, user, password, getIdpHttpsPort(), cookieManager);
+    @Override
+    public String getServletContextName() {
+        return "fedizhelloworld_wfresh";
     }
+
 }

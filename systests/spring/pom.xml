@@ -194,6 +194,26 @@
                             </resources>              
                         </configuration>            
                     </execution>
+                    <execution>
+                        <id>copy-customised-sts-config</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/tomcat/idp/webapps/fediz-idp-sts/WEB-INF</outputDirectory>
+                            <resources>          
+                                <resource>
+                                    <directory>${basedir}/src/test/resources/realma</directory>
+                                    <includes>
+                                        <include>fediz-sts.xml</include>
+                                    </includes>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>              
+                            <overwrite>true</overwrite>       
+                        </configuration>            
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
