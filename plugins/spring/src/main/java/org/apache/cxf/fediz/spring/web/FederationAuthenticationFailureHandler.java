@@ -20,22 +20,13 @@
 package org.apache.cxf.fediz.spring.web;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.cxf.fediz.core.config.FedizContext;
-import org.apache.cxf.fediz.core.exception.ProcessingException;
-import org.apache.cxf.fediz.core.processor.FedizProcessor;
-import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
-import org.apache.cxf.fediz.core.processor.RedirectionResponse;
 import org.apache.cxf.fediz.spring.FederationConfig;
 import org.apache.cxf.fediz.spring.authentication.ExpiredTokenException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 
@@ -43,9 +34,7 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationFa
  * A AuthenticationFailureHandler which will redirect a expired user (token) back to the IdP.
  */
 public class FederationAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
-    
-    private static final Logger LOG = LoggerFactory.getLogger(FederationAuthenticationFailureHandler.class);
-       
+
     private FederationConfig federationConfig;
     
     public FederationAuthenticationFailureHandler() {
@@ -57,36 +46,9 @@ public class FederationAuthenticationFailureHandler extends SimpleUrlAuthenticat
                                         AuthenticationException exception) throws IOException, ServletException {
         
         if (exception instanceof ExpiredTokenException) {
-            String redirectUrl = null;
-            try {
-                FedizContext fedContext = federationConfig.getFedizContext();
-                FedizProcessor wfProc = 
-                    FedizProcessorFactory.newFedizProcessor(fedContext.getProtocol());
-                RedirectionResponse redirectionResponse =
-                    wfProc.createSignInRequest(request, fedContext);
-                redirectUrl = redirectionResponse.getRedirectionURL();
-                
-                if (redirectUrl == null) {
-                    LOG.warn("Failed to create SignInRequest. Redirect URL null");
-                    throw new ServletException("Failed to create SignInRequest. Redirect URL null");
-                }
-                
-                Map<String, String> headers = redirectionResponse.getHeaders();
-                if (!headers.isEmpty()) {
-                    for (Entry<String, String> entry : headers.entrySet()) {
-                        response.addHeader(entry.getKey(), entry.getValue());
-                    }
-                }
-                
-            } catch (ProcessingException ex) {
-                LOG.warn("Failed to create SignInRequest", ex);
-                throw new ServletException("Failed to create SignInRequest: " + ex.getMessage());
-            }
-            
-            if (LOG.isInfoEnabled()) {
-                LOG.info("Redirecting to IDP: " + redirectUrl);
-            }
-            response.sendRedirect(redirectUrl);
+            // Just redirect back to the original URL and re-start the authentication process.
+            response.sendRedirect(request.getRequestURL().toString());
+            return;
         }
         
         super.onAuthenticationFailure(request, response, exception);
