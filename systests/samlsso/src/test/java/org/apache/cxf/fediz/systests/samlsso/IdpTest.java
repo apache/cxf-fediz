@@ -492,7 +492,7 @@ public class IdpTest {
         final WebClient webClient = new WebClient();
         webClient.getOptions().setUseInsecureSSL(true);
         webClient.addRequestHeader("Authorization", "Basic "
-            + Base64.getEncoder().encodeToString((user + ":" + password).getBytes()));
+            + Base64.getEncoder().encodeToString((user + ":" + password).getBytes(StandardCharsets.UTF_8)));
 
         //
         // First invocation
@@ -523,7 +523,7 @@ public class IdpTest {
 
         webClient.removeRequestHeader("Authorization");
         webClient.addRequestHeader("Authorization", "Basic "
-            + Base64.getEncoder().encodeToString(("mallory" + ":" + password).getBytes()));
+            + Base64.getEncoder().encodeToString(("mallory" + ":" + password).getBytes(StandardCharsets.UTF_8)));
 
         webClient.getOptions().setJavaScriptEnabled(false);
         idpPage = webClient.getPage(url);
@@ -1000,7 +1000,7 @@ public class IdpTest {
         webClient.close();
     }
 
-    @org.junit.Ignore
+    @org.junit.Test
     public void testMissingRelayState() throws Exception {
         OpenSAMLUtil.initSamlEngine();
 
@@ -1424,7 +1424,7 @@ public class IdpTest {
 
         // Don't inflate the token...
         String requestMessage = DOM2Writer.nodeToString(authnRequestElement);
-        String authnRequestEncoded = Base64Utility.encode(requestMessage.getBytes("UTF-8"));
+        String authnRequestEncoded = Base64Utility.encode(requestMessage.getBytes(StandardCharsets.UTF_8));
 
         String urlEncodedRequest = URLEncoder.encode(authnRequestEncoded, "UTF-8");
 
@@ -1487,7 +1487,7 @@ public class IdpTest {
         final WebClient webClient = new WebClient();
         webClient.getOptions().setUseInsecureSSL(true);
         webClient.addRequestHeader("Authorization", "Basic "
-            + Base64.getEncoder().encodeToString((user + ":" + password).getBytes()));
+            + Base64.getEncoder().encodeToString((user + ":" + password).getBytes(StandardCharsets.UTF_8)));
 
         //
         // First invocation
@@ -1518,7 +1518,7 @@ public class IdpTest {
 
         webClient.removeRequestHeader("Authorization");
         webClient.addRequestHeader("Authorization", "Basic "
-            + Base64.getEncoder().encodeToString(("mallory" + ":" + password).getBytes()));
+            + Base64.getEncoder().encodeToString(("mallory" + ":" + password).getBytes(StandardCharsets.UTF_8)));
 
         webClient.getOptions().setJavaScriptEnabled(false);
         try {
@@ -1535,7 +1535,7 @@ public class IdpTest {
         String requestMessage = DOM2Writer.nodeToString(authnRequest);
 
         DeflateEncoderDecoder encoder = new DeflateEncoderDecoder();
-        byte[] deflatedBytes = encoder.deflateToken(requestMessage.getBytes("UTF-8"));
+        byte[] deflatedBytes = encoder.deflateToken(requestMessage.getBytes(StandardCharsets.UTF_8));
 
         return Base64Utility.encode(deflatedBytes);
     }
