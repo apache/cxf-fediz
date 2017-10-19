@@ -62,6 +62,7 @@
     
     <!-- HTTP/BA entry point for SAML SSO -->
     <security:http pattern="/saml/up/**" use-expressions="true">
+        <security:csrf />
 		<security:intercept-url requires-channel="https" pattern="/saml/up/login*" access="isAuthenticated()" />
         <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
