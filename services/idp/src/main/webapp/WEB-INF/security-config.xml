@@ -92,6 +92,7 @@
     
     <!-- HTTP/BA entry point -->
     <security:http pattern="/federation/up/**" use-expressions="true">
+        <security:csrf />
 		<security:intercept-url requires-channel="https" pattern="/federation/up/login*" access="isAnonymous() or isAuthenticated()" />
         <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
