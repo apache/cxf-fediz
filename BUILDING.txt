@@ -4,7 +4,7 @@ Building Apache CXF Fediz
 Initial Setup
 -------------
 
-1) Install J2SE 8 SDK, which can be downloaded from 
+1) Install J2SE 7 or 8 SDK, which can be downloaded from 
    http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
 2) Make sure that your JAVA_HOME environment variable is set to the newly installed 
@@ -38,14 +38,20 @@ Source Directory structure
 
  + plugins               contains the sources of the Federation plugin
       + core             the core module contains the majority of functionality which is Servlet container agnostic
+      + tomcat7          the Tomcat 7 module is the bridge of the core to the
+                           Tomcat 7 specific security engine (container managed)
       + tomcat8          the Tomcat 8 module is the bridge of the core to the
                            Tomcat 8 specific security engine (container managed)
+      + jetty8           the Jetty 8 module is the bridge of the core to the
+                           Jetty 8 specific security engine (container managed)
       + jetty9           the Jetty 9 module is the bridge of the core to the
                            Jetty 9 specific security engine (container managed)
       + cxf              the CXF module is the bridge of the core to the
                            CXF specific security engine (application managed)
       + spring           the Spring module is the brige of the core to the
                            Spring Security 4 specific security engine (application managed)
+      + spring2          the Spring 2 module is the brige of the core to the
+                           Spring Security 2 specific security engine (application managed)
       + spring3          the Spring3 module is the bridge of the core to the
                            Spring Security 3 specific security engine (application managed)
       + websphere        the IBM Websphere module is the bridge of the core to the
