@@ -4,14 +4,14 @@ Building Apache CXF Fediz
 Initial Setup
 -------------
 
-1) Install J2SE 6 or 7 SDK, which can be downloaded from 
+1) Install J2SE 8 SDK, which can be downloaded from 
    http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
 2) Make sure that your JAVA_HOME environment variable is set to the newly installed 
    JDK location, and that your PATH includes %JAVA_HOME%\bin (Windows) or 
    $JAVA_HOME$/bin (*nix).
 
-3) Install Maven 2.2.1 or newer, which can be downloaded from 
+3) Install Maven 3.0.x or newer, which can be downloaded from 
    http://maven.apache.org/download.html. Make sure that your PATH includes 
    the MVN_HOME/bin directory. 
 
@@ -38,14 +38,16 @@ Source Directory structure
 
  + plugins               contains the sources of the Federation plugin
       + core             the core module contains the majority of functionality which is Servlet container agnostic
-      + tomcat           the Tomcat module is the bridge of the core to the
-                           Tomcat specific security engine (container managed)
-      + jetty            the Jetty module is the bridge of the core to the
-                           Jetty specific security engine (container managed)
+      + tomcat8          the Tomcat 8 module is the bridge of the core to the
+                           Tomcat 8 specific security engine (container managed)
+      + jetty9           the Jetty 9 module is the bridge of the core to the
+                           Jetty 9 specific security engine (container managed)
+      + cxf              the CXF module is the bridge of the core to the
+                           CXF specific security engine (application managed)
       + spring           the Spring module is the brige of the core to the
+                           Spring Security 4 specific security engine (application managed)
+      + spring3          the Spring3 module is the bridge of the core to the
                            Spring Security 3 specific security engine (application managed)
-      + spring2          the Spring2 module is the bridge of the core to the
-                           Spring Security 2 specific security engine (application managed)
       + websphere        the IBM Websphere module is the bridge of the core to the
                            IBM Websphere specific security engine (container managed)
 
