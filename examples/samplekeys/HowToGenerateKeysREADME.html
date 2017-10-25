@@ -30,7 +30,7 @@ is recommended.</p>
 keytool -genkeypair -keyalg RSA -validity 3600 -alias realma -keystore stsrealm_a.jks -dname "cn=REALMA" -keypass realma -storepass storepass -keysize 2048<br/><br/>
 keytool -export -rfc -keystore stsrealm_a.jks -storepass storepass -alias realma -file realma.cert
 </code>
-</td>√
+</td>
     <td>Nobody</td><td>By Relying Party (ststrust.jks)</td></tr>
 <tr><td>stsrealm_b.jks (storepass)</td><td>realmb (realmb)</td><td>services/sts/src/main/resources/stsrealm_b.jks</td>
     <td><code>
@@ -54,3 +54,6 @@ keytool -import -trustcacerts -keystore webappKeystore.jks -storepass waspass -a
 </code></td>
     <td>mytomidpkey (to access IDP STS via HTTPS, mytomwspkey (to access web service via HTTPS)</td><td>Nobody</td></tr>  
 </table>
+
+</body>
+</html>
