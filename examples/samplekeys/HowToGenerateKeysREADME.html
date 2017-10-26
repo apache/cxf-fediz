@@ -43,7 +43,8 @@ keytool -export -rfc -keystore stsrealm_b.jks -storepass storepass -alias realmb
     <td><code>
 keytool -import -trustcacerts -keystore ststrust.jks -storepass storepass -alias realma -file realma.cert -noprompt<br/><br/>
 keytool -import -trustcacerts -keystore ststrust.jks -storepass storepass -alias realmb -file realmb.cert -noprompt<br/><br/>
-keytool -import -trustcacerts -keystore ststrust.jks -storepass storepass -alias rpcert -file MyTCRP.cer -noprompt
+keytool -import -trustcacerts -keystore ststrust.jks -storepass storepass -alias rpcert -file MyTCRP.cer -noprompt<br/><br/>
+keytool -import -trustcacerts -keystore ststrust.jks -storepass storepass -alias idpcert -file MyTCIDP.cer -noprompt
 </code>
 </td>
     <td>Nobody</td><td>By Relying Party (Fediz configuration file)</td></tr>    
