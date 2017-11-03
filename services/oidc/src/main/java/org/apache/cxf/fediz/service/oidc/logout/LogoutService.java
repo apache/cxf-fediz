@@ -58,6 +58,7 @@ public class LogoutService extends JoseJwtConsumer {
     private FedizSubjectCreator subjectCreator = new FedizSubjectCreator();
     private BackChannelLogoutHandler backChannelLogoutHandler;
     private List<LogoutHandler> logoutHandlers;
+    private boolean allowAnonymousLogout;
 
     @POST
     public Response initiateLogoutPost(MultivaluedMap<String, String> params) {
@@ -73,7 +74,7 @@ public class LogoutService extends JoseJwtConsumer {
         IdToken idTokenHint = getIdTokenHint(params);
         Client client = getClient(params, idTokenHint);
 
-        if (mc.getSecurityContext().getUserPrincipal() != null) {
+        if (!allowAnonymousLogout || mc.getSecurityContext().getUserPrincipal() != null) {
             OidcUserSubject subject = subjectCreator.createUserSubject(mc, params);
 
             if (backChannelLogoutHandler != null) {
@@ -179,6 +180,10 @@ public class LogoutService extends JoseJwtConsumer {
     }
     public void setBackChannelLogoutHandler(BackChannelLogoutHandler handler) {
         this.backChannelLogoutHandler = handler;
+    }
+
+    public void setAllowAnonymousLogout(boolean allowAnonymousLogout) {
+        this.allowAnonymousLogout = allowAnonymousLogout;
     }
 
     public void close() {
