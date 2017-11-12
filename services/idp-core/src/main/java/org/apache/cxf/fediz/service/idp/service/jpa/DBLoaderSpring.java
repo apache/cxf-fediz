@@ -25,11 +25,14 @@ import javax.persistence.PersistenceContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.EnvironmentAware;
 import org.springframework.context.support.GenericXmlApplicationContext;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.Environment;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
-public class DBLoaderSpring implements DBLoader {
+public class DBLoaderSpring implements DBLoader, EnvironmentAware {
 
     public static final String NAME = "SPRINGDBLOADER";
 
@@ -37,6 +40,7 @@ public class DBLoaderSpring implements DBLoader {
 
     private EntityManager em;
     private String resource;
+    private Environment environment;
 
     @PersistenceContext
     public void setEntityManager(EntityManager entityManager) {
@@ -57,6 +61,11 @@ public class DBLoaderSpring implements DBLoader {
     }
 
     @Override
+    public void setEnvironment(Environment environment) {
+        this.environment = environment;
+    }
+
+    @Override
     public void load() {
 
         GenericXmlApplicationContext ctx = null;
@@ -67,6 +76,9 @@ public class DBLoaderSpring implements DBLoader {
             }
 
             ctx = new GenericXmlApplicationContext();
+            if (environment instanceof ConfigurableEnvironment) {
+                ctx.setEnvironment((ConfigurableEnvironment) environment);
+            }
             ctx.load(resource);
             ctx.refresh();
             ctx.start();
