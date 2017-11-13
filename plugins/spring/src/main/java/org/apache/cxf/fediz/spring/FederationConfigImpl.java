@@ -38,6 +38,7 @@ public class FederationConfigImpl implements FederationConfig, ServletContextAwa
 
     private Resource configFile;
     private String contextName;
+    private String relativePath;
 
     private ServletContext servletContext;
     private FedizConfigurator configurator = new FedizConfigurator();
@@ -81,6 +82,9 @@ public class FederationConfigImpl implements FederationConfig, ServletContextAwa
             LOG.error("Federation context '" + context + "' not found.");
             throw new IllegalStateException("Federation context '" + context + "' not found.");
         }
+        if (relativePath != null) {
+            ctx.setRelativePath(relativePath);
+        }
         return ctx;
     }
 
@@ -101,4 +105,7 @@ public class FederationConfigImpl implements FederationConfig, ServletContextAwa
         this.servletContext = servletContext;
     }
 
+    public void setRelativePath(String relativePath) {
+        this.relativePath = relativePath;
+    }
 }
