@@ -58,6 +58,7 @@ public class FedizSubjectCreator implements SubjectCreator {
     private boolean stripPathFromIssuerUri;
     private String issuer;
     private Map<String, String> supportedClaims = Collections.emptyMap();
+    private long timeToLive;
 
     @Override
     public OidcUserSubject createUserSubject(MessageContext mc,
@@ -106,7 +107,7 @@ public class FedizSubjectCreator implements SubjectCreator {
             DateTime authInstant = saml2Assertion.getAuthnStatements().get(0).getAuthnInstant();
             idToken.setAuthenticationTime(authInstant.getMillis() / 1000L);
         }
-        // Check if default issuer, issuedAt and expiryTime values have to be set
+        // Check if default issuer, issuedAt values have to be set
         if (issuer != null) {
             String realIssuer = null;
             if (issuer.startsWith("/")) {
@@ -133,10 +134,13 @@ public class FedizSubjectCreator implements SubjectCreator {
             }
         }
 
+        // Compute exp claim
         long currentTimeInSecs = System.currentTimeMillis() / 1000;
         idToken.setIssuedAt(currentTimeInSecs);
         HttpSession httpSession = mc.getHttpServletRequest().getSession(false);
-        if (httpSession != null && httpSession.getMaxInactiveInterval() > 0) {
+        if (timeToLive > 0) {
+            idToken.setExpiryTime(timeToLive);
+        } else if (httpSession != null && httpSession.getMaxInactiveInterval() > 0) {
             idToken.setExpiryTime(currentTimeInSecs + httpSession.getMaxInactiveInterval());
         } else {
             idToken.setExpiryTime(currentTimeInSecs + DEFAULT_TIME_TO_LIVE);
@@ -243,4 +247,18 @@ public class FedizSubjectCreator implements SubjectCreator {
         this.stripPathFromIssuerUri = stripPathFromIssuerUri;
     }
 
+    /**
+     * Time to live in seconds (used for id_token exp claim).
+     *
+     * If this value is set and strictly positive, then the generated
+     * id_token will use this value for the exp claim.
+     *
+     * Otherwise, it will use maxInactiveInterval of httpSession, and
+     * if this later is not strictly positive, it will be 1 hour by default.
+     *
+     * @param timeToLive time to live in seconds of the id_token
+     */
+    public void setTimeToLive(long timeToLive) {
+        this.timeToLive = timeToLive;
+    }
 }
