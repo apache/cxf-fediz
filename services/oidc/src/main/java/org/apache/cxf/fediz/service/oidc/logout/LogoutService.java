@@ -58,6 +58,7 @@ public class LogoutService extends JoseJwtConsumer {
     private FedizSubjectCreator subjectCreator = new FedizSubjectCreator();
     private BackChannelLogoutHandler backChannelLogoutHandler;
     private List<LogoutHandler> logoutHandlers;
+    private boolean allowAnonymousLogout;
 
     @POST
     public Response initiateLogoutPost(MultivaluedMap<String, String> params) {
@@ -71,18 +72,22 @@ public class LogoutService extends JoseJwtConsumer {
     protected Response doInitiateLogout(MultivaluedMap<String, String> params) {
 
         IdToken idTokenHint = getIdTokenHint(params);
-        OidcUserSubject subject = subjectCreator.createUserSubject(mc, params);
-
         Client client = getClient(params, idTokenHint);
-        if (backChannelLogoutHandler != null) {
-            backChannelLogoutHandler.handleLogout(client, subject, idTokenHint);
-        }
-        if (logoutHandlers != null) {
 
-            for (LogoutHandler handler : logoutHandlers) {
-                handler.handleLogout(client, subject);
+        if (!allowAnonymousLogout || mc.getSecurityContext().getUserPrincipal() != null) {
+            OidcUserSubject subject = subjectCreator.createUserSubject(mc, params);
+
+            if (backChannelLogoutHandler != null) {
+                backChannelLogoutHandler.handleLogout(client, subject, idTokenHint);
+            }
+            if (logoutHandlers != null) {
+
+                for (LogoutHandler handler : logoutHandlers) {
+                    handler.handleLogout(client, subject);
+                }
             }
         }
+
         // Clear OIDC session now
         mc.getHttpServletRequest().getSession().invalidate();
 
@@ -113,7 +118,7 @@ public class LogoutService extends JoseJwtConsumer {
         String clientLogoutUriParam = params.getFirst(CLIENT_LOGOUT_URI);
         if (uris.length > 1) {
             if (clientLogoutUriParam == null
-                || !new HashSet<>(Arrays.asList(uris)).contains(clientLogoutUriParam)) {
+                    || !new HashSet<>(Arrays.asList(uris)).contains(clientLogoutUriParam)) {
                 throw new BadRequestException();
             }
             uriStr = clientLogoutUriParam;
@@ -175,6 +180,10 @@ public class LogoutService extends JoseJwtConsumer {
     }
     public void setBackChannelLogoutHandler(BackChannelLogoutHandler handler) {
         this.backChannelLogoutHandler = handler;
+    }
+
+    public void setAllowAnonymousLogout(boolean allowAnonymousLogout) {
+        this.allowAnonymousLogout = allowAnonymousLogout;
     }
 
     public void close() {
