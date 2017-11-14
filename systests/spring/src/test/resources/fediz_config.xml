@@ -28,7 +28,7 @@
 		</audienceUris>
 		<certificateStores>
 			<trustManager>
-				<keyStore file="clienttrust.jks" password="storepass" type="JKS" />
+				<keyStore file="test-classes/clienttrust.jks" password="storepass" type="JKS" />
 			</trustManager>
 		</certificateStores>
 		<trustedIssuers>
@@ -36,7 +36,7 @@
 		</trustedIssuers>
 		<maximumClockSkew>1000</maximumClockSkew>
 		<signingKey keyAlias="mytomidpkey" keyPassword="tompass">
-            <keyStore file="server.jks" password="tompass" type="JKS" />
+            <keyStore file="test-classes/server.jks" password="tompass" type="JKS" />
         </signingKey>
 		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 			xsi:type="federationProtocolType" version="1.0.0">
@@ -67,7 +67,7 @@
 		</audienceUris>
 		<certificateStores>
 			<trustManager>
-				<keyStore file="clienttrust.jks" password="storepass" type="JKS" />
+				<keyStore file="test-classes/clienttrust.jks" password="storepass" type="JKS" />
 			</trustManager>
 		</certificateStores>
 		<trustedIssuers>
@@ -75,7 +75,7 @@
 		</trustedIssuers>
 		<maximumClockSkew>1000</maximumClockSkew>
 		<signingKey keyAlias="mytomidpkey" keyPassword="tompass">
-            <keyStore file="server.jks" password="tompass" type="JKS" />
+            <keyStore file="test-classes/server.jks" password="tompass" type="JKS" />
         </signingKey>
 		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 			xsi:type="federationProtocolType" version="1.0.0">
@@ -106,7 +106,7 @@
 		</audienceUris>
 		<certificateStores>
 			<trustManager>
-				<keyStore file="clienttrust.jks" password="storepass" type="JKS" />
+				<keyStore file="test-classes/clienttrust.jks" password="storepass" type="JKS" />
 			</trustManager>
 		</certificateStores>
 		<trustedIssuers>
@@ -114,7 +114,7 @@
 		</trustedIssuers>
 		<maximumClockSkew>1000</maximumClockSkew>
 		<signingKey keyAlias="mytomidpkey" keyPassword="tompass">
-            <keyStore file="server.jks" password="tompass" type="JKS" />
+            <keyStore file="test-classes/server.jks" password="tompass" type="JKS" />
         </signingKey>
 		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 			xsi:type="federationProtocolType" version="1.0.0">
@@ -145,7 +145,7 @@
         </audienceUris>
         <certificateStores>
 			<trustManager>
-				<keyStore file="clienttrust.jks" password="storepass" type="JKS" />
+				<keyStore file="test-classes/clienttrust.jks" password="storepass" type="JKS" />
 			</trustManager>
 		</certificateStores>
         <trustedIssuers>
@@ -153,7 +153,7 @@
         </trustedIssuers>
         <maximumClockSkew>1000</maximumClockSkew>
         <signingKey keyAlias="mytomidpkey" keyPassword="tompass">
-            <keyStore file="server.jks" password="tompass" type="JKS" />
+            <keyStore file="test-classes/server.jks" password="tompass" type="JKS" />
         </signingKey>
         <protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:type="federationProtocolType" version="1.0.0">
