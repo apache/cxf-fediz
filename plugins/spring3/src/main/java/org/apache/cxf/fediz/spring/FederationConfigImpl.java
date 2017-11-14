@@ -38,6 +38,7 @@ public class FederationConfigImpl implements FederationConfig, ServletContextAwa
 
     private Resource configFile;
     private String contextName;
+    private String relativePath;
 
     private ServletContext servletContext;
     private FedizConfigurator configurator = new FedizConfigurator();
@@ -81,7 +82,26 @@ public class FederationConfigImpl implements FederationConfig, ServletContextAwa
             LOG.error("Federation context '" + context + "' not found.");
             throw new IllegalStateException("Federation context '" + context + "' not found.");
         }
+        initializeRelativePath(ctx);
         return ctx;
+    }
+
+    private void initializeRelativePath(FedizContext ctx) {
+        if (relativePath != null && relativePath.length() > 0) {
+            ctx.setRelativePath(relativePath);
+        }
+        if (ctx.getRelativePath() == null) {
+            String catalinaBase = System.getProperty("catalina.base");
+            if (catalinaBase != null && catalinaBase.length() > 0) {
+                ctx.setRelativePath(catalinaBase);
+            }
+        }
+        if (ctx.getRelativePath() == null) {
+            String jettyHome = System.getProperty("jetty.home");
+            if (jettyHome != null && jettyHome.length() > 0) {
+                ctx.setRelativePath(jettyHome);
+            }
+        }
     }
 
     @Override
@@ -101,4 +121,7 @@ public class FederationConfigImpl implements FederationConfig, ServletContextAwa
         this.servletContext = servletContext;
     }
 
+    public void setRelativePath(String relativePath) {
+        this.relativePath = relativePath;
+    }
 }
