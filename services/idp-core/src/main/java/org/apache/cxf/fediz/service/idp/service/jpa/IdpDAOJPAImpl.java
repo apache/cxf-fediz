@@ -333,7 +333,10 @@ public class IdpDAOJPAImpl implements IdpDAO {
         idp.setRpSingleSignOutCleanupConfirmation(entity.isRpSingleSignOutCleanupConfirmation());
         idp.setAutomaticRedirectToRpAfterLogout(entity.isAutomaticRedirectToRpAfterLogout());
         idp.setDisableLogoutAddressValidation(entity.isDisableLogoutAddressValidation());
-        idp.setMaxParameterSize(entity.getMaxParameterSize());
+
+        if (entity.getMaxParameterSize() > 0) {
+            idp.setMaxParameterSize(entity.getMaxParameterSize());
+        }
 
         if (expandList != null && (expandList.contains("all") || expandList.contains("applications"))) {
             for (ApplicationEntity item : entity.getApplications()) {
