@@ -1,4 +1,4 @@
-Apache CXF Fediz 1.3.2 Release Notes
+Apache CXF Fediz 1.3.3 Release Notes
 ------------------------------------
 
 1. Overview
@@ -64,6 +64,17 @@ N.A.
 
 
 8. Specific issues, features, and improvements fixed in this version
+
+Release Notes - CXF-Fediz - Version 1.3.3
+
+Bug
+
+    [FEDIZ-202] - OIDC war files are being included in the plugin directories in the distribution
+    [FEDIZ-213] - Spring plugins don't handle token expiration properly
+
+Improvement
+
+    [FEDIZ-209] - Make FedizResponse properly serializable
 
 Release Notes - CXF-Fediz - Version 1.3.2
 
