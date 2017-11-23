@@ -1,4 +1,4 @@
-Apache CXF Fediz 1.4.2 Release Notes
+Apache CXF Fediz 1.4.3 Release Notes
 ------------------------------------
 
 1. Overview
@@ -64,6 +64,20 @@ N.A.
 
 
 8. Specific issues, features, and improvements fixed in this version
+
+Release Notes - CXF-Fediz - Version 1.4.3
+
+Bug
+
+    [FEDIZ-211] - Local IdP redirection (after token expiry) is not working
+    [FEDIZ-212] - Multiple OIDC logout return to login page
+    [FEDIZ-213] - Spring plugins don't handle token expiration properly
+    [FEDIZ-214] - OIDC generated already expired id_token
+
+Improvement
+
+    [FEDIZ-210] - Limit IdP request parameter size
+
 
 Release Notes - CXF-Fediz - Version 1.4.2
 
