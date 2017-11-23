@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.apache.cxf.fediz</groupId>
         <artifactId>examples</artifactId>
-        <version>1.3.3</version>
+        <version>1.3.4-SNAPSHOT</version>
     </parent>
     <groupId>org.apache.cxf.fediz.examples</groupId>
     <artifactId>springWebapp</artifactId>
