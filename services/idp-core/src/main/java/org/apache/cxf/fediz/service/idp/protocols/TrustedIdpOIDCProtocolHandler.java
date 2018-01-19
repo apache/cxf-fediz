@@ -131,9 +131,8 @@ public class TrustedIdpOIDCProtocolHandler extends AbstractTrustedIdpOAuth2Proto
             WebClient client =
                 WebClient.create(tokenEndpoint, providers, clientId, clientSecret, "cxf-tls.xml");
 
-            ClientConfiguration config = WebClient.getConfig(client);
-
             if (LOG.isDebugEnabled()) {
+                ClientConfiguration config = WebClient.getConfig(client);
                 config.getOutInterceptors().add(new LoggingOutInterceptor());
                 config.getInInterceptors().add(new LoggingInInterceptor());
             }
