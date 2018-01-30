@@ -69,7 +69,7 @@
         <spring.security.version>4.2.3.RELEASE</spring.security.version>
         <tomcat7.version>7.0.82</tomcat7.version>
         <tomcat8.version>8.5.23</tomcat8.version>
-        <wss4j.version>2.1.11</wss4j.version>
+        <wss4j.version>2.1.12</wss4j.version>
 
         <tomcat.url>http://localhost:8080/manager/text</tomcat.url>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
