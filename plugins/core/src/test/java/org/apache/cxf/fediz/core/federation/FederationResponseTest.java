@@ -362,6 +362,43 @@ public class FederationResponseTest {
         Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
     }
 
+    @org.junit.Test
+    public void validateSAML2TokenSubjectWithComment() throws Exception {
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        String subject = "alice<!---->o=example.com";
+        callbackHandler.setSubjectName(subject);
+        ConditionsBean cp = new ConditionsBean();
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
+        callbackHandler.setConditions(cp);
+
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
+        String rstr = createSamlToken(assertion, "mystskey", true, STSUtil.SAMPLE_RSTR_MSG);
+
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
+
+        configurator = null;
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+
+        FedizProcessor wfProc = new FederationProcessorImpl();
+        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
+
+        Assert.assertEquals("Principal name wrong", subject,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
+                            .size());
+        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+    }
+
     /**
      * Validate SAML 2 token which doesn't include the role SAML attribute
      */
