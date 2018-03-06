@@ -49,13 +49,14 @@
             <homeRealm type="String">urn:org:apache:cxf:fediz:idp:realm-A</homeRealm>
             <claimTypesRequested>
                 <claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role" optional="false" />
-				<claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname" optional="true" />
-				<claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname" optional="true" />
-				<claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress" optional="true" />
+                <claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname" optional="true" />
+                <claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname" optional="true" />
+                <claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress" optional="true" />
             </claimTypesRequested>
         </protocol>
         <logoutURL>/secure/logout</logoutURL>
         <logoutRedirectTo>/index.html</logoutRedirectTo>
+        <claimsTransformer type="Class">org.apache.cxf.fediz.systests.cxf.ClaimTransformerTest</claimsTransformer>
     </contextConfig>
 </FedizConfig>
 

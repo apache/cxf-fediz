@@ -47,6 +47,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.RequestState;
 import org.apache.cxf.fediz.core.TokenValidator;
@@ -221,8 +222,14 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             created = lifeTime.getCreated();
         }
 
+        List<Claim> claims = validatorResponse.getClaims();
+        if (config.getClaimsTransformer() != null) {
+            LOG.debug("invoking ClaimsTransformer");
+            claims = config.getClaimsTransformer().processClaims(validatorResponse.getClaims());
+        }
+
         FedizResponse fedResponse = new FedizResponse(validatorResponse.getUsername(), validatorResponse.getIssuer(),
-                                                      validatorResponse.getRoles(), validatorResponse.getClaims(),
+                                                      validatorResponse.getRoles(), claims,
                                                       validatorResponse.getAudience(), created, expires, rst,
                                                       validatorResponse.getUniqueTokenId());
 

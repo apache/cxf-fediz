@@ -28,6 +28,7 @@
                 <xs:element ref="logoutURL" minOccurs="0" />
                 <xs:element ref="logoutRedirectTo" minOccurs="0" />
                 <xs:element ref="logoutRedirectToConstraint" minOccurs="0" />
+                <xs:element ref="claimsTransformer" minOccurs="0" />
             </xs:sequence>
             <xs:attribute name="name" use="required" type="xs:string" />
 
@@ -221,6 +222,16 @@
             </xs:documentation>
         </xs:annotation>
     </xs:element>
+
+    <xs:complexType name="ClaimsTransformerType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="type" type="argumentType" />
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:element name="claimsTransformer" type="ClaimsTransformerType" />
 
     <xs:element name="issuer" type="CallbackType" />
     <xs:element name="homeRealm" type="CallbackType" />

@@ -35,6 +35,7 @@ import org.apache.cxf.fediz.core.config.jaxb.CallbackType;
 import org.apache.cxf.fediz.core.config.jaxb.CertificateStores;
 import org.apache.cxf.fediz.core.config.jaxb.ClaimType;
 import org.apache.cxf.fediz.core.config.jaxb.ClaimTypesRequested;
+import org.apache.cxf.fediz.core.config.jaxb.ClaimsTransformerType;
 import org.apache.cxf.fediz.core.config.jaxb.ContextConfig;
 import org.apache.cxf.fediz.core.config.jaxb.FederationProtocolType;
 import org.apache.cxf.fediz.core.config.jaxb.FedizConfig;
@@ -84,6 +85,7 @@ public class FedizConfigurationTest {
     private static final String SUBJECT_VALUE_2 = ".*CN=www.sts2.com.*";
     private static final String SUBJECT_VALUE_3 = ".*CN=www.sts3.com.*";
 
+    private static final String CLAIMSTRANFORMER_CLASS = "org.apache.fediz.MyClaimsTransformer.class";
 
     private static final String CONFIG_FILE = "./target/fedizconfig.xml";
 
@@ -212,6 +214,11 @@ public class FedizConfigurationTest {
         CallbackType issuer = new CallbackType();
         issuer.setValue(ISSUER);
         protocol.setIssuer(issuer);
+
+        ClaimsTransformerType claimsTransformer = new ClaimsTransformerType();
+        claimsTransformer.setType(ArgumentType.CLASS);
+        claimsTransformer.setValue(CLAIMSTRANFORMER_CLASS);
+        config.setClaimsTransformer(claimsTransformer);
 
         return rootConfig;
 
