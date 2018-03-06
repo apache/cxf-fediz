@@ -32,8 +32,10 @@ import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
+import org.apache.cxf.fediz.core.config.jaxb.ArgumentType;
 import org.apache.cxf.fediz.core.config.jaxb.CallbackType;
 import org.apache.cxf.fediz.core.config.jaxb.CertificateStores;
+import org.apache.cxf.fediz.core.config.jaxb.ClaimsTransformerType;
 import org.apache.cxf.fediz.core.config.jaxb.ContextConfig;
 import org.apache.cxf.fediz.core.config.jaxb.FederationProtocolType;
 import org.apache.cxf.fediz.core.config.jaxb.KeyManagersType;
@@ -44,6 +46,7 @@ import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuers;
 import org.apache.cxf.fediz.core.exception.IllegalConfigurationException;
+import org.apache.cxf.fediz.core.processor.ClaimsProcessor;
 import org.apache.cxf.fediz.core.util.CertsUtils;
 import org.apache.wss4j.common.cache.ReplayCache;
 import org.apache.wss4j.common.cache.ReplayCacheFactory;
@@ -258,6 +261,41 @@ public class FedizContext implements Closeable {
             }
         }
         return replayCache;
+    }
+
+    public ClaimsProcessor getClaimsTransformer() {
+        ClaimsTransformerType  claimsTransformerType  = config.getClaimsTransformer();
+        if (claimsTransformerType != null) {
+            ArgumentType type = claimsTransformerType.getType();
+            if (type.equals(ArgumentType.CLASS)) {
+                String clazzName = type.value();
+                Class<?> clazz;
+                try {
+                    clazz = getClassloader().loadClass(clazzName);
+                    Object obj = clazz.newInstance();
+                    if (obj instanceof ClaimsProcessor) {
+                        return (ClaimsProcessor) obj;
+                    } else {
+                        LOG.error("The configured ClaimsTransformer is not an instance of ClaimsProcessor !");
+                        return null;
+                    }
+                    
+                } catch (ClassNotFoundException e) {
+                    LOG.error("The specified ClaimsTransformer can not be found. Check your classpath");
+                    return null;
+                
+                } catch (InstantiationException e) {
+                    LOG.error("The specified ClaimsTransformer can not be instantiated.");
+                    return null;
+                
+                } catch (IllegalAccessException e) {
+                    LOG.error("The specified ClaimsTransformer can not be accessed.");
+                    return null;
+                }
+                
+            }
+        }
+        return null;
     }
 
     public String getName() {
