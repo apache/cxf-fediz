@@ -62,14 +62,15 @@ import org.slf4j.LoggerFactory;
  */
 public final class DOMUtils {
     private static final Logger LOG = LoggerFactory.getLogger(DOMUtils.class);
-    
+
     private static final String XMLNAMESPACE = "xmlns";
 
     private static final DocumentBuilderFactory DBF = DocumentBuilderFactory.newInstance();
-    
+
     static {
         try {
             DBF.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            DBF.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
 
             DBF.setValidating(false);
             DBF.setIgnoringComments(false);
