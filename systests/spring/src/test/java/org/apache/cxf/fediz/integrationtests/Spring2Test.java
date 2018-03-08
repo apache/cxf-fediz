@@ -251,6 +251,13 @@ public class Spring2Test extends AbstractTests {
     }
 
     @Override
+    @Test
+    @Ignore
+    public void testEntityExpansionAttack2() throws Exception {
+
+    }
+
+    @Override
     @org.junit.Test
     public void testCSRFAttack() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
