@@ -20,6 +20,7 @@ package org.apache.cxf.fediz.service.idp.beans;
 
 import java.io.StringWriter;
 
+import javax.xml.XMLConstants;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -46,7 +47,9 @@ public class TokenSerializer {
         if (rpToken != null) {
             StringWriter sw = new StringWriter();
             try {
-                Transformer t = TransformerFactory.newInstance().newTransformer();
+                TransformerFactory tf = TransformerFactory.newInstance();
+                tf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+                Transformer t = tf.newTransformer();
                 t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
                 t.transform(new DOMSource(rpToken), new StreamResult(sw));
             } catch (TransformerException te) {
