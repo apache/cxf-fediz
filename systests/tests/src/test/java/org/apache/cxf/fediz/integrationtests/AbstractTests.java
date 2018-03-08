@@ -728,6 +728,59 @@ public abstract class AbstractTests {
         // webClient.close();
     }
 
+    @Test
+    public void testEntityExpansionAttack2() throws Exception {
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
+        String user = "alice";
+        String password = "ecila";
+
+        // Get the initial token
+        CookieManager cookieManager = new CookieManager();
+        final WebClient webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        final HtmlPage idpPage = webClient.getPage(url);
+        webClient.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+
+        // Parse the form to get the token (wresult)
+        DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
+
+        String entity =
+            IOUtils.toString(this.getClass().getClassLoader().getResource("entity2.xml").openStream(), "UTF-8");
+        String reference = "&m;";
+
+        for (DomElement result : results) {
+            if ("wresult".equals(result.getAttributeNS(null, "name"))) {
+                // Now modify the Signature
+                String value = result.getAttributeNS(null, "value");
+                value = entity + value;
+                value = value.replace("alice", reference);
+                result.setAttributeNS(null, "value", value);
+            }
+        }
+
+        // Invoke back on the RP
+
+        final HtmlForm form = idpPage.getFormByName("signinresponseform");
+        final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
+
+        try {
+            button.click();
+            Assert.fail("Failure expected on an entity expansion attack");
+        } catch (FailingHttpStatusCodeException ex) {
+            // expected
+            Assert.assertTrue(401 == ex.getStatusCode() || 403 == ex.getStatusCode());
+        }
+
+        webClient.close();
+    }
+
     @org.junit.Test
     public void testCSRFAttack() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
