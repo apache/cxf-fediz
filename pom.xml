@@ -68,7 +68,7 @@
         <spring.version>4.3.10.RELEASE</spring.version>
         <spring.security.version>4.2.3.RELEASE</spring.security.version>
         <tomcat7.version>7.0.85</tomcat7.version>
-        <tomcat8.version>8.5.28</tomcat8.version>
+        <tomcat8.version>8.5.29</tomcat8.version>
         <woodstox.core.version>4.4.1</woodstox.core.version>
         <wss4j.version>2.1.12</wss4j.version>
 
