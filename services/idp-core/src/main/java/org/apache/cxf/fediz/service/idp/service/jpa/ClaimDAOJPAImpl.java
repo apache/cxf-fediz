@@ -28,7 +28,6 @@ import javax.persistence.Query;
 
 import org.apache.cxf.fediz.service.idp.domain.Claim;
 import org.apache.cxf.fediz.service.idp.service.ClaimDAO;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;

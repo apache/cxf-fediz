@@ -32,10 +32,8 @@ import javax.servlet.ServletResponse;
 import org.apache.cxf.fediz.service.idp.domain.Entitlement;
 import org.apache.cxf.fediz.service.idp.domain.Role;
 import org.apache.cxf.fediz.service.idp.service.RoleDAO;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;

@@ -27,6 +27,7 @@ import java.security.cert.X509Certificate;
 import java.util.Collections;
 
 import org.w3c.dom.Element;
+
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.config.TrustManager;

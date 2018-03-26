@@ -30,6 +30,7 @@ import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 import org.w3c.dom.Element;
+
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.ClaimTypes;

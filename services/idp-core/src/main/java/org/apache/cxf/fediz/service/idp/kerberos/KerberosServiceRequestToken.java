@@ -35,6 +35,7 @@ package org.apache.cxf.fediz.service.idp.kerberos;
 
 import java.util.Arrays;
 import java.util.Collection;
+
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 

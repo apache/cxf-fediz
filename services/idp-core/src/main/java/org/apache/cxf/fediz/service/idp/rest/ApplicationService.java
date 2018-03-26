@@ -38,7 +38,6 @@ import javax.ws.rs.core.UriInfo;
 
 import org.apache.cxf.fediz.service.idp.domain.Application;
 import org.apache.cxf.fediz.service.idp.domain.RequestClaim;
-
 import org.springframework.security.access.prepost.PreAuthorize;
 
 

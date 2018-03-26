@@ -20,6 +20,7 @@
 package org.apache.cxf.fediz.core;
 
 import org.w3c.dom.Element;
+
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 

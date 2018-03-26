@@ -27,6 +27,7 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Response;
 
 import org.w3c.dom.Document;
+
 import org.apache.cxf.configuration.security.AuthorizationPolicy;
 import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.jaxrs.utils.JAXRSUtils;

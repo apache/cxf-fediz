@@ -40,7 +40,6 @@ import org.apache.cxf.fediz.service.idp.domain.Application;
 import org.apache.cxf.fediz.service.idp.domain.Claim;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
-
 import org.springframework.security.access.prepost.PreAuthorize;
 
 @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })

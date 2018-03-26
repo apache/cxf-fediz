@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.w3c.dom.Document;
+
 import org.apache.cxf.fediz.core.config.CertificateValidationMethod;
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.config.TrustManager;

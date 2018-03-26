@@ -27,7 +27,6 @@ import javax.persistence.Query;
 
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 import org.apache.cxf.fediz.service.idp.service.TrustedIdpDAO;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;

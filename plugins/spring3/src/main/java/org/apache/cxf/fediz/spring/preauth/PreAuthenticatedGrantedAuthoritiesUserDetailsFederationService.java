@@ -30,7 +30,6 @@ import org.springframework.security.core.authority.GrantedAuthoritiesContainer;
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
-
 import org.springframework.util.Assert;
 
 /**

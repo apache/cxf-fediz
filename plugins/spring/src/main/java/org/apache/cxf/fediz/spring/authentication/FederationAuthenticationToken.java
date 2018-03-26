@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.w3c.dom.Element;
+
 import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.FedizPrincipal;
 import org.apache.cxf.fediz.core.processor.FedizResponse;

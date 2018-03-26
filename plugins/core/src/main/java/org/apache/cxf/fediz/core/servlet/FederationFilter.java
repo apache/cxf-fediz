@@ -31,6 +31,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
 import org.w3c.dom.Element;
+
 import org.apache.cxf.fediz.core.FedizPrincipal;
 import org.apache.cxf.fediz.core.SecurityTokenThreadLocal;
 

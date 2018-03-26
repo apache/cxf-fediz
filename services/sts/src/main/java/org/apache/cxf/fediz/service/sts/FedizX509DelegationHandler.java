@@ -19,13 +19,13 @@
 package org.apache.cxf.fediz.service.sts;
 
 import org.w3c.dom.Element;
+
 import org.apache.cxf.sts.request.ReceivedToken;
 import org.apache.cxf.sts.request.ReceivedToken.STATE;
 import org.apache.cxf.sts.token.delegation.TokenDelegationHandler;
 import org.apache.cxf.sts.token.delegation.TokenDelegationParameters;
 import org.apache.cxf.sts.token.delegation.TokenDelegationResponse;
 import org.apache.wss4j.dom.WSConstants;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

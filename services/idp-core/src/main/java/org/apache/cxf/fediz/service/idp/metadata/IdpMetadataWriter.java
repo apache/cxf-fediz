@@ -26,6 +26,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.w3c.dom.Document;
+
 import org.apache.cxf.fediz.core.util.CertsUtils;
 import org.apache.cxf.fediz.core.util.SignatureUtils;
 import org.apache.cxf.fediz.service.idp.domain.Claim;

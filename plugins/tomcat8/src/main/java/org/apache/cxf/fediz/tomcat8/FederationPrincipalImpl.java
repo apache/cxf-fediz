@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.w3c.dom.Element;
+
 import org.apache.catalina.realm.GenericPrincipal;
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimCollection;

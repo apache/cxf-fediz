@@ -27,6 +27,7 @@ import java.util.Arrays;
 import javax.security.auth.Subject;
 
 import org.w3c.dom.Element;
+
 import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.eclipse.jetty.server.UserIdentity;
 

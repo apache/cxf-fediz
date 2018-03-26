@@ -32,6 +32,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
 
 import org.w3c.dom.Element;
+
 import org.xml.sax.SAXException;
 
 import org.apache.cxf.fediz.core.Claim;

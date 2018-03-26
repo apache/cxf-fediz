@@ -43,8 +43,8 @@
         <commons.logging.version>1.2</commons.logging.version>
         <commons.io.version>2.5</commons.io.version>
         <commons.validator.version>1.6</commons.validator.version>
-        <cxf.version>3.2.3</cxf.version>
-        <cxf.build-utils.version>3.3.0</cxf.build-utils.version>
+        <cxf.version>3.2.4</cxf.version>
+        <cxf.build-utils.version>3.4.0</cxf.build-utils.version>
         <dbcp.version>2.1.1</dbcp.version>
         <easymock.version>3.4</easymock.version>
         <ehcache.version>2.10.4</ehcache.version>
@@ -455,13 +455,25 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>2.17</version>
+                    <version>3.0.0</version>
                     <dependencies>
                         <dependency>
                             <groupId>org.apache.cxf.build-utils</groupId>
                             <artifactId>cxf-buildtools</artifactId>
                             <version>${cxf.build-utils.version}</version>
                         </dependency>
+                        <dependency>
+                            <groupId>com.puppycrawl.tools</groupId>
+                            <artifactId>checkstyle</artifactId>
+                            <version>8.7</version>
+                            <exclusions>
+                                <!--  MCHECKSTYLE-156  -->
+                                <exclusion>
+                                    <groupId>com.sun</groupId>
+                                    <artifactId>tools</artifactId>
+                                </exclusion>
+                            </exclusions>
+                       </dependency>
                     </dependencies>
                     <configuration>
                         <encoding>UTF-8</encoding>
@@ -477,7 +489,6 @@
                                 <failsOnError>true</failsOnError>
                                 <linkXRef>false</linkXRef>
                                 <suppressionsLocation>${fediz.resources.base.path}cxf-checkstyle-suppressions.xml</suppressionsLocation>
-                                <sourceDirectory>${basedir}/src</sourceDirectory>
                                 <excludes>**/archetype-resources/**/*.java</excludes>
                                 <excludes>**/jaxb/**/*.java</excludes>
                             </configuration>

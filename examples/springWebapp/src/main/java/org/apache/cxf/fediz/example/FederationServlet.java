@@ -42,7 +42,6 @@ import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.SecurityTokenThreadLocal;
 import org.apache.cxf.fediz.spring.FederationUser;
 import org.apache.cxf.fediz.spring.authentication.FederationAuthenticationToken;
-
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;

@@ -26,7 +26,6 @@ import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.config.CacheConfiguration;
-
 import org.apache.cxf.fediz.core.RequestState;
 import org.apache.wss4j.common.cache.EHCacheManagerHolder;
 import org.apache.wss4j.common.util.Loader;

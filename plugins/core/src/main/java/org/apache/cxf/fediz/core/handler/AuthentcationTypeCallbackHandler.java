@@ -25,7 +25,6 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.apache.cxf.fediz.core.spi.WAuthCallback;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

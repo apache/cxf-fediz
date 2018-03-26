@@ -32,7 +32,6 @@ import org.apache.cxf.fediz.service.idp.domain.Claim;
 import org.apache.cxf.fediz.service.idp.domain.RequestClaim;
 import org.apache.cxf.fediz.service.idp.service.ApplicationDAO;
 import org.apache.cxf.fediz.service.idp.service.ClaimDAO;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
