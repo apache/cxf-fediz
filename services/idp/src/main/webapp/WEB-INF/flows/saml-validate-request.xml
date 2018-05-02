@@ -63,6 +63,7 @@
             <set name="flowScope.SAMLResponse" value="requestParameters.SAMLResponse" />
             <set name="flowScope.SAMLRequest" value="requestParameters.SAMLRequest" />
             <set name="flowScope.Signature" value="requestParameters.Signature" />
+            <set name="flowScope.SigAlg" value="requestParameters.SigAlg" />
         </on-entry>
         <if test="requestParameters.RelayState == null or requestParameters.RelayState.isEmpty()"
             then="viewBadRequest" />
@@ -86,8 +87,8 @@
     
     <action-state id="parseSAMLAuthnRequest">
         <evaluate expression="authnRequestParser.parseSAMLRequest(flowRequestContext, flowScope.idpConfig,
-                                                              flowScope.SAMLRequest, flowScope.Signature,
-                                                              flowScope.RelayState)" />
+                                                              flowScope.SAMLRequest, flowScope.SigAlg,
+                                                              flowScope.Signature, flowScope.RelayState)" />
         <transition to="retrieveConsumerURL"/>
         <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
     </action-state>
