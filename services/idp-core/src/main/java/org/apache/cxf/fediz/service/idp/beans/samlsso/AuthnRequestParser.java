@@ -24,8 +24,10 @@ import java.io.InputStreamReader;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.List;
 
 import org.w3c.dom.Document;
 
@@ -55,6 +57,7 @@ import org.apache.wss4j.dom.saml.WSSSAMLKeyInfoProcessor;
 import org.apache.wss4j.dom.validate.Credential;
 import org.apache.wss4j.dom.validate.SignatureTrustValidator;
 import org.apache.wss4j.dom.validate.Validator;
+import org.apache.xml.security.algorithms.JCEMapper;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.security.impl.SAMLSignatureProfileValidator;
 import org.opensaml.security.credential.BasicCredential;
@@ -75,11 +78,25 @@ import org.springframework.webflow.execution.RequestContext;
 public class AuthnRequestParser {
 
     private static final Logger LOG = LoggerFactory.getLogger(AuthnRequestParser.class);
+    private static final String RSA_SHA256 = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
+    private static final String RSA_SHA384 = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha384";
+    private static final String RSA_SHA512 = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha512";
+    private static final String RSA_SHA1_MGF1 = "http://www.w3.org/2007/05/xmldsig-more#sha1-rsa-MGF1";
+    private static final String RSA_SHA256_MGF1 = "http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1";
+    private static final String DSA_SHA256 = "http://www.w3.org/2009/xmldsig11#dsa-sha256";
+    private static final List<String> SIG_ALGS;
+
+    static {
+        List<String> sigAlgs = Arrays.asList(SSOConstants.RSA_SHA1, SSOConstants.DSA_SHA1, RSA_SHA256, RSA_SHA384,
+                                             RSA_SHA512, RSA_SHA1_MGF1, RSA_SHA256_MGF1, DSA_SHA256);
+        SIG_ALGS = Collections.unmodifiableList(sigAlgs);
+    }
+
     private boolean supportDeflateEncoding;
     private boolean requireSignature = true;
 
     public void parseSAMLRequest(RequestContext context, Idp idp, String samlRequest,
-                                 String signature, String relayState) throws ProcessingException {
+                                 String sigAlg, String signature, String relayState) throws ProcessingException {
         LOG.debug("Received SAML Request: {}", samlRequest);
 
         if (samlRequest == null) {
@@ -98,8 +115,34 @@ public class AuthnRequestParser {
             SAMLAuthnRequest authnRequest = new SAMLAuthnRequest(parsedRequest);
             WebUtils.putAttributeInFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST, authnRequest);
 
-            validateSignature(context, parsedRequest, idp, signature, relayState,
+            // Check the signature
+            try {
+                if (parsedRequest.isSigned()) {
+                    // Check destination
+                    checkDestination(context, parsedRequest);
+
+                    // Check signature
+                    X509Certificate validatingCert = getValidatingCertificate(idp, authnRequest.getIssuer());
+                    Crypto issuerCrypto = new CertificateStore(new X509Certificate[] {validatingCert});
+                    validateAuthnRequestSignature(parsedRequest.getSignature(), issuerCrypto);
+                } else if (signature != null) {
+                    // Check destination
+                    checkDestination(context, parsedRequest);
+
+                    // Check signature
+                    validateSeparateSignature(idp, sigAlg, signature, relayState,
                               samlRequest, authnRequest.getIssuer());
+                } else if (requireSignature) {
+                    LOG.debug("No signature is present, therefore the request is rejected");
+                    throw new ProcessingException(TYPE.BAD_REQUEST);
+                } else {
+                    LOG.debug("No signature is present, but this is allowed by configuration");
+                }
+            } catch (Exception ex) {
+                LOG.debug("Error validating SAML Signature", ex);
+                throw new ProcessingException(TYPE.BAD_REQUEST);
+            }
+
             validateRequest(parsedRequest);
 
             LOG.debug("SAML Request with id '{}' successfully parsed", parsedRequest.getID());
@@ -230,48 +273,33 @@ public class AuthnRequestParser {
         }
     }
 
-    private void validateSignature(RequestContext context, AuthnRequest authnRequest, Idp idp,
-                                   String signature, String relayState, String samlRequest,
-                                   String realm) throws ProcessingException {
-        try {
-            if (authnRequest.isSigned()) {
-                // Check destination
-                checkDestination(context, authnRequest);
+    private void validateSeparateSignature(Idp idp, String sigAlg, String signature, String relayState,
+                                           String samlRequest, String realm) throws Exception {
+        // Check signature
+        X509Certificate validatingCert = getValidatingCertificate(idp, realm);
 
-                // Check signature
-                X509Certificate validatingCert = getValidatingCertificate(idp, realm);
-                Crypto issuerCrypto =
-                    new CertificateStore(Collections.singletonList(validatingCert).toArray(new X509Certificate[0]));
-                validateAuthnRequestSignature(authnRequest.getSignature(), issuerCrypto);
-            } else if (signature != null) {
-                // Check destination
-                checkDestination(context, authnRequest);
+        // Process the received SigAlg parameter - fall back to RSA SHA1
+        String processedSigAlg = null;
+        if (sigAlg != null && SIG_ALGS.contains(sigAlg)) {
+            processedSigAlg = sigAlg;
+        } else {
+            LOG.debug("Supplied SigAlg parameter is either null or not known, so falling back to use RSA-SHA1");
+            processedSigAlg = SSOConstants.RSA_SHA1;
+        }
 
-                // Check signature
-                X509Certificate validatingCert = getValidatingCertificate(idp, realm);
+        java.security.Signature sig =
+            java.security.Signature.getInstance(JCEMapper.translateURItoJCEID(processedSigAlg));
+        sig.initVerify(validatingCert);
 
-                java.security.Signature sig = java.security.Signature.getInstance("SHA1withRSA");
-                sig.initVerify(validatingCert);
+        // Recreate request to sign
+        String requestToSign = SSOConstants.SAML_REQUEST + "=" + URLEncoder.encode(samlRequest, "UTF-8")
+        + "&" + SSOConstants.RELAY_STATE + "=" + relayState + "&" + SSOConstants.SIG_ALG
+        + "=" + URLEncoder.encode(processedSigAlg, StandardCharsets.UTF_8.name());
 
-                // Recreate request to sign
-                String requestToSign = SSOConstants.SAML_REQUEST + "=" + URLEncoder.encode(samlRequest, "UTF-8")
-                     + "&" + SSOConstants.RELAY_STATE + "=" + relayState + "&" + SSOConstants.SIG_ALG
-                     + "=" + URLEncoder.encode(SSOConstants.RSA_SHA1, StandardCharsets.UTF_8.name());
+        sig.update(requestToSign.getBytes(StandardCharsets.UTF_8));
 
-                sig.update(requestToSign.getBytes(StandardCharsets.UTF_8));
-
-                if (!sig.verify(Base64.getDecoder().decode(signature))) {
-                    LOG.debug("Signature validation failed");
-                    throw new ProcessingException(TYPE.BAD_REQUEST);
-                }
-            } else if (requireSignature) {
-                LOG.debug("No signature is present, therefore the request is rejected");
-                throw new ProcessingException(TYPE.BAD_REQUEST);
-            } else {
-                LOG.debug("No signature is present, but this is allowed by configuration");
-            }
-        } catch (Exception ex) {
-            LOG.debug("Error validating SAML Signature", ex);
+        if (!sig.verify(Base64.getDecoder().decode(signature))) {
+            LOG.debug("Signature validation failed");
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
     }

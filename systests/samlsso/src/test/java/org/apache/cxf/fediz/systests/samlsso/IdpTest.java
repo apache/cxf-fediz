@@ -460,6 +460,89 @@ public class IdpTest {
     }
 
     @org.junit.Test
+    public void testSeparateSignatureRSASHA256() throws Exception {
+        OpenSAMLUtil.initSamlEngine();
+
+        // Create SAML AuthnRequest
+        Document doc = DOMUtils.createDocument();
+        doc.appendChild(doc.createElement("root"));
+        // Create the AuthnRequest
+        String consumerURL = "https://localhost:" + getRpHttpsPort() + "/"
+            + getServletContextName() + "/secure/fedservlet";
+        AuthnRequest authnRequest =
+            new DefaultAuthnRequestBuilder().createAuthnRequest(
+                null, "urn:org:apache:cxf:fediz:fedizhelloworld", consumerURL
+            );
+        authnRequest.setDestination("https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml");
+
+        Element authnRequestElement = OpenSAMLUtil.toDom(authnRequest, doc);
+        String authnRequestEncoded = encodeAuthnRequest(authnRequestElement);
+
+        String urlEncodedRequest = URLEncoder.encode(authnRequestEncoded, "UTF-8");
+
+        String relayState = UUID.randomUUID().toString();
+
+        // Sign request
+        Crypto crypto = CryptoFactory.getInstance("stsKeystoreA.properties");
+
+        CryptoType cryptoType = new CryptoType(CryptoType.TYPE.ALIAS);
+        cryptoType.setAlias("realma");
+
+        // Get the private key
+        PrivateKey privateKey = crypto.getPrivateKey("realma", "realma");
+
+        java.security.Signature signature = java.security.Signature.getInstance("SHA256withRSA");
+        signature.initSign(privateKey);
+
+        String requestToSign = SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
+        requestToSign += "&" + SSOConstants.RELAY_STATE + "=" + relayState;
+        String encodedSignatureAlgorithm =
+            URLEncoder.encode("http://www.w3.org/2001/04/xmldsig-more#rsa-sha256", StandardCharsets.UTF_8.name());
+        requestToSign += "&" + SSOConstants.SIG_ALG + "=" + encodedSignatureAlgorithm;
+
+        signature.update(requestToSign.getBytes(StandardCharsets.UTF_8));
+        byte[] signBytes = signature.sign();
+
+        String encodedSignature = Base64.getEncoder().encodeToString(signBytes);
+
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml/up?";
+        url += SSOConstants.RELAY_STATE + "=" + relayState;
+        url += "&" + SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
+        url += "&" + SSOConstants.SIG_ALG + "=" + encodedSignatureAlgorithm;
+        url += "&" + SSOConstants.SIGNATURE + "=" + URLEncoder.encode(encodedSignature, StandardCharsets.UTF_8.name());
+
+        String user = "alice";
+        String password = "ecila";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        final HtmlPage idpPage = webClient.getPage(url);
+        webClient.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+
+        org.opensaml.saml.saml2.core.Response samlResponse =
+            parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
+        String expected = "urn:oasis:names:tc:SAML:2.0:status:Success";
+        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+
+        // Check claims
+        String parsedResponse = DOM2Writer.nodeToString(samlResponse.getDOM().getOwnerDocument());
+        String claim = ClaimTypes.FIRSTNAME.toString();
+        Assert.assertTrue(parsedResponse.contains(claim));
+        claim = ClaimTypes.LASTNAME.toString();
+        Assert.assertTrue(parsedResponse.contains(claim));
+        claim = ClaimTypes.EMAILADDRESS.toString();
+        Assert.assertTrue(parsedResponse.contains(claim));
+
+        webClient.close();
+    }
+
+    @org.junit.Test
     public void testSuccessfulSSOInvokeOnIdP() throws Exception {
         OpenSAMLUtil.initSamlEngine();
 
