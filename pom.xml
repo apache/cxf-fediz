@@ -43,7 +43,7 @@
         <commons.logging.version>1.2</commons.logging.version>
         <commons.io.version>2.5</commons.io.version>
         <commons.validator.version>1.6</commons.validator.version>
-        <cxf.version>3.2.4</cxf.version>
+        <cxf.version>3.2.5-SNAPSHOT</cxf.version>
         <cxf.build-utils.version>3.4.0</cxf.build-utils.version>
         <dbcp.version>2.1.1</dbcp.version>
         <easymock.version>3.4</easymock.version>
@@ -64,7 +64,7 @@
         <spring.version>4.3.10.RELEASE</spring.version>
         <spring.security.version>4.2.3.RELEASE</spring.security.version>
         <tomcat8.version>8.5.30</tomcat8.version>
-        <wss4j.version>2.2.1</wss4j.version>
+        <wss4j.version>2.2.2-SNAPSHOT</wss4j.version>
 
         <tomcat.url>http://localhost:8080/manager/text</tomcat.url>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
