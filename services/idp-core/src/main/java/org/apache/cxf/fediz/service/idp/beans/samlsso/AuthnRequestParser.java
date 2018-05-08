@@ -292,9 +292,10 @@ public class AuthnRequestParser {
         sig.initVerify(validatingCert);
 
         // Recreate request to sign
-        String requestToSign = SSOConstants.SAML_REQUEST + "=" + URLEncoder.encode(samlRequest, "UTF-8")
-        + "&" + SSOConstants.RELAY_STATE + "=" + relayState + "&" + SSOConstants.SIG_ALG
-        + "=" + URLEncoder.encode(processedSigAlg, StandardCharsets.UTF_8.name());
+        String requestToSign =
+                SSOConstants.SAML_REQUEST + "=" + URLEncoder.encode(samlRequest, StandardCharsets.UTF_8.name())
+                + "&" + SSOConstants.RELAY_STATE + "=" + URLEncoder.encode(relayState, StandardCharsets.UTF_8.name())
+                + "&" + SSOConstants.SIG_ALG + "=" + URLEncoder.encode(processedSigAlg, StandardCharsets.UTF_8.name());
 
         sig.update(requestToSign.getBytes(StandardCharsets.UTF_8));
 
