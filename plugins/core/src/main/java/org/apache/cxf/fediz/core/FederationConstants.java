@@ -150,6 +150,12 @@ public final class FederationConstants extends FedizConstants {
      * element.
      */
     public static final String PARAM_RESULT_PTR = "wresultptr";
+    
+    /**
+     * This OPTIONAL session attribute prefix append to request RelayState value specifies 
+     * initial RequestState created before redirecting to IDP
+     */
+    public static final String SESSION_SAVED_REQUEST_STATE_PREFIX = "SAVED_REQUEST_STATE_";
 
     public static final Map<String, URI> AUTH_TYPE_MAP;
     static {

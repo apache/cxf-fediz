@@ -43,6 +43,7 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.FedizPrincipal;
+import org.apache.cxf.fediz.core.RequestState;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
@@ -299,7 +300,7 @@ public class FederationAuthenticator extends FormAuthenticator {
 
                 // Save original request in our session
                 try {
-                    saveRequest(request, redirectionResponse.getRequestState().getState());
+                    saveRequest(request, redirectionResponse.getRequestState());
                 } catch (IOException ioe) {
                     LOG.debug("Request body too big to save during authentication");
                     response.sendError(HttpServletResponse.SC_FORBIDDEN, sm
@@ -333,7 +334,8 @@ public class FederationAuthenticator extends FormAuthenticator {
         return false;
     }
 
-    protected void saveRequest(Request request, String contextId) throws IOException {
+    protected void saveRequest(Request request, RequestState requestState) throws IOException {
+        String contextId = requestState.getState();
         String uri = request.getDecodedRequestURI();
         Session session = request.getSessionInternal(true);
         if (session != null) {
@@ -352,6 +354,9 @@ public class FederationAuthenticator extends FormAuthenticator {
                 sb.append(saved.getQueryString());
             }
             session.setNote(SESSION_SAVED_URI_PREFIX + contextId, sb.toString());
+            //we set Request State as session attribute for later retrieval in SigninHandler
+            request.getSession().setAttribute(
+                FederationConstants.SESSION_SAVED_REQUEST_STATE_PREFIX + requestState.getState(), requestState);
         }
     }
 
