@@ -135,6 +135,14 @@
                                     <outputDirectory>target/tomcat/idp/webapps/fediz-idp-sts</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
+                                    <groupId>org.apache.cxf.fediz.systests.webapps</groupId>
+                                    <artifactId>fediz-systests-webapps-simple</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>war</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target/tomcat/rp/webapps/simpleWebapp</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
                                     <groupId>org.apache.cxf.fediz.systests</groupId>
                                     <artifactId>fediz-systests-tests</artifactId>
                                     <version>${project.version}</version>
