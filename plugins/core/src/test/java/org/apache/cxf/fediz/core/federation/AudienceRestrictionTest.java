@@ -153,8 +153,7 @@ public class AudienceRestrictionTest {
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_RESULT)).andReturn(rstr);
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_ACTION))
             .andReturn(FederationConstants.ACTION_SIGNIN);
-        String relayState = "asfnaosif123123";
-        EasyMock.expect(req.getParameter("RelayState")).andReturn(relayState);
+        EasyMock.expect(req.getParameter("RelayState")).andReturn(null);
         EasyMock.expect(req.getAttribute("javax.servlet.request.X509Certificate")).andReturn(null);
         EasyMock.expect(req.getQueryString()).andReturn(null);
         EasyMock.replay(req);
@@ -197,8 +196,7 @@ public class AudienceRestrictionTest {
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_RESULT)).andReturn(rstr);
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_ACTION))
             .andReturn(FederationConstants.ACTION_SIGNIN);
-        String relayState = "asfnaosif123123";
-        EasyMock.expect(req.getParameter("RelayState")).andReturn(relayState);
+        EasyMock.expect(req.getParameter("RelayState")).andReturn(null);
         EasyMock.expect(req.getAttribute("javax.servlet.request.X509Certificate")).andReturn(null);
         EasyMock.expect(req.getQueryString()).andReturn(null);
         EasyMock.replay(req);
@@ -241,8 +239,7 @@ public class AudienceRestrictionTest {
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_RESULT)).andReturn(rstr);
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_ACTION))
             .andReturn(FederationConstants.ACTION_SIGNIN);
-        String relayState = "asfnaosif123123";
-        EasyMock.expect(req.getParameter("RelayState")).andReturn(relayState);
+        EasyMock.expect(req.getParameter("RelayState")).andReturn(null);
         EasyMock.expect(req.getAttribute("javax.servlet.request.X509Certificate")).andReturn(null);
         EasyMock.expect(req.getQueryString()).andReturn(null);
         EasyMock.replay(req);
@@ -282,8 +279,7 @@ public class AudienceRestrictionTest {
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_RESULT)).andReturn(rstr);
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_ACTION))
             .andReturn(FederationConstants.ACTION_SIGNIN);
-        String relayState = "asfnaosif123123";
-        EasyMock.expect(req.getParameter("RelayState")).andReturn(relayState);
+        EasyMock.expect(req.getParameter("RelayState")).andReturn(null);
         EasyMock.expect(req.getAttribute("javax.servlet.request.X509Certificate")).andReturn(null);
         EasyMock.expect(req.getQueryString()).andReturn(null);
         EasyMock.replay(req);
@@ -323,8 +319,7 @@ public class AudienceRestrictionTest {
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_RESULT)).andReturn(rstr);
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_ACTION))
             .andReturn(FederationConstants.ACTION_SIGNIN);
-        String relayState = "asfnaosif123123";
-        EasyMock.expect(req.getParameter("RelayState")).andReturn(relayState);
+        EasyMock.expect(req.getParameter("RelayState")).andReturn(null);
         EasyMock.expect(req.getAttribute("javax.servlet.request.X509Certificate")).andReturn(null);
         EasyMock.expect(req.getQueryString()).andReturn(null);
         EasyMock.replay(req);
@@ -367,8 +362,7 @@ public class AudienceRestrictionTest {
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_RESULT)).andReturn(rstr);
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_ACTION))
             .andReturn(FederationConstants.ACTION_SIGNIN);
-        String relayState = "asfnaosif123123";
-        EasyMock.expect(req.getParameter("RelayState")).andReturn(relayState);
+        EasyMock.expect(req.getParameter("RelayState")).andReturn(null);
         EasyMock.expect(req.getAttribute("javax.servlet.request.X509Certificate")).andReturn(null);
         EasyMock.expect(req.getQueryString()).andReturn(null);
         EasyMock.replay(req);
