@@ -203,7 +203,7 @@ public class FederationAuthenticator extends FormAuthenticator {
             FedizPrincipal principal = signinHandler.handleRequest(request, response);
             if (principal != null) {
                 LOG.debug("Authentication of '{}' was successful", principal);
-                resumeRequest(request, response);
+                resumeRequest(signinHandler.getContextParameter(request), request, response);
             } else {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
             }
@@ -231,12 +231,11 @@ public class FederationAuthenticator extends FormAuthenticator {
         return authenticate(request, response);
     }
 
-    protected void resumeRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String contextId = request.getParameter(FederationConstants.PARAM_CONTEXT);
+    protected void resumeRequest(String contextId, HttpServletRequest request,
+                                 HttpServletResponse response) throws IOException {
         if (contextId == null) {
-            LOG.warn("The 'wctx' parameter has not been provided back with signin request.");
+            LOG.warn("The context parameter has not been provided back with signin request.");
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-
         } else {
             Session session = ((Request)request).getSessionInternal();
             String originalURL = (String)session.getNote(FederationAuthenticator.SESSION_SAVED_URI_PREFIX + contextId);

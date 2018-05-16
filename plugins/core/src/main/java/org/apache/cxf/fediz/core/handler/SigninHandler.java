@@ -58,7 +58,7 @@ public class SigninHandler<T> implements RequestHandler<T> {
             && FederationConstants.ACTION_SIGNIN.equals(request.getParameter(FederationConstants.PARAM_ACTION))) {
             return true;
         } else if (fedizContext.getProtocol() instanceof SAMLProtocol
-                   && request.getParameter(SAMLSSOConstants.RELAY_STATE) != null) {
+            && request.getParameter(SAMLSSOConstants.RELAY_STATE) != null) {
             return true;
         }
         return false;
@@ -103,22 +103,23 @@ public class SigninHandler<T> implements RequestHandler<T> {
         FedizRequest federationRequest = new FedizRequest();
 
         String wa = req.getParameter(FederationConstants.PARAM_ACTION);
-        
-        String relayState = req.getParameter("RelayState");
 
         federationRequest.setAction(wa);
         federationRequest.setResponseToken(responseToken);
-        federationRequest.setState(relayState);
+
+        if (fedizContext.getProtocol() instanceof SAMLProtocol) {
+            String relayState = req.getParameter("RelayState");
+            federationRequest.setState(relayState);
+            if (relayState != null) {
+                HttpSession session = req.getSession();
+                federationRequest.setRequestState((RequestState)
+                     session.getAttribute(FederationConstants.SESSION_SAVED_REQUEST_STATE_PREFIX + relayState));
+                session.removeAttribute(FederationConstants.SESSION_SAVED_REQUEST_STATE_PREFIX + relayState);
+            }
+        }
         federationRequest.setRequest(req);
         federationRequest.setCerts((X509Certificate[])req.getAttribute("javax.servlet.request.X509Certificate"));
 
-        if (relayState != null) {
-            HttpSession session = req.getSession();
-            federationRequest.setRequestState((RequestState) 
-                 session.getAttribute(FederationConstants.SESSION_SAVED_REQUEST_STATE_PREFIX + relayState));
-            session.removeAttribute(FederationConstants.SESSION_SAVED_REQUEST_STATE_PREFIX + relayState);
-        }
-        
         FedizProcessor processor = FedizProcessorFactory.newFedizProcessor(fedizContext.getProtocol());
         return processor.processRequest(federationRequest, fedizContext);
     }
@@ -164,6 +165,22 @@ public class SigninHandler<T> implements RequestHandler<T> {
             }
         }
         return token;
+    }
+
+    public String getContextParameter(HttpServletRequest request) {
+        String context = null;
+        if (fedizContext.getProtocol() instanceof FederationProtocol) {
+            context = request.getParameter(FederationConstants.PARAM_CONTEXT);
+            if (context == null) {
+                throw new RuntimeException("Missing required parameter 'wctx'");
+            }
+        } else if (fedizContext.getProtocol() instanceof SAMLProtocol) {
+            context = request.getParameter("RelayState");
+            if (context == null) {
+                throw new RuntimeException("Missing required parameter 'RelayState'");
+            }
+        }
+        return context;
     }
 
     public FedizContext getFedizContext() {
