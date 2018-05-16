@@ -135,6 +135,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
                 tokenStream = CompressionUtils.inflate(deflatedToken);
             }
         } catch (DataFormatException ex) {
+            LOG.warn("Invalid data format", ex);
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         } catch (Base64DecodingException e) {
             throw new ProcessingException(TYPE.INVALID_REQUEST);
@@ -147,7 +148,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             el = doc.getDocumentElement();
 
         } catch (Exception e) {
-            LOG.warn("Failed to parse token: " + e.getMessage());
+            LOG.warn("Failed to parse token", e);
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
 

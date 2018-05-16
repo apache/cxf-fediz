@@ -23,8 +23,10 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.cxf.fediz.core.FederationConstants;
+import org.apache.cxf.fediz.core.RequestState;
 import org.apache.cxf.fediz.core.SAMLSSOConstants;
 import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.config.FedizContext;
@@ -101,13 +103,22 @@ public class SigninHandler<T> implements RequestHandler<T> {
         FedizRequest federationRequest = new FedizRequest();
 
         String wa = req.getParameter(FederationConstants.PARAM_ACTION);
+        
+        String relayState = req.getParameter("RelayState");
 
         federationRequest.setAction(wa);
         federationRequest.setResponseToken(responseToken);
-        federationRequest.setState(req.getParameter("RelayState"));
+        federationRequest.setState(relayState);
         federationRequest.setRequest(req);
         federationRequest.setCerts((X509Certificate[])req.getAttribute("javax.servlet.request.X509Certificate"));
 
+        if (relayState != null) {
+            HttpSession session = req.getSession();
+            federationRequest.setRequestState((RequestState) 
+                 session.getAttribute(FederationConstants.SESSION_SAVED_REQUEST_STATE_PREFIX + relayState));
+            session.removeAttribute(FederationConstants.SESSION_SAVED_REQUEST_STATE_PREFIX + relayState);
+        }
+        
         FedizProcessor processor = FedizProcessorFactory.newFedizProcessor(fedizContext.getProtocol());
         return processor.processRequest(federationRequest, fedizContext);
     }
