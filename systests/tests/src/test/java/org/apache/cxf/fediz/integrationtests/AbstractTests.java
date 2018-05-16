@@ -68,6 +68,17 @@ public abstract class AbstractTests {
 
     public abstract String getRpHttpsPort();
 
+    protected boolean isWSFederation() {
+        return true;
+    }
+
+    private String getLoginFormName() {
+        if (isWSFederation()) {
+            return "signinresponseform";
+        }
+        return "samlsigninresponseform";
+    }
+
     @Test
     public void testAlice() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
@@ -76,7 +87,7 @@ public abstract class AbstractTests {
         String password = "ecila";
 
         final String bodyTextContent =
-            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), getLoginFormName());
 
         Assert.assertTrue("Principal not " + user,
                           bodyTextContent.contains("userPrincipal=" + user));
@@ -107,7 +118,7 @@ public abstract class AbstractTests {
         String password = "ecila";
 
         final String bodyTextContent =
-            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), getLoginFormName());
 
         Assert.assertTrue("Principal not " + user,
                           bodyTextContent.contains("userPrincipal=" + user));
@@ -127,7 +138,7 @@ public abstract class AbstractTests {
         String password = "ecila";
 
         try {
-            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), getLoginFormName());
             Assert.fail("Exception expected");
         } catch (FailingHttpStatusCodeException ex) {
             Assert.assertEquals(ex.getStatusCode(), 403);
@@ -142,7 +153,7 @@ public abstract class AbstractTests {
         String password = "ecila";
 
         try {
-            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), getLoginFormName());
             Assert.fail("Exception expected");
         } catch (FailingHttpStatusCodeException ex) {
             Assert.assertEquals(ex.getStatusCode(), 403);
@@ -157,7 +168,7 @@ public abstract class AbstractTests {
         String password = "alice";
 
         try {
-            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), getLoginFormName());
             Assert.fail("Exception expected");
         } catch (FailingHttpStatusCodeException ex) {
             Assert.assertEquals(ex.getStatusCode(), 401);
@@ -172,7 +183,7 @@ public abstract class AbstractTests {
         String password = "bob";
 
         final String bodyTextContent =
-            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), getLoginFormName());
 
         Assert.assertTrue("Principal not " + user,
                           bodyTextContent.contains("userPrincipal=" + user));
@@ -202,7 +213,7 @@ public abstract class AbstractTests {
         String password = "bob";
 
         final String bodyTextContent =
-            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), getLoginFormName());
 
         Assert.assertTrue("Principal not " + user,
                           bodyTextContent.contains("userPrincipal=" + user));
@@ -222,7 +233,7 @@ public abstract class AbstractTests {
         String password = "bob";
 
         final String bodyTextContent =
-            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), getLoginFormName());
 
         Assert.assertTrue("Principal not " + user,
                           bodyTextContent.contains("userPrincipal=" + user));
@@ -242,7 +253,7 @@ public abstract class AbstractTests {
         String password = "bob";
 
         final String bodyTextContent =
-            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), getLoginFormName());
 
         Assert.assertTrue("Principal not " + user,
                           bodyTextContent.contains("userPrincipal=" + user));
@@ -262,7 +273,7 @@ public abstract class AbstractTests {
         String password = "det";
 
         final String bodyTextContent =
-            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), getLoginFormName());
 
         Assert.assertTrue("Principal not " + user,
                           bodyTextContent.contains("userPrincipal=" + user));
@@ -292,7 +303,7 @@ public abstract class AbstractTests {
         String password = "det";
 
         try {
-            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), getLoginFormName());
             Assert.fail("Exception expected");
         } catch (FailingHttpStatusCodeException ex) {
             Assert.assertEquals(ex.getStatusCode(), 403);
@@ -307,7 +318,7 @@ public abstract class AbstractTests {
         String password = "det";
 
         try {
-            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), getLoginFormName());
             Assert.fail("Exception expected");
         } catch (FailingHttpStatusCodeException ex) {
             Assert.assertEquals(ex.getStatusCode(), 403);
@@ -322,7 +333,7 @@ public abstract class AbstractTests {
         String password = "det";
 
         try {
-            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), getLoginFormName());
             Assert.fail("Exception expected");
         } catch (FailingHttpStatusCodeException ex) {
             Assert.assertEquals(ex.getStatusCode(), 403);
@@ -331,6 +342,11 @@ public abstract class AbstractTests {
 
     @Test
     public void testRPMetadata() throws Exception {
+
+        if (!isWSFederation()) {
+            return;
+        }
+
         String url = "https://localhost:" + getRpHttpsPort()
             + "/" + getServletContextName() + "/FederationMetadata/2007-06/FederationMetadata.xml";
 
@@ -364,6 +380,10 @@ public abstract class AbstractTests {
 
     @Test
     public void testRPLogout() throws Exception {
+
+        if (!isWSFederation()) {
+            return;
+        }
 
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/fedservlet";
@@ -408,6 +428,10 @@ public abstract class AbstractTests {
     @Test
     public void testRPLogoutViaAction() throws Exception {
 
+        if (!isWSFederation()) {
+            return;
+        }
+
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/fedservlet";
         String user = "alice";
@@ -450,6 +474,10 @@ public abstract class AbstractTests {
 
     @Test
     public void testIdPLogout() throws Exception {
+
+        if (!isWSFederation()) {
+            return;
+        }
 
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/fedservlet";
@@ -494,6 +522,10 @@ public abstract class AbstractTests {
     @Test
     public void testIdPLogoutCleanup() throws Exception {
 
+        if (!isWSFederation()) {
+            return;
+        }
+
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/fedservlet";
         String user = "alice";
@@ -536,6 +568,11 @@ public abstract class AbstractTests {
 
     @Test
     public void testAliceModifiedSignature() throws Exception {
+
+        if (!isWSFederation()) {
+            return;
+        }
+
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/fedservlet";
         String user = "alice";
@@ -608,7 +645,7 @@ public abstract class AbstractTests {
         Assert.assertEquals("IDP SignIn Response Form", idpPage2.getTitleText());
 
         // Invoke back on the page1 RP
-        final HtmlForm form = idpPage1.getFormByName("signinresponseform");
+        final HtmlForm form = idpPage1.getFormByName(getLoginFormName());
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
         final HtmlPage rpPage1 = button.click();
         Assert.assertTrue("WS Federation Systests Examples".equals(rpPage1.getTitleText())
@@ -620,7 +657,7 @@ public abstract class AbstractTests {
                           bodyTextContent1.contains("userPrincipal=" + user));
 
         // Invoke back on the page2 RP
-        final HtmlForm form2 = idpPage2.getFormByName("signinresponseform");
+        final HtmlForm form2 = idpPage2.getFormByName(getLoginFormName());
         final HtmlSubmitInput button2 = form2.getInputByName("_eventId_submit");
         final HtmlPage rpPage2 = button2.click();
         String bodyTextContent2 = rpPage2.getBody().getTextContent();
@@ -632,6 +669,10 @@ public abstract class AbstractTests {
 
     @org.junit.Test
     public void testMaliciousRedirect() throws Exception {
+        if (!isWSFederation()) {
+            return;
+        }
+
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
@@ -678,6 +719,11 @@ public abstract class AbstractTests {
 
     @Test
     public void testEntityExpansionAttack() throws Exception {
+
+        if (!isWSFederation()) {
+            return;
+        }
+
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
@@ -730,6 +776,10 @@ public abstract class AbstractTests {
 
     @Test
     public void testEntityExpansionAttack2() throws Exception {
+        if (!isWSFederation()) {
+            return;
+        }
+
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
@@ -783,6 +833,11 @@ public abstract class AbstractTests {
 
     @org.junit.Test
     public void testCSRFAttack() throws Exception {
+
+        if (!isWSFederation()) {
+            return;
+        }
+
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
         csrfAttackTest(url);
     }
@@ -854,6 +909,10 @@ public abstract class AbstractTests {
 
     @org.junit.Test
     public void testCSRFAttack2() throws Exception {
+        if (!isWSFederation()) {
+            return;
+        }
+
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
         csrfAttackTest2(url);
     }

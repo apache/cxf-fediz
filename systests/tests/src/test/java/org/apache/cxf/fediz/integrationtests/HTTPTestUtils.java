@@ -42,7 +42,8 @@ public final class HTTPTestUtils {
         // complete
     }
 
-    public static String login(String url, String user, String password, String idpPort) throws IOException {
+    public static String login(String url, String user, String password, String idpPort,
+                               String formName) throws IOException {
         final WebClient webClient = new WebClient();
         webClient.getOptions().setUseInsecureSSL(true);
         webClient.getCredentialsProvider().setCredentials(
@@ -54,26 +55,12 @@ public final class HTTPTestUtils {
         webClient.getOptions().setJavaScriptEnabled(true);
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
-        final HtmlForm form = idpPage.getFormByName("signinresponseform");
+        final HtmlForm form = idpPage.getFormByName(formName);
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
 
         final HtmlPage rpPage = button.click();
         Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
                             || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
-
-        // webClient.close();
-        return rpPage.getBody().getTextContent();
-    }
-
-    public static String loginForSAMLSSO(String url, String user, String password, String idpPort) throws IOException {
-        final WebClient webClient = new WebClient();
-        webClient.getOptions().setUseInsecureSSL(true);
-        webClient.getCredentialsProvider().setCredentials(
-            new AuthScope("localhost", Integer.parseInt(idpPort)),
-            new UsernamePasswordCredentials(user, password));
-
-        webClient.getOptions().setJavaScriptEnabled(false);
-        final HtmlPage rpPage = webClient.getPage(url);
 
         // webClient.close();
         return rpPage.getBody().getTextContent();

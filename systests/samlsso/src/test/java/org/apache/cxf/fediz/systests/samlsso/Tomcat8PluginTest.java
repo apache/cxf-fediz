@@ -17,21 +17,14 @@
  * under the License.
  */
 
-package org.apache.cxf.fediz.systests.custom;
+package org.apache.cxf.fediz.systests.samlsso;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URLEncoder;
 
 import javax.servlet.ServletException;
-
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.DomNodeList;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
@@ -39,20 +32,16 @@ import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.commons.io.IOUtils;
-import org.apache.cxf.fediz.core.ClaimTypes;
-import org.apache.cxf.fediz.integrationtests.HTTPTestUtils;
-import org.apache.cxf.fediz.tomcat7.FederationAuthenticator;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.wss4j.dom.engine.WSSConfig;
+import org.apache.cxf.fediz.integrationtests.AbstractTests;
+import org.apache.cxf.fediz.tomcat8.FederationAuthenticator;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 
 /**
- * Some tests invoking directly on the IdP and sending custom parameters
+ * Some tests for SAML SSO with the Tomcat 8 plugin, invoking on the Fediz IdP configured for SAML SSO.
  */
-public class CustomParametersTest {
+public class Tomcat8PluginTest extends AbstractTests {
 
     static String idpHttpsPort;
     static String rpHttpsPort;
@@ -62,15 +51,6 @@ public class CustomParametersTest {
 
     @BeforeClass
     public static void init() throws Exception {
-        System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
-        System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
-        System.setProperty("org.apache.commons.logging.simplelog.log.httpclient.wire", "info");
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.commons.httpclient", "info");
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.webflow", "info");
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.security.web", "info");
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf.fediz", "info");
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf", "info");
-
         idpHttpsPort = System.getProperty("idp.https.port");
         Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
         rpHttpsPort = System.getProperty("rp.https.port");
@@ -78,8 +58,6 @@ public class CustomParametersTest {
 
         idpServer = startServer(true, idpHttpsPort);
         rpServer = startServer(false, rpHttpsPort);
-
-        WSSConfig.init();
     }
 
     private static Tomcat startServer(boolean idp, String port)
@@ -170,109 +148,33 @@ public class CustomParametersTest {
         }
     }
 
+    @Override
     public String getIdpHttpsPort() {
         return idpHttpsPort;
     }
 
+    @Override
     public String getRpHttpsPort() {
         return rpHttpsPort;
     }
 
+    @Override
     public String getServletContextName() {
         return "fedizhelloworld";
     }
 
-    // Test a custom parameter that gets passed through to the STS
-    @org.junit.Test
-    public void testCustomParameter() throws Exception {
-        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
-        url += "wa=wsignin1.0";
-        url += "&whr=urn:org:apache:cxf:fediz:idp:realm-A";
-        url += "&wtrealm=urn:org:apache:cxf:fediz:fedizhelloworld";
-        String wreply = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
-        url += "&wreply=" + wreply;
-
-        String user = "alice";
-        String password = "ecila";
-
-        // Successful test
-        WebClient webClient = new WebClient();
-        webClient.getOptions().setUseInsecureSSL(true);
-        webClient.getCredentialsProvider().setCredentials(
-            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
-            new UsernamePasswordCredentials(user, password));
-
-        webClient.getOptions().setJavaScriptEnabled(false);
-
-        String authUrl = url + "&auth_realm="
-            + URLEncoder.encode("<realm xmlns=\"http://cxf.apache.org/custom\">custom-realm</realm>", "UTF-8");
-        HtmlPage idpPage = webClient.getPage(authUrl);
-        webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
-
-        // Parse the form to get the token (wresult)
-        DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
-
-        String wresult = null;
-        for (DomElement result : results) {
-            if ("wresult".equals(result.getAttributeNS(null, "name"))) {
-                wresult = result.getAttributeNS(null, "value");
-                break;
-            }
-        }
-
-        Assert.assertNotNull(wresult);
-
-        webClient.close();
-
-        // Unsuccessful test
-        webClient = new WebClient();
-        webClient.getOptions().setUseInsecureSSL(true);
-        webClient.getCredentialsProvider().setCredentials(
-            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
-            new UsernamePasswordCredentials(user, password));
-
-        webClient.getOptions().setJavaScriptEnabled(false);
-        authUrl = url + "&auth_realm="
-            + URLEncoder.encode("<realm xmlns=\"http://cxf.apache.org/custom\">unknown-realm</realm>", "UTF-8");
-        try {
-            webClient.getPage(authUrl);
-            Assert.fail("Failure expected on a bad auth_realm value");
-        } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 401);
-        }
-
-        webClient.close();
+    @Override
+    protected boolean isWSFederation() {
+        return false;
     }
 
     @org.junit.Test
-    public void testCustomParameterViaRP() throws Exception {
+    @org.junit.Ignore
+    public void testBrowser() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
-        String user = "alice";
-        String password = "ecila";
 
-        final String bodyTextContent =
-            HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), "signinresponseform");
-
-        Assert.assertTrue("Principal not " + user,
-                          bodyTextContent.contains("userPrincipal=" + user));
-        Assert.assertTrue("User " + user + " does not have role Admin",
-                          bodyTextContent.contains("role:Admin=false"));
-        Assert.assertTrue("User " + user + " does not have role Manager",
-                          bodyTextContent.contains("role:Manager=false"));
-        Assert.assertTrue("User " + user + " must have role User",
-                          bodyTextContent.contains("role:User=true"));
-
-        String claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
-                          bodyTextContent.contains(claim + "=Alice"));
-        claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
-                          bodyTextContent.contains(claim + "=Smith"));
-        claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
-                          bodyTextContent.contains(claim + "=alice@realma.org"));
-
+        System.out.println("URL: " + url);
+        Thread.sleep(5 * 60 * 1000);
     }
 
 }

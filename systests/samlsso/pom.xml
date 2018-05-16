@@ -37,13 +37,7 @@
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-core</artifactId>
-            <version>${tomcat7.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.tomcat.embed</groupId>
-            <artifactId>tomcat-embed-logging-juli</artifactId>
-            <version>${tomcat7.version}</version>
+            <version>${tomcat8.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -55,7 +49,7 @@
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-jasper</artifactId>
-            <version>${tomcat7.version}</version>
+            <version>${tomcat8.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -66,7 +60,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.cxf.fediz</groupId>
-            <artifactId>fediz-tomcat7</artifactId>
+            <artifactId>fediz-tomcat8</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
@@ -147,6 +141,14 @@
                                     <outputDirectory>target/tomcat/idp/webapps/fediz-idp-sts</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
+                                    <groupId>org.apache.cxf.fediz.systests.webapps</groupId>
+                                    <artifactId>fediz-systests-webapps-simple</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>war</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target/tomcat/rp/webapps/simpleWebapp</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
                                     <groupId>org.apache.cxf.fediz.systests</groupId>
                                     <artifactId>fediz-systests-tests</artifactId>
                                     <version>${project.version}</version>
@@ -210,6 +212,7 @@
                             </systemPropertyVariables>
                             <includes>
                                 <include>**/idp/**</include>
+                                <include>**/samlsso/**</include>
                             </includes>
                             <argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=256m </argLine>
                             <!--argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=256m -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y</argLine-->
@@ -231,6 +234,7 @@
                 <configuration>
                     <excludes>
                         <exclude>**/idp/**</exclude>
+                        <exclude>**/samlsso/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>

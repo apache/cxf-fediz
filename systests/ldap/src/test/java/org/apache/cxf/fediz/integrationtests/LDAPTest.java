@@ -256,7 +256,7 @@ public class LDAPTest extends AbstractLdapTestUnit {
         String password = "ecila";
 
         final String bodyTextContent =
-            HTTPTestUtils.login(url, user, password, getIdpHttpsPort());
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), "signinresponseform");
 
         Assert.assertTrue("Principal not " + user,
                           bodyTextContent.contains("userPrincipal=" + user));
