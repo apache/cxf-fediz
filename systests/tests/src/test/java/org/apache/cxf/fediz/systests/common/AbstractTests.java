@@ -19,6 +19,9 @@
 
 package org.apache.cxf.fediz.systests.common;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -41,11 +44,14 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.cxf.common.util.Base64Utility;
 import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.util.DOMUtils;
+import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.wss4j.dom.engine.WSSConfig;
 import org.apache.xml.security.keys.KeyInfo;
 import org.apache.xml.security.signature.XMLSignature;
@@ -736,10 +742,6 @@ public abstract class AbstractTests {
     @Test
     public void testEntityExpansionAttack() throws Exception {
 
-        if (!isWSFederation()) {
-            return;
-        }
-
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
@@ -766,18 +768,37 @@ public abstract class AbstractTests {
         String reference = "&m;";
 
         for (DomElement result : results) {
-            if ("wresult".equals(result.getAttributeNS(null, "name"))) {
+            if (getTokenName().equals(result.getAttributeNS(null, "name"))) {
                 // Now modify the Signature
                 String value = result.getAttributeNS(null, "value");
-                value = entity + value;
-                value = value.replace("alice", reference);
-                result.setAttributeNS(null, "value", value);
+                
+                if (isWSFederation()) {
+                    value = entity + value;
+                    value = value.replace("alice", reference);
+                    result.setAttributeNS(null, "value", value);
+                } else {
+                    // Decode response
+                    byte[] deflatedToken = Base64Utility.decode(value);
+                    InputStream inputStream = new ByteArrayInputStream(deflatedToken);
+
+                    Document responseDoc = StaxUtils.read(new InputStreamReader(inputStream, "UTF-8"));
+                    
+                    // Modify SignatureValue to include the entity
+                    String signatureNamespace = "http://www.w3.org/2000/09/xmldsig#";
+                    Node signatureValue =
+                        responseDoc.getElementsByTagNameNS(signatureNamespace, "SignatureValue").item(0);
+                    signatureValue.setTextContent(reference + signatureValue.getTextContent());
+                    
+                    // Re-encode response
+                    String responseMessage = DOM2Writer.nodeToString(responseDoc);
+                    result.setAttributeNS(null, "value", Base64Utility.encode((entity + responseMessage).getBytes()));
+                }
             }
         }
 
         // Invoke back on the RP
 
-        final HtmlForm form = idpPage.getFormByName("signinresponseform");
+        final HtmlForm form = idpPage.getFormByName(getLoginFormName());
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
 
         try {
@@ -793,9 +814,6 @@ public abstract class AbstractTests {
 
     @Test
     public void testEntityExpansionAttack2() throws Exception {
-        if (!isWSFederation()) {
-            return;
-        }
 
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
         String user = "alice";
@@ -823,18 +841,37 @@ public abstract class AbstractTests {
         String reference = "&m;";
 
         for (DomElement result : results) {
-            if ("wresult".equals(result.getAttributeNS(null, "name"))) {
+            if (getTokenName().equals(result.getAttributeNS(null, "name"))) {
                 // Now modify the Signature
                 String value = result.getAttributeNS(null, "value");
-                value = entity + value;
-                value = value.replace("alice", reference);
-                result.setAttributeNS(null, "value", value);
+                
+                if (isWSFederation()) {
+                    value = entity + value;
+                    value = value.replace("alice", reference);
+                    result.setAttributeNS(null, "value", value);
+                } else {
+                    // Decode response
+                    byte[] deflatedToken = Base64Utility.decode(value);
+                    InputStream inputStream = new ByteArrayInputStream(deflatedToken);
+
+                    Document responseDoc = StaxUtils.read(new InputStreamReader(inputStream, "UTF-8"));
+                    
+                    // Modify SignatureValue to include the entity
+                    String signatureNamespace = "http://www.w3.org/2000/09/xmldsig#";
+                    Node signatureValue =
+                        responseDoc.getElementsByTagNameNS(signatureNamespace, "SignatureValue").item(0);
+                    signatureValue.setTextContent(reference + signatureValue.getTextContent());
+                    
+                    // Re-encode response
+                    String responseMessage = DOM2Writer.nodeToString(responseDoc);
+                    result.setAttributeNS(null, "value", Base64Utility.encode((entity + responseMessage).getBytes()));
+                }
             }
         }
 
         // Invoke back on the RP
 
-        final HtmlForm form = idpPage.getFormByName("signinresponseform");
+        final HtmlForm form = idpPage.getFormByName(getLoginFormName());
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
 
         try {
