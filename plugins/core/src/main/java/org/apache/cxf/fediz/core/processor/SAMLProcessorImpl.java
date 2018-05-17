@@ -112,10 +112,6 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             LOG.error("Invalid RelayState");
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
-        if (requestState == null) {
-            LOG.error("Missing Request State");
-            throw new ProcessingException(TYPE.INVALID_REQUEST);
-        }
         return requestState;
     }
 
@@ -265,9 +261,9 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
                 ((SAMLProtocol)config.getProtocol()).isDoNotEnforceKnownIssuer();
             ssoResponseValidator.setEnforceKnownIssuer(!doNotEnforceKnownIssuer);
 
-            ssoResponseValidator.setIssuerIDP(requestState.getIdpServiceAddress());
-            ssoResponseValidator.setRequestId(requestState.getRequestId());
-            ssoResponseValidator.setSpIdentifier(requestState.getIssuerId());
+            ssoResponseValidator.setIssuerIDP(requestState != null ? requestState.getIdpServiceAddress() : null);
+            ssoResponseValidator.setRequestId(requestState != null ? requestState.getRequestId() : null);
+            ssoResponseValidator.setSpIdentifier(requestState != null ? requestState.getIssuerId() : null);
             ssoResponseValidator.setEnforceAssertionsSigned(true);
             ssoResponseValidator.setReplayCache(config.getTokenReplayCache());
 

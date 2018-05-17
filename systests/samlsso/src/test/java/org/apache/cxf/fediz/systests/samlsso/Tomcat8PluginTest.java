@@ -223,7 +223,7 @@ public class Tomcat8PluginTest extends AbstractTests {
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
 
         for (DomElement result : results) {
-            if (getTokenNameFromForm().equals(result.getAttributeNS(null, "name"))) {
+            if (getTokenName().equals(result.getAttributeNS(null, "name"))) {
                 String value = result.getAttributeNS(null, "value");
 
                 // Decode response
@@ -255,6 +255,56 @@ public class Tomcat8PluginTest extends AbstractTests {
         } catch (FailingHttpStatusCodeException ex) {
             // expected
             Assert.assertTrue(401 == ex.getStatusCode() || 403 == ex.getStatusCode());
+        }
+
+        webClient.close();
+    }
+    
+    @Test
+    public void testAliceModifiedContext() throws Exception {
+
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
+            + "/secure/fedservlet";
+        String user = "alice";
+        String password = "ecila";
+
+        // Get the initial token
+        CookieManager cookieManager = new CookieManager();
+        final WebClient webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        final HtmlPage idpPage = webClient.getPage(url);
+        webClient.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+
+        // Parse the form to get the token (wresult)
+        DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
+
+        for (DomElement result : results) {
+            if (getContextName().equals(result.getAttributeNS(null, "name"))) {
+                // Now modify the context
+                String value = result.getAttributeNS(null, "value");
+                value = "H" + value;
+                result.setAttributeNS(null, "value", value);
+            }
+        }
+
+        // Invoke back on the RP
+
+        final HtmlForm form = idpPage.getFormByName(getLoginFormName());
+        final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
+
+        try {
+            button.click();
+            Assert.fail("Failure expected on a modified context");
+        } catch (FailingHttpStatusCodeException ex) {
+            // Request Timeout expected here, as the context isn't known - the session is presumed to have expired
+            Assert.assertTrue(408 == ex.getStatusCode());
         }
 
         webClient.close();

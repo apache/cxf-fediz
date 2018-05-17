@@ -160,7 +160,7 @@ public class SAMLSSOResponseValidator {
         }
 
         // Issuer value must match (be contained in) Issuer IDP
-        if (enforceKnownIssuer && !issuerIDP.startsWith(issuer.getValue())) {
+        if (enforceKnownIssuer && issuerIDP != null && !issuerIDP.startsWith(issuer.getValue())) {
             LOG.debug("Issuer value: " + issuer.getValue() + " does not match issuer IDP: "
                 + issuerIDP);
             throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
@@ -268,7 +268,7 @@ public class SAMLSSOResponseValidator {
             throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
         }
         List<AudienceRestriction> audienceRestrs = conditions.getAudienceRestrictions();
-        if (!matchSaml2AudienceRestriction(spIdentifier, audienceRestrs)) {
+        if (spIdentifier != null && !matchSaml2AudienceRestriction(spIdentifier, audienceRestrs)) {
             LOG.debug("Assertion does not contain unique subject provider identifier "
                      + spIdentifier + " in the audience restriction conditions");
             throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
