@@ -134,7 +134,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             } else {
                 tokenStream = CompressionUtils.inflate(deflatedToken);
             }
-        } catch (DataFormatException ex) {
+        } catch (IllegalArgumentException | DataFormatException ex) {
             LOG.warn("Invalid data format", ex);
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         } catch (Base64DecodingException e) {
