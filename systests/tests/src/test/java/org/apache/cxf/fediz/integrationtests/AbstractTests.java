@@ -887,10 +887,6 @@ public abstract class AbstractTests {
     @org.junit.Test
     public void testCSRFAttack() throws Exception {
 
-        if (!isWSFederation()) {
-            return;
-        }
-
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
         csrfAttackTest(url);
     }
@@ -912,7 +908,7 @@ public abstract class AbstractTests {
         webClient.getOptions().setJavaScriptEnabled(true);
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
-        final HtmlForm form = idpPage.getFormByName("signinresponseform");
+        final HtmlForm form = idpPage.getFormByName(getLoginFormName());
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
 
         final HtmlPage rpPage = button.click();
@@ -941,11 +937,19 @@ public abstract class AbstractTests {
         DomNodeList<DomElement> results = idpPage2.getElementsByTagName("input");
 
         for (DomElement result : results) {
-            if ("wresult".equals(result.getAttributeNS(null, "name"))
-                || "wa".equals(result.getAttributeNS(null, "name"))
-                || "wctx".equals(result.getAttributeNS(null, "name"))) {
-                String value = result.getAttributeNS(null, "value");
-                request.getRequestParameters().add(new NameValuePair(result.getAttributeNS(null, "name"), value));
+            if (isWSFederation()) {
+                if ("wresult".equals(result.getAttributeNS(null, "name"))
+                    || "wa".equals(result.getAttributeNS(null, "name"))
+                    || "wctx".equals(result.getAttributeNS(null, "name"))) {
+                    String value = result.getAttributeNS(null, "value");
+                    request.getRequestParameters().add(new NameValuePair(result.getAttributeNS(null, "name"), value));
+                }
+            } else {
+                if ("SAMLResponse".equals(result.getAttributeNS(null, "name"))
+                    || "RelayState".equals(result.getAttributeNS(null, "name"))) {
+                    String value = result.getAttributeNS(null, "value");
+                    request.getRequestParameters().add(new NameValuePair(result.getAttributeNS(null, "name"), value));
+                }
             }
         }
 
@@ -962,9 +966,6 @@ public abstract class AbstractTests {
 
     @org.junit.Test
     public void testCSRFAttack2() throws Exception {
-        if (!isWSFederation()) {
-            return;
-        }
 
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
         csrfAttackTest2(url);
@@ -994,11 +995,19 @@ public abstract class AbstractTests {
         DomNodeList<DomElement> results = idpPage2.getElementsByTagName("input");
 
         for (DomElement result : results) {
-            if ("wresult".equals(result.getAttributeNS(null, "name"))
-                || "wa".equals(result.getAttributeNS(null, "name"))
-                || "wctx".equals(result.getAttributeNS(null, "name"))) {
-                String value = result.getAttributeNS(null, "value");
-                request.getRequestParameters().add(new NameValuePair(result.getAttributeNS(null, "name"), value));
+            if (isWSFederation()) {
+                if ("wresult".equals(result.getAttributeNS(null, "name"))
+                    || "wa".equals(result.getAttributeNS(null, "name"))
+                    || "wctx".equals(result.getAttributeNS(null, "name"))) {
+                    String value = result.getAttributeNS(null, "value");
+                    request.getRequestParameters().add(new NameValuePair(result.getAttributeNS(null, "name"), value));
+                }
+            } else {
+                if ("SAMLResponse".equals(result.getAttributeNS(null, "name"))
+                    || "RelayState".equals(result.getAttributeNS(null, "name"))) {
+                    String value = result.getAttributeNS(null, "value");
+                    request.getRequestParameters().add(new NameValuePair(result.getAttributeNS(null, "name"), value));
+                }
             }
         }
 
