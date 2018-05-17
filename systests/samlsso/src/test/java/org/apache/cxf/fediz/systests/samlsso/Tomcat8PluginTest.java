@@ -29,6 +29,18 @@ import java.io.InputStreamReader;
 
 import javax.servlet.ServletException;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+
+import com.gargoylesoftware.htmlunit.CookieManager;
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.DomElement;
+import com.gargoylesoftware.htmlunit.html.DomNodeList;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
+
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleState;
@@ -46,17 +58,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-
-import com.gargoylesoftware.htmlunit.CookieManager;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.DomNodeList;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 
 /**
  * Some tests for SAML SSO with the Tomcat 8 plugin, invoking on the Fediz IdP configured for SAML SSO.
