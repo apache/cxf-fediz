@@ -72,14 +72,14 @@ public abstract class AbstractTests {
         return true;
     }
 
-    private String getLoginFormName() {
+    protected String getLoginFormName() {
         if (isWSFederation()) {
             return "signinresponseform";
         }
         return "samlsigninresponseform";
     }
 
-    private String getTokenNameFromForm() {
+    protected String getTokenNameFromForm() {
         if (isWSFederation()) {
             return "wresult";
         }
