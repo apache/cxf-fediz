@@ -269,7 +269,7 @@ public class SAMLSSOResponseValidator {
             throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
         }
         List<AudienceRestriction> audienceRestrs = conditions.getAudienceRestrictions();
-        if (!matchSaml2AudienceRestriction(spIdentifier, audienceRestrs)) {
+        if (!audienceRestrs.isEmpty() && !matchSaml2AudienceRestriction(spIdentifier, audienceRestrs)) {
             LOG.debug("Assertion does not contain unique subject provider identifier "
                      + spIdentifier + " in the audience restriction conditions");
             throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
