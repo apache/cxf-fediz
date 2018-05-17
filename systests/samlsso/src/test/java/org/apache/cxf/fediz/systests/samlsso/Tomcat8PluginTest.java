@@ -19,10 +19,13 @@
 
 package org.apache.cxf.fediz.systests.samlsso;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 import javax.servlet.ServletException;
 
@@ -32,11 +35,28 @@ import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.commons.io.IOUtils;
+import org.apache.cxf.common.util.Base64Utility;
 import org.apache.cxf.fediz.integrationtests.AbstractTests;
 import org.apache.cxf.fediz.tomcat8.FederationAuthenticator;
+import org.apache.cxf.staxutils.StaxUtils;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.wss4j.common.util.DOM2Writer;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+
+import com.gargoylesoftware.htmlunit.CookieManager;
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.DomElement;
+import com.gargoylesoftware.htmlunit.html.DomNodeList;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 
 /**
  * Some tests for SAML SSO with the Tomcat 8 plugin, invoking on the Fediz IdP configured for SAML SSO.
@@ -175,6 +195,69 @@ public class Tomcat8PluginTest extends AbstractTests {
 
         System.out.println("URL: " + url);
         Thread.sleep(5 * 60 * 1000);
+    }
+
+    @Test
+    public void testModifiedSignatureValue() throws Exception {
+
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
+            + "/secure/fedservlet";
+        String user = "alice";
+        String password = "ecila";
+
+        // Get the initial token
+        CookieManager cookieManager = new CookieManager();
+        final WebClient webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        final HtmlPage idpPage = webClient.getPage(url);
+        webClient.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+
+        // Parse the form to get the token (wresult)
+        DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
+
+        for (DomElement result : results) {
+            if (getTokenNameFromForm().equals(result.getAttributeNS(null, "name"))) {
+                String value = result.getAttributeNS(null, "value");
+
+                // Decode response
+                byte[] deflatedToken = Base64Utility.decode(value);
+                InputStream inputStream = new ByteArrayInputStream(deflatedToken);
+
+                Document responseDoc = StaxUtils.read(new InputStreamReader(inputStream, "UTF-8"));
+
+                // Modify SignatureValue
+                String signatureNamespace = "http://www.w3.org/2000/09/xmldsig#";
+                Node signatureValue =
+                    responseDoc.getElementsByTagNameNS(signatureNamespace, "SignatureValue").item(0);
+                signatureValue.setTextContent("H" + signatureValue.getTextContent());
+
+                // Re-encode response
+                String responseMessage = DOM2Writer.nodeToString(responseDoc);
+                result.setAttributeNS(null, "value", Base64Utility.encode(responseMessage.getBytes()));
+            }
+        }
+
+        // Invoke back on the RP
+
+        final HtmlForm form = idpPage.getFormByName(getLoginFormName());
+        final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
+
+        try {
+            button.click();
+            Assert.fail("Failure expected on a modified signature");
+        } catch (FailingHttpStatusCodeException ex) {
+            // expected
+            Assert.assertTrue(401 == ex.getStatusCode() || 403 == ex.getStatusCode());
+        }
+
+        webClient.close();
     }
 
 }
