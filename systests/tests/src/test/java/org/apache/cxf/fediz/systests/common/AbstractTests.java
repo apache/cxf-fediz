@@ -79,6 +79,14 @@ public abstract class AbstractTests {
         return "samlsigninresponseform";
     }
 
+    private String getTokenNameFromForm() {
+        if (isWSFederation()) {
+            return "wresult";
+        }
+
+        return "SAMLResponse";
+    }
+
     @Test
     public void testAlice() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
@@ -569,10 +577,6 @@ public abstract class AbstractTests {
     @Test
     public void testAliceModifiedSignature() throws Exception {
 
-        if (!isWSFederation()) {
-            return;
-        }
-
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/fedservlet";
         String user = "alice";
@@ -596,17 +600,21 @@ public abstract class AbstractTests {
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
 
         for (DomElement result : results) {
-            if ("wresult".equals(result.getAttributeNS(null, "name"))) {
+            if (getTokenNameFromForm().equals(result.getAttributeNS(null, "name"))) {
                 // Now modify the Signature
                 String value = result.getAttributeNS(null, "value");
-                value = value.replace("alice", "bob");
+                if (value.contains("alice")) {
+                    value = value.replace("alice", "bob");
+                } else {
+                    value += "H";
+                }
                 result.setAttributeNS(null, "value", value);
             }
         }
 
         // Invoke back on the RP
 
-        final HtmlForm form = idpPage.getFormByName("signinresponseform");
+        final HtmlForm form = idpPage.getFormByName(getLoginFormName());
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
 
         try {
