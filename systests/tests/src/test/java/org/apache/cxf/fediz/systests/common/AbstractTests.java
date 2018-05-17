@@ -79,12 +79,20 @@ public abstract class AbstractTests {
         return "samlsigninresponseform";
     }
 
-    protected String getTokenNameFromForm() {
+    protected String getTokenName() {
         if (isWSFederation()) {
             return "wresult";
         }
 
         return "SAMLResponse";
+    }
+
+    protected String getContextName() {
+        if (isWSFederation()) {
+            return "wctx";
+        }
+
+        return "RelayState";
     }
 
     @Test
@@ -600,13 +608,13 @@ public abstract class AbstractTests {
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
 
         for (DomElement result : results) {
-            if (getTokenNameFromForm().equals(result.getAttributeNS(null, "name"))) {
+            if (getTokenName().equals(result.getAttributeNS(null, "name"))) {
                 // Now modify the Signature
                 String value = result.getAttributeNS(null, "value");
                 if (value.contains("alice")) {
                     value = value.replace("alice", "bob");
                 } else {
-                    value += "H";
+                    value = "H" + value;
                 }
                 result.setAttributeNS(null, "value", value);
             }
