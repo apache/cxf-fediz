@@ -65,23 +65,7 @@ public final class DOMUtils {
 
     private static final String XMLNAMESPACE = "xmlns";
 
-    private static final DocumentBuilderFactory DBF = DocumentBuilderFactory.newInstance();
-
-    static {
-        try {
-            DBF.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            DBF.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-
-            DBF.setValidating(false);
-            DBF.setIgnoringComments(false);
-            DBF.setIgnoringElementContentWhitespace(true);
-            DBF.setNamespaceAware(true);
-            // DBF.setCoalescing(true);
-            // DBF.setExpandEntityReferences(true);
-        } catch (ParserConfigurationException ex) {
-            LOG.error("Error configuring DocumentBuilderFactory", ex);
-        }
-    }
+    private static final ThreadLocal<DocumentBuilder> DOC_BUILDER_TL = new MyThreadLocal();
 
     private DOMUtils() {
     }
@@ -428,14 +412,12 @@ public final class DOMUtils {
      */
     public static Document readXml(InputStream is) throws SAXException, IOException,
         ParserConfigurationException {
-        DocumentBuilder db = DBF.newDocumentBuilder();
-        return db.parse(is);
+        return createDocumentBuilder().parse(is);
     }
 
     public static Document readXml(Reader is) throws SAXException, IOException, ParserConfigurationException {
         InputSource ips = new InputSource(is);
-        DocumentBuilder db = DBF.newDocumentBuilder();
-        return db.parse(ips);
+        return createDocumentBuilder().parse(ips);
     }
 
     public static Document readXml(StreamSource is) throws SAXException, IOException,
@@ -445,8 +427,7 @@ public final class DOMUtils {
         is2.setByteStream(is.getInputStream());
         is2.setCharacterStream(is.getReader());
 
-        DocumentBuilder db = DBF.newDocumentBuilder();
-        return db.parse(is2);
+        return createDocumentBuilder().parse(is2);
     }
 
     public static void writeXml(Node n, OutputStream os) throws TransformerException {
@@ -459,19 +440,13 @@ public final class DOMUtils {
     }
 
     public static DocumentBuilder createDocumentBuilder() {
-        try {
-            return DBF.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            throw new RuntimeException("Couldn't find a DOM parser.", e);
-        }
+        DocumentBuilder documentBuilder = DOC_BUILDER_TL.get();
+        documentBuilder.reset();
+        return documentBuilder;
     }
 
     public static Document createDocument() {
-        try {
-            return DBF.newDocumentBuilder().newDocument();
-        } catch (ParserConfigurationException e) {
-            throw new RuntimeException("Couldn't find a DOM parser.", e);
-        }
+        return createDocumentBuilder().newDocument();
     }
 
     public static String getPrefixRecursive(Element el, String ns) {
@@ -657,5 +632,24 @@ public final class DOMUtils {
      */
     public static void addNamespacePrefix(Element element, String namespaceUri, String prefix) {
         element.setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, "xmlns:" + prefix, namespaceUri);
+    }
+
+    private static final class MyThreadLocal extends ThreadLocal<DocumentBuilder> {
+
+        @Override
+        protected DocumentBuilder initialValue() {
+            try {
+                DocumentBuilderFactory dfactory = DocumentBuilderFactory.newInstance();
+                dfactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, Boolean.TRUE);
+                dfactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+                dfactory.setValidating(false);
+                dfactory.setNamespaceAware(true);
+
+                return dfactory.newDocumentBuilder();
+            } catch (ParserConfigurationException e) {
+                LOG.error("Error configuring DocumentBuilderFactory", e);
+                throw new RuntimeException(e);
+            }
+        }
     }
 }
