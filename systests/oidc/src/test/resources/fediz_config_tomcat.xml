@@ -23,7 +23,7 @@
      In Fediz 1.0, one keystore was used for SSL and the STS public certificate.
 -->
 <FedizConfig>
-	<contextConfig name="/fediz-oidc">
+	<contextConfig name="/fediz-oidc-tomcat">
 		<audienceUris>
 			<audienceItem>urn:org:apache:cxf:fediz:oidc</audienceItem>
 		</audienceUris>
