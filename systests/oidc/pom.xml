@@ -169,7 +169,7 @@
                                     <version>${project.version}</version>
                                     <type>war</type>
                                     <overWrite>true</overWrite>
-                                    <outputDirectory>target/tomcat/rp/webapps/fediz-oidc</outputDirectory>
+                                    <outputDirectory>target/tomcat/rp/webapps/fediz-oidc-tomcat</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz.systests</groupId>
@@ -195,7 +195,7 @@
                           <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${basedir}/target/tomcat/rp/webapps/fediz-oidc/WEB-INF/lib</outputDirectory>
+                            <outputDirectory>${basedir}/target/tomcat/rp/webapps/fediz-oidc-tomcat/WEB-INF/lib</outputDirectory>
                              <includeScope>compile</includeScope>
                         </configuration>
                     </execution>
@@ -230,7 +230,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${basedir}/target/tomcat/rp/webapps/fediz-oidc/WEB-INF</outputDirectory>
+                            <outputDirectory>${basedir}/target/tomcat/rp/webapps/fediz-oidc-tomcat/WEB-INF</outputDirectory>
                             <resources>          
                                 <resource>
                                     <directory>${basedir}/src/test/resources/oidc</directory>
@@ -258,7 +258,7 @@
                         <configuration>
                             <tasks>
                                 <delete>
-                                    <fileset dir="${basedir}/target/tomcat/rp/webapps/fediz-oidc/META-INF" includes="context.xml" />
+                                    <fileset dir="${basedir}/target/tomcat/rp/webapps/fediz-oidc-tomcat/META-INF" includes="context.xml" />
                                 </delete>
                             </tasks>
                         </configuration>

@@ -20,9 +20,6 @@
 package org.apache.cxf.fediz.systests.oidc;
 
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -38,8 +35,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
-
-import javax.servlet.ServletException;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
@@ -59,14 +54,9 @@ import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.util.WebConnectionWrapper;
 
-import org.apache.catalina.Context;
-import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleState;
-import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.IOUtils;
-import org.apache.cxf.fediz.tomcat8.FederationAuthenticator;
 import org.apache.cxf.rs.security.jose.jwa.SignatureAlgorithm;
 import org.apache.cxf.rs.security.jose.jws.JwsJwtCompactConsumer;
 import org.apache.cxf.rs.security.jose.jwt.JwtConstants;
@@ -74,126 +64,18 @@ import org.apache.cxf.rs.security.jose.jwt.JwtToken;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.wss4j.common.util.Loader;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 
 /**
  * Some OIDC tests.
  */
-public class OIDCTest {
-
-    static String idpHttpsPort;
-    static String rpHttpsPort;
-
-    private static Tomcat idpServer;
-    private static Tomcat rpServer;
+abstract class AbstractOIDCTest {
 
     private static String storedClientId;
     private static String storedClient2Id;
     private static String storedClientPassword;
 
-    @BeforeClass
-    public static void init() throws Exception {
-        System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
-        System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
-        System.setProperty("org.apache.commons.logging.simplelog.log.httpclient.wire", "info");
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.commons.httpclient", "info");
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.webflow", "info");
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.springframework.security.web", "info");
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf.fediz", "info");
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf", "info");
-
-        idpHttpsPort = System.getProperty("idp.https.port");
-        Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
-        rpHttpsPort = System.getProperty("rp.https.port");
-        Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
-
-        idpServer = startServer(true, idpHttpsPort);
-        rpServer = startServer(false, rpHttpsPort);
-
-        loginToClientsPage(rpHttpsPort, idpHttpsPort);
-    }
-
-    private static Tomcat startServer(boolean idp, String port)
-        throws ServletException, LifecycleException, IOException {
-        Tomcat server = new Tomcat();
-        server.setPort(0);
-        String currentDir = new File(".").getCanonicalPath();
-        String baseDir = currentDir + File.separator + "target";
-        server.setBaseDir(baseDir);
-
-        if (idp) {
-            server.getHost().setAppBase("tomcat/idp/webapps");
-        } else {
-            server.getHost().setAppBase("tomcat/rp/webapps");
-        }
-        server.getHost().setAutoDeploy(true);
-        server.getHost().setDeployOnStartup(true);
-
-        Connector httpsConnector = new Connector();
-        httpsConnector.setPort(Integer.parseInt(port));
-        httpsConnector.setSecure(true);
-        httpsConnector.setScheme("https");
-        httpsConnector.setAttribute("keyAlias", "mytomidpkey");
-        httpsConnector.setAttribute("keystorePass", "tompass");
-        httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
-        httpsConnector.setAttribute("truststorePass", "tompass");
-        httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
-        httpsConnector.setAttribute("clientAuth", "want");
-        // httpsConnector.setAttribute("clientAuth", "false");
-        httpsConnector.setAttribute("sslProtocol", "TLS");
-        httpsConnector.setAttribute("SSLEnabled", true);
-
-        server.getService().addConnector(httpsConnector);
-
-        if (idp) {
-            File stsWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp-sts");
-            server.addWebapp("/fediz-idp-sts", stsWebapp.getAbsolutePath());
-
-            File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp");
-            server.addWebapp("/fediz-idp", idpWebapp.getAbsolutePath());
-        } else {
-            File rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-oidc");
-            Context cxt = server.addWebapp("/fediz-oidc", rpWebapp.getAbsolutePath());
-
-            // Substitute the IDP port. Necessary if running the test in eclipse where port filtering doesn't seem
-            // to work
-            File f = new File(currentDir + "/src/test/resources/fediz_config.xml");
-            FileInputStream inputStream = new FileInputStream(f);
-            String content = IOUtils.toString(inputStream, "UTF-8");
-            inputStream.close();
-            if (content.contains("idp.https.port")) {
-                content = content.replaceAll("\\$\\{idp.https.port\\}", "" + idpHttpsPort);
-
-                File f2 = new File(baseDir + "/test-classes/fediz_config.xml");
-                try (FileOutputStream outputStream = new FileOutputStream(f2)) {
-                    IOUtils.write(content, outputStream, "UTF-8");
-                }
-            }
-
-            FederationAuthenticator fa = new FederationAuthenticator();
-            fa.setConfigFile(currentDir + File.separator + "target" + File.separator
-                             + "test-classes" + File.separator + "fediz_config.xml");
-            cxt.getPipeline().addValve(fa);
-        }
-
-        server.start();
-
-        return server;
-    }
-
-    @AfterClass
-    public static void cleanup() throws Exception {
-        try {
-            loginToClientsPageAndDeleteClient(rpHttpsPort, idpHttpsPort);
-        } finally {
-            shutdownServer(idpServer);
-            shutdownServer(rpServer);
-        }
-    }
-
-    private static void shutdownServer(Tomcat server) {
+    protected static void shutdownServer(Tomcat server) {
         try {
             if (server != null && server.getServer() != null
                 && server.getServer().getState() != LifecycleState.DESTROYED) {
@@ -207,21 +89,15 @@ public class OIDCTest {
         }
     }
 
-    public String getIdpHttpsPort() {
-        return idpHttpsPort;
-    }
+    protected abstract String getIdpHttpsPort();
 
-    public String getRpHttpsPort() {
-        return rpHttpsPort;
-    }
+    protected abstract String getRpHttpsPort();
 
-    public String getServletContextName() {
-        return "fedizhelloworld";
-    }
+    protected abstract String getServletContextName();
 
     // Runs as BeforeClass: Login to the OIDC Clients page + create two new clients
-    private static void loginToClientsPage(String rpPort, String idpPort) throws Exception {
-        String url = "https://localhost:" + rpPort + "/fediz-oidc/console/clients";
+    protected static void loginToClientsPage(String rpPort, String idpPort, String servletContext) throws Exception {
+        String url = "https://localhost:" + rpPort + "/" + servletContext + "/console/clients";
         String user = "alice";
         String password = "ecila";
 
@@ -295,8 +171,9 @@ public class OIDCTest {
     }
 
     // Runs as AfterClass: Login to the OIDC Clients page + delete the created clients!
-    private static void loginToClientsPageAndDeleteClient(String rpPort, String idpPort) throws Exception {
-        String url = "https://localhost:" + rpPort + "/fediz-oidc/console/clients";
+    protected static void loginToClientsPageAndDeleteClient(String rpPort, String idpPort, 
+                                                            String servletContext) throws Exception {
+        String url = "https://localhost:" + rpPort + "/" + servletContext + "/console/clients";
         String user = "alice";
         String password = "ecila";
 
@@ -344,7 +221,7 @@ public class OIDCTest {
     // Test that we managed to create the clients ok
     @org.junit.Test
     public void testCreatedClients() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/console/clients";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/console/clients";
         String user = "alice";
         String password = "ecila";
 
@@ -386,7 +263,7 @@ public class OIDCTest {
     // Test that "bob" can't see the clients created by "alice"
     @org.junit.Test
     public void testRegisteredClientsAsBob() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/console/clients";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/console/clients";
         String user = "bob";
         String password = "bob";
 
@@ -408,7 +285,7 @@ public class OIDCTest {
     @org.junit.Test
     public void testOIDCLoginForClient1() throws Exception {
 
-        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/idp/authorize?";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize?";
         url += "client_id=" + storedClientId;
         url += "&response_type=code";
         url += "&scope=openid";
@@ -422,7 +299,7 @@ public class OIDCTest {
 
         // Now use the code to get an IdToken
 
-        url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/oauth2/token";
+        url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/token";
         WebRequest request = new WebRequest(new URL(url), HttpMethod.POST);
 
         request.setRequestParameters(new ArrayList<NameValuePair>());
@@ -445,7 +322,7 @@ public class OIDCTest {
     @org.junit.Test
     public void testOIDCLoginForClient2() throws Exception {
 
-        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/idp/authorize?";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize?";
         url += "client_id=" + storedClient2Id;
         url += "&response_type=code";
         url += "&scope=openid";
@@ -459,7 +336,7 @@ public class OIDCTest {
 
         // Now use the code to get an IdToken
 
-        url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/oauth2/token";
+        url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/token";
         WebRequest request = new WebRequest(new URL(url), HttpMethod.POST);
 
         request.setRequestParameters(new ArrayList<NameValuePair>());
@@ -482,7 +359,7 @@ public class OIDCTest {
     @org.junit.Test
     public void testUsingCodeForOtherClient() throws Exception {
         // Get the code for the first client
-        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/idp/authorize?";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize?";
         url += "client_id=" + storedClientId;
         url += "&response_type=code";
         url += "&scope=openid";
@@ -495,7 +372,7 @@ public class OIDCTest {
         Assert.assertNotNull(authorizationCode);
 
         // Now try and get a token for the second client
-        url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/oauth2/token";
+        url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/token";
         WebRequest request = new WebRequest(new URL(url), HttpMethod.POST);
 
         request.setRequestParameters(new ArrayList<NameValuePair>());
@@ -515,7 +392,7 @@ public class OIDCTest {
     @org.junit.Test
     public void testBadClientId() throws Exception {
 
-        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/idp/authorize?";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize?";
         url += "client_id=" + storedClientId + 2;
         url += "&response_type=code";
         url += "&scope=openid";
@@ -534,7 +411,7 @@ public class OIDCTest {
     @org.junit.Test
     public void testEmptyClientId() throws Exception {
 
-        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/idp/authorize?";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize?";
         url += "client_id=";
         url += "&response_type=code";
         url += "&scope=openid";
@@ -553,7 +430,7 @@ public class OIDCTest {
     @org.junit.Test
     public void testIncorrectRedirectURI() throws Exception {
 
-        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/idp/authorize?";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize?";
         url += "client_id=" + storedClientId;
         url += "&response_type=code";
         url += "&scope=openid";
@@ -572,7 +449,7 @@ public class OIDCTest {
 
     @org.junit.Test
     public void testCreateClientWithInvalidRegistrationURI() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/console/clients";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/console/clients";
         String user = "alice";
         String password = "ecila";
 
@@ -596,7 +473,7 @@ public class OIDCTest {
 
     @org.junit.Test
     public void testCreateClientWithRegistrationURIFragment() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/console/clients";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/console/clients";
         String user = "alice";
         String password = "ecila";
 
@@ -620,7 +497,7 @@ public class OIDCTest {
 
     @org.junit.Test
     public void testCreateClientWithInvalidAudienceURI() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/console/clients";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/console/clients";
         String user = "alice";
         String password = "ecila";
 
@@ -644,7 +521,7 @@ public class OIDCTest {
 
     @org.junit.Test
     public void testCreateClientWithInvalidLogoutURI() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/console/clients";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/console/clients";
         String user = "alice";
         String password = "ecila";
 
@@ -668,7 +545,7 @@ public class OIDCTest {
 
     @org.junit.Test
     public void testCreateClientWithAudienceURIFragment() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/console/clients";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/console/clients";
         String user = "alice";
         String password = "ecila";
 
@@ -692,7 +569,7 @@ public class OIDCTest {
 
     @org.junit.Test
     public void testClientCredentialsSTS() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/oauth2/token";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/token";
         WebRequest request = new WebRequest(new URL(url), HttpMethod.POST);
 
         request.setRequestParameters(new ArrayList<NameValuePair>());
@@ -713,7 +590,7 @@ public class OIDCTest {
 
     @org.junit.Test
     public void testCreateClientWithSupportedTLD() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/console/clients";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/console/clients";
         String user = "alice";
         String password = "ecila";
 
@@ -753,7 +630,7 @@ public class OIDCTest {
     @org.junit.Test
     public void testLogout() throws Exception {
         // 1. Log in
-        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/idp/authorize?";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize?";
         url += "client_id=" + storedClientId;
         url += "&response_type=code";
         url += "&scope=openid";
@@ -781,7 +658,7 @@ public class OIDCTest {
         Assert.assertNotNull(authorizationCode);
 
         // 3. Log out
-        String logoutUrl = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/idp/logout?";
+        String logoutUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/logout?";
         logoutUrl += "client_id=" + storedClientId;
 
         webClient.getOptions().setJavaScriptEnabled(false);
@@ -806,7 +683,7 @@ public class OIDCTest {
     @org.junit.Test
     public void testLogoutViaTokenHint() throws Exception {
         // 1. Log in
-        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/idp/authorize?";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize?";
         url += "client_id=" + storedClientId;
         url += "&response_type=code";
         url += "&scope=openid";
@@ -824,7 +701,7 @@ public class OIDCTest {
         String data = storedClientId + ":" + storedClientPassword;
         String authorizationHeader = "Basic " + Base64.encodeBase64String(data.getBytes(StandardCharsets.UTF_8));
         webClient2.addRequestHeader("Authorization", authorizationHeader);
-        String tokenUrl = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/oauth2/token";
+        String tokenUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/token";
         WebRequest request = new WebRequest(new URL(tokenUrl), HttpMethod.POST);
 
         request.setRequestParameters(new ArrayList<NameValuePair>());
@@ -844,7 +721,7 @@ public class OIDCTest {
         webClient2.close();
 
         // 2. Log out using the token hint
-        String logoutUrl = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/idp/logout?";
+        String logoutUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/logout?";
         logoutUrl += "id_token_hint=" + idToken;
 
         webClient.getOptions().setJavaScriptEnabled(false);
@@ -869,7 +746,7 @@ public class OIDCTest {
     // Test that the form has the correct CSRF token in it when creating a client
     @org.junit.Test
     public void testCSRFClientRegistration() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/console/clients";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/console/clients";
         String user = "alice";
         String password = "ecila";
 
@@ -901,7 +778,7 @@ public class OIDCTest {
     @org.junit.Test
     public void testOIDCLoginForClient1WithRoles() throws Exception {
 
-        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/idp/authorize?";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize?";
         url += "client_id=" + storedClientId;
         url += "&response_type=code";
         url += "&scope=openid";
@@ -916,7 +793,7 @@ public class OIDCTest {
 
         // Now use the code to get an IdToken
 
-        url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/oauth2/token";
+        url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/token";
         WebRequest request = new WebRequest(new URL(url), HttpMethod.POST);
 
         request.setRequestParameters(new ArrayList<NameValuePair>());
@@ -939,7 +816,7 @@ public class OIDCTest {
     @org.junit.Test
     public void testOIDCLoginForClient1WithRolesScope() throws Exception {
 
-        String url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/idp/authorize?";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize?";
         url += "client_id=" + storedClientId;
         url += "&response_type=code";
         url += "&scope=openid%20roles";
@@ -953,7 +830,7 @@ public class OIDCTest {
 
         // Now use the code to get an IdToken
 
-        url = "https://localhost:" + getRpHttpsPort() + "/fediz-oidc/oauth2/token";
+        url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/token";
         WebRequest request = new WebRequest(new URL(url), HttpMethod.POST);
 
         request.setRequestParameters(new ArrayList<NameValuePair>());
