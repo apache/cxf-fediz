@@ -458,14 +458,6 @@ public final class DOMUtils {
         t.transform(new DOMSource(n), new StreamResult(os));
     }
 
-    public static DocumentBuilder createDocumentBuilder() {
-        try {
-            return DBF.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            throw new RuntimeException("Couldn't find a DOM parser.", e);
-        }
-    }
-
     public static Document createDocument() {
         try {
             return DBF.newDocumentBuilder().newDocument();
