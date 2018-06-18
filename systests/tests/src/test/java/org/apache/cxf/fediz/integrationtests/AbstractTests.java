@@ -881,7 +881,7 @@ public abstract class AbstractTests {
             Assert.assertTrue(401 == ex.getStatusCode() || 403 == ex.getStatusCode());
         }
 
-        webClient.close();
+        // webClient.close();
     }
 
     @org.junit.Test
