@@ -61,8 +61,8 @@
         <openjpa.version>2.4.2</openjpa.version>
         <servlet.version>2.5</servlet.version>
         <slf4j.version>1.7.25</slf4j.version>
-        <spring.version>4.3.17.RELEASE</spring.version>
-        <spring.security.version>4.2.6.RELEASE</spring.security.version>
+        <spring.version>4.3.18.RELEASE</spring.version>
+        <spring.security.version>4.2.7.RELEASE</spring.security.version>
         <tomcat8.version>8.5.31</tomcat8.version>
         <wss4j.version>2.2.2-SNAPSHOT</wss4j.version>
 
