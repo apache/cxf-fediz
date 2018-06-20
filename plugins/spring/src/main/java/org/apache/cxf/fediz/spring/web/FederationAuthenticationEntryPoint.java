@@ -79,7 +79,7 @@ public class FederationAuthenticationEntryPoint implements AuthenticationEntryPo
         Assert.notNull(this.federationConfig, "FederationConfig cannot be null.");
     }
 
-    public final void commence(final HttpServletRequest servletRequest, final HttpServletResponse response,
+    public void commence(final HttpServletRequest servletRequest, final HttpServletResponse response,
             final AuthenticationException authenticationException) throws IOException, ServletException {
 
         FedizContext fedContext = federationConfig.getFedizContext();
