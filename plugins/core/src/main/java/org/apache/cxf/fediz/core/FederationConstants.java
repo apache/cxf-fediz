@@ -48,7 +48,7 @@ public final class FederationConstants extends FedizConstants {
 
     /**
      * This OPTIONAL parameter is the URL to which responses are directed. Note that this serves roughly the
-     * same purpose as the WS-Addressing <wsa:ReplyTo> header for the WS-Trust SOAP RST messages.
+     * same purpose as the WS-Addressing &lt;wsa:ReplyTo&gt; header for the WS-Trust SOAP RST messages.
      */
     public static final String PARAM_REPLY = "wreply";
 
@@ -74,7 +74,7 @@ public final class FederationConstants extends FedizConstants {
     public static final String PARAM_AUTH_TYPE = "wauth";
 
     /**
-     * This OPTIONAL parameter specifies a token request using either a <wst:RequestSecurityToken> element or
+     * This OPTIONAL parameter specifies a token request using either a &lt;wst:RequestSecurityToken&gt; element or
      * a full request message as described in WS-Trust. If this parameter is not specified, it is assumed that
      * the responding service knows the correct type of token to return. Note that this can contain the same
      * RST payload as used in WS-Trust RST messages.
@@ -118,9 +118,9 @@ public final class FederationConstants extends FedizConstants {
 
     /**
      * This REQUIRED parameter specifies the result of the token issuance. This can take the form of the
-     * <wst:RequestSecurityTokenResponse> element or <wst:RequestSecurityTokenResponseCollection> element, a
-     * SOAP security token request response (that is, a <S:Envelope>) as detailed in WS-Trust, or a SOAP
-     * <S:Fault> element.
+     * &lt;wst:RequestSecurityTokenResponse&gt; element or &lt;wst:RequestSecurityTokenResponseCollection&gt; element, a
+     * SOAP security token request response (that is, a &lt;S:Envelope&gt;) as detailed in WS-Trust, or a SOAP
+     * &lt;S:Fault&gt; element.
      */
     public static final String PARAM_RESULT = "wresult";
 
@@ -138,15 +138,16 @@ public final class FederationConstants extends FedizConstants {
 
     /**
      * This OPTIONAL parameter specifies a URL for where to find the request expressed as a
-     * <wst:RequestSecurityToken> element. Note that this does not have a WS-Trust parallel. The wreqptr
+     * &lt;wst:RequestSecurityToken&gt; element. Note that this does not have a WS-Trust parallel. The wreqptr
      * parameter MUST NOT be included in a token request if wreq is present.
      */
     public static final String PARAM_REQUEST_PTR = "wreqptr";
 
     /**
      * This parameter specifies a URL to which an HTTP GET can be issued. The result is a document of type
-     * text/xml that contains the issuance result. This can either be the <wst:RequestSecurityTokenResponse>
-     * element, the <wst:RequestSecurityTokenResponseCollection> element, a SOAP response, or a SOAP <S:Fault>
+     * text/xml that contains the issuance result. This can either be the &lt;wst:RequestSecurityTokenResponse&gt;
+     * element, the &lt;wst:RequestSecurityTokenResponseCollection&gt; element,
+     * a SOAP response, or a SOAP &lt;S:Fault&gt;
      * element.
      */
     public static final String PARAM_RESULT_PTR = "wresultptr";
