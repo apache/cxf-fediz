@@ -30,7 +30,7 @@
     <packaging>bundle</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <cxf.xjc-utils.version>3.1.0</cxf.xjc-utils.version>
+        <cxf.xjc-utils.version>3.2.2</cxf.xjc-utils.version>
     </properties>
     <dependencies>
         <dependency>
