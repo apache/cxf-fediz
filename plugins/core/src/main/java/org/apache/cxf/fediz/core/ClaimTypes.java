@@ -50,7 +50,7 @@ public interface ClaimTypes {
 
     /**
      * (mail in inetOrgPerson) Preferred address for the "To:" field of email
-     * to be sent to the Subject, usually of the form <user>@<domain>.
+     * to be sent to the Subject, usually of the form user@domain.
      * According to inetOrgPerson using [RFC 1274]: This attribute type specifies
      * an electronic mailbox attribute following the syntax specified in RFC 822.
      */

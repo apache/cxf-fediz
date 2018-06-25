@@ -130,8 +130,9 @@ public final class ClassLoaderUtils {
     }
 
     /**
-     * Load a given resources. <p/> This method will try to load the resources
+     * Load a given resources. <p> This method will try to load the resources
      * using the following methods (in order):
+     * </p>
      * <ul>
      * <li>From Thread.currentThread().getContextClassLoader()
      * <li>From ClassLoaderUtil.class.getClassLoader()
@@ -219,9 +220,9 @@ public final class ClassLoaderUtils {
 
 
     /**
-     * This is a convenience method to load a resource as a stream. <p/> The
+     * This is a convenience method to load a resource as a stream. <p> The
      * algorithm used to find the resource is given in getResource()
-     *
+     * </p>
      * @param resourceName The name of the resource to load
      * @param callingClass The Class object of the calling object
      */
@@ -236,8 +237,9 @@ public final class ClassLoaderUtils {
     }
 
     /**
-     * Load a class with a given name. <p/> It will try to load the class in the
+     * Load a class with a given name. <p> It will try to load the class in the
      * following order:
+     * </p>
      * <ul>
      * <li>From Thread.currentThread().getContextClassLoader()
      * <li>Using the basic Class.forName()
