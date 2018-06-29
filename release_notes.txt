@@ -1,4 +1,4 @@
-Apache CXF Fediz 1.4.3 Release Notes
+Apache CXF Fediz 1.4.4 Release Notes
 ------------------------------------
 
 1. Overview
@@ -64,6 +64,22 @@ N.A.
 
 
 8. Specific issues, features, and improvements fixed in this version
+
+Release Notes - CXF-Fediz - Version 1.4.4
+
+Bug
+
+    [FEDIZ-217] - SAML authentication fails in plugin
+
+New Feature
+
+    [FEDIZ-7] - Add support for SAML-P in the plugin
+
+Improvement
+
+    [FEDIZ-216] - Support different signature algorithms for the SAML SSO Redirect Binding
+    [FEDIZ-219] - Add support for SAML SSO to the Tomcat 8 RP implementation
+
 
 Release Notes - CXF-Fediz - Version 1.4.3
 
