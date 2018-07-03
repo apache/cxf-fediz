@@ -134,7 +134,7 @@ public class FedizSubjectCreator implements SubjectCreator {
         }
 
         // Compute exp claim
-        long currentTimeInSecs = System.currentTimeMillis() / 1000;
+        long currentTimeInSecs = System.currentTimeMillis() / 1000L;
         idToken.setIssuedAt(currentTimeInSecs);
         HttpSession httpSession = mc.getHttpServletRequest().getSession(false);
         if (timeToLive > 0) {
