@@ -20,7 +20,6 @@ package org.apache.cxf.fediz.core.handler;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URLEncoder;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
@@ -111,7 +110,7 @@ public class LogoutHandler implements RequestHandler<Boolean> {
                 if (matcher.matches()) {
                     try {
                         LOG.debug("Redirecting user after logout to: {}", wreply);
-                        response.sendRedirect(URLEncoder.encode(wreply, "UTF-8"));
+                        response.sendRedirect(response.encodeRedirectURL(wreply));
                         return true;
                     } catch (IOException e) {
                         LOG.error("Error redirecting user after logout: {}", e.getMessage());

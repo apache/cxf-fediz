@@ -383,6 +383,8 @@ public class FederationLogoutTest {
         Assert.assertTrue(logoutHandler.canHandleRequest(req));
 
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
+        String encodedResponse = "https%3A%2F%2Flocalhost%2Ffedizhelloworld%2Fsecure%2Fwreply.html";
+        EasyMock.expect(resp.encodeRedirectURL(REPLY_URL)).andReturn(encodedResponse);
         String expectedRedirect = URLEncoder.encode(REPLY_URL, "UTF-8");
         resp.sendRedirect(expectedRedirect);
         EasyMock.expectLastCall();
