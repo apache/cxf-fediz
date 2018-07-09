@@ -19,38 +19,26 @@
 
 package org.apache.cxf.fediz.service.idp.samlsso;
 
-import org.opensaml.saml.saml2.core.AuthnRequest;
+import org.opensaml.saml.saml2.core.LogoutRequest;
 
 /**
- * This class encapsulates a (parsed) SAML AuthnRequest Object. The OpenSAML AuthnRequest Object is not
+ * This class encapsulates a (parsed) SAML LogoutRequest Object. The OpenSAML LogoutRequest Object is not
  * serializable.
  */
-public class SAMLAuthnRequest extends SAMLAbstractRequest {
+public class SAMLLogoutRequest extends SAMLAbstractRequest {
     /**
      *
      */
     private static final long serialVersionUID = 4353024755428346545L;
 
-    private String consumerServiceURL;
-    private boolean forceAuthn;
     private String subjectNameId;
 
-    public SAMLAuthnRequest(AuthnRequest authnRequest) {
-        super(authnRequest);
+    public SAMLLogoutRequest(LogoutRequest logoutRequest) {
+        super(logoutRequest);
 
-        consumerServiceURL = authnRequest.getAssertionConsumerServiceURL();
-        forceAuthn = authnRequest.isForceAuthn().booleanValue();
-        if (authnRequest.getSubject() != null && authnRequest.getSubject().getNameID() != null) {
-            subjectNameId = authnRequest.getSubject().getNameID().getValue();
+        if (logoutRequest.getNameID() != null) {
+            subjectNameId = logoutRequest.getNameID().getValue();
         }
-    }
-
-    public String getConsumerServiceURL() {
-        return consumerServiceURL;
-    }
-
-    public boolean isForceAuthn() {
-        return forceAuthn;
     }
 
     public String getSubjectNameId() {
