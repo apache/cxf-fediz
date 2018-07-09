@@ -19,41 +19,37 @@
 
 package org.apache.cxf.fediz.service.idp.samlsso;
 
-import org.opensaml.saml.saml2.core.AuthnRequest;
+import java.io.Serializable;
+
+import org.opensaml.saml.saml2.core.RequestAbstractType;
 
 /**
- * This class encapsulates a (parsed) SAML AuthnRequest Object. The OpenSAML AuthnRequest Object is not
+ * This class encapsulates a (parsed) SAML RequestAbstractType Object. The OpenSAML RequestAbstractType Object is not
  * serializable.
  */
-public class SAMLAuthnRequest extends SAMLAbstractRequest {
+public abstract class SAMLAbstractRequest implements Serializable {
     /**
      *
      */
     private static final long serialVersionUID = 4353024755428346545L;
 
-    private String consumerServiceURL;
-    private boolean forceAuthn;
-    private String subjectNameId;
+    private String issuer;
+    private String requestId;
 
-    public SAMLAuthnRequest(AuthnRequest authnRequest) {
-        super(authnRequest);
-
-        consumerServiceURL = authnRequest.getAssertionConsumerServiceURL();
-        forceAuthn = authnRequest.isForceAuthn().booleanValue();
-        if (authnRequest.getSubject() != null && authnRequest.getSubject().getNameID() != null) {
-            subjectNameId = authnRequest.getSubject().getNameID().getValue();
+    public SAMLAbstractRequest(RequestAbstractType request) {
+        if (request.getIssuer() != null) {
+            issuer = request.getIssuer().getValue();
         }
+
+        requestId = request.getID();
     }
 
-    public String getConsumerServiceURL() {
-        return consumerServiceURL;
+    public String getIssuer() {
+        return issuer;
     }
 
-    public boolean isForceAuthn() {
-        return forceAuthn;
+    public String getRequestId() {
+        return requestId;
     }
 
-    public String getSubjectNameId() {
-        return subjectNameId;
-    }
 }

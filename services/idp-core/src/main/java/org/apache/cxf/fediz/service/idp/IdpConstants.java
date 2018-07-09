@@ -42,6 +42,11 @@ public final class IdpConstants {
      * The SAML Authn Request
      */
     public static final String SAML_AUTHN_REQUEST = "saml_authn_request";
+    
+    /**
+     * The SAML Logout Request
+     */
+    public static final String SAML_LOGOUT_REQUEST = "saml_logout_request";
 
     /**
      * A Context variable associated with the request (independent of protocol)

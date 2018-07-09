@@ -68,7 +68,7 @@
         <if test="requestParameters.RelayState == null or requestParameters.RelayState.isEmpty()"
             then="viewBadRequest" />
         <if test="requestParameters.SAMLRequest != null and !requestParameters.SAMLRequest.isEmpty()"
-            then="parseSAMLAuthnRequest" />
+            then="parseSAMLRequest" />
         <if test="requestParameters.SAMLResponse == null or requestParameters.SAMLResponse.isEmpty()"
             then="viewBadRequest" else="signinResponse" />
     </decision-state>
@@ -85,13 +85,18 @@
             then="viewBadRequest" else="signinResponse" />
     </decision-state>
     
-    <action-state id="parseSAMLAuthnRequest">
+    <action-state id="parseSAMLRequest">
         <evaluate expression="authnRequestParser.parseSAMLRequest(flowRequestContext, flowScope.idpConfig,
                                                               flowScope.SAMLRequest, flowScope.SigAlg,
                                                               flowScope.Signature, flowScope.RelayState)" />
-        <transition to="retrieveConsumerURL"/>
+        <transition to="determineRequestType"/>
         <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
     </action-state>
+    
+    <decision-state id="determineRequestType">
+        <if test="flowScope.saml_authn_request == null"
+            then="selectSignOutProcess" else="retrieveConsumerURL" />
+    </decision-state>
     
     <action-state id="retrieveConsumerURL">
         <evaluate expression="authnRequestParser.retrieveConsumerURL(flowRequestContext)" 
@@ -209,6 +214,37 @@
         <transition to="redirectToTrustedIDP" />
         <transition on-exception="java.lang.Throwable" to="scInternalServerError" />
     </action-state>
+    
+    <decision-state id="selectSignOutProcess">
+        <if test="flowScope.idpConfig.rpSingleSignOutConfirmation == true
+            or flowScope.idpConfig.rpSingleSignOutCleanupConfirmation == true"
+            then="viewSignoutConfirmation" else="invalidateSessionAction" />
+    </decision-state>
+    
+    <!-- normal exit point for logout -->
+    <view-state id="viewSignoutConfirmation" view="signoutconfirmationresponse">
+        <transition on="submit" to="invalidateSessionAction"/>
+        <transition on="cancel" to="redirect" />
+    </view-state>
+    
+    <!-- normal exit point for logout -->
+    <decision-state id="invalidateSessionAction">
+        <on-entry>
+            <!-- store the realmConfigMap in the request map before we invalidate the session below.
+            Its needed in the signoutresponse.jsp page -->
+            <set name="externalContext.requestMap.realmConfigMap" 
+                value="externalContext.sessionMap.realmConfigMap"/>
+            <set name="externalContext.requestMap.wreply" value="flowScope.wreply"/>
+            <evaluate expression="homeRealmReminder.removeCookie(flowRequestContext)" />
+            <evaluate expression="logoutAction.submit(flowRequestContext)" />
+        </on-entry>
+        <if test="flowScope.idpConfig.isAutomaticRedirectToRpAfterLogout()"
+            then="redirectToRPLogoutPage" else="showLogoutResponsePage" />
+    </decision-state>
+    
+    <end-state id="showLogoutResponsePage" view="signoutresponse" />
+    
+    <end-state id="redirectToRPLogoutPage" view="externalRedirect:#{flowScope.wreply}" />
 
     <!-- abnormal exit point -->
     <decision-state id="viewBadRequest">

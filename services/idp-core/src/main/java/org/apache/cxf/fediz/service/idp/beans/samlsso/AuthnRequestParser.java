@@ -39,6 +39,7 @@ import org.apache.cxf.fediz.service.idp.IdpConstants;
 import org.apache.cxf.fediz.service.idp.domain.Application;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.samlsso.SAMLAuthnRequest;
+import org.apache.cxf.fediz.service.idp.samlsso.SAMLLogoutRequest;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.rs.security.saml.DeflateEncoderDecoder;
 import org.apache.cxf.rs.security.saml.sso.SSOConstants;
@@ -59,6 +60,8 @@ import org.apache.wss4j.dom.validate.SignatureTrustValidator;
 import org.apache.wss4j.dom.validate.Validator;
 import org.apache.xml.security.algorithms.JCEMapper;
 import org.opensaml.saml.saml2.core.AuthnRequest;
+import org.opensaml.saml.saml2.core.LogoutRequest;
+import org.opensaml.saml.saml2.core.RequestAbstractType;
 import org.opensaml.saml.security.impl.SAMLSignatureProfileValidator;
 import org.opensaml.security.credential.BasicCredential;
 import org.opensaml.security.x509.BasicX509Credential;
@@ -72,7 +75,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.webflow.execution.RequestContext;
 
 /**
- * Parse the received SAMLRequest into an OpenSAML AuthnRequest
+ * Parse the received SAMLRequest into an OpenSAML AuthnRequest or LogoutRequest
  */
 @Component
 public class AuthnRequestParser {
@@ -103,17 +106,24 @@ public class AuthnRequestParser {
             WebUtils.removeAttribute(context, IdpConstants.SAML_AUTHN_REQUEST);
             throw new ProcessingException(TYPE.BAD_REQUEST);
         } else {
-            AuthnRequest parsedRequest = null;
+            RequestAbstractType parsedRequest = null;
             try {
                 parsedRequest = extractRequest(context, samlRequest);
             } catch (Exception ex) {
                 LOG.warn("Error parsing request: {}", ex.getMessage());
                 throw new ProcessingException(TYPE.BAD_REQUEST);
             }
-
-            // Store various attributes from the AuthnRequest
-            SAMLAuthnRequest authnRequest = new SAMLAuthnRequest(parsedRequest);
-            WebUtils.putAttributeInFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST, authnRequest);
+            
+            // Store various attributes from the AuthnRequest/LogoutRequest
+            if (parsedRequest instanceof AuthnRequest) {
+                SAMLAuthnRequest authnRequest = new SAMLAuthnRequest((AuthnRequest)parsedRequest);
+                WebUtils.putAttributeInFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST, authnRequest);
+            } else if (parsedRequest instanceof LogoutRequest) {
+                SAMLLogoutRequest logoutRequest = new SAMLLogoutRequest((LogoutRequest)parsedRequest);
+                WebUtils.putAttributeInFlowScope(context, IdpConstants.SAML_LOGOUT_REQUEST, logoutRequest);
+            }
+            
+            validateRequest(parsedRequest);
 
             // Check the signature
             try {
@@ -122,7 +132,8 @@ public class AuthnRequestParser {
                     checkDestination(context, parsedRequest);
 
                     // Check signature
-                    X509Certificate validatingCert = getValidatingCertificate(idp, authnRequest.getIssuer());
+                    X509Certificate validatingCert = 
+                        getValidatingCertificate(idp, parsedRequest.getIssuer().getValue());
                     Crypto issuerCrypto = new CertificateStore(new X509Certificate[] {validatingCert});
                     validateAuthnRequestSignature(parsedRequest.getSignature(), issuerCrypto);
                 } else if (signature != null) {
@@ -131,7 +142,7 @@ public class AuthnRequestParser {
 
                     // Check signature
                     validateSeparateSignature(idp, sigAlg, signature, relayState,
-                              samlRequest, authnRequest.getIssuer());
+                              samlRequest, parsedRequest.getIssuer().getValue());
                 } else if (requireSignature) {
                     LOG.debug("No signature is present, therefore the request is rejected");
                     throw new ProcessingException(TYPE.BAD_REQUEST);
@@ -142,8 +153,6 @@ public class AuthnRequestParser {
                 LOG.debug("Error validating SAML Signature", ex);
                 throw new ProcessingException(TYPE.BAD_REQUEST);
             }
-
-            validateRequest(parsedRequest);
 
             LOG.debug("SAML Request with id '{}' successfully parsed", parsedRequest.getID());
         }
@@ -226,7 +235,7 @@ public class AuthnRequestParser {
         return false;
     }
 
-    protected AuthnRequest extractRequest(RequestContext context, String samlRequest) throws Exception {
+    protected RequestAbstractType extractRequest(RequestContext context, String samlRequest) throws Exception {
         byte[] deflatedToken = Base64Utility.decode(samlRequest);
         String httpMethod = WebUtils.getHttpServletRequest(context).getMethod();
 
@@ -235,12 +244,10 @@ public class AuthnRequestParser {
                  : new ByteArrayInputStream(deflatedToken);
 
         Document responseDoc = StaxUtils.read(new InputStreamReader(tokenStream, StandardCharsets.UTF_8));
-        AuthnRequest request =
-            (AuthnRequest)OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
         if (LOG.isDebugEnabled()) {
             LOG.debug(DOM2Writer.nodeToString(responseDoc));
         }
-        return request;
+        return (RequestAbstractType)OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
     }
 
     public boolean isSupportDeflateEncoding() {
@@ -251,9 +258,9 @@ public class AuthnRequestParser {
         this.supportDeflateEncoding = supportDeflateEncoding;
     }
 
-    private void validateRequest(AuthnRequest parsedRequest) throws ProcessingException {
+    private void validateRequest(RequestAbstractType parsedRequest) throws ProcessingException {
         if (parsedRequest.getIssuer() == null) {
-            LOG.debug("No Issuer is present in the AuthnRequest");
+            LOG.debug("No Issuer is present in the AuthnRequest/LogoutRequest");
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
 
@@ -264,12 +271,15 @@ public class AuthnRequestParser {
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
 
-        // No SubjectConfirmation Elements are allowed
-        if (parsedRequest.getSubject() != null
-            && parsedRequest.getSubject().getSubjectConfirmations() != null
-            && !parsedRequest.getSubject().getSubjectConfirmations().isEmpty()) {
-            LOG.debug("An invalid SubjectConfirmation Element was received");
-            throw new ProcessingException(TYPE.BAD_REQUEST);
+        if (parsedRequest instanceof AuthnRequest) {
+            // No SubjectConfirmation Elements are allowed
+            AuthnRequest authnRequest = (AuthnRequest)parsedRequest;
+            if (authnRequest.getSubject() != null
+                && authnRequest.getSubject().getSubjectConfirmations() != null
+                && !authnRequest.getSubject().getSubjectConfirmations().isEmpty()) {
+                LOG.debug("An invalid SubjectConfirmation Element was received");
+                throw new ProcessingException(TYPE.BAD_REQUEST);
+            }
         }
     }
 
@@ -316,9 +326,9 @@ public class AuthnRequestParser {
         return CertsUtils.parseX509Certificate(serviceConfig.getValidatingCertificate());
     }
 
-    private void checkDestination(RequestContext context, AuthnRequest authnRequest) throws ProcessingException {
+    private void checkDestination(RequestContext context, RequestAbstractType request) throws ProcessingException {
         // Check destination
-        String destination = authnRequest.getDestination();
+        String destination = request.getDestination();
         LOG.debug("Validating destination: {}", destination);
 
         String localAddr = WebUtils.getHttpServletRequest(context).getRequestURL().toString();
