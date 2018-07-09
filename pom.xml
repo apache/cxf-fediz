@@ -67,7 +67,7 @@
         <slf4j.version>1.7.25</slf4j.version>
         <spring.version>4.3.18.RELEASE</spring.version>
         <spring.security.version>4.2.7.RELEASE</spring.security.version>
-        <tomcat7.version>7.0.88</tomcat7.version>
+        <tomcat7.version>7.0.90</tomcat7.version>
         <tomcat8.version>8.5.31</tomcat8.version>
         <woodstox.core.version>4.4.1</woodstox.core.version>
         <wss4j.version>2.1.12</wss4j.version>
