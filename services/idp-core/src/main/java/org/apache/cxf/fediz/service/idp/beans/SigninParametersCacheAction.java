@@ -62,10 +62,6 @@ public class SigninParametersCacheAction {
         if (value != null) {
             signinParams.put(IdpConstants.RETURN_ADDRESS, value);
         }
-        value = WebUtils.getAttributeFromFlowScope(context, IdpConstants.RETURN_ADDRESS);
-        if (value != null) {
-            signinParams.put(IdpConstants.RETURN_ADDRESS, value);
-        }
 
         if ("samlsso".equals(protocol)) {
             value = WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
@@ -132,18 +128,21 @@ public class SigninParametersCacheAction {
         }
     }
 
-    public void storeRPConfigInSession(RequestContext context) throws ProcessingException {
+    public void storeRPConfigInSession(RequestContext context, String replyAddress) throws ProcessingException {
 
-        String wtrealm = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_TREALM);
+        String realm = (String)WebUtils.getAttributeFromFlowScope(context, IdpConstants.REALM);
+        if (realm == null) {
+            realm = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_TREALM);
+        }
         Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(context, IdpConstants.IDP_CONFIG);
-        if (wtrealm == null || idpConfig == null) {
+        if (realm == null || idpConfig == null) {
             return;
         }
 
-        Application serviceConfig = idpConfig.findApplication(wtrealm);
+        Application serviceConfig = idpConfig.findApplication(realm);
         if (serviceConfig != null) {
             if (serviceConfig.getPassiveRequestorEndpoint() == null) {
-                String url = guessPassiveRequestorURL(context, wtrealm);
+                String url = guessPassiveRequestorURL(context, replyAddress, realm);
                 serviceConfig.setPassiveRequestorEndpoint(url);
             }
 
@@ -157,22 +156,25 @@ public class SigninParametersCacheAction {
                 WebUtils.putAttributeInExternalContext(context, ACTIVE_APPLICATIONS, realmConfigMap);
             }
 
-            if (realmConfigMap.get(wtrealm) == null) {
-                realmConfigMap.put(wtrealm, serviceConfig);
+            if (realmConfigMap.get(realm) == null) {
+                realmConfigMap.put(realm, serviceConfig);
             }
         }
     }
 
-    protected String guessPassiveRequestorURL(RequestContext context, String wtrealm) throws ProcessingException {
-        String url = (String)WebUtils.getAttributeFromFlowScope(context, FederationConstants.PARAM_REPLY);
-        try {
-            //basic check if the url is correctly formed
-            new URL(url);
-        } catch (Exception e) {
-            url = null;
+    protected String guessPassiveRequestorURL(RequestContext context, String replyAddress,
+                                              String realm) throws ProcessingException {
+        String url = replyAddress;
+        if (url != null) {
+            try {
+                //basic check if the url is correctly formed
+                new URL(url);
+            } catch (Exception e) {
+                url = null;
+            }
         }
         if (url == null) {
-            url = wtrealm;
+            url = realm;
             try {
                 //basic check if the url is correctly formed
                 new URL(url);
