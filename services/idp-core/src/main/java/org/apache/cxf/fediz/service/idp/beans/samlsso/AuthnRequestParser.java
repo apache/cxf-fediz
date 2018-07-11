@@ -135,7 +135,7 @@ public class AuthnRequestParser {
                     X509Certificate validatingCert = 
                         getValidatingCertificate(idp, parsedRequest.getIssuer().getValue());
                     Crypto issuerCrypto = new CertificateStore(new X509Certificate[] {validatingCert});
-                    validateAuthnRequestSignature(parsedRequest.getSignature(), issuerCrypto);
+                    validateRequestSignature(parsedRequest.getSignature(), issuerCrypto);
                 } else if (signature != null) {
                     // Check destination
                     checkDestination(context, parsedRequest);
@@ -339,9 +339,9 @@ public class AuthnRequestParser {
     }
 
     /**
-     * Validate the AuthnRequest signature
+     * Validate the AuthnRequest or LogoutRequest signature
      */
-    private void validateAuthnRequestSignature(
+    private void validateRequestSignature(
         Signature signature,
         Crypto sigCrypto
     ) throws WSSecurityException {

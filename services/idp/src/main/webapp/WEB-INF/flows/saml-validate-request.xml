@@ -164,6 +164,7 @@
             <set name="flowScope.idpToken" value="currentEvent.attributes.idpToken" />
             <set name="flowScope.saml_authn_request" value="currentEvent.attributes.saml_authn_request" />
             <set name="flowScope.RelayState" value="currentEvent.attributes.request_context" />
+            <set name="flowScope.consumerURL" value="currentEvent.attributes.return_address" />
         </transition>
         <transition on="viewBadRequest" to="viewBadRequest" />
         <transition on="scInternalServerError" to="scInternalServerError" />
@@ -177,7 +178,7 @@
             <evaluate expression="stsClientForRpAction.submit(flowRequestContext, flowScope.realm, flowScope.home_realm)"
                       result="flowScope.rpTokenElement"/>
         </on-entry>
-        <evaluate expression="signinParametersCacheAction.storeRPConfigInSession(flowRequestContext)"/>
+        <evaluate expression="signinParametersCacheAction.storeRPConfigInSession(flowRequestContext, flowScope.consumerURL)"/>
         <transition to="produceSAMLResponse" />
         <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
         <transition on-exception="java.lang.Throwable" to="scInternalServerError" />

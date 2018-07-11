@@ -167,7 +167,7 @@
             <evaluate expression="tokenSerializer.serialize(flowRequestContext, flowScope.rpTokenElement)"
                       result="flowScope.rpToken"/>
         </on-entry>
-        <evaluate expression="signinParametersCacheAction.storeRPConfigInSession(flowRequestContext)" />
+        <evaluate expression="signinParametersCacheAction.storeRPConfigInSession(flowRequestContext, flowScope.wreply)" />
         <transition to="isWReplyProvided" />
         <transition on-exception="org.apache.cxf.fediz.core.exception.ProcessingException" to="viewBadRequest" />
         <transition on-exception="java.lang.Throwable" to="scInternalServerError" />
