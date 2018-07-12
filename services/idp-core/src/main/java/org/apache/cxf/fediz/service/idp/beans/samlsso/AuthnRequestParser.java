@@ -38,6 +38,7 @@ import org.apache.cxf.fediz.core.util.CertsUtils;
 import org.apache.cxf.fediz.service.idp.IdpConstants;
 import org.apache.cxf.fediz.service.idp.domain.Application;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
+import org.apache.cxf.fediz.service.idp.samlsso.SAMLAbstractRequest;
 import org.apache.cxf.fediz.service.idp.samlsso.SAMLAuthnRequest;
 import org.apache.cxf.fediz.service.idp.samlsso.SAMLLogoutRequest;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
@@ -113,7 +114,7 @@ public class AuthnRequestParser {
                 LOG.warn("Error parsing request: {}", ex.getMessage());
                 throw new ProcessingException(TYPE.BAD_REQUEST);
             }
-            
+
             // Store various attributes from the AuthnRequest/LogoutRequest
             if (parsedRequest instanceof AuthnRequest) {
                 SAMLAuthnRequest authnRequest = new SAMLAuthnRequest((AuthnRequest)parsedRequest);
@@ -122,7 +123,7 @@ public class AuthnRequestParser {
                 SAMLLogoutRequest logoutRequest = new SAMLLogoutRequest((LogoutRequest)parsedRequest);
                 WebUtils.putAttributeInFlowScope(context, IdpConstants.SAML_LOGOUT_REQUEST, logoutRequest);
             }
-            
+
             validateRequest(parsedRequest);
 
             // Check the signature
@@ -132,7 +133,7 @@ public class AuthnRequestParser {
                     checkDestination(context, parsedRequest);
 
                     // Check signature
-                    X509Certificate validatingCert = 
+                    X509Certificate validatingCert =
                         getValidatingCertificate(idp, parsedRequest.getIssuer().getValue());
                     Crypto issuerCrypto = new CertificateStore(new X509Certificate[] {validatingCert});
                     validateRequestSignature(parsedRequest.getSignature(), issuerCrypto);
@@ -159,16 +160,20 @@ public class AuthnRequestParser {
     }
 
     public String retrieveRealm(RequestContext context) {
-        SAMLAuthnRequest authnRequest =
-            (SAMLAuthnRequest)WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
+        SAMLAbstractRequest request =
+            (SAMLAbstractRequest)WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
+        if (request == null) {
+            request = (SAMLAbstractRequest)WebUtils.getAttributeFromFlowScope(context,
+                                                                              IdpConstants.SAML_LOGOUT_REQUEST);
+        }
 
-        if (authnRequest != null) {
-            String issuer = authnRequest.getIssuer();
-            LOG.debug("Parsed SAML AuthnRequest Issuer: {}", issuer);
+        if (request != null) {
+            String issuer = request.getIssuer();
+            LOG.debug("Parsed SAML Request Issuer: {}", issuer);
             return issuer;
         }
 
-        LOG.debug("No AuthnRequest available to be parsed");
+        LOG.debug("No AuthnRequest or LogoutRequest available to be parsed");
         return null;
     }
 
@@ -190,37 +195,47 @@ public class AuthnRequestParser {
         if (serviceConfig != null) {
             String racs = serviceConfig.getPassiveRequestorEndpoint();
             LOG.debug("Attempting to use the configured passive requestor endpoint instead: {}", racs);
-            return racs;
+            if (racs != null) {
+                return racs;
+            }
         }
 
         return null;
     }
 
     public String retrieveRequestId(RequestContext context) {
-        SAMLAuthnRequest authnRequest =
-            (SAMLAuthnRequest)WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
+        SAMLAbstractRequest request =
+            (SAMLAbstractRequest)WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
+        if (request == null) {
+            request = (SAMLAbstractRequest)WebUtils.getAttributeFromFlowScope(context,
+                                                                              IdpConstants.SAML_LOGOUT_REQUEST);
+        }
 
-        if (authnRequest != null && authnRequest.getRequestId() != null) {
-            String id = authnRequest.getRequestId();
-            LOG.debug("Parsed SAML AuthnRequest Id: {}", id);
+        if (request != null && request.getRequestId() != null) {
+            String id = request.getRequestId();
+            LOG.debug("Parsed SAML Request Id: {}", id);
             return id;
         }
 
-        LOG.debug("No AuthnRequest available to be parsed");
+        LOG.debug("No AuthnRequest/LogoutRequest available to be parsed");
         return null;
     }
 
     public String retrieveRequestIssuer(RequestContext context) {
-        SAMLAuthnRequest authnRequest =
-            (SAMLAuthnRequest)WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
+        SAMLAbstractRequest request =
+            (SAMLAbstractRequest)WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
+        if (request == null) {
+            request = (SAMLAbstractRequest)WebUtils.getAttributeFromFlowScope(context,
+                                                                              IdpConstants.SAML_LOGOUT_REQUEST);
+        }
 
-        if (authnRequest != null && authnRequest.getIssuer() != null) {
-            String issuer = authnRequest.getIssuer();
-            LOG.debug("Parsed SAML AuthnRequest Issuer: {}", issuer);
+        if (request != null && request.getIssuer() != null) {
+            String issuer = request.getIssuer();
+            LOG.debug("Parsed SAML Request Issuer: {}", issuer);
             return issuer;
         }
 
-        LOG.debug("No AuthnRequest available to be parsed");
+        LOG.debug("No AuthnRequest/LogoutRequest available to be parsed");
         return null;
     }
 

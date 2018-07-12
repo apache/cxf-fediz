@@ -86,6 +86,7 @@ import org.opensaml.saml.saml2.core.AuthnContextComparisonTypeEnumeration;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.Issuer;
 import org.opensaml.saml.saml2.core.LogoutRequest;
+import org.opensaml.saml.saml2.core.LogoutResponse;
 import org.opensaml.saml.saml2.core.NameID;
 import org.opensaml.saml.saml2.core.NameIDPolicy;
 import org.opensaml.saml.saml2.core.RequestedAuthnContext;
@@ -1713,7 +1714,20 @@ public class IdpTest {
 
         HtmlForm form = idpPage.getFormByName("signoutconfirmationresponseform");
         HtmlSubmitInput button = form.getInputByName("_eventId_submit");
-        button.click();
+        HtmlPage signoutPage = button.click();
+
+        // Check Response
+        HtmlForm responseForm = signoutPage.getFormByName("samlsignoutresponseform");
+        String responseValue = responseForm.getInputByName("SAMLResponse").getAttributeNS(null, "value");
+        Assert.assertNotNull(responseValue);
+
+        byte[] deflatedToken = Base64Utility.decode(responseValue);
+        InputStream tokenStream = new ByteArrayInputStream(deflatedToken);
+        Document responseDoc = StaxUtils.read(new InputStreamReader(tokenStream, StandardCharsets.UTF_8));
+
+        LogoutResponse logoutResponse = (LogoutResponse)OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
+        Assert.assertNotNull(logoutResponse);
+        // TODO further checks
 
         webClient.close();
 

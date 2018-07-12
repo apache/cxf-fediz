@@ -50,6 +50,7 @@ import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.wss4j.dom.WSConstants;
 import org.joda.time.DateTime;
 import org.opensaml.saml.saml2.core.Assertion;
+import org.opensaml.saml.saml2.core.LogoutResponse;
 import org.opensaml.saml.saml2.core.NameID;
 import org.opensaml.saml.saml2.core.Response;
 import org.opensaml.saml.saml2.core.Status;
@@ -89,6 +90,17 @@ public class SamlResponseCreator {
                                      remoteAddr, consumerURL);
 
             Element response = createResponse(idp, requestId, saml2Assertion);
+            return encodeResponse(response);
+        } catch (Exception ex) {
+            LOG.warn("Error marshalling SAML Token: {}", ex.getMessage());
+            throw new ProcessingException(TYPE.BAD_REQUEST);
+        }
+    }
+
+    public String createSAMLLogoutResponse(RequestContext context, Idp idp, String requestId)
+                                         throws ProcessingException {
+        try {
+            Element response = createLogoutResponse(idp, requestId);
             return encodeResponse(response);
         } catch (Exception ex) {
             LOG.warn("Error marshalling SAML Token: {}", ex.getMessage());
@@ -160,6 +172,23 @@ public class SamlResponseCreator {
             SAML2PResponseComponentBuilder.createSAMLResponse(requestID, issuer, status);
 
         response.getAssertions().add(assertion);
+
+        Element policyElement = OpenSAMLUtil.toDom(response, doc);
+        doc.appendChild(policyElement);
+
+        return policyElement;
+    }
+
+    protected Element createLogoutResponse(Idp idp, String requestID) throws Exception {
+        Document doc = DOMUtils.newDocument();
+
+        Status status =
+            SAML2PResponseComponentBuilder.createStatus(
+                "urn:oasis:names:tc:SAML:2.0:status:Success", null
+            );
+        String issuer = useRealmForIssuer ? idp.getRealm() : idp.getIdpUrl().toString();
+        LogoutResponse response =
+            SAML2PResponseComponentBuilder.createSAMLLogoutResponse(requestID, issuer, status);
 
         Element policyElement = OpenSAMLUtil.toDom(response, doc);
         doc.appendChild(policyElement);
