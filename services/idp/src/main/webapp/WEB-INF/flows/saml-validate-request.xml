@@ -223,7 +223,7 @@
     
     <view-state id="viewSignoutConfirmation" view="signoutconfirmationresponse">
         <transition on="submit" to="produceSAMLLogoutResponse"/>
-        <transition on="cancel" to="redirect" />
+        <!-- <transition on="cancel" to="redirect" /> -->
     </view-state>
     
     <action-state id="produceSAMLLogoutResponse">
@@ -238,17 +238,18 @@
         <transition to="invalidateSessionAction" />
     </action-state>
     
-    <action-state id="invalidateSessionAction">
+    <decision-state id="invalidateSessionAction">
         <on-entry>
             <!-- store the realmConfigMap in the request map before we invalidate the session below.
             Its needed in the signoutresponse.jsp page -->
             <set name="externalContext.requestMap.realmConfigMap" 
                 value="externalContext.sessionMap.realmConfigMap"/>
             <evaluate expression="homeRealmReminder.removeCookie(flowRequestContext)" />
+            <evaluate expression="logoutAction.submit(flowRequestContext)" />
         </on-entry>
-        <evaluate expression="logoutAction.submit(flowRequestContext)" />
-        <transition to="signOutFormResponseView" />
-    </action-state>
+        <if test="flowScope.idpConfig.isAutomaticRedirectToRpAfterLogout()"
+            then="signOutFormResponseView" else="showLogoutResponsePage" />
+    </decision-state>
     
     <!-- normal exit point for logout -->
     <!-- browser redirection (self-submitted form 'samlsignoutresponseform.jsp') -->
@@ -259,6 +260,9 @@
             <evaluate expression="flowScope.logoutResponse" result="requestScope.samlResponse" />
         </on-entry>
     </end-state>
+    
+    <!-- normal exit point for logout -->
+    <end-state id="showLogoutResponsePage" view="signoutresponse" />
 
     <!-- abnormal exit point -->
     <decision-state id="viewBadRequest">

@@ -178,6 +178,24 @@ public class AuthnRequestParser {
     }
 
     public String retrieveConsumerURL(RequestContext context) {
+        // If it's a LogoutRequest we just want to get the logout endpoint from the configuration
+        SAMLLogoutRequest logoutRequest =
+            (SAMLLogoutRequest)WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_LOGOUT_REQUEST);
+        if (logoutRequest != null) {
+            Idp idpConfig = (Idp) WebUtils.getAttributeFromFlowScope(context, "idpConfig");
+            String realm = retrieveRealm(context);
+            Application serviceConfig = idpConfig.findApplication(realm);
+            if (serviceConfig != null) {
+                String logoutEndpoint = serviceConfig.getLogoutEndpoint();
+                if (logoutEndpoint != null) {
+                    LOG.debug("Attempting to use the configured logout endpoint: {}", logoutEndpoint);
+                    return logoutEndpoint;
+                }
+            }
+            LOG.debug("No LogoutEndpoint has been configured for this application");
+            return "/";
+        }
+
         SAMLAuthnRequest authnRequest =
             (SAMLAuthnRequest)WebUtils.getAttributeFromFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST);
 
@@ -195,9 +213,7 @@ public class AuthnRequestParser {
         if (serviceConfig != null) {
             String racs = serviceConfig.getPassiveRequestorEndpoint();
             LOG.debug("Attempting to use the configured passive requestor endpoint instead: {}", racs);
-            if (racs != null) {
-                return racs;
-            }
+            return racs;
         }
 
         return null;

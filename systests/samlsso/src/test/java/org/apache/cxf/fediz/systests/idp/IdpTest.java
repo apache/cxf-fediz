@@ -1723,8 +1723,11 @@ public class IdpTest {
 
         // Check Response
         HtmlForm responseForm = signoutPage.getFormByName("samlsignoutresponseform");
+        Assert.assertEquals("https://localhost:8080/logout", responseForm.getActionAttribute());
         String responseValue = responseForm.getInputByName("SAMLResponse").getAttributeNS(null, "value");
         Assert.assertNotNull(responseValue);
+        String receivedRelayState = responseForm.getInputByName("RelayState").getAttributeNS(null, "value");
+        Assert.assertEquals(relayState, receivedRelayState);
 
         byte[] deflatedToken = Base64Utility.decode(responseValue);
         InputStream tokenStream = new ByteArrayInputStream(deflatedToken);
