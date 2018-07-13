@@ -5,9 +5,9 @@ This demo shows how to build and deploy an SSO protected JAX-RS web application
 using Apache CXF Fediz.
 
 The demo uses Apache CXF CXFServlet.
-If you work with Jersey or RESTEasy - please replace CXF specific declarations with your 
-preferred JAX-RS implementation's Servlet declaration. The application code 
-is a portable JAX-RS code. 
+If you work with Jersey or RESTEasy - please replace CXF specific declarations
+with your preferred JAX-RS implementation's Servlet declaration. The application
+code is a portable JAX-RS code.
 
 Running this sample consists of four steps:
 
