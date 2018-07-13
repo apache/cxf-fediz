@@ -1736,7 +1736,7 @@ public class IdpTest {
 
         LogoutResponse logoutResponse = (LogoutResponse)OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
         Assert.assertNotNull(logoutResponse);
-        // TODO further checks
+        Assert.assertEquals("https://localhost:8080/logout", logoutResponse.getDestination());
 
         webClient.close();
 
@@ -1852,7 +1852,7 @@ public class IdpTest {
         webClient.close();
 
         // 3. now we try to access the idp without authentication but with the existing cookies
-        // to see if we are really logged out - it should work OK as our LogoutRequest was expired
+        // to see if we are really logged out - we should still be logged in as our LogoutRequest was expired
         webClient = new WebClient();
         webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);

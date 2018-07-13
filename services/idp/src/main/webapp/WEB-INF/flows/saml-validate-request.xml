@@ -233,7 +233,8 @@
             <evaluate expression="authnRequestParser.retrieveRequestIssuer(flowRequestContext)" 
                       result="flowScope.requestIssuer"/>
         </on-entry>
-        <evaluate expression="samlResponseCreator.createSAMLLogoutResponse(flowRequestContext, flowScope.idpConfig, flowScope.requestId)"
+        <evaluate expression="samlResponseCreator.createSAMLLogoutResponse(flowRequestContext, flowScope.idpConfig, 
+        		flowScope.consumerURL, flowScope.requestId)"
                   result="flowScope.logoutResponse"/>                                               
         <transition to="invalidateSessionAction" />
     </action-state>

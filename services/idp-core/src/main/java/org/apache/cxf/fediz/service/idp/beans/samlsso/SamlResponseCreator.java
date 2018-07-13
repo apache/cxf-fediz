@@ -97,10 +97,10 @@ public class SamlResponseCreator {
         }
     }
 
-    public String createSAMLLogoutResponse(RequestContext context, Idp idp, String requestId)
+    public String createSAMLLogoutResponse(RequestContext context, Idp idp, String destination, String requestId)
                                          throws ProcessingException {
         try {
-            Element response = createLogoutResponse(idp, requestId);
+            Element response = createLogoutResponse(idp, destination, requestId);
             return encodeResponse(response);
         } catch (Exception ex) {
             LOG.warn("Error marshalling SAML Token: {}", ex.getMessage());
@@ -179,7 +179,7 @@ public class SamlResponseCreator {
         return policyElement;
     }
 
-    protected Element createLogoutResponse(Idp idp, String requestID) throws Exception {
+    protected Element createLogoutResponse(Idp idp, String destination, String requestID) throws Exception {
         Document doc = DOMUtils.newDocument();
 
         Status status =
@@ -188,7 +188,7 @@ public class SamlResponseCreator {
             );
         String issuer = useRealmForIssuer ? idp.getRealm() : idp.getIdpUrl().toString();
         LogoutResponse response =
-            SAML2PResponseComponentBuilder.createSAMLLogoutResponse(requestID, issuer, status);
+            SAML2PResponseComponentBuilder.createSAMLLogoutResponse(requestID, issuer, status, destination);
 
         Element policyElement = OpenSAMLUtil.toDom(response, doc);
         doc.appendChild(policyElement);
