@@ -33,7 +33,7 @@
             
             while (iterator.hasNext()) {
                 Application next = iterator.next().getValue();
-                if (next != null) {
+                if (next != null && "http://docs.oasis-open.org/wsfed/federation/200706".equals(next.getProtocol())) {
     %>
                     <%= next.getServiceDisplayName() %> 
                     <img src="<%=next.getPassiveRequestorEndpoint() + "?" + FederationConstants.PARAM_ACTION 

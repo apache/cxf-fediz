@@ -93,6 +93,7 @@
         <property name="stsUrl" value="https://localhost:${idp.https.port}/fediz-idp-sts/REALMA" />
         <property name="idpUrl" value="https://localhost:${idp.https.port}/fediz-idp/saml" />
         <property name="rpSingleSignOutConfirmation" value="true"/>
+        <property name="automaticRedirectToRpAfterLogout" value="true"/>
         <property name="supportedProtocols">
             <util:list>
                 <value>urn:oasis:names:tc:SAML:2.0:profiles:SSO:browser
@@ -151,12 +152,13 @@
 
     <bean id="srv-fedizhelloworld" class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationEntity">
         <property name="realm" value="urn:org:apache:cxf:fediz:fedizhelloworld" />
-        <property name="protocol" value="http://docs.oasis-open.org/wsfed/federation/200706" />
+        <property name="protocol" value="urn:oasis:names:tc:SAML:2.0:profiles:SSO:browser" />
         <property name="serviceDisplayName" value="Fedizhelloworld" />
-        <property name="serviceDescription" value="Web Application to illustrate WS-Federation" />
+        <property name="serviceDescription" value="Web Application to illustrate SAML SSO" />
         <property name="role" value="ApplicationServiceType" />
         <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0" />
         <property name="lifeTime" value="3600" />
+        <property name="logoutEndpoint" value="https://localhost:8080/logout" />
         <property name="passiveRequestorEndpointConstraint" 
                   value="https://localhost:(\d)*/(\w)*helloworld(\w)*/secure/.*" />
         <property name="validatingCertificate" value="realma.cert" />
