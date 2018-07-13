@@ -1625,6 +1625,7 @@ public class IdpTest {
         webClient.close();
     }
 
+    // CHECKSTYLE:OFF
     @org.junit.Test
     public void testIdPLogout() throws Exception {
         OpenSAMLUtil.initSamlEngine();
@@ -1883,6 +1884,7 @@ public class IdpTest {
 
         webClient.close();
     }
+    // CHECKSTYLE:ON
 
     private String encodeAuthnRequest(Element authnRequest) throws IOException {
         String requestMessage = DOM2Writer.nodeToString(authnRequest);
