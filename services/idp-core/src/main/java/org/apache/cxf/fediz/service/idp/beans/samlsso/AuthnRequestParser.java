@@ -26,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.w3c.dom.Document;
@@ -121,6 +122,10 @@ public class AuthnRequestParser {
                 WebUtils.putAttributeInFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST, authnRequest);
             } else if (parsedRequest instanceof LogoutRequest) {
                 SAMLLogoutRequest logoutRequest = new SAMLLogoutRequest((LogoutRequest)parsedRequest);
+                if (logoutRequest.getNotOnOrAfter() != null && (new Date()).after(logoutRequest.getNotOnOrAfter())) {
+                    LOG.debug("The LogoutRequest is expired");
+                    throw new ProcessingException(TYPE.BAD_REQUEST);
+                }
                 WebUtils.putAttributeInFlowScope(context, IdpConstants.SAML_LOGOUT_REQUEST, logoutRequest);
             }
 
