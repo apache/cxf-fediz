@@ -122,11 +122,11 @@ public class AuthnRequestParser {
                 WebUtils.putAttributeInFlowScope(context, IdpConstants.SAML_AUTHN_REQUEST, authnRequest);
             } else if (parsedRequest instanceof LogoutRequest) {
                 SAMLLogoutRequest logoutRequest = new SAMLLogoutRequest((LogoutRequest)parsedRequest);
+                WebUtils.putAttributeInFlowScope(context, IdpConstants.SAML_LOGOUT_REQUEST, logoutRequest);
                 if (logoutRequest.getNotOnOrAfter() != null && (new Date()).after(logoutRequest.getNotOnOrAfter())) {
                     LOG.debug("The LogoutRequest is expired");
                     throw new ProcessingException(TYPE.BAD_REQUEST);
                 }
-                WebUtils.putAttributeInFlowScope(context, IdpConstants.SAML_LOGOUT_REQUEST, logoutRequest);
             }
 
             validateRequest(parsedRequest);

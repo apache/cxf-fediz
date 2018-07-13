@@ -272,8 +272,10 @@
                       result="requestScope.samlAction"/>
         </on-entry>
         <!-- See if we managed to at least parse the request to get the response URL -->
-        <if test="requestScope.samlAction == null or requestScope.samlAction.isEmpty()"
-            then="viewBadRequestParsingError" else="viewBadRequestResponse"/>
+        <if test="requestScope.samlAction == null or requestScope.samlAction.isEmpty() or requestScope.samlAction == '/'"
+            then="viewBadRequestParsingError"/>
+        <if test="flowScope.saml_logout_request != null"
+            then="viewBadLogoutRequestResponse" else="viewBadRequestResponse"/>
     </decision-state>
     
     <end-state id="viewBadRequestResponse" view="samlsigninresponseform">
@@ -283,8 +285,21 @@
             <evaluate expression="authnRequestParser.retrieveRequestId(flowRequestContext)" 
                       result="flowScope.requestId"/>
             <evaluate expression="flowScope.RelayState" result="requestScope.relayState" />
-            <evaluate expression="samlResponseErrorCreator.createSAMLResponse(flowRequestContext, true, flowScope.idpConfig, 
-                                                                     flowScope.requestId)"
+            <evaluate expression="samlResponseErrorCreator.createSAMLResponse(flowRequestContext, false,
+            	true, flowScope.idpConfig, flowScope.requestId, requestScope.samlAction)"
+                      result="requestScope.samlResponse"/>     
+        </on-entry>
+    </end-state>
+    
+    <end-state id="viewBadLogoutRequestResponse" view="samlsignoutresponseform">
+        <on-entry>
+            <evaluate expression="authnRequestParser.retrieveConsumerURL(flowRequestContext)" 
+                      result="requestScope.samlAction"/>
+            <evaluate expression="authnRequestParser.retrieveRequestId(flowRequestContext)" 
+                      result="flowScope.requestId"/>
+            <evaluate expression="flowScope.RelayState" result="requestScope.relayState" />
+            <evaluate expression="samlResponseErrorCreator.createSAMLResponse(flowRequestContext, true,
+            	true, flowScope.idpConfig, flowScope.requestId, requestScope.samlAction)"
                       result="requestScope.samlResponse"/>     
         </on-entry>
     </end-state>

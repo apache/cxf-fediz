@@ -1737,6 +1737,10 @@ public class IdpTest {
         LogoutResponse logoutResponse = (LogoutResponse)OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
         Assert.assertNotNull(logoutResponse);
         Assert.assertEquals("https://localhost:8080/logout", logoutResponse.getDestination());
+        String expectedIssuer = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml";
+        Assert.assertEquals(expectedIssuer, logoutResponse.getIssuer().getValue());
+        String success = "urn:oasis:names:tc:SAML:2.0:status:Success";
+        Assert.assertEquals(success, logoutResponse.getStatus().getStatusCode().getValue());
 
         webClient.close();
 
@@ -1843,12 +1847,28 @@ public class IdpTest {
             new UsernamePasswordCredentials(user, password));
 
         webClient.getOptions().setJavaScriptEnabled(false);
-        try {
-            webClient.getPage(logoutURL);
-            Assert.fail("Authentication failure expected");
-        }  catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
-        }
+        idpPage = webClient.getPage(logoutURL);
+        webClient.getOptions().setJavaScriptEnabled(true);
+
+        // Check Response
+        HtmlForm responseForm = idpPage.getFormByName("samlsignoutresponseform");
+        Assert.assertEquals("https://localhost:8080/logout", responseForm.getActionAttribute());
+        String responseValue = responseForm.getInputByName("SAMLResponse").getAttributeNS(null, "value");
+        Assert.assertNotNull(responseValue);
+        String receivedRelayState = responseForm.getInputByName("RelayState").getAttributeNS(null, "value");
+        Assert.assertEquals(relayState, receivedRelayState);
+
+        byte[] deflatedToken = Base64Utility.decode(responseValue);
+        InputStream tokenStream = new ByteArrayInputStream(deflatedToken);
+        Document responseDoc = StaxUtils.read(new InputStreamReader(tokenStream, StandardCharsets.UTF_8));
+
+        LogoutResponse logoutResponse = (LogoutResponse)OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
+        Assert.assertNotNull(logoutResponse);
+        Assert.assertEquals("https://localhost:8080/logout", logoutResponse.getDestination());
+        String expectedIssuer = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml";
+        Assert.assertEquals(expectedIssuer, logoutResponse.getIssuer().getValue());
+        String success = "urn:oasis:names:tc:SAML:2.0:status:Requester";
+        Assert.assertEquals(success, logoutResponse.getStatus().getStatusCode().getValue());
         webClient.close();
 
         // 3. now we try to access the idp without authentication but with the existing cookies

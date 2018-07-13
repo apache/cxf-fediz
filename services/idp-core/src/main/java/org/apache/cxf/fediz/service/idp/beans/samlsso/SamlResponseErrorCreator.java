@@ -33,6 +33,7 @@ import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.rs.security.saml.DeflateEncoderDecoder;
 import org.apache.wss4j.common.saml.OpenSAMLUtil;
 import org.apache.wss4j.common.util.DOM2Writer;
+import org.opensaml.saml.saml2.core.LogoutResponse;
 import org.opensaml.saml.saml2.core.Response;
 import org.opensaml.saml.saml2.core.Status;
 import org.slf4j.Logger;
@@ -48,30 +49,53 @@ public class SamlResponseErrorCreator {
 
     private static final Logger LOG = LoggerFactory.getLogger(SamlResponseErrorCreator.class);
     private boolean supportDeflateEncoding;
+    private boolean useRealmForIssuer;
 
-    public String createSAMLResponse(RequestContext context, boolean requestor,
-                                     Idp idp, String requestID) throws ProcessingException {
+    public String createSAMLResponse(RequestContext context, boolean logout, boolean requestor,
+                                     Idp idp, String requestID, String destination) throws ProcessingException {
         Document doc = DOMUtils.newDocument();
 
         String statusValue = "urn:oasis:names:tc:SAML:2.0:status:Responder";
         if (requestor) {
             statusValue = "urn:oasis:names:tc:SAML:2.0:status:Requester";
         }
+
         Status status =
             SAML2PResponseComponentBuilder.createStatus(statusValue, null);
-        Response response =
-            SAML2PResponseComponentBuilder.createSAMLResponse(requestID, idp.getRealm(), status);
-
+        Element responseElement = null;
         try {
-            Element policyElement = OpenSAMLUtil.toDom(response, doc);
-            doc.appendChild(policyElement);
+            if (logout) {
+                responseElement = createLogoutResponse(idp, statusValue, destination, requestID);
+            } else {
+                Response response =
+                    SAML2PResponseComponentBuilder.createSAMLResponse(requestID, idp.getRealm(), status);
+                Element policyElement = OpenSAMLUtil.toDom(response, doc);
+                doc.appendChild(policyElement);
 
-            Element responseElement = policyElement;
+                responseElement = policyElement;
+            }
+
             return encodeResponse(responseElement);
         } catch (Exception e) {
             LOG.warn("Error marshalling SAML Token: {}", e.getMessage());
             throw new ProcessingException(TYPE.BAD_REQUEST);
         }
+    }
+
+    protected Element createLogoutResponse(Idp idp, String statusValue,
+                                           String destination, String requestID) throws Exception {
+        Document doc = DOMUtils.newDocument();
+
+        Status status =
+            SAML2PResponseComponentBuilder.createStatus(statusValue, null);
+        String issuer = useRealmForIssuer ? idp.getRealm() : idp.getIdpUrl().toString();
+        LogoutResponse response =
+            SAML2PResponseComponentBuilder.createSAMLLogoutResponse(requestID, issuer, status, destination);
+
+        Element policyElement = OpenSAMLUtil.toDom(response, doc);
+        doc.appendChild(policyElement);
+
+        return policyElement;
     }
 
     protected String encodeResponse(Element response) throws IOException {
@@ -94,5 +118,13 @@ public class SamlResponseErrorCreator {
 
     public void setSupportDeflateEncoding(boolean supportDeflateEncoding) {
         this.supportDeflateEncoding = supportDeflateEncoding;
+    }
+
+    public boolean isUseRealmForIssuer() {
+        return useRealmForIssuer;
+    }
+
+    public void setUseRealmForIssuer(boolean useRealmForIssuer) {
+        this.useRealmForIssuer = useRealmForIssuer;
     }
 }
