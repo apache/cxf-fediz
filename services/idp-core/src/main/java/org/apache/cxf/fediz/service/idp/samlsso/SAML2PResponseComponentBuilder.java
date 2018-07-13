@@ -82,7 +82,8 @@ public final class SAML2PResponseComponentBuilder {
     public static LogoutResponse createSAMLLogoutResponse(
         String inResponseTo,
         String issuer,
-        Status status
+        Status status,
+        String destination
     ) {
         if (logoutResponseBuilder == null) {
             logoutResponseBuilder = (SAMLObjectBuilder<LogoutResponse>)
@@ -96,6 +97,7 @@ public final class SAML2PResponseComponentBuilder {
         response.setIssuer(createIssuer(issuer));
         response.setStatus(status);
         response.setVersion(SAMLVersion.VERSION_20);
+        response.setDestination(destination);
 
         return response;
     }
