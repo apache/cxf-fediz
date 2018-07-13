@@ -1,9 +1,8 @@
 JAX-RS CXF Plugin Web Application Demo
 ==================================
 
-This demo shows how to build and deploy an SSO protected CXF JAX-RS web application
-using Apache CXF Fediz and Fediz CXF Plugin.
-
+This demo shows how to build and deploy an SSO protected CXF JAX-RS web
+application using Apache CXF Fediz and the Fediz CXF Plugin.
 
 Running this sample consists of four steps:
 

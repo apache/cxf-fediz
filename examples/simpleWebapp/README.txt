@@ -1,8 +1,8 @@
 Simple Web Application Demo
 ===========================
 
-This demo shows how to build and deploy an SSO protected using Apache CXF Fediz
-web application.
+This demo shows how to build and deploy a SSO protected web application using
+Apache CXF Fediz.
 
 Running this sample consists of four steps:
 
