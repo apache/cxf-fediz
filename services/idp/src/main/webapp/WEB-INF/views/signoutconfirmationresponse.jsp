@@ -17,6 +17,7 @@
         Map<String, Application> rcm =
         (Map<String, Application>) request.getSession().getAttribute(SigninParametersCacheAction.ACTIVE_APPLICATIONS);
     	String wreply = (String) request.getAttribute("wreply");
+    	String samlAction = (String) request.getAttribute("SAMLRequest");
 
         if (rcm == null) {
     %>
@@ -53,6 +54,10 @@
 			        if (wreply != null && !wreply.isEmpty()) {
 			    %>
 			    <input type="hidden" name="wreply" value="<%= wreply%>" />        
+	            <input type="submit" name="_eventId_cancel" value="Cancel" />
+	            <%     
+			        } else if (samlAction != null && !samlAction.isEmpty()) {
+			    %>
 	            <input type="submit" name="_eventId_cancel" value="Cancel" />
 	            <%     
 			        }
