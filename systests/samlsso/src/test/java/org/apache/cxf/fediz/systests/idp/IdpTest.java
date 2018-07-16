@@ -1743,6 +1743,8 @@ public class IdpTest {
         String success = "urn:oasis:names:tc:SAML:2.0:status:Success";
         Assert.assertEquals(success, logoutResponse.getStatus().getStatusCode().getValue());
 
+        Assert.assertNotNull(logoutResponse.getSignature());
+
         webClient.close();
 
         // 3. now we try to access the idp without authentication but with the existing cookies
@@ -1870,6 +1872,8 @@ public class IdpTest {
         Assert.assertEquals(expectedIssuer, logoutResponse.getIssuer().getValue());
         String success = "urn:oasis:names:tc:SAML:2.0:status:Requester";
         Assert.assertEquals(success, logoutResponse.getStatus().getStatusCode().getValue());
+
+        Assert.assertNotNull(logoutResponse.getSignature());
         webClient.close();
 
         // 3. now we try to access the idp without authentication but with the existing cookies
@@ -1884,7 +1888,6 @@ public class IdpTest {
 
         webClient.close();
     }
-    // CHECKSTYLE:ON
 
     @org.junit.Test
     public void testIdpLogoutCancelled() throws Exception {
@@ -2003,6 +2006,7 @@ public class IdpTest {
         String success = "urn:oasis:names:tc:SAML:2.0:status:Requester";
         Assert.assertEquals(success, logoutResponse.getStatus().getStatusCode().getValue());
 
+        Assert.assertNotNull(logoutResponse.getSignature());
         webClient.close();
 
         // 3. now we try to access the idp without authentication but with the existing cookies
@@ -2017,6 +2021,7 @@ public class IdpTest {
 
         webClient.close();
     }
+    // CHECKSTYLE:ON
 
     private String encodeAuthnRequest(Element authnRequest) throws IOException {
         String requestMessage = DOM2Writer.nodeToString(authnRequest);
@@ -2112,4 +2117,5 @@ public class IdpTest {
 
         return samlResponseObject;
     }
+
 }

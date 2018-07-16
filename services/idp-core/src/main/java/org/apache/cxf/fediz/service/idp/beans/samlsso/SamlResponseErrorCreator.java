@@ -18,22 +18,15 @@
  */
 package org.apache.cxf.fediz.service.idp.beans.samlsso;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import org.apache.cxf.common.util.Base64Utility;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.samlsso.SAML2PResponseComponentBuilder;
 import org.apache.cxf.helpers.DOMUtils;
-import org.apache.cxf.rs.security.saml.DeflateEncoderDecoder;
 import org.apache.wss4j.common.saml.OpenSAMLUtil;
-import org.apache.wss4j.common.util.DOM2Writer;
-import org.opensaml.saml.saml2.core.LogoutResponse;
 import org.opensaml.saml.saml2.core.Response;
 import org.opensaml.saml.saml2.core.Status;
 import org.slf4j.Logger;
@@ -45,11 +38,9 @@ import org.springframework.webflow.execution.RequestContext;
  * Create a SAML Error Response
  */
 @Component
-public class SamlResponseErrorCreator {
+public class SamlResponseErrorCreator extends AbstractSamlResponseCreator {
 
     private static final Logger LOG = LoggerFactory.getLogger(SamlResponseErrorCreator.class);
-    private boolean supportDeflateEncoding;
-    private boolean useRealmForIssuer;
 
     public String createSAMLResponse(RequestContext context, boolean logout, boolean requestor,
                                      Idp idp, String requestID, String destination) throws ProcessingException {
@@ -82,49 +73,4 @@ public class SamlResponseErrorCreator {
         }
     }
 
-    protected Element createLogoutResponse(Idp idp, String statusValue,
-                                           String destination, String requestID) throws Exception {
-        Document doc = DOMUtils.newDocument();
-
-        Status status =
-            SAML2PResponseComponentBuilder.createStatus(statusValue, null);
-        String issuer = useRealmForIssuer ? idp.getRealm() : idp.getIdpUrl().toString();
-        LogoutResponse response =
-            SAML2PResponseComponentBuilder.createSAMLLogoutResponse(requestID, issuer, status, destination);
-
-        Element policyElement = OpenSAMLUtil.toDom(response, doc);
-        doc.appendChild(policyElement);
-
-        return policyElement;
-    }
-
-    protected String encodeResponse(Element response) throws IOException {
-        String responseMessage = DOM2Writer.nodeToString(response);
-        LOG.debug("Created Response: {}", responseMessage);
-
-        if (supportDeflateEncoding) {
-            DeflateEncoderDecoder encoder = new DeflateEncoderDecoder();
-            byte[] deflatedBytes = encoder.deflateToken(responseMessage.getBytes(StandardCharsets.UTF_8));
-
-            return Base64Utility.encode(deflatedBytes);
-        }
-
-        return Base64Utility.encode(responseMessage.getBytes());
-    }
-
-    public boolean isSupportDeflateEncoding() {
-        return supportDeflateEncoding;
-    }
-
-    public void setSupportDeflateEncoding(boolean supportDeflateEncoding) {
-        this.supportDeflateEncoding = supportDeflateEncoding;
-    }
-
-    public boolean isUseRealmForIssuer() {
-        return useRealmForIssuer;
-    }
-
-    public void setUseRealmForIssuer(boolean useRealmForIssuer) {
-        this.useRealmForIssuer = useRealmForIssuer;
-    }
 }
