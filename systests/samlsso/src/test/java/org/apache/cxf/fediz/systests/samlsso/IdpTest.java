@@ -1879,6 +1879,138 @@ public class IdpTest {
         webClient.close();
     }
 
+    @org.junit.Test
+    public void testIdpLogoutCancelled() throws Exception {
+        OpenSAMLUtil.initSamlEngine();
+
+        // 1. First let's login to the IdP
+
+        // Create SAML AuthnRequest
+        Document doc = DOMUtils.createDocument();
+        doc.appendChild(doc.createElement("root"));
+        // Create the AuthnRequest
+        String consumerURL = "https://localhost:" + getRpHttpsPort() + "/"
+            + getServletContextName() + "/secure/fedservlet";
+        AuthnRequest authnRequest =
+            new DefaultAuthnRequestBuilder().createAuthnRequest(
+                null, "urn:org:apache:cxf:fediz:fedizhelloworld", consumerURL
+            );
+        authnRequest.setDestination("https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml");
+        signAuthnRequest(authnRequest);
+
+        Element authnRequestElement = OpenSAMLUtil.toDom(authnRequest, doc);
+        String authnRequestEncoded = encodeAuthnRequest(authnRequestElement);
+
+        String urlEncodedRequest = URLEncoder.encode(authnRequestEncoded, "UTF-8");
+
+        String relayState = UUID.randomUUID().toString();
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml?";
+        url += SSOConstants.RELAY_STATE + "=" + relayState;
+        url += "&" + SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
+
+        String user = "alice";
+        String password = "ecila";
+
+        CookieManager cookieManager = new CookieManager();
+
+        WebClient webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        HtmlPage idpPage = webClient.getPage(url);
+        webClient.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+
+        org.opensaml.saml.saml2.core.Response samlResponse =
+            parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
+        String expected = "urn:oasis:names:tc:SAML:2.0:status:Success";
+        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        NameID nameID = samlResponse.getAssertions().get(0).getSubject().getNameID();
+        Assert.assertNotNull(nameID);
+        nameID.detach();
+
+        webClient.close();
+
+        // 2. now we logout from IdP - but cancel the logout
+
+        // Create SAML LogoutRequest
+        doc = DOMUtils.createDocument();
+        doc.appendChild(doc.createElement("root"));
+
+        Issuer issuer = SamlpRequestComponentBuilder.createIssuer("urn:org:apache:cxf:fediz:fedizhelloworld");
+        String destination = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml";
+        LogoutRequest logoutRequest =
+            SamlpRequestComponentBuilder.createLogoutRequest(SAMLVersion.VERSION_20, issuer, destination,
+                                                             null, null, null, nameID);
+
+        signAuthnRequest(logoutRequest);
+
+        Element logoutRequestElement = OpenSAMLUtil.toDom(logoutRequest, doc);
+        String logoutRequestEncoded = encodeAuthnRequest(logoutRequestElement);
+
+        urlEncodedRequest = URLEncoder.encode(logoutRequestEncoded, "UTF-8");
+
+        relayState = UUID.randomUUID().toString();
+        String logoutURL = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml?";
+        logoutURL += SSOConstants.RELAY_STATE + "=" + relayState;
+        logoutURL += "&" + SSOConstants.SAML_REQUEST + "=" + urlEncodedRequest;
+
+        webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        idpPage = webClient.getPage(logoutURL);
+        webClient.getOptions().setJavaScriptEnabled(true);
+
+        Assert.assertEquals("IDP SignOut Confirmation Response Page", idpPage.getTitleText());
+
+        HtmlForm form = idpPage.getFormByName("signoutconfirmationresponseform");
+        HtmlSubmitInput button = form.getInputByName("_eventId_cancel");
+        HtmlPage signoutPage = button.click();
+
+        // Check Response
+        HtmlForm responseForm = signoutPage.getFormByName("samlsignoutresponseform");
+        Assert.assertEquals("https://localhost:8080/logout", responseForm.getActionAttribute());
+        String responseValue = responseForm.getInputByName("SAMLResponse").getAttributeNS(null, "value");
+        Assert.assertNotNull(responseValue);
+        String receivedRelayState = responseForm.getInputByName("RelayState").getAttributeNS(null, "value");
+        Assert.assertEquals(relayState, receivedRelayState);
+
+        byte[] deflatedToken = Base64Utility.decode(responseValue);
+        InputStream tokenStream = new ByteArrayInputStream(deflatedToken);
+        Document responseDoc = StaxUtils.read(new InputStreamReader(tokenStream, StandardCharsets.UTF_8));
+
+        LogoutResponse logoutResponse = (LogoutResponse)OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
+        Assert.assertNotNull(logoutResponse);
+        Assert.assertEquals("https://localhost:8080/logout", logoutResponse.getDestination());
+        String expectedIssuer = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml";
+        Assert.assertEquals(expectedIssuer, logoutResponse.getIssuer().getValue());
+        String success = "urn:oasis:names:tc:SAML:2.0:status:Requester";
+        Assert.assertEquals(success, logoutResponse.getStatus().getStatusCode().getValue());
+
+        webClient.close();
+
+        // 3. now we try to access the idp without authentication but with the existing cookies
+        // to see if we are really logged out - we should still be logged in as we cancelled the Logout process
+        webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        idpPage = webClient.getPage(url);
+
+        Assert.assertEquals(200, idpPage.getWebResponse().getStatusCode());
+
+        webClient.close();
+    }
+
     private String encodeAuthnRequest(Element authnRequest) throws IOException {
         String requestMessage = DOM2Writer.nodeToString(authnRequest);
 

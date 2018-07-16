@@ -223,7 +223,7 @@
     
     <view-state id="viewSignoutConfirmation" view="signoutconfirmationresponse">
         <transition on="submit" to="produceSAMLLogoutResponse"/>
-        <!-- <transition on="cancel" to="redirect" /> -->
+        <transition on="cancel" to="viewBadLogoutRequestResponse" />
     </view-state>
     
     <action-state id="produceSAMLLogoutResponse">
