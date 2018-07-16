@@ -37,23 +37,6 @@ import java.util.UUID;
 
 import javax.servlet.ServletException;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
-import com.gargoylesoftware.htmlunit.CookieManager;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.DomNodeList;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
-import com.gargoylesoftware.htmlunit.xml.XmlPage;
-
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
@@ -96,6 +79,22 @@ import org.opensaml.xmlsec.keyinfo.impl.X509KeyInfoGeneratorFactory;
 import org.opensaml.xmlsec.signature.KeyInfo;
 import org.opensaml.xmlsec.signature.Signature;
 import org.opensaml.xmlsec.signature.support.SignatureConstants;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
+import com.gargoylesoftware.htmlunit.CookieManager;
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.html.DomElement;
+import com.gargoylesoftware.htmlunit.html.DomNodeList;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
+import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
 /**
  * Some tests invoking directly on the IdP for SAML SSO
@@ -1737,6 +1736,8 @@ public class IdpTest {
         String success = "urn:oasis:names:tc:SAML:2.0:status:Success";
         Assert.assertEquals(success, logoutResponse.getStatus().getStatusCode().getValue());
 
+        Assert.assertNotNull(logoutResponse.getSignature());
+
         webClient.close();
 
         // 3. now we try to access the idp without authentication but with the existing cookies
@@ -1864,6 +1865,8 @@ public class IdpTest {
         Assert.assertEquals(expectedIssuer, logoutResponse.getIssuer().getValue());
         String success = "urn:oasis:names:tc:SAML:2.0:status:Requester";
         Assert.assertEquals(success, logoutResponse.getStatus().getStatusCode().getValue());
+
+        Assert.assertNotNull(logoutResponse.getSignature());
         webClient.close();
 
         // 3. now we try to access the idp without authentication but with the existing cookies
@@ -1996,6 +1999,7 @@ public class IdpTest {
         String success = "urn:oasis:names:tc:SAML:2.0:status:Requester";
         Assert.assertEquals(success, logoutResponse.getStatus().getStatusCode().getValue());
 
+        Assert.assertNotNull(logoutResponse.getSignature());
         webClient.close();
 
         // 3. now we try to access the idp without authentication but with the existing cookies
@@ -2105,4 +2109,5 @@ public class IdpTest {
 
         return samlResponseObject;
     }
+
 }

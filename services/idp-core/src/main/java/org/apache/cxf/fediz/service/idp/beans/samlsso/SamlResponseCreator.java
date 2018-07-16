@@ -18,15 +18,12 @@
  */
 package org.apache.cxf.fediz.service.idp.beans.samlsso;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import org.apache.cxf.common.util.Base64Utility;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.core.util.CertsUtils;
@@ -37,7 +34,6 @@ import org.apache.cxf.fediz.service.idp.samlsso.SAML2PResponseComponentBuilder;
 import org.apache.cxf.fediz.service.idp.samlsso.SAMLAuthnRequest;
 import org.apache.cxf.fediz.service.idp.util.WebUtils;
 import org.apache.cxf.helpers.DOMUtils;
-import org.apache.cxf.rs.security.saml.DeflateEncoderDecoder;
 import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.saml.OpenSAMLUtil;
 import org.apache.wss4j.common.saml.SAMLCallback;
@@ -46,11 +42,9 @@ import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.apache.wss4j.common.saml.bean.AudienceRestrictionBean;
 import org.apache.wss4j.common.saml.bean.ConditionsBean;
 import org.apache.wss4j.common.saml.bean.SubjectConfirmationDataBean;
-import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.wss4j.dom.WSConstants;
 import org.joda.time.DateTime;
 import org.opensaml.saml.saml2.core.Assertion;
-import org.opensaml.saml.saml2.core.LogoutResponse;
 import org.opensaml.saml.saml2.core.NameID;
 import org.opensaml.saml.saml2.core.Response;
 import org.opensaml.saml.saml2.core.Status;
@@ -63,11 +57,9 @@ import org.springframework.webflow.execution.RequestContext;
  * Insert the SAML Token received from the STS into a SAML Response
  */
 @Component
-public class SamlResponseCreator {
+public class SamlResponseCreator extends AbstractSamlResponseCreator {
 
     private static final Logger LOG = LoggerFactory.getLogger(SamlResponseCreator.class);
-    private boolean supportDeflateEncoding;
-    private boolean useRealmForIssuer;
 
     public String createSAMLResponse(RequestContext context, Idp idp, Element rpToken,
                                      String consumerURL, String requestId, String requestIssuer)
@@ -100,7 +92,8 @@ public class SamlResponseCreator {
     public String createSAMLLogoutResponse(RequestContext context, Idp idp, String destination, String requestId)
                                          throws ProcessingException {
         try {
-            Element response = createLogoutResponse(idp, destination, requestId);
+            Element response = createLogoutResponse(idp, "urn:oasis:names:tc:SAML:2.0:status:Success",
+                                                    destination, requestId);
             return encodeResponse(response);
         } catch (Exception ex) {
             LOG.warn("Error marshalling SAML Token: {}", ex.getMessage());
@@ -113,7 +106,7 @@ public class SamlResponseCreator {
                                            String remoteAddr, String racs) throws Exception {
         // Create an AuthenticationAssertion
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
-        String issuer = useRealmForIssuer ? idp.getRealm() : idp.getIdpUrl().toString();
+        String issuer = isUseRealmForIssuer() ? idp.getRealm() : idp.getIdpUrl().toString();
         callbackHandler.setIssuer(issuer);
         callbackHandler.setSubject(receivedToken.getSaml2().getSubject());
 
@@ -167,7 +160,7 @@ public class SamlResponseCreator {
             SAML2PResponseComponentBuilder.createStatus(
                 "urn:oasis:names:tc:SAML:2.0:status:Success", null
             );
-        String issuer = useRealmForIssuer ? idp.getRealm() : idp.getIdpUrl().toString();
+        String issuer = isUseRealmForIssuer() ? idp.getRealm() : idp.getIdpUrl().toString();
         Response response =
             SAML2PResponseComponentBuilder.createSAMLResponse(requestID, issuer, status);
 
@@ -179,50 +172,5 @@ public class SamlResponseCreator {
         return policyElement;
     }
 
-    protected Element createLogoutResponse(Idp idp, String destination, String requestID) throws Exception {
-        Document doc = DOMUtils.newDocument();
 
-        Status status =
-            SAML2PResponseComponentBuilder.createStatus(
-                "urn:oasis:names:tc:SAML:2.0:status:Success", null
-            );
-        String issuer = useRealmForIssuer ? idp.getRealm() : idp.getIdpUrl().toString();
-        LogoutResponse response =
-            SAML2PResponseComponentBuilder.createSAMLLogoutResponse(requestID, issuer, status, destination);
-
-        Element policyElement = OpenSAMLUtil.toDom(response, doc);
-        doc.appendChild(policyElement);
-
-        return policyElement;
-    }
-
-    protected String encodeResponse(Element response) throws IOException {
-        String responseMessage = DOM2Writer.nodeToString(response);
-        LOG.debug("Created Response: {}", responseMessage);
-
-        if (supportDeflateEncoding) {
-            DeflateEncoderDecoder encoder = new DeflateEncoderDecoder();
-            byte[] deflatedBytes = encoder.deflateToken(responseMessage.getBytes(StandardCharsets.UTF_8));
-
-            return Base64Utility.encode(deflatedBytes);
-        }
-
-        return Base64Utility.encode(responseMessage.getBytes());
-    }
-
-    public boolean isSupportDeflateEncoding() {
-        return supportDeflateEncoding;
-    }
-
-    public void setSupportDeflateEncoding(boolean supportDeflateEncoding) {
-        this.supportDeflateEncoding = supportDeflateEncoding;
-    }
-
-    public boolean isUseRealmForIssuer() {
-        return useRealmForIssuer;
-    }
-
-    public void setUseRealmForIssuer(boolean useRealmForIssuer) {
-        this.useRealmForIssuer = useRealmForIssuer;
-    }
 }
