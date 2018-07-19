@@ -25,6 +25,8 @@ import java.math.BigInteger;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -63,6 +65,7 @@ import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.apache.cxf.fediz.core.processor.SAMLProcessorImpl;
 import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.crypto.CryptoFactory;
+import org.apache.wss4j.common.crypto.CryptoType;
 import org.apache.wss4j.common.ext.WSPasswordCallback;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.OpenSAMLUtil;
@@ -82,8 +85,16 @@ import org.joda.time.DateTimeZone;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.opensaml.saml.common.SAMLObjectContentReference;
+import org.opensaml.saml.common.SignableSAMLObject;
+import org.opensaml.saml.saml2.core.LogoutResponse;
 import org.opensaml.saml.saml2.core.Response;
 import org.opensaml.saml.saml2.core.Status;
+import org.opensaml.security.x509.BasicX509Credential;
+import org.opensaml.xmlsec.keyinfo.impl.X509KeyInfoGeneratorFactory;
+import org.opensaml.xmlsec.signature.KeyInfo;
+import org.opensaml.xmlsec.signature.Signature;
+import org.opensaml.xmlsec.signature.support.SignatureConstants;
 
 import static org.junit.Assert.fail;
 
@@ -1239,6 +1250,32 @@ public class SAMLResponseTest {
             // expected
         }
     }
+    
+    @org.junit.Test
+    public void validateLogoutResponse() throws Exception {
+        // Mock up a LogoutResponse
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        
+        String status = "urn:oasis:names:tc:SAML:2.0:status:Success";
+        Element logoutResponse = createLogoutResponse(status, TEST_REQUEST_URL, true, requestId);
+
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(encodeResponse(logoutResponse));
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+        wfReq.setSignOutRequest(true);
+
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        wfProc.processRequest(wfReq, config);
+    }
 
     private String createSamlResponseStr(String requestId) throws Exception {
         // Create SAML Assertion
@@ -1308,6 +1345,86 @@ public class SAMLResponseTest {
         return policyElement;
     }
 
+    private Element createLogoutResponse(String statusValue, String destination, 
+                                         boolean sign, String requestID) throws Exception {
+        DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+        Document doc = docBuilder.newDocument();
+
+        Status status =
+            SAML2PResponseComponentBuilder.createStatus(statusValue, null);
+        LogoutResponse response =
+            SAML2PResponseComponentBuilder.createSAMLLogoutResponse(requestID, TEST_IDP_ISSUER, status, destination);
+
+        // Sign the LogoutResponse
+        if (sign) {
+            signResponse(response, "mystskey");
+        }
+
+        Element policyElement = OpenSAMLUtil.toDom(response, doc);
+        doc.appendChild(policyElement);
+
+        return policyElement;
+    }
+    
+    private void signResponse(SignableSAMLObject signableObject, String alias) throws Exception {
+
+        Signature signature = OpenSAMLUtil.buildSignature();
+        signature.setCanonicalizationAlgorithm(SignatureConstants.ALGO_ID_C14N_EXCL_OMIT_COMMENTS);
+        CryptoType cryptoType = new CryptoType(CryptoType.TYPE.ALIAS);
+        cryptoType.setAlias(alias);
+        X509Certificate[] issuerCerts = crypto.getX509Certificates(cryptoType);
+
+        String sigAlgo = SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA1;
+        String pubKeyAlgo = issuerCerts[0].getPublicKey().getAlgorithm();
+        if (pubKeyAlgo.equalsIgnoreCase("DSA")) {
+            sigAlgo = SignatureConstants.ALGO_ID_SIGNATURE_DSA;
+        } else if (pubKeyAlgo.equalsIgnoreCase("EC")) {
+            sigAlgo = SignatureConstants.ALGO_ID_SIGNATURE_ECDSA_SHA1;
+        }
+        
+        WSPasswordCallback[] cb = {
+            new WSPasswordCallback(alias, WSPasswordCallback.SIGNATURE)
+        };
+        cbPasswordHandler.handle(cb);
+        String password = cb[0].getPassword();
+        
+        PrivateKey privateKey;
+        try {
+            privateKey = crypto.getPrivateKey(alias, password);
+        } catch (Exception ex) {
+            throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, ex);
+        }
+        if (privateKey == null) {
+            throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "empty",
+                new Object[] {"No private key was found using issuer name: " + alias});
+        }
+
+        signature.setSignatureAlgorithm(sigAlgo);
+
+        BasicX509Credential signingCredential =
+            new BasicX509Credential(issuerCerts[0], privateKey);
+
+        signature.setSigningCredential(signingCredential);
+
+        X509KeyInfoGeneratorFactory kiFactory = new X509KeyInfoGeneratorFactory();
+        kiFactory.setEmitEntityCertificate(true);
+
+        try {
+            KeyInfo keyInfo = kiFactory.newInstance().generate(signingCredential);
+            signature.setKeyInfo(keyInfo);
+        } catch (org.opensaml.security.SecurityException ex) {
+            throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, ex, "empty",
+                new Object[] {"Error generating KeyInfo from signing credential"});
+        }
+
+        signableObject.setSignature(signature);
+        String digestAlg = SignatureConstants.ALGO_ID_DIGEST_SHA1;
+        SAMLObjectContentReference contentRef =
+            (SAMLObjectContentReference)signature.getContentReferences().get(0);
+        contentRef.setDigestAlgorithm(digestAlg);
+        signableObject.releaseDOM();
+        signableObject.releaseChildrenDOM(true);
+    }
 
     /**
      * Returns the first element that matches <code>name</code> and

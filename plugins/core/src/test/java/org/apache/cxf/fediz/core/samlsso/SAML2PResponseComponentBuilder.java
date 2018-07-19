@@ -27,6 +27,7 @@ import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.opensaml.saml.common.SAMLObjectBuilder;
 import org.opensaml.saml.common.SAMLVersion;
 import org.opensaml.saml.saml2.core.Issuer;
+import org.opensaml.saml.saml2.core.LogoutResponse;
 import org.opensaml.saml.saml2.core.Response;
 import org.opensaml.saml.saml2.core.Status;
 import org.opensaml.saml.saml2.core.StatusCode;
@@ -38,6 +39,8 @@ import org.opensaml.saml.saml2.core.StatusMessage;
 public final class SAML2PResponseComponentBuilder {
 
     private static SAMLObjectBuilder<Response> responseBuilder;
+    
+    private static SAMLObjectBuilder<LogoutResponse> logoutResponseBuilder;
 
     private static SAMLObjectBuilder<Issuer> issuerBuilder;
 
@@ -80,6 +83,29 @@ public final class SAML2PResponseComponentBuilder {
         response.setIssuer(issuer);
         response.setStatus(status);
         response.setVersion(SAMLVersion.VERSION_20);
+
+        return response;
+    }
+    
+    public static LogoutResponse createSAMLLogoutResponse(
+        String inResponseTo,
+        String issuer,
+        Status status,
+        String destination
+    ) {
+        if (logoutResponseBuilder == null) {
+            logoutResponseBuilder = (SAMLObjectBuilder<LogoutResponse>)
+                builderFactory.getBuilder(LogoutResponse.DEFAULT_ELEMENT_NAME);
+        }
+        LogoutResponse response = logoutResponseBuilder.buildObject();
+
+        response.setID(UUID.randomUUID().toString());
+        response.setIssueInstant(new DateTime());
+        response.setInResponseTo(inResponseTo);
+        response.setIssuer(createIssuer(issuer));
+        response.setStatus(status);
+        response.setVersion(SAMLVersion.VERSION_20);
+        response.setDestination(destination);
 
         return response;
     }
