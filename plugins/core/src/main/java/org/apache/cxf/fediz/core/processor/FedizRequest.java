@@ -38,6 +38,7 @@ public class FedizRequest implements Serializable {
     private Certificate[] certs;
     private transient HttpServletRequest request;
     private RequestState requestState;
+    private boolean signOutRequest;
 
     public Certificate[] getCerts() {
         if (certs != null) {
@@ -87,6 +88,12 @@ public class FedizRequest implements Serializable {
     }
     public void setRequestState(RequestState requestState) {
         this.requestState = requestState;
+    }
+    public boolean isSignOutRequest() {
+        return signOutRequest;
+    }
+    public void setSignOutRequest(boolean signOutRequest) {
+        this.signOutRequest = signOutRequest;
     }
 
 }

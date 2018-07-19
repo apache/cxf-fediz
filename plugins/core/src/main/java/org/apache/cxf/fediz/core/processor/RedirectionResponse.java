@@ -35,6 +35,7 @@ public class RedirectionResponse implements Serializable {
     private String redirectionURL;
     private Map<String, String> headers = new HashMap<>();
     private RequestState requestState;
+    private String state;
 
     public String getRedirectionURL() {
         return redirectionURL;
@@ -58,6 +59,14 @@ public class RedirectionResponse implements Serializable {
 
     public void setRequestState(RequestState requestState) {
         this.requestState = requestState;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
     }
 
 }

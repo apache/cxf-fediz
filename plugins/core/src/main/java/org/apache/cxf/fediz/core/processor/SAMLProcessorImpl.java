@@ -28,6 +28,7 @@ import java.security.PrivateKey;
 import java.security.Signature;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.zip.DataFormatException;
@@ -63,6 +64,7 @@ import org.opensaml.core.xml.XMLObject;
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.LogoutRequest;
+import org.opensaml.saml.saml2.core.StatusResponseType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,8 +93,17 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             throw new IllegalStateException("Unsupported protocol");
         }
 
-        if (request.getResponseToken() == null || request.getState() == null) {
-            LOG.error("Missing response token or RelayState parameters");
+        if (request.getResponseToken() == null) {
+            LOG.error("Missing response token parameter");
+            throw new ProcessingException(TYPE.INVALID_REQUEST);
+        }
+
+        if (request.isSignOutRequest()) {
+            return processSignOutResponse(request, config);
+        }
+
+        if (request.getState() == null) {
+            LOG.error("Missing RelayState parameter");
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
 
@@ -221,12 +232,72 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
         return fedResponse;
     }
 
+    private FedizResponse processSignOutResponse(FedizRequest request, FedizContext config) throws ProcessingException {
+        SAMLProtocol protocol = (SAMLProtocol)config.getProtocol();
+
+        InputStream tokenStream = null;
+        try {
+            byte[] deflatedToken = Base64.getDecoder().decode(request.getResponseToken());
+            if (protocol.isDisableDeflateEncoding()) {
+                tokenStream = new ByteArrayInputStream(deflatedToken);
+            } else {
+                tokenStream = CompressionUtils.inflate(deflatedToken);
+            }
+        } catch (IllegalArgumentException | DataFormatException ex) {
+            LOG.warn("Invalid data format", ex);
+            throw new ProcessingException(TYPE.INVALID_REQUEST);
+        }
+
+        Document doc = null;
+        Element el = null;
+        try {
+            doc = DOMUtils.readXml(tokenStream);
+            el = doc.getDocumentElement();
+
+        } catch (Exception e) {
+            LOG.warn("Failed to parse token", e);
+            throw new ProcessingException(TYPE.INVALID_REQUEST);
+        }
+
+        LOG.debug("Received response: " + DOM2Writer.nodeToString(el));
+
+        XMLObject responseObject = null;
+        try {
+            responseObject = OpenSAMLUtil.fromDom(el);
+        } catch (WSSecurityException ex) {
+            LOG.debug(ex.getMessage(), ex);
+            throw new ProcessingException(TYPE.INVALID_REQUEST);
+        }
+        if (!(responseObject instanceof org.opensaml.saml.saml2.core.LogoutResponse)) {
+            throw new ProcessingException(TYPE.INVALID_REQUEST);
+        }
+
+        org.opensaml.saml.saml2.core.LogoutResponse logoutResponse = 
+            (org.opensaml.saml.saml2.core.LogoutResponse)responseObject;
+        
+        // Validate the Response
+        validateSamlResponseProtocol(logoutResponse, config);
+        
+        Instant issueInstant = logoutResponse.getIssueInstant().toDate().toInstant();
+        
+        FedizResponse fedResponse = new FedizResponse(
+            null, logoutResponse.getIssuer().getValue(),
+            Collections.emptyList(), Collections.emptyList(),
+            null,
+            issueInstant,
+            null,
+            null,
+            logoutResponse.getID());
+
+        return fedResponse;
+    }
+
     /**
      * Validate the received SAML Response as per the protocol
      * @throws ProcessingException
      */
     protected void validateSamlResponseProtocol(
-        org.opensaml.saml.saml2.core.Response samlResponse,
+        StatusResponseType samlResponse,
         FedizContext config
     ) throws ProcessingException {
         try {
@@ -468,6 +539,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             RedirectionResponse response = new RedirectionResponse();
             response.addHeader("Cache-Control", "no-cache, no-store");
             response.addHeader("Pragma", "no-cache");
+            response.setState(relayState);
 
             redirectURL = redirectURL + "?" + sb.toString();
             response.setRedirectionURL(redirectURL);

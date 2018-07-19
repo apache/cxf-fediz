@@ -69,7 +69,7 @@ public class SAMLProtocolResponseValidator {
      * @throws WSSecurityException
      */
     public void validateSamlResponse(
-        org.opensaml.saml.saml2.core.Response samlResponse,
+        org.opensaml.saml.saml2.core.StatusResponseType samlResponse,
         FedizContext config
     ) throws WSSecurityException {
         // Check the Status Code
@@ -121,7 +121,7 @@ public class SAMLProtocolResponseValidator {
      * Validate the Response signature (if it exists)
      */
     private void validateResponseSignature(
-        org.opensaml.saml.saml2.core.Response samlResponse,
+        org.opensaml.saml.saml2.core.StatusResponseType samlResponse,
         FedizContext config
     ) throws WSSecurityException {
         if (!samlResponse.isSigned()) {
