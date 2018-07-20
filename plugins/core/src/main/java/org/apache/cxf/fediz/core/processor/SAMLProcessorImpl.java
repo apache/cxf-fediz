@@ -278,6 +278,12 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
         // Validate the Response
         validateSamlResponseProtocol(logoutResponse, config);
         
+        // Enforce that the LogoutResponse is signed - we don't support a separate signature for now
+        if (!logoutResponse.isSigned()) {
+            LOG.debug("The LogoutResponse is not signed");
+            throw new ProcessingException(TYPE.INVALID_REQUEST);
+        }
+        
         Instant issueInstant = logoutResponse.getIssueInstant().toDate().toInstant();
         
         FedizResponse fedResponse = new FedizResponse(

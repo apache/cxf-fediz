@@ -64,7 +64,6 @@ import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.apache.cxf.fediz.core.processor.SAMLProcessorImpl;
-import org.apache.cxf.fediz.core.util.CertsUtils;
 import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.crypto.CryptoFactory;
 import org.apache.wss4j.common.crypto.CryptoType;
@@ -1276,6 +1275,130 @@ public class SAMLResponseTest {
 
         FedizProcessor wfProc = new SAMLProcessorImpl();
         wfProc.processRequest(wfReq, config);
+    }
+    
+    @org.junit.Test
+    public void validateUnsignedLogoutResponse() throws Exception {
+        // Mock up a LogoutResponse
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        
+        String status = "urn:oasis:names:tc:SAML:2.0:status:Success";
+        Element logoutResponse = createLogoutResponse(status, TEST_REQUEST_URL, false, requestId);
+
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(encodeResponse(logoutResponse));
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+        wfReq.setSignOutRequest(true);
+
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            fail("Failure expected on an unsigned response");
+        } catch (ProcessingException ex) {
+            // expected
+        }
+    }
+    
+    @org.junit.Test
+    public void validateUntrustedLogoutResponse() throws Exception {
+        // Mock up a LogoutResponse
+        FedizContext config = getFederationConfigurator().getFedizContext("CLIENT_TRUST");
+
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        
+        String status = "urn:oasis:names:tc:SAML:2.0:status:Success";
+        Element logoutResponse = createLogoutResponse(status, TEST_REQUEST_URL, true, requestId);
+
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(encodeResponse(logoutResponse));
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+        wfReq.setSignOutRequest(true);
+
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            fail("Failure expected on an untrusted response");
+        } catch (ProcessingException ex) {
+            // expected
+        }
+    }
+    
+    @org.junit.Test
+    public void validateBadStatusInLogoutResponse() throws Exception {
+        // Mock up a LogoutResponse
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        
+        String status = "urn:oasis:names:tc:SAML:2.0:status:Requester";
+        Element logoutResponse = createLogoutResponse(status, TEST_REQUEST_URL, true, requestId);
+
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(encodeResponse(logoutResponse));
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+        wfReq.setSignOutRequest(true);
+
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            fail("Failure expected on a a bad status code");
+        } catch (ProcessingException ex) {
+            // expected
+        }
+    }
+
+    @org.junit.Test
+    public void validateBadDestinationLogoutResponse() throws Exception {
+        // Mock up a LogoutResponse
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        
+        String status = "urn:oasis:names:tc:SAML:2.0:status:Success";
+        Element logoutResponse = createLogoutResponse(status, TEST_REQUEST_URL + "_", false, requestId);
+
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(encodeResponse(logoutResponse));
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+        wfReq.setSignOutRequest(true);
+
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            fail("Failure expected on a bad destination");
+        } catch (ProcessingException ex) {
+            // expected
+        }
     }
 
     private String createSamlResponseStr(String requestId) throws Exception {
