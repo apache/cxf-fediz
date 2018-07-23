@@ -21,7 +21,6 @@ package org.apache.cxf.fediz.core.processor;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.time.Instant;
 
 import javax.security.auth.callback.Callback;
@@ -34,6 +33,7 @@ import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.core.spi.IDPCallback;
 import org.apache.cxf.fediz.core.spi.RealmCallback;
+import org.apache.cxf.fediz.core.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,24 +99,7 @@ public abstract class AbstractFedizProcessor implements FedizProcessor {
     }
 
     protected String extractFullContextPath(HttpServletRequest request) throws MalformedURLException {
-        String result = null;
-        String contextPath = request.getContextPath();
-        String requestUrl = request.getRequestURL().toString();
-        String requestPath = new URL(requestUrl).getPath();
-        // Cut request path of request url and add context path if not ROOT
-        if (requestPath != null && requestPath.length() > 0) {
-            int lastIndex = requestUrl.lastIndexOf(requestPath);
-            result = requestUrl.substring(0, lastIndex);
-        } else {
-            result = requestUrl;
-        }
-        if (contextPath != null && contextPath.length() > 0) {
-            // contextPath contains starting slash
-            result = result + contextPath + "/";
-        } else {
-            result = result + "/";
-        }
-        return result;
+        return StringUtils.extractFullContextPath(request);
     }
 
 }

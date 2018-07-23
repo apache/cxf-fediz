@@ -42,6 +42,9 @@
 				<claimType type="a particular claim type" optional="true" />
 			</claimTypesRequested>
 		</protocol>
+		
+		<logoutURL>secure/logout</logoutURL>
+        <logoutRedirectTo>/redir.html</logoutRedirectTo>
 	</contextConfig>
 	
 	<contextConfig name="ROOT2">
@@ -236,6 +239,8 @@
 				<claimType type="a particular claim type" optional="true" />
 			</claimTypesRequested>
 		</protocol>
-	</contextConfig>
 	
+		<logoutURL>secure/logout</logoutURL>
+   	 	<logoutRedirectTo>/redir.html</logoutRedirectTo>
+   	 </contextConfig>
 </FedizConfig>
