@@ -36,10 +36,13 @@ import org.w3c.dom.Element;
 
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.config.FedizContext;
+import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
+import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.apache.cxf.fediz.core.processor.RedirectionResponse;
 import org.apache.cxf.fediz.core.spi.ReplyConstraintCallback;
+import org.apache.cxf.fediz.core.util.StringUtils;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,6 +83,8 @@ public class LogoutHandler implements RequestHandler<Boolean> {
             return signout(request, response);
         } else if (FederationConstants.ACTION_SIGNOUT_CLEANUP.equals(wa)) {
             return signoutCleanup(request, response);
+        } else if (request.getParameter("SAMLResponse") != null) {
+            return handleSAMLSSOLogoutResponse(request, response);
         } else {
             return customLogout(request, response);
         }
@@ -95,7 +100,7 @@ public class LogoutHandler implements RequestHandler<Boolean> {
         request.getSession().invalidate();
 
         String wreply = request.getParameter(FederationConstants.PARAM_REPLY);
-
+        String logoutRedirectTo = fedizConfig.getLogoutRedirectTo();
         if (wreply != null && !wreply.isEmpty()) {
             Pattern logoutRedirectToConstraint = null;
             try {
@@ -119,6 +124,21 @@ public class LogoutHandler implements RequestHandler<Boolean> {
                     LOG.warn("The received wreply address {} does not match the configured constraint {}",
                              wreply, logoutRedirectToConstraint);
                 }
+            }
+        } else if (logoutRedirectTo != null && !logoutRedirectTo.isEmpty()) {
+            try {
+                if (logoutRedirectTo.startsWith("/")) {
+                    logoutRedirectTo =
+                        StringUtils.extractFullContextPath(request).concat(logoutRedirectTo.substring(1));
+                } else if (!logoutRedirectTo.startsWith("http") && !logoutRedirectTo.startsWith("https")) {
+                    logoutRedirectTo = StringUtils.extractFullContextPath(request).concat(logoutRedirectTo);
+                }
+
+                LOG.debug("Redirecting after logout to={}", logoutRedirectTo);
+                response.sendRedirect(response.encodeRedirectURL(logoutRedirectTo));
+                return true;
+            } catch (Exception e) {
+                LOG.error("Error redirecting user after logout: {}", e.getMessage());
             }
         }
 
@@ -201,6 +221,53 @@ public class LogoutHandler implements RequestHandler<Boolean> {
             } catch (IOException e) {
                 // ignore
             }
+        }
+    }
+
+    protected boolean handleSAMLSSOLogoutResponse(HttpServletRequest request, HttpServletResponse response) {
+        try {
+            FedizProcessor wfProc = FedizProcessorFactory.newFedizProcessor(fedizConfig.getProtocol());
+
+            FedizRequest wfReq = new FedizRequest();
+            wfReq.setResponseToken(request.getParameter("SAMLResponse"));
+            wfReq.setState(request.getParameter("RelayState"));
+            wfReq.setRequest(request);
+            wfReq.setSignOutResponse(true);
+
+            wfProc.processRequest(wfReq, fedizConfig);
+
+            String logoutRedirectTo = fedizConfig.getLogoutRedirectTo();
+            if (logoutRedirectTo != null && !logoutRedirectTo.isEmpty()) {
+                try {
+                    if (logoutRedirectTo.startsWith("/")) {
+                        logoutRedirectTo =
+                            StringUtils.extractFullContextPath(request).concat(logoutRedirectTo.substring(1));
+                    } else if (!logoutRedirectTo.startsWith("http") && !logoutRedirectTo.startsWith("https")) {
+                        logoutRedirectTo = StringUtils.extractFullContextPath(request).concat(logoutRedirectTo);
+                    }
+
+                    LOG.debug("Redirecting after logout to={}", logoutRedirectTo);
+                    response.sendRedirect(response.encodeRedirectURL(logoutRedirectTo));
+                } catch (Exception e) {
+                    LOG.error("Error redirecting user after logout: {}", e.getMessage());
+                }
+            } else {
+                writeLogoutImage(response);
+            }
+            return true;
+        } catch (ProcessingException ex) {
+            LOG.warn("Failed to validate SAMLResponse: " + ex.getMessage());
+            handleSAMLResponseValidationError(ex, response);
+            return false;
+        }
+    }
+
+    // Allow the user to handle some custom logic if the SAMLResponse validation fails for logout
+    protected void handleSAMLResponseValidationError(ProcessingException ex, HttpServletResponse response) {
+        try {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to validate SAMLResponse.");
+        } catch (IOException e) {
+            LOG.error("Failed to send error response: {}", e.getMessage());
         }
     }
 

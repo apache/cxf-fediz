@@ -95,6 +95,7 @@ public class FederationLogoutTest {
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_ACTION)).andReturn(null).anyTimes();
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_REPLY)).andReturn(null);
+        EasyMock.expect(req.getParameter("SAMLResponse")).andReturn(null);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(LOGOUT_URL));
         EasyMock.expect(req.getRequestURI()).andReturn(LOGOUT_URI);
         EasyMock.expect(req.getContextPath()).andReturn(LOGOUT_URI);
@@ -120,6 +121,7 @@ public class FederationLogoutTest {
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_ACTION)).andReturn(null).anyTimes();
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_REPLY)).andReturn(REPLY_URL).anyTimes();
+        EasyMock.expect(req.getParameter("SAMLResponse")).andReturn(null);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(LOGOUT_URL));
         EasyMock.expect(req.getRequestURI()).andReturn(LOGOUT_URI);
         EasyMock.expect(req.getContextPath()).andReturn(LOGOUT_URI);
@@ -145,6 +147,7 @@ public class FederationLogoutTest {
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_ACTION)).andReturn(null).anyTimes();
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_REPLY)).andReturn(BAD_REPLY_URL).anyTimes();
+        EasyMock.expect(req.getParameter("SAMLResponse")).andReturn(null);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(LOGOUT_URL));
         EasyMock.expect(req.getRequestURI()).andReturn(LOGOUT_URI);
         EasyMock.expect(req.getContextPath()).andReturn(LOGOUT_URI);
@@ -170,6 +173,7 @@ public class FederationLogoutTest {
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_ACTION)).andReturn(null).anyTimes();
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_REPLY)).andReturn(REPLY_URL).anyTimes();
+        EasyMock.expect(req.getParameter("SAMLResponse")).andReturn(null);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(LOGOUT_URL));
         EasyMock.expect(req.getRequestURI()).andReturn(LOGOUT_URI);
         EasyMock.expect(req.getContextPath()).andReturn(LOGOUT_URI);
@@ -195,6 +199,7 @@ public class FederationLogoutTest {
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_ACTION)).andReturn(null).anyTimes();
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_REPLY)).andReturn(BAD_REPLY_URL).anyTimes();
+        EasyMock.expect(req.getParameter("SAMLResponse")).andReturn(null);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(LOGOUT_URL));
         EasyMock.expect(req.getRequestURI()).andReturn(LOGOUT_URI);
         EasyMock.expect(req.getContextPath()).andReturn(LOGOUT_URI);
@@ -220,6 +225,7 @@ public class FederationLogoutTest {
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_ACTION)).andReturn(null).anyTimes();
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_REPLY)).andReturn(REPLY_URL).anyTimes();
+        EasyMock.expect(req.getParameter("SAMLResponse")).andReturn(null);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(LOGOUT_URL));
         EasyMock.expect(req.getRequestURI()).andReturn(LOGOUT_URI);
         EasyMock.expect(req.getContextPath()).andReturn(LOGOUT_URI);
@@ -245,6 +251,7 @@ public class FederationLogoutTest {
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_ACTION)).andReturn(null).anyTimes();
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_REPLY)).andReturn(null);
+        EasyMock.expect(req.getParameter("SAMLResponse")).andReturn(null);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(LOGOUT_URL));
         EasyMock.expect(req.getRequestURI()).andReturn(LOGOUT_URI);
         EasyMock.expect(req.getContextPath()).andReturn(LOGOUT_URI);
@@ -271,6 +278,7 @@ public class FederationLogoutTest {
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_ACTION))
             .andReturn(FederationConstants.ACTION_SIGNOUT).anyTimes();
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_REPLY)).andReturn(null);
+        EasyMock.expect(req.getParameter("SAMLResponse")).andReturn(null);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer("https://localhost/fedizhelloworld/secure"));
         EasyMock.expect(req.getRequestURI()).andReturn("/secure");
         EasyMock.expect(req.getContextPath()).andReturn("/secure");
@@ -297,6 +305,7 @@ public class FederationLogoutTest {
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_ACTION))
             .andReturn(FederationConstants.ACTION_SIGNOUT).anyTimes();
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_REPLY)).andReturn(REPLY_URL).anyTimes();
+        EasyMock.expect(req.getParameter("SAMLResponse")).andReturn(null);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer("https://localhost/fedizhelloworld/secure"));
         EasyMock.expect(req.getRequestURI()).andReturn("/secure");
         EasyMock.expect(req.getContextPath()).andReturn("/secure");
@@ -323,6 +332,7 @@ public class FederationLogoutTest {
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_ACTION))
             .andReturn(FederationConstants.ACTION_SIGNOUT).anyTimes();
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_REPLY)).andReturn(BAD_REPLY_URL).anyTimes();
+        EasyMock.expect(req.getParameter("SAMLResponse")).andReturn(null);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer("https://localhost/fedizhelloworld/secure"));
         EasyMock.expect(req.getRequestURI()).andReturn("/secure");
         EasyMock.expect(req.getContextPath()).andReturn("/secure");
@@ -349,6 +359,7 @@ public class FederationLogoutTest {
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_ACTION))
         .andReturn(FederationConstants.ACTION_SIGNOUT).anyTimes();
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_REPLY)).andReturn(REPLY_URL).anyTimes();
+        EasyMock.expect(req.getParameter("SAMLResponse")).andReturn(null);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer("https://localhost/fedizhelloworld/secure"));
         EasyMock.expect(req.getRequestURI()).andReturn("/secure");
         EasyMock.expect(req.getContextPath()).andReturn("/secure");
@@ -377,6 +388,7 @@ public class FederationLogoutTest {
             .andReturn(FederationConstants.ACTION_SIGNOUT_CLEANUP).anyTimes();
         EasyMock.expect(req.getSession()).andReturn(session);
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_REPLY)).andReturn(REPLY_URL).anyTimes();
+        EasyMock.expect(req.getParameter("SAMLResponse")).andReturn(null);
         EasyMock.replay(req);
 
         LogoutHandler logoutHandler = new LogoutHandler(config);
@@ -401,6 +413,7 @@ public class FederationLogoutTest {
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_ACTION))
             .andReturn(FederationConstants.ACTION_SIGNOUT_CLEANUP).anyTimes();
         EasyMock.expect(req.getSession()).andReturn(session);
+        EasyMock.expect(req.getParameter("SAMLResponse")).andReturn(null);
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_REPLY)).andReturn(BAD_REPLY_URL).anyTimes();
         EasyMock.replay(req);
 
@@ -425,6 +438,7 @@ public class FederationLogoutTest {
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_ACTION))
             .andReturn(FederationConstants.ACTION_SIGNOUT_CLEANUP).anyTimes();
         EasyMock.expect(req.getSession()).andReturn(session);
+        EasyMock.expect(req.getParameter("SAMLResponse")).andReturn(null);
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_REPLY)).andReturn(REPLY_URL).anyTimes();
         EasyMock.replay(req);
 
@@ -447,6 +461,7 @@ public class FederationLogoutTest {
         HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_ACTION)).andReturn(null).anyTimes();
         EasyMock.expect(req.getParameter(FederationConstants.PARAM_REPLY)).andReturn(null);
+        EasyMock.expect(req.getParameter("SAMLResponse")).andReturn(null);
         EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(LOGOUT_URL));
         EasyMock.expect(req.getRequestURI()).andReturn(LOGOUT_URI);
         EasyMock.expect(req.getContextPath()).andReturn(LOGOUT_URI);

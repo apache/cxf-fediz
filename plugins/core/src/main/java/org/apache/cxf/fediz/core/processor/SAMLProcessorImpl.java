@@ -100,7 +100,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
 
-        if (request.isSignOutRequest()) {
+        if (request.isSignOutResponse()) {
             return processSignOutResponse(request, config);
         }
 
@@ -278,9 +278,9 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
 
-        org.opensaml.saml.saml2.core.LogoutResponse logoutResponse = 
+        org.opensaml.saml.saml2.core.LogoutResponse logoutResponse =
             (org.opensaml.saml.saml2.core.LogoutResponse)responseObject;
-        
+
         // Validate the Response
         validateSamlResponseProtocol(logoutResponse, config);
         
@@ -290,7 +290,6 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             LOG.debug("The LogoutResponse is not signed");
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
-        
         FedizResponse fedResponse = new FedizResponse(
             null, logoutResponse.getIssuer().getValue(),
             Collections.<String>emptyList(), Collections.<Claim>emptyList(),

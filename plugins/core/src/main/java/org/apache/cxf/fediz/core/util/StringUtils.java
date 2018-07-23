@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * Few simple utils. This is originally from the CXF project.
  */
@@ -229,5 +231,26 @@ public final class StringUtils {
         return new StringBuilder(str.length())
                 .append(Character.toLowerCase(str.charAt(0)))
                 .append(str.substring(1)).toString();
+    }
+
+    public static String extractFullContextPath(HttpServletRequest request) throws MalformedURLException {
+        String result = null;
+        String contextPath = request.getContextPath();
+        String requestUrl = request.getRequestURL().toString();
+        String requestPath = new URL(requestUrl).getPath();
+        // Cut request path of request url and add context path if not ROOT
+        if (requestPath != null && requestPath.length() > 0) {
+            int lastIndex = requestUrl.lastIndexOf(requestPath);
+            result = requestUrl.substring(0, lastIndex);
+        } else {
+            result = requestUrl;
+        }
+        if (contextPath != null && contextPath.length() > 0) {
+            // contextPath contains starting slash
+            result = result + contextPath + "/";
+        } else {
+            result = result + "/";
+        }
+        return result;
     }
 }

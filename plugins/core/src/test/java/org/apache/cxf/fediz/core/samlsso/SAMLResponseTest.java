@@ -116,6 +116,7 @@ public class SAMLResponseTest {
     private static DocumentBuilderFactory docBuilderFactory;
 
     static {
+        OpenSAMLUtil.initSamlEngine();
         docBuilderFactory = DocumentBuilderFactory.newInstance();
         docBuilderFactory.setNamespaceAware(true);
     }
@@ -1250,14 +1251,14 @@ public class SAMLResponseTest {
             // expected
         }
     }
-    
+
     @org.junit.Test
     public void validateLogoutResponse() throws Exception {
         // Mock up a LogoutResponse
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
 
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        
+
         String status = "urn:oasis:names:tc:SAML:2.0:status:Success";
         Element logoutResponse = createLogoutResponse(status, TEST_REQUEST_URL, true, requestId);
 
@@ -1271,19 +1272,19 @@ public class SAMLResponseTest {
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         wfReq.setState(relayState);
         wfReq.setRequest(req);
-        wfReq.setSignOutRequest(true);
+        wfReq.setSignOutResponse(true);
 
         FedizProcessor wfProc = new SAMLProcessorImpl();
         wfProc.processRequest(wfReq, config);
     }
-    
+
     @org.junit.Test
     public void validateUnsignedLogoutResponse() throws Exception {
         // Mock up a LogoutResponse
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
 
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        
+
         String status = "urn:oasis:names:tc:SAML:2.0:status:Success";
         Element logoutResponse = createLogoutResponse(status, TEST_REQUEST_URL, false, requestId);
 
@@ -1297,7 +1298,7 @@ public class SAMLResponseTest {
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         wfReq.setState(relayState);
         wfReq.setRequest(req);
-        wfReq.setSignOutRequest(true);
+        wfReq.setSignOutResponse(true);
 
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
@@ -1307,14 +1308,14 @@ public class SAMLResponseTest {
             // expected
         }
     }
-    
+
     @org.junit.Test
     public void validateUntrustedLogoutResponse() throws Exception {
         // Mock up a LogoutResponse
         FedizContext config = getFederationConfigurator().getFedizContext("CLIENT_TRUST");
 
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        
+
         String status = "urn:oasis:names:tc:SAML:2.0:status:Success";
         Element logoutResponse = createLogoutResponse(status, TEST_REQUEST_URL, true, requestId);
 
@@ -1328,7 +1329,7 @@ public class SAMLResponseTest {
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         wfReq.setState(relayState);
         wfReq.setRequest(req);
-        wfReq.setSignOutRequest(true);
+        wfReq.setSignOutResponse(true);
 
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
@@ -1338,14 +1339,14 @@ public class SAMLResponseTest {
             // expected
         }
     }
-    
+
     @org.junit.Test
     public void validateBadStatusInLogoutResponse() throws Exception {
         // Mock up a LogoutResponse
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
 
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        
+
         String status = "urn:oasis:names:tc:SAML:2.0:status:Requester";
         Element logoutResponse = createLogoutResponse(status, TEST_REQUEST_URL, true, requestId);
 
@@ -1359,7 +1360,7 @@ public class SAMLResponseTest {
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         wfReq.setState(relayState);
         wfReq.setRequest(req);
-        wfReq.setSignOutRequest(true);
+        wfReq.setSignOutResponse(true);
 
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
@@ -1376,7 +1377,7 @@ public class SAMLResponseTest {
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
 
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
-        
+
         String status = "urn:oasis:names:tc:SAML:2.0:status:Success";
         Element logoutResponse = createLogoutResponse(status, TEST_REQUEST_URL + "_", false, requestId);
 
@@ -1390,7 +1391,7 @@ public class SAMLResponseTest {
         String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
         wfReq.setState(relayState);
         wfReq.setRequest(req);
-        wfReq.setSignOutRequest(true);
+        wfReq.setSignOutResponse(true);
 
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
@@ -1469,7 +1470,7 @@ public class SAMLResponseTest {
         return policyElement;
     }
 
-    private Element createLogoutResponse(String statusValue, String destination, 
+    private Element createLogoutResponse(String statusValue, String destination,
                                          boolean sign, String requestID) throws Exception {
         DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
         Document doc = docBuilder.newDocument();
@@ -1489,7 +1490,7 @@ public class SAMLResponseTest {
 
         return policyElement;
     }
-    
+
     private void signResponse(SignableSAMLObject signableObject, String alias) throws Exception {
 
         Signature signature = OpenSAMLUtil.buildSignature();
@@ -1505,13 +1506,13 @@ public class SAMLResponseTest {
         } else if (pubKeyAlgo.equalsIgnoreCase("EC")) {
             sigAlgo = SignatureConstants.ALGO_ID_SIGNATURE_ECDSA_SHA1;
         }
-        
+
         WSPasswordCallback[] cb = {
             new WSPasswordCallback(alias, WSPasswordCallback.SIGNATURE)
         };
         cbPasswordHandler.handle(cb);
         String password = cb[0].getPassword();
-        
+
         PrivateKey privateKey;
         try {
             privateKey = crypto.getPrivateKey(alias, password);
