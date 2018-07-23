@@ -36,6 +36,7 @@ import org.w3c.dom.Element;
 
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.config.FedizContext;
+import org.apache.cxf.fediz.core.config.SAMLProtocol;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
@@ -83,7 +84,7 @@ public class LogoutHandler implements RequestHandler<Boolean> {
             return signout(request, response);
         } else if (FederationConstants.ACTION_SIGNOUT_CLEANUP.equals(wa)) {
             return signoutCleanup(request, response);
-        } else if (request.getParameter("SAMLResponse") != null) {
+        } else if (request.getParameter("SAMLResponse") != null && fedizConfig.getProtocol() instanceof SAMLProtocol) {
             return handleSAMLSSOLogoutResponse(request, response);
         } else {
             return customLogout(request, response);
