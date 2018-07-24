@@ -403,10 +403,6 @@ public abstract class AbstractTests {
     @Test
     public void testRPLogout() throws Exception {
 
-        if (!isWSFederation()) {
-            return;
-        }
-
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/fedservlet";
         String user = "alice";
@@ -415,7 +411,7 @@ public abstract class AbstractTests {
         CookieManager cookieManager = new CookieManager();
 
         // 1. Login
-        HTTPTestUtils.loginWithCookieManager(url, user, password, getIdpHttpsPort(), cookieManager);
+        HTTPTestUtils.loginWithCookieManager(url, user, password, getIdpHttpsPort(), getLoginFormName(), cookieManager);
 
         // 2. Now we should have a cookie from the RP and IdP and should be able to do
         // subsequent requests without authenticate again. Lets test this first.
@@ -430,7 +426,7 @@ public abstract class AbstractTests {
         String rpLogoutUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/logout";
 
-        HTTPTestUtils.logout(rpLogoutUrl, cookieManager);
+        HTTPTestUtils.logout(rpLogoutUrl, cookieManager, isWSFederation());
 
         // 4. now we try to access the RP and idp without authentication but with the existing cookies
         // to see if we are really logged out
@@ -462,7 +458,7 @@ public abstract class AbstractTests {
         CookieManager cookieManager = new CookieManager();
 
         // 1. Login
-        HTTPTestUtils.loginWithCookieManager(url, user, password, getIdpHttpsPort(), cookieManager);
+        HTTPTestUtils.loginWithCookieManager(url, user, password, getIdpHttpsPort(), getLoginFormName(), cookieManager);
 
         // 2. Now we should have a cookie from the RP and IdP and should be able to do
         // subsequent requests without authenticate again. Lets test this first.
@@ -477,7 +473,7 @@ public abstract class AbstractTests {
         String rpLogoutUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/secure/fedservlet?wa=" + FederationConstants.ACTION_SIGNOUT;
 
-        HTTPTestUtils.logout(rpLogoutUrl, cookieManager);
+        HTTPTestUtils.logout(rpLogoutUrl, cookieManager, isWSFederation());
 
         // 4. now we try to access the RP and idp without authentication but with the existing cookies
         // to see if we are really logged out
@@ -509,7 +505,7 @@ public abstract class AbstractTests {
         CookieManager cookieManager = new CookieManager();
 
         // 1. Login
-        HTTPTestUtils.loginWithCookieManager(url, user, password, getIdpHttpsPort(), cookieManager);
+        HTTPTestUtils.loginWithCookieManager(url, user, password, getIdpHttpsPort(), getLoginFormName(), cookieManager);
 
         // 2. Now we should have a cookie from the RP and IdP and should be able to do
         // subsequent requests without authenticate again. Lets test this first.
@@ -524,7 +520,7 @@ public abstract class AbstractTests {
         String idpLogoutUrl = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?wa="
             + FederationConstants.ACTION_SIGNOUT; //todo logout url on idp?!?
 
-        HTTPTestUtils.logout(idpLogoutUrl, cookieManager);
+        HTTPTestUtils.logout(idpLogoutUrl, cookieManager, isWSFederation());
 
         // 4. now we try to access the RP and idp without authentication but with the existing cookies
         // to see if we are really logged out
@@ -556,7 +552,7 @@ public abstract class AbstractTests {
         CookieManager cookieManager = new CookieManager();
 
         // 1. Login
-        HTTPTestUtils.loginWithCookieManager(url, user, password, getIdpHttpsPort(), cookieManager);
+        HTTPTestUtils.loginWithCookieManager(url, user, password, getIdpHttpsPort(), getLoginFormName(), cookieManager);
 
         // 2. Now we should have a cookie from the RP and IdP and should be able to do
         // subsequent requests without authenticate again. Lets test this first.
@@ -702,7 +698,7 @@ public abstract class AbstractTests {
         CookieManager cookieManager = new CookieManager();
 
         // 1. Login
-        HTTPTestUtils.loginWithCookieManager(url, user, password, getIdpHttpsPort(), cookieManager);
+        HTTPTestUtils.loginWithCookieManager(url, user, password, getIdpHttpsPort(), getLoginFormName(), cookieManager);
 
         // 2. Now we should have a cookie from the RP and IdP and should be able to do
         // subsequent requests without authenticate again. Lets test this first.
@@ -770,7 +766,7 @@ public abstract class AbstractTests {
             if (getTokenName().equals(result.getAttributeNS(null, "name"))) {
                 // Now modify the Signature
                 String value = result.getAttributeNS(null, "value");
-                
+
                 if (isWSFederation()) {
                     value = entity + value;
                     value = value.replace("alice", reference);
@@ -781,13 +777,13 @@ public abstract class AbstractTests {
                     InputStream inputStream = new ByteArrayInputStream(deflatedToken);
 
                     Document responseDoc = StaxUtils.read(new InputStreamReader(inputStream, "UTF-8"));
-                    
+
                     // Modify SignatureValue to include the entity
                     String signatureNamespace = "http://www.w3.org/2000/09/xmldsig#";
                     Node signatureValue =
                         responseDoc.getElementsByTagNameNS(signatureNamespace, "SignatureValue").item(0);
                     signatureValue.setTextContent(reference + signatureValue.getTextContent());
-                    
+
                     // Re-encode response
                     String responseMessage = DOM2Writer.nodeToString(responseDoc);
                     result.setAttributeNS(null, "value", Base64Utility.encode((entity + responseMessage).getBytes()));
@@ -843,7 +839,7 @@ public abstract class AbstractTests {
             if (getTokenName().equals(result.getAttributeNS(null, "name"))) {
                 // Now modify the Signature
                 String value = result.getAttributeNS(null, "value");
-                
+
                 if (isWSFederation()) {
                     value = entity + value;
                     value = value.replace("alice", reference);
@@ -854,13 +850,13 @@ public abstract class AbstractTests {
                     InputStream inputStream = new ByteArrayInputStream(deflatedToken);
 
                     Document responseDoc = StaxUtils.read(new InputStreamReader(inputStream, "UTF-8"));
-                    
+
                     // Modify SignatureValue to include the entity
                     String signatureNamespace = "http://www.w3.org/2000/09/xmldsig#";
                     Node signatureValue =
                         responseDoc.getElementsByTagNameNS(signatureNamespace, "SignatureValue").item(0);
                     signatureValue.setTextContent(reference + signatureValue.getTextContent());
-                    
+
                     // Re-encode response
                     String responseMessage = DOM2Writer.nodeToString(responseDoc);
                     result.setAttributeNS(null, "value", Base64Utility.encode((entity + responseMessage).getBytes()));

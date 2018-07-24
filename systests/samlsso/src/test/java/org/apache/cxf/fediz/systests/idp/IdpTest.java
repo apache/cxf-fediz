@@ -1725,7 +1725,8 @@ public class IdpTest {
 
         // Check Response
         HtmlForm responseForm = signoutPage.getFormByName("samlsignoutresponseform");
-        Assert.assertEquals("https://localhost:8080/logout", responseForm.getActionAttribute());
+        String logoutResponseURL = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/logout";
+        Assert.assertEquals(logoutResponseURL, responseForm.getActionAttribute());
         String responseValue = responseForm.getInputByName("SAMLResponse").getAttributeNS(null, "value");
         Assert.assertNotNull(responseValue);
         String receivedRelayState = responseForm.getInputByName("RelayState").getAttributeNS(null, "value");
@@ -1737,7 +1738,7 @@ public class IdpTest {
 
         LogoutResponse logoutResponse = (LogoutResponse)OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
         Assert.assertNotNull(logoutResponse);
-        Assert.assertEquals("https://localhost:8080/logout", logoutResponse.getDestination());
+        Assert.assertEquals(logoutResponseURL, logoutResponse.getDestination());
         String expectedIssuer = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml";
         Assert.assertEquals(expectedIssuer, logoutResponse.getIssuer().getValue());
         String success = "urn:oasis:names:tc:SAML:2.0:status:Success";
@@ -1855,7 +1856,8 @@ public class IdpTest {
 
         // Check Response
         HtmlForm responseForm = idpPage.getFormByName("samlsignoutresponseform");
-        Assert.assertEquals("https://localhost:8080/logout", responseForm.getActionAttribute());
+        String logoutResponseURL = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/logout";
+        Assert.assertEquals(logoutResponseURL, responseForm.getActionAttribute());
         String responseValue = responseForm.getInputByName("SAMLResponse").getAttributeNS(null, "value");
         Assert.assertNotNull(responseValue);
         String receivedRelayState = responseForm.getInputByName("RelayState").getAttributeNS(null, "value");
@@ -1867,7 +1869,7 @@ public class IdpTest {
 
         LogoutResponse logoutResponse = (LogoutResponse)OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
         Assert.assertNotNull(logoutResponse);
-        Assert.assertEquals("https://localhost:8080/logout", logoutResponse.getDestination());
+        Assert.assertEquals(logoutResponseURL, logoutResponse.getDestination());
         String expectedIssuer = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml";
         Assert.assertEquals(expectedIssuer, logoutResponse.getIssuer().getValue());
         String success = "urn:oasis:names:tc:SAML:2.0:status:Requester";
@@ -1988,7 +1990,8 @@ public class IdpTest {
 
         // Check Response
         HtmlForm responseForm = signoutPage.getFormByName("samlsignoutresponseform");
-        Assert.assertEquals("https://localhost:8080/logout", responseForm.getActionAttribute());
+        String logoutResponseURL = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/logout";
+        Assert.assertEquals(logoutResponseURL, responseForm.getActionAttribute());
         String responseValue = responseForm.getInputByName("SAMLResponse").getAttributeNS(null, "value");
         Assert.assertNotNull(responseValue);
         String receivedRelayState = responseForm.getInputByName("RelayState").getAttributeNS(null, "value");
@@ -2000,7 +2003,7 @@ public class IdpTest {
 
         LogoutResponse logoutResponse = (LogoutResponse)OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
         Assert.assertNotNull(logoutResponse);
-        Assert.assertEquals("https://localhost:8080/logout", logoutResponse.getDestination());
+        Assert.assertEquals(logoutResponseURL, logoutResponse.getDestination());
         String expectedIssuer = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml";
         Assert.assertEquals(expectedIssuer, logoutResponse.getIssuer().getValue());
         String success = "urn:oasis:names:tc:SAML:2.0:status:Requester";

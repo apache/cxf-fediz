@@ -67,7 +67,7 @@ public final class HTTPTestUtils {
     }
 
     public static String loginWithCookieManager(String url, String user, String password,
-                                                String idpPort, CookieManager cookieManager) throws IOException {
+                                                String idpPort, String formName, CookieManager cookieManager) throws IOException {
         final WebClient webClient = new WebClient();
         webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);
@@ -80,7 +80,7 @@ public final class HTTPTestUtils {
         webClient.getOptions().setJavaScriptEnabled(true);
         Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
-        final HtmlForm form = idpPage.getFormByName("signinresponseform");
+        final HtmlForm form = idpPage.getFormByName(formName);
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
 
         final HtmlPage rpPage = button.click();
@@ -91,7 +91,7 @@ public final class HTTPTestUtils {
         return rpPage.getBody().getTextContent();
     }
 
-    public static void logout(String url, CookieManager cookieManager) throws IOException {
+    public static void logout(String url, CookieManager cookieManager, boolean wsfed) throws IOException {
         final WebClient webClient = new WebClient();
         webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);
@@ -101,16 +101,26 @@ public final class HTTPTestUtils {
 
         final HtmlForm form = idpPage.getFormByName("signoutconfirmationresponseform");
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
+
+        webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpLogoutPage = button.click();
+        webClient.getOptions().setJavaScriptEnabled(true);
 
-        DomNodeList<DomElement> images = idpLogoutPage.getElementsByTagName("img");
-        Assert.assertEquals(1, images.getLength());
-        for (int i = 0; i < images.size(); i++) {
-            DomElement domElement = images.get(i);
-            String imgSrc = domElement.getAttribute("src");
+        if (wsfed) {
+            DomNodeList<DomElement> images = idpLogoutPage.getElementsByTagName("img");
+            Assert.assertEquals(1, images.getLength());
+            for (int i = 0; i < images.size(); i++) {
+                DomElement domElement = images.get(i);
+                String imgSrc = domElement.getAttribute("src");
 
-            //we should get a fault if the image isn't available.
-            webClient.getPage(imgSrc);
+                //we should get a fault if the image isn't available.
+                webClient.getPage(imgSrc);
+            }
+        } else {
+            // For SAML SSO we will be redirected back to the RP
+            HtmlForm responseForm = idpLogoutPage.getFormByName("samlsignoutresponseform");
+            HtmlSubmitInput button2 = responseForm.getInputByName("_eventId_submit");
+            button2.click();
         }
 
         // webClient.close();
