@@ -158,7 +158,7 @@
         <property name="role" value="ApplicationServiceType" />
         <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0" />
         <property name="lifeTime" value="3600" />
-        <property name="logoutEndpoint" value="https://localhost:8080/logout" />
+        <property name="logoutEndpoint" value="https://localhost:${rp.https.port}/fedizhelloworld/secure/logout" />
         <property name="passiveRequestorEndpointConstraint" 
                   value="https://localhost:(\d)*/(\w)*helloworld(\w)*/secure/.*" />
         <property name="validatingCertificate" value="realma.cert" />

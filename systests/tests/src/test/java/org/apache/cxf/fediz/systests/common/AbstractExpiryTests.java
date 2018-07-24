@@ -117,7 +117,7 @@ public abstract class AbstractExpiryTests {
         CookieManager cookieManager = new CookieManager();
 
         // 1. Login
-        HTTPTestUtils.loginWithCookieManager(url, user, password, getIdpHttpsPort(), cookieManager);
+        HTTPTestUtils.loginWithCookieManager(url, user, password, getIdpHttpsPort(), "signinresponseform", cookieManager);
 
         // 2. Sign out of the service (but not the Idp)
         final WebClient webClient = new WebClient();
@@ -127,7 +127,7 @@ public abstract class AbstractExpiryTests {
         webClient.close();
 
         // 3. Sign back in to the service provider. This time it will get a new IdP token due to wfresh=0.
-        HTTPTestUtils.loginWithCookieManager(url, user, password, getIdpHttpsPort(), cookieManager);
+        HTTPTestUtils.loginWithCookieManager(url, user, password, getIdpHttpsPort(), "signinresponseform", cookieManager);
     }
 
     private void verifyApplication(String user, String bodyTextContent) {
