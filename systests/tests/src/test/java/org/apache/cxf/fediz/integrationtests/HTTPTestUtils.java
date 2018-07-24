@@ -67,7 +67,8 @@ public final class HTTPTestUtils {
     }
 
     public static String loginWithCookieManager(String url, String user, String password,
-                                                String idpPort, String formName, CookieManager cookieManager) throws IOException {
+                                                String idpPort, String formName,
+                                                CookieManager cookieManager) throws IOException {
         final WebClient webClient = new WebClient();
         webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);
