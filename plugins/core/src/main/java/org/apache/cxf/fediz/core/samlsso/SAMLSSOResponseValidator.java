@@ -238,9 +238,9 @@ public class SAMLSSOResponseValidator {
         }
 
         // Check address
-        if (subjectConfData.getAddress() != null
+        if (subjectConfData.getAddress() != null && clientAddress != null
             && !subjectConfData.getAddress().equals(clientAddress)) {
-            LOG.debug("Subject Conf Data address " + subjectConfData.getAddress() + " does match"
+            LOG.debug("Subject Conf Data address " + subjectConfData.getAddress() + " does not match"
                      + " client address " + clientAddress);
             throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
         }
