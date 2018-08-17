@@ -109,4 +109,8 @@ public class SAMLProtocol extends Protocol {
     public String getIssuerLogoutURL() {
         return getSAMLProtocol().getIssuerLogoutURL();
     }
+
+    public boolean isCheckClientAddress() {
+        return getSAMLProtocol().isCheckClientAddress();
+    }
 }
