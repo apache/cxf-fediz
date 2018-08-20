@@ -333,8 +333,8 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             SAMLSSOResponseValidator ssoResponseValidator = new SAMLSSOResponseValidator();
             String requestURL = request.getRequestURL().toString();
             ssoResponseValidator.setAssertionConsumerURL(requestURL);
-            boolean checkClientAddress = ((SAMLProtocol)config.getProtocol()).isCheckClientAddress();
-            if (checkClientAddress) {
+            boolean disableClientAddressCheck = ((SAMLProtocol)config.getProtocol()).isDisableClientAddressCheck();
+            if (!disableClientAddressCheck) {
                 ssoResponseValidator.setClientAddress(request.getRemoteAddr());
             }
 
