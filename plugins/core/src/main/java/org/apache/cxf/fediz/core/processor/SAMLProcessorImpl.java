@@ -334,8 +334,6 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
                 ssoResponseValidator.setClientAddress(request.getRemoteAddr());
             }
 
-            ssoResponseValidator.setClientAddress(request.getRemoteAddr());
-
             boolean doNotEnforceKnownIssuer =
                 ((SAMLProtocol)config.getProtocol()).isDoNotEnforceKnownIssuer();
             ssoResponseValidator.setEnforceKnownIssuer(!doNotEnforceKnownIssuer);
