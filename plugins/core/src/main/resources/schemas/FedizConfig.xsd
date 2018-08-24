@@ -152,7 +152,6 @@
                     <xs:element ref="authenticationType" />
                     <xs:element ref="homeRealm" />
                     <xs:element ref="freshness" />
-                    <xs:element ref="reply" />
                     <xs:element ref="request" />
                     <xs:element ref="signInQuery" />
                     <xs:element ref="signOutQuery" />
@@ -201,6 +200,7 @@
             <xs:element ref="realm" />
             <xs:element ref="tokenValidators" />
             <xs:element ref="metadataURI" />
+            <xs:element ref="reply" />
         </xs:sequence>
     </xs:complexType>
 

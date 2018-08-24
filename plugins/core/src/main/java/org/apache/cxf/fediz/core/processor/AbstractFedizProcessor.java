@@ -33,6 +33,7 @@ import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.core.spi.IDPCallback;
 import org.apache.cxf.fediz.core.spi.RealmCallback;
+import org.apache.cxf.fediz.core.spi.ReplyCallback;
 import org.apache.cxf.fediz.core.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,6 +101,25 @@ public abstract class AbstractFedizProcessor implements FedizProcessor {
 
     protected String extractFullContextPath(HttpServletRequest request) throws MalformedURLException {
         return StringUtils.extractFullContextPath(request);
+    }
+
+    protected String resolveReply(HttpServletRequest request, FedizContext config) throws IOException,
+        UnsupportedCallbackException {
+        Object replyObj = config.getProtocol().getReply();
+        String reply = null;
+        if (replyObj != null) {
+            if (replyObj instanceof String) {
+                reply = (String)replyObj;
+            } else if (replyObj instanceof CallbackHandler) {
+                CallbackHandler replyCB = (CallbackHandler)replyObj;
+                ReplyCallback callback = new ReplyCallback(request);
+                replyCB.handle(new Callback[] {
+                    callback
+                });
+                reply = callback.getReply();
+            }
+        }
+        return reply;
     }
 
 }
