@@ -60,7 +60,6 @@ import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.core.metadata.MetadataWriter;
 import org.apache.cxf.fediz.core.spi.FreshnessCallback;
 import org.apache.cxf.fediz.core.spi.HomeRealmCallback;
-import org.apache.cxf.fediz.core.spi.ReplyCallback;
 import org.apache.cxf.fediz.core.spi.ReplyConstraintCallback;
 import org.apache.cxf.fediz.core.spi.SignInQueryCallback;
 import org.apache.cxf.fediz.core.spi.SignOutQueryCallback;
@@ -720,25 +719,6 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             }
         }
         return wReq;
-    }
-
-    private String resolveReply(HttpServletRequest request, FedizContext config) throws IOException,
-        UnsupportedCallbackException {
-        Object replyObj = ((FederationProtocol)config.getProtocol()).getReply();
-        String reply = null;
-        if (replyObj != null) {
-            if (replyObj instanceof String) {
-                reply = (String)replyObj;
-            } else if (replyObj instanceof CallbackHandler) {
-                CallbackHandler replyCB = (CallbackHandler)replyObj;
-                ReplyCallback callback = new ReplyCallback(request);
-                replyCB.handle(new Callback[] {
-                    callback
-                });
-                reply = callback.getReply();
-            }
-        }
-        return reply;
     }
 
     private void testForMandatoryClaims(String roleURI,

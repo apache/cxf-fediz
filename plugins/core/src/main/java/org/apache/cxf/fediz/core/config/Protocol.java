@@ -41,6 +41,7 @@ public abstract class Protocol {
     private Object issuer;
     private Object realm;
     private List<TokenValidator> validators = new ArrayList<>();
+    private Object reply;
 
     public Protocol(ProtocolType protocolType) {
         super();
@@ -195,4 +196,26 @@ public abstract class Protocol {
     public void setApplicationServiceURL(String value) {
         getProtocolType().setApplicationServiceURL(value);
     }
+
+    public Object getReply() {
+        if (this.reply != null) {
+            return this.reply;
+        }
+        CallbackType cbt = getProtocolType().getReply();
+        this.reply = ConfigUtils.loadCallbackType(cbt, "Reply", getClassloader());
+        return this.reply;
+    }
+
+    public void setReply(Object value) {
+        final boolean isString = value instanceof String;
+        final boolean isCallbackHandler = value instanceof CallbackHandler;
+        if (isString || isCallbackHandler) {
+            this.reply = value;
+        } else {
+            LOG.error("Unsupported 'Reply' object");
+            throw new IllegalArgumentException("Unsupported 'Reply' object. Type must be "
+                                               + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
+        }
+    }
+
 }

@@ -22,6 +22,8 @@ package org.apache.cxf.fediz.core.processor;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
@@ -375,10 +377,23 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             doc.appendChild(doc.createElement("root"));
 
             // Create the AuthnRequest
-            String requestURL = request.getRequestURL().toString();
+            String reply = resolveReply(request, config);
+            if (reply == null || reply.length() == 0) {
+                reply = request.getRequestURL().toString();
+            } else {
+                try {
+                    new URL(reply);
+                } catch (MalformedURLException ex) {
+                    if (reply.startsWith("/")) {
+                        reply = extractFullContextPath(request).concat(reply.substring(1));
+                    } else {
+                        reply = extractFullContextPath(request).concat(reply);
+                    }
+                }
+            }
             String realm = resolveWTRealm(request, config);
             AuthnRequest authnRequest =
-                samlpRequestBuilder.createAuthnRequest(realm, requestURL);
+                samlpRequestBuilder.createAuthnRequest(realm, reply);
 
             if (((SAMLProtocol)config.getProtocol()).isSignRequest()) {
                 authnRequest.setDestination(redirectURL);
@@ -389,7 +404,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
 
             String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
             RequestState requestState = new RequestState();
-            requestState.setTargetAddress(requestURL);
+            requestState.setTargetAddress(reply);
             requestState.setIdpServiceAddress(redirectURL);
             requestState.setRequestId(authnRequest.getID());
             requestState.setIssuerId(realm);

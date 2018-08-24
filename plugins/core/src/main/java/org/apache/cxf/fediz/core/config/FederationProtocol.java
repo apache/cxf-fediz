@@ -38,7 +38,6 @@ public class FederationProtocol extends Protocol {
     private Object freshness;
     private Object signInQuery;
     private Object signOutQuery;
-    private Object reply;
 
     public FederationProtocol(ProtocolType protocolType) {
         super(protocolType);
@@ -180,27 +179,6 @@ public class FederationProtocol extends Protocol {
         } else {
             LOG.error("Unsupported 'Request' object");
             throw new IllegalArgumentException("Unsupported 'Request' object. Type must be "
-                                               + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
-        }
-    }
-
-    public Object getReply() {
-        if (this.reply != null) {
-            return this.reply;
-        }
-        CallbackType cbt = getFederationProtocol().getReply();
-        this.reply = ConfigUtils.loadCallbackType(cbt, "Reply", getClassloader());
-        return this.reply;
-    }
-
-    public void setReply(Object value) {
-        final boolean isString = value instanceof String;
-        final boolean isCallbackHandler = value instanceof CallbackHandler;
-        if (isString || isCallbackHandler) {
-            this.reply = value;
-        } else {
-            LOG.error("Unsupported 'Reply' object");
-            throw new IllegalArgumentException("Unsupported 'Reply' object. Type must be "
                                                + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
         }
     }
