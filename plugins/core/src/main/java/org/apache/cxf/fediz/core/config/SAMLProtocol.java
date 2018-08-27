@@ -81,7 +81,9 @@ public class SAMLProtocol extends Protocol {
         }
 
         // Default implementation
-        samlpRequestBuilder = new DefaultSAMLPRequestBuilder();
+        if (samlpRequestBuilder == null) {
+            samlpRequestBuilder = new DefaultSAMLPRequestBuilder();
+        }
 
         return samlpRequestBuilder;
     }
