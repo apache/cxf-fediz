@@ -113,7 +113,7 @@ public class FederationAuthenticationEntryPoint implements AuthenticationEntryPo
             }
 
             HttpSession session = servletRequest.getSession(true);
-            session.setAttribute(SAVED_CONTEXT, redirectionResponse.getRequestState().getState());
+            session.setAttribute(SAVED_CONTEXT, redirectionResponse.getRequestState());
         } catch (ProcessingException ex) {
             LOG.warn("Failed to create SignInRequest", ex);
             throw new ServletException("Failed to create SignInRequest: " + ex.getMessage());
