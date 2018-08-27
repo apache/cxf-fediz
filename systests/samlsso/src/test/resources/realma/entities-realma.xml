@@ -118,6 +118,7 @@
         <property name="applications">
             <util:list>
                 <ref bean="srv-fedizhelloworld" />
+                <ref bean="srv-spring-fedizhelloworld" />
             </util:list>
         </property>
         <!--
@@ -164,6 +165,18 @@
         <property name="validatingCertificate" value="realma.cert" />
     </bean>
     
+     <bean id="srv-spring-fedizhelloworld" class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationEntity">
+        <property name="realm" value="urn:org:apache:cxf:fediz:fedizhelloworldspring" />
+        <property name="protocol" value="urn:oasis:names:tc:SAML:2.0:profiles:SSO:browser" />
+        <property name="serviceDisplayName" value="Fedizhelloworld" />
+        <property name="serviceDescription" value="Web Application to illustrate SAML SSO" />
+        <property name="role" value="ApplicationServiceType" />
+        <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0" />
+        <property name="lifeTime" value="3600" />
+        <property name="passiveRequestorEndpointConstraint" value="https://localhost:?(\d)*/.*" />
+        <property name="validatingCertificate" value="realma.cert" />
+    </bean>
+    
     <bean class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationClaimEntity">
         <property name="application" ref="srv-fedizhelloworld" />
         <property name="claim" ref="claim_role" />
@@ -181,6 +194,27 @@
     </bean>
     <bean class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationClaimEntity">
         <property name="application" ref="srv-fedizhelloworld" />
+        <property name="claim" ref="claim_email" />
+        <property name="optional" value="false" />
+    </bean>
+    
+    <bean class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationClaimEntity">
+        <property name="application" ref="srv-spring-fedizhelloworld" />
+        <property name="claim" ref="claim_role" />
+        <property name="optional" value="false" />
+    </bean>
+    <bean class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationClaimEntity">
+        <property name="application" ref="srv-spring-fedizhelloworld" />
+        <property name="claim" ref="claim_givenname" />
+        <property name="optional" value="false" />
+    </bean>
+    <bean class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationClaimEntity">
+        <property name="application" ref="srv-spring-fedizhelloworld" />
+        <property name="claim" ref="claim_surname" />
+        <property name="optional" value="false" />
+    </bean>
+    <bean class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationClaimEntity">
+        <property name="application" ref="srv-spring-fedizhelloworld" />
         <property name="claim" ref="claim_email" />
         <property name="optional" value="false" />
     </bean>

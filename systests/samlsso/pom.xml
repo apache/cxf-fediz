@@ -86,6 +86,24 @@
 
     </dependencies>
     <build>
+         <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*.xml</include>
+                </includes>
+            </testResource>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>false</filtering>
+                <includes>
+                    <include>**/*.jks</include>
+                    <include>**/*.cert</include>
+                    <include>**/*.properties</include>
+                </includes>
+            </testResource>
+        </testResources>
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -101,6 +119,7 @@
                             <portNames>
                                 <portName>idp.https.port</portName>
                                 <portName>rp.https.port</portName>
+                                <portName>rp.spring.https.port</portName>
                             </portNames>
                         </configuration>
                     </execution>
@@ -152,6 +171,14 @@
                                     <outputDirectory>target/test-classes</outputDirectory>
                                     <includes>**/*.jks</includes>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.cxf.fediz.systests.webapps</groupId>
+                                    <artifactId>fediz-systests-webapps-spring</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>war</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target/tomcat/rp/webapps/fediz-systests-webapps-spring</outputDirectory>
+                                </artifactItem>
                             </artifactItems>
                             <outputAbsoluteArtifactFilename>true</outputAbsoluteArtifactFilename>
                             <overWriteSnapshots>true</overWriteSnapshots>
@@ -202,6 +229,7 @@
                                 <wt.headless>true</wt.headless>
                                 <idp.https.port>${idp.https.port}</idp.https.port>
                                 <rp.https.port>${rp.https.port}</rp.https.port>
+                                <rp.spring.https.port>${rp.spring.https.port}</rp.spring.https.port>
                                 <java.util.logging.config.file>${basedir}/target/test-classes/logging.properties</java.util.logging.config.file>
                             </systemPropertyVariables>
                             <includes>
