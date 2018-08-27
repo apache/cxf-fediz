@@ -24,7 +24,7 @@ import java.io.File;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
-import org.apache.cxf.fediz.systests.common.AbstractTests;
+import org.apache.cxf.fediz.integrationtests.AbstractTests;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;

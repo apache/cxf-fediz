@@ -37,6 +37,7 @@ import javax.servlet.http.HttpSession;
 import javax.xml.bind.JAXBException;
 
 import org.apache.cxf.fediz.core.FederationConstants;
+import org.apache.cxf.fediz.core.RequestState;
 import org.apache.cxf.fediz.core.SAMLSSOConstants;
 import org.apache.cxf.fediz.core.config.FederationProtocol;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
@@ -268,8 +269,9 @@ public class FederationAuthenticator extends LoginAuthenticator {
             FedizRequest wfReq = new FedizRequest();
             wfReq.setAction(action);
             wfReq.setResponseToken(responseToken);
-            wfReq.setState(request.getParameter("RelayState"));
+            wfReq.setState(getState(request));
             wfReq.setRequest(request);
+            wfReq.setRequestState((RequestState) session.getAttribute(J_CONTEXT));
 
             X509Certificate[] certs =
                 (X509Certificate[])request.getAttribute("javax.servlet.request.X509Certificate");
@@ -284,10 +286,10 @@ public class FederationAuthenticator extends LoginAuthenticator {
                 String nuri;
                 synchronized (session) {
                     // Check the context
-                    String savedContext = (String) session.getAttribute(J_CONTEXT);
-                    String receivedContext = request.getParameter(FederationConstants.PARAM_CONTEXT);
-                    if (savedContext == null || !savedContext.equals(receivedContext)) {
-                        LOG.warn("The received wctx parameter does not match the saved value");
+                    RequestState savedRequestState = (RequestState) session.getAttribute(J_CONTEXT);
+                    String receivedContext = getState(request);
+                    if (savedRequestState == null || !savedRequestState.getState().equals(receivedContext)) {
+                        LOG.warn("The received wctx/RelayState parameter does not match the saved value");
                         response.sendError(HttpServletResponse.SC_FORBIDDEN);
                         return Authentication.UNAUTHENTICATED;
                     }
@@ -461,6 +463,16 @@ public class FederationAuthenticator extends LoginAuthenticator {
         return null;
     }
 
+    private String getState(ServletRequest request) {
+        if (request.getParameter(FederationConstants.PARAM_CONTEXT) != null) {
+            return request.getParameter(FederationConstants.PARAM_CONTEXT);
+        } else if (request.getParameter(SAMLSSOConstants.RELAY_STATE) != null) {
+            return request.getParameter(SAMLSSOConstants.RELAY_STATE);
+        }
+
+        return null;
+    }
+
     /* ------------------------------------------------------------ */
     public boolean secureResponse(ServletRequest req, ServletResponse res, boolean mandatory,
                                   User validatedUser) throws ServerAuthException {
@@ -505,7 +517,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
                 }
 
                 synchronized (session) {
-                    session.setAttribute(J_CONTEXT, redirectionResponse.getRequestState().getState());
+                    session.setAttribute(J_CONTEXT, redirectionResponse.getRequestState());
                 }
 
                 response.sendRedirect(redirectURL);
