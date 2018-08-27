@@ -270,7 +270,7 @@ public class SAMLRequestTest {
             redirectionURL.substring(redirectionURL.indexOf("SAMLRequest=") + "SAMLRequest=".length(),
                                      redirectionURL.indexOf("RelayState=") - 1);
 
-        byte[] deflatedToken = Base64.getDecoder().decode(URLDecoder.decode(samlRequest, "UTF-8"));
+        byte[] deflatedToken = Base64.decode(URLDecoder.decode(samlRequest, "UTF-8"));
         InputStream tokenStream = CompressionUtils.inflate(deflatedToken);
 
         Document requestDoc = DOMUtils.readXml(new InputStreamReader(tokenStream, StandardCharsets.UTF_8));
