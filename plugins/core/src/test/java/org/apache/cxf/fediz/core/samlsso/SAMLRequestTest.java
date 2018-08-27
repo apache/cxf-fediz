@@ -179,6 +179,7 @@ public class SAMLRequestTest {
 
         Assert.assertEquals(TEST_REQUEST_URL, request.getIssuer().getValue());
         Assert.assertEquals(TEST_REQUEST_URL, request.getAssertionConsumerServiceURL());
+        Assert.assertEquals("2.0",  request.getVersion().toString());
     }
 
     @org.junit.Test
@@ -248,5 +249,36 @@ public class SAMLRequestTest {
         String signature =
             redirectionURL.substring(redirectionURL.indexOf("Signature=") + "Signature=".length());
         Assert.assertTrue(signature != null && signature.length() > 0);
+    }
+
+    @org.junit.Test
+    public void testCustomSAMLAuthnRequest() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("CUSTOM_REQUEST");
+
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL)).times(1, 2);
+        EasyMock.expect(req.getContextPath()).andReturn(TEST_REQUEST_URI);
+        EasyMock.expect(req.getRequestURI()).andReturn(TEST_REQUEST_URI).times(1, 2);
+        EasyMock.replay(req);
+
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        RedirectionResponse response = wfProc.createSignInRequest(req, config);
+
+        String redirectionURL = response.getRedirectionURL();
+        String samlRequest =
+            redirectionURL.substring(redirectionURL.indexOf("SAMLRequest=") + "SAMLRequest=".length(),
+                                     redirectionURL.indexOf("RelayState=") - 1);
+
+        byte[] deflatedToken = Base64.getDecoder().decode(URLDecoder.decode(samlRequest, "UTF-8"));
+        InputStream tokenStream = CompressionUtils.inflate(deflatedToken);
+
+        Document requestDoc = DOMUtils.readXml(new InputStreamReader(tokenStream, StandardCharsets.UTF_8));
+        AuthnRequest request =
+            (AuthnRequest)OpenSAMLUtil.fromDom(requestDoc.getDocumentElement());
+
+        Assert.assertEquals(TEST_REQUEST_URL, request.getIssuer().getValue());
+        Assert.assertEquals(TEST_REQUEST_URL, request.getAssertionConsumerServiceURL());
+        Assert.assertEquals("1.1",  request.getVersion().toString());
     }
 }
