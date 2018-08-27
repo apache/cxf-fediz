@@ -128,5 +128,41 @@
         <logoutURL>/secure/logout</logoutURL>
         <logoutRedirectTo>/index.html</logoutRedirectTo>
     </contextConfig>
+    <contextConfig name="/fedizhelloworldjetty">
+        <audienceUris>
+            <audienceItem>urn:org:apache:cxf:fediz:fedizhelloworld</audienceItem>
+        </audienceUris>
+        <certificateStores>
+            <trustManager>
+                <keyStore file="clienttrust.jks"
+                          password="storepass" type="JKS" />
+            </trustManager>
+        </certificateStores>
+        <trustedIssuers>
+            <issuer certificateValidation="PeerTrust" />
+        </trustedIssuers>
+        <maximumClockSkew>1000</maximumClockSkew>
+        <signingKey keyAlias="realma" keyPassword="realma">
+            <keyStore file="stsrealm_a.jks" password="storepass" type="JKS" />
+        </signingKey>
+        <protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:type="samlProtocolType" version="1.0.0">
+            <realm>urn:org:apache:cxf:fediz:fedizhelloworld</realm>
+            <signRequest>true</signRequest>
+            <issuer>https://localhost:${idp.https.port}/fediz-idp/saml</issuer>
+            <roleDelimiter>,</roleDelimiter>
+            <roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
+            <disableDeflateEncoding>true</disableDeflateEncoding>
+            <claimTypesRequested>
+                <claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role" optional="false" />
+				<claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname" optional="true" />
+				<claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname" optional="true" />
+				<claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress" optional="true" />
+            </claimTypesRequested>
+            <disableClientAddressCheck>true</disableClientAddressCheck>
+        </protocol>
+        <logoutURL>/secure/logout</logoutURL>
+        <logoutRedirectTo>/index.html</logoutRedirectTo>
+    </contextConfig>
 </FedizConfig>
 
