@@ -24,18 +24,21 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigInteger;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
 import org.apache.cxf.fediz.common.SecurityTestUtil;
+import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.core.config.jaxb.ArgumentType;
 import org.apache.cxf.fediz.core.config.jaxb.AudienceUris;
 import org.apache.cxf.fediz.core.config.jaxb.CallbackType;
 import org.apache.cxf.fediz.core.config.jaxb.CertificateStores;
 import org.apache.cxf.fediz.core.config.jaxb.ClaimType;
 import org.apache.cxf.fediz.core.config.jaxb.ClaimTypesRequested;
-import org.apache.cxf.fediz.core.config.jaxb.ClaimsTransformerType;
 import org.apache.cxf.fediz.core.config.jaxb.ContextConfig;
 import org.apache.cxf.fediz.core.config.jaxb.FederationProtocolType;
 import org.apache.cxf.fediz.core.config.jaxb.FedizConfig;
@@ -46,6 +49,7 @@ import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuers;
 import org.apache.cxf.fediz.core.config.jaxb.ValidationType;
+import org.apache.cxf.fediz.core.processor.ClaimsProcessor;
 import org.apache.wss4j.common.cache.EHCacheReplayCache;
 import org.apache.wss4j.common.cache.MemoryReplayCache;
 import org.apache.wss4j.common.cache.ReplayCache;
@@ -59,7 +63,7 @@ public class FedizConfigurationTest {
     //private static final String REQUEST = "request value";
     private static final String REPLY = "reply value";
     private static final String TARGET_REALM = "target realm";
-    private static final String HOME_REALM_CLASS = "org.apache.fediz.realm.MyHomeRealm.class";
+    private static final String HOME_REALM_CLASS = "org.apache.fediz.realm.MyHomeRealm";
     private static final String FRESHNESS_VALUE = "10000";
 
     private static final String CONFIG_NAME = "ROOT";
@@ -79,13 +83,13 @@ public class FedizConfigurationTest {
 
     private static final String ROLE_DELIMITER = ";";
     private static final String ROLE_URI = "http://someserver:8080/path/roles.uri";
-    private static final String CLAIM_TYPE_1 = "a particular claim type";
-    private static final String CLAIM_TYPE_2 = "a second particular claim type";
+    private static final String CLAIM_TYPE_1 = ClaimTypes.FIRSTNAME.toString();
+    private static final String CLAIM_TYPE_2 = ClaimTypes.LASTNAME.toString();
     private static final String SUBJECT_VALUE_1 = ".*CN=www.sts1.com.*";
     private static final String SUBJECT_VALUE_2 = ".*CN=www.sts2.com.*";
     private static final String SUBJECT_VALUE_3 = ".*CN=www.sts3.com.*";
 
-    private static final String CLAIMSTRANFORMER_CLASS = "org.apache.fediz.MyClaimsTransformer.class";
+    private static final String CLAIMS_PROCESSOR_CLASS = "org.apache.cxf.fediz.common.ClaimCopyProcessor";
 
     private static final String CONFIG_FILE = "./target/fedizconfig.xml";
 
@@ -215,10 +219,10 @@ public class FedizConfigurationTest {
         issuer.setValue(ISSUER);
         protocol.setIssuer(issuer);
 
-        ClaimsTransformerType claimsTransformer = new ClaimsTransformerType();
-        claimsTransformer.setType(ArgumentType.CLASS);
-        claimsTransformer.setValue(CLAIMSTRANFORMER_CLASS);
-        config.setClaimsTransformer(claimsTransformer);
+        CallbackType claimsProcessor = new CallbackType();
+        claimsProcessor.setType(ArgumentType.CLASS);
+        claimsProcessor.setValue(CLAIMS_PROCESSOR_CLASS);
+        config.setClaimsProcessor(claimsProcessor);
 
         return rootConfig;
 
@@ -417,6 +421,30 @@ public class FedizConfigurationTest {
 
         Assert.assertTrue(config.getMaximumClockSkew().intValue() == 5);
         Assert.assertFalse(config.isTokenExpirationValidation());
+    }
+    
+    @org.junit.Test
+    public void testClaimProcessor() throws JAXBException, IOException {
+        final JAXBContext jaxbContext = JAXBContext.newInstance(FedizConfig.class);
+        FedizConfigurator configurator = new FedizConfigurator();
+        FedizConfig configOut = createConfiguration(true);
+        StringWriter writer = new StringWriter();
+        jaxbContext.createMarshaller().marshal(configOut, writer);
+        StringReader reader = new StringReader(writer.toString());
+        configurator.loadConfig(reader);
+        
+        FedizContext fedContext = configurator.getFedizContext(CONFIG_NAME);
+        List<ClaimsProcessor> claimsProcessor = fedContext.getClaimsProcessor();
+        Assert.assertNotNull(claimsProcessor);
+        Assert.assertEquals(1, claimsProcessor.size());
+        
+        List<org.apache.cxf.fediz.core.Claim> inputClaims = new ArrayList<>();
+        org.apache.cxf.fediz.core.Claim claim = new org.apache.cxf.fediz.core.Claim();
+        claim.setClaimType(URI.create(CLAIM_TYPE_1));
+        claim.setValue("Alice");
+        inputClaims.add(claim);
+        List<org.apache.cxf.fediz.core.Claim> processedClaims = claimsProcessor.get(0).processClaims(inputClaims);
+        Assert.assertEquals(inputClaims, processedClaims);
     }
 
 }

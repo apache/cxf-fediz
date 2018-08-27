@@ -210,10 +210,6 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             expires = validatorResponse.getExpires();
         }
         testForReplayAttack(validatorResponse.getUniqueTokenId(), config, expires);
-        testForMandatoryClaims(((FederationProtocol)config.getProtocol()).getRoleURI(),
-                              ((FederationProtocol)config.getProtocol()).getClaimTypesRequested(),
-                              validatorResponse.getClaims(),
-                              validatorResponse.getRoles() != null && !validatorResponse.getRoles().isEmpty());
 
         Date created = validatorResponse.getCreated();
         if (lifeTime != null && lifeTime.getCreated() != null) {
@@ -221,13 +217,23 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         }
 
         List<Claim> claims = validatorResponse.getClaims();
-        if (config.getClaimsTransformer() != null) {
-            LOG.debug("invoking ClaimsTransformer");
-            claims = config.getClaimsTransformer().processClaims(validatorResponse.getClaims());
+        
+        testForMandatoryClaims(config.getProtocol().getRoleURI(),
+                ((FederationProtocol)config.getProtocol()).getClaimTypesRequested(),
+                claims);
+
+        List<ClaimsProcessor> processors = config.getClaimsProcessor();
+        if (processors != null) {
+            for (ClaimsProcessor cp : processors) {
+                LOG.debug("invoking ClaimsProcessor {}", cp);
+                claims = cp.processClaims(claims);
+            }
         }
 
+        List<String> roles = getRoles(claims, config.getProtocol().getRoleURI());
+        
         FedizResponse fedResponse = new FedizResponse(validatorResponse.getUsername(), validatorResponse.getIssuer(),
-                                                      validatorResponse.getRoles(), claims,
+                                                      roles, claims,
                                                       validatorResponse.getAudience(), created, expires, rst,
                                                       validatorResponse.getUniqueTokenId());
 
@@ -748,8 +754,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
 
     private void testForMandatoryClaims(String roleURI,
                                         List<org.apache.cxf.fediz.core.config.Claim> requestedClaims,
-                                        List<org.apache.cxf.fediz.core.Claim> receivedClaims,
-                                        boolean foundRoles
+                                        List<org.apache.cxf.fediz.core.Claim> receivedClaims
     ) throws ProcessingException {
         if (requestedClaims != null) {
             for (org.apache.cxf.fediz.core.config.Claim requestedClaim : requestedClaims) {
@@ -760,11 +765,6 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                             found = true;
                             break;
                         }
-                    }
-                    if (!found && foundRoles && roleURI != null && roleURI.equals(requestedClaim.getType())) {
-                        // Maybe the requested claim is a role, which has already been removed
-                        // from the claims collection
-                        found = true;
                     }
                     if (!found) {
                         LOG.warn("Mandatory claim {} not found in token", requestedClaim.getType());

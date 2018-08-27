@@ -129,9 +129,8 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
         return requestState;
     }
 
-    protected FedizResponse processSignInRequest(
-            FedizRequest request, FedizContext config)
-        throws ProcessingException {
+    protected FedizResponse processSignInRequest(FedizRequest request, FedizContext config) throws ProcessingException {
+        
         SAMLProtocol protocol = (SAMLProtocol)config.getProtocol();
         RequestState requestState =
             processRelayState(request.getState(), request.getRequestState());
@@ -226,9 +225,23 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
         }
         testForReplayAttack(validatorResponse.getUniqueTokenId(), config, expires);
 
+        List<Claim> claims = validatorResponse.getClaims();
+
+        if (config.getClaimsProcessor() != null) {
+            List<ClaimsProcessor> processors = config.getClaimsProcessor();
+            if (processors != null) {
+                for (ClaimsProcessor cp : processors) {
+                    LOG.debug("invoking ClaimsProcessor {}", cp);
+                    claims = cp.processClaims(claims);
+                }
+            }
+        }
+
+        List<String> roles = getRoles(claims, config.getProtocol().getRoleURI());
+        
         FedizResponse fedResponse = new FedizResponse(
                 validatorResponse.getUsername(), validatorResponse.getIssuer(),
-                validatorResponse.getRoles(), validatorResponse.getClaims(),
+                roles, claims,
                 validatorResponse.getAudience(),
                 validatorResponse.getCreated(),
                 expires,

@@ -26,6 +26,7 @@ public class TokenValidatorResponse {
 
     private String username;
     private String uniqueTokenId;
+    @Deprecated
     private List<String> roles;
     private String issuer;
     private String audience;
@@ -33,8 +34,16 @@ public class TokenValidatorResponse {
     private Date expires;
     private Date created;
 
+    public TokenValidatorResponse(String uniqueTokenId, String username, String issuer, 
+                                  List<Claim> claims, String audience) {
+        this.username = username;
+        this.issuer = issuer;
+        this.claims = claims;
+        this.audience = audience;
+        this.uniqueTokenId = uniqueTokenId;
+    }
 
-
+    @Deprecated
     public TokenValidatorResponse(String uniqueTokenId, String username, String issuer,
                                   List<String> roles, List<Claim> claims, String audience) {
         this.username = username;
@@ -49,18 +58,24 @@ public class TokenValidatorResponse {
     public String getUsername() {
         return username;
     }
+    
     public String getUniqueTokenId() {
         return uniqueTokenId;
     }
+    
+    @Deprecated
     public List<String> getRoles() {
         return roles;
     }
+    
     public String getIssuer() {
         return issuer;
     }
+    
     public String getAudience() {
         return audience;
     }
+    
     public List<Claim> getClaims() {
         return claims;
     }
@@ -96,6 +111,4 @@ public class TokenValidatorResponse {
             this.created = null;
         }
     }
-
-
 }

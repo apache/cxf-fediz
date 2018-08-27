@@ -22,12 +22,16 @@ package org.apache.cxf.fediz.core.processor;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Date;
+import java.net.URI;
+import java.util.Collections;
+import java.util.List;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
@@ -102,7 +106,39 @@ public abstract class AbstractFedizProcessor implements FedizProcessor {
     protected String extractFullContextPath(HttpServletRequest request) throws MalformedURLException {
         return StringUtils.extractFullContextPath(request);
     }
+    
+    
+    protected List<String> getRoles(List<Claim> claims, String roleURI) {
+        if (roleURI == null || roleURI.isEmpty()) {
+            return null;
+        }
+        return getRoles(claims, URI.create(roleURI));
+    }
 
+    protected List<String> getRoles(List<Claim> claims, URI roleURI) {
+        if (claims == null || roleURI == null) {
+            return null;
+        }
+        List<String> roles = null;
+        for (Claim c : claims) {
+            if (roleURI.equals(c.getClaimType())) {
+                Object oValue = c.getValue();
+                if ((oValue instanceof String) && !"".equals((String) oValue)) {
+                    roles = Collections.singletonList((String) oValue);
+                } else if ((oValue instanceof List<?>) && !((List<?>) oValue).isEmpty()) {
+                    @SuppressWarnings("unchecked")
+                    List<String> values = (List<String>) oValue;
+                    roles = Collections.unmodifiableList(values);
+                } else if (!((oValue instanceof String) || (oValue instanceof List<?>))) {
+                    LOG.error("Unsupported value type of Claim value");
+                    throw new IllegalStateException("Unsupported value type of Claim value");
+                }
+                break;
+            }
+        }
+        return roles;
+    }
+    
     protected String resolveReply(HttpServletRequest request, FedizContext config) throws IOException,
         UnsupportedCallbackException {
         Object replyObj = config.getProtocol().getReply();

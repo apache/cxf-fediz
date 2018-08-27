@@ -90,5 +90,10 @@ public class Claim implements Serializable {
     public Object getValue() {
         return value;
     }
+    
+    @Override
+    public String toString() {
+        return claimType + " : " + value;
+    }
 
 }
