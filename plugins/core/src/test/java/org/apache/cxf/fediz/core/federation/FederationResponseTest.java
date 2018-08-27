@@ -22,6 +22,7 @@ package org.apache.cxf.fediz.core.federation;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.URI;
 import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
@@ -1716,9 +1717,10 @@ public class FederationResponseTest {
     }
 
     private void assertClaims(List<Claim> claims, String roleClaimType) {
+        URI roleClaimTypeURI = URI.create(roleClaimType);
         for (Claim c : claims) {
             Assert.assertTrue("Invalid ClaimType URI: " + c.getClaimType(),
-                              c.getClaimType().equals(roleClaimType)
+                              c.getClaimType().equals(roleClaimTypeURI)
                               || c.getClaimType().equals(ClaimTypes.COUNTRY)
                               || c.getClaimType().equals(AbstractSAMLCallbackHandler.CLAIM_TYPE_LANGUAGE)
                               );

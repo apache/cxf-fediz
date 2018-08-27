@@ -56,7 +56,6 @@
         </protocol>
         <logoutURL>/secure/logout</logoutURL>
         <logoutRedirectTo>/index.html</logoutRedirectTo>
-        <claimsTransformer type="Class">org.apache.cxf.fediz.systests.cxf.ClaimTransformerTest</claimsTransformer>
     </contextConfig>
 </FedizConfig>
 

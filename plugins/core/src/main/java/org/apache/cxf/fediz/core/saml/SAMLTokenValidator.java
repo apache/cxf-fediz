@@ -200,12 +200,12 @@ public class SAMLTokenValidator implements TokenValidator {
                 claims = Collections.emptyList();
             }
 
-            List<String> roles = parseRoles(config, claims);
-
+            claims = parseRoleClaim(config, claims);
+            
             SAMLTokenPrincipal p = new SAMLTokenPrincipalImpl(assertion);
 
             TokenValidatorResponse response = new TokenValidatorResponse(
-                    assertion.getId(), p.getName(), assertionIssuer, roles,
+                    assertion.getId(), p.getName(), assertionIssuer,
                     new ClaimCollection(claims), audience);
             response.setExpires(getExpires(assertion));
             response.setCreated(getCreated(assertion));
@@ -218,6 +218,7 @@ public class SAMLTokenValidator implements TokenValidator {
         }
     }
 
+    @Deprecated
     protected List<String> parseRoles(FedizContext config, List<Claim> claims) {
         List<String> roles = null;
         Protocol protocol = config.getProtocol();
@@ -248,6 +249,38 @@ public class SAMLTokenValidator implements TokenValidator {
         }
 
         return roles;
+    }
+    
+    protected List<Claim> parseRoleClaim(FedizContext config, List<Claim> claims) {
+        List<String> roles = null;
+        Protocol protocol = config.getProtocol();
+        if (protocol.getRoleURI() != null) {
+            URI roleURI = URI.create(protocol.getRoleURI());
+            String delim = protocol.getRoleDelimiter();
+            for (Claim c : claims) {
+                if (roleURI.equals(c.getClaimType())) {
+                    Object oValue = c.getValue();
+                    if ((oValue instanceof String) && !"".equals((String)oValue)) {
+                        if (delim == null) {
+                            roles = Collections.singletonList((String)oValue);
+                        } else {
+                            roles = parseRoles((String)oValue, delim);
+                        }
+                    } else if ((oValue instanceof List<?>) && !((List<?>)oValue).isEmpty()) {
+                        @SuppressWarnings("unchecked")
+                        List<String> values = (List<String>)oValue;
+                        roles = Collections.unmodifiableList(values);
+                    } else if (!((oValue instanceof String) || (oValue instanceof List<?>))) {
+                        LOG.error("Unsupported value type of Claim value");
+                        throw new IllegalStateException("Unsupported value type of Claim value");
+                    }
+                    // Replace single role String with role List<String> after parsing
+                    c.setValue(roles);
+                    break;
+                }
+            }
+        }
+        return claims;
     }
 
     protected List<Claim> parseClaimsInAssertion(
@@ -309,8 +342,6 @@ public class SAMLTokenValidator implements TokenValidator {
         collection.addAll(claimsMap.values());
         return collection;
     }
-
-
 
     protected List<Claim> parseClaimsInAssertion(
             org.opensaml.saml.saml2.core.Assertion assertion) {

@@ -47,7 +47,6 @@ public class CustomValidator implements TokenValidator {
                                           SAMLResponseTest.TEST_USER,
                                           SAMLResponseTest.TEST_IDP_ISSUER,
                                           null,
-                                          null,
                                           SAMLResponseTest.TEST_REQUEST_URL);
     }
 

@@ -32,10 +32,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-import org.apache.cxf.fediz.core.config.jaxb.ArgumentType;
 import org.apache.cxf.fediz.core.config.jaxb.CallbackType;
 import org.apache.cxf.fediz.core.config.jaxb.CertificateStores;
-import org.apache.cxf.fediz.core.config.jaxb.ClaimsTransformerType;
 import org.apache.cxf.fediz.core.config.jaxb.ContextConfig;
 import org.apache.cxf.fediz.core.config.jaxb.FederationProtocolType;
 import org.apache.cxf.fediz.core.config.jaxb.KeyManagersType;
@@ -75,6 +73,8 @@ public class FedizContext implements Closeable {
     private KeyManager decryptionKeyManager;
     private ClassLoader classloader;
     private Object logoutRedirectToConstraint;
+
+    private List<ClaimsProcessor> claimsProcessor;
 
 
     public FedizContext(ContextConfig config) {
@@ -263,39 +263,27 @@ public class FedizContext implements Closeable {
         return replayCache;
     }
 
-    public ClaimsProcessor getClaimsTransformer() {
-        ClaimsTransformerType  claimsTransformerType  = config.getClaimsTransformer();
-        if (claimsTransformerType != null) {
-            ArgumentType type = claimsTransformerType.getType();
-            if (type.equals(ArgumentType.CLASS)) {
-                String clazzName = type.value();
-                Class<?> clazz;
-                try {
-                    clazz = getClassloader().loadClass(clazzName);
-                    Object obj = clazz.newInstance();
-                    if (obj instanceof ClaimsProcessor) {
-                        return (ClaimsProcessor) obj;
-                    } else {
-                        LOG.error("The configured ClaimsTransformer is not an instance of ClaimsProcessor !");
-                        return null;
-                    }
-                    
-                } catch (ClassNotFoundException e) {
-                    LOG.error("The specified ClaimsTransformer can not be found. Check your classpath");
-                    return null;
-                
-                } catch (InstantiationException e) {
-                    LOG.error("The specified ClaimsTransformer can not be instantiated.");
-                    return null;
-                
-                } catch (IllegalAccessException e) {
-                    LOG.error("The specified ClaimsTransformer can not be accessed.");
-                    return null;
-                }
-                
-            }
+    @SuppressWarnings("unchecked")
+    public List<ClaimsProcessor> getClaimsProcessor() {
+        if (this.claimsProcessor != null) {
+            return this.claimsProcessor;
         }
-        return null;
+        CallbackType cbt = config.getClaimsProcessor();
+        Object claimsProc = ConfigUtils.loadCallbackType(cbt, "ClaimsProcessor", getClassloader());
+
+        if (claimsProc == null) {
+            return null;
+        } else if (claimsProc instanceof ClaimsProcessor) {
+            this.claimsProcessor = new ArrayList<>();
+            this.claimsProcessor.add((ClaimsProcessor) claimsProc);
+        } else if (claimsProc instanceof List && !((List<?>) claimsProc).isEmpty()
+                && ((List<?>) claimsProc).get(0) instanceof ClaimsProcessor) {
+            this.claimsProcessor = (List<ClaimsProcessor>) claimsProc;
+        } else {
+            LOG.error("The configured ClaimsProcessor is not an instance of ClaimsProcessor!");
+            return null;
+        }
+        return this.claimsProcessor;
     }
 
     public String getName() {

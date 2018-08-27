@@ -47,7 +47,6 @@ public class CustomValidator implements TokenValidator {
                                           FederationResponseTest.TEST_USER,
                                           FederationResponseTest.TEST_RSTR_ISSUER,
                                           null,
-                                          null,
                                           FederationResponseTest.TEST_AUDIENCE);
     }
 
