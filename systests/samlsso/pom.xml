@@ -126,6 +126,7 @@
                                 <portName>idp.https.port</portName>
                                 <portName>rp.https.port</portName>
                                 <portName>rp.spring.https.port</portName>
+                                <portName>rp.cxf.https.port</portName>
                             </portNames>
                         </configuration>
                     </execution>
@@ -185,6 +186,14 @@
                                     <overWrite>true</overWrite>
                                     <outputDirectory>target/tomcat/rp/webapps/fediz-systests-webapps-spring</outputDirectory>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.cxf.fediz.systests.webapps</groupId>
+                                    <artifactId>fediz-systests-webapps-cxf</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>war</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target/tomcat/rp/webapps/fediz-systests-webapps-cxf</outputDirectory>
+                                </artifactItem>
                             </artifactItems>
                             <outputAbsoluteArtifactFilename>true</outputAbsoluteArtifactFilename>
                             <overWriteSnapshots>true</overWriteSnapshots>
@@ -217,6 +226,25 @@
                             </resources>              
                         </configuration>            
                     </execution>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/tomcat/rp/webapps/fediz-systests-webapps-cxf/WEB-INF/classes/</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/target/test-classes</directory>
+                                    <includes>
+                                        <include>fediz_config.xml</include>
+                                    </includes>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -236,6 +264,7 @@
                                 <idp.https.port>${idp.https.port}</idp.https.port>
                                 <rp.https.port>${rp.https.port}</rp.https.port>
                                 <rp.spring.https.port>${rp.spring.https.port}</rp.spring.https.port>
+                                <rp.cxf.https.port>${rp.cxf.https.port}</rp.cxf.https.port>
                                 <java.util.logging.config.file>${basedir}/target/test-classes/logging.properties</java.util.logging.config.file>
                             </systemPropertyVariables>
                             <includes>
