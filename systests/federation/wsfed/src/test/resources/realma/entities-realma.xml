@@ -166,6 +166,7 @@
                 <entry key="client.id" value="consumer-id"/>
                 <entry key="client.secret" value="this-is-a-secret"/>
                 <entry key="token.endpoint" value="https://localhost:${idp.oidc.https.port}/idpoidc/services/token"/>
+                <entry key="claims.handler" value="org.apache.cxf.fediz.service.idp.protocols.RoleClaimsHandler"/>
             </util:map>
         </property>
     </bean>

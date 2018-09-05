@@ -46,6 +46,7 @@ public class IdTokenProviderImpl implements IdTokenProvider {
         token.setSubject(authenticatedUser.getLogin().toLowerCase());
         token.setClaim("preferred_username", authenticatedUser.getLogin().toLowerCase());
         token.setIssuer("OIDC IdP");
+        token.setClaim("role", "user");
 
         return token;
     }
