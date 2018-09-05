@@ -20,7 +20,9 @@
 package org.apache.cxf.fediz.service.idp.protocols;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import org.apache.cxf.jaxrs.json.basic.JsonMapObject;
 import org.apache.wss4j.common.saml.bean.AttributeBean;
@@ -44,7 +46,9 @@ public class RoleClaimsHandler implements ClaimsHandler {
                 AttributeBean attributeBean = new AttributeBean();
                 attributeBean.setQualifiedName(ROLE.toString());
                 attributeBean.setNameFormat(nameFormat);
-                attributeBean.setAttributeValues(Collections.singletonList(role));
+                List<Object> attributes = new ArrayList<>();
+                attributes.add(role);
+                attributeBean.setAttributeValues(attributes);
                 attrBean.setSamlAttributes(Collections.singletonList(attributeBean));
                 return attrBean;
             }
