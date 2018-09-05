@@ -41,6 +41,7 @@ import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.rs.security.oauth2.provider.OAuthServiceException;
 import org.apache.cxf.rs.security.oauth2.provider.SubjectCreator;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
+import org.apache.cxf.rs.security.oauth2.utils.OAuthUtils;
 import org.apache.cxf.rs.security.oidc.common.IdToken;
 import org.apache.cxf.rs.security.oidc.idp.OidcUserSubject;
 import org.apache.cxf.rs.security.oidc.utils.OidcUtils;
@@ -134,6 +135,8 @@ public class FedizSubjectCreator implements SubjectCreator {
             }
         }
 
+        idToken.setTokenId(OAuthUtils.generateRandomTokenKey());
+
         // Compute exp claim
         long currentTimeInSecs = System.currentTimeMillis() / 1000L;
         idToken.setIssuedAt(currentTimeInSecs);
@@ -184,7 +187,7 @@ public class FedizSubjectCreator implements SubjectCreator {
                     idToken.setEmail((String) c.getValue());
                 } else if (supportedClaims.containsKey(c.getClaimType().toString())
                         && requestedClaimsList.contains(supportedClaims.get(c.getClaimType().toString()))) {
-                    idToken.setClaim(supportedClaims.get(c.getClaimType().toString()), (String) c.getValue());
+                    idToken.setClaim(supportedClaims.get(c.getClaimType().toString()), c.getValue());
                 }
 
             }
