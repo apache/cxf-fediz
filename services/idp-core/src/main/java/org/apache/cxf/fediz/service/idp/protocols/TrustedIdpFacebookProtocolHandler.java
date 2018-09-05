@@ -128,7 +128,7 @@ public class TrustedIdpFacebookProtocolHandler extends AbstractTrustedIdpOAuth2P
                 Instant expires = Instant.now().plusSeconds(accessToken.getExpiresIn());
                 SecurityToken idpToken = new SecurityToken(IDGenerator.generateID(null), null, expires);
                 SamlAssertionWrapper assertion =
-                    createSamlAssertion(idp, trustedIdp, subjectName, null, expires);
+                    createSamlAssertion(idp, trustedIdp, null, subjectName, null, expires);
                 Document doc = DOMUtils.createDocument();
                 Element token = assertion.toDOM(doc);
 

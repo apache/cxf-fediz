@@ -25,6 +25,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Date;
 
 import javax.security.auth.callback.Callback;
@@ -35,14 +36,17 @@ import org.apache.cxf.fediz.core.util.CertsUtils;
 import org.apache.cxf.fediz.service.idp.IdpConstants;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
+import org.apache.cxf.jaxrs.json.basic.JsonMapObject;
 import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.saml.SAMLCallback;
 import org.apache.wss4j.common.saml.SAMLUtil;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
+import org.apache.wss4j.common.saml.bean.AttributeStatementBean;
 import org.apache.wss4j.common.saml.bean.ConditionsBean;
 import org.apache.wss4j.common.saml.bean.SubjectBean;
 import org.apache.wss4j.common.saml.bean.Version;
 import org.apache.wss4j.common.saml.builder.SAML2Constants;
+import org.apache.wss4j.common.util.Loader;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,6 +74,12 @@ public abstract class AbstractTrustedIdpOAuth2ProtocolHandler extends AbstractTr
      * The default value depends on the subclass.
      */
     public static final String SCOPE = "scope";
+
+    /**
+     * The fully qualified class name of a ClaimsHandler implementation, designed to convert claims in a JWT token
+     * into claims in the generated SAML token.
+     */
+    public static final String CLAIMS_HANDLER = "claims.handler";
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractTrustedIdpOAuth2ProtocolHandler.class);
 
@@ -115,7 +125,8 @@ public abstract class AbstractTrustedIdpOAuth2ProtocolHandler extends AbstractTr
         }
     }
 
-    protected SamlAssertionWrapper createSamlAssertion(Idp idp, TrustedIdp trustedIdp, String subjectName,
+    protected SamlAssertionWrapper createSamlAssertion(Idp idp, TrustedIdp trustedIdp, JsonMapObject claims, 
+                                                     String subjectName,
                                                      Instant notBefore,
                                                      Instant expires) throws Exception {
         SamlCallbackHandler callbackHandler = new SamlCallbackHandler();
@@ -143,6 +154,14 @@ public abstract class AbstractTrustedIdpOAuth2ProtocolHandler extends AbstractTr
         }
         callbackHandler.setConditionsBean(conditionsBean);
 
+        // Claims
+        String claimsHandler = getProperty(trustedIdp, CLAIMS_HANDLER);
+        if (claimsHandler != null) {
+            ClaimsHandler claimsHandlerImpl = (ClaimsHandler)Loader.loadClass(claimsHandler).newInstance();
+            AttributeStatementBean attrStatementBean = claimsHandlerImpl.handleClaims(claims);
+            callbackHandler.setAttrBean(attrStatementBean);
+        }
+
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
 
@@ -159,6 +178,7 @@ public abstract class AbstractTrustedIdpOAuth2ProtocolHandler extends AbstractTr
         private ConditionsBean conditionsBean;
         private SubjectBean subjectBean;
         private String issuer;
+        private AttributeStatementBean attrBean;
 
         /**
          * Set the SubjectBean
@@ -197,8 +217,17 @@ public abstract class AbstractTrustedIdpOAuth2ProtocolHandler extends AbstractTr
 
                     // Set the conditions
                     samlCallback.setConditions(conditionsBean);
+
+                    // Set the attributes
+                    if (attrBean != null) {
+                        samlCallback.setAttributeStatementData(Collections.singletonList(attrBean));
+                    }
                 }
             }
+        }
+
+        public void setAttrBean(AttributeStatementBean attrBean) {
+            this.attrBean = attrBean;
         }
 
     }

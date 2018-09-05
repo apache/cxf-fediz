@@ -211,7 +211,8 @@ public class TrustedIdpOIDCProtocolHandler extends AbstractTrustedIdpOAuth2Proto
 
                 // Convert into a SAML Token
                 SamlAssertionWrapper assertion =
-                    createSamlAssertion(idp, trustedIdp, (String)jwt.getClaim(subjectName), notBefore, expires);
+                    createSamlAssertion(idp, trustedIdp, jwt.getClaims(), (String)jwt.getClaim(subjectName), 
+                                        notBefore, expires);
                 Document doc = DOMUtils.createDocument();
                 Element token = assertion.toDOM(doc);
 
