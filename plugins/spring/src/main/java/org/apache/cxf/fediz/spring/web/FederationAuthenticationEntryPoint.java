@@ -30,6 +30,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
+import org.apache.cxf.fediz.core.handler.RequestHandler;
 import org.apache.cxf.fediz.core.metadata.MetadataDocumentHandler;
 import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
@@ -65,6 +66,15 @@ public class FederationAuthenticationEntryPoint implements AuthenticationEntryPo
 
     private ApplicationContext appContext;
     private FederationConfig federationConfig;
+    private RequestHandler<?> requestHandler;
+
+    public RequestHandler<?> getRequestHandler() {
+        return requestHandler;
+    }
+
+    public void setRequestHandler(RequestHandler<?> requestHandler) {
+        this.requestHandler = requestHandler;
+    }
 
     public FederationConfig getFederationConfig() {
         return federationConfig;
@@ -84,6 +94,12 @@ public class FederationAuthenticationEntryPoint implements AuthenticationEntryPo
 
         FedizContext fedContext = federationConfig.getFedizContext();
         LOG.debug("Federation context: {}", fedContext);
+
+        // First see if we want to handle the request in some custom way
+        if (requestHandler != null && requestHandler.canHandleRequest(servletRequest)) {
+            requestHandler.handleRequest(servletRequest, response);
+            return;
+        }
 
         // Check to see if it is a metadata request
         MetadataDocumentHandler mdHandler = new MetadataDocumentHandler(fedContext);
