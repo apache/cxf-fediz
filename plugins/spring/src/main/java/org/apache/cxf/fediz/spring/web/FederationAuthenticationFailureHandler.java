@@ -25,6 +25,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.cxf.fediz.core.handler.RequestHandler;
 import org.apache.cxf.fediz.spring.FederationConfig;
 import org.apache.cxf.fediz.spring.authentication.ExpiredTokenException;
 import org.springframework.security.core.AuthenticationException;
@@ -36,6 +37,7 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationFa
 public class FederationAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
     private FederationConfig federationConfig;
+    private RequestHandler<?> requestHandler;
 
     public FederationAuthenticationFailureHandler() {
         super();
@@ -44,6 +46,12 @@ public class FederationAuthenticationFailureHandler extends SimpleUrlAuthenticat
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
                                         AuthenticationException exception) throws IOException, ServletException {
+
+        // First see if we want to handle the request in some custom way
+        if (requestHandler != null && requestHandler.canHandleRequest(request)) {
+            requestHandler.handleRequest(request, response);
+            return;
+        }
 
         if (exception instanceof ExpiredTokenException) {
             // Just redirect back to the original URL and re-start the authentication process.
@@ -60,6 +68,14 @@ public class FederationAuthenticationFailureHandler extends SimpleUrlAuthenticat
 
     public void setFederationConfig(FederationConfig fedConfig) {
         this.federationConfig = fedConfig;
+    }
+
+    public RequestHandler<?> getRequestHandler() {
+        return requestHandler;
+    }
+
+    public void setRequestHandler(RequestHandler<?> requestHandler) {
+        this.requestHandler = requestHandler;
     }
 
 }
