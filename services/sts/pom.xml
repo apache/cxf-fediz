@@ -107,6 +107,7 @@
                             </excludes>
                         </resource>
                     </webResources>
+                    <attachClasses>true</attachClasses>
                 </configuration>
             </plugin>
             <plugin>
