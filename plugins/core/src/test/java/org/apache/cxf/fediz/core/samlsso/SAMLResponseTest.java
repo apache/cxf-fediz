@@ -39,7 +39,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import org.apache.cxf.fediz.common.STSUtil;
@@ -1551,68 +1550,10 @@ public class SAMLResponseTest {
         signableObject.releaseChildrenDOM(true);
     }
 
-    /**
-     * Returns the first element that matches <code>name</code> and
-     * <code>namespace</code>. <p/> This is a replacement for a XPath lookup
-     * <code>//name</code> with the given namespace. It's somewhat faster than
-     * XPath, and we do not deal with prefixes, just with the real namespace URI
-     *
-     * @param startNode Where to start the search
-     * @param name Local name of the element
-     * @param namespace Namespace URI of the element
-     * @return The found element or <code>null</code>
-     */
-    public static Element findElement(Node startNode, String name, String namespace) {
-        //
-        // Replace the formerly recursive implementation with a depth-first-loop
-        // lookup
-        //
-        if (startNode == null) {
-            return null;
-        }
-        Node startParent = startNode.getParentNode();
-        Node processedNode = null;
-
-        while (startNode != null) {
-            // start node processing at this point
-            if (startNode.getNodeType() == Node.ELEMENT_NODE
-                && startNode.getLocalName().equals(name)) {
-                String ns = startNode.getNamespaceURI();
-                if (ns != null && ns.equals(namespace)) {
-                    return (Element)startNode;
-                }
-
-                if ((namespace == null || namespace.length() == 0)
-                    && (ns == null || ns.length() == 0)) {
-                    return (Element)startNode;
-                }
-            }
-            processedNode = startNode;
-            startNode = startNode.getFirstChild();
-
-            // no child, this node is done.
-            if (startNode == null) {
-                // close node processing, get sibling
-                startNode = processedNode.getNextSibling();
-            }
-            // no more siblings, get parent, all children
-            // of parent are processed.
-            while (startNode == null) {
-                processedNode = processedNode.getParentNode();
-                if (processedNode == startParent) {
-                    return null;
-                }
-                // close parent node processing (processed node now)
-                startNode = processedNode.getNextSibling();
-            }
-        }
-        return null;
-    }
-
     private void assertClaims(List<Claim> claims, String roleClaimType) {
         for (Claim c : claims) {
             Assert.assertTrue("Invalid ClaimType URI: " + c.getClaimType(),
-                              c.getClaimType().equals(roleClaimType)
+                              c.getClaimType().toString().equals(roleClaimType)
                               || c.getClaimType().equals(ClaimTypes.COUNTRY)
                               || c.getClaimType().equals(AbstractSAMLCallbackHandler.CLAIM_TYPE_LANGUAGE)
                               );

@@ -73,7 +73,7 @@ import org.apache.wss4j.common.saml.bean.AudienceRestrictionBean;
 import org.apache.wss4j.common.saml.bean.ConditionsBean;
 import org.apache.wss4j.common.saml.builder.SAML2Constants;
 import org.apache.wss4j.common.util.DOM2Writer;
-
+import org.apache.wss4j.common.util.XMLUtils;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -326,10 +326,10 @@ public class RequestedClaimsTest {
         Document doc = STSUtil.toSOAPPart(rstr);
         Element token = assertion.toDOM(doc);
 
-        Element e = SAMLTokenValidatorOldTest.findElement(doc, "RequestedSecurityToken",
+        Element e = XMLUtils.findElement(doc, "RequestedSecurityToken",
                                                         FederationConstants.WS_TRUST_13_NS);
         if (e == null) {
-            e = SAMLTokenValidatorOldTest.findElement(doc, "RequestedSecurityToken",
+            e = XMLUtils.findElement(doc, "RequestedSecurityToken",
                                                     FederationConstants.WS_TRUST_2005_02_NS);
         }
         e.appendChild(token);
