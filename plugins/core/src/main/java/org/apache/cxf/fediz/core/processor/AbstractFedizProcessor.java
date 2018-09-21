@@ -21,9 +21,9 @@ package org.apache.cxf.fediz.core.processor;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.Date;
 import java.net.URI;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import javax.security.auth.callback.Callback;
