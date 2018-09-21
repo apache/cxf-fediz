@@ -30,6 +30,9 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 import org.apache.cxf.fediz.common.STSUtil;
 import org.apache.cxf.fediz.common.SecurityTestUtil;
 import org.apache.cxf.fediz.core.Claim;
@@ -74,8 +77,6 @@ import org.apache.wss4j.common.util.XMLUtils;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 /**
  * Test for claim transformations with ClaimsProcessor
