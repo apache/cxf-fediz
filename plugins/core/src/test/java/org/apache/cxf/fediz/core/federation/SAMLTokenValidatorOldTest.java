@@ -155,7 +155,7 @@ public class SAMLTokenValidatorOldTest {
         Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
                             .size());
         Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
-        assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
+        assertClaims(wfRes.getClaims(), ClaimTypes.URI_BASE.toString() + "/" + callbackHandler.getRoleAttributeName());
 
     }
 
@@ -289,7 +289,7 @@ public class SAMLTokenValidatorOldTest {
         Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
                             .size());
         Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
-        assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
+        assertClaims(wfRes.getClaims(), ClaimTypes.URI_BASE.toString() + "/" + callbackHandler.getRoleAttributeName());
     }
 
 
