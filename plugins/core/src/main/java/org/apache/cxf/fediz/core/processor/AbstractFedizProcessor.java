@@ -123,7 +123,7 @@ public abstract class AbstractFedizProcessor implements FedizProcessor {
         for (Claim c : claims) {
             if (roleURI.equals(c.getClaimType())) {
                 Object oValue = c.getValue();
-                if ((oValue instanceof String) && !"".equals((String) oValue)) {
+                if ((oValue instanceof String) && !"".equals(oValue)) {
                     roles = Collections.singletonList((String) oValue);
                 } else if ((oValue instanceof List<?>) && !((List<?>) oValue).isEmpty()) {
                     @SuppressWarnings("unchecked")
@@ -158,4 +158,26 @@ public abstract class AbstractFedizProcessor implements FedizProcessor {
         return reply;
     }
 
+    protected void testForMandatoryClaims(String roleURI,
+                                        List<org.apache.cxf.fediz.core.config.Claim> requestedClaims,
+                                        List<org.apache.cxf.fediz.core.Claim> receivedClaims
+    ) throws ProcessingException {
+        if (requestedClaims != null) {
+            for (org.apache.cxf.fediz.core.config.Claim requestedClaim : requestedClaims) {
+                if (!requestedClaim.isOptional()) {
+                    boolean found = false;
+                    for (org.apache.cxf.fediz.core.Claim receivedClaim : receivedClaims) {
+                        if (requestedClaim.getType().equals(receivedClaim.getClaimType().toString())) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        LOG.warn("Mandatory claim {} not found in token", requestedClaim.getType());
+                        throw new ProcessingException("Mandatory claim not found in token", TYPE.INVALID_REQUEST);
+                    }
+                }
+            }
+        }
+    }
 }

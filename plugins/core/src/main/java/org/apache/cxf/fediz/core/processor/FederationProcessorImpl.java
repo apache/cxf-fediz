@@ -221,7 +221,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         List<Claim> claims = validatorResponse.getClaims();
         
         testForMandatoryClaims(config.getProtocol().getRoleURI(),
-                ((FederationProtocol)config.getProtocol()).getClaimTypesRequested(),
+                config.getProtocol().getClaimTypesRequested(),
                 claims);
 
         List<ClaimsProcessor> processors = config.getClaimsProcessor();
@@ -732,29 +732,6 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             }
         }
         return wReq;
-    }
-
-    private void testForMandatoryClaims(String roleURI,
-                                        List<org.apache.cxf.fediz.core.config.Claim> requestedClaims,
-                                        List<org.apache.cxf.fediz.core.Claim> receivedClaims
-    ) throws ProcessingException {
-        if (requestedClaims != null) {
-            for (org.apache.cxf.fediz.core.config.Claim requestedClaim : requestedClaims) {
-                if (!requestedClaim.isOptional()) {
-                    boolean found = false;
-                    for (org.apache.cxf.fediz.core.Claim receivedClaim : receivedClaims) {
-                        if (requestedClaim.getType().equals(receivedClaim.getClaimType().toString())) {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found) {
-                        LOG.warn("Mandatory claim {} not found in token", requestedClaim.getType());
-                        throw new ProcessingException("Mandatory claim not found in token", TYPE.INVALID_REQUEST);
-                    }
-                }
-            }
-        }
     }
 
     private static class DecryptionCallbackHandler implements CallbackHandler {

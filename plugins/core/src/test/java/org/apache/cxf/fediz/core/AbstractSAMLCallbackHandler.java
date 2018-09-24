@@ -93,6 +93,7 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
     protected String customClaimName = CLAIM_TYPE_LANGUAGE.toString();
     protected String attributeNameFormat = "urn:oasis:names:tc:SAML:2.0:attrname-format:unspecified";
     protected boolean useNameFormatAsNamespace;
+    private boolean addGivenName;
 
     public void setSubjectConfirmationData(SubjectConfirmationDataBean subjectConfirmationData) {
         this.subjectConfirmationData = subjectConfirmationData;
@@ -363,6 +364,23 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
             }
             attributeList.add(attributeBean2);
 
+            if (addGivenName) {
+                AttributeBean attributeBean3 = new AttributeBean();
+                if (subjectBean != null) {
+                    //SAML 1.1
+                    attributeBean3.setSimpleName(getNameOfClaimType(ClaimTypes.FIRSTNAME.toString()));
+                    //QualifiedName maps to AttributeNamespace in SAML1ComponentBuilder.createSamlv1Attribute()
+                    attributeBean3.setQualifiedName(getNamespaceOfClaimType((ClaimTypes.FIRSTNAME.toString())));
+
+                } else {
+                    //SAML 2.0
+                    attributeBean3.setQualifiedName((ClaimTypes.FIRSTNAME.toString()));
+                    attributeBean3.setNameFormat(this.getAttributeNameFormat());
+                }
+                attributeBean3.addAttributeValue("alice");
+                attributeList.add(attributeBean3);
+            }
+
             attrStateBean.setSamlAttributes(attributeList);
             callback.setAttributeStatementData(Collections.singletonList(attrStateBean));
 
@@ -433,5 +451,13 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
 
     public void setAlsoAddAuthnStatement(boolean alsoAddAuthnStatement) {
         this.alsoAddAuthnStatement = alsoAddAuthnStatement;
+    }
+
+    public boolean isAddGivenName() {
+        return addGivenName;
+    }
+
+    public void setAddGivenName(boolean addGivenName) {
+        this.addGivenName = addGivenName;
     }
 }

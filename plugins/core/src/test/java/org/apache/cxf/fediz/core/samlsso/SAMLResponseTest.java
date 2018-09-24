@@ -22,6 +22,7 @@ package org.apache.cxf.fediz.core.samlsso;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -48,7 +49,6 @@ import org.apache.cxf.fediz.core.AbstractSAMLCallbackHandler;
 import org.apache.cxf.fediz.core.AbstractSAMLCallbackHandler.MultiValue;
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimTypes;
-import org.apache.cxf.fediz.core.FedizConstants;
 import org.apache.cxf.fediz.core.KeystoreCallbackHandler;
 import org.apache.cxf.fediz.core.RequestState;
 import org.apache.cxf.fediz.core.SAML1CallbackHandler;
@@ -200,7 +200,8 @@ public class SAMLResponseTest {
         Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
                             .size());
         Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
-        assertClaims(wfRes.getClaims(), FedizConstants.DEFAULT_ROLE_URI.toString());
+        assertClaims(wfRes.getClaims(), ClaimTypes.COUNTRY);
+        assertClaims(wfRes.getClaims(), AbstractSAMLCallbackHandler.CLAIM_TYPE_LANGUAGE);
     }
 
     /**
@@ -443,7 +444,8 @@ public class SAMLResponseTest {
         Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
         Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles().size());
         Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
-        assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
+        assertClaims(wfRes.getClaims(), ClaimTypes.COUNTRY);
+        assertClaims(wfRes.getClaims(), AbstractSAMLCallbackHandler.CLAIM_TYPE_LANGUAGE);
     }
 
     /**
@@ -552,7 +554,8 @@ public class SAMLResponseTest {
         Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
         Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles().size());
         Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
-        assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
+        assertClaims(wfRes.getClaims(), ClaimTypes.COUNTRY);
+        assertClaims(wfRes.getClaims(), AbstractSAMLCallbackHandler.CLAIM_TYPE_LANGUAGE);
     }
 
     /**
@@ -605,10 +608,10 @@ public class SAMLResponseTest {
         Assert.assertEquals("Principal name wrong", TEST_USER,
                             wfRes.getUsername());
         Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
-        System.out.println("ROLE: " + wfRes.getRoles().get(0));
         Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles().size());
         Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
-        assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
+        assertClaims(wfRes.getClaims(), ClaimTypes.COUNTRY);
+        assertClaims(wfRes.getClaims(), AbstractSAMLCallbackHandler.CLAIM_TYPE_LANGUAGE);
     }
 
     /**
@@ -1400,6 +1403,106 @@ public class SAMLResponseTest {
             // expected
         }
     }
+    
+    @org.junit.Test
+    public void validateSAMLResponseWithRequiredClaims() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("REQUIRED_CLAIMS");
+
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                                                     TEST_IDP_ISSUER,
+                                                     requestId,
+                                                     TEST_REQUEST_URL,
+                                                     (String)config.getProtocol().getIssuer(),
+                                                     null,
+                                                     relayState,
+                                                     System.currentTimeMillis());
+
+        // Create SAML Response
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setAlsoAddAuthnStatement(true);
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_IDP_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        callbackHandler.setAddGivenName(true);
+
+        String responseStr = createSamlResponseStr(callbackHandler, requestId);
+
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(responseStr);
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+        wfReq.setRequestState(requestState);
+
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
+
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
+                            .size());
+        Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
+        assertClaims(wfRes.getClaims(), ClaimTypes.COUNTRY);
+        assertClaims(wfRes.getClaims(), AbstractSAMLCallbackHandler.CLAIM_TYPE_LANGUAGE);
+        assertClaims(wfRes.getClaims(), ClaimTypes.FIRSTNAME);
+    }
+    
+    @org.junit.Test
+    public void validateSAMLResponseWithoutRequiredClaims() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("REQUIRED_CLAIMS");
+
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                                                     TEST_IDP_ISSUER,
+                                                     requestId,
+                                                     TEST_REQUEST_URL,
+                                                     (String)config.getProtocol().getIssuer(),
+                                                     null,
+                                                     relayState,
+                                                     System.currentTimeMillis());
+
+        // Create SAML Response
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setAlsoAddAuthnStatement(true);
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_IDP_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+
+        String responseStr = createSamlResponseStr(callbackHandler, requestId);
+
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(responseStr);
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+        wfReq.setRequestState(requestState);
+
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            fail("Failure expected on a required claim that isn't present");
+        } catch (ProcessingException ex) {
+            // expected
+        }
+    }
 
     private String createSamlResponseStr(String requestId) throws Exception {
         // Create SAML Assertion
@@ -1550,14 +1653,15 @@ public class SAMLResponseTest {
         signableObject.releaseChildrenDOM(true);
     }
 
-    private void assertClaims(List<Claim> claims, String roleClaimType) {
+    private void assertClaims(List<Claim> claims, URI claimType) {
+        boolean found = false;
         for (Claim c : claims) {
-            Assert.assertTrue("Invalid ClaimType URI: " + c.getClaimType(),
-                              c.getClaimType().toString().equals(roleClaimType)
-                              || c.getClaimType().equals(ClaimTypes.COUNTRY)
-                              || c.getClaimType().equals(AbstractSAMLCallbackHandler.CLAIM_TYPE_LANGUAGE)
-                              );
+            if (c.getClaimType().equals(claimType)) {
+                found = true;
+                break;
+            }
         }
+        Assert.assertTrue(found);
     }
 
     private String encodeResponse(Element response) throws IOException {
