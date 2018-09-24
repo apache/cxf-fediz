@@ -228,7 +228,7 @@ public class SAMLTokenValidator implements TokenValidator {
             for (Claim c : claims) {
                 if (roleURI.equals(c.getClaimType())) {
                     Object oValue = c.getValue();
-                    if ((oValue instanceof String) && !"".equals((String)oValue)) {
+                    if ((oValue instanceof String) && !"".equals(oValue)) {
                         if (delim == null) {
                             roles = Collections.singletonList((String)oValue);
                         } else {
@@ -260,8 +260,8 @@ public class SAMLTokenValidator implements TokenValidator {
             for (Claim c : claims) {
                 if (roleURI.equals(c.getClaimType())) {
                     Object oValue = c.getValue();
-                    if ((oValue instanceof String) && !"".equals((String)oValue)) {
-                        if (delim == null) {
+                    if (oValue instanceof String) {
+                        if (delim == null || "".equals(oValue)) {
                             roles = Collections.singletonList((String)oValue);
                         } else {
                             roles = parseRoles((String)oValue, delim);
