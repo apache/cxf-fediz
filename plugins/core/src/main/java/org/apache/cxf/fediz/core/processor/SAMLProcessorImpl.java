@@ -227,6 +227,10 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
 
         List<Claim> claims = validatorResponse.getClaims();
 
+        testForMandatoryClaims(config.getProtocol().getRoleURI(),
+                               config.getProtocol().getClaimTypesRequested(),
+                               claims, false);
+
         if (config.getClaimsProcessor() != null) {
             List<ClaimsProcessor> processors = config.getClaimsProcessor();
             if (processors != null) {
