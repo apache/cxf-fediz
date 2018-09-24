@@ -220,7 +220,8 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         
         testForMandatoryClaims(config.getProtocol().getRoleURI(),
                 ((FederationProtocol)config.getProtocol()).getClaimTypesRequested(),
-                claims);
+                claims,
+                validatorResponse.getRoles() != null && !validatorResponse.getRoles().isEmpty());
 
         List<ClaimsProcessor> processors = config.getClaimsProcessor();
         if (processors != null) {
@@ -231,6 +232,9 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         }
 
         List<String> roles = getRoles(claims, config.getProtocol().getRoleURI());
+        if (roles == null || roles.isEmpty()) {
+            roles = validatorResponse.getRoles();
+        }
         
         FedizResponse fedResponse = new FedizResponse(validatorResponse.getUsername(), validatorResponse.getIssuer(),
                                                       roles, claims,
@@ -754,7 +758,8 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
 
     private void testForMandatoryClaims(String roleURI,
                                         List<org.apache.cxf.fediz.core.config.Claim> requestedClaims,
-                                        List<org.apache.cxf.fediz.core.Claim> receivedClaims
+                                        List<org.apache.cxf.fediz.core.Claim> receivedClaims,
+                                        boolean foundRoles
     ) throws ProcessingException {
         if (requestedClaims != null) {
             for (org.apache.cxf.fediz.core.config.Claim requestedClaim : requestedClaims) {
@@ -765,6 +770,11 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                             found = true;
                             break;
                         }
+                    }
+                    if (!found && foundRoles && roleURI != null && roleURI.equals(requestedClaim.getType())) {
+                        // Maybe the requested claim is a role, which may have been already been removed
+                        // from the claims collection
+                        found = true;
                     }
                     if (!found) {
                         LOG.warn("Mandatory claim {} not found in token", requestedClaim.getType());
