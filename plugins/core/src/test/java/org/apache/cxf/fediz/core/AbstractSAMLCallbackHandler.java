@@ -94,6 +94,7 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
     protected String attributeNameFormat = "urn:oasis:names:tc:SAML:2.0:attrname-format:unspecified";
     protected boolean useNameFormatAsNamespace;
     private boolean addGivenName;
+    private boolean addRoleValue = true;
 
     public void setSubjectConfirmationData(SubjectConfirmationDataBean subjectConfirmationData) {
         this.subjectConfirmationData = subjectConfirmationData;
@@ -273,8 +274,10 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
                     attributeBean.setNameFormat(this.getAttributeNameFormat());
                 }
                 if (this.multiValueType.equals(MultiValue.MULTI_VALUE)) {
-                    for (String role : roles) {
-                        attributeBean.addAttributeValue(role);
+                    if (addRoleValue) {
+                        for (String role : roles) {
+                            attributeBean.addAttributeValue(role);
+                        }
                     }
                 } else {
                     StringBuilder sb = new StringBuilder();
@@ -315,7 +318,10 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
                         attributeBean.setQualifiedName(this.roleAttributeName);
                         attributeBean.setNameFormat(this.getAttributeNameFormat());
                     }
-                    attributeBean.addAttributeValue(role);
+                    
+                    if (addRoleValue) {
+                        attributeBean.addAttributeValue(role);
+                    }
                     attributeList.add(attributeBean);
                 }
             }
@@ -459,5 +465,13 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
 
     public void setAddGivenName(boolean addGivenName) {
         this.addGivenName = addGivenName;
+    }
+
+    public boolean isAddRoleValue() {
+        return addRoleValue;
+    }
+
+    public void setAddRoleValue(boolean addRoleValue) {
+        this.addRoleValue = addRoleValue;
     }
 }
