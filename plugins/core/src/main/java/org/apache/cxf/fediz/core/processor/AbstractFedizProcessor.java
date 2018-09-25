@@ -129,7 +129,7 @@ public abstract class AbstractFedizProcessor implements FedizProcessor {
                     @SuppressWarnings("unchecked")
                     List<String> values = (List<String>) oValue;
                     roles = Collections.unmodifiableList(values);
-                } else if (!((oValue instanceof String) || (oValue instanceof List<?>))) {
+                } else if (!((oValue instanceof String) || (oValue instanceof List<?>) || (oValue == null))) {
                     LOG.error("Unsupported value type of Claim value");
                     throw new IllegalStateException("Unsupported value type of Claim value");
                 }
