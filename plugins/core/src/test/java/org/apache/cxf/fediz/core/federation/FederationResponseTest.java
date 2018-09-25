@@ -761,6 +761,43 @@ public class FederationResponseTest {
         Assert.assertEquals(1, wfRes.getRoles().size());
         Assert.assertEquals("", wfRes.getRoles().get(0));
     }
+    
+    @org.junit.Test
+    public void validateSAML2TokenNoRoleValue() throws Exception {
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_RSTR_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        callbackHandler.setAddRoleValue(false);
+        ConditionsBean cp = new ConditionsBean();
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_AUDIENCE);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
+        callbackHandler.setConditions(cp);
+
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(callbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
+        String rstr = createSamlToken(assertion, "mystskey", true);
+
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setAction(FederationConstants.ACTION_SIGNIN);
+        wfReq.setResponseToken(rstr);
+
+        configurator = null;
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
+        Protocol protocol = config.getProtocol();
+        protocol.setRoleDelimiter(",");
+
+        FedizProcessor wfProc = new FederationProcessorImpl();
+        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
+
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals(null, wfRes.getRoles());
+    }
 
     /**
      * Validate SAML 2 token which includes the role attribute with 2 values

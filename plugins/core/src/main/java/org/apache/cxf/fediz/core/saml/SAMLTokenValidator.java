@@ -265,7 +265,7 @@ public class SAMLTokenValidator implements TokenValidator {
                         } else {
                             roles = parseRoles((String)oValue, delim);
                         }
-                    } else if ((oValue instanceof List<?>) && !((List<?>)oValue).isEmpty()) {
+                    } else if (oValue instanceof List<?>) {
                         @SuppressWarnings("unchecked")
                         List<String> values = (List<String>)oValue;
                         roles = Collections.unmodifiableList(values);
