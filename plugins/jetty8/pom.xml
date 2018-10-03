@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.apache.cxf.fediz</groupId>
         <artifactId>plugin</artifactId>
-        <version>1.4.5</version>
+        <version>1.4.5-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>fediz-jetty8</artifactId>
