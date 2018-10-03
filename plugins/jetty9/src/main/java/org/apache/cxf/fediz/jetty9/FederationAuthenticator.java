@@ -227,7 +227,8 @@ public class FederationAuthenticator extends LoginAuthenticator {
                         && HttpMethod.POST.asString().equals(request.getMethod())) {
                         Request baseRequest = (Request)req;
                             //(req instanceof Request)?(Request)req:HttpConnection.getCurrentConnection().getRequest();
-                        baseRequest.extractParameters();
+                        // Load the parameters (previously extractParameters)
+                        baseRequest.getParameterMap();
                         session.setAttribute(J_POST, new MultiMap<String>(baseRequest.getQueryParameters()));
                     }
                 }
