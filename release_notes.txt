@@ -1,4 +1,4 @@
-Apache CXF Fediz 1.4.4 Release Notes
+Apache CXF Fediz 1.4.5 Release Notes
 ------------------------------------
 
 1. Overview
@@ -28,7 +28,7 @@ client authentication
 Before installing Apache CXF Fediz, make sure the following products,
 with the specified versions, are installed on your system:
 
-    * Java 6 or 7 Development Kit
+    * Java 7 Development Kit or higher
     * Apache Maven 3.x to build the samples
 
 3. Installation Procedures
@@ -64,6 +64,28 @@ N.A.
 
 
 8. Specific issues, features, and improvements fixed in this version
+
+Release Notes - CXF-Fediz - Version 1.4.5
+
+Bug
+
+    [FEDIZ-220] - http 400 when logout with redirect to constraint
+    [FEDIZ-224] - Saml SSO spring plugin does not work
+    [FEDIZ-226] - authnRequestBuilder cofiguration property for samlProtocolType ignored
+
+New Feature
+
+    [FEDIZ-158] - Support Fediz OIDC Login for Trusted IDP
+    [FEDIZ-223] - Support custom claim handler within Fediz Plugin
+
+Task
+
+    [FEDIZ-221] - Support SAML SSO Logout in the IdP
+    [FEDIZ-222] - Support SAML SSO Logout in the RP
+    [FEDIZ-225] - Add support to specify the AssertionConsumerService URL via the "reply" configuration parameter for SAML SSO
+    [FEDIZ-227] - Support SAML SSO in the Jetty plugin
+    [FEDIZ-228] - Add the "jti" claim in FedizSubjectCreator
+    [FEDIZ-229] - Provide a way to map JWT claims into SAML attributes when converting a third party JWT token into a SAML Token
 
 Release Notes - CXF-Fediz - Version 1.4.4
 
