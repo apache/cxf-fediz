@@ -35,7 +35,7 @@ import org.apache.catalina.startup.Tomcat;
 import org.apache.commons.io.IOUtils;
 import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.systests.common.HTTPTestUtils;
-import org.apache.cxf.fediz.tomcat8.FederationAuthenticator;
+import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
 import org.apache.directory.server.annotations.CreateLdapServer;
 import org.apache.directory.server.annotations.CreateTransport;
 import org.apache.directory.server.core.annotations.ApplyLdifFiles;

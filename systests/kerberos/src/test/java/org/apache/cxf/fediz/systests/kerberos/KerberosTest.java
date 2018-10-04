@@ -40,7 +40,7 @@ import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.cxf.fediz.core.ClaimTypes;
-import org.apache.cxf.fediz.tomcat8.FederationAuthenticator;
+import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
 import org.apache.kerby.kerberos.kerb.server.SimpleKdcServer;
 import org.apache.wss4j.dom.engine.WSSConfig;
 import org.ietf.jgss.GSSContext;

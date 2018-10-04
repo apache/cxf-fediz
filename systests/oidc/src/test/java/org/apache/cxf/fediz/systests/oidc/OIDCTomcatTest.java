@@ -32,7 +32,7 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.commons.io.IOUtils;
-import org.apache.cxf.fediz.tomcat8.FederationAuthenticator;
+import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;

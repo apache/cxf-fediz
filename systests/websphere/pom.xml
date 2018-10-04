@@ -40,13 +40,13 @@
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-core</artifactId>
-            <version>${tomcat8.version}</version>
+            <version>${tomcat.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-jasper</artifactId>
-            <version>${tomcat8.version}</version>
+            <version>${tomcat.version}</version>
             <scope>test</scope>
         </dependency>        
         <dependency>
@@ -57,7 +57,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.cxf.fediz</groupId>
-            <artifactId>fediz-tomcat8</artifactId>
+            <artifactId>fediz-tomcat</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>

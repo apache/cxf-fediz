@@ -38,8 +38,8 @@ Source Directory structure
 
  + plugins               contains the sources of the Federation plugin
       + core             the core module contains the majority of functionality which is Servlet container agnostic
-      + tomcat8          the Tomcat 8 module is the bridge of the core to the
-                           Tomcat 8 specific security engine (container managed)
+      + tomcat           the Tomcat module is the bridge of the core to the
+                         Tomcat 8/9 specific security engine (container managed)
       + jetty9           the Jetty 9 module is the bridge of the core to the
                            Jetty 9 specific security engine (container managed)
       + cxf              the CXF module is the bridge of the core to the

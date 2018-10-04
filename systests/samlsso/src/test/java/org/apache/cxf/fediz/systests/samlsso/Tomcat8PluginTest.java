@@ -37,7 +37,7 @@ import org.apache.catalina.startup.Tomcat;
 import org.apache.commons.io.IOUtils;
 import org.apache.cxf.common.util.Base64Utility;
 import org.apache.cxf.fediz.systests.common.AbstractTests;
-import org.apache.cxf.fediz.tomcat8.FederationAuthenticator;
+import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
 import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
