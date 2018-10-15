@@ -65,8 +65,8 @@
         <openjpa.version>2.4.2</openjpa.version>
         <servlet.version>2.5</servlet.version>
         <slf4j.version>1.7.25</slf4j.version>
-        <spring.version>4.3.18.RELEASE</spring.version>
-        <spring.security.version>4.2.7.RELEASE</spring.security.version>
+        <spring.version>4.3.20.RELEASE</spring.version>
+        <spring.security.version>4.2.8.RELEASE</spring.security.version>
         <tomcat7.version>7.0.91</tomcat7.version>
         <tomcat8.version>8.5.34</tomcat8.version>
         <woodstox.core.version>4.4.1</woodstox.core.version>
