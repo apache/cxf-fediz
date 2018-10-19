@@ -135,7 +135,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             el = DOMUtils.getFirstElement(el);
         }
         if (el == null || !"RequestSecurityTokenResponse".equals(el.getLocalName())) {
-            LOG.warn("Unexpected root element of wresult: '" + el.getLocalName() + "'");
+            LOG.warn("Unexpected root element of wresult: '" + (el == null ? "null" : el.getLocalName()) + "'");
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
         el = DOMUtils.getFirstElement(el);

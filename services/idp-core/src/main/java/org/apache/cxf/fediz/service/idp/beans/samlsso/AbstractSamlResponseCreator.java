@@ -80,15 +80,13 @@ abstract class AbstractSamlResponseCreator {
             return;
         }
         Crypto issuerCrypto = CertsUtils.getCryptoFromCertificate(idp.getCertificate());
-        String issuerKeyName = issuerCrypto.getDefaultX509Identifier();
-        String issuerKeyPassword = idp.getCertificatePassword();
 
-        Signature signature = OpenSAMLUtil.buildSignature();
-        signature.setCanonicalizationAlgorithm(SignatureConstants.ALGO_ID_C14N_EXCL_OMIT_COMMENTS);
-        CryptoType cryptoType = new CryptoType(CryptoType.TYPE.ALIAS);
-        cryptoType.setAlias(issuerKeyName);
         X509Certificate[] issuerCerts = null;
+        String issuerKeyName = null;
         if (issuerCrypto != null) {
+            CryptoType cryptoType = new CryptoType(CryptoType.TYPE.ALIAS);
+            issuerKeyName = issuerCrypto.getDefaultX509Identifier();
+            cryptoType.setAlias(issuerKeyName);
             issuerCerts = issuerCrypto.getX509Certificates(cryptoType);
         }
         if (issuerCerts == null || issuerCerts.length == 0) {
@@ -108,6 +106,7 @@ abstract class AbstractSamlResponseCreator {
         LOG.debug("Using Signature algorithm {}", sigAlgo);
         PrivateKey privateKey;
         try {
+            String issuerKeyPassword = idp.getCertificatePassword();
             privateKey = issuerCrypto.getPrivateKey(issuerKeyName, issuerKeyPassword);
         } catch (Exception ex) {
             throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, ex);
@@ -117,6 +116,8 @@ abstract class AbstractSamlResponseCreator {
                 new Object[] {"No private key was found using issuer name: " + issuerKeyName});
         }
 
+        Signature signature = OpenSAMLUtil.buildSignature();
+        signature.setCanonicalizationAlgorithm(SignatureConstants.ALGO_ID_C14N_EXCL_OMIT_COMMENTS);
         signature.setSignatureAlgorithm(sigAlgo);
 
         BasicX509Credential signingCredential =
