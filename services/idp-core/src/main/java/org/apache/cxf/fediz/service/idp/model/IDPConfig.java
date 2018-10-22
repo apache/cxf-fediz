@@ -23,7 +23,6 @@ import java.util.Map;
 
 import org.apache.cxf.fediz.service.idp.domain.Application;
 import org.apache.cxf.fediz.service.idp.domain.Idp;
-import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 
 public class IDPConfig extends Idp {
 
@@ -34,7 +33,7 @@ public class IDPConfig extends Idp {
     }
 
     public void setTrustedIdps(Map<String, TrustedIDPConfig> trustedIdps) {
-        this.trustedIdpList = new ArrayList<TrustedIdp>(trustedIdps.values());
+        this.trustedIdpList = new ArrayList<>(trustedIdps.values());
     }
 
     @Deprecated

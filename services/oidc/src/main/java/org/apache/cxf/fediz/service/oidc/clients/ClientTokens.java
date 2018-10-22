@@ -27,8 +27,8 @@ import org.apache.cxf.rs.security.oauth2.tokens.refresh.RefreshToken;
 
 public class ClientTokens {
     private Client client;
-    private List<ServerAccessToken> accessTokens = new LinkedList<ServerAccessToken>();
-    private List<RefreshToken> refreshTokens = new LinkedList<RefreshToken>();
+    private List<ServerAccessToken> accessTokens = new LinkedList<>();
+    private List<RefreshToken> refreshTokens = new LinkedList<>();
     public ClientTokens(Client c,
                               List<ServerAccessToken> accessTokens,
                               List<RefreshToken> refreshTokens) {

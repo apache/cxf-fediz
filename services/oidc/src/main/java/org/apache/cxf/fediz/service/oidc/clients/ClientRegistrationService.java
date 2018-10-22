@@ -313,7 +313,7 @@ public class ClientRegistrationService {
             // Client Redirect URIs
             if (!StringUtils.isEmpty(redirectURI)) {
                 String[] allUris = redirectURI.trim().split(" ");
-                List<String> redirectUris = new LinkedList<String>();
+                List<String> redirectUris = new LinkedList<>();
                 for (String uri : allUris) {
                     if (!StringUtils.isEmpty(uri)) {
                         if (!isValidURI(uri, false)) {
@@ -341,7 +341,7 @@ public class ClientRegistrationService {
             // Client Audience URIs
             if (!StringUtils.isEmpty(audience)) {
                 String[] auds = audience.trim().split(" ");
-                List<String> registeredAuds = new LinkedList<String>();
+                List<String> registeredAuds = new LinkedList<>();
                 for (String aud : auds) {
                     if (!StringUtils.isEmpty(aud)) {
                         if (!isValidURI(aud, true)) {
@@ -438,7 +438,7 @@ public class ClientRegistrationService {
             clientNames.put(userName, names);
         } else if (names.contains(newClient.getApplicationName())) {
             String newName = newClient.getApplicationName();
-            SortedSet<Integer> numbers = new TreeSet<Integer>();
+            SortedSet<Integer> numbers = new TreeSet<>();
             for (String name : names) {
                 if (name.startsWith(newName) && !name.equals(newName)) {
                     try {
@@ -467,7 +467,7 @@ public class ClientRegistrationService {
     protected Collection<Client> getClientRegistrations(String userName) {
         Collection<Client> userClientRegs = registrations.get(userName);
         if (userClientRegs == null) {
-            userClientRegs = new TreeSet<Client>(new ClientComparator());
+            userClientRegs = new TreeSet<>(new ClientComparator());
             registrations.put(userName, userClientRegs);
         }
         return userClientRegs;

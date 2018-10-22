@@ -101,14 +101,14 @@ public abstract class AbstractSTSTest {
             PasswordString passwordString = new PasswordString();
             passwordString.setValue(password);
             passwordString.setType(WSConstants.PASSWORD_TEXT);
-            JAXBElement<PasswordString> passwordType = new JAXBElement<PasswordString>(
+            JAXBElement<PasswordString> passwordType = new JAXBElement<>(
                 QNameConstants.PASSWORD,
                 PasswordString.class,
                 passwordString);
             usernameToken.getAny().add(passwordType);
         }
 
-        JAXBElement<UsernameTokenType> tokenType = new JAXBElement<UsernameTokenType>(
+        JAXBElement<UsernameTokenType> tokenType = new JAXBElement<>(
             QNameConstants.USERNAME_TOKEN,
             UsernameTokenType.class,
             usernameToken);

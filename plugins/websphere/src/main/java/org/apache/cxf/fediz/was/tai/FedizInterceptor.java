@@ -245,7 +245,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
             }
 
             // Handle Signin requests
-            SigninHandler<TAIResult> signinHandler = new SigninHandler<TAIResult>(fedCtx);
+            SigninHandler<TAIResult> signinHandler = new SigninHandler<>(fedCtx);
             if (signinHandler.canHandleRequest(req)) {
                 LOG.debug("SignIn request detected");
                 return true;
@@ -341,7 +341,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
             }
 
             // Handle Signin requests
-            SigninHandler<TAIResult> signinHandler = new SigninHandler<TAIResult>(fedCtx) {
+            SigninHandler<TAIResult> signinHandler = new SigninHandler<>(fedCtx) {
 
                 @Override
                 protected TAIResult createPrincipal(HttpServletRequest request, HttpServletResponse response,

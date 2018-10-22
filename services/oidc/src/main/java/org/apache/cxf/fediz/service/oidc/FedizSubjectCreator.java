@@ -149,7 +149,7 @@ public class FedizSubjectCreator implements SubjectCreator {
             idToken.setExpiryTime(currentTimeInSecs + DEFAULT_TIME_TO_LIVE);
         }
 
-        List<String> requestedClaimsList = new ArrayList<String>();
+        List<String> requestedClaimsList = new ArrayList<>();
         // Derive claims from scope
         String requestedScope = params.getFirst(OAuthConstants.SCOPE);
         if (requestedScope != null && !requestedScope.isEmpty()) {

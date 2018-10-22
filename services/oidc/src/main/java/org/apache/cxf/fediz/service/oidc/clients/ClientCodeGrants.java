@@ -26,7 +26,7 @@ import org.apache.cxf.rs.security.oauth2.grants.code.ServerAuthorizationCodeGran
 
 public class ClientCodeGrants {
     private Client client;
-    private List<ServerAuthorizationCodeGrant> codeGrants = new LinkedList<ServerAuthorizationCodeGrant>();
+    private List<ServerAuthorizationCodeGrant> codeGrants = new LinkedList<>();
     public ClientCodeGrants(Client c, List<ServerAuthorizationCodeGrant> codeGrants) {
         this.client = c;
         this.codeGrants = codeGrants;

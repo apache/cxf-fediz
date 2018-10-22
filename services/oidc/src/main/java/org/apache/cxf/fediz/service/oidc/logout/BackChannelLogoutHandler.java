@@ -59,7 +59,7 @@ public class BackChannelLogoutHandler extends JoseJwtProducer {
         // in cases when ATs have expired or been revoked or Implicit id_token flow is used.
         // Most likely a 'visited sites' cookie as suggested by the spec will need to be used.
         List<ServerAccessToken> accessTokens = dataProvider.getAccessTokens(null,  subject);
-        Set<String> processedClients = new HashSet<String>();
+        Set<String> processedClients = new HashSet<>();
         for (ServerAccessToken at : accessTokens) {
             Client atClient = at.getClient();
             if (client.getClientId().equals(atClient.getClientId())
