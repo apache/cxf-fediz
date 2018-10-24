@@ -188,7 +188,7 @@ public class ServiceMetadataWriter {
                     "No signing certs were found to insert into the metadata using name: "
                         + keyAlias);
             }
-            byte data[] = cert.getEncoded();
+            byte[] data = cert.getEncoded();
             String encodedCertificate = Base64.getEncoder().encodeToString(data);
             writer.writeCharacters(encodedCertificate);
 
