@@ -82,7 +82,7 @@ public class ClientRegistrationService {
     private Map<String, Set<String>> clientNames = new HashMap<>();
     private OAuthDataProvider dataProvider;
     private ClientRegistrationProvider clientProvider;
-    private Map<String, String> homeRealms = new LinkedHashMap<String, String>();
+    private Map<String, String> homeRealms = new LinkedHashMap<>();
     private boolean protectIdTokenWithClientSecret;
     private Map<String, String> clientScopes;
 
