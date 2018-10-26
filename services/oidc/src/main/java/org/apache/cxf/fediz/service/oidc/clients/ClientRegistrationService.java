@@ -180,10 +180,10 @@ public class ClientRegistrationService {
         Comparator<ServerAccessToken> tokenComp = new TokenComparator();
         UserSubject subject = new OidcUserSubject(getUserName());
         List<ServerAccessToken> accessTokens =
-            new ArrayList<ServerAccessToken>(dataProvider.getAccessTokens(c, subject));
+            new ArrayList<>(dataProvider.getAccessTokens(c, subject));
         Collections.sort(accessTokens, tokenComp);
         List<RefreshToken> refreshTokens =
-                new ArrayList<RefreshToken>(dataProvider.getRefreshTokens(c, subject));
+                new ArrayList<>(dataProvider.getRefreshTokens(c, subject));
         Collections.sort(refreshTokens, tokenComp);
         return new ClientTokens(c, accessTokens, refreshTokens);
     }

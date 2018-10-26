@@ -28,7 +28,7 @@ import org.w3c.dom.Element;
 public final class SecurityTokenThreadLocal {
 
     private static final ThreadLocal<Element> TLS =
-        new ThreadLocal<Element>();
+        new ThreadLocal<>();
 
     private SecurityTokenThreadLocal() {
     }
