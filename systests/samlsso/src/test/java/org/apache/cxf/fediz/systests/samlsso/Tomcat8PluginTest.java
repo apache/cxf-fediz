@@ -21,11 +21,10 @@ package org.apache.cxf.fediz.systests.samlsso;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 
 import javax.servlet.ServletException;
 
@@ -34,7 +33,6 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
-import org.apache.commons.io.IOUtils;
 import org.apache.cxf.common.util.Base64Utility;
 import org.apache.cxf.fediz.systests.common.AbstractTests;
 import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
@@ -125,16 +123,12 @@ public class Tomcat8PluginTest extends AbstractTests {
             // Substitute the IDP port. Necessary if running the test in eclipse where port filtering doesn't seem
             // to work
             File f = new File(currentDir + "/src/test/resources/fediz_config.xml");
-            FileInputStream inputStream = new FileInputStream(f);
-            String content = IOUtils.toString(inputStream, "UTF-8");
-            inputStream.close();
+            String content = new String(Files.readAllBytes(f.toPath()), "UTF-8");
             if (content.contains("idp.https.port")) {
                 content = content.replaceAll("\\$\\{idp.https.port\\}", "" + idpHttpsPort);
 
                 File f2 = new File(baseDir + "/test-classes/fediz_config.xml");
-                try (FileOutputStream outputStream = new FileOutputStream(f2)) {
-                    IOUtils.write(content, outputStream, "UTF-8");
-                }
+                Files.write(f2.toPath(), content.getBytes());
             }
 
             FederationAuthenticator fa = new FederationAuthenticator();

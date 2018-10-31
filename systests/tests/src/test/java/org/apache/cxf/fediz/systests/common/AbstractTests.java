@@ -25,6 +25,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -43,7 +44,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.cxf.common.util.Base64Utility;
 import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.core.FederationConstants;
@@ -759,8 +759,9 @@ public abstract class AbstractTests {
         // Parse the form to get the token (wresult)
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
 
-        String entity =
-            IOUtils.toString(this.getClass().getClassLoader().getResource("entity.xml").openStream(), "UTF-8");
+        Scanner s = 
+            new Scanner(this.getClass().getClassLoader().getResource("entity.xml").openStream()).useDelimiter("\\A");
+        String entity = s.next();
         String reference = "&m;";
 
         for (DomElement result : results) {
@@ -832,8 +833,9 @@ public abstract class AbstractTests {
         // Parse the form to get the token (wresult)
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
 
-        String entity =
-            IOUtils.toString(this.getClass().getClassLoader().getResource("entity2.xml").openStream(), "UTF-8");
+        Scanner s = 
+            new Scanner(this.getClass().getClassLoader().getResource("entity2.xml").openStream()).useDelimiter("\\A");
+        String entity = s.next();
         String reference = "&m;";
 
         for (DomElement result : results) {

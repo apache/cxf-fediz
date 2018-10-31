@@ -21,16 +21,14 @@ package org.apache.cxf.fediz.systests.oidc;
 
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import javax.servlet.ServletException;
 
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
-import org.apache.commons.io.IOUtils;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -104,16 +102,12 @@ public class OIDCSpringTest extends AbstractOIDCTest {
             // Substitute the IDP port. Necessary if running the test in eclipse where port filtering doesn't seem
             // to work
             File f = new File(currentDir + "/src/test/resources/fediz_config_spring.xml");
-            FileInputStream inputStream = new FileInputStream(f);
-            String content = IOUtils.toString(inputStream, "UTF-8");
-            inputStream.close();
+            String content = new String(Files.readAllBytes(f.toPath()), "UTF-8");
             if (content.contains("idp.https.port")) {
                 content = content.replaceAll("\\$\\{idp.https.port\\}", "" + idpHttpsPort);
 
                 File f2 = new File(baseDir + "/test-classes/fediz_config_spring.xml");
-                try (FileOutputStream outputStream = new FileOutputStream(f2)) {
-                    IOUtils.write(content, outputStream, "UTF-8");
-                }
+                Files.write(f2.toPath(), content.getBytes());
             }
         }
 

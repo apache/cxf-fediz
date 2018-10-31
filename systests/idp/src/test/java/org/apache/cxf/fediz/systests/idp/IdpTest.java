@@ -21,8 +21,8 @@ package org.apache.cxf.fediz.systests.idp;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URLEncoder;
+import java.nio.file.Files;
 import java.util.Base64;
 
 import javax.servlet.ServletException;
@@ -45,7 +45,6 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
-import org.apache.commons.io.IOUtils;
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.http.auth.AuthScope;
@@ -403,9 +402,9 @@ public class IdpTest {
         String wreply = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
         url += "&wreply=" + wreply;
 
-        InputStream is = this.getClass().getClassLoader().getResource("entity_wreq.xml").openStream();
-        String entity = IOUtils.toString(is, "UTF-8");
-        is.close();
+        String currentDir = new File(".").getCanonicalPath();
+        File f = new File(currentDir + "/src/test/resources/entity_wreq.xml");
+        String entity = new String(Files.readAllBytes(f.toPath()), "UTF-8");
         String validWreq =
             "<RequestSecurityToken xmlns=\"http://docs.oasis-open.org/ws-sx/ws-trust/200512\">"
             + "<TokenType>&m;http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0</TokenType>"
@@ -443,9 +442,9 @@ public class IdpTest {
         String wreply = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
         url += "&wreply=" + wreply;
 
-        InputStream is = this.getClass().getClassLoader().getResource("entity_wreq2.xml").openStream();
-        String entity = IOUtils.toString(is, "UTF-8");
-        is.close();
+        String currentDir = new File(".").getCanonicalPath();
+        File f = new File(currentDir + "/src/test/resources/entity_wreq2.xml");
+        String entity = new String(Files.readAllBytes(f.toPath()), "UTF-8");
         String validWreq =
             "<RequestSecurityToken xmlns=\"http://docs.oasis-open.org/ws-sx/ws-trust/200512\">"
             + "<TokenType>&m;http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0</TokenType>"

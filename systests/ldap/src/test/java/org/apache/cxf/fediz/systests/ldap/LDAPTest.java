@@ -21,9 +21,8 @@ package org.apache.cxf.fediz.systests.ldap;
 
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import javax.servlet.ServletException;
 
@@ -32,7 +31,6 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
-import org.apache.commons.io.IOUtils;
 import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.systests.common.HTTPTestUtils;
 import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
@@ -118,28 +116,19 @@ public class LDAPTest extends AbstractLdapTestUnit {
             // Read in ldap.xml and substitute in the correct port
             File f = new File(basedir + "/src/test/resources/sts/ldap.xml");
 
-            FileInputStream inputStream = new FileInputStream(f);
-            String content = IOUtils.toString(inputStream, "UTF-8");
-            inputStream.close();
+            String content = new String(Files.readAllBytes(f.toPath()), "UTF-8");
             content = content.replaceAll("portno", "" + super.getLdapServer().getPort());
 
             File f2 = new File(basedir + "/target/tomcat/idp/webapps/fediz-idp-sts/WEB-INF/endpoints/ldap.xml");
-            try (FileOutputStream outputStream = new FileOutputStream(f2)) {
-                IOUtils.write(content, outputStream, "UTF-8");
-            }
+            Files.write(f2.toPath(), content.getBytes());
 
             // Read in ldap.jaas and substitute in the correct port
             f = new File(basedir + "/src/test/resources/ldap.jaas");
-
-            inputStream = new FileInputStream(f);
-            content = IOUtils.toString(inputStream, "UTF-8");
-            inputStream.close();
+            content = new String(Files.readAllBytes(f.toPath()), "UTF-8");
             content = content.replaceAll("portno", "" + super.getLdapServer().getPort());
 
             f2 = new File(basedir + "/target/test-classes/ldap.jaas");
-            try (FileOutputStream outputStream = new FileOutputStream(f2)) {
-                IOUtils.write(content, outputStream, "UTF-8");
-            }
+            Files.write(f2.toPath(), content.getBytes());
 
             portUpdated = true;
         }
