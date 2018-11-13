@@ -132,20 +132,24 @@ public class FederationAuthenticationFilter extends AbstractAuthenticationProces
 
     private RequestState verifySavedState(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
+        boolean enforceValidState =
+                federationConfig == null || federationConfig.getFedizContext().isRequestStateValidation();
 
-        if (session == null) {
+        if (session == null && enforceValidState) {
             logger.warn("The received state does not match the state saved in the context");
             throw new BadCredentialsException("The received state does not match the state saved in the context");
-        }
+        } else if (session != null) {
+            RequestState savedRequestState = (RequestState) session.getAttribute(SAVED_CONTEXT);
+            session.removeAttribute(SAVED_CONTEXT);
+            String state = getState(request);
 
-        RequestState savedRequestState = (RequestState) session.getAttribute(SAVED_CONTEXT);
-        String state = getState(request);
-        if (savedRequestState == null || !savedRequestState.getState().equals(state)) {
-            logger.warn("The received state does not match the state saved in the context");
-            throw new BadCredentialsException("The received state does not match the state saved in the context");
+            if (enforceValidState && (savedRequestState == null || !savedRequestState.getState().equals(state))) {
+                logger.warn("The received state does not match the state saved in the context");
+                throw new BadCredentialsException("The received state does not match the state saved in the context");
+            }
+            return savedRequestState;
         }
-        session.removeAttribute(SAVED_CONTEXT);
-        return savedRequestState;
+        return null;
     }
 
     /**

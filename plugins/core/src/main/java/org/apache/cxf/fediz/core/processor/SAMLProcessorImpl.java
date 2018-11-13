@@ -106,7 +106,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             return processSignOutResponse(request, config);
         }
 
-        if (request.getState() == null) {
+        if (request.getState() == null && config.isRequestStateValidation()) {
             LOG.error("Missing RelayState parameter");
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
@@ -122,7 +122,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
     private RequestState processRelayState(
         String relayState, RequestState requestState
     ) throws ProcessingException {
-        if (relayState.getBytes().length <= 0 || relayState.getBytes().length > 80) {
+        if (relayState != null && (relayState.getBytes().length <= 0 || relayState.getBytes().length > 80)) {
             LOG.error("Invalid RelayState");
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
@@ -130,7 +130,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
     }
 
     protected FedizResponse processSignInRequest(FedizRequest request, FedizContext config) throws ProcessingException {
-        
+
         SAMLProtocol protocol = (SAMLProtocol)config.getProtocol();
         RequestState requestState =
             processRelayState(request.getState(), request.getRequestState());
@@ -242,7 +242,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
         }
 
         List<String> roles = getRoles(claims, config.getProtocol().getRoleURI());
-        
+
         FedizResponse fedResponse = new FedizResponse(
                 validatorResponse.getUsername(), validatorResponse.getIssuer(),
                 roles, claims,
@@ -302,7 +302,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
 
         // Validate the Response
         validateSamlResponseProtocol(logoutResponse, config);
-        
+
         Date issueInstant = logoutResponse.getIssueInstant().toDate();
         // Enforce that the LogoutResponse is signed - we don't support a separate signature for now
         if (!logoutResponse.isSigned()) {

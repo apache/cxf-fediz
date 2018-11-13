@@ -421,6 +421,7 @@ public class FedizConfigurationTest {
 
         Assert.assertTrue(config.getMaximumClockSkew().intValue() == 5);
         Assert.assertFalse(config.isTokenExpirationValidation());
+        Assert.assertTrue(config.isRequestStateValidation());
     }
     
     @org.junit.Test
