@@ -46,7 +46,7 @@ public class IdpEntity {
 
     // Unique
     // fed:TargetScope
-    @Index
+    @Index(unique = false)
     @NotNull
     private String realm; // wtrealm, whr
 

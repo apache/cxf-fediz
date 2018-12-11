@@ -37,7 +37,7 @@ public class ApplicationEntity {
     @Id
     private int id;
 
-    @Index
+    @Index(unique = false)
     @NotNull
     private String realm;  //wtrealm, whr
 
