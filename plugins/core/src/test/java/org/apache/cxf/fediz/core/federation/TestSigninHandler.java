@@ -51,10 +51,8 @@ public class TestSigninHandler extends SigninHandler<FedizPrincipal> {
         }
 
         // proceed creating the JAAS Subject
-        FedizPrincipal principal = new FederationPrincipalImpl(wfRes.getUsername(), roles,
+        return new FederationPrincipalImpl(wfRes.getUsername(), roles,
                                                                wfRes.getClaims(), wfRes.getToken());
-
-        return principal;
     }
 
     private static class FederationPrincipalImpl implements FedizPrincipal {

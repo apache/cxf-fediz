@@ -56,7 +56,7 @@ public class CommonsURLValidator {
         // Support additional top level domains
         if (additionalTLDs != null && !additionalTLDs.isEmpty()) {
             try {
-                String[] tldsToAddArray = additionalTLDs.toArray(new String[additionalTLDs.size()]);
+                String[] tldsToAddArray = additionalTLDs.toArray(new String[0]);
                 LOG.info("Adding the following additional Top Level Domains: " + Arrays.toString(tldsToAddArray));
                 DomainValidator.updateTLDOverride(ArrayType.GENERIC_PLUS, tldsToAddArray);
             } catch (IllegalStateException ex) {
