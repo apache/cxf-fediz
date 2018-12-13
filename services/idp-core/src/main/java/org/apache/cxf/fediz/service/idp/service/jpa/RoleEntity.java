@@ -34,7 +34,7 @@ public class RoleEntity {
     @Id
     private int id;
 
-    @Index(unique = false)
+    @Index
     private String name;
 
     private String description;

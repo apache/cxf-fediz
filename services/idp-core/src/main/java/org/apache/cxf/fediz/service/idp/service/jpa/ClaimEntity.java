@@ -30,7 +30,7 @@ public class ClaimEntity {
     @Id
     private int id;
 
-    @Index(unique = false)
+    @Index
     @NotNull
     private String claimType;
 

@@ -44,7 +44,7 @@ public class TrustedIdpEntity {
     private int id;
 
     //@Column(name = "REALM", nullable = true, length = FIELD_LENGTH)
-    @Index(unique = false)
+    @Index
     @NotNull
     private String realm;  //wtrealm, whr
 
