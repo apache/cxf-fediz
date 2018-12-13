@@ -29,7 +29,7 @@ public class EntitlementEntity {
     @Id
     private int id;
 
-    @Index
+    @Index(unique = true)
     private String name;
 
     private String description;

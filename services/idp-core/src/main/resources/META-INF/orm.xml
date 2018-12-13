@@ -23,11 +23,6 @@
     version="2.0">
 
     <entity class="org.apache.cxf.fediz.service.idp.service.jpa.ClaimEntity">
-        <table>
-            <unique-constraint>
-                <column-name>claimtype</column-name>
-            </unique-constraint>
-        </table>
         <attributes>
             <id name="id">
                 <generated-value generator="SEQ_Claim"
@@ -39,11 +34,6 @@
     </entity>
 
     <entity class="org.apache.cxf.fediz.service.idp.service.jpa.IdpEntity">
-        <table>
-            <unique-constraint>
-                <column-name>realm</column-name>
-            </unique-constraint>
-        </table>
         <attributes>
             <id name="id">
                 <generated-value generator="SEQ_IDP"
@@ -87,11 +77,6 @@
 
     <entity
         class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationEntity">
-        <table>
-            <unique-constraint>
-                <column-name>realm</column-name>
-            </unique-constraint>
-        </table>
         <attributes>
             <id name="id">
                 <generated-value generator="SEQ_Application"
@@ -104,11 +89,6 @@
 
     <entity
         class="org.apache.cxf.fediz.service.idp.service.jpa.TrustedIdpEntity">
-        <table>
-            <unique-constraint>
-                <column-name>realm</column-name>
-            </unique-constraint>
-        </table>
         <attributes>
             <id name="id">
                 <generated-value generator="SEQ_TrustedIDP"
@@ -137,13 +117,8 @@
             </id>
         </attributes>
     </entity>
-    
+
     <entity class="org.apache.cxf.fediz.service.idp.service.jpa.EntitlementEntity">
-        <table>
-            <unique-constraint>
-                <column-name>name</column-name>
-            </unique-constraint>
-        </table>
         <attributes>
             <id name="id">
                 <generated-value generator="SEQ_Entitlement"
@@ -153,13 +128,8 @@
             </id>
         </attributes>
     </entity>
-    
+
     <entity class="org.apache.cxf.fediz.service.idp.service.jpa.RoleEntity">
-        <table>
-            <unique-constraint>
-                <column-name>name</column-name>
-            </unique-constraint>
-        </table>
         <attributes>
             <id name="id">
                 <generated-value generator="SEQ_ROLE"
@@ -179,5 +149,5 @@
             </many-to-many>
         </attributes>
     </entity>
-    
+
 </entity-mappings>
