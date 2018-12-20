@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.zip.DataFormatException;
 
+import javax.security.auth.DestroyFailedException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.w3c.dom.Document;
@@ -507,6 +508,13 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
         byte[] signBytes = signature.sign();
 
         String encodedSignature = Base64.getEncoder().encodeToString(signBytes);
+        
+        // Clean the private key from memory when we're done
+        try {
+            privateKey.destroy();
+        } catch (DestroyFailedException ex) {
+            // ignore
+        }
 
         return URLEncoder.encode(encodedSignature, "UTF-8");
     }

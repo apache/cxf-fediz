@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.security.auth.DestroyFailedException;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.crypto.dsig.DigestMethod;
 import javax.xml.crypto.dsig.Reference;
@@ -148,6 +149,13 @@ public final class SignatureUtils {
 
         // Marshal, generate, and sign the enveloped signature.
         signature.sign(dsc);
+        
+        // Clean the private key from memory when we're done
+        try {
+            keyEntry.destroy();
+        } catch (DestroyFailedException ex) {
+            // ignore
+        }
 
         // step 4
         // Output the resulting document.
