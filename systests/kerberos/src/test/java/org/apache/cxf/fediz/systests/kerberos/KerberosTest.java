@@ -59,7 +59,7 @@ import org.junit.BeforeClass;
  *
  * This test uses an Apache Kerby instance as the KDC
  */
-public class KerberosTest extends org.junit.Assert {
+public class KerberosTest {
 
     static String idpHttpsPort;
     static String rpHttpsPort;
