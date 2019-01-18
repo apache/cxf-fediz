@@ -66,12 +66,12 @@
         <openjpa.version>2.4.3</openjpa.version>
         <servlet.version>2.5</servlet.version>
         <slf4j.version>1.7.25</slf4j.version>
-        <spring.version>4.3.20.RELEASE</spring.version>
+        <spring.version>4.3.22.RELEASE</spring.version>
         <spring-ldap-core.version>2.3.2.RELEASE</spring-ldap-core.version>
-        <spring.security.version>4.2.9.RELEASE</spring.security.version>
+        <spring.security.version>4.2.11.RELEASE</spring.security.version>
         <spring-webflow.version>2.4.8.RELEASE</spring-webflow.version>
         <tomcat7.version>7.0.92</tomcat7.version>
-        <tomcat8.version>8.5.35</tomcat8.version>
+        <tomcat8.version>8.5.37</tomcat8.version>
         <woodstox.core.version>4.4.1</woodstox.core.version>
         <wss4j.version>2.1.12</wss4j.version>
 
