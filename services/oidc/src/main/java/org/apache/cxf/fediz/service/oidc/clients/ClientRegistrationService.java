@@ -160,6 +160,9 @@ public class ClientRegistrationService {
         checkSecurityContext();
 
         Client c = getRegisteredClient(id);
+        if (c == null) {
+            throwInvalidRegistrationException("The client id is invalid");
+        }
         if (c.isConfidential()) {
             c.setClientSecret(generateClientSecret());
         }
@@ -173,6 +176,9 @@ public class ClientRegistrationService {
     public ClientTokens getClientIssuedTokens(@PathParam("id") String id) {
         checkSecurityContext();
         Client c = getRegisteredClient(id);
+        if (c == null) {
+            throwInvalidRegistrationException("The client id is invalid");
+        }
         return doGetClientIssuedTokens(c);
     }
 
@@ -217,6 +223,9 @@ public class ClientRegistrationService {
         checkSecurityContext();
 
         Client c = getRegisteredClient(clientId);
+        if (c == null) {
+            throwInvalidRegistrationException("The client id is invalid");
+        }
         dataProvider.revokeToken(c, tokenId, tokenType);
         return doGetClientIssuedTokens(c);
     }
@@ -228,6 +237,9 @@ public class ClientRegistrationService {
         checkSecurityContext();
         if (dataProvider instanceof AuthorizationCodeDataProvider) {
             Client c = getRegisteredClient(id);
+            if (c == null) {
+                throwInvalidRegistrationException("The client id is invalid");
+            }
             UserSubject subject = new OidcUserSubject(getUserName());
             List<ServerAuthorizationCodeGrant> codeGrants = new ArrayList<>(
                ((AuthorizationCodeDataProvider)dataProvider).getCodeGrants(c, subject));
