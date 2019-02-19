@@ -58,7 +58,7 @@ public class SigninHandler<T> implements RequestHandler<T> {
             && FederationConstants.ACTION_SIGNIN.equals(request.getParameter(FederationConstants.PARAM_ACTION))) {
             return true;
         } else if (fedizContext.getProtocol() instanceof SAMLProtocol
-            && request.getParameter(SAMLSSOConstants.RELAY_STATE) != null) {
+            && request.getParameter(SAMLSSOConstants.SAML_RESPONSE) != null) {
             return true;
         }
         return false;
@@ -171,12 +171,12 @@ public class SigninHandler<T> implements RequestHandler<T> {
         String context = null;
         if (fedizContext.getProtocol() instanceof FederationProtocol) {
             context = request.getParameter(FederationConstants.PARAM_CONTEXT);
-            if (context == null) {
+            if (fedizContext.isRequestStateValidation() && context == null) {
                 throw new RuntimeException("Missing required parameter 'wctx'");
             }
         } else if (fedizContext.getProtocol() instanceof SAMLProtocol) {
             context = request.getParameter("RelayState");
-            if (context == null) {
+            if (fedizContext.isRequestStateValidation() && context == null) {
                 throw new RuntimeException("Missing required parameter 'RelayState'");
             }
         }

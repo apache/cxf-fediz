@@ -418,4 +418,7 @@ public class FedizContext implements Closeable {
         return config.isAddAuthenticatedRole();
     }
 
+    public boolean isRequestStateValidation() {
+        return config.isRequestStateValidation();
+    }
 }

@@ -106,7 +106,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             return processSignOutResponse(request, config);
         }
 
-        if (request.getState() == null) {
+        if (request.getState() == null && config.isRequestStateValidation()) {
             LOG.error("Missing RelayState parameter");
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
@@ -120,9 +120,10 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
     }
 
     private RequestState processRelayState(
-        String relayState, RequestState requestState
+        String relayState, RequestState requestState, FedizContext config
     ) throws ProcessingException {
-        if (relayState.getBytes().length <= 0 || relayState.getBytes().length > 80) {
+        if (config.isRequestStateValidation() 
+            && (relayState.getBytes().length <= 0 || relayState.getBytes().length > 80)) {
             LOG.error("Invalid RelayState");
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
@@ -133,7 +134,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
         
         SAMLProtocol protocol = (SAMLProtocol)config.getProtocol();
         RequestState requestState =
-            processRelayState(request.getState(), request.getRequestState());
+            processRelayState(request.getState(), request.getRequestState(), config);
 
         InputStream tokenStream = null;
         try {

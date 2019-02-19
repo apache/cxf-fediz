@@ -29,10 +29,20 @@ import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.cxf.fediz.systests.common.AbstractTests;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
+
+import com.gargoylesoftware.htmlunit.CookieManager;
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.DomElement;
+import com.gargoylesoftware.htmlunit.html.DomNodeList;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 
 /**
  * Some tests for SAML SSO with the CXF plugin, invoking on the Fediz IdP configured for SAML SSO.
@@ -126,6 +136,7 @@ public class CXFTest extends AbstractTests {
             File rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(),
                                      "fediz-systests-webapps-cxf");
             server.addWebapp("/fedizhelloworldcxf", rpWebapp.getAbsolutePath());
+            server.addWebapp("/fedizhelloworldcxfnoreqvalidation", rpWebapp.getAbsolutePath());
         }
 
         server.start();
@@ -157,4 +168,48 @@ public class CXFTest extends AbstractTests {
     public void testRPLogout() throws Exception {
         //
     }
+
+    @org.junit.Test
+    public void testNoRequestValidation() throws Exception {
+
+        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworldcxfnoreqvalidation/secure/fedservlet";
+        String user = "alice";
+        String password = "ecila";
+
+        // Get the initial token
+        CookieManager cookieManager = new CookieManager();
+        final WebClient webClient = new WebClient();
+        webClient.setCookieManager(cookieManager);
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        final HtmlPage idpPage = webClient.getPage(url);
+        webClient.getOptions().setJavaScriptEnabled(true);
+        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+
+        // Parse the form to remove the context
+        DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
+
+        for (DomElement result : results) {
+            if (getContextName().equals(result.getAttributeNS(null, "name"))) {
+                result.setAttributeNS(null, "value", "");
+            }
+        }
+
+        // Invoke back on the RP
+
+        final HtmlForm form = idpPage.getFormByName(getLoginFormName());
+        final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
+
+        final HtmlPage rpPage = button.click();
+        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
+                          || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
+
+        webClient.close();
+
+    }
+
 }

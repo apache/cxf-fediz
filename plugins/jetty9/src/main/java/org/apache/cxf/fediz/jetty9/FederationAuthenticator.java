@@ -446,7 +446,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
                 request.getParameter(FederationConstants.PARAM_ACTION))) {
             return true;
         } else if (fedConfig.getProtocol() instanceof SAMLProtocol
-            && request.getParameter(SAMLSSOConstants.RELAY_STATE) != null) {
+            && request.getParameter(SAMLSSOConstants.SAML_RESPONSE) != null) {
             return true;
         }
 

@@ -161,22 +161,24 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
         }
 
         Cookie relayStateCookie = cookies.get(SECURITY_CONTEXT_STATE);
-        if (relayStateCookie == null) {
-            reportError("MISSING_RELAY_COOKIE");
-            return false;
-        }
-        String originalRelayState = responseState.getState();
-        if (!originalRelayState.equals(relayStateCookie.getValue())) {
-            // perhaps the response state should also be removed
-            reportError("INVALID_RELAY_STATE");
-            return false;
-        }
+        if (fedConfig.isRequestStateValidation()) {
+            if (relayStateCookie == null) {
+                reportError("MISSING_RELAY_COOKIE");
+                return false;
+            }
+            String originalRelayState = responseState.getState();
+            if (!originalRelayState.equals(relayStateCookie.getValue())) {
+                // perhaps the response state should also be removed
+                reportError("INVALID_RELAY_STATE");
+                return false;
+            }
 
-        // Check to see if a CSRF-style attack is being mounted
-        String state = getState(fedConfig, params);
-        if (state != null && !state.equals(responseState.getState())) {
-            LOG.error("wctx parameter does not match stored value");
-            throw ExceptionUtils.toForbiddenException(null, null);
+            // Check to see if a CSRF-style attack is being mounted
+            String state = getState(fedConfig, params);
+            if (state != null && !state.equals(responseState.getState())) {
+                LOG.error("wctx parameter does not match stored value");
+                throw ExceptionUtils.toForbiddenException(null, null);
+            }
         }
 
         // Create SecurityContext

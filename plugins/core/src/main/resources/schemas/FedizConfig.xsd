@@ -29,6 +29,7 @@
                 <xs:element ref="logoutURL" minOccurs="0" />
                 <xs:element ref="logoutRedirectTo" minOccurs="0" />
                 <xs:element ref="logoutRedirectToConstraint" minOccurs="0" />
+                <xs:element ref="requestStateValidation" minOccurs="0" />
             </xs:sequence>
             <xs:attribute name="name" use="required" type="xs:string" />
 
@@ -497,5 +498,12 @@
         </xs:attribute>
     </xs:complexType>
 
+    <xs:element name="requestStateValidation" type="xs:boolean" default="true" >
+        <xs:annotation>
+            <xs:documentation>Decision whether the received state must match the
+                state saved in the context.
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
 
 </xs:schema>
