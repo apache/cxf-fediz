@@ -58,6 +58,12 @@
 		delete-cookies="FEDIZ_HOME_REALM,JSESSIONID" 
 		invalidate-session="true" 
 	/>
+
+        <security:headers>
+            <security:content-type-options />
+            <security:frame-options />
+            <security:xss-protection />
+        </security:headers>
     </security:http>
     
     <!-- HTTP/BA entry point for SAML SSO -->
@@ -79,6 +85,12 @@
 		delete-cookies="FEDIZ_HOME_REALM,JSESSIONID" 
 		invalidate-session="true" 
 	/>
+
+        <security:headers>
+            <security:content-type-options />
+            <security:frame-options />
+            <security:xss-protection />
+        </security:headers>
     </security:http>
     
     <bean id="stsUPPortFilter" class="org.apache.cxf.fediz.service.idp.STSPortFilter">

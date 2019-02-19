@@ -52,6 +52,12 @@
 
         <security:custom-filter ref="kerberosAuthenticationProcessingFilter" position="BASIC_AUTH_FILTER" />
         <security:logout delete-cookies="FEDIZ_HOME_REALM" invalidate-session="true" />
+
+        <security:headers>
+            <security:content-type-options />
+            <security:frame-options />
+            <security:xss-protection />
+        </security:headers>
     </security:http>
     
     <security:http pattern="/saml/krb" use-expressions="true" entry-point-ref="kerberosEntryPoint">
@@ -61,6 +67,12 @@
 
         <security:custom-filter ref="kerberosAuthenticationProcessingFilter" position="BASIC_AUTH_FILTER" />
         <security:logout delete-cookies="FEDIZ_HOME_REALM" invalidate-session="true" />
+
+        <security:headers>
+            <security:content-type-options />
+            <security:frame-options />
+            <security:xss-protection />
+        </security:headers>
     </security:http>
     
     <bean id="stsKrbPortFilter" class="org.apache.cxf.fediz.service.idp.STSPortFilter">

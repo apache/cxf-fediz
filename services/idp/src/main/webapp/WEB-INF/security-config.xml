@@ -57,12 +57,25 @@
         <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
         <security:intercept-url pattern="/FederationMetadata/2007-06/FederationMetadata.xml" access="isAnonymous() or isAuthenticated()" />
+
+        <security:headers>
+            <security:content-type-options />
+            <security:frame-options />
+            <security:xss-protection />
+        </security:headers>
+
     </security:http>
     
     <!-- Main entry point for SAML SSO -->
     <security:http pattern="/saml" use-expressions="true" entry-point-ref="fedizEntryPoint">
         <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
+
+        <security:headers>
+            <security:content-type-options />
+            <security:frame-options />
+            <security:xss-protection />
+        </security:headers>
     </security:http>
     
     <security:authentication-manager alias="authenticationManagers">
@@ -76,5 +89,5 @@
 
     <bean id="commonsURLValidator"
           class="org.apache.cxf.fediz.service.idp.beans.CommonsURLValidator" />
-	
+
 </beans>
