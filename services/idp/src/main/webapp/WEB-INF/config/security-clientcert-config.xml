@@ -44,6 +44,12 @@
 
         <security:x509 />
         <security:logout delete-cookies="FEDIZ_HOME_REALM" invalidate-session="true" />
+
+        <security:headers>
+            <security:content-type-options />
+            <security:frame-options />
+            <security:xss-protection />
+        </security:headers>
     </security:http>
     
     <!-- SSL Client Cert entry point for SAML SSO -->
@@ -54,6 +60,12 @@
 
         <security:x509 />
         <security:logout delete-cookies="FEDIZ_HOME_REALM" invalidate-session="true" />
+
+        <security:headers>
+            <security:content-type-options />
+            <security:frame-options />
+            <security:xss-protection />
+        </security:headers>
     </security:http>
 
     <bean id="stsClientCertPortFilter" class="org.apache.cxf.fediz.service.idp.STSPortFilter">

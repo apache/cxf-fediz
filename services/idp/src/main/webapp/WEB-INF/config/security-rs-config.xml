@@ -41,6 +41,12 @@
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
         <security:intercept-url pattern="/services/rs/**" access="isAuthenticated()" />
         <security:http-basic />
+
+        <security:headers>
+            <security:content-type-options />
+            <security:frame-options />
+            <security:xss-protection />
+        </security:headers>
     </security:http>
 
     <bean id="bCryptPasswordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" />
