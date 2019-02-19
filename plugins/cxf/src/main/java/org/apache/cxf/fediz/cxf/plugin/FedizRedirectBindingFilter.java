@@ -357,7 +357,7 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
             && params.getFirst(FederationConstants.PARAM_ACTION) == null) {
             return true;
         } else if (params != null && fedConfig.getProtocol() instanceof SAMLProtocol
-            && params.getFirst(SAMLSSOConstants.RELAY_STATE) == null) {
+            && params.getFirst(SAMLSSOConstants.SAML_RESPONSE) == null) {
             return true;
         }
 
@@ -370,7 +370,7 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
                 params.getFirst(FederationConstants.PARAM_ACTION))) {
             return true;
         } else if (params != null && fedConfig.getProtocol() instanceof SAMLProtocol
-            && params.getFirst(SAMLSSOConstants.RELAY_STATE) != null) {
+            && params.getFirst(SAMLSSOConstants.SAML_RESPONSE) != null) {
             return true;
         }
 
@@ -440,23 +440,25 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
         wfReq.setAction(params.getFirst(FederationConstants.PARAM_ACTION));
         wfReq.setResponseToken(responseToken);
 
-        if (state == null || state.getBytes().length <= 0) {
-            LOG.error("Invalid RelayState/WCTX");
-            throw ExceptionUtils.toBadRequestException(null, null);
-        }
-
-        wfReq.setState(state);
-        wfReq.setRequestState(getStateManager().removeRequestState(state));
-
-        if (wfReq.getRequestState() == null) {
-            LOG.error("Missing Request State");
-            throw ExceptionUtils.toBadRequestException(null, null);
-        }
-
-        if (CookieUtils.isStateExpired(wfReq.getRequestState().getCreatedAt(), false, 0,
-                                       getStateTimeToLive())) {
-            LOG.error("EXPIRED_REQUEST_STATE");
-            throw ExceptionUtils.toBadRequestException(null, null);
+        if (fedConfig.isRequestStateValidation()) {
+            if (state == null || state.getBytes().length <= 0) {
+                LOG.error("Invalid RelayState/WCTX");
+                throw ExceptionUtils.toBadRequestException(null, null);
+            }
+    
+            wfReq.setState(state);
+            wfReq.setRequestState(getStateManager().removeRequestState(state));
+    
+            if (wfReq.getRequestState() == null) {
+                LOG.error("Missing Request State");
+                throw ExceptionUtils.toBadRequestException(null, null);
+            }
+    
+            if (CookieUtils.isStateExpired(wfReq.getRequestState().getCreatedAt(), false, 0,
+                                           getStateTimeToLive())) {
+                LOG.error("EXPIRED_REQUEST_STATE");
+                throw ExceptionUtils.toBadRequestException(null, null);
+            }
         }
 
         HttpServletRequest request = messageContext.getHttpServletRequest();

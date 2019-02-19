@@ -288,6 +288,48 @@ public class SAMLResponseTest {
         }
     }
 
+    @org.junit.Test
+    public void testMissingRelayStateAllowed() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT_NO_REQ_STATE_VALIDATION");
+
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                                                     TEST_IDP_ISSUER,
+                                                     requestId,
+                                                     TEST_REQUEST_URL,
+                                                     (String)config.getProtocol().getIssuer(),
+                                                     null,
+                                                     null,
+                                                     System.currentTimeMillis());
+
+        // Create SAML Response
+        String responseStr = createSamlResponseStr(requestId);
+
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(responseStr);
+        wfReq.setRequest(req);
+        wfReq.setRequestState(requestState);
+
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
+
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                            wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
+                            .size());
+        Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
+        assertClaims(wfRes.getClaims(), ClaimTypes.COUNTRY);
+        assertClaims(wfRes.getClaims(), AbstractSAMLCallbackHandler.CLAIM_TYPE_LANGUAGE);
+    }
+
     /**
      * Validate SAML 1 token (this is not allowed / supported)
      */

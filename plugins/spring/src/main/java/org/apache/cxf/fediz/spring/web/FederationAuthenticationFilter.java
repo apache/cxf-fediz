@@ -132,20 +132,26 @@ public class FederationAuthenticationFilter extends AbstractAuthenticationProces
 
     private RequestState verifySavedState(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
+        boolean enforceValidState =
+            federationConfig == null || federationConfig.getFedizContext().isRequestStateValidation();
 
-        if (session == null) {
-            logger.warn("The received state does not match the state saved in the context");
-            throw new BadCredentialsException("The received state does not match the state saved in the context");
+        if (enforceValidState) {
+            if (session == null) {
+                logger.warn("The received state does not match the state saved in the context");
+                throw new BadCredentialsException("The received state does not match the state saved in the context");
+            }
+    
+            RequestState savedRequestState = (RequestState) session.getAttribute(SAVED_CONTEXT);
+            String state = getState(request);
+            if (savedRequestState == null || !savedRequestState.getState().equals(state)) {
+                logger.warn("The received state does not match the state saved in the context");
+                throw new BadCredentialsException("The received state does not match the state saved in the context");
+            }
+            session.removeAttribute(SAVED_CONTEXT);
+            return savedRequestState;
         }
-
-        RequestState savedRequestState = (RequestState) session.getAttribute(SAVED_CONTEXT);
-        String state = getState(request);
-        if (savedRequestState == null || !savedRequestState.getState().equals(state)) {
-            logger.warn("The received state does not match the state saved in the context");
-            throw new BadCredentialsException("The received state does not match the state saved in the context");
-        }
-        session.removeAttribute(SAVED_CONTEXT);
-        return savedRequestState;
+        
+        return null;
     }
 
     /**
