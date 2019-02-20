@@ -24,19 +24,6 @@ import java.io.IOException;
 
 import javax.servlet.ServletException;
 
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.LifecycleState;
-import org.apache.catalina.connector.Connector;
-import org.apache.catalina.startup.Tomcat;
-import org.apache.cxf.fediz.integrationtests.AbstractTests;
-import org.apache.cxf.fediz.systests.common.AbstractTests;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.DomElement;
@@ -44,6 +31,18 @@ import com.gargoylesoftware.htmlunit.html.DomNodeList;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
+
+import org.apache.catalina.LifecycleException;
+import org.apache.catalina.LifecycleState;
+import org.apache.catalina.connector.Connector;
+import org.apache.catalina.startup.Tomcat;
+import org.apache.cxf.fediz.integrationtests.AbstractTests;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
 
 /**
  * Some tests for SAML SSO with the Spring (4) plugin, invoking on the Fediz IdP configured for SAML SSO.
@@ -195,7 +194,8 @@ public class SpringTest extends AbstractTests {
     @org.junit.Test
     public void testNoRequestValidation() throws Exception {
 
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworldspringnoreqvalidation/secure/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort()
+            + "/fedizhelloworldspringnoreqvalidation/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
 
