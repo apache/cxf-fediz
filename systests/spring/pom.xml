@@ -145,14 +145,6 @@
                                     <outputDirectory>target/tomcat/rp/webapps/fediz-systests-webapps-spring</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
-                                    <groupId>org.apache.cxf.fediz.systests.webapps</groupId>
-                                    <artifactId>fediz-systests-webapps-spring3</artifactId>
-                                    <version>${project.version}</version>
-                                    <type>war</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>target/tomcat/rp/webapps/fediz-systests-webapps-spring3</outputDirectory>
-                                </artifactItem>                                                               
-                                <artifactItem>
                                     <groupId>org.apache.cxf.fediz.systests</groupId>
                                     <artifactId>fediz-systests-tests</artifactId>
                                     <version>${project.version}</version>

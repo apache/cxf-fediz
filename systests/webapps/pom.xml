@@ -34,7 +34,6 @@
       <module>simpleWebapp</module>
       <module>springPreauthWebapp</module>
       <module>springWebapp</module>
-      <module>spring3Webapp</module>
       <module>cxfWebapp</module>
    </modules>
 
