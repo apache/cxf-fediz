@@ -35,9 +35,6 @@ import org.apache.cxf.sts.claims.ProcessedClaimCollection;
  */
 public class FileClaimsHandler implements ClaimsHandler {
 
-    public static final URI ROLE =
-        URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role");
-
     private Map<String, Map<String, String>> userClaims;
     private List<URI> supportedClaims;
 

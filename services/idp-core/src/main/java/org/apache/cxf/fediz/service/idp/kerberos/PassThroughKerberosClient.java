@@ -54,7 +54,7 @@ public class PassThroughKerberosClient extends KerberosClient {
         SecurityToken securityToken = new SecurityToken(bst.getID());
         securityToken.setToken(bst.getElement());
         securityToken.setWsuId(bst.getID());
-        securityToken.setData(bst.getToken());
+        securityToken.setSecret(bst.getToken());
         String sha1 = Base64.getEncoder().encodeToString(KeyUtils.generateDigest(bst.getToken()));
         securityToken.setSHA1(sha1);
         securityToken.setTokenType(bst.getValueType());
