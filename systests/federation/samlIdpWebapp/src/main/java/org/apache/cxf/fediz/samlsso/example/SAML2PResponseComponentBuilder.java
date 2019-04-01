@@ -66,7 +66,7 @@ public final class SAML2PResponseComponentBuilder {
         }
         Response response = responseBuilder.buildObject();
 
-        response.setID(UUID.randomUUID().toString());
+        response.setID("_" + UUID.randomUUID().toString());
         response.setIssueInstant(new DateTime());
         response.setInResponseTo(inResponseTo);
         response.setIssuer(createIssuer(issuer));

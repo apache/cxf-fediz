@@ -83,7 +83,7 @@ public final class SamlpRequestComponentBuilder {
         AuthnRequest authnRequest = authnRequestBuilder.buildObject();
         authnRequest.setAssertionConsumerServiceURL(serviceURL);
         authnRequest.setForceAuthn(forceAuthn);
-        authnRequest.setID(UUID.randomUUID().toString());
+        authnRequest.setID("_" + UUID.randomUUID().toString());
         authnRequest.setIsPassive(isPassive);
         authnRequest.setIssueInstant(new DateTime());
         authnRequest.setProtocolBinding(protocolBinding);
@@ -114,7 +114,7 @@ public final class SamlpRequestComponentBuilder {
 
         LogoutRequest logoutRequest = logoutRequestBuilder.buildObject();
 
-        logoutRequest.setID(UUID.randomUUID().toString());
+        logoutRequest.setID("_" + UUID.randomUUID().toString());
         logoutRequest.setIssueInstant(new DateTime());
 
         if (reason != null) {
