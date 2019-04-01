@@ -44,6 +44,7 @@ public class DefaultSAMLPRequestBuilder implements SAMLPRequestBuilder {
     private boolean forceAuthn;
     private boolean isPassive;
     private String protocolBinding = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST";
+    private String nameIDFormat = "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent";
 
     /**
      * Create a SAML 2.0 Protocol AuthnRequest
@@ -57,7 +58,7 @@ public class DefaultSAMLPRequestBuilder implements SAMLPRequestBuilder {
 
         NameIDPolicy nameIDPolicy =
             SamlpRequestComponentBuilder.createNameIDPolicy(
-                true, "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent", issuerId
+                true, nameIDFormat, issuerId
             );
 
         AuthnContextClassRef authnCtxClassRef =
@@ -151,6 +152,14 @@ public class DefaultSAMLPRequestBuilder implements SAMLPRequestBuilder {
             nameID,
             sessionIndices
         );
+    }
+
+    public String getNameIDFormat() {
+        return nameIDFormat;
+    }
+
+    public void setNameIDFormat(String nameIDFormat) {
+        this.nameIDFormat = nameIDFormat;
     }
 
 }
