@@ -70,8 +70,8 @@
         <spring-ldap-core.version>2.3.2.RELEASE</spring-ldap-core.version>
         <spring.security.version>4.2.11.RELEASE</spring.security.version>
         <spring-webflow.version>2.4.8.RELEASE</spring-webflow.version>
-        <tomcat7.version>7.0.93</tomcat7.version>
-        <tomcat8.version>8.5.39</tomcat8.version>
+        <tomcat7.version>7.0.94</tomcat7.version>
+        <tomcat8.version>8.5.40</tomcat8.version>
         <woodstox.core.version>4.4.1</woodstox.core.version>
         <wss4j.version>2.1.12</wss4j.version>
 
