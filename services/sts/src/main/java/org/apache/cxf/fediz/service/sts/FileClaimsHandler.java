@@ -18,7 +18,6 @@
  */
 package org.apache.cxf.fediz.service.sts;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +35,7 @@ import org.apache.cxf.sts.claims.ProcessedClaimCollection;
 public class FileClaimsHandler implements ClaimsHandler {
 
     private Map<String, Map<String, String>> userClaims;
-    private List<URI> supportedClaims;
+    private List<String> supportedClaims;
 
     public void setUserClaims(Map<String, Map<String, String>> userClaims) {
         this.userClaims = userClaims;
@@ -46,12 +45,12 @@ public class FileClaimsHandler implements ClaimsHandler {
         return userClaims;
     }
 
-    public void setSupportedClaims(List<URI> supportedClaims) {
+    public void setSupportedClaims(List<String> supportedClaims) {
         this.supportedClaims = supportedClaims;
     }
 
     @Override
-    public List<URI> getSupportedClaimTypes() {
+    public List<String> getSupportedClaimTypes() {
         return Collections.unmodifiableList(this.supportedClaims);
     }
 

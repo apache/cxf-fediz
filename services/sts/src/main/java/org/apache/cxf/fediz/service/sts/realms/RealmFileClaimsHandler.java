@@ -18,7 +18,6 @@
  */
 package org.apache.cxf.fediz.service.sts.realms;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +39,7 @@ public class RealmFileClaimsHandler implements ClaimsHandler {
     private static final Logger LOG = LogUtils.getL7dLogger(RealmFileClaimsHandler.class);
 
     private Map<String, Map<String, String>> userClaims;
-    private List<URI> supportedClaims;
+    private List<String> supportedClaims;
     private String realm;
 
     public void setUserClaims(Map<String, Map<String, String>> userClaims) {
@@ -51,7 +50,7 @@ public class RealmFileClaimsHandler implements ClaimsHandler {
         return userClaims;
     }
 
-    public void setSupportedClaims(List<URI> supportedClaims) {
+    public void setSupportedClaims(List<String> supportedClaims) {
         this.supportedClaims = supportedClaims;
     }
 
@@ -64,7 +63,7 @@ public class RealmFileClaimsHandler implements ClaimsHandler {
     }
 
     @Override
-    public List<URI> getSupportedClaimTypes() {
+    public List<String> getSupportedClaimTypes() {
         return Collections.unmodifiableList(this.supportedClaims);
     }
 

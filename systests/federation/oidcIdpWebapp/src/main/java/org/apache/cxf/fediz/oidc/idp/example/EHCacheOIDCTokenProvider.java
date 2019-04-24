@@ -24,13 +24,17 @@ import java.util.List;
 
 import org.apache.cxf.rs.security.oauth2.common.Client;
 import org.apache.cxf.rs.security.oauth2.common.OAuthPermission;
-import org.apache.cxf.rs.security.oauth2.grants.code.DefaultEHCacheCodeDataProvider;
+import org.apache.cxf.rs.security.oauth2.grants.code.JCacheCodeDataProvider;
 import org.apache.cxf.rs.security.oauth2.provider.OAuthServiceException;
 
 /**
- * Extend the DefaultEHCacheCodeDataProvider to allow OpenId
+ * Extend the JCacheCodeDataProvider to allow OpenId
  */
-public class EHCacheOIDCTokenProvider extends DefaultEHCacheCodeDataProvider {
+public class EHCacheOIDCTokenProvider extends JCacheCodeDataProvider {
+
+    public EHCacheOIDCTokenProvider() throws Exception {
+        super();
+    }
 
     @Override
     public List<OAuthPermission> convertScopeToPermissions(Client client, List<String> requestedScopes) {
