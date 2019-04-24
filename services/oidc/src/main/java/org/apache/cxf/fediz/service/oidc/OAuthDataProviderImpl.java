@@ -24,15 +24,19 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.cxf.rs.security.oauth2.common.Client;
-import org.apache.cxf.rs.security.oauth2.grants.code.DefaultEHCacheCodeDataProvider;
+import org.apache.cxf.rs.security.oauth2.grants.code.JCacheCodeDataProvider;
 import org.apache.cxf.rs.security.oauth2.provider.OAuthServiceException;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
 import org.apache.cxf.rs.security.oidc.utils.OidcUtils;
 
-public class OAuthDataProviderImpl extends DefaultEHCacheCodeDataProvider {
+public class OAuthDataProviderImpl extends JCacheCodeDataProvider {
     private static final Set<String> NON_REDIRECTION_FLOWS = 
         new HashSet<>(Arrays.asList(OAuthConstants.CLIENT_CREDENTIALS_GRANT, 
                                     OAuthConstants.RESOURCE_OWNER_GRANT));
+
+    public OAuthDataProviderImpl() throws Exception {
+        super();
+    }
 
     @Override
     protected void checkRequestedScopes(Client client, List<String> requestedScopes) {
