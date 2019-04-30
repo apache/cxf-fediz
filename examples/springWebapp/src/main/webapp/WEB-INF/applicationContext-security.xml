@@ -25,15 +25,15 @@
     xmlns:util="http://www.springframework.org/schema/util"
     xsi:schemaLocation="
         http://www.springframework.org/schema/security
-        http://www.springframework.org/schema/security/spring-security-3.2.xsd
+        http://www.springframework.org/schema/security/spring-security.xsd
         http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/util
-        http://www.springframework.org/schema/util/spring-util-4.3.xsd
+        http://www.springframework.org/schema/util/spring-util.xsd
         http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+        http://www.springframework.org/schema/context/spring-context.xsd">
 
-    <!-- DIABLE in production as it might log confidential information about 
+    <!-- DISABLE in production as it might log confidential information about 
         the user -->
     <sec:debug />
 
@@ -48,6 +48,7 @@
         <sec:intercept-url pattern="/secure/user/**" access="hasAnyRole('ROLE_USER','ROLE_ADMIN','ROLE_MANAGER')" />
         <sec:custom-filter ref="federationFilter" after="BASIC_AUTH_FILTER" />
         <sec:session-management session-authentication-strategy-ref="sas" />
+        <sec:csrf disabled="true"/>
     </sec:http>
 
 
@@ -64,11 +65,11 @@
 
     <bean id="federationFilter"
         class="org.apache.cxf.fediz.spring.web.FederationAuthenticationFilter"
-        p:authenticationManager-ref="authManager">
+        p:authenticationManager-ref="authManager"
+        p:federationConfig-ref="fedizConfig">
 
         <property name="authenticationFailureHandler">
-            <bean
-                class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler" />
+            <bean class="org.apache.cxf.fediz.spring.web.FederationAuthenticationFailureHandler" p:federationConfig-ref="fedizConfig" />
         </property>
     </bean>
 

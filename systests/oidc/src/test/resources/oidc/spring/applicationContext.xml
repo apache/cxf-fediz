@@ -50,7 +50,7 @@
     <import resource="data-manager.xml" />
     
     
-<!-- DIABLE in production as it might log confidential information about the user -->
+<!-- DISABLE in production as it might log confidential information about the user -->
     <springsec:debug />
 
     <springsec:http entry-point-ref="federationEntryPoint" use-expressions="true">
