@@ -41,6 +41,11 @@
     <!-- The user has no role during the login phase of WS-Federation -->
     <security:global-method-security pre-post-annotations="enabled"/>
 
+    <!-- Remove the ROLE_ prefix -->
+    <bean id="grantedAuthorityDefaults" class="org.springframework.security.config.core.GrantedAuthorityDefaults">
+        <constructor-arg value="" />
+    </bean>
+
     <security:http pattern="/services/rs/**" use-expressions="true" authentication-manager-ref="restAuthenticationManager">
         <security:custom-filter after="CHANNEL_FILTER" ref="stsPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
