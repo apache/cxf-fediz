@@ -24,13 +24,14 @@
         http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
         http://www.springframework.org/schema/security
-        http://www.springframework.org/schema/security/spring-security-3.2.xsd
+        http://www.springframework.org/schema/security/spring-security.xsd
         ">
 
     <!-- DISABLE in production as it might log confidential information about the user -->
     <!-- <security:debug /> -->
 
     <security:http pattern="/services/rs/**" use-expressions="true" authentication-manager-ref="restAuthenticationManager">
+        <security:csrf disabled="true"/>
         <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
         <security:intercept-url pattern="/services/rs/**" access="isAuthenticated()" />
@@ -56,7 +57,7 @@
             <security:salt-source user-property="username" />
           </security:password-encoder>
           -->
-          <security:user-service properties="classpath:/users.properties" />
+            <security:user-service properties="classpath:/users.properties" />
         </security:authentication-provider>
         <security:authentication-provider ref="stsUPAuthProvider" />
     </security:authentication-manager>
