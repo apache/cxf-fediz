@@ -27,7 +27,7 @@
         http://www.springframework.org/schema/context
         http://www.springframework.org/schema/context/spring-context-4.3.xsd
         http://www.springframework.org/schema/security
-        http://www.springframework.org/schema/security/spring-security-3.2.xsd
+        http://www.springframework.org/schema/security/spring-security.xsd
         ">
 
     <context:property-placeholder location="classpath:realm.properties"/>

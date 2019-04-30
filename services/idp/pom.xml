@@ -228,7 +228,7 @@
                             <properties>
                                 <property>
                                     <name>catalina.base</name>
-                                    <value>target</value>
+                                    <value>${project.build.directory}</value>
                                 </property>
                             </properties>
                         </configuration>
@@ -248,12 +248,12 @@
                     ${project.build.directory}/test-classes/jetty-ssl.xml,${project.build.directory}/test-classes/jetty-https.xml</jettyXml>
                     <contextHandlers>
                         <contextHandler implementation="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
-                            <war>${basedir}/target/fediz-idp-sts.war</war>
+                            <war>${project.build.directory}/fediz-idp-sts.war</war>
                             <contextPath>/fediz-idp-sts</contextPath>
                             <throwUnavailableOnStartupException>false</throwUnavailableOnStartupException>
                         </contextHandler>
                         <contextHandler implementation="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
-                            <war>${basedir}/target/fediz-idp.war</war>
+                            <war>${project.build.directory}/fediz-idp.war</war>
                             <contextPath>/fediz-idp</contextPath>
                         </contextHandler>
                     </contextHandlers>
@@ -301,7 +301,7 @@
                             <systemPropertyVariables>
                                 <idp.https.port>${idp.https.port}</idp.https.port>
                                 <realm>${realm}</realm>
-                                <catalina.base>target</catalina.base>
+                                <catalina.base>${project.build.directory}</catalina.base>
                             </systemPropertyVariables>
                             <includes>
                                 <include>**/integrationtests/**</include>
@@ -366,7 +366,7 @@
                         <configuration>
                             <contextHandlers>
                                 <contextHandler implementation="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
-                                    <war>${basedir}/target/fediz-idp.war</war>
+                                    <war>${project.build.directory}/fediz-idp.war</war>
                                     <contextPath>/fediz-idp</contextPath>
                                 </contextHandler>
                             </contextHandlers>
@@ -393,7 +393,7 @@
                         <configuration>
                             <contextHandlers>
                                 <contextHandler implementation="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
-                                    <war>${basedir}/target/fediz-idp-remote.war</war>
+                                    <war>${project.build.directory}/fediz-idp-remote.war</war>
                                     <contextPath>/fediz-idp-remote</contextPath>
                                 </contextHandler>
                             </contextHandlers>
@@ -435,7 +435,7 @@
                                             <version>${project.version}</version>
                                             <type>war</type>
                                             <overWrite>true</overWrite>
-                                            <outputDirectory>target/</outputDirectory>
+                                            <outputDirectory>${project.build.directory}</outputDirectory>
                                         </artifactItem>
                                     </artifactItems>
                                     <outputAbsoluteArtifactFilename>true</outputAbsoluteArtifactFilename>
@@ -452,7 +452,7 @@
                         <configuration>
                             <contextHandlers combine.children="append">
                                 <contextHandler implementation="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
-                                    <war>${basedir}/target/fediz-idp-sts.war</war>
+                                    <war>${project.build.directory}/fediz-idp-sts.war</war>
                                     <contextPath>/fediz-idp-sts</contextPath>
                                 </contextHandler>
                             </contextHandlers>
