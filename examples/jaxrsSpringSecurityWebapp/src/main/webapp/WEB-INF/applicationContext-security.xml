@@ -21,18 +21,12 @@
     xmlns:sec="http://www.springframework.org/schema/security"
     xmlns:p="http://www.springframework.org/schema/p"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:context="http://www.springframework.org/schema/context"
-    xmlns:util="http://www.springframework.org/schema/util"
     xmlns:jaxrs="http://cxf.apache.org/jaxrs" 
     xsi:schemaLocation="
         http://www.springframework.org/schema/security
-        http://www.springframework.org/schema/security/spring-security-3.2.xsd
+        http://www.springframework.org/schema/security/spring-security.xsd
         http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
-        http://www.springframework.org/schema/util
-        http://www.springframework.org/schema/util/spring-util-4.3.xsd
-        http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context-4.3.xsd
         http://cxf.apache.org/jaxrs
         http://cxf.apache.org/schemas/jaxrs.xsd">
 
@@ -97,5 +91,5 @@
 
     <bean id="sas"
         class="org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy" />
-</beans>
 
+</beans>
