@@ -49,7 +49,7 @@
             <groupId>org.apache.cxf.fediz</groupId>
             <artifactId>fediz-core</artifactId>
             <version>${project.version}</version>
-            <scope>provided</scope>          
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.cxf.fediz</groupId>
@@ -60,6 +60,11 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>${commons.lang.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>${commons.text.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
