@@ -20,12 +20,12 @@
 package org.apache.cxf.fediz.systests.common;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -759,9 +759,7 @@ public abstract class AbstractTests {
         // Parse the form to get the token (wresult)
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
 
-        Scanner s = 
-            new Scanner(this.getClass().getClassLoader().getResource("entity.xml").openStream()).useDelimiter("\\A");
-        String entity = s.next();
+        String entity = getResourceAsString("/entity.xml");
         String reference = "&m;";
 
         for (DomElement result : results) {
@@ -833,9 +831,7 @@ public abstract class AbstractTests {
         // Parse the form to get the token (wresult)
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
 
-        Scanner s = 
-            new Scanner(this.getClass().getClassLoader().getResource("entity2.xml").openStream()).useDelimiter("\\A");
-        String entity = s.next();
+        String entity = getResourceAsString("/entity2.xml");
         String reference = "&m;";
 
         for (DomElement result : results) {
@@ -1024,6 +1020,14 @@ public abstract class AbstractTests {
         webClient.close();
         webClient2.close();
 
+    }
+
+    private static String getResourceAsString(String location) throws IOException {
+        try (InputStream is = AbstractTests.class.getResourceAsStream(location)) {
+            byte[] content = new byte[is.available()];
+            is.read(content);
+            return new String(content);
+        }
     }
 
 }
