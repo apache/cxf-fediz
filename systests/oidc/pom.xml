@@ -28,11 +28,7 @@
     <groupId>org.apache.cxf.fediz.systests</groupId>
     <artifactId>fediz-systests-oidc</artifactId>
     <name>Apache Fediz Systests Open Id Connect</name>
-    <packaging>jar</packaging>
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    </properties>
+
     <dependencies>
         <dependency>
             <groupId>net.sourceforge.htmlunit</groupId>
@@ -88,9 +84,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-	        <groupId>org.apache.cxf</groupId>
-	        <artifactId>cxf-rt-ws-security</artifactId>
-	        <version>${cxf.version}</version>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-ws-security</artifactId>
+            <version>${cxf.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
@@ -99,22 +95,6 @@
         </dependency>
     </dependencies>
     <build>
-        <testResources>
-            <testResource>
-                <directory>src/test/resources</directory>
-                <filtering>true</filtering>
-                <includes>
-                    <include>**/fediz_config*.xml</include>
-                </includes>
-            </testResource>
-            <testResource>
-                <directory>src/test/resources</directory>
-                <filtering>false</filtering>
-                <excludes>
-                    <exclude>**/fediz_config*.xml</exclude>
-                </excludes>
-            </testResource>
-        </testResources>
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -153,7 +133,7 @@
                                     <version>${project.version}</version>
                                     <type>war</type>
                                     <overWrite>true</overWrite>
-                                    <outputDirectory>target/tomcat/idp/webapps/fediz-idp</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/tomcat/idp/webapps/fediz-idp</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz</groupId>
@@ -161,7 +141,7 @@
                                     <version>${project.version}</version>
                                     <type>war</type>
                                     <overWrite>true</overWrite>
-                                    <outputDirectory>target/tomcat/idp/webapps/fediz-idp-sts</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/tomcat/idp/webapps/fediz-idp-sts</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz</groupId>
@@ -169,7 +149,7 @@
                                     <version>${project.version}</version>
                                     <type>war</type>
                                     <overWrite>true</overWrite>
-                                    <outputDirectory>target/tomcat/rp/webapps/fediz-oidc-tomcat</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/tomcat/rp/webapps/fediz-oidc-tomcat</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz</groupId>
@@ -177,7 +157,7 @@
                                     <version>${project.version}</version>
                                     <type>war</type>
                                     <overWrite>true</overWrite>
-                                    <outputDirectory>target/tomcat/rp/webapps/fediz-oidc-spring</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/tomcat/rp/webapps/fediz-oidc-spring</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz.systests</groupId>
@@ -186,7 +166,7 @@
                                     <classifier>tests</classifier>
                                     <type>jar</type>
                                     <overWrite>true</overWrite>
-                                    <outputDirectory>target/test-classes</outputDirectory>
+                                    <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
                                     <includes>**/*.jks</includes>
                                 </artifactItem>
                             </artifactItems>
@@ -197,25 +177,25 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>copy-extra-jars-to-oidc</id>
+                        <id>copy-extra-jars-to-oidc-tomcat</id>
                         <phase>package</phase>
                         <goals>
                           <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${basedir}/target/tomcat/rp/webapps/fediz-oidc-tomcat/WEB-INF/lib</outputDirectory>
-                             <includeScope>compile</includeScope>
-                             <excludeGroupIds>org.springframework.security,org.apache.cxf.fediz</excludeGroupIds>
+                            <outputDirectory>${project.build.directory}/tomcat/rp/webapps/fediz-oidc-tomcat/WEB-INF/lib</outputDirectory>
+                            <includeScope>compile</includeScope>
+                            <excludeGroupIds>org.springframework.security,org.apache.cxf.fediz</excludeGroupIds>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>copy-extra-jars-to-oidc2</id>
+                        <id>copy-extra-jars-to-oidc-spring</id>
                         <phase>package</phase>
                         <goals>
                           <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${basedir}/target/tomcat/rp/webapps/fediz-oidc-spring/WEB-INF/lib</outputDirectory>
+                            <outputDirectory>${project.build.directory}/tomcat/rp/webapps/fediz-oidc-spring/WEB-INF/lib</outputDirectory>
                              <includeScope>compile</includeScope>
                         </configuration>
                     </execution>
@@ -231,7 +211,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${basedir}/target/tomcat/idp/webapps/fediz-idp/WEB-INF/classes</outputDirectory>
+                            <outputDirectory>${project.build.directory}/tomcat/idp/webapps/fediz-idp/WEB-INF/classes</outputDirectory>
                             <resources>          
                                 <resource>
                                     <directory>${basedir}/src/test/resources/realma</directory>
@@ -240,17 +220,17 @@
                                     </includes>
                                     <filtering>true</filtering>
                                 </resource>
-                            </resources>              
-                        </configuration>            
+                            </resources>
+                        </configuration>
                     </execution>
                     <execution>
-                        <id>copy-entities-to-oidc</id>
+                        <id>copy-entities-to-oidc-tomcat</id>
                         <phase>generate-test-sources</phase>
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${basedir}/target/tomcat/rp/webapps/fediz-oidc-tomcat/WEB-INF</outputDirectory>
+                            <outputDirectory>${project.build.directory}/tomcat/rp/webapps/fediz-oidc-tomcat/WEB-INF</outputDirectory>
                             <resources>          
                                 <resource>
                                     <directory>${basedir}/src/test/resources/oidc</directory>
@@ -260,17 +240,17 @@
                                     </includes>
                                     <filtering>true</filtering>
                                 </resource>
-                            </resources>              
-                        </configuration>            
+                            </resources>
+                        </configuration>
                     </execution>
                     <execution>
-                        <id>copy-entities-to-oidc2</id>
+                        <id>copy-entities-to-oidc-spring</id>
                         <phase>generate-test-sources</phase>
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${basedir}/target/tomcat/rp/webapps/fediz-oidc-spring/WEB-INF</outputDirectory>
+                            <outputDirectory>${project.build.directory}/tomcat/rp/webapps/fediz-oidc-spring/WEB-INF</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${basedir}/src/test/resources/oidc</directory>
@@ -305,8 +285,8 @@
                         <configuration>
                             <tasks>
                                 <delete>
-                                    <fileset dir="${basedir}/target/tomcat/rp/webapps/fediz-oidc-tomcat/META-INF" includes="context.xml" />
-                                    <fileset dir="${basedir}/target/tomcat/rp/webapps/fediz-oidc-spring/META-INF" includes="context.xml" />
+                                    <fileset dir="${project.build.directory}/tomcat/rp/webapps/fediz-oidc-tomcat/META-INF" includes="context.xml" />
+                                    <fileset dir="${project.build.directory}/tomcat/rp/webapps/fediz-oidc-spring/META-INF" includes="context.xml" />
                                 </delete>
                             </tasks>
                         </configuration>
@@ -329,9 +309,9 @@
                                 <wt.headless>true</wt.headless>
                                 <idp.https.port>${idp.https.port}</idp.https.port>
                                 <rp.https.port>${rp.https.port}</rp.https.port>
-                                <java.io.tmpdir>${basedir}/target</java.io.tmpdir>
+                                <java.io.tmpdir>${project.build.directory}</java.io.tmpdir>
                                 <java.security.auth.login.config>src/test/resources/sts.jaas</java.security.auth.login.config>
-                                <java.util.logging.config.file>${basedir}/target/test-classes/logging.properties</java.util.logging.config.file>
+                                <java.util.logging.config.file>${project.build.testOutputDirectory}/logging.properties</java.util.logging.config.file>
                             </systemPropertyVariables>
                             <includes>
                                 <include>**/systests/**</include>

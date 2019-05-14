@@ -21,8 +21,13 @@ package org.apache.cxf.fediz.systests.oidc;
 
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.ConnectException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -37,8 +42,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import javax.servlet.ServletException;
+
+import org.apache.catalina.Context;
+import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleState;
+import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
+import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
 import org.apache.cxf.rs.security.jose.jwa.SignatureAlgorithm;
 import org.apache.cxf.rs.security.jose.jws.JwsJwtCompactConsumer;
 import org.apache.cxf.rs.security.jose.jwt.JwtConstants;
@@ -46,7 +57,6 @@ import org.apache.cxf.rs.security.jose.jwt.JwtToken;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.wss4j.common.util.Loader;
-import org.junit.Assert;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
@@ -66,37 +76,125 @@ import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.util.WebConnectionWrapper;
 
+import static org.junit.Assert.*;
+
 /**
  * Some OIDC tests.
  */
 abstract class AbstractOIDCTest {
 
+    private static final String idpHttpsPort = System.getProperty("idp.https.port");
+    private static final String rpHttpsPort = System.getProperty("rp.https.port");
+
+    private static Tomcat idpServer;
+    private static Tomcat rpServer;
+
     private static String storedClientId;
     private static String storedClient2Id;
     private static String storedClientPassword;
 
-    protected static void shutdownServer(Tomcat server) {
-        try {
-            if (server != null && server.getServer() != null
-                && server.getServer().getState() != LifecycleState.DESTROYED) {
-                if (server.getServer().getState() != LifecycleState.STOPPED) {
-                    server.stop();
-                }
-                server.destroy();
+    protected static void startServer(String servletContextName, String fedizConfigPath) throws Exception {
+        assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
+        assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
+
+        idpServer = startServer(idpHttpsPort, null, null);
+        rpServer = startServer(rpHttpsPort, servletContextName, fedizConfigPath);
+
+        loginToClientsPage(rpHttpsPort, idpHttpsPort, servletContextName);
+    }
+
+    private static Tomcat startServer(String port, String servletContextName, String fedizConfigPath)
+            throws ServletException, LifecycleException, IOException {
+        Tomcat server = new Tomcat();
+        server.setPort(0);
+        Path targetDir = Paths.get("target").toAbsolutePath();
+        server.setBaseDir(targetDir.toString());
+
+        server.getHost().setAutoDeploy(true);
+        server.getHost().setDeployOnStartup(true);
+
+        Connector httpsConnector = new Connector();
+        httpsConnector.setPort(Integer.parseInt(port));
+        httpsConnector.setSecure(true);
+        httpsConnector.setScheme("https");
+        httpsConnector.setAttribute("sslProtocol", "TLS");
+        httpsConnector.setAttribute("SSLEnabled", true);
+        httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
+        httpsConnector.setAttribute("keystorePass", "tompass");
+        httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
+        httpsConnector.setAttribute("truststorePass", "tompass");
+        httpsConnector.setAttribute("clientAuth", "want");
+
+        // httpsConnector.setAttribute("clientAuth", "false");
+
+        server.getService().addConnector(httpsConnector);
+
+        if (null == servletContextName) { // IDP
+            server.getHost().setAppBase("tomcat/idp/webapps");
+
+            Path stsWebapp = targetDir.resolve(server.getHost().getAppBase()).resolve("fediz-idp-sts");
+            server.addWebapp("/fediz-idp-sts", stsWebapp.toString());
+
+            Path idpWebapp = targetDir.resolve(server.getHost().getAppBase()).resolve("fediz-idp");
+            server.addWebapp("/fediz-idp", idpWebapp.toString());
+        } else { // RP
+            server.getHost().setAppBase("tomcat/rp/webapps");
+
+            Path rpWebapp = targetDir.resolve(server.getHost().getAppBase()).resolve(servletContextName);
+            Context cxt = server.addWebapp(servletContextName, rpWebapp.toString());
+
+            // Substitute the IDP port. Necessary if running the test in eclipse where port filtering doesn't seem
+            // to work
+            Path fedizConfig = targetDir.resolve("tomcat").resolve(fedizConfigPath);
+            try (InputStream is = AbstractOIDCTest.class.getResourceAsStream('/' + fedizConfigPath)) {
+                byte[] content = new byte[is.available()];
+                is.read(content);
+                Files.write(fedizConfig, new String(content).replace("${idp.https.port}", idpHttpsPort).getBytes());
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+
+            if (!fedizConfigPath.contains("spring")) {
+                FederationAuthenticator fa = new FederationAuthenticator();
+                fa.setConfigFile(fedizConfig.toString());
+                cxt.getPipeline().addValve(fa);
+            }
+        }
+
+        server.start();
+
+        return server;
+    }
+
+    protected static void shutdownServer(String servletContextName) throws Exception {
+        try {
+            loginToClientsPageAndDeleteClient(rpHttpsPort, idpHttpsPort, servletContextName);
+        } finally {
+            shutdownServer(idpServer);
+            shutdownServer(rpServer);
         }
     }
 
-    protected abstract String getIdpHttpsPort();
+    private static void shutdownServer(Tomcat server) throws LifecycleException {
+        if (server != null && server.getServer() != null
+            && server.getServer().getState() != LifecycleState.DESTROYED) {
+            if (server.getServer().getState() != LifecycleState.STOPPED) {
+                server.stop();
+            }
+            server.destroy();
+        }
+    }
 
-    protected abstract String getRpHttpsPort();
+    private String getIdpHttpsPort() {
+        return idpHttpsPort;
+    }
+
+    private String getRpHttpsPort() {
+        return rpHttpsPort;
+    }
 
     protected abstract String getServletContextName();
 
     // Runs as BeforeClass: Login to the OIDC Clients page + create two new clients
-    protected static void loginToClientsPage(String rpPort, String idpPort, String servletContext) throws Exception {
+    private static void loginToClientsPage(String rpPort, String idpPort, String servletContext) throws Exception {
         String url = "https://localhost:" + rpPort + "/" + servletContext + "/console/clients";
         String user = "alice";
         String password = "ecila";
@@ -105,20 +203,20 @@ abstract class AbstractOIDCTest {
         WebClient webClient = setupWebClient(user, password, idpPort);
         HtmlPage loginPage = login(url, webClient);
         final String bodyTextContent = loginPage.getBody().getTextContent();
-        Assert.assertTrue(bodyTextContent.contains("Registered Clients"));
+        assertTrue(bodyTextContent.contains("Registered Clients"));
 
         // Now try to register a new client
         HtmlPage registeredClientPage =
             registerNewClient(webClient, url, "new-client", "https://127.0.0.1",
                               "https://cxf.apache.org", "https://localhost:12345");
         String registeredClientPageBody = registeredClientPage.getBody().getTextContent();
-        Assert.assertTrue(registeredClientPageBody.contains("Registered Clients"));
-        Assert.assertTrue(registeredClientPageBody.contains("new-client"));
-        Assert.assertTrue(registeredClientPageBody.contains("https://127.0.0.1"));
+        assertTrue(registeredClientPageBody.contains("Registered Clients"));
+        assertTrue(registeredClientPageBody.contains("new-client"));
+        assertTrue(registeredClientPageBody.contains("https://127.0.0.1"));
 
         HtmlTable table = registeredClientPage.getHtmlElementById("registered_clients");
         storedClientId = table.getCellAt(1, 1).asText().trim();
-        Assert.assertNotNull(storedClientId);
+        assertNotNull(storedClientId);
 
         // Get the password
         registeredClientPage = webClient.getPage(url + "/" + storedClientId);
@@ -130,18 +228,18 @@ abstract class AbstractOIDCTest {
             registerNewClient(webClient, url, "new-client2", "https://127.0.1.1",
                               "https://ws.apache.org", "https://localhost:12345");
         registeredClientPageBody = registeredClientPage.getBody().getTextContent();
-        Assert.assertTrue(registeredClientPageBody.contains("Registered Clients"));
-        Assert.assertTrue(registeredClientPageBody.contains("new-client"));
-        Assert.assertTrue(registeredClientPageBody.contains("https://127.0.0.1"));
-        Assert.assertTrue(registeredClientPageBody.contains("new-client2"));
-        Assert.assertTrue(registeredClientPageBody.contains("https://127.0.1.1"));
+        assertTrue(registeredClientPageBody.contains("Registered Clients"));
+        assertTrue(registeredClientPageBody.contains("new-client"));
+        assertTrue(registeredClientPageBody.contains("https://127.0.0.1"));
+        assertTrue(registeredClientPageBody.contains("new-client2"));
+        assertTrue(registeredClientPageBody.contains("https://127.0.1.1"));
 
         table = registeredClientPage.getHtmlElementById("registered_clients");
         storedClient2Id = table.getCellAt(2, 1).asText().trim();
         if (storedClient2Id.equals(storedClientId)) {
             storedClient2Id = table.getCellAt(1, 1).asText().trim();
         }
-        Assert.assertNotNull(storedClient2Id);
+        assertNotNull(storedClient2Id);
 
         webClient.close();
     }
@@ -171,7 +269,8 @@ abstract class AbstractOIDCTest {
     }
 
     // Runs as AfterClass: Login to the OIDC Clients page + delete the created clients!
-    protected static void loginToClientsPageAndDeleteClient(String rpPort, String idpPort, String servletContext) throws Exception {
+    private static void loginToClientsPageAndDeleteClient(String rpPort, String idpPort, String servletContext)
+            throws Exception {
         String url = "https://localhost:" + rpPort + "/" + servletContext + "/console/clients";
         String user = "alice";
         String password = "ecila";
@@ -180,28 +279,28 @@ abstract class AbstractOIDCTest {
         WebClient webClient = setupWebClient(user, password, idpPort);
         HtmlPage loginPage = login(url, webClient);
         final String bodyTextContent = loginPage.getBody().getTextContent();
-        Assert.assertTrue(bodyTextContent.contains("Registered Clients"));
+        assertTrue(bodyTextContent.contains("Registered Clients"));
 
         // Get the client identifier
         HtmlTable table = loginPage.getHtmlElementById("registered_clients");
         String clientId = table.getCellAt(1, 1).asText().trim();
-        Assert.assertNotNull(clientId);
+        assertNotNull(clientId);
         String clientId2 = table.getCellAt(2, 1).asText().trim();
-        Assert.assertNotNull(clientId2);
+        assertNotNull(clientId2);
 
         // Now go to the specific client page
         HtmlPage registeredClientsPage = deleteClient(webClient, url, clientId);
 
         // Check we have one more registered clients
         table = registeredClientsPage.getHtmlElementById("registered_clients");
-        Assert.assertEquals(2, table.getRowCount());
+        assertEquals(2, table.getRowCount());
 
         // Now delete the other client
         registeredClientsPage = deleteClient(webClient, url, clientId2);
 
         // Check we have no more registered clients
         table = registeredClientsPage.getHtmlElementById("registered_clients");
-        Assert.assertEquals(1, table.getRowCount());
+        assertEquals(1, table.getRowCount());
 
         webClient.close();
     }
@@ -210,7 +309,7 @@ abstract class AbstractOIDCTest {
         HtmlPage clientPage = webClient.getPage(url + "/" + clientId);
 
         final HtmlForm deleteForm = clientPage.getFormByName("deleteForm");
-        Assert.assertNotNull(deleteForm);
+        assertNotNull(deleteForm);
 
         // Delete the client
         final HtmlButton button = deleteForm.getButtonByName("submit_delete_button");
@@ -228,33 +327,33 @@ abstract class AbstractOIDCTest {
         WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
         HtmlPage loginPage = login(url, webClient);
         final String bodyTextContent = loginPage.getBody().getTextContent();
-        Assert.assertTrue(bodyTextContent.contains("Registered Clients"));
+        assertTrue(bodyTextContent.contains("Registered Clients"));
 
         // Get the new client identifier
         HtmlTable table = loginPage.getHtmlElementById("registered_clients");
 
         // 2 clients
-        Assert.assertEquals(table.getRows().size(), 3);
+        assertEquals(table.getRows().size(), 3);
 
         // Now check the first client
         String clientId = table.getCellAt(1, 1).asText().trim();
-        Assert.assertNotNull(clientId);
+        assertNotNull(clientId);
 
         // Check the Date
         String date = table.getCellAt(1, 2).asText().trim();
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.US);
         dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-        Assert.assertEquals(dateFormat.format(new Date()), date);
+        assertEquals(dateFormat.format(new Date()), date);
 
         // Check the redirect URI
         String redirectURI = table.getCellAt(1, 3).asText().trim();
-        Assert.assertTrue("https://127.0.0.1".equals(redirectURI)
+        assertTrue("https://127.0.0.1".equals(redirectURI)
                           || "https://127.0.1.1".equals(redirectURI));
 
         // Now check the specific client page
         HtmlPage clientPage = webClient.getPage(url + "/" + clientId);
         HtmlTable clientTable = clientPage.getHtmlElementById("client");
-        Assert.assertEquals(clientId, clientTable.getCellAt(1, 0).asText().trim());
+        assertEquals(clientId, clientTable.getCellAt(1, 0).asText().trim());
 
         webClient.close();
     }
@@ -270,13 +369,13 @@ abstract class AbstractOIDCTest {
         WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
         HtmlPage loginPage = login(url, webClient);
         final String bodyTextContent = loginPage.getBody().getTextContent();
-        Assert.assertTrue(bodyTextContent.contains("Registered Clients"));
+        assertTrue(bodyTextContent.contains("Registered Clients"));
 
         // Get the new client identifier
         HtmlTable table = loginPage.getHtmlElementById("registered_clients");
 
         // 2 clients
-        Assert.assertEquals(table.getRows().size(), 1);
+        assertEquals(table.getRows().size(), 1);
 
         webClient.close();
     }
@@ -294,7 +393,7 @@ abstract class AbstractOIDCTest {
         // Login to the OIDC token endpoint + get the authorization code
         WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
         String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
-        Assert.assertNotNull(authorizationCode);
+        assertNotNull(authorizationCode);
 
         // Now use the code to get an IdToken
 
@@ -312,7 +411,7 @@ abstract class AbstractOIDCTest {
 
         // Check the IdToken
         String idToken = getIdToken(response);
-        Assert.assertNotNull(idToken);
+        assertNotNull(idToken);
         validateIdToken(idToken, storedClientId);
 
         webClient.close();
@@ -331,7 +430,7 @@ abstract class AbstractOIDCTest {
         // Login to the OIDC token endpoint + get the authorization code
         WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
         String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
-        Assert.assertNotNull(authorizationCode);
+        assertNotNull(authorizationCode);
 
         // Now use the code to get an IdToken
 
@@ -349,7 +448,7 @@ abstract class AbstractOIDCTest {
 
         // Check the IdToken
         String idToken = getIdToken(response);
-        Assert.assertNotNull(idToken);
+        assertNotNull(idToken);
         validateIdToken(idToken, storedClient2Id);
 
         webClient.close();
@@ -368,7 +467,7 @@ abstract class AbstractOIDCTest {
         // Login to the OIDC token endpoint + get the authorization code
         WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
         String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
-        Assert.assertNotNull(authorizationCode);
+        assertNotNull(authorizationCode);
 
         // Now try and get a token for the second client
         url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/token";
@@ -382,7 +481,7 @@ abstract class AbstractOIDCTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         try {
             webClient.getPage(request);
-            Assert.fail();
+            fail();
         } catch (FailingHttpStatusCodeException ex) {
             // expected
         }
@@ -402,7 +501,7 @@ abstract class AbstractOIDCTest {
         WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
 
         String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
-        Assert.assertNull(authorizationCode);
+        assertNull(authorizationCode);
 
         webClient.close();
     }
@@ -421,7 +520,7 @@ abstract class AbstractOIDCTest {
         WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
 
         String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
-        Assert.assertNull(authorizationCode);
+        assertNull(authorizationCode);
 
         webClient.close();
     }
@@ -441,7 +540,7 @@ abstract class AbstractOIDCTest {
         WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
 
         String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
-        Assert.assertNull(authorizationCode);
+        assertNull(authorizationCode);
 
         webClient.close();
     }
@@ -456,16 +555,12 @@ abstract class AbstractOIDCTest {
         WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
         HtmlPage loginPage = login(url, webClient);
         final String bodyTextContent = loginPage.getBody().getTextContent();
-        Assert.assertTrue(bodyTextContent.contains("Registered Clients"));
+        assertTrue(bodyTextContent.contains("Registered Clients"));
 
         // Now try to register a new client
-        try {
-            HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1//",
-                              "https://cxf.apache.org", "https://localhost:12345");
-            Assert.assertTrue(errorPage.asText().contains("Invalid Client Registration"));
-        } catch (Exception ex) {
-            // expected
-        }
+        HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1//",
+                          "https://cxf.apache.org", "https://localhost:12345");
+        assertTrue(errorPage.asText().contains("Invalid Client Registration"));
 
         webClient.close();
     }
@@ -480,16 +575,12 @@ abstract class AbstractOIDCTest {
         WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
         HtmlPage loginPage = login(url, webClient);
         final String bodyTextContent = loginPage.getBody().getTextContent();
-        Assert.assertTrue(bodyTextContent.contains("Registered Clients"));
+        assertTrue(bodyTextContent.contains("Registered Clients"));
 
         // Now try to register a new client
-        try {
-            HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1#fragment",
-                              "https://cxf.apache.org", "https://localhost:12345");
-            Assert.assertTrue(errorPage.asText().contains("Invalid Client Registration"));
-        } catch (Exception ex) {
-            // expected
-        }
+        HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1#fragment",
+                          "https://cxf.apache.org", "https://localhost:12345");
+        assertTrue(errorPage.asText().contains("Invalid Client Registration"));
 
         webClient.close();
     }
@@ -504,16 +595,12 @@ abstract class AbstractOIDCTest {
         WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
         HtmlPage loginPage = login(url, webClient);
         final String bodyTextContent = loginPage.getBody().getTextContent();
-        Assert.assertTrue(bodyTextContent.contains("Registered Clients"));
+        assertTrue(bodyTextContent.contains("Registered Clients"));
 
         // Now try to register a new client
-        try {
-            HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1/",
-                              "https://cxf.apache.org//", "https://localhost:12345");
-            Assert.assertTrue(errorPage.asText().contains("Invalid Client Registration"));
-        } catch (Exception ex) {
-            // expected
-        }
+        HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1/",
+                          "https://cxf.apache.org//", "https://localhost:12345");
+        assertTrue(errorPage.asText().contains("Invalid Client Registration"));
 
         webClient.close();
     }
@@ -528,16 +615,12 @@ abstract class AbstractOIDCTest {
         WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
         HtmlPage loginPage = login(url, webClient);
         final String bodyTextContent = loginPage.getBody().getTextContent();
-        Assert.assertTrue(bodyTextContent.contains("Registered Clients"));
+        assertTrue(bodyTextContent.contains("Registered Clients"));
 
         // Now try to register a new client
-        try {
-            HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1/",
-                              "https://cxf.apache.org/", "https://localhost:12345//");
-            Assert.assertTrue(errorPage.asText().contains("Invalid Client Registration"));
-        } catch (Exception ex) {
-            // expected
-        }
+        HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1/",
+                          "https://cxf.apache.org/", "https://localhost:12345//");
+        assertTrue(errorPage.asText().contains("Invalid Client Registration"));
 
         webClient.close();
     }
@@ -552,16 +635,12 @@ abstract class AbstractOIDCTest {
         WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
         HtmlPage loginPage = login(url, webClient);
         final String bodyTextContent = loginPage.getBody().getTextContent();
-        Assert.assertTrue(bodyTextContent.contains("Registered Clients"));
+        assertTrue(bodyTextContent.contains("Registered Clients"));
 
         // Now try to register a new client
-        try {
-            HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1",
-                              "https://cxf.apache.org#fragment", "https://localhost:12345");
-            Assert.assertTrue(errorPage.asText().contains("Invalid Client Registration"));
-        } catch (Exception ex) {
-            // expected
-        }
+        HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1",
+                          "https://cxf.apache.org#fragment", "https://localhost:12345");
+        assertTrue(errorPage.asText().contains("Invalid Client Registration"));
 
         webClient.close();
     }
@@ -582,7 +661,7 @@ abstract class AbstractOIDCTest {
         final UnexpectedPage responsePage = webClient.getPage(request);
         String response = responsePage.getWebResponse().getContentAsString();
 
-        Assert.assertTrue(response.contains("access_token"));
+        assertTrue(response.contains("access_token"));
 
         webClient.close();
     }
@@ -597,31 +676,26 @@ abstract class AbstractOIDCTest {
         WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
         HtmlPage loginPage = login(url, webClient);
         final String bodyTextContent = loginPage.getBody().getTextContent();
-        Assert.assertTrue(bodyTextContent.contains("Registered Clients"));
+        assertTrue(bodyTextContent.contains("Registered Clients"));
 
         // Register a client with a supported TLD
         HtmlPage registeredClientPage = registerNewClient(webClient, url, "tld1", "https://www.apache.corp",
             "https://cxf.apache.org", "https://localhost:12345");
         String registeredClientPageBody = registeredClientPage.getBody().getTextContent();
-        Assert.assertTrue(registeredClientPageBody.contains("Registered Clients"));
-        Assert.assertTrue(registeredClientPageBody.contains("tld1"));
-        Assert.assertTrue(registeredClientPageBody.contains("https://www.apache.corp"));
+        assertTrue(registeredClientPageBody.contains("Registered Clients"));
+        assertTrue(registeredClientPageBody.contains("tld1"));
+        assertTrue(registeredClientPageBody.contains("https://www.apache.corp"));
 
         HtmlTable table = registeredClientPage.getHtmlElementById("registered_clients");
         String clientId = table.getCellAt(3, 1).asText().trim();
 
         // Register a client with an unsupported TLD
-        try {
-            HtmlPage errorPage = registerNewClient(webClient, url, "tld2", "https://www.apache.corp2",
-                                                   "https://cxf.apache.org", "https://localhost:12345");
-            Assert.assertTrue(errorPage.asText().contains("Invalid Client Registration"));
-        } catch (Exception ex) {
-            // expected
-        }
+        HtmlPage errorPage = registerNewClient(webClient, url, "tld2", "https://www.apache.corp2",
+                                               "https://cxf.apache.org", "https://localhost:12345");
+        assertTrue(errorPage.asText().contains("Invalid Client Registration"));
 
         // Delete the first client above
         deleteClient(webClient, url, clientId);
-
 
         webClient.close();
     }
@@ -639,7 +713,7 @@ abstract class AbstractOIDCTest {
         // Login to the OIDC token endpoint + get the authorization code
         WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
         String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
-        Assert.assertNotNull(authorizationCode);
+        assertNotNull(authorizationCode);
 
         // 2. Get another authorization code without username/password. This should work as we are
         // logged on
@@ -648,13 +722,14 @@ abstract class AbstractOIDCTest {
 
         try {
             webClient.getPage(url);
-        } catch (Throwable t) {
+            fail();
+        } catch (ConnectException t) {
             // expected
         }
 
         wrapper.close();
         authorizationCode = wrapper.getCode();
-        Assert.assertNotNull(authorizationCode);
+        assertNotNull(authorizationCode);
 
         // 3. Log out
         String logoutUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/logout?";
@@ -663,17 +738,18 @@ abstract class AbstractOIDCTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         try {
             webClient.getPage(logoutUrl);
+            fail();
         } catch (Exception ex) {
-            Assert.assertTrue(ex.getMessage().contains("Connect to localhost:12345"));
+            assertTrue(ex.getMessage().contains("Connect to localhost:12345"));
         }
 
         // 4. Get another authorization code without username/password. This should fail as we have
         // logged out
         try {
             loginAndGetAuthorizationCode(url, webClient);
-            Assert.fail("Failure expected after logout");
+            fail("Failure expected after logout");
         } catch (Exception ex) {
-            Assert.assertTrue(ex.getMessage().contains("401"));
+            assertTrue(ex.getMessage().contains("401"));
         }
 
         webClient.close();
@@ -692,7 +768,7 @@ abstract class AbstractOIDCTest {
         // Login to the OIDC token endpoint + get the authorization code
         WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
         String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
-        Assert.assertNotNull(authorizationCode);
+        assertNotNull(authorizationCode);
         webClient.getCredentialsProvider().clear();
 
         // Now use the code to get an IdToken
@@ -715,7 +791,7 @@ abstract class AbstractOIDCTest {
 
         // Check the IdToken
         String idToken = getIdToken(response);
-        Assert.assertNotNull(idToken);
+        assertNotNull(idToken);
         validateIdToken(idToken, storedClientId);
 
         webClient2.close();
@@ -727,17 +803,18 @@ abstract class AbstractOIDCTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         try {
             webClient.getPage(logoutUrl);
+            fail();
         } catch (Exception ex) {
-            Assert.assertTrue(ex.getMessage().contains("Connect to localhost:12345"));
+            assertTrue(ex.getMessage().contains("Connect to localhost:12345"));
         }
 
         // 3. Get another authorization code without username/password. This should fail as we have
         // logged out
         try {
             loginAndGetAuthorizationCode(url, webClient);
-            Assert.fail("Failure expected after logout");
+            fail("Failure expected after logout");
         } catch (Exception ex) {
-            Assert.assertTrue(ex.getMessage().contains("401"));
+            assertTrue(ex.getMessage().contains("401"));
         }
 
         webClient.close();
@@ -754,7 +831,7 @@ abstract class AbstractOIDCTest {
         WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
         HtmlPage loginPage = login(url, webClient);
         final String bodyTextContent = loginPage.getBody().getTextContent();
-        Assert.assertTrue(bodyTextContent.contains("Registered Clients"));
+        assertTrue(bodyTextContent.contains("Registered Clients"));
 
         // Register a new client
 
@@ -770,7 +847,7 @@ abstract class AbstractOIDCTest {
         request.getRequestParameters().add(new NameValuePair("client_csrfToken", "12345"));
 
         HtmlPage registeredClientPage = webClient.getPage(request);
-        Assert.assertTrue(registeredClientPage.asXml().contains("Invalid CSRF Token"));
+        assertTrue(registeredClientPage.asXml().contains("Invalid CSRF Token"));
 
         webClient.close();
     }
@@ -778,18 +855,18 @@ abstract class AbstractOIDCTest {
     @org.junit.Test
     public void testOIDCLoginForClient1WithRoles() throws Exception {
 
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize?";
-        url += "client_id=" + storedClientId;
-        url += "&response_type=code";
-        url += "&scope=openid";
-        url += "&claims=roles";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize?"
+            + "client_id=" + storedClientId
+            + "&response_type=code"
+            + "&scope=openid"
+            + "&claims=roles";
         String user = "alice";
         String password = "ecila";
 
         // Login to the OIDC token endpoint + get the authorization code
         WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
         String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
-        Assert.assertNotNull(authorizationCode);
+        assertNotNull(authorizationCode);
 
         // Now use the code to get an IdToken
 
@@ -807,7 +884,7 @@ abstract class AbstractOIDCTest {
 
         // Check the IdToken
         String idToken = getIdToken(response);
-        Assert.assertNotNull(idToken);
+        assertNotNull(idToken);
         validateIdToken(idToken, storedClientId, "User");
 
         webClient.close();
@@ -816,17 +893,17 @@ abstract class AbstractOIDCTest {
     @org.junit.Test
     public void testOIDCLoginForClient1WithRolesScope() throws Exception {
 
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize?";
-        url += "client_id=" + storedClientId;
-        url += "&response_type=code";
-        url += "&scope=openid%20roles";
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize?"
+            + "client_id=" + storedClientId
+            + "&response_type=code"
+            + "&scope=openid%20roles";
         String user = "alice";
         String password = "ecila";
 
         // Login to the OIDC token endpoint + get the authorization code
         WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
         String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
-        Assert.assertNotNull(authorizationCode);
+        assertNotNull(authorizationCode);
 
         // Now use the code to get an IdToken
 
@@ -844,7 +921,7 @@ abstract class AbstractOIDCTest {
 
         // Check the IdToken
         String idToken = getIdToken(response);
-        Assert.assertNotNull(idToken);
+        assertNotNull(idToken);
         validateIdToken(idToken, storedClientId, "User");
 
         webClient.close();
@@ -868,7 +945,7 @@ abstract class AbstractOIDCTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // Test the SAML Version here
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
@@ -880,7 +957,7 @@ abstract class AbstractOIDCTest {
                 break;
             }
         }
-        Assert.assertTrue(wresult != null
+        assertTrue(wresult != null
             && wresult.contains("urn:oasis:names:tc:SAML:2.0:cm:bearer"));
 
         final HtmlForm form = idpPage.getFormByName("signinresponseform");
@@ -895,7 +972,7 @@ abstract class AbstractOIDCTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
 
@@ -906,7 +983,7 @@ abstract class AbstractOIDCTest {
                 break;
             }
         }
-        Assert.assertTrue(wresult != null
+        assertTrue(wresult != null
             && wresult.contains("urn:oasis:names:tc:SAML:2.0:cm:bearer"));
 
         final HtmlForm form = idpPage.getFormByName("signinresponseform");
@@ -918,7 +995,8 @@ abstract class AbstractOIDCTest {
 
         try {
             button.click();
-        } catch (Throwable t) {
+            fail();
+        } catch (RuntimeException e) {
             // expected
         }
 
@@ -926,11 +1004,11 @@ abstract class AbstractOIDCTest {
         return wrapper.getCode();
     }
 
-    private String getIdToken(String parentString) {
+    private static String getIdToken(String parentString) {
         String foundString =
             parentString.substring(parentString.indexOf("id_token")
-                                   + ("id_token" + "\":\"").length());
-        int ampersandIndex = foundString.indexOf('\"');
+                                   + ("id_token\":\"").length());
+        int ampersandIndex = foundString.indexOf('"');
         if (ampersandIndex < 1) {
             ampersandIndex = foundString.length();
         }
@@ -948,26 +1026,26 @@ abstract class AbstractOIDCTest {
         JwtToken jwt = jwtConsumer.getJwtToken();
 
         // Validate claims
-        Assert.assertEquals("alice", jwt.getClaim("preferred_username"));
-        Assert.assertEquals("accounts.fediz.com", jwt.getClaim(JwtConstants.CLAIM_ISSUER));
-        Assert.assertEquals(audience, jwt.getClaim(JwtConstants.CLAIM_AUDIENCE));
-        Assert.assertNotNull(jwt.getClaim(JwtConstants.CLAIM_EXPIRY));
-        Assert.assertNotNull(jwt.getClaim(JwtConstants.CLAIM_ISSUED_AT));
+        assertEquals("alice", jwt.getClaim("preferred_username"));
+        assertEquals("accounts.fediz.com", jwt.getClaim(JwtConstants.CLAIM_ISSUER));
+        assertEquals(audience, jwt.getClaim(JwtConstants.CLAIM_AUDIENCE));
+        assertNotNull(jwt.getClaim(JwtConstants.CLAIM_EXPIRY));
+        assertNotNull(jwt.getClaim(JwtConstants.CLAIM_ISSUED_AT));
 
         // Check role
         if (role != null) {
             List<String> roles = jwt.getClaims().getListStringProperty("roles");
-            Assert.assertNotNull(roles);
-            Assert.assertFalse(roles.isEmpty());
-            Assert.assertEquals(role, roles.get(0));
+            assertNotNull(roles);
+            assertFalse(roles.isEmpty());
+            assertEquals(role, roles.get(0));
         }
 
         KeyStore keystore = KeyStore.getInstance("JKS");
         keystore.load(Loader.getResource("oidc.jks").openStream(), "password".toCharArray());
         Certificate cert = keystore.getCertificate("alice");
-        Assert.assertNotNull(cert);
+        assertNotNull(cert);
 
-        Assert.assertTrue(jwtConsumer.verifySignatureWith((X509Certificate)cert,
+        assertTrue(jwtConsumer.verifySignatureWith((X509Certificate)cert,
                                                           SignatureAlgorithm.RS256));
     }
 

@@ -20,19 +20,7 @@
 package org.apache.cxf.fediz.systests.oidc;
 
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-
-import javax.servlet.ServletException;
-
-import org.apache.catalina.Context;
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.connector.Connector;
-import org.apache.catalina.startup.Tomcat;
-import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 
 /**
@@ -40,112 +28,21 @@ import org.junit.BeforeClass;
  */
 public class OIDCTomcatTest extends AbstractOIDCTest {
 
-    static String idpHttpsPort;
-    static String rpHttpsPort;
-
-    private static Tomcat idpServer;
-    private static Tomcat rpServer;
+    private static final String SERVLET_CONTEXT_NAME = "fediz-oidc-tomcat";
 
     @BeforeClass
     public static void init() throws Exception {
-        idpHttpsPort = System.getProperty("idp.https.port");
-        Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
-        rpHttpsPort = System.getProperty("rp.https.port");
-        Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
-
-        idpServer = startServer(true, idpHttpsPort);
-        rpServer = startServer(false, rpHttpsPort);
-
-        loginToClientsPage(rpHttpsPort, idpHttpsPort, "fediz-oidc-tomcat");
-    }
-
-    private static Tomcat startServer(boolean idp, String port)
-        throws ServletException, LifecycleException, IOException {
-        Tomcat server = new Tomcat();
-        server.setPort(0);
-        String currentDir = new File(".").getCanonicalPath();
-        String baseDir = currentDir + File.separator + "target";
-        server.setBaseDir(baseDir);
-
-        if (idp) {
-            server.getHost().setAppBase("tomcat/idp/webapps");
-        } else {
-            server.getHost().setAppBase("tomcat/rp/webapps");
-        }
-        server.getHost().setAutoDeploy(true);
-        server.getHost().setDeployOnStartup(true);
-
-        Connector httpsConnector = new Connector();
-        httpsConnector.setPort(Integer.parseInt(port));
-        httpsConnector.setSecure(true);
-        httpsConnector.setScheme("https");
-        httpsConnector.setAttribute("keyAlias", "mytomidpkey");
-        httpsConnector.setAttribute("keystorePass", "tompass");
-        httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
-        httpsConnector.setAttribute("truststorePass", "tompass");
-        httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
-        httpsConnector.setAttribute("clientAuth", "want");
-        // httpsConnector.setAttribute("clientAuth", "false");
-        httpsConnector.setAttribute("sslProtocol", "TLS");
-        httpsConnector.setAttribute("SSLEnabled", true);
-
-        server.getService().addConnector(httpsConnector);
-
-        if (idp) {
-            File stsWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp-sts");
-            server.addWebapp("/fediz-idp-sts", stsWebapp.getAbsolutePath());
-
-            File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp");
-            server.addWebapp("/fediz-idp", idpWebapp.getAbsolutePath());
-        } else {
-            File rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-oidc-tomcat");
-            Context cxt = server.addWebapp("/fediz-oidc-tomcat", rpWebapp.getAbsolutePath());
-
-            // Substitute the IDP port. Necessary if running the test in eclipse where port filtering doesn't seem
-            // to work
-            File f = new File(currentDir + "/src/test/resources/fediz_config_tomcat.xml");
-            String content = new String(Files.readAllBytes(f.toPath()), "UTF-8");
-            if (content.contains("idp.https.port")) {
-                content = content.replaceAll("\\$\\{idp.https.port\\}", "" + idpHttpsPort);
-
-                File f2 = new File(baseDir + "/test-classes/fediz_config_tomcat.xml");
-                Files.write(f2.toPath(), content.getBytes());
-            }
-
-            FederationAuthenticator fa = new FederationAuthenticator();
-            fa.setConfigFile(currentDir + File.separator + "target" + File.separator
-                             + "test-classes" + File.separator + "fediz_config_tomcat.xml");
-            cxt.getPipeline().addValve(fa);
-        }
-
-        server.start();
-
-        return server;
+        startServer(SERVLET_CONTEXT_NAME, "fediz_config_tomcat.xml");
     }
 
     @AfterClass
     public static void cleanup() throws Exception {
-        try {
-            loginToClientsPageAndDeleteClient(rpHttpsPort, idpHttpsPort, "fediz-oidc-tomcat");
-        } finally {
-            shutdownServer(idpServer);
-            shutdownServer(rpServer);
-        }
+        shutdownServer(SERVLET_CONTEXT_NAME);
     }
 
-    @Override
-    protected String getIdpHttpsPort() {
-        return idpHttpsPort;
-    }
-
-    @Override
-    protected String getRpHttpsPort() {
-        return rpHttpsPort;
-    }
-    
     @Override
     protected String getServletContextName() {
-        return "fediz-oidc-tomcat";
+        return SERVLET_CONTEXT_NAME;
     }
 
 }
