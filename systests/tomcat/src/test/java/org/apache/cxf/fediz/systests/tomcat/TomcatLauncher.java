@@ -79,9 +79,6 @@ public class TomcatLauncher {
         if (null == servletContextName) { // IDP
             server.getHost().setAppBase("tomcat/idp/webapps");
 
-            httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
-            httpsConnector.setAttribute("truststorePass", "tompass");
-
             Path stsWebapp = targetDir.resolve(server.getHost().getAppBase()).resolve("fediz-idp-sts");
             server.addWebapp("/fediz-idp-sts", stsWebapp.toString());
 
