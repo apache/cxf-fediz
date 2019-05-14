@@ -121,16 +121,13 @@ abstract class AbstractOIDCTest {
         httpsConnector.setAttribute("SSLEnabled", true);
         httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
         httpsConnector.setAttribute("keystorePass", "tompass");
-        httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
-        httpsConnector.setAttribute("truststorePass", "tompass");
-        httpsConnector.setAttribute("clientAuth", "want");
-
-        // httpsConnector.setAttribute("clientAuth", "false");
-
-        server.getService().addConnector(httpsConnector);
 
         if (null == servletContextName) { // IDP
             server.getHost().setAppBase("tomcat/idp/webapps");
+
+            httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
+            httpsConnector.setAttribute("truststorePass", "tompass");
+            httpsConnector.setAttribute("clientAuth", "want");
 
             Path stsWebapp = targetDir.resolve(server.getHost().getAppBase()).resolve("fediz-idp-sts");
             server.addWebapp("/fediz-idp-sts", stsWebapp.toString());
@@ -139,6 +136,8 @@ abstract class AbstractOIDCTest {
             server.addWebapp("/fediz-idp", idpWebapp.toString());
         } else { // RP
             server.getHost().setAppBase("tomcat/rp/webapps");
+
+            httpsConnector.setAttribute("clientAuth", "false");
 
             Path rpWebapp = targetDir.resolve(server.getHost().getAppBase()).resolve(servletContextName);
             Context cxt = server.addWebapp(servletContextName, rpWebapp.toString());
@@ -158,6 +157,8 @@ abstract class AbstractOIDCTest {
                 cxt.getPipeline().addValve(fa);
             }
         }
+
+        server.getService().addConnector(httpsConnector);
 
         server.start();
 
