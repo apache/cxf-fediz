@@ -26,13 +26,9 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>org.apache.cxf.fediz.systests</groupId>
-    <artifactId>fediz-systests-tomcat8</artifactId>
-    <name>Apache Fediz Systests Tomcat 8</name>
-    <packaging>jar</packaging>
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    </properties>
+    <artifactId>fediz-systests-tomcat</artifactId>
+    <name>Apache Fediz Systests Tomcat</name>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
@@ -62,9 +58,8 @@
             <groupId>org.apache.cxf.fediz.systests</groupId>
             <artifactId>fediz-systests-tests</artifactId>
             <version>${project.version}</version>
-            <type>test-jar</type>
-            <scope>test</scope>
             <classifier>tests</classifier>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -80,22 +75,6 @@
         </dependency>
     </dependencies>
     <build>
-        <testResources>
-            <testResource>
-                <directory>src/test/resources</directory>
-                <filtering>true</filtering>
-                <includes>
-                    <include>**/fediz_config*.xml</include>
-                </includes>
-            </testResource>
-            <testResource>
-                <directory>src/test/resources</directory>
-                <filtering>false</filtering>
-                <excludes>
-                    <exclude>**/fediz_config*.xml</exclude>
-                </excludes>
-            </testResource>
-        </testResources>
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -134,7 +113,7 @@
                                     <version>${project.version}</version>
                                     <type>war</type>
                                     <overWrite>true</overWrite>
-                                    <outputDirectory>target/tomcat/idp/webapps/fediz-idp</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/tomcat/idp/webapps/fediz-idp</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz</groupId>
@@ -142,7 +121,7 @@
                                     <version>${project.version}</version>
                                     <type>war</type>
                                     <overWrite>true</overWrite>
-                                    <outputDirectory>target/tomcat/idp/webapps/fediz-idp-sts</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/tomcat/idp/webapps/fediz-idp-sts</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz.systests.webapps</groupId>
@@ -150,7 +129,7 @@
                                     <version>${project.version}</version>
                                     <type>war</type>
                                     <overWrite>true</overWrite>
-                                    <outputDirectory>target/tomcat/rp/webapps/simpleWebapp</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/tomcat/rp/webapps/simpleWebapp</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz.systests</groupId>
@@ -159,7 +138,7 @@
                                     <classifier>tests</classifier>
                                     <type>jar</type>
                                     <overWrite>true</overWrite>
-                                    <outputDirectory>target/test-classes</outputDirectory>
+                                    <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
                                     <includes>**/*.jks</includes>
                                 </artifactItem>
                             </artifactItems>
@@ -176,13 +155,13 @@
                 <executions>
                     <execution>
                         <id>copy-entities-to-idp</id>
-                        <phase>generate-test-sources</phase>
+                        <phase>generate-test-resources</phase>
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${basedir}/target/tomcat/idp/webapps/fediz-idp/WEB-INF/classes</outputDirectory>
-                            <resources>          
+                            <outputDirectory>${project.build.directory}/tomcat/idp/webapps/fediz-idp/WEB-INF/classes</outputDirectory>
+                            <resources>
                                 <resource>
                                     <directory>${basedir}/src/test/resources/realma</directory>
                                     <includes>
@@ -190,18 +169,18 @@
                                     </includes>
                                     <filtering>true</filtering>
                                 </resource>
-                            </resources>              
-                        </configuration>            
+                            </resources>
+                        </configuration>
                     </execution>
                     <execution>
                         <id>copy-customised-sts-config</id>
-                        <phase>generate-test-sources</phase>
+                        <phase>generate-test-resources</phase>
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${basedir}/target/tomcat/idp/webapps/fediz-idp-sts/WEB-INF</outputDirectory>
-                            <resources>          
+                            <outputDirectory>${project.build.directory}/tomcat/idp/webapps/fediz-idp-sts/WEB-INF</outputDirectory>
+                            <resources>
                                 <resource>
                                     <directory>${basedir}/src/test/resources/realma</directory>
                                     <includes>
@@ -209,9 +188,9 @@
                                     </includes>
                                     <filtering>false</filtering>
                                 </resource>
-                            </resources>              
-                            <overwrite>true</overwrite>       
-                        </configuration>            
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -231,7 +210,7 @@
                                 <wt.headless>true</wt.headless>
                                 <idp.https.port>${idp.https.port}</idp.https.port>
                                 <rp.https.port>${rp.https.port}</rp.https.port>
-                                <java.util.logging.config.file>${basedir}/target/test-classes/logging.properties</java.util.logging.config.file>
+                                <java.util.logging.config.file>${project.build.testOutputDirectory}/logging.properties</java.util.logging.config.file>
                             </systemPropertyVariables>
                             <includes>
                                 <include>**/systests/**</include>
