@@ -68,7 +68,7 @@
     </springsec:authentication-manager>
 
     <bean id="fedizConfig" class="org.apache.cxf.fediz.spring.FederationConfigImpl" init-method="init"
-        p:configFile="file:./target/test-classes/fediz_config_spring.xml" />
+        p:configFile="file:./target/tomcat/fediz_config_spring.xml" />
 
     <bean id="federationEntryPoint"
         class="org.apache.cxf.fediz.spring.web.FederationAuthenticationEntryPoint"
