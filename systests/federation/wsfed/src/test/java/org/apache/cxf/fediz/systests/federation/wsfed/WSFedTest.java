@@ -20,10 +20,11 @@
 package org.apache.cxf.fediz.systests.federation.wsfed;
 
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 import javax.servlet.ServletException;
@@ -39,7 +40,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 
-import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
@@ -49,8 +49,9 @@ import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.BeforeClass;
+
+import static org.junit.Assert.*;
 
 /**
  * This is a test for federation using a WS-Federation enabled web application. The web application is configured
@@ -67,11 +68,11 @@ public class WSFedTest {
         IDP, REALMB, SAMLSSO, OIDC, RP
     }
 
-    static String idpHttpsPort;
-    static String idpRealmbHttpsPort;
-    static String idpSamlSSOHttpsPort;
-    static String idpOIDCHttpsPort;
-    static String rpHttpsPort;
+    private static final String idpHttpsPort = System.getProperty("idp.https.port");
+    private static final String idpRealmbHttpsPort = System.getProperty("idp.realmb.https.port");
+    private static final String idpSamlSSOHttpsPort = System.getProperty("idp.samlsso.https.port");
+    private static final String idpOIDCHttpsPort = System.getProperty("idp.oidc.https.port");
+    private static final String rpHttpsPort = System.getProperty("rp.https.port");
 
     private static Tomcat idpServer;
     private static Tomcat idpRealmbServer;
@@ -81,16 +82,11 @@ public class WSFedTest {
 
     @BeforeClass
     public static void init() throws Exception {
-        idpHttpsPort = System.getProperty("idp.https.port");
-        Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
-        idpRealmbHttpsPort = System.getProperty("idp.realmb.https.port");
-        Assert.assertNotNull("Property 'idp.realmb.https.port' null", idpRealmbHttpsPort);
-        idpSamlSSOHttpsPort = System.getProperty("idp.samlsso.https.port");
-        Assert.assertNotNull("Property 'idp.samlsso.https.port' null", idpSamlSSOHttpsPort);
-        idpOIDCHttpsPort = System.getProperty("idp.oidc.https.port");
-        Assert.assertNotNull("Property 'idp.oidc.https.port' null", idpOIDCHttpsPort);
-        rpHttpsPort = System.getProperty("rp.https.port");
-        Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
+        assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
+        assertNotNull("Property 'idp.realmb.https.port' null", idpRealmbHttpsPort);
+        assertNotNull("Property 'idp.samlsso.https.port' null", idpSamlSSOHttpsPort);
+        assertNotNull("Property 'idp.oidc.https.port' null", idpOIDCHttpsPort);
+        assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
 
         idpServer = startServer(ServerType.IDP, idpHttpsPort);
         idpRealmbServer = startServer(ServerType.REALMB, idpRealmbHttpsPort);
@@ -103,21 +99,10 @@ public class WSFedTest {
         throws ServletException, LifecycleException, IOException {
         Tomcat server = new Tomcat();
         server.setPort(0);
-        String currentDir = new File(".").getCanonicalPath();
-        String baseDir = currentDir + File.separator + "target";
-        server.setBaseDir(baseDir);
 
-        if (serverType == ServerType.IDP) {
-            server.getHost().setAppBase("tomcat/idp/webapps");
-        } else if (serverType == ServerType.REALMB) {
-            server.getHost().setAppBase("tomcat/idprealmb/webapps");
-        } else if (serverType == ServerType.SAMLSSO) {
-            server.getHost().setAppBase("tomcat/idpsamlsso/webapps");
-        } else if (serverType == ServerType.OIDC) {
-            server.getHost().setAppBase("tomcat/idpoidc/webapps");
-        } else {
-            server.getHost().setAppBase("tomcat/rp/webapps");
-        }
+        Path targetDir = Paths.get("target").toAbsolutePath();
+        server.setBaseDir(targetDir.toString());
+
         server.getHost().setAutoDeploy(true);
         server.getHost().setDeployOnStartup(true);
 
@@ -125,61 +110,63 @@ public class WSFedTest {
         httpsConnector.setPort(Integer.parseInt(port));
         httpsConnector.setSecure(true);
         httpsConnector.setScheme("https");
-        httpsConnector.setAttribute("keyAlias", "mytomidpkey");
+        httpsConnector.setAttribute("sslProtocol", "TLS");
+        httpsConnector.setAttribute("SSLEnabled", true);
         httpsConnector.setAttribute("keystorePass", "tompass");
         httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
+        httpsConnector.setAttribute("keyAlias", "mytomidpkey");
         httpsConnector.setAttribute("truststorePass", "tompass");
         httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
         httpsConnector.setAttribute("clientAuth", "want");
-        // httpsConnector.setAttribute("clientAuth", "false");
-        httpsConnector.setAttribute("sslProtocol", "TLS");
-        httpsConnector.setAttribute("SSLEnabled", true);
-
-        server.getService().addConnector(httpsConnector);
 
         if (serverType == ServerType.IDP) {
-            File stsWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp-sts");
-            server.addWebapp("/fediz-idp-sts", stsWebapp.getAbsolutePath());
+            server.getHost().setAppBase("tomcat/idp/webapps");
 
-            File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp");
-            server.addWebapp("/fediz-idp", idpWebapp.getAbsolutePath());
+            Path stsWebapp = targetDir.resolve(server.getHost().getAppBase()).resolve("fediz-idp-sts");
+            server.addWebapp("/fediz-idp-sts", stsWebapp.toString());
+
+            Path idpWebapp = targetDir.resolve(server.getHost().getAppBase()).resolve("fediz-idp");
+            server.addWebapp("/fediz-idp", idpWebapp.toString());
         } else if (serverType == ServerType.REALMB) {
-            File stsWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp-sts-realmb");
-            server.addWebapp("/fediz-idp-sts-realmb", stsWebapp.getAbsolutePath());
+            server.getHost().setAppBase("tomcat/idprealmb/webapps");
 
-            File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp-realmb");
-            server.addWebapp("/fediz-idp-realmb", idpWebapp.getAbsolutePath());
+            Path stsWebapp = targetDir.resolve(server.getHost().getAppBase()).resolve("fediz-idp-sts-realmb");
+            server.addWebapp("/fediz-idp-sts-realmb", stsWebapp.toString());
+
+            Path idpWebapp = targetDir.resolve(server.getHost().getAppBase()).resolve("fediz-idp-realmb");
+            server.addWebapp("/fediz-idp-realmb", idpWebapp.toString());
         } else if (serverType == ServerType.SAMLSSO) {
-            File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "idpsaml");
-            server.addWebapp("/idp", idpWebapp.getAbsolutePath());
+            server.getHost().setAppBase("tomcat/idpsamlsso/webapps");
+
+            Path idpWebapp = targetDir.resolve(server.getHost().getAppBase()).resolve("idpsaml");
+            server.addWebapp("/idp", idpWebapp.toString());
         } else if (serverType == ServerType.OIDC) {
-            File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "idpoidc");
-            server.addWebapp("/idpoidc", idpWebapp.getAbsolutePath());
+            server.getHost().setAppBase("tomcat/idpoidc/webapps");
+
+            Path idpWebapp = targetDir.resolve(server.getHost().getAppBase()).resolve("idpoidc");
+            server.addWebapp("/idpoidc", idpWebapp.toString());
         } else {
-            File rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
-            Context cxt = server.addWebapp("/wsfed", rpWebapp.getAbsolutePath());
+            server.getHost().setAppBase("tomcat/rp/webapps");
+
+            httpsConnector.setAttribute("clientAuth", "false");
 
             FederationAuthenticator fa = new FederationAuthenticator();
-            fa.setConfigFile(currentDir + File.separator + "target" + File.separator
-                             + "test-classes" + File.separator + "fediz_config_wsfed.xml");
-            cxt.getPipeline().addValve(fa);
+            fa.setConfigFile(targetDir.resolve("test-classes").resolve("fediz_config_wsfed.xml").toString());
 
-            rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
-            cxt = server.addWebapp("/samlsso", rpWebapp.getAbsolutePath());
-            cxt.getPipeline().addValve(fa);
+            Path rpWebapp = targetDir.resolve(server.getHost().getAppBase()).resolve("simpleWebapp");
 
-            rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
-            cxt = server.addWebapp("/samlssocustom", rpWebapp.getAbsolutePath());
-            cxt.getPipeline().addValve(fa);
+            server.addWebapp("/wsfed", rpWebapp.toString()).getPipeline().addValve(fa);
 
-            rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
-            cxt = server.addWebapp("/samlssocustompost", rpWebapp.getAbsolutePath());
-            cxt.getPipeline().addValve(fa);
+            server.addWebapp("/samlsso", rpWebapp.toString()).getPipeline().addValve(fa);
 
-            rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
-            cxt = server.addWebapp("/oidc", rpWebapp.getAbsolutePath());
-            cxt.getPipeline().addValve(fa);
+            server.addWebapp("/samlssocustom", rpWebapp.toString()).getPipeline().addValve(fa);
+
+            server.addWebapp("/samlssocustompost", rpWebapp.toString()).getPipeline().addValve(fa);
+
+            server.addWebapp("/oidc", rpWebapp.toString()).getPipeline().addValve(fa);
         }
+
+        server.getService().addConnector(httpsConnector);
 
         server.start();
 
@@ -236,23 +223,23 @@ public class WSFedTest {
         final String bodyTextContent =
             login(url, user, password, getIdpRealmbHttpsPort(), idpHttpsPort);
 
-        Assert.assertTrue("Principal not alice",
+        assertTrue("Principal not alice",
                           bodyTextContent.contains("userPrincipal=alice"));
-        Assert.assertTrue("User " + user + " does not have role Admin",
+        assertTrue("User " + user + " does not have role Admin",
                           bodyTextContent.contains("role:Admin=false"));
-        Assert.assertTrue("User " + user + " does not have role Manager",
+        assertTrue("User " + user + " does not have role Manager",
                           bodyTextContent.contains("role:Manager=false"));
-        Assert.assertTrue("User " + user + " must have role User",
+        assertTrue("User " + user + " must have role User",
                           bodyTextContent.contains("role:User=true"));
 
         String claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
+        assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
                           bodyTextContent.contains(claim + "=Alice"));
         claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
+        assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
                           bodyTextContent.contains(claim + "=Smith"));
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
+        assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
                           bodyTextContent.contains(claim + "=alice@realma.org"));
     }
 
@@ -267,23 +254,23 @@ public class WSFedTest {
         final String bodyTextContent =
             login(url, user, password, getIdpRealmbHttpsPort(), getIdpHttpsPort(), true);
 
-        Assert.assertTrue("Principal not alice",
+        assertTrue("Principal not alice",
                           bodyTextContent.contains("userPrincipal=alice"));
-        Assert.assertTrue("User " + user + " does not have role Admin",
+        assertTrue("User " + user + " does not have role Admin",
                           bodyTextContent.contains("role:Admin=false"));
-        Assert.assertTrue("User " + user + " does not have role Manager",
+        assertTrue("User " + user + " does not have role Manager",
                           bodyTextContent.contains("role:Manager=false"));
-        Assert.assertTrue("User " + user + " must have role User",
+        assertTrue("User " + user + " must have role User",
                           bodyTextContent.contains("role:User=true"));
 
         String claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
+        assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
                           bodyTextContent.contains(claim + "=Alice"));
         claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
+        assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
                           bodyTextContent.contains(claim + "=Smith"));
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
+        assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
                           bodyTextContent.contains(claim + "=alice@realma.org"));
     }
 
@@ -298,23 +285,23 @@ public class WSFedTest {
         final String bodyTextContent =
             login(url, user, password, idpSamlSSOHttpsPort, idpHttpsPort, false);
 
-        Assert.assertTrue("Principal not alice",
+        assertTrue("Principal not alice",
                           bodyTextContent.contains("userPrincipal=alice"));
-        Assert.assertTrue("User " + user + " does not have role Admin",
+        assertTrue("User " + user + " does not have role Admin",
                           bodyTextContent.contains("role:Admin=false"));
-        Assert.assertTrue("User " + user + " does not have role Manager",
+        assertTrue("User " + user + " does not have role Manager",
                           bodyTextContent.contains("role:Manager=false"));
-        Assert.assertTrue("User " + user + " must have role User",
+        assertTrue("User " + user + " must have role User",
                           bodyTextContent.contains("role:User=true"));
 
         String claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
+        assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
                           bodyTextContent.contains(claim + "=Alice"));
         claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
+        assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
                           bodyTextContent.contains(claim + "=Smith"));
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
+        assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
                           bodyTextContent.contains(claim + "=alice@realma.org"));
     }
 
@@ -329,23 +316,23 @@ public class WSFedTest {
         final String bodyTextContent =
             login(url, user, password, idpSamlSSOHttpsPort, idpHttpsPort, true);
 
-        Assert.assertTrue("Principal not alice",
+        assertTrue("Principal not alice",
                           bodyTextContent.contains("userPrincipal=alice"));
-        Assert.assertTrue("User " + user + " does not have role Admin",
+        assertTrue("User " + user + " does not have role Admin",
                           bodyTextContent.contains("role:Admin=false"));
-        Assert.assertTrue("User " + user + " does not have role Manager",
+        assertTrue("User " + user + " does not have role Manager",
                           bodyTextContent.contains("role:Manager=false"));
-        Assert.assertTrue("User " + user + " must have role User",
+        assertTrue("User " + user + " must have role User",
                           bodyTextContent.contains("role:User=true"));
 
         String claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
+        assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
                           bodyTextContent.contains(claim + "=Alice"));
         claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
+        assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
                           bodyTextContent.contains(claim + "=Smith"));
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
+        assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
                           bodyTextContent.contains(claim + "=alice@realma.org"));
     }
 
@@ -358,23 +345,23 @@ public class WSFedTest {
         final String bodyTextContent =
             loginOIDC(url, user, password, idpOIDCHttpsPort, idpHttpsPort);
 
-        Assert.assertTrue("Principal not alice",
+        assertTrue("Principal not alice",
                           bodyTextContent.contains("userPrincipal=alice"));
-        Assert.assertTrue("User " + user + " does not have role Admin",
+        assertTrue("User " + user + " does not have role Admin",
                           bodyTextContent.contains("role:Admin=false"));
-        Assert.assertTrue("User " + user + " does not have role Manager",
+        assertTrue("User " + user + " does not have role Manager",
                           bodyTextContent.contains("role:Manager=false"));
-        Assert.assertTrue("User " + user + " must have role User",
+        assertTrue("User " + user + " must have role User",
                           bodyTextContent.contains("role:User=true"));
 
         String claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
+        assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
                           bodyTextContent.contains(claim + "=Alice"));
         claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
+        assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
                           bodyTextContent.contains(claim + "=Smith"));
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
+        assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
                           bodyTextContent.contains(claim + "=alice@realma.org"));
     }
 
@@ -395,26 +382,33 @@ public class WSFedTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // For some reason, redirecting back to the IdP for "realm a" is not working with htmlunit. So extract
         // the parameters manually from the form, and access the IdP for "realm a" with them
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
 
         String wresult = null;
-        String wa = "wsignin1.0";
+        String wa = null;
         String wctx = null;
         String wtrealm = null;
         for (DomElement result : results) {
-            if ("wresult".equals(result.getAttributeNS(null, "name"))) {
-                wresult = result.getAttributeNS(null, "value");
-            } else if ("wctx".equals(result.getAttributeNS(null, "name"))) {
-                wctx = result.getAttributeNS(null, "value");
-            } else if ("wtrealm".equals(result.getAttributeNS(null, "name"))) {
-                wtrealm = result.getAttributeNS(null, "value");
+            String name = result.getAttributeNS(null, "name");
+            String value = result.getAttributeNS(null, "value");
+            if ("wresult".equals(name)) {
+                wresult = value;
+            } else if ("wa".equals(name)) {
+                wa = value;
+            } else if ("wctx".equals(name)) {
+                wctx = value;
+            } else if ("wtrealm".equals(name)) {
+                wtrealm = value;
             }
         }
-        Assert.assertTrue(wctx != null && wresult != null && wtrealm != null);
+        assertNotNull(wresult);
+        assertNotNull(wa);
+        assertNotNull(wctx);
+        assertNotNull(wtrealm);
         webClient.close();
 
         // Invoke on the IdP for "realm a"
@@ -422,16 +416,16 @@ public class WSFedTest {
         webClient2.setCookieManager(cookieManager);
         webClient2.getOptions().setUseInsecureSSL(true);
 
-        String url2 = "https://localhost:" + rpIdpPort + "/fediz-idp/federation?";
-        url2 += "wctx=" + wctx + "&";
-        url2 += "wa=" + wa + "&";
-        url2 += "wtrealm=" + URLEncoder.encode(wtrealm, "UTF8") + "&";
-        url2 += "wresult=" + URLEncoder.encode(wresult, "UTF8") + "&";
+        String url2 = "https://localhost:" + rpIdpPort + "/fediz-idp/federation"
+                + "?wctx=" + wctx
+                + "&wa=" + wa
+                + "&wtrealm=" + URLEncoder.encode(wtrealm, "UTF8")
+                + "&wresult=" + URLEncoder.encode(wresult, "UTF8");
 
         webClient2.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage2 = webClient2.getPage(url2);
         webClient2.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage2.getTitleText());
+        assertEquals("IDP SignIn Response Form", idpPage2.getTitleText());
 
         // Now redirect back to the RP
         final HtmlForm form2 = idpPage2.getFormByName("signinresponseform");
@@ -439,7 +433,7 @@ public class WSFedTest {
         final HtmlSubmitInput button2 = form2.getInputByName("_eventId_submit");
 
         final HtmlPage rpPage = button2.click();
-        Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
+        assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
 
         webClient2.close();
         return rpPage.getBody().getTextContent();
@@ -463,7 +457,7 @@ public class WSFedTest {
         HtmlPage idpPage = webClient.getPage(url);
 
         if (postBinding) {
-            Assert.assertTrue("SAML IDP Response Form".equals(idpPage.getTitleText())
+            assertTrue("SAML IDP Response Form".equals(idpPage.getTitleText())
                                 || "IDP SignIn Response Form".equals(idpPage.getTitleText()));
             for (HtmlForm form : idpPage.getForms()) {
                 String name = form.getAttributeNS(null, "name");
@@ -474,7 +468,7 @@ public class WSFedTest {
             }
         }
 
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // Now redirect back to the RP
         final HtmlForm form = idpPage.getFormByName("signinresponseform");
@@ -482,7 +476,7 @@ public class WSFedTest {
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
 
         final HtmlPage rpPage = button.click();
-        Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
+        assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
 
         webClient.close();
         return rpPage.getBody().getTextContent();
@@ -525,7 +519,7 @@ public class WSFedTest {
 
         HtmlPage idpPage = webClient.getPage(request);
 
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // Now redirect back to the RP
         final HtmlForm form = idpPage.getFormByName("signinresponseform");
@@ -533,7 +527,7 @@ public class WSFedTest {
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
 
         final HtmlPage rpPage = button.click();
-        Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
+        assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
 
         webClient.close();
         return rpPage.getBody().getTextContent();
