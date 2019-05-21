@@ -98,7 +98,7 @@
     </properties>
 
     <scm>
-        <connection>scm:git:http://gitbox.apache.org/repos/asf/cxf-fediz.git</connection>
+        <connection>scm:git:https://gitbox.apache.org/repos/asf/cxf-fediz.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/cxf-fediz.git</developerConnection>
       <tag>HEAD</tag>
   </scm>
@@ -136,7 +136,7 @@
         <repository>
             <id>wasdev-maven-repo</id>
             <name>wasdev-maven-repo</name>
-            <url>http://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/wasdev/maven/repository/</url>
+            <url>https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/wasdev/maven/repository/</url>
         </repository>
     </repositories>
     <pluginRepositories>
@@ -154,7 +154,7 @@
         <pluginRepository>
             <id>Liberty</id>
             <name>Liberty Repository</name>
-            <url>http://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/wasdev/maven/repository/</url>
+            <url>https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/wasdev/maven/repository/</url>
             <layout>default</layout>
             <snapshots>
                 <enabled>false</enabled>
@@ -173,35 +173,35 @@
             <subscribe>users-subscribe@cxf.apache.org</subscribe>
             <unsubscribe>users-unsubscribe@cxf.apache.org</unsubscribe>
             <post>users@cxf.apache.org</post>
-            <archive>http://mail-archives.apache.org/mod_mbox/cxf-users</archive>
+            <archive>https://mail-archives.apache.org/mod_mbox/cxf-users</archive>
         </mailingList>
         <mailingList>
             <name>Apache CXF Developer List</name>
             <subscribe>dev-subscribe@cxf.apache.org</subscribe>
             <unsubscribe>dev-unsubscribe@cxf.apache.org</unsubscribe>
             <post>dev@cxf.apache.org</post>
-            <archive>http://mail-archives.apache.org/mod_mbox/cxf-dev</archive>
+            <archive>https://mail-archives.apache.org/mod_mbox/cxf-dev</archive>
         </mailingList>
         <mailingList>
             <name>Apache CXF Commits List</name>
             <subscribe>commits-subscribe@cxf.apache.org</subscribe>
             <unsubscribe>commits-unsubscribe@cxf.apache.org</unsubscribe>
             <post>commits@cxf.apache.org</post>
-            <archive>http://mail-archives.apache.org/mod_mbox/cxf-commits</archive>
+            <archive>https://mail-archives.apache.org/mod_mbox/cxf-commits</archive>
         </mailingList>
         <mailingList>
             <name>Apache CXF Issues List</name>
             <subscribe>issues-subscribe@cxf.apache.org</subscribe>
             <unsubscribe>issues-unsubscribe@cxf.apache.org</unsubscribe>
             <post>issues@cxf.apache.org</post>
-            <archive>http://mail-archives.apache.org/mod_mbox/cxf-issues</archive>
+            <archive>https://mail-archives.apache.org/mod_mbox/cxf-issues</archive>
         </mailingList>
         <mailingList>
             <name>Apache CXF Build Notifications List</name>
             <subscribe>notifications-subscribe@cxf.apache.org</subscribe>
             <unsubscribe>notifications-unsubscribe@cxf.apache.org</unsubscribe>
             <post>notifications@cxf.apache.org</post>
-            <archive>http://mail-archives.apache.org/mod_mbox/cxf-notifications</archive>
+            <archive>https://mail-archives.apache.org/mod_mbox/cxf-notifications</archive>
         </mailingList>
     </mailingLists>
 
@@ -209,11 +209,11 @@
         <developer>
             <name>The Apache CXF Team</name>
             <email>dev@cxf.apache.org</email>
-            <url>http://cxf.apache.org</url>
+            <url>https://cxf.apache.org</url>
             <organization>Apache Software Foundation</organization>
-            <organizationUrl>http://apache.org/</organizationUrl>
+            <organizationUrl>https://apache.org/</organizationUrl>
             <properties>
-                <picUrl>http://cxf.apache.org/images/cxf.png</picUrl>
+                <picUrl>https://cxf.apache.org/images/cxf.png</picUrl>
             </properties>
         </developer>
     </developers>
@@ -234,13 +234,13 @@
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
     <organization>
         <name>The Apache Software Foundation</name>
-        <url>http://www.apache.org/</url>
+        <url>https://www.apache.org/</url>
     </organization>
 
     <modules>
