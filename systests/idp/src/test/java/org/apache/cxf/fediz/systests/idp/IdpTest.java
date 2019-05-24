@@ -33,7 +33,9 @@ import org.w3c.dom.Node;
 
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.UnexpectedPage;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNodeList;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -1357,6 +1359,28 @@ public class IdpTest {
         } catch (FailingHttpStatusCodeException ex) {
             Assert.assertEquals(ex.getStatusCode(), 400);
         }
+
+        webClient.close();
+    }
+
+    @org.junit.Test
+    public void testSwagger() throws Exception {
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/services/rs/swagger.json";
+
+        String user = "alice";
+        String password = "ecila";
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+        webClient.getCredentialsProvider().setCredentials(
+            new AuthScope("localhost", Integer.parseInt(getIdpHttpsPort())),
+            new UsernamePasswordCredentials(user, password));
+
+        final UnexpectedPage swaggerPage = webClient.getPage(url);
+        WebResponse response = swaggerPage.getWebResponse();
+        Assert.assertEquals("application/json", response.getContentType());
+        String json = response.getContentAsString();
+        Assert.assertTrue(json.contains("Claims"));
 
         webClient.close();
     }
