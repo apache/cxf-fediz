@@ -6,7 +6,7 @@
 <%@ page import="java.util.TimeZone"%>
 <%@ page import="javax.servlet.http.HttpServletRequest" %>
 <%@ page import="org.apache.cxf.fediz.service.oidc.clients.RegisteredClients" %>
-<%@ page import="org.apache.commons.lang3.StringEscapeUtils" %>
+<%@ page import="org.apache.commons.text.StringEscapeUtils" %>
 
 <%
 	Collection<Client> regs = ((RegisteredClients)request.getAttribute("data")).getClients();

@@ -30,6 +30,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Element;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -57,7 +58,7 @@ public class TokenSerializer {
             }
             String serializedToken = sw.toString();
 
-            return org.apache.commons.lang3.StringEscapeUtils.escapeXml11(serializedToken);
+            return StringEscapeUtils.escapeXml11(serializedToken);
         }
 
         return null;

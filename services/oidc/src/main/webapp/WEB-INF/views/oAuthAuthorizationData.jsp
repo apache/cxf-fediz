@@ -2,7 +2,7 @@
 <%@ page import="java.util.List" %>
 <%@ page import="org.apache.cxf.rs.security.oauth2.common.OAuthAuthorizationData" %>
 <%@ page import="org.apache.cxf.rs.security.oauth2.common.OAuthPermission" %>
-<%@ page import="org.apache.commons.lang3.StringEscapeUtils" %>
+<%@ page import="org.apache.commons.text.StringEscapeUtils" %>
 
 
 <%

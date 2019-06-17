@@ -29,7 +29,6 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.fediz.core.spi.ReplyConstraintCallback;
 import org.apache.cxf.fediz.service.oidc.handler.hrd.ApplicationContextProvider;
 import org.apache.cxf.rs.security.oauth2.common.Client;
@@ -73,7 +72,7 @@ public class LogoutRedirectConstraintHandler implements CallbackHandler {
                 for (int i = 0; i < uris.size(); i++) {
                     uris.set(i, "\\Q" + uris.get(i) + "\\E");
                 }
-                return Pattern.compile("(" + StringUtils.join(uris, "|") + ")");
+                return Pattern.compile("(" + String.join("|", uris) + ")");
             }
         }
         
