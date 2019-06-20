@@ -64,9 +64,9 @@
         <openjpa.version>2.4.3</openjpa.version>
         <servlet.version>2.5</servlet.version>
         <slf4j.version>1.7.26</slf4j.version>
-        <spring.version>4.3.22.RELEASE</spring.version>
+        <spring.version>4.3.24.RELEASE</spring.version>
         <spring-ldap-core.version>2.3.2.RELEASE</spring-ldap-core.version>
-        <spring.security.version>4.2.11.RELEASE</spring.security.version>
+        <spring.security.version>4.2.13.RELEASE</spring.security.version>
         <spring-webflow.version>2.5.1.RELEASE</spring-webflow.version>
         <tomcat.version>9.0.20</tomcat.version>
         <wss4j.version>2.2.2</wss4j.version>
@@ -263,6 +263,18 @@
         <module>examples</module>
         <module>apache-fediz</module>
     </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-framework-bom</artifactId>
+                <version>${spring.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <defaultGoal>install</defaultGoal>
@@ -643,7 +655,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-war-plugin</artifactId>
-                    <version>3.2.1</version>
+                    <version>3.2.3</version>
                </plugin>
             </plugins>
         </pluginManagement>
@@ -825,7 +837,5 @@
             </properties>
         </profile>
     </profiles>
-
-
 
 </project>
