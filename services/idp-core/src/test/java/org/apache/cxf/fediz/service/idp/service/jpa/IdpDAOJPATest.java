@@ -33,9 +33,6 @@ import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.domain.TrustedIdp;
 import org.apache.cxf.fediz.service.idp.service.IdpDAO;
 import org.apache.wss4j.dom.WSConstants;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -43,6 +40,10 @@ import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
+
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -63,7 +64,7 @@ public class IdpDAOJPATest {
     public void testReadAllIdps() {
         List<Idp> idps = idpDAO.getIdps(0, 999, null);
         // Idp could have been removed, Order not given as per JUnit design
-        Assert.isTrue(0 < idps.size(), "Size doesn't match [" + idps.size() + "]");
+        Assert.isTrue(!idps.isEmpty(), "Size doesn't match [" + idps.size() + "]");
     }
 
 

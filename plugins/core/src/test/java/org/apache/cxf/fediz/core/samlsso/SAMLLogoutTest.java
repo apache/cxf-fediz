@@ -35,6 +35,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 import org.apache.cxf.fediz.common.SecurityTestUtil;
 import org.apache.cxf.fediz.core.KeystoreCallbackHandler;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
@@ -47,10 +50,6 @@ import org.apache.wss4j.common.ext.WSPasswordCallback;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.OpenSAMLUtil;
 import org.apache.wss4j.common.util.DOM2Writer;
-import org.easymock.EasyMock;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.opensaml.saml.common.SAMLObjectContentReference;
 import org.opensaml.saml.common.SignableSAMLObject;
 import org.opensaml.saml.saml2.core.LogoutResponse;
@@ -60,18 +59,21 @@ import org.opensaml.xmlsec.keyinfo.impl.X509KeyInfoGeneratorFactory;
 import org.opensaml.xmlsec.signature.KeyInfo;
 import org.opensaml.xmlsec.signature.Signature;
 import org.opensaml.xmlsec.signature.support.SignatureConstants;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+
+import org.easymock.EasyMock;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
 
 /**
  * Some tests for logout for SAML SSO
  */
 public class SAMLLogoutTest {
-    private static final String LOGOUT_URL = "https://localhost/fedizhelloworld/secure/logout";
-    private static final String LOGOUT_URI = "/secure/logout";
     static final String TEST_REQUEST_URL = "https://localhost/fedizhelloworld/";
     static final String TEST_IDP_ISSUER = "http://url_to_the_issuer";
     static final String TEST_CLIENT_ADDRESS = "https://127.0.0.1";
+    private static final String LOGOUT_URL = "https://localhost/fedizhelloworld/secure/logout";
+    private static final String LOGOUT_URI = "/secure/logout";
 
     private static final String CONFIG_FILE = "fediz_test_config_saml.xml";
 
@@ -272,9 +274,9 @@ public class SAMLLogoutTest {
 
         String sigAlgo = SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA1;
         String pubKeyAlgo = issuerCerts[0].getPublicKey().getAlgorithm();
-        if (pubKeyAlgo.equalsIgnoreCase("DSA")) {
+        if ("DSA".equalsIgnoreCase(pubKeyAlgo)) {
             sigAlgo = SignatureConstants.ALGO_ID_SIGNATURE_DSA;
-        } else if (pubKeyAlgo.equalsIgnoreCase("EC")) {
+        } else if ("EC".equalsIgnoreCase(pubKeyAlgo)) {
             sigAlgo = SignatureConstants.ALGO_ID_SIGNATURE_ECDSA_SHA1;
         }
 

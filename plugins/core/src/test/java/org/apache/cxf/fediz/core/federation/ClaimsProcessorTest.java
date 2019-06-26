@@ -74,6 +74,7 @@ import org.apache.wss4j.common.saml.bean.ConditionsBean;
 import org.apache.wss4j.common.saml.builder.SAML2Constants;
 import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.wss4j.common.util.XMLUtils;
+
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;

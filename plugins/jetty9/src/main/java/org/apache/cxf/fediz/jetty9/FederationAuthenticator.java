@@ -219,7 +219,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
                 if (session.getAttribute(J_URI) == null) { // || alwaysSaveUri)
                     StringBuffer buf = request.getRequestURL();
                     if (request.getQueryString() != null) {
-                        buf.append("?").append(request.getQueryString());
+                        buf.append('?').append(request.getQueryString());
                     }
                     session.setAttribute(J_URI, buf.toString());
 
@@ -389,7 +389,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
                 if (jUri != null && jPost != null) {
                     StringBuffer buf = request.getRequestURL();
                     if (request.getQueryString() != null) {
-                        buf.append("?").append(request.getQueryString());
+                        buf.append('?').append(request.getQueryString());
                     }
 
                     if (jUri.equals(buf.toString())) {

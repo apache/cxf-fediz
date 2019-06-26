@@ -81,25 +81,25 @@ public class TrustedIdpWSFedProtocolHandler extends AbstractTrustedIdpProtocolHa
         try {
             StringBuilder sb = new StringBuilder();
             sb.append(trustedIdp.getUrl());
-            sb.append("?").append(FederationConstants.PARAM_ACTION).append('=');
+            sb.append('?').append(FederationConstants.PARAM_ACTION).append('=');
             sb.append(FederationConstants.ACTION_SIGNIN);
-            sb.append("&").append(FederationConstants.PARAM_TREALM).append('=');
+            sb.append('&').append(FederationConstants.PARAM_TREALM).append('=');
             sb.append(URLEncoder.encode(idp.getRealm(), "UTF-8"));
-            sb.append("&").append(FederationConstants.PARAM_REPLY).append('=');
+            sb.append('&').append(FederationConstants.PARAM_REPLY).append('=');
             sb.append(URLEncoder.encode(idp.getIdpUrl().toString(), "UTF-8"));
 
             if (isBooleanPropertyConfigured(trustedIdp, HOME_REALM_PROPAGATION, true)) {
-                sb.append("&").append(FederationConstants.PARAM_HOME_REALM).append('=');
+                sb.append('&').append(FederationConstants.PARAM_HOME_REALM).append('=');
                 sb.append(trustedIdp.getRealm());
             }
 
             String wfresh = context.getFlowScope().getString(FederationConstants.PARAM_FRESHNESS);
             if (wfresh != null) {
-                sb.append("&").append(FederationConstants.PARAM_FRESHNESS).append('=');
+                sb.append('&').append(FederationConstants.PARAM_FRESHNESS).append('=');
                 sb.append(URLEncoder.encode(wfresh, "UTF-8"));
             }
             String wctx = context.getFlowScope().getString(IdpConstants.TRUSTED_IDP_CONTEXT);
-            sb.append("&").append(FederationConstants.PARAM_CONTEXT).append('=');
+            sb.append('&').append(FederationConstants.PARAM_CONTEXT).append('=');
             sb.append(wctx);
 
             return new URL(sb.toString());

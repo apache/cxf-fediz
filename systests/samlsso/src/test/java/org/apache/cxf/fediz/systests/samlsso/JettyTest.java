@@ -25,6 +25,7 @@ import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.cxf.fediz.systests.common.AbstractTests;
+
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -35,17 +36,15 @@ import org.junit.Ignore;
  */
 public class JettyTest extends AbstractTests {
 
-    static String idpHttpsPort;
-    static String rpHttpsPort;
+    private static final String IDP_HTTPS_PORT = System.getProperty("idp.https.port");
+    private static final String RP_HTTPS_PORT = System.getProperty("rp.jetty.https.port");
 
     private static Tomcat idpServer;
 
     @BeforeClass
     public static void init() {
-        idpHttpsPort = System.getProperty("idp.https.port");
-        Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
-        rpHttpsPort = System.getProperty("rp.jetty.https.port");
-        Assert.assertNotNull("Property 'rp.jetty.https.port' null", rpHttpsPort);
+        Assert.assertNotNull("Property 'idp.https.port' null", IDP_HTTPS_PORT);
+        Assert.assertNotNull("Property 'rp.jetty.https.port' null", RP_HTTPS_PORT);
 
         initIdp();
 
@@ -83,7 +82,7 @@ public class JettyTest extends AbstractTests {
             idpServer.getHost().setDeployOnStartup(true);
 
             Connector httpsConnector = new Connector();
-            httpsConnector.setPort(Integer.parseInt(idpHttpsPort));
+            httpsConnector.setPort(Integer.parseInt(IDP_HTTPS_PORT));
             httpsConnector.setSecure(true);
             httpsConnector.setScheme("https");
             httpsConnector.setAttribute("keyAlias", "mytomidpkey");
@@ -112,12 +111,12 @@ public class JettyTest extends AbstractTests {
 
     @Override
     public String getIdpHttpsPort() {
-        return idpHttpsPort;
+        return IDP_HTTPS_PORT;
     }
 
     @Override
     public String getRpHttpsPort() {
-        return rpHttpsPort;
+        return RP_HTTPS_PORT;
     }
 
     @Override

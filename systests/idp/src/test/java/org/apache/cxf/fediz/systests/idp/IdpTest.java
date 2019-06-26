@@ -54,6 +54,7 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.wss4j.dom.engine.WSSConfig;
 import org.apache.xml.security.keys.KeyInfo;
 import org.apache.xml.security.signature.XMLSignature;
+
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;

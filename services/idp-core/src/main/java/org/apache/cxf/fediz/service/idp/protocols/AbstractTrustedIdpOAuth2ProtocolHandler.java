@@ -96,26 +96,13 @@ public abstract class AbstractTrustedIdpOAuth2ProtocolHandler extends AbstractTr
         LOG.debug("Using scope: {}", scope);
 
         try {
-            StringBuilder sb = new StringBuilder();
-            sb.append(trustedIdp.getUrl());
-            sb.append("?");
-            sb.append("response_type").append('=');
-            sb.append("code");
-            sb.append("&");
-            sb.append("client_id").append('=');
-            sb.append(clientId);
-            sb.append("&");
-            sb.append("redirect_uri").append('=');
-            sb.append(URLEncoder.encode(idp.getIdpUrl().toString(), "UTF-8"));
-            sb.append("&");
-            sb.append("scope").append('=');
-            sb.append(URLEncoder.encode(scope, "UTF-8"));
-
-            String state = context.getFlowScope().getString(IdpConstants.TRUSTED_IDP_CONTEXT);
-            sb.append("&").append("state").append('=');
-            sb.append(state);
-
-            return new URL(sb.toString());
+            final String url = trustedIdp.getUrl()
+                    + "?response_type=code"
+                    + "&client_id=" + clientId
+                    + "&redirect_uri=" + URLEncoder.encode(idp.getIdpUrl().toString(), "UTF-8")
+                    + "&scope=" + URLEncoder.encode(scope, "UTF-8")
+                    + "&state=" + context.getFlowScope().getString(IdpConstants.TRUSTED_IDP_CONTEXT);
+            return new URL(url);
         } catch (MalformedURLException ex) {
             LOG.error("Invalid Redirect URL for Trusted Idp", ex);
             throw new IllegalStateException("Invalid Redirect URL for Trusted Idp");

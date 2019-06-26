@@ -30,6 +30,7 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
 import org.apache.cxf.fediz.common.STSUtil;
 import org.apache.cxf.fediz.common.SecurityTestUtil;
 import org.apache.cxf.fediz.core.AbstractSAMLCallbackHandler;
@@ -58,6 +59,7 @@ import org.apache.wss4j.common.saml.builder.SAML1Constants;
 import org.apache.wss4j.common.saml.builder.SAML2Constants;
 import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.wss4j.common.util.XMLUtils;
+
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;

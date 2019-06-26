@@ -62,8 +62,7 @@ public class FedizSubjectCreator implements SubjectCreator {
     private long timeToLive;
 
     @Override
-    public OidcUserSubject createUserSubject(MessageContext mc,
-                                             MultivaluedMap<String, String> params) throws OAuthServiceException {
+    public OidcUserSubject createUserSubject(MessageContext mc, MultivaluedMap<String, String> params) {
         Principal principal = mc.getSecurityContext().getUserPrincipal();
 
         if (!(principal instanceof FedizPrincipal)) {

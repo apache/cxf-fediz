@@ -31,9 +31,10 @@ import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.fediz.sts.AbstractSTSTest;
 import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
+import org.opensaml.saml.saml2.core.Attribute;
+
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.opensaml.saml.saml2.core.Attribute;
 
 /**
  * Some unit tests for the CXF STSClient Issue Binding.

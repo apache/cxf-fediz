@@ -28,6 +28,7 @@ import org.apache.cxf.fediz.systests.common.AbstractClientCertTests;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.xml.XmlConfiguration;
+
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;

@@ -247,7 +247,7 @@ public class STSClientAction {
         if (HTTP_DOCS_OASIS_OPEN_ORG_WS_SX_WS_TRUST_200512_PUBLICKEY.equals(stsKeyType)) {
             HttpServletRequest servletRequest = WebUtils.getHttpServletRequest(context);
             if (servletRequest != null) {
-                X509Certificate certs[] = (X509Certificate[])servletRequest
+                X509Certificate[] certs = (X509Certificate[])servletRequest
                     .getAttribute("javax.servlet.request.X509Certificate");
                 if (certs != null && certs.length > 0) {
                     sts.setUseCertificateForConfirmationKeyInfo(true);
@@ -350,7 +350,7 @@ public class STSClientAction {
         if (!isPortSet) {
             String updatedUrl = LocalServerResolver.resolve(this.wsdlLocation, context);
             setSTSWsdlUrl(updatedUrl);
-            LOG.info("STS WSDL URL updated to {}", updatedUrl.toString());
+            LOG.info("STS WSDL URL updated to {}", updatedUrl);
         }
     }
 

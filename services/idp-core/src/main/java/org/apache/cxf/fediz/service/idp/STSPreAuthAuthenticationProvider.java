@@ -34,7 +34,6 @@ import org.apache.xml.security.keys.content.X509Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
@@ -47,7 +46,7 @@ public class STSPreAuthAuthenticationProvider extends STSAuthenticationProvider 
             .getLogger(STSPreAuthAuthenticationProvider.class);
 
     @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+    public Authentication authenticate(Authentication authentication) {
         // We only handle PreAuthenticatedAuthenticationTokens
         if (!(authentication instanceof PreAuthenticatedAuthenticationToken)) {
             return null;

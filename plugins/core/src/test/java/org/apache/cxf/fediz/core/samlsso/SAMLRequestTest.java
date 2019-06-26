@@ -42,12 +42,13 @@ import org.apache.cxf.fediz.core.processor.RedirectionResponse;
 import org.apache.cxf.fediz.core.processor.SAMLProcessorImpl;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.wss4j.common.saml.OpenSAMLUtil;
+import org.opensaml.saml.saml2.core.AuthnRequest;
+import org.opensaml.saml.saml2.core.LogoutRequest;
+
 import org.easymock.EasyMock;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.opensaml.saml.saml2.core.AuthnRequest;
-import org.opensaml.saml.saml2.core.LogoutRequest;
 
 /**
  * Some tests for creating SAMLRequests using the SAMLProcessorImpl

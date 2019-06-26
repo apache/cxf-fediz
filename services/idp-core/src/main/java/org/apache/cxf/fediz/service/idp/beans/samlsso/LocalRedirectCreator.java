@@ -33,17 +33,17 @@ import org.springframework.webflow.execution.RequestContext;
 public class LocalRedirectCreator {
 
     public String createRedirectURL(RequestContext context, Idp idp) throws UnsupportedEncodingException {
-        StringBuilder redirectURL = new StringBuilder();
-        redirectURL.append(idp.getIdpUrl().toString()).append("?");
+        StringBuilder redirectURL = new StringBuilder(25);
+        redirectURL.append(idp.getIdpUrl().toString()).append('?');
 
         String relayState = (String)WebUtils.getAttributeFromFlowScope(context, "RelayState");
-        redirectURL.append("RelayState=").append(relayState).append("&");
+        redirectURL.append("RelayState=").append(relayState).append('&');
         String samlRequest = (String)WebUtils.getAttributeFromFlowScope(context, "SAMLRequest");
         redirectURL.append("SAMLRequest=").append(URLEncoder.encode(samlRequest, "UTF-8"));
 
         String signature = (String)WebUtils.getAttributeFromFlowScope(context, "Signature");
         if (signature != null) {
-            redirectURL.append("&");
+            redirectURL.append('&');
             redirectURL.append("Signature=").append(URLEncoder.encode(signature, "UTF-8"));
         }
 

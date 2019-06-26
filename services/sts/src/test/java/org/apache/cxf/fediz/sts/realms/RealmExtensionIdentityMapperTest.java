@@ -23,6 +23,7 @@ import java.security.Principal;
 
 import org.apache.cxf.fediz.service.sts.realms.RealmExtensionIdentityMapper;
 import org.apache.wss4j.common.principal.CustomTokenPrincipal;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

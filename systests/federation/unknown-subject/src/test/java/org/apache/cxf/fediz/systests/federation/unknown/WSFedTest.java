@@ -43,6 +43,7 @@ import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;

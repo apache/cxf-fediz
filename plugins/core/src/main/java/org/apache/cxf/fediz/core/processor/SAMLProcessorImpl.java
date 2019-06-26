@@ -437,11 +437,11 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
 
             StringBuilder sb = new StringBuilder();
             sb.append(SAMLSSOConstants.SAML_REQUEST).append('=').append(urlEncodedRequest);
-            sb.append("&" + SAMLSSOConstants.RELAY_STATE).append('=').append(relayState);
+            sb.append('&').append(SAMLSSOConstants.RELAY_STATE).append('=').append(relayState);
 
             if (((SAMLProtocol)config.getProtocol()).isSignRequest()) {
                 String signature = signRequest(config, sb);
-                sb.append("&" + SAMLSSOConstants.SIGNATURE).append('=').append(signature);
+                sb.append('&').append(SAMLSSOConstants.SIGNATURE).append('=').append(signature);
             }
 
             RedirectionResponse response = new RedirectionResponse();
@@ -502,7 +502,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
         Signature signature = Signature.getInstance(jceSigAlgo);
         signature.initSign(privateKey);
 
-        sb.append("&" + SAMLSSOConstants.SIG_ALG).append('=').append(URLEncoder.encode(sigAlgo, "UTF-8"));
+        sb.append('&').append(SAMLSSOConstants.SIG_ALG).append('=').append(URLEncoder.encode(sigAlgo, "UTF-8"));
         String requestToSign = sb.toString();
 
         signature.update(requestToSign.getBytes(StandardCharsets.UTF_8));
@@ -580,11 +580,11 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
 
             StringBuilder sb = new StringBuilder();
             sb.append(SAMLSSOConstants.SAML_REQUEST).append('=').append(urlEncodedRequest);
-            sb.append("&" + SAMLSSOConstants.RELAY_STATE).append('=').append(relayState);
+            sb.append('&').append(SAMLSSOConstants.RELAY_STATE).append('=').append(relayState);
 
             if (((SAMLProtocol)config.getProtocol()).isSignRequest()) {
                 String signature = signRequest(config, sb);
-                sb.append("&" + SAMLSSOConstants.SIGNATURE).append('=').append(signature);
+                sb.append('&').append(SAMLSSOConstants.SIGNATURE).append('=').append(signature);
             }
 
             RedirectionResponse response = new RedirectionResponse();

@@ -63,14 +63,15 @@ import org.apache.wss4j.common.saml.bean.ConditionsBean;
 import org.apache.wss4j.common.saml.bean.SubjectConfirmationDataBean;
 import org.apache.wss4j.common.saml.builder.SAML2Constants;
 import org.apache.wss4j.common.util.DOM2Writer;
-import org.easymock.EasyMock;
 import org.joda.time.DateTime;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.opensaml.saml.saml2.core.Issuer;
 import org.opensaml.saml.saml2.core.Response;
 import org.opensaml.saml.saml2.core.Status;
+
+import org.easymock.EasyMock;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
 
 import static org.junit.Assert.fail;
 

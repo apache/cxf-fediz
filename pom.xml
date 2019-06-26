@@ -44,7 +44,7 @@
         <commons.text.version>1.6</commons.text.version>
         <commons.validator.version>1.6</commons.validator.version>
         <cxf.version>3.3.2</cxf.version>
-        <cxf.build-utils.version>3.4.1</cxf.build-utils.version>
+        <cxf.build-utils.version>3.4.2</cxf.build-utils.version>
         <dbcp.version>2.1.1</dbcp.version>
         <easymock.version>4.0.2</easymock.version>
         <ehcache.version>2.10.6</ehcache.version>
@@ -470,7 +470,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>3.1.0</version>
                     <dependencies>
                         <dependency>
                             <groupId>org.apache.cxf.build-utils</groupId>
@@ -480,19 +480,12 @@
                         <dependency>
                             <groupId>com.puppycrawl.tools</groupId>
                             <artifactId>checkstyle</artifactId>
-                            <version>8.7</version>
-                            <exclusions>
-                                <!--  MCHECKSTYLE-156  -->
-                                <exclusion>
-                                    <groupId>com.sun</groupId>
-                                    <artifactId>tools</artifactId>
-                                </exclusion>
-                            </exclusions>
+                            <version>8.22</version>
                        </dependency>
                     </dependencies>
                     <configuration>
-                        <encoding>UTF-8</encoding>
                         <includeResources>false</includeResources>
+                        <includeTestSourceDirectory>true</includeTestSourceDirectory>
                     </configuration>
                     <executions>
                         <execution>
@@ -516,7 +509,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-pmd-plugin</artifactId>
-                    <version>3.11.0</version>
+                    <version>3.12.0</version>
                     <dependencies>
                         <dependency>
                             <groupId>org.apache.cxf.build-utils</groupId>

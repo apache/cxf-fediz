@@ -44,20 +44,6 @@ import java.util.TimeZone;
 
 import javax.servlet.ServletException;
 
-import org.apache.catalina.Context;
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.LifecycleState;
-import org.apache.catalina.connector.Connector;
-import org.apache.catalina.startup.Tomcat;
-import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
-import org.apache.cxf.rs.security.jose.jwa.SignatureAlgorithm;
-import org.apache.cxf.rs.security.jose.jws.JwsJwtCompactConsumer;
-import org.apache.cxf.rs.security.jose.jwt.JwtConstants;
-import org.apache.cxf.rs.security.jose.jwt.JwtToken;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.wss4j.common.util.Loader;
-
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.UnexpectedPage;
@@ -76,15 +62,34 @@ import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.util.WebConnectionWrapper;
 
-import static org.junit.Assert.*;
+import org.apache.catalina.Context;
+import org.apache.catalina.LifecycleException;
+import org.apache.catalina.LifecycleState;
+import org.apache.catalina.connector.Connector;
+import org.apache.catalina.startup.Tomcat;
+import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
+import org.apache.cxf.rs.security.jose.jwa.SignatureAlgorithm;
+import org.apache.cxf.rs.security.jose.jws.JwsJwtCompactConsumer;
+import org.apache.cxf.rs.security.jose.jwt.JwtConstants;
+import org.apache.cxf.rs.security.jose.jwt.JwtToken;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.wss4j.common.util.Loader;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Some OIDC tests.
  */
 abstract class AbstractOIDCTest {
 
-    private static final String idpHttpsPort = System.getProperty("idp.https.port");
-    private static final String rpHttpsPort = System.getProperty("rp.https.port");
+    private static final String IDP_HTTPS_PORT = System.getProperty("idp.https.port");
+    private static final String RP_HTTPS_PORT = System.getProperty("rp.https.port");
 
     private static Tomcat idpServer;
     private static Tomcat rpServer;
@@ -94,13 +99,13 @@ abstract class AbstractOIDCTest {
     private static String storedClientPassword;
 
     protected static void startServer(String servletContextName, String fedizConfigPath) throws Exception {
-        assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
-        assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
+        assertNotNull("Property 'idp.https.port' null", IDP_HTTPS_PORT);
+        assertNotNull("Property 'rp.https.port' null", RP_HTTPS_PORT);
 
-        idpServer = startServer(idpHttpsPort, null, null);
-        rpServer = startServer(rpHttpsPort, servletContextName, fedizConfigPath);
+        idpServer = startServer(IDP_HTTPS_PORT, null, null);
+        rpServer = startServer(RP_HTTPS_PORT, servletContextName, fedizConfigPath);
 
-        loginToClientsPage(rpHttpsPort, idpHttpsPort, servletContextName);
+        loginToClientsPage(RP_HTTPS_PORT, IDP_HTTPS_PORT, servletContextName);
     }
 
     private static Tomcat startServer(String port, String servletContextName, String fedizConfigPath)
@@ -148,7 +153,7 @@ abstract class AbstractOIDCTest {
             try (InputStream is = AbstractOIDCTest.class.getResourceAsStream('/' + fedizConfigPath)) {
                 byte[] content = new byte[is.available()];
                 is.read(content);
-                Files.write(fedizConfig, new String(content).replace("${idp.https.port}", idpHttpsPort).getBytes());
+                Files.write(fedizConfig, new String(content).replace("${idp.https.port}", IDP_HTTPS_PORT).getBytes());
             }
 
             if (!fedizConfigPath.contains("spring")) {
@@ -167,7 +172,7 @@ abstract class AbstractOIDCTest {
 
     protected static void shutdownServer(String servletContextName) throws Exception {
         try {
-            loginToClientsPageAndDeleteClient(rpHttpsPort, idpHttpsPort, servletContextName);
+            loginToClientsPageAndDeleteClient(RP_HTTPS_PORT, IDP_HTTPS_PORT, servletContextName);
         } finally {
             shutdownServer(idpServer);
             shutdownServer(rpServer);
@@ -185,11 +190,11 @@ abstract class AbstractOIDCTest {
     }
 
     private String getIdpHttpsPort() {
-        return idpHttpsPort;
+        return IDP_HTTPS_PORT;
     }
 
     private String getRpHttpsPort() {
-        return rpHttpsPort;
+        return RP_HTTPS_PORT;
     }
 
     protected abstract String getServletContextName();
@@ -1008,7 +1013,7 @@ abstract class AbstractOIDCTest {
     private static String getIdToken(String parentString) {
         String foundString =
             parentString.substring(parentString.indexOf("id_token")
-                                   + ("id_token\":\"").length());
+                                   + "id_token\":\"".length());
         int ampersandIndex = foundString.indexOf('"');
         if (ampersandIndex < 1) {
             ampersandIndex = foundString.length();
@@ -1054,7 +1059,7 @@ abstract class AbstractOIDCTest {
 
         private String code;
 
-        CodeWebConnectionWrapper(WebClient webClient) throws IllegalArgumentException {
+        CodeWebConnectionWrapper(WebClient webClient) {
             super(webClient);
         }
 

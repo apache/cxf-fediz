@@ -21,10 +21,12 @@ package org.apache.cxf.fediz.service.idp.beans;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.webflow.execution.RequestContext;
 import org.springframework.webflow.test.MockRequestContext;
+
+import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 
 public class STSClientActionTest {

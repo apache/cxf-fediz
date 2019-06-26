@@ -34,7 +34,6 @@ import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.service.ConfigService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -109,9 +108,9 @@ public class FedizEntryPoint implements AuthenticationEntryPoint,
             String name = names.nextElement();
             String[] values = servletRequest.getParameterValues(name);
             if (values != null && values.length > 0) {
-                builder.append(name).append("=");
+                builder.append(name).append('=');
                 builder.append(URLEncoder.encode(values[0], "UTF-8"));
-                builder.append("&");
+                builder.append('&');
             }
         }
         // Remove trailing ampersand
@@ -139,7 +138,7 @@ public class FedizEntryPoint implements AuthenticationEntryPoint,
     }
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    public void setApplicationContext(ApplicationContext applicationContext) {
         this.appContext = applicationContext;
     }
 

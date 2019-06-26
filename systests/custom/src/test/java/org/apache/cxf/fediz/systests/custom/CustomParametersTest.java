@@ -43,6 +43,7 @@ import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.wss4j.dom.engine.WSSConfig;
+
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -118,7 +119,7 @@ public class CustomParametersTest {
             File f = new File(currentDir + "/src/test/resources/fediz_config.xml");
             String content = new String(Files.readAllBytes(f.toPath()), "UTF-8");
             if (content.contains("idp.https.port")) {
-                content = content.replaceAll("\\$\\{idp.https.port\\}", "" + idpHttpsPort);
+                content = content.replaceAll("\\$\\{idp.https.port\\}", idpHttpsPort);
 
                 File f2 = new File(baseDir + "/test-classes/fediz_config.xml");
                 Files.write(f2.toPath(), content.getBytes());
@@ -236,7 +237,8 @@ public class CustomParametersTest {
         String user = "alice";
         String password = "ecila";
 
-        final String bodyTextContent = HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), "signinresponseform");
+        final String bodyTextContent =
+            HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), "signinresponseform");
 
         Assert.assertTrue("Principal not " + user,
                           bodyTextContent.contains("userPrincipal=" + user));

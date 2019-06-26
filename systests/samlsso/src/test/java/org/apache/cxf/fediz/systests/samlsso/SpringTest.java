@@ -24,18 +24,6 @@ import java.io.IOException;
 
 import javax.servlet.ServletException;
 
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.LifecycleState;
-import org.apache.catalina.connector.Connector;
-import org.apache.catalina.startup.Tomcat;
-import org.apache.cxf.fediz.systests.common.AbstractTests;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.DomElement;
@@ -44,13 +32,26 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 
+import org.apache.catalina.LifecycleException;
+import org.apache.catalina.LifecycleState;
+import org.apache.catalina.connector.Connector;
+import org.apache.catalina.startup.Tomcat;
+import org.apache.cxf.fediz.systests.common.AbstractTests;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+
 /**
  * Some tests for SAML SSO with the Spring (4) plugin, invoking on the Fediz IdP configured for SAML SSO.
  */
 public class SpringTest extends AbstractTests {
 
-    static String idpHttpsPort;
-    static String rpHttpsPort;
+    private static final String IDP_HTTPS_PORT = System.getProperty("idp.https.port");
+    private static final String RP_HTTPS_PORT = System.getProperty("rp.https.port");
 
     private static Tomcat idpServer;
     private static Tomcat rpServer;
@@ -65,13 +66,11 @@ public class SpringTest extends AbstractTests {
 
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.commons.httpclient", "debug");
 
-        idpHttpsPort = System.getProperty("idp.https.port");
-        Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
-        rpHttpsPort = System.getProperty("rp.spring.https.port");
-        Assert.assertNotNull("Property 'rp.spring.https.port' null", rpHttpsPort);
+        Assert.assertNotNull("Property 'idp.https.port' null", IDP_HTTPS_PORT);
+        Assert.assertNotNull("Property 'rp.spring.https.port' null", RP_HTTPS_PORT);
 
-        idpServer = startServer(true, idpHttpsPort);
-        rpServer = startServer(false, rpHttpsPort);
+        idpServer = startServer(true, IDP_HTTPS_PORT);
+        rpServer = startServer(false, RP_HTTPS_PORT);
     }
 
     @AfterClass
@@ -146,12 +145,12 @@ public class SpringTest extends AbstractTests {
 
     @Override
     public String getIdpHttpsPort() {
-        return idpHttpsPort;
+        return IDP_HTTPS_PORT;
     }
 
     @Override
     public String getRpHttpsPort() {
-        return rpHttpsPort;
+        return RP_HTTPS_PORT;
     }
 
     @Override
@@ -194,7 +193,8 @@ public class SpringTest extends AbstractTests {
     @org.junit.Test
     public void testNoRequestValidation() throws Exception {
 
-        String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworldspringnoreqvalidation/secure/fedservlet";
+        String url = "https://localhost:" + getRpHttpsPort()
+                + "/fedizhelloworldspringnoreqvalidation/secure/fedservlet";
         String user = "alice";
         String password = "ecila";
 

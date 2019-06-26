@@ -67,15 +67,12 @@ public class DBLoaderSpring implements DBLoader, EnvironmentAware {
 
     @Override
     public void load() {
-
-        GenericXmlApplicationContext ctx = null;
-        try {
+        try (GenericXmlApplicationContext ctx = new GenericXmlApplicationContext()) {
 
             if (resource == null) {
                 LOG.warn("Resource null for DBLoaderSpring");
             }
 
-            ctx = new GenericXmlApplicationContext();
             if (environment instanceof ConfigurableEnvironment) {
                 ctx.setEnvironment((ConfigurableEnvironment) environment);
             }
@@ -131,10 +128,6 @@ public class DBLoaderSpring implements DBLoader, EnvironmentAware {
             em.flush();
         } catch (Exception ex) {
             LOG.warn("Failed to initialize DB with data", ex);
-        } finally {
-            if (ctx != null) {
-                ctx.close();
-            }
         }
     }
 

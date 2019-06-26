@@ -464,7 +464,7 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
         HttpServletRequest request = messageContext.getHttpServletRequest();
         wfReq.setRequest(request);
 
-        X509Certificate certs[] =
+        X509Certificate[] certs =
             (X509Certificate[])request.getAttribute("javax.servlet.request.X509Certificate");
         wfReq.setCerts(certs);
 

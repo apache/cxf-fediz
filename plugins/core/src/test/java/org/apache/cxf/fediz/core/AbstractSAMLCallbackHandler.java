@@ -442,12 +442,12 @@ public abstract class AbstractSAMLCallbackHandler implements CallbackHandler {
     }
 
     protected String getNamespaceOfClaimType(String claimType) {
-        int i = claimType.lastIndexOf("/");
+        int i = claimType.lastIndexOf('/');
         return claimType.substring(0, i);
     }
 
     protected String getNameOfClaimType(String claimType) {
-        int i = claimType.lastIndexOf("/");
+        int i = claimType.lastIndexOf('/');
         return claimType.substring(i + 1);
     }
 

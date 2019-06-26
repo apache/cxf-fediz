@@ -104,7 +104,7 @@ public class FedizConfigurator {
         return null;
     }
 
-    public ContextConfig getContextConfig(String contextName) throws IllegalArgumentException {
+    public ContextConfig getContextConfig(String contextName) {
         if (contextName == null) {
             throw new IllegalArgumentException("Context Name cannot be 'null'.");
         }

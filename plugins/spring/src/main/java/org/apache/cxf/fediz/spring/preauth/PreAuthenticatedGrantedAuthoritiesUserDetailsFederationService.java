@@ -24,7 +24,6 @@ import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.FedizPrincipal;
 import org.apache.cxf.fediz.spring.FederationUser;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.GrantedAuthoritiesContainer;
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
@@ -56,7 +55,7 @@ public class PreAuthenticatedGrantedAuthoritiesUserDetailsFederationService
      * GrantedAuthoritiesContainer implementation as returned by
      * the token.getDetails() method.
      */
-    public final UserDetails loadUserDetails(PreAuthenticatedAuthenticationToken token) throws AuthenticationException {
+    public final UserDetails loadUserDetails(PreAuthenticatedAuthenticationToken token) {
         Assert.notNull(token.getDetails());
         Assert.isInstanceOf(GrantedAuthoritiesContainer.class, token.getDetails());
         Assert.isInstanceOf(FedizPrincipal.class, token.getPrincipal());

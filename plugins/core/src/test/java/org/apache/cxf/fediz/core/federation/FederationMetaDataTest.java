@@ -40,6 +40,7 @@ import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.keys.KeyInfo;
 import org.apache.xml.security.signature.XMLSignature;
 import org.apache.xml.security.signature.XMLSignatureException;
+
 import org.easymock.EasyMock;
 import org.junit.AfterClass;
 import org.junit.Assert;

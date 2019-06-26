@@ -21,6 +21,7 @@ package org.apache.cxf.fediz.systests.tomcat;
 
 
 import org.apache.cxf.fediz.systests.common.AbstractExpiryTests;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 

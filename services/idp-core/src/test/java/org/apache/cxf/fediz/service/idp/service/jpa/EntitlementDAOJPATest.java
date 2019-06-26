@@ -22,17 +22,16 @@ import java.util.List;
 
 import org.apache.cxf.fediz.service.idp.domain.Entitlement;
 import org.apache.cxf.fediz.service.idp.service.EntitlementDAO;
-
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
+
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)

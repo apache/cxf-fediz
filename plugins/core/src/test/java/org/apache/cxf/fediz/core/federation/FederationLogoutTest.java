@@ -34,6 +34,7 @@ import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.handler.LogoutHandler;
+
 import org.easymock.EasyMock;
 import org.junit.AfterClass;
 import org.junit.Assert;

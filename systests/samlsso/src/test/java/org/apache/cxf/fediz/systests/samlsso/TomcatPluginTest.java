@@ -28,22 +28,6 @@ import java.nio.file.Files;
 
 import javax.servlet.ServletException;
 
-import org.apache.catalina.Context;
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.LifecycleState;
-import org.apache.catalina.connector.Connector;
-import org.apache.catalina.startup.Tomcat;
-import org.apache.cxf.common.util.Base64Utility;
-import org.apache.cxf.fediz.systests.common.AbstractTests;
-import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
-import org.apache.cxf.staxutils.StaxUtils;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.wss4j.common.util.DOM2Writer;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -56,26 +40,41 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 
-/**
- * Some tests for SAML SSO with the Tomcat 8 plugin, invoking on the Fediz IdP configured for SAML SSO.
- */
-public class Tomcat8PluginTest extends AbstractTests {
+import org.apache.catalina.Context;
+import org.apache.catalina.LifecycleException;
+import org.apache.catalina.LifecycleState;
+import org.apache.catalina.connector.Connector;
+import org.apache.catalina.startup.Tomcat;
+import org.apache.cxf.common.util.Base64Utility;
+import org.apache.cxf.fediz.systests.common.AbstractTests;
+import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
+import org.apache.cxf.staxutils.StaxUtils;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.wss4j.common.util.DOM2Writer;
 
-    static String idpHttpsPort;
-    static String rpHttpsPort;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+/**
+ * Some tests for SAML SSO with the Tomcat plugin, invoking on the Fediz IdP configured for SAML SSO.
+ */
+public class TomcatPluginTest extends AbstractTests {
+
+    private static final String IDP_HTTPS_PORT = System.getProperty("idp.https.port");
+    private static final String RP_HTTPS_PORT = System.getProperty("rp.https.port");
 
     private static Tomcat idpServer;
     private static Tomcat rpServer;
 
     @BeforeClass
     public static void init() throws Exception {
-        idpHttpsPort = System.getProperty("idp.https.port");
-        Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
-        rpHttpsPort = System.getProperty("rp.https.port");
-        Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
+        Assert.assertNotNull("Property 'idp.https.port' null", IDP_HTTPS_PORT);
+        Assert.assertNotNull("Property 'rp.https.port' null", RP_HTTPS_PORT);
 
-        idpServer = startServer(true, idpHttpsPort);
-        rpServer = startServer(false, rpHttpsPort);
+        idpServer = startServer(true, IDP_HTTPS_PORT);
+        rpServer = startServer(false, RP_HTTPS_PORT);
     }
 
     private static Tomcat startServer(boolean idp, String port)
@@ -125,7 +124,7 @@ public class Tomcat8PluginTest extends AbstractTests {
             File f = new File(currentDir + "/src/test/resources/fediz_config.xml");
             String content = new String(Files.readAllBytes(f.toPath()), "UTF-8");
             if (content.contains("idp.https.port")) {
-                content = content.replaceAll("\\$\\{idp.https.port\\}", "" + idpHttpsPort);
+                content = content.replaceAll("\\$\\{idp.https.port\\}", IDP_HTTPS_PORT);
 
                 File f2 = new File(baseDir + "/test-classes/fediz_config.xml");
                 Files.write(f2.toPath(), content.getBytes());
@@ -164,12 +163,12 @@ public class Tomcat8PluginTest extends AbstractTests {
 
     @Override
     public String getIdpHttpsPort() {
-        return idpHttpsPort;
+        return IDP_HTTPS_PORT;
     }
 
     @Override
     public String getRpHttpsPort() {
-        return rpHttpsPort;
+        return RP_HTTPS_PORT;
     }
 
     @Override

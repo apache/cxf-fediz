@@ -48,10 +48,13 @@ import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * This is a test for federation using a WS-Federation enabled web application. The web application is configured
@@ -68,11 +71,11 @@ public class WSFedTest {
         IDP, REALMB, SAMLSSO, OIDC, RP
     }
 
-    private static final String idpHttpsPort = System.getProperty("idp.https.port");
-    private static final String idpRealmbHttpsPort = System.getProperty("idp.realmb.https.port");
-    private static final String idpSamlSSOHttpsPort = System.getProperty("idp.samlsso.https.port");
-    private static final String idpOIDCHttpsPort = System.getProperty("idp.oidc.https.port");
-    private static final String rpHttpsPort = System.getProperty("rp.https.port");
+    private static final String IDP_HTTPS_PORT = System.getProperty("idp.https.port");
+    private static final String IDP_REALMB_HTTPS_PORT = System.getProperty("idp.realmb.https.port");
+    private static final String IDP_SAMLSSO_HTTPS_PORT = System.getProperty("idp.samlsso.https.port");
+    private static final String IDP_OIDC_HTTPS_PORT = System.getProperty("idp.oidc.https.port");
+    private static final String RP_HTTPS_PORT = System.getProperty("rp.https.port");
 
     private static Tomcat idpServer;
     private static Tomcat idpRealmbServer;
@@ -82,17 +85,17 @@ public class WSFedTest {
 
     @BeforeClass
     public static void init() throws Exception {
-        assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
-        assertNotNull("Property 'idp.realmb.https.port' null", idpRealmbHttpsPort);
-        assertNotNull("Property 'idp.samlsso.https.port' null", idpSamlSSOHttpsPort);
-        assertNotNull("Property 'idp.oidc.https.port' null", idpOIDCHttpsPort);
-        assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
+        assertNotNull("Property 'idp.https.port' null", IDP_HTTPS_PORT);
+        assertNotNull("Property 'idp.realmb.https.port' null", IDP_REALMB_HTTPS_PORT);
+        assertNotNull("Property 'idp.samlsso.https.port' null", IDP_SAMLSSO_HTTPS_PORT);
+        assertNotNull("Property 'idp.oidc.https.port' null", IDP_OIDC_HTTPS_PORT);
+        assertNotNull("Property 'rp.https.port' null", RP_HTTPS_PORT);
 
-        idpServer = startServer(ServerType.IDP, idpHttpsPort);
-        idpRealmbServer = startServer(ServerType.REALMB, idpRealmbHttpsPort);
-        idpSamlSSOServer = startServer(ServerType.SAMLSSO, idpSamlSSOHttpsPort);
-        idpOIDCServer = startServer(ServerType.OIDC, idpOIDCHttpsPort);
-        rpServer = startServer(ServerType.RP, rpHttpsPort);
+        idpServer = startServer(ServerType.IDP, IDP_HTTPS_PORT);
+        idpRealmbServer = startServer(ServerType.REALMB, IDP_REALMB_HTTPS_PORT);
+        idpSamlSSOServer = startServer(ServerType.SAMLSSO, IDP_SAMLSSO_HTTPS_PORT);
+        idpOIDCServer = startServer(ServerType.OIDC, IDP_OIDC_HTTPS_PORT);
+        rpServer = startServer(ServerType.RP, RP_HTTPS_PORT);
     }
 
     private static Tomcat startServer(ServerType serverType, String port)
@@ -197,15 +200,15 @@ public class WSFedTest {
     }
 
     public String getIdpHttpsPort() {
-        return idpHttpsPort;
+        return IDP_HTTPS_PORT;
     }
 
     public String getIdpRealmbHttpsPort() {
-        return idpRealmbHttpsPort;
+        return IDP_REALMB_HTTPS_PORT;
     }
 
     public String getRpHttpsPort() {
-        return rpHttpsPort;
+        return RP_HTTPS_PORT;
     }
 
     public String getServletContextName() {
@@ -221,7 +224,7 @@ public class WSFedTest {
         String password = "ECILA";
 
         final String bodyTextContent =
-            login(url, user, password, getIdpRealmbHttpsPort(), idpHttpsPort);
+            login(url, user, password, getIdpRealmbHttpsPort(), IDP_HTTPS_PORT);
 
         assertTrue("Principal not alice",
                           bodyTextContent.contains("userPrincipal=alice"));
@@ -283,7 +286,7 @@ public class WSFedTest {
         String password = "ECILA";
 
         final String bodyTextContent =
-            login(url, user, password, idpSamlSSOHttpsPort, idpHttpsPort, false);
+            login(url, user, password, IDP_SAMLSSO_HTTPS_PORT, IDP_HTTPS_PORT, false);
 
         assertTrue("Principal not alice",
                           bodyTextContent.contains("userPrincipal=alice"));
@@ -314,7 +317,7 @@ public class WSFedTest {
         String password = "ECILA";
 
         final String bodyTextContent =
-            login(url, user, password, idpSamlSSOHttpsPort, idpHttpsPort, true);
+            login(url, user, password, IDP_SAMLSSO_HTTPS_PORT, IDP_HTTPS_PORT, true);
 
         assertTrue("Principal not alice",
                           bodyTextContent.contains("userPrincipal=alice"));
@@ -343,7 +346,7 @@ public class WSFedTest {
         String password = "ECILA";
 
         final String bodyTextContent =
-            loginOIDC(url, user, password, idpOIDCHttpsPort, idpHttpsPort);
+            loginOIDC(url, user, password, IDP_OIDC_HTTPS_PORT, IDP_HTTPS_PORT);
 
         assertTrue("Principal not alice",
                           bodyTextContent.contains("userPrincipal=alice"));

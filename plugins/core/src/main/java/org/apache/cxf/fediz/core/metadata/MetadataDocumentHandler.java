@@ -67,9 +67,7 @@ public class MetadataDocumentHandler implements RequestHandler<Boolean> {
     public Boolean handleRequest(HttpServletRequest request, HttpServletResponse response) {
         LOG.debug("Metadata document requested");
         FedizProcessor wfProc = FedizProcessorFactory.newFedizProcessor(fedizConfig.getProtocol());
-        PrintWriter out = null;
-        try {
-            out = response.getWriter();
+        try (PrintWriter out = response.getWriter()) {
             Document metadata = wfProc.getMetaData(request, fedizConfig);
             out.write(DOM2Writer.nodeToString(metadata));
             response.setContentType("text/xml");
@@ -82,10 +80,6 @@ public class MetadataDocumentHandler implements RequestHandler<Boolean> {
                 LOG.error("Failed to send error response: {}", e.getMessage());
             }
             return false;
-        } finally {
-            if (out != null) {
-                out.close();
-            }
         }
     }
 }

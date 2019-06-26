@@ -40,6 +40,7 @@ import org.apache.cxf.fediz.service.idp.rest.Claims;
 import org.apache.cxf.fediz.service.idp.rest.Entitlements;
 import org.apache.cxf.fediz.service.idp.rest.Idps;
 import org.apache.cxf.fediz.service.idp.rest.Roles;
+
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;

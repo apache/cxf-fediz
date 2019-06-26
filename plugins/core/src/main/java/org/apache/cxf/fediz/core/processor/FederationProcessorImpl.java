@@ -386,7 +386,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             StringBuffer requestURL = request.getRequestURL();
             String params = request.getQueryString();
             if (params != null && !params.isEmpty()) {
-                requestURL.append("?").append(params);
+                requestURL.append('?').append(params);
             }
 
             requestState = new RequestState();
@@ -577,7 +577,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                     StringBuilder sbQuery = new StringBuilder();
                     for (Entry<String, String> entry : signInQueryMap.entrySet()) {
                         if (sbQuery.length() > 0) {
-                            sbQuery.append("&");
+                            sbQuery.append('&');
                         }
                         sbQuery.append(entry.getKey()).append('=').append(URLEncoder.encode(entry.getValue(), "UTF-8"));
                     }
@@ -621,7 +621,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                     StringBuilder sbQuery = new StringBuilder();
                     for (Entry<String, String> entry : signOutQueryMap.entrySet()) {
                         if (sbQuery.length() > 0) {
-                            sbQuery.append("&");
+                            sbQuery.append('&');
                         }
                         sbQuery.append(entry.getKey()).append('=').append(URLEncoder.encode(entry.getValue(), "UTF-8"));
                     }

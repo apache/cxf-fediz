@@ -43,6 +43,7 @@ import org.apache.directory.server.core.annotations.CreatePartition;
 import org.apache.directory.server.core.integ.AbstractLdapTestUnit;
 import org.apache.directory.server.core.integ.FrameworkRunner;
 import org.apache.wss4j.dom.engine.WSSConfig;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -106,7 +107,7 @@ public class LDAPTest extends AbstractLdapTestUnit {
         rpServer = startServer(false, rpHttpsPort);
     }
 
-    public void updatePort() throws Exception {
+    private void updatePort() throws Exception {
         if (!portUpdated) {
             String basedir = System.getProperty("basedir");
             if (basedir == null) {
@@ -117,7 +118,7 @@ public class LDAPTest extends AbstractLdapTestUnit {
             File f = new File(basedir + "/src/test/resources/sts/ldap.xml");
 
             String content = new String(Files.readAllBytes(f.toPath()), "UTF-8");
-            content = content.replaceAll("portno", "" + super.getLdapServer().getPort());
+            content = content.replaceAll("portno", Integer.toString(getLdapServer().getPort()));
 
             File f2 = new File(basedir + "/target/tomcat/idp/webapps/fediz-idp-sts/WEB-INF/endpoints/ldap.xml");
             Files.write(f2.toPath(), content.getBytes());
@@ -125,7 +126,7 @@ public class LDAPTest extends AbstractLdapTestUnit {
             // Read in ldap.jaas and substitute in the correct port
             f = new File(basedir + "/src/test/resources/ldap.jaas");
             content = new String(Files.readAllBytes(f.toPath()), "UTF-8");
-            content = content.replaceAll("portno", "" + super.getLdapServer().getPort());
+            content = content.replaceAll("portno", Integer.toString(getLdapServer().getPort()));
 
             f2 = new File(basedir + "/target/test-classes/ldap.jaas");
             Files.write(f2.toPath(), content.getBytes());

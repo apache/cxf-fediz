@@ -20,15 +20,17 @@
 package org.apache.cxf.fediz.service.idp.util;
 
 import org.w3c.dom.Document;
+
 import org.apache.cxf.fediz.service.idp.domain.Idp;
 import org.apache.cxf.fediz.service.idp.metadata.IdpMetadataWriter;
 import org.apache.cxf.fediz.service.idp.service.ConfigService;
 import org.apache.wss4j.common.util.DOM2Writer;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.util.Assert;
+
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class MetadataWriterTest {
 

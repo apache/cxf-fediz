@@ -21,16 +21,6 @@ package org.apache.cxf.fediz.systests.cxf;
 
 import java.io.File;
 
-import org.apache.catalina.LifecycleState;
-import org.apache.catalina.connector.Connector;
-import org.apache.catalina.startup.Tomcat;
-import org.apache.cxf.fediz.systests.common.AbstractTests;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.DomElement;
@@ -38,6 +28,17 @@ import com.gargoylesoftware.htmlunit.html.DomNodeList;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
+
+import org.apache.catalina.LifecycleState;
+import org.apache.catalina.connector.Connector;
+import org.apache.catalina.startup.Tomcat;
+import org.apache.cxf.fediz.systests.common.AbstractTests;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
 
 /**
  * A test for WS-Federation using the CXF plugin (deployed in Tomcat).

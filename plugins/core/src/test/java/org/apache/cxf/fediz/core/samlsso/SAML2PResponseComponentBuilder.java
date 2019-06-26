@@ -86,13 +86,13 @@ public final class SAML2PResponseComponentBuilder {
 
         return response;
     }
-    
+
     public static LogoutResponse createSAMLLogoutResponse(
         String inResponseTo,
         String issuer,
         Status status,
         String destination
-        ) {
+    ) {
         if (logoutResponseBuilder == null) {
             logoutResponseBuilder = (SAMLObjectBuilder<LogoutResponse>)
                 builderFactory.getBuilder(LogoutResponse.DEFAULT_ELEMENT_NAME);

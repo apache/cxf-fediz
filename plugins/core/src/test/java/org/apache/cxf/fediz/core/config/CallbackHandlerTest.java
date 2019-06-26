@@ -53,6 +53,7 @@ import org.apache.cxf.fediz.core.spi.ReplyCallback;
 import org.apache.cxf.fediz.core.spi.SignInQueryCallback;
 import org.apache.cxf.fediz.core.spi.WAuthCallback;
 import org.apache.cxf.fediz.core.spi.WReqCallback;
+
 import org.junit.AfterClass;
 import org.junit.Assert;
 

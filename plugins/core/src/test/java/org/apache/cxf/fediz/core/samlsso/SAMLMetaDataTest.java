@@ -28,6 +28,7 @@ import javax.xml.transform.TransformerException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
 import org.apache.cxf.fediz.common.SecurityTestUtil;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
@@ -39,6 +40,7 @@ import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.keys.KeyInfo;
 import org.apache.xml.security.signature.XMLSignature;
 import org.apache.xml.security.signature.XMLSignatureException;
+
 import org.easymock.EasyMock;
 import org.junit.AfterClass;
 import org.junit.Assert;
