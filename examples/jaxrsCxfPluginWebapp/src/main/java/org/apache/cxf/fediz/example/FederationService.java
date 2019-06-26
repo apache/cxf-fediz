@@ -21,8 +21,6 @@ package org.apache.cxf.fediz.example;
 
 import java.io.StringWriter;
 import java.security.Principal;
-import java.util.Arrays;
-import java.util.List;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -63,22 +61,22 @@ public class FederationService {
 
         ResponseBuilder rb = Response.ok().type("text/html");
 
-        StringBuilder out = new StringBuilder();
+        StringBuilder out = new StringBuilder(297);
         out.append("<html>");
         out.append("<head><title>WS Federation Spring Security Example</title></head>");
         out.append("<body>");
         out.append("<h1>Hello World</h1>");
         out.append("Hello world<br>");
-        out.append("Request url: " + uriInfo.getAbsolutePath().toString() + "<p>");
+        out.append("Request url: ").append(uriInfo.getAbsolutePath()).append("<p>");
 
         out.append("<br><b>User</b><p>");
         Principal p = securityContext.getUserPrincipal();
         if (p != null) {
-            out.append("Principal: " + p.getName() + "<p>");
+            out.append("Principal: ").append(p.getName()).append("<p>");
         }
 
         out.append("<br><b>Roles</b><p>");
-        List<String> roleListToCheck = Arrays.asList("Admin", "Manager", "User", "Authenticated");
+        String[] roleListToCheck = new String[]{"Admin", "Manager", "User", "Authenticated"};
         for (String item: roleListToCheck) {
             out.append("Has role '" + item + "': "
                 + ((securityContext.isUserInRole(item)) ? "<b>yes</b>" : "no") + "<p>");
@@ -90,7 +88,7 @@ public class FederationService {
             out.append("<br><b>Claims</b><p>");
             ClaimCollection claims = fp.getClaims();
             for (Claim c: claims) {
-                out.append(c.getClaimType().toString() + ": " + c.getValue() + "<p>");
+                out.append(c.getClaimType()).append(": ").append(c.getValue()).append("<p>");
             }
         } else {
             out.append("Principal is not instance of FedizPrincipal");
@@ -99,19 +97,18 @@ public class FederationService {
         Element el = SecurityTokenThreadLocal.getToken();
         if (el != null) {
             out.append("<p>Bootstrap token...");
-            String token = null;
             try {
                 TransformerFactory transFactory = TransformerFactory.newInstance();
                 Transformer transformer = transFactory.newTransformer();
                 StringWriter buffer = new StringWriter();
                 transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
                 transformer.transform(new DOMSource(el), new StreamResult(buffer));
-                token = buffer.toString();
+                String token = buffer.toString();
                 @SuppressWarnings("deprecation")
                 String escapedXml = StringEscapeUtils.escapeXml(token);
-                out.append("<p>" + escapedXml);
+                out.append("<p>").append(escapedXml);
             } catch (Exception ex) {
-                out.append("<p>Failed to transform cached element to string: " + ex.toString());
+                out.append("<p>Failed to transform cached element to string: ").append(ex.toString());
             }
         } else {
             out.append("<p>Bootstrap token not cached in thread local storage");

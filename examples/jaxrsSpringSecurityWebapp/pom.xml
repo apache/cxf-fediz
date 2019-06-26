@@ -26,7 +26,7 @@
     </parent>
     <groupId>org.apache.cxf.fediz.examples</groupId>
     <artifactId>jaxrsSpringSecurityWebapp</artifactId>
-    <name>Fediz Example: SpringWebapp</name>
+    <name>Fediz Example: SpringWebapp (Spring Security)</name>
     <packaging>war</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

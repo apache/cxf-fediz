@@ -21,8 +21,6 @@ package org.apache.cxf.fediz.example;
 
 import java.io.StringWriter;
 import java.security.Principal;
-import java.util.Arrays;
-import java.util.List;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -56,22 +54,22 @@ public class FederationService {
 
         ResponseBuilder rb = Response.ok().type("text/html");
 
-        StringBuilder out = new StringBuilder();
+        StringBuilder out = new StringBuilder(308);
         out.append("<html>");
         out.append("<head><title>WS Federation Spring Security Example</title></head>");
         out.append("<body>");
         out.append("<h1>Hello World</h1>");
         out.append("Hello world<br>");
-        out.append("Request url: " + uriInfo.getAbsolutePath().toString() + "<p>");
+        out.append("Request url: ").append(uriInfo.getAbsolutePath()).append("<p>");
 
         out.append("<br><b>User</b><p>");
         Principal p = securityContext.getUserPrincipal();
         if (p != null) {
-            out.append("Principal: " + p.getName() + "<p>");
+            out.append("Principal: ").append(p.getName()).append("<p>");
         }
 
         out.append("<br><b>Roles</b><p>");
-        List<String> roleListToCheck = Arrays.asList("Admin", "Manager", "User", "Authenticated");
+        String[] roleListToCheck = new String[]{"Admin", "Manager", "User", "Authenticated"};
         for (String item: roleListToCheck) {
             out.append("Has role '" + item + "': "
                 + ((securityContext.isUserInRole(item)) ? "<b>yes</b>" : "no") + "<p>");
@@ -102,9 +100,9 @@ public class FederationService {
                 token = buffer.toString();
                 @SuppressWarnings("deprecation")
                 String escapedXml = StringEscapeUtils.escapeXml(token);
-                out.append("<p>" + escapedXml);
+                out.append("<p>").append(escapedXml);
             } catch (Exception ex) {
-                out.append("<p>Failed to transform cached element to string: " + ex.toString());
+                out.append("<p>Failed to transform cached element to string: ").append(ex.toString());
             }
         } else {
             out.append("<p>Bootstrap token not cached in thread local storage");

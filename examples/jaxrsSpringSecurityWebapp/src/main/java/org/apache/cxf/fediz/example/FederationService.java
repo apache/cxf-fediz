@@ -58,18 +58,18 @@ public class FederationService {
 
         ResponseBuilder rb = Response.ok().type("text/html");
 
-        StringBuilder out = new StringBuilder();
+        StringBuilder out = new StringBuilder(275);
         out.append("<html>");
         out.append("<head><title>WS Federation Spring Security Example</title></head>");
         out.append("<body>");
         out.append("<h1>Hello World</h1>");
         out.append("Hello world<br>");
-        out.append("Request url: " + uriInfo.getAbsolutePath().toString() + "<p>");
+        out.append("Request url: ").append(uriInfo.getAbsolutePath()).append("<p>");
 
         out.append("<br><b>User</b><p>");
         Principal p = securityContext.getUserPrincipal();
         if (p != null) {
-            out.append("Principal: " + p.getName() + "<p>");
+            out.append("Principal: ").append(p.getName()).append("<p>");
         }
 
         // Access Spring security context
@@ -78,7 +78,7 @@ public class FederationService {
             out.append("Roles of user:<p><ul>");
             FederationAuthenticationToken fedAuthToken = (FederationAuthenticationToken) auth;
             for (GrantedAuthority item : fedAuthToken.getAuthorities()) {
-                out.append("<li>" + item.getAuthority() + "</li>");
+                out.append("<li>").append(item.getAuthority()).append("</li>");
             }
             out.append("</ul>");
 
@@ -86,7 +86,7 @@ public class FederationService {
                 out.append("<br><b>Claims</b><p>");
                 ClaimCollection claims = ((FederationUser) fedAuthToken.getUserDetails()).getClaims();
                 for (Claim c : claims) {
-                    out.append(c.getClaimType().toString() + ": " + c.getValue() + "<p>");
+                    out.append(c.getClaimType().toString()).append(": ").append(c.getValue()).append("<p>");
                 }
             } else {
                 out.append("FederationAuthenticationToken found but not FederationUser");
@@ -109,9 +109,9 @@ public class FederationService {
                 token = buffer.toString();
                 @SuppressWarnings("deprecation")
                 String escapedXml = StringEscapeUtils.escapeXml(token);
-                out.append("<p>" + escapedXml);
+                out.append("<p>").append(escapedXml);
             } catch (Exception ex) {
-                out.append("<p>Failed to transform cached element to string: " + ex.toString());
+                out.append("<p>Failed to transform cached element to string: ").append(ex.toString());
             }
         } else {
             out.append("<p>Bootstrap token not cached in thread local storage");
