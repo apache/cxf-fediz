@@ -200,20 +200,6 @@
             <groupId>org.apache.bval</groupId>
             <artifactId>bval-jsr</artifactId>
             <version>${bval.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.sun.xml.bind</groupId>
-                    <artifactId>jaxb-impl</artifactId>
-                </exclusion>
-                <!-- 
-                dependency to newer version (commons-beanutils)
-                imported from commons-validator
-                -->
-                <exclusion>
-                    <groupId>commons-beanutils</groupId>
-                    <artifactId>commons-beanutils-core</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>commons-validator</groupId>
