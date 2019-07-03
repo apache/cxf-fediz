@@ -24,7 +24,7 @@ import org.apache.cxf.rs.security.jose.common.PrivateKeyPasswordProvider;
 
 public class PrivateKeyPasswordProviderImpl implements PrivateKeyPasswordProvider {
 
-    private String password = "password";
+    private String password;
 
     @Override
     public char[] getPassword(Properties props) {
