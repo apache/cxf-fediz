@@ -41,7 +41,7 @@
         <bval.version>2.0.2</bval.version>
         <commons.lang.version>3.9</commons.lang.version>
         <commons.logging.version>1.2</commons.logging.version>
-        <commons.text.version>1.6</commons.text.version>
+        <commons.text.version>1.7</commons.text.version>
         <commons.validator.version>1.6</commons.validator.version>
         <cxf.version>3.3.2</cxf.version>
         <cxf.build-utils.version>3.4.2</cxf.build-utils.version>
@@ -50,7 +50,7 @@
         <ehcache.version>2.10.6</ehcache.version>
         <ehcache3.version>3.0.3</ehcache3.version>
         <jcache.version>1.0.0</jcache.version>
-        <hsqldb.version>2.4.1</hsqldb.version>
+        <hsqldb.version>2.5.0</hsqldb.version>
         <htmlunit.version>2.27</htmlunit.version>
         <jackson.version>2.9.9</jackson.version>
         <javassist.version>3.19.0-GA</javassist.version>
@@ -331,7 +331,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.0</version>
+                    <version>3.8.1</version>
                     <configuration>
                         <source>${jdk.version}</source>
                         <target>${jdk.version}</target>
