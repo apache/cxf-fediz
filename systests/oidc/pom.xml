@@ -152,7 +152,7 @@
                                     <type>war</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/tomcat/rp/webapps/fediz-oidc-tomcat</outputDirectory>
-                                    <excludes>META-INF/context.xml</excludes>
+                                    <excludes>META-INF/context.xml,**/jakarta.xml.bind-api-*.jar</excludes>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz</groupId>
@@ -189,7 +189,7 @@
                         <configuration>
                             <outputDirectory>${project.build.directory}/tomcat/rp/webapps/fediz-oidc-tomcat/WEB-INF/lib</outputDirectory>
                             <includeScope>compile</includeScope>
-                            <excludeGroupIds>org.springframework.security,org.apache.cxf.fediz</excludeGroupIds>
+                            <excludeGroupIds>org.springframework.security,org.apache.cxf.fediz,jakarta.xml.bind</excludeGroupIds>
                         </configuration>
                     </execution>
                     <execution>

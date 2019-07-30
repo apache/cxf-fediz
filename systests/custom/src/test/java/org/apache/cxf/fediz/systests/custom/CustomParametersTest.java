@@ -19,10 +19,12 @@
 
 package org.apache.cxf.fediz.systests.custom;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.servlet.ServletException;
 
@@ -53,21 +55,19 @@ import org.junit.BeforeClass;
  */
 public class CustomParametersTest {
 
-    static String idpHttpsPort;
-    static String rpHttpsPort;
+    private static final String IDP_HTTPS_PORT = System.getProperty("idp.https.port");
+    private static final String RP_HTTPS_PORT = System.getProperty("rp.https.port");
 
     private static Tomcat idpServer;
     private static Tomcat rpServer;
 
     @BeforeClass
     public static void init() throws Exception {
-        idpHttpsPort = System.getProperty("idp.https.port");
-        Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
-        rpHttpsPort = System.getProperty("rp.https.port");
-        Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
+        Assert.assertNotNull("Property 'idp.https.port' null", IDP_HTTPS_PORT);
+        Assert.assertNotNull("Property 'rp.https.port' null", RP_HTTPS_PORT);
 
-        idpServer = startServer(true, idpHttpsPort);
-        rpServer = startServer(false, rpHttpsPort);
+        idpServer = startServer(true, IDP_HTTPS_PORT);
+        rpServer = startServer(false, RP_HTTPS_PORT);
 
         WSSConfig.init();
     }
@@ -76,15 +76,9 @@ public class CustomParametersTest {
         throws ServletException, LifecycleException, IOException {
         Tomcat server = new Tomcat();
         server.setPort(0);
-        String currentDir = new File(".").getCanonicalPath();
-        String baseDir = currentDir + File.separator + "target";
-        server.setBaseDir(baseDir);
+        Path targetDir = Paths.get("target").toAbsolutePath();
+        server.setBaseDir(targetDir.toString());
 
-        if (idp) {
-            server.getHost().setAppBase("tomcat/idp/webapps");
-        } else {
-            server.getHost().setAppBase("tomcat/rp/webapps");
-        }
         server.getHost().setAutoDeploy(true);
         server.getHost().setDeployOnStartup(true);
 
@@ -92,42 +86,45 @@ public class CustomParametersTest {
         httpsConnector.setPort(Integer.parseInt(port));
         httpsConnector.setSecure(true);
         httpsConnector.setScheme("https");
-        httpsConnector.setAttribute("keyAlias", "mytomidpkey");
-        httpsConnector.setAttribute("keystorePass", "tompass");
-        httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
-        httpsConnector.setAttribute("truststorePass", "tompass");
-        httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
-        httpsConnector.setAttribute("clientAuth", "want");
-        // httpsConnector.setAttribute("clientAuth", "false");
         httpsConnector.setAttribute("sslProtocol", "TLS");
         httpsConnector.setAttribute("SSLEnabled", true);
+//        httpsConnector.setAttribute("keyAlias", "mytomidpkey");
+        httpsConnector.setAttribute("keystorePass", "tompass");
+        httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
 
         server.getService().addConnector(httpsConnector);
 
         if (idp) {
-            File stsWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp-sts");
-            server.addWebapp("/fediz-idp-sts", stsWebapp.getAbsolutePath());
+            server.getHost().setAppBase("tomcat/idp/webapps");
 
-            File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp");
-            server.addWebapp("/fediz-idp", idpWebapp.getAbsolutePath());
+            httpsConnector.setAttribute("truststorePass", "tompass");
+            httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
+            httpsConnector.setAttribute("clientAuth", "want");
+
+            Path stsWebapp = targetDir.resolve(server.getHost().getAppBase()).resolve("fediz-idp-sts");
+            server.addWebapp("/fediz-idp-sts", stsWebapp.toString());
+
+            Path idpWebapp = targetDir.resolve(server.getHost().getAppBase()).resolve("fediz-idp");
+            server.addWebapp("/fediz-idp", idpWebapp.toString());
         } else {
-            File rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
-            Context cxt = server.addWebapp("/fedizhelloworld", rpWebapp.getAbsolutePath());
+            server.getHost().setAppBase("tomcat/rp/webapps");
+
+            httpsConnector.setAttribute("clientAuth", "false");
+
+            Path rpWebapp = targetDir.resolve(server.getHost().getAppBase()).resolve("simpleWebapp");
+            Context cxt = server.addWebapp("/fedizhelloworld", rpWebapp.toString());
 
             // Substitute the IDP port. Necessary if running the test in eclipse where port filtering doesn't seem
             // to work
-            File f = new File(currentDir + "/src/test/resources/fediz_config.xml");
-            String content = new String(Files.readAllBytes(f.toPath()), "UTF-8");
-            if (content.contains("idp.https.port")) {
-                content = content.replaceAll("\\$\\{idp.https.port\\}", idpHttpsPort);
-
-                File f2 = new File(baseDir + "/test-classes/fediz_config.xml");
-                Files.write(f2.toPath(), content.getBytes());
+            Path fedizConfig = targetDir.resolve("tomcat").resolve("fediz_config.xml");
+            try (InputStream is = CustomParametersTest.class.getResourceAsStream("/fediz_config.xml")) {
+                byte[] content = new byte[is.available()];
+                is.read(content);
+                Files.write(fedizConfig, new String(content).replace("${idp.https.port}", IDP_HTTPS_PORT).getBytes());
             }
 
             FederationAuthenticator fa = new FederationAuthenticator();
-            fa.setConfigFile(currentDir + File.separator + "target" + File.separator
-                             + "test-classes" + File.separator + "fediz_config.xml");
+            fa.setConfigFile(fedizConfig.toString());
             cxt.getPipeline().addValve(fa);
         }
 
@@ -157,11 +154,11 @@ public class CustomParametersTest {
     }
 
     public String getIdpHttpsPort() {
-        return idpHttpsPort;
+        return IDP_HTTPS_PORT;
     }
 
     public String getRpHttpsPort() {
-        return rpHttpsPort;
+        return RP_HTTPS_PORT;
     }
 
     public String getServletContextName() {

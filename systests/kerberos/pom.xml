@@ -157,6 +157,7 @@
                                     <type>war</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>target/tomcat/rp/webapps/simpleWebapp</outputDirectory>
+                                    <excludes>**/jakarta.xml.bind-api-*.jar</excludes>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz.systests</groupId>
