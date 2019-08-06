@@ -101,6 +101,17 @@
             <scope>test</scope>
             <version>${bcprov.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.directory.server</groupId>
+            <artifactId>apacheds-kerberos-codec</artifactId>
+            <version>${apacheds.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>net.sf.ehcache</groupId>
+                    <artifactId>ehcache-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
     </dependencies>
     <build>
