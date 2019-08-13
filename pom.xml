@@ -43,8 +43,8 @@
         <commons.logging.version>1.2</commons.logging.version>
         <commons.text.version>1.7</commons.text.version>
         <commons.validator.version>1.6</commons.validator.version>
-        <cxf.version>3.3.2</cxf.version>
-        <cxf.build-utils.version>3.4.2</cxf.build-utils.version>
+        <cxf.version>3.3.3</cxf.version>
+        <cxf.build-utils.version>3.4.3</cxf.build-utils.version>
         <dbcp.version>2.1.1</dbcp.version>
         <easymock.version>4.0.2</easymock.version>
         <ehcache.version>2.10.6</ehcache.version>
@@ -380,7 +380,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.0.2</version>
+                    <version>3.1.2</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
