@@ -59,14 +59,14 @@
 
     <bean id="realmA" class="org.apache.cxf.sts.token.realm.RealmProperties">
         <property name="issuer" value="STS Realm A" />
-        <property name="signaturePropertiesFile" value="stsKeystoreA.properties" />
+        <property name="signatureCryptoProperties" value="stsKeystoreA.properties" />
         <property name="callbackHandlerClass"
             value="org.apache.cxf.fediz.service.sts.PasswordCallbackHandler" />
     </bean>
 
     <bean id="realmB" class="org.apache.cxf.sts.token.realm.RealmProperties">
         <property name="issuer" value="STS Realm B" />
-        <property name="signaturePropertiesFile" value="stsKeystoreB.properties" />
+        <property name="signatureCryptoProperties" value="stsKeystoreB.properties" />
         <property name="callbackHandlerClass"
             value="org.apache.cxf.fediz.service.sts.PasswordCallbackHandler" />
     </bean>
