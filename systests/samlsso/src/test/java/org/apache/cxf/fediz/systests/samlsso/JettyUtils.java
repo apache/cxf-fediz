@@ -30,40 +30,17 @@ public final class JettyUtils {
     private JettyUtils() {
     }
 
-    public static void initRpServer() {
-        initRpServer("rp-server.xml");
-    }
-
-    public static void initRpServer(String configurationFile) {
+    public static void initRpServer(String configurationFile) throws Exception {
         if (rpServer == null) {
-            try {
-                Resource testServerConfig = Resource.newSystemResource(configurationFile);
-                XmlConfiguration configuration = new XmlConfiguration(testServerConfig.getInputStream());
-                rpServer = (Server)configuration.configure();
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            XmlConfiguration configuration = new XmlConfiguration(Resource.newSystemResource(configurationFile));
+            rpServer = (Server) configuration.configure();
+            rpServer.start();
         }
     }
 
-    public static void startRpServer() {
-        if (rpServer != null && !rpServer.isStarted()) {
-            try {
-                rpServer.start();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public static void stopRpServer() {
+    public static void stopRpServer() throws Exception {
         if (rpServer != null && rpServer.isStarted()) {
-            try {
-                rpServer.stop();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            rpServer.stop();
         }
     }
 
