@@ -72,7 +72,7 @@
            <Set name="idleTimeout">30000</Set>
          </New>
       </Arg>
-   </Call>
+    </Call>
 
     <Set name="handler">
       <New class="org.eclipse.jetty.server.handler.HandlerList">
@@ -108,7 +108,7 @@
                   </Set>
                 </Get>
               </New>
-            </Item>		    
+            </Item>
           </Array>
         </Set>
       </New>
