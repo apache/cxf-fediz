@@ -33,19 +33,19 @@
     </parent>
 
     <prerequisites>
-        <maven>3.0</maven>
+        <maven>3.0.5</maven>
     </prerequisites>
 
     <properties>
         <apacheds.version>2.0.0-M24</apacheds.version>
         <bval.version>2.0.2</bval.version>
+        <commons.dbcp2.version>2.7.0</commons.dbcp2.version>
         <commons.lang.version>3.9</commons.lang.version>
         <commons.logging.version>1.2</commons.logging.version>
         <commons.text.version>1.7</commons.text.version>
         <commons.validator.version>1.6</commons.validator.version>
         <cxf.version>3.3.3</cxf.version>
         <cxf.build-utils.version>3.4.3</cxf.build-utils.version>
-        <dbcp.version>2.1.1</dbcp.version>
         <easymock.version>4.0.2</easymock.version>
         <ehcache.version>2.10.6</ehcache.version>
         <ehcache3.version>3.0.3</ehcache3.version>
