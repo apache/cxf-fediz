@@ -154,16 +154,6 @@
             <version>${cxf.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.jaxrs</groupId>
-            <artifactId>jackson-jaxrs-json-provider</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.databind.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
             <version>${hsqldb.version}</version>

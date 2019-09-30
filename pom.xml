@@ -52,8 +52,7 @@
         <jcache.version>1.0.0</jcache.version>
         <hsqldb.version>2.5.0</hsqldb.version>
         <htmlunit.version>2.36.0</htmlunit.version>
-        <jackson.version>2.9.9</jackson.version>
-        <jackson.databind.version>2.9.9.3</jackson.databind.version>
+        <jackson.version>2.9.10</jackson.version>
         <javassist.version>3.19.0-GA</javassist.version>
         <javax.el.version>3.0.0</javax.el.version>
         <javax.validation.version>2.0.1.Final</javax.validation.version>
@@ -273,6 +272,13 @@
                 <version>${spring.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
             </dependency>
         </dependencies>
     </dependencyManagement>
