@@ -150,6 +150,12 @@
             <id>wasdev-maven-repo</id>
             <name>wasdev-maven-repo</name>
             <url>https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/wasdev/maven/repository/</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
         </repository>
     </repositories>
     <pluginRepositories>
@@ -234,7 +240,7 @@
 
     <ciManagement>
         <system>Hudson</system>
-        <url>https://builds.apache.org/view/A-F/view/CXF/job/CXF-Fediz/</url>
+        <url>https://builds.apache.org/view/A-D/view/CXF/job/CXF-Fediz/</url>
         <notifiers>
             <notifier>
                 <type>mail</type>
