@@ -104,6 +104,7 @@ abstract class AbstractOIDCTest {
     private static String storedClientId;
     private static String storedClient2Id;
     private static String storedClientPassword;
+    private static String storedClient2Password;
 
     protected static void startServer(String servletContextName, String fedizConfigPath) throws Exception {
         assertNotNull("Property 'idp.https.port' null", IDP_HTTPS_PORT);
@@ -257,6 +258,12 @@ abstract class AbstractOIDCTest {
             storedClient2Id = table.getCellAt(1, 1).asText().trim();
         }
         assertNotNull(storedClient2Id);
+
+        // Get the password
+        registeredClientPage = webClient.getPage(url + "/" + storedClient2Id);
+        table = registeredClientPage.getHtmlElementById("client");
+        storedClient2Password = table.getCellAt(1, 2).asText().trim();
+        assertNotNull(storedClient2Password);
 
         webClient.close();
     }
@@ -422,8 +429,12 @@ abstract class AbstractOIDCTest {
             new NameValuePair("grant_type", "authorization_code"),
             new NameValuePair("code", authorizationCode)));
 
-        webClient.getOptions().setJavaScriptEnabled(false);
-        final UnexpectedPage responsePage = webClient.getPage(request);
+        WebClient webClient2 = setupWebClient("", "");
+        String data = storedClientId + ":" + storedClientPassword;
+        String authorizationHeader = "Basic "
+            + Base64.getEncoder().encodeToString(data.getBytes(StandardCharsets.UTF_8));
+        webClient2.addRequestHeader("Authorization", authorizationHeader);
+        final UnexpectedPage responsePage = webClient2.getPage(request);
         String response = responsePage.getWebResponse().getContentAsString();
 
         // Check the IdToken
@@ -432,6 +443,7 @@ abstract class AbstractOIDCTest {
         validateIdToken(idToken, storedClientId);
 
         webClient.close();
+        webClient2.close();
     }
 
     @org.junit.Test
@@ -459,8 +471,12 @@ abstract class AbstractOIDCTest {
             new NameValuePair("grant_type", "authorization_code"),
             new NameValuePair("code", authorizationCode)));
 
-        webClient.getOptions().setJavaScriptEnabled(false);
-        final UnexpectedPage responsePage = webClient.getPage(request);
+        WebClient webClient2 = setupWebClient("", "");
+        String data = storedClient2Id + ":" + storedClient2Password;
+        String authorizationHeader = "Basic "
+            + Base64.getEncoder().encodeToString(data.getBytes(StandardCharsets.UTF_8));
+        webClient2.addRequestHeader("Authorization", authorizationHeader);
+        final UnexpectedPage responsePage = webClient2.getPage(request);
         String response = responsePage.getWebResponse().getContentAsString();
 
         // Check the IdToken
@@ -469,6 +485,7 @@ abstract class AbstractOIDCTest {
         validateIdToken(idToken, storedClient2Id);
 
         webClient.close();
+        webClient2.close();
     }
 
     @org.junit.Test
@@ -491,19 +508,24 @@ abstract class AbstractOIDCTest {
         WebRequest request = new WebRequest(new URL(url), HttpMethod.POST);
 
         request.setRequestParameters(Arrays.asList(
-            new NameValuePair("client_id", storedClient2Id),
+            new NameValuePair("client_id", storedClientId),
             new NameValuePair("grant_type", "authorization_code"),
             new NameValuePair("code", authorizationCode)));
 
-        webClient.getOptions().setJavaScriptEnabled(false);
+        WebClient webClient2 = setupWebClient("", "");
+        String data = storedClient2Id + ":" + storedClient2Password;
+        String authorizationHeader = "Basic "
+            + Base64.getEncoder().encodeToString(data.getBytes(StandardCharsets.UTF_8));
+        webClient2.addRequestHeader("Authorization", authorizationHeader);
+        webClient2.getOptions().setJavaScriptEnabled(false);
         try {
-            webClient.getPage(request);
+            webClient2.getPage(request);
             fail();
         } catch (FailingHttpStatusCodeException ex) {
             assertEquals(Status.BAD_REQUEST.getStatusCode(), ex.getStatusCode());
         }
 
-        webClient.close();
+        webClient2.close();
     }
 
     @org.junit.Test
@@ -881,8 +903,12 @@ abstract class AbstractOIDCTest {
             new NameValuePair("grant_type", "authorization_code"),
             new NameValuePair("code", authorizationCode)));
 
-        webClient.getOptions().setJavaScriptEnabled(false);
-        final UnexpectedPage responsePage = webClient.getPage(request);
+        WebClient webClient2 = setupWebClient("", "");
+        String data = storedClientId + ":" + storedClientPassword;
+        String authorizationHeader = "Basic "
+            + Base64.getEncoder().encodeToString(data.getBytes(StandardCharsets.UTF_8));
+        webClient2.addRequestHeader("Authorization", authorizationHeader);
+        final UnexpectedPage responsePage = webClient2.getPage(request);
         String response = responsePage.getWebResponse().getContentAsString();
 
         // Check the IdToken
@@ -891,6 +917,7 @@ abstract class AbstractOIDCTest {
         validateIdToken(idToken, storedClientId, "User");
 
         webClient.close();
+        webClient2.close();
     }
 
     @org.junit.Test
@@ -918,8 +945,12 @@ abstract class AbstractOIDCTest {
             new NameValuePair("grant_type", "authorization_code"),
             new NameValuePair("code", authorizationCode)));
 
-        webClient.getOptions().setJavaScriptEnabled(false);
-        final UnexpectedPage responsePage = webClient.getPage(request);
+        WebClient webClient2 = setupWebClient("", "");
+        String data = storedClientId + ":" + storedClientPassword;
+        String authorizationHeader = "Basic "
+            + Base64.getEncoder().encodeToString(data.getBytes(StandardCharsets.UTF_8));
+        webClient2.addRequestHeader("Authorization", authorizationHeader);
+        final UnexpectedPage responsePage = webClient2.getPage(request);
         String response = responsePage.getWebResponse().getContentAsString();
 
         // Check the IdToken
@@ -928,9 +959,8 @@ abstract class AbstractOIDCTest {
         validateIdToken(idToken, storedClientId, "User");
 
         webClient.close();
+        webClient2.close();
     }
-
-
 
     private static WebClient setupWebClient(String user, String password) {
         final WebClient webClient = new WebClient();
