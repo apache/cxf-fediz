@@ -231,14 +231,14 @@
         <ref bean="clientCredsHandler"/>
     </util:list>
     <!-- Access Token service -->
-    <bean id="accessTokenService" class="org.apache.cxf.rs.security.oauth2.services.AccessTokenService">
+    <bean id="accessTokenService" class="org.apache.cxf.fediz.service.oidc.FedizAccessTokenService">
         <property name="dataProvider" ref="oauthProvider"/>
         <property name="responseFilter" ref="idTokenFilter"/>
         <property name="grantHandlers" ref="grantHandlers"/>
         <property name="canSupportPublicClients" value="true"/>
     </bean>
     <!-- Access Token Revocation service -->
-    <bean id="accessTokenRevocationService" class="org.apache.cxf.rs.security.oauth2.services.TokenRevocationService">
+    <bean id="accessTokenRevocationService" class="org.apache.cxf.fediz.service.oidc.FedizTokenRevocationService">
         <property name="dataProvider" ref="oauthProvider"/>
     </bean>
     <!-- Access Token Introspection service -->
