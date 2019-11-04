@@ -38,7 +38,7 @@
 
     <properties>
         <apacheds.version>2.0.0-M24</apacheds.version>
-        <bcprov.version>1.57</bcprov.version>
+        <bcprov.version>1.64</bcprov.version>
         <bval.version>1.1.2</bval.version>
         <commons.lang.version>3.5</commons.lang.version>
         <commons.logging.version>1.2</commons.logging.version>
@@ -59,7 +59,7 @@
         <javax.validation.version>1.1.0.Final</javax.validation.version>
         <jericho.version>3.3</jericho.version>
         <jetty8.version>8.1.22.v20160922</jetty8.version>
-        <jetty9.version>9.3.25.v20180904</jetty9.version>
+        <jetty9.version>9.3.27.v20190418</jetty9.version>
         <junit.version>4.12</junit.version>
         <kerby.version>1.1.1</kerby.version>
         <log4j.version>1.2.17</log4j.version>
@@ -71,7 +71,7 @@
         <spring.security.version>4.2.11.RELEASE</spring.security.version>
         <spring-webflow.version>2.4.8.RELEASE</spring-webflow.version>
         <tomcat7.version>7.0.96</tomcat7.version>
-        <tomcat8.version>8.5.43</tomcat8.version>
+        <tomcat8.version>8.5.47</tomcat8.version>
         <woodstox.core.version>4.4.1</woodstox.core.version>
         <wss4j.version>2.1.12</wss4j.version>
 
