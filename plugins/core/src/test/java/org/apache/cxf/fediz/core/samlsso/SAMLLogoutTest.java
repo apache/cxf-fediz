@@ -26,7 +26,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
-import java.util.Base64;
 import java.util.UUID;
 
 import javax.security.auth.callback.CallbackHandler;
@@ -50,6 +49,7 @@ import org.apache.wss4j.common.ext.WSPasswordCallback;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.saml.OpenSAMLUtil;
 import org.apache.wss4j.common.util.DOM2Writer;
+import org.apache.xml.security.utils.Base64;
 import org.easymock.EasyMock;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -328,7 +328,7 @@ public class SAMLLogoutTest {
 
         byte[] deflatedBytes = CompressionUtils.deflate(responseMessage.getBytes(StandardCharsets.UTF_8));
 
-        return Base64.getEncoder().encodeToString(deflatedBytes);
+        return Base64.encode(deflatedBytes);
     }
 
 }
