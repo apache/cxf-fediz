@@ -962,6 +962,158 @@ abstract class AbstractOIDCTest {
         webClient2.close();
     }
 
+    @org.junit.Test
+    public void testAccessTokenRevocation() throws Exception {
+
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize"
+            + "?client_id=" + storedClientId
+            + "&response_type=code"
+            + "&scope=openid";
+        String user = "alice";
+        String password = "ecila";
+
+        // Login to the OIDC token endpoint + get the authorization code
+        WebClient webClient = setupWebClient(user, password);
+        String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
+        assertNotNull(authorizationCode);
+
+        // Now use the code to get an IdToken
+
+        url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/token";
+        WebRequest request = new WebRequest(new URL(url), HttpMethod.POST);
+
+        request.setRequestParameters(Arrays.asList(
+            new NameValuePair("client_id", storedClientId),
+            new NameValuePair("grant_type", "authorization_code"),
+            new NameValuePair("code", authorizationCode)));
+
+        WebClient webClient2 = setupWebClient("", "");
+        String data = storedClientId + ":" + storedClientPassword;
+        String authorizationHeader = "Basic "
+            + Base64.getEncoder().encodeToString(data.getBytes(StandardCharsets.UTF_8));
+        webClient2.addRequestHeader("Authorization", authorizationHeader);
+        final UnexpectedPage responsePage = webClient2.getPage(request);
+        String response = responsePage.getWebResponse().getContentAsString();
+
+        // Check the IdToken
+        String idToken = getIdToken(response);
+        assertNotNull(idToken);
+        validateIdToken(idToken, storedClientId);
+
+        // Get the access token
+        String accessToken = parseToken(response, "access_token");
+        assertNotNull(accessToken);
+
+        // Introspect the token and check it's valid
+        url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/introspect";
+        WebRequest introspectionRequest = new WebRequest(new URL(url), HttpMethod.POST);
+        introspectionRequest.setRequestParameters(Arrays.asList(
+            new NameValuePair("token", accessToken)));
+
+        UnexpectedPage introspectionResponsePage = webClient2.getPage(introspectionRequest);
+        String introspectionResponse = introspectionResponsePage.getWebResponse().getContentAsString();
+
+        assertTrue(introspectionResponse.contains("\"active\":true"));
+
+        // Now revoke the token
+        url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/revoke";
+        WebRequest revocationRequest = new WebRequest(new URL(url), HttpMethod.POST);
+        revocationRequest.setRequestParameters(Arrays.asList(
+            new NameValuePair("token", accessToken)));
+
+        webClient2.getPage(revocationRequest);
+
+        // Now introspect the token again and check it's not valid
+        url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/introspect";
+
+        introspectionResponsePage = webClient2.getPage(introspectionRequest);
+        introspectionResponse = introspectionResponsePage.getWebResponse().getContentAsString();
+
+        assertTrue(introspectionResponse.contains("\"active\":false"));
+
+        webClient.close();
+        webClient2.close();
+    }
+
+    @org.junit.Test
+    public void testAccessTokenRevocationWrongClient() throws Exception {
+
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize"
+            + "?client_id=" + storedClientId
+            + "&response_type=code"
+            + "&scope=openid";
+        String user = "alice";
+        String password = "ecila";
+
+        // Login to the OIDC token endpoint + get the authorization code
+        WebClient webClient = setupWebClient(user, password);
+        String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
+        assertNotNull(authorizationCode);
+
+        // Now use the code to get an IdToken
+
+        url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/token";
+        WebRequest request = new WebRequest(new URL(url), HttpMethod.POST);
+
+        request.setRequestParameters(Arrays.asList(
+            new NameValuePair("client_id", storedClientId),
+            new NameValuePair("grant_type", "authorization_code"),
+            new NameValuePair("code", authorizationCode)));
+
+        WebClient webClient2 = setupWebClient("", "");
+        String data = storedClientId + ":" + storedClientPassword;
+        String authorizationHeader = "Basic "
+            + Base64.getEncoder().encodeToString(data.getBytes(StandardCharsets.UTF_8));
+        webClient2.addRequestHeader("Authorization", authorizationHeader);
+        final UnexpectedPage responsePage = webClient2.getPage(request);
+        String response = responsePage.getWebResponse().getContentAsString();
+
+        // Check the IdToken
+        String idToken = getIdToken(response);
+        assertNotNull(idToken);
+        validateIdToken(idToken, storedClientId);
+
+        // Get the access token
+        String accessToken = parseToken(response, "access_token");
+        assertNotNull(accessToken);
+
+        // Introspect the token and check it's valid
+        url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/introspect";
+        WebRequest introspectionRequest = new WebRequest(new URL(url), HttpMethod.POST);
+        introspectionRequest.setRequestParameters(Arrays.asList(
+            new NameValuePair("token", accessToken)));
+
+        UnexpectedPage introspectionResponsePage = webClient2.getPage(introspectionRequest);
+        String introspectionResponse = introspectionResponsePage.getWebResponse().getContentAsString();
+
+        assertTrue(introspectionResponse.contains("\"active\":true"));
+
+        // Now try to revoke the token as the other client
+        WebClient webClient3 = setupWebClient("", "");
+        String data2 = storedClient2Id + ":" + storedClient2Password;
+        String authorizationHeader2 = "Basic "
+            + Base64.getEncoder().encodeToString(data2.getBytes(StandardCharsets.UTF_8));
+        webClient3.addRequestHeader("Authorization", authorizationHeader2);
+        url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/revoke";
+        WebRequest revocationRequest = new WebRequest(new URL(url), HttpMethod.POST);
+        revocationRequest.setRequestParameters(Arrays.asList(
+            new NameValuePair("token", accessToken)));
+
+        webClient3.getPage(revocationRequest);
+        webClient3.close();
+
+        // Now introspect the token again and check it's still valid
+        url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/introspect";
+
+        introspectionResponsePage = webClient2.getPage(introspectionRequest);
+        introspectionResponse = introspectionResponsePage.getWebResponse().getContentAsString();
+
+        assertTrue(introspectionResponse.contains("\"active\":true"));
+
+        webClient.close();
+        webClient2.close();
+    }
+
     private static WebClient setupWebClient(String user, String password) {
         final WebClient webClient = new WebClient();
         webClient.getOptions().setUseInsecureSSL(true);
@@ -1025,9 +1177,13 @@ abstract class AbstractOIDCTest {
     }
 
     private static String getIdToken(String parentString) {
+        return parseToken(parentString, "id_token");
+    }
+
+    private static String parseToken(String parentString, String tag) {
         String foundString =
-            parentString.substring(parentString.indexOf("id_token")
-                                   + "id_token\":\"".length());
+            parentString.substring(parentString.indexOf(tag)
+                                   + (tag + "\":\"").length());
         int ampersandIndex = foundString.indexOf('"');
         if (ampersandIndex < 1) {
             ampersandIndex = foundString.length();
