@@ -110,7 +110,7 @@
          Public JWK Key Service: Disable it if the client secret is used or if 
          pre-installing public OIDC keys to clients is preferred
     --> 
-    <bean id="oidcKeysService" class="org.apache.cxf.rs.security.oidc.idp.OidcKeysService"/>
+    <bean id="oidcKeysService" class="org.apache.cxf.fediz.service.oidc.FedizOidcKeysService"/>
     <jaxrs:server address="/jwk">
         <jaxrs:serviceBeans>
            <ref bean="oidcKeysService"/>
@@ -125,6 +125,21 @@
         </jaxrs:properties>
     </jaxrs:server>
     
+    <bean id="oidcKeysService2" class="org.apache.cxf.fediz.service.oidc.FedizOidcKeysService"/>
+    <jaxrs:server address="/jwk2">
+        <jaxrs:serviceBeans>
+           <ref bean="oidcKeysService2"/>
+        </jaxrs:serviceBeans>
+        <jaxrs:providers>
+            <ref bean="corsFilter"/>
+            <bean class="org.apache.cxf.rs.security.jose.jaxrs.JsonWebKeysProvider"/>
+        </jaxrs:providers>
+        <jaxrs:properties>
+             <entry key="rs.security.keystore.type" value="jwk" />
+             <entry key="rs.security.keystore.alias" value="2011-04-29"/>
+             <entry key="rs.security.keystore.file" value="jwkPrivateSet.txt" />
+        </jaxrs:properties>
+    </jaxrs:server>
     
     <bean id="oauth2TokenValidationFilter" class="org.apache.cxf.rs.security.oauth2.filters.OAuthRequestFilter">
          <property name="dataProvider" ref="oauthProvider"/>

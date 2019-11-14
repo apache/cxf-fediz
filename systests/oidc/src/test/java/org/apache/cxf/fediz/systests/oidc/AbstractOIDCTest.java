@@ -1036,6 +1036,43 @@ abstract class AbstractOIDCTest {
         webClient2.close();
     }
 
+    @org.junit.Test
+    public void testJWKKeyService() throws Exception {
+
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/jwk/keys";
+        String user = "alice";
+        String password = "ecila";
+
+        WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
+        final UnexpectedPage responsePage = webClient.getPage(url);
+        String response = responsePage.getWebResponse().getContentAsString();
+        assertTrue(response.contains("alice"));
+        assertTrue(response.contains("RSA"));
+        assertTrue(response.contains("\"e\":"));
+        assertFalse(response.contains("\"d\":"));
+
+        webClient.close();
+    }
+
+    @org.junit.Test
+    public void testJWKKeyService2() throws Exception {
+
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/jwk2/keys";
+        String user = "alice";
+        String password = "ecila";
+
+        WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
+        final UnexpectedPage responsePage = webClient.getPage(url);
+        String response = responsePage.getWebResponse().getContentAsString();
+        System.out.println("RESP: " + response);
+        assertTrue(response.contains("2011-04-29"));
+        assertTrue(response.contains("RSA"));
+        assertTrue(response.contains("\"e\":"));
+        assertFalse(response.contains("\"d\":"));
+
+        webClient.close();
+    }
+
     private static WebClient setupWebClient(String user, String password, String idpPort) {
         final WebClient webClient = new WebClient();
         webClient.getOptions().setUseInsecureSSL(true);
