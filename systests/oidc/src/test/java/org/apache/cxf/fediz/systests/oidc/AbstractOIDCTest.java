@@ -1046,10 +1046,10 @@ abstract class AbstractOIDCTest {
         WebClient webClient = setupWebClient(user, password, getIdpHttpsPort());
         final UnexpectedPage responsePage = webClient.getPage(url);
         String response = responsePage.getWebResponse().getContentAsString();
-        assertTrue(response.contains("alice"));
-        assertTrue(response.contains("RSA"));
-        assertTrue(response.contains("\"e\":"));
-        assertFalse(response.contains("\"d\":"));
+        Assert.assertTrue(response.contains("alice"));
+        Assert.assertTrue(response.contains("RSA"));
+        Assert.assertTrue(response.contains("\"e\":"));
+        Assert.assertFalse(response.contains("\"d\":"));
 
         webClient.close();
     }
@@ -1065,10 +1065,10 @@ abstract class AbstractOIDCTest {
         final UnexpectedPage responsePage = webClient.getPage(url);
         String response = responsePage.getWebResponse().getContentAsString();
         System.out.println("RESP: " + response);
-        assertTrue(response.contains("2011-04-29"));
-        assertTrue(response.contains("RSA"));
-        assertTrue(response.contains("\"e\":"));
-        assertFalse(response.contains("\"d\":"));
+        Assert.assertTrue(response.contains("2011-04-29"));
+        Assert.assertTrue(response.contains("RSA"));
+        Assert.assertTrue(response.contains("\"e\":"));
+        Assert.assertFalse(response.contains("\"d\":"));
 
         webClient.close();
     }
