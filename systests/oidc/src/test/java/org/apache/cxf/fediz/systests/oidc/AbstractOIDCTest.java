@@ -1142,7 +1142,6 @@ abstract class AbstractOIDCTest {
         WebClient webClient = setupWebClient(user, password);
         final UnexpectedPage responsePage = webClient.getPage(url);
         String response = responsePage.getWebResponse().getContentAsString();
-        System.out.println("RESP: " + response);
         assertTrue(response.contains("2011-04-29"));
         assertTrue(response.contains("RSA"));
         assertTrue(response.contains("\"e\":"));
