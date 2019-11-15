@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.apache.cxf.fediz</groupId>
     <artifactId>fediz</artifactId>
-    <version>1.4.6</version>
+    <version>1.4.7-SNAPSHOT</version>
     <name>Apache Fediz</name>
     <packaging>pom</packaging>
 
@@ -106,7 +106,7 @@
     <scm>
         <connection>scm:git:https://gitbox.apache.org/repos/asf/cxf-fediz.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/cxf-fediz.git</developerConnection>
-      <tag>fediz-1.4.6</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <issueManagement>
