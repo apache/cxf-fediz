@@ -29,10 +29,6 @@
     <name>Apache Fediz IDP</name>
     <packaging>war</packaging>
     
-    <properties>
-        <swagger-ui.version>2.2.6</swagger-ui.version>
-    </properties>
-    
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -131,74 +127,6 @@
                     </webResources>
                     <attachClasses>true</attachClasses>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.webjars</groupId>
-                                    <artifactId>swagger-ui</artifactId>
-                                    <version>${swagger-ui.version}</version>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>${project.build.directory}/swagger-ui</outputDirectory>
-                                    <excludes>**/*.gz</excludes>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy-swagger-resources-in-place</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/${project.build.finalName}/resources/swagger</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${project.build.directory}/swagger-ui/META-INF/resources/webjars/swagger-ui/${swagger-ui.version}</directory>
-                                    <excludes>
-                                        <exclude>index.html</exclude>
-                                        <exclude>swagger-ui.min.js</exclude>
-                                    </excludes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <inherited>true</inherited>
-                <executions>
-                    <execution>
-                        <id>addMatrixParamSupport</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <replace file="${project.build.directory}/swagger-ui/META-INF/resources/webjars/swagger-ui/${swagger-ui.version}/swagger-ui.js" token="return url + requestUrl + querystring;" value="&#xA;var matrixstring = '';&#xA; for (var i = 0; i &lt; this.parameters.length; i++) {&#xA; var param = this.parameters[i];&#xA; &#xA; if (param.in === 'matrix') {&#xA; matrixstring += ';' + this.encodeQueryParam(param.name) + '=' + this.encodeQueryParam(args[param.name]);&#xA; }&#xA; }&#xA; &#xA;   var url = this.scheme + '://' + this.host;&#xA; &#xA;   if (this.basePath !== '/') {&#xA;     url += this.basePath;&#xA;   }&#xA;   return url + requestUrl + matrixstring + querystring;" />
-                            </target>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
