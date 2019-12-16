@@ -202,7 +202,7 @@ public class TrustedIdpOIDCProtocolHandler extends AbstractTrustedIdpOAuth2Proto
                     LOG.debug("No claim available in the token for {}", subjectName);
                     subjectName = "preferred_username";
                     LOG.debug("Falling back to use subject claim name {}", subjectName);
-                    if (subjectName == null || jwt.getClaim(subjectName) == null) {
+                    if (jwt.getClaim(subjectName) == null) {
                         subjectName = JwtConstants.CLAIM_SUBJECT;
                         LOG.debug("No claim available in the token for preferred_username. "
                                   + "Falling back to use {}", subjectName);

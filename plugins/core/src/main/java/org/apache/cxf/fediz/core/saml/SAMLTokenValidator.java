@@ -270,7 +270,7 @@ public class SAMLTokenValidator implements TokenValidator {
                         @SuppressWarnings("unchecked")
                         List<String> values = (List<String>)oValue;
                         roles = Collections.unmodifiableList(values);
-                    } else if (!((oValue instanceof String) || (oValue instanceof List<?>))) {
+                    } else {
                         LOG.error("Unsupported value type of Claim value");
                         throw new IllegalStateException("Unsupported value type of Claim value");
                     }

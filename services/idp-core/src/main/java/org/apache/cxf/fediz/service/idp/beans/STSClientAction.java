@@ -295,7 +295,7 @@ public class STSClientAction {
         try {
             rpToken = sts.requestSecurityTokenResponse(realm);
         } catch (SoapFault ex) {
-            LOG.error("Error in retrieving a token", ex.getMessage());
+            LOG.error("Error in retrieving a token {}", ex.getMessage());
             if (ex.getFaultCode() != null && "RequestFailed".equals(ex.getFaultCode().getLocalPart())) {
                 throw new ProcessingException(TYPE.BAD_REQUEST);
             }

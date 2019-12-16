@@ -257,7 +257,7 @@ public class FederationAuthenticator extends FormAuthenticator {
                     }
                 }
             } catch (IOException e) {
-                LOG.error("Cannot resume with request.", e.getMessage());
+                LOG.error("Cannot resume with request. {}", e.getMessage());
             }
         }
     }
