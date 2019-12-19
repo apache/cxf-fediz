@@ -318,9 +318,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("WSFED authentication FAILED");
             }
-            if (response != null) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN);
-            }
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return Authentication.UNAUTHENTICATED;
         }
     }
