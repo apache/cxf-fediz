@@ -61,7 +61,7 @@ public class FederationServlet extends HttpServlet {
         out.println("<html>");
         out.println("<head><title>WS Federation Systests Examples</title></head>");
         out.println("<body>");
-        out.println("<p>Request url: " + request.getRequestURL().toString() + "</p>");
+        out.println("<p>Request url: "); out.println(request.getRequestURL()); out.println("</p>");
 
         out.print("<p>userPrincipal=");
         Principal p = request.getUserPrincipal();
