@@ -25,8 +25,8 @@ import java.security.Principal;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.transform.OutputKeys;
@@ -37,7 +37,6 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Element;
 
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.SecurityTokenThreadLocal;
@@ -46,7 +45,7 @@ import org.apache.cxf.fediz.spring.authentication.FederationAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-
+import org.springframework.web.util.HtmlUtils;
 
 
 @Path("/")
@@ -55,8 +54,6 @@ public class FederationService {
     @GET
     public Response get(@Context UriInfo uriInfo,
                         @Context SecurityContext securityContext) {
-
-        ResponseBuilder rb = Response.ok().type("text/html");
 
         StringBuilder out = new StringBuilder(275);
         out.append("<html>");
@@ -99,16 +96,14 @@ public class FederationService {
         Element el = SecurityTokenThreadLocal.getToken();
         if (el != null) {
             out.append("<p>Bootstrap token...");
-            String token = null;
             try {
                 TransformerFactory transFactory = TransformerFactory.newInstance();
                 Transformer transformer = transFactory.newTransformer();
                 StringWriter buffer = new StringWriter();
                 transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
                 transformer.transform(new DOMSource(el), new StreamResult(buffer));
-                token = buffer.toString();
-                @SuppressWarnings("deprecation")
-                String escapedXml = StringEscapeUtils.escapeXml(token);
+                String token = buffer.toString();
+                String escapedXml = HtmlUtils.htmlEscape(token);
                 out.append("<p>").append(escapedXml);
             } catch (Exception ex) {
                 out.append("<p>Failed to transform cached element to string: ").append(ex.toString());
@@ -119,7 +114,7 @@ public class FederationService {
 
         out.append("</body>");
 
-        return rb.entity(out.toString()).build();
+        return Response.ok().type(MediaType.TEXT_HTML).entity(out.toString()).build();
     }
 
 }
