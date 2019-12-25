@@ -43,7 +43,7 @@ public class FederationPreAuthenticatedProcessingFilter extends AbstractPreAuthe
         Principal principal = httpRequest.getUserPrincipal();
         if (logger.isDebugEnabled()) {
             logger.debug("PreAuthenticated J2EE principal: "
-                         + principal == null ? null : principal.getName());
+                         + (principal == null ? null : principal.getName()));
         }
         return principal;
     }
