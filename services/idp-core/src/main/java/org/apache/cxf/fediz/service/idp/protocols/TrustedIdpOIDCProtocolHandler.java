@@ -165,17 +165,19 @@ public class TrustedIdpOIDCProtocolHandler extends AbstractTrustedIdpOAuth2Proto
                 JwsJwtCompactConsumer jwtConsumer = new JwsJwtCompactConsumer(idToken);
                 JwtToken jwt = jwtConsumer.getJwtToken();
 
-                if (jwt != null && jwt.getClaims() != null && LOG.isDebugEnabled()) {
-                    LOG.debug("Received Claims:");
-                    for (Map.Entry<String, Object> claim : jwt.getClaims().asMap().entrySet()) {
-                        LOG.debug(claim.getKey() + ": " + claim.getValue());
+                if (LOG.isDebugEnabled()) {
+                    if (jwt.getClaims() != null) {
+                        LOG.debug("Received Claims:");
+                        for (Map.Entry<String, Object> claim : jwt.getClaims().asMap().entrySet()) {
+                            LOG.debug(claim.getKey() + ": " + claim.getValue());
+                        }
                     }
-                }
 
-                if (jwt != null && jwt.getJwsHeaders() != null && LOG.isDebugEnabled()) {
-                    LOG.debug("Received JWS Headers:");
-                    for (Map.Entry<String, Object> header : jwt.getJwsHeaders().asMap().entrySet()) {
-                        LOG.debug(header.getKey() + ": " + header.getValue());
+                    if (jwt.getJwsHeaders() != null) {
+                        LOG.debug("Received JWS Headers:");
+                        for (Map.Entry<String, Object> header : jwt.getJwsHeaders().asMap().entrySet()) {
+                            LOG.debug(header.getKey() + ": " + header.getValue());
+                        }
                     }
                 }
 

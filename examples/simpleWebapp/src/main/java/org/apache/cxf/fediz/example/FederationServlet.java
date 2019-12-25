@@ -63,7 +63,7 @@ public class FederationServlet extends HttpServlet {
         out.println("<body>");
         out.println("<h1>Hello World</h1>");
         out.println("Hello world<br>");
-        out.println("Request url: "); out.println(request.getRequestURL().toString()); out.println("<p>");
+        out.println("Request url: "); out.println(request.getRequestURL()); out.println("<p>");
 
 
         out.println("<br><b>User</b><p>");
