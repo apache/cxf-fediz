@@ -44,7 +44,7 @@
         <commons.text.version>1.8</commons.text.version>
         <commons.validator.version>1.6</commons.validator.version>
         <cxf.version>3.3.5</cxf.version>
-        <cxf.build-utils.version>3.4.3</cxf.build-utils.version>
+        <cxf.build-utils.version>3.4.4</cxf.build-utils.version>
         <easymock.version>4.0.2</easymock.version>
         <ehcache.version>2.10.6</ehcache.version>
         <ehcache3.version>3.0.3</ehcache3.version>
@@ -464,7 +464,7 @@
                         <dependency>
                             <groupId>com.puppycrawl.tools</groupId>
                             <artifactId>checkstyle</artifactId>
-                            <version>8.22</version>
+                            <version>8.28</version>
                        </dependency>
                     </dependencies>
                     <configuration>

@@ -36,7 +36,7 @@ import org.apache.wss4j.common.saml.builder.SAML2Constants;
  */
 public class SAML2CallbackHandler extends AbstractSAMLCallbackHandler {
 
-    public SAML2CallbackHandler() throws Exception {
+    public SAML2CallbackHandler() {
         // Required for Holder-Of-Key. Commented out.
         /*
         if (certs == null) {

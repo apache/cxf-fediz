@@ -20,13 +20,15 @@
 package org.apache.cxf.fediz.common;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
-public class STSUtil {
+import org.xml.sax.SAXException;
 
+public final class STSUtil {
 
     public static final String SAMPLE_RSTR_COLL_MSG =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -55,23 +57,25 @@ public class STSUtil {
         + "</RequestSecurityTokenResponse>";
 
 
-    private static DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    private static final DocumentBuilderFactory FACTORY = DocumentBuilderFactory.newInstance();
 
     static {
-        factory.setNamespaceAware(true);
+        FACTORY.setNamespaceAware(true);
     }
 
-    protected STSUtil() {
-
+    private STSUtil() {
     }
 
     /**
      * Convert an XML document as a String to a org.w3c.dom.Document.
+     * @throws IOException 
+     * @throws ParserConfigurationException 
+     * @throws SAXException 
      */
-    public static org.w3c.dom.Document toSOAPPart(String xml) throws Exception {
+    public static org.w3c.dom.Document toSOAPPart(String xml)
+        throws IOException, SAXException, ParserConfigurationException {
         try (InputStream in = new ByteArrayInputStream(xml.getBytes())) {
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            return builder.parse(in);
+            return FACTORY.newDocumentBuilder().parse(in);
         }
     }
 

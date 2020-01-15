@@ -29,9 +29,12 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
+import org.xml.sax.SAXException;
 
 import org.apache.cxf.fediz.common.STSUtil;
 import org.apache.cxf.fediz.common.SecurityTestUtil;
@@ -249,7 +252,8 @@ public class ClaimsProcessorTest {
         String originalClaimValue = "Alice";
         String claimsProcessorClass = MUTATE_CLAIMS_PROCESSOR_CLASS;
         
-        FedizResponse wfRes = performLogin(ClaimTypes.PRIVATE_PERSONAL_IDENTIFIER.toString(), originalClaimValue, claimsProcessorClass);
+        FedizResponse wfRes =
+            performLogin(ClaimTypes.PRIVATE_PERSONAL_IDENTIFIER.toString(), originalClaimValue, claimsProcessorClass);
 
         Object firstname = null;
         Object lastname = null;
@@ -267,11 +271,10 @@ public class ClaimsProcessorTest {
         Assert.assertEquals("alice", firstname);
         Assert.assertEquals("ALICE", lastname);
     }
-    
-    
 
     private FedizResponse performLogin(String claimType, String claimValue, String claimsProcessorClass)
-            throws Exception, WSSecurityException, IOException, UnsupportedCallbackException, JAXBException, ProcessingException {
+        throws WSSecurityException, IOException, UnsupportedCallbackException, JAXBException, ProcessingException,
+        SAXException, ParserConfigurationException {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
         callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
@@ -312,12 +315,14 @@ public class ClaimsProcessorTest {
     }
 
     private String createSamlToken(SamlAssertionWrapper assertion, String alias, boolean sign)
-        throws IOException, UnsupportedCallbackException, WSSecurityException, Exception {
+        throws IOException, UnsupportedCallbackException, WSSecurityException, SAXException,
+        ParserConfigurationException {
         return createSamlToken(assertion, alias, sign, STSUtil.SAMPLE_RSTR_COLL_MSG);
     }
 
     private String createSamlToken(SamlAssertionWrapper assertion, String alias, boolean sign, String rstr)
-        throws IOException, UnsupportedCallbackException, WSSecurityException, Exception {
+        throws IOException, UnsupportedCallbackException, WSSecurityException, SAXException,
+        ParserConfigurationException {
         WSPasswordCallback[] cb = {
             new WSPasswordCallback(alias, WSPasswordCallback.SIGNATURE)
         };
