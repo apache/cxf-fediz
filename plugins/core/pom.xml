@@ -29,8 +29,7 @@
     <name>Apache Fediz Plugin Core</name>
     <packaging>bundle</packaging>
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <cxf.xjc-utils.version>3.3.0</cxf.xjc-utils.version>
+        <cxf.xjc-utils.version>3.3.1</cxf.xjc-utils.version>
     </properties>
     <dependencies>
         <dependency>
