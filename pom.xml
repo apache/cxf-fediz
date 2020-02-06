@@ -38,7 +38,7 @@
 
     <properties>
         <apacheds.version>2.0.0-M24</apacheds.version>
-        <bval.version>2.0.2</bval.version>
+        <bval.version>2.0.3</bval.version>
         <commons.dbcp2.version>2.7.0</commons.dbcp2.version>
         <commons.logging.version>1.2</commons.logging.version>
         <commons.text.version>1.8</commons.text.version>
@@ -52,9 +52,6 @@
         <hsqldb.version>2.5.0</hsqldb.version>
         <htmlunit.version>2.37.0</htmlunit.version>
         <jackson.version>2.10.2</jackson.version>
-        <javassist.version>3.19.0-GA</javassist.version>
-        <javax.el.version>3.0.0</javax.el.version>
-        <javax.validation.version>2.0.1.Final</javax.validation.version>
         <jaxb.version>2.3.2</jaxb.version>
         <jetty9.version>9.4.24.v20191120</jetty9.version>
         <junit.version>4.13</junit.version>
@@ -68,6 +65,7 @@
         <spring.security.version>4.2.13.RELEASE</spring.security.version>
         <spring-webflow.version>2.5.1.RELEASE</spring-webflow.version>
         <tomcat.version>9.0.29</tomcat.version>
+        <validation-api.version>2.0.2</validation-api.version>
         <wss4j.version>2.2.4</wss4j.version>
 
         <tomcat.url>http://localhost:8080/manager/text</tomcat.url>
