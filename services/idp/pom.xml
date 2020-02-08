@@ -287,6 +287,13 @@
                 <idp.https.port>9443</idp.https.port>
                 <realm>realm-a</realm>
             </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.hsqldb</groupId>
+                    <artifactId>hsqldb</artifactId>
+                    <version>${hsqldb.version}</version>
+                </dependency>
+            </dependencies>
             <build>
                 <filters>
                     <filter>src/main/filters/realm-a/env.properties</filter>
