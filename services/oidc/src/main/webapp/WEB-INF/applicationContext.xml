@@ -235,7 +235,8 @@
             <ref bean="accessTokenRevocationService"/>
         </jaxrs:serviceBeans>
         <jaxrs:providers>
-           <ref bean="oauthJsonProvider"/>
+            <ref bean="corsFilter"/>
+            <ref bean="oauthJsonProvider"/>
         </jaxrs:providers>
         <jaxrs:properties>
             <entry key="rs.security.signature.properties" value="rs.security.properties"/>
