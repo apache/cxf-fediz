@@ -339,6 +339,13 @@
                 <jpa.url>jdbc:hsqldb:target/db/realma/myDB;shutdown=true</jpa.url>
                 <realm>realm-a</realm>
             </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.hsqldb</groupId>
+                    <artifactId>hsqldb</artifactId>
+                    <version>${hsqldb.version}</version>
+                </dependency>
+            </dependencies>
             <build>
                 <filters>
                     <filter>src/main/filters/realm-a/env.properties</filter>
@@ -388,6 +395,13 @@
                 <idp.http.port>12345</idp.http.port>
                 <realm>realm-b</realm>
             </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.hsqldb</groupId>
+                    <artifactId>hsqldb</artifactId>
+                    <version>${hsqldb.version}</version>
+                </dependency>
+            </dependencies>
             <build>
                 <filters>
                     <filter>src/main/filters/realm-b/env.properties</filter>
@@ -414,6 +428,13 @@
             <properties>
                 <maven.test.skip>true</maven.test.skip>
             </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.hsqldb</groupId>
+                    <artifactId>hsqldb</artifactId>
+                    <version>${hsqldb.version}</version>
+                </dependency>
+            </dependencies>
             <build>
                 <defaultGoal>jetty:run-war</defaultGoal>
             </build>
