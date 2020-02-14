@@ -24,12 +24,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.cxf.rs.security.oauth2.common.Client;
-import org.apache.cxf.rs.security.oauth2.common.ServerAccessToken;
 import org.apache.cxf.rs.security.oauth2.grants.code.JCacheCodeDataProvider;
 import org.apache.cxf.rs.security.oauth2.provider.OAuthServiceException;
-import org.apache.cxf.rs.security.oauth2.tokens.refresh.RefreshToken;
 import org.apache.cxf.rs.security.oauth2.utils.OAuthConstants;
-import org.apache.cxf.rs.security.oauth2.utils.OAuthUtils;
 import org.apache.cxf.rs.security.oidc.utils.OidcUtils;
 
 public class OAuthDataProviderImpl extends JCacheCodeDataProvider {
@@ -46,100 +43,4 @@ public class OAuthDataProviderImpl extends JCacheCodeDataProvider {
         }
     }
 
-    //
-    // BEGIN - TODO This can be removed once we pick up CXF 3.3.5
-    //
-
-    @Override
-    public ServerAccessToken refreshAccessToken(Client client, String refreshTokenKey,
-                                                List<String> restrictedScopes) throws OAuthServiceException {
-        RefreshToken currentRefreshToken = isRecycleRefreshTokens()
-            ? revokeRefreshToken(client, refreshTokenKey) : getRefreshToken(refreshTokenKey);
-        if (currentRefreshToken == null) {
-            throw new OAuthServiceException(OAuthConstants.ACCESS_DENIED);
-        }
-        if (OAuthUtils.isExpired(currentRefreshToken.getIssuedAt(), currentRefreshToken.getExpiresIn())) {
-            if (!isRecycleRefreshTokens()) {
-                revokeRefreshToken(client, refreshTokenKey);
-            }
-            throw new OAuthServiceException(OAuthConstants.ACCESS_DENIED);
-        }
-        if (isRecycleRefreshTokens()) {
-            revokeAccessTokens(client, currentRefreshToken);
-        }
-
-        ServerAccessToken at = doRefreshAccessToken(client, currentRefreshToken, restrictedScopes);
-        saveAccessToken(at);
-        if (isRecycleRefreshTokens()) {
-            createNewRefreshToken(at);
-        } else {
-            updateExistingRefreshToken(currentRefreshToken, at);
-        }
-        return at;
-    }
-
-    @Override
-    public void revokeToken(Client client, String tokenKey, String tokenTypeHint) throws OAuthServiceException {
-        ServerAccessToken accessToken = null;
-        if (!OAuthConstants.REFRESH_TOKEN.equals(tokenTypeHint)) {
-            accessToken = revokeAccessToken(client, tokenKey);
-        }
-        if (accessToken != null) {
-            handleLinkedRefreshToken(client, accessToken);
-        } else if (!OAuthConstants.ACCESS_TOKEN.equals(tokenTypeHint)) {
-            RefreshToken currentRefreshToken = revokeRefreshToken(client, tokenKey);
-            revokeAccessTokens(client, currentRefreshToken);
-        }
-    }
-
-    protected void handleLinkedRefreshToken(Client client, ServerAccessToken accessToken) {
-        if (accessToken != null && accessToken.getRefreshToken() != null) {
-            RefreshToken rt = getRefreshToken(accessToken.getRefreshToken());
-            if (rt == null) {
-                return;
-            }
-
-            unlinkRefreshAccessToken(rt, accessToken.getTokenKey());
-            if (rt.getAccessTokens().isEmpty()) {
-                revokeRefreshToken(client, rt.getTokenKey());
-            } else {
-                saveRefreshToken(rt);
-            }
-        }
-
-    }
-
-    protected void revokeAccessTokens(Client client, RefreshToken currentRefreshToken) {
-        if (currentRefreshToken != null) {
-            for (String accessTokenKey : currentRefreshToken.getAccessTokens()) {
-                revokeAccessToken(client, accessTokenKey);
-            }
-        }
-    }
-
-    protected ServerAccessToken revokeAccessToken(Client client, String accessTokenKey) {
-        ServerAccessToken at = getAccessToken(accessTokenKey);
-        if (at != null) {
-            if (!at.getClient().getClientId().equals(client.getClientId())) {
-                throw new OAuthServiceException(OAuthConstants.INVALID_GRANT);
-            }
-            doRevokeAccessToken(at);
-        }
-        return at;
-    }
-
-    protected RefreshToken revokeRefreshToken(Client client, String refreshTokenKey) {
-        RefreshToken refreshToken = getRefreshToken(refreshTokenKey);
-        if (refreshToken != null) {
-            if (!refreshToken.getClient().getClientId().equals(client.getClientId())) {
-                throw new OAuthServiceException(OAuthConstants.INVALID_GRANT);
-            }
-            doRevokeRefreshToken(refreshToken);
-        }
-        return refreshToken;
-    }
-
-    //
-    // END
-    //
 }

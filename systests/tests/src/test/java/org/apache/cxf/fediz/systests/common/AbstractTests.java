@@ -65,10 +65,6 @@ public abstract class AbstractTests {
         WSSConfig.init();
     }
 
-    public AbstractTests() {
-        super();
-    }
-
     public abstract String getServletContextName();
 
     public abstract String getIdpHttpsPort();

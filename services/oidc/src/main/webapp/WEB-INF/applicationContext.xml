@@ -104,7 +104,7 @@
          Public JWK Key Service: Disable it if the client secret is used or if 
          pre-installing public OIDC keys to clients is preferred
     --> 
-    <bean id="oidcKeysService" class="org.apache.cxf.fediz.service.oidc.FedizOidcKeysService"/>
+    <bean id="oidcKeysService" class="org.apache.cxf.rs.security.oidc.idp.OidcKeysService"/>
     <jaxrs:server address="/jwk">
         <jaxrs:serviceBeans>
            <ref bean="oidcKeysService"/>
