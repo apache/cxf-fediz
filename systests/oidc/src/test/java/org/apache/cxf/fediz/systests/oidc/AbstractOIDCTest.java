@@ -23,19 +23,13 @@ package org.apache.cxf.fediz.systests.oidc;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -46,11 +40,11 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriBuilder;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.UnexpectedPage;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.DomElement;
@@ -76,7 +70,6 @@ import org.apache.cxf.rs.security.jose.jwt.JwtConstants;
 import org.apache.cxf.rs.security.jose.jwt.JwtToken;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.conn.HttpHostConnectException;
 import org.apache.wss4j.common.util.Loader;
 
 import static org.junit.Assert.assertEquals;
@@ -95,11 +88,16 @@ abstract class AbstractOIDCTest {
 
     private static final String CALLBACK_CONTEXT_1 = "/callback1";
     private static final String REDIRECT_URL_1 = "https://127.0.0.1:" + RP_HTTPS_PORT + CALLBACK_CONTEXT_1;
+    private static final String LOGOUT_CONTEXT_1 = "/logout1";
+    private static final String LOGOUT_URL_1 = "https://127.0.0.1:" + RP_HTTPS_PORT + LOGOUT_CONTEXT_1;
+    private static final String LOGOUT_MSG = "logout";
     private static final String CALLBACK_CONTEXT_2 = "/callback2";
     private static final String REDIRECT_URL_2 = "https://127.0.0.1:" + RP_HTTPS_PORT + CALLBACK_CONTEXT_2;
 
     private static Tomcat idpServer;
     private static Tomcat rpServer;
+
+    private static X509Certificate oidcCertificate;
 
     private static String storedClientId;
     private static String storedClient2Id;
@@ -112,6 +110,13 @@ abstract class AbstractOIDCTest {
 
         idpServer = startServer(IDP_HTTPS_PORT, null, null);
         rpServer = startServer(Integer.parseInt(RP_HTTPS_PORT), servletContextName, fedizConfigPath);
+
+        try (InputStream is = Loader.getResource("oidc.jks").openStream()) {
+            KeyStore keystore = KeyStore.getInstance("JKS");
+            keystore.load(is, "password".toCharArray());
+            oidcCertificate = (X509Certificate) keystore.getCertificate("alice");
+            assertNotNull(oidcCertificate);
+        }
 
         loginToClientsPage(RP_HTTPS_PORT, servletContextName);
     }
@@ -173,10 +178,13 @@ abstract class AbstractOIDCTest {
 
             // callback
             ctx = server.addContext("", null);
-            final String servletName = "callback";
-            Tomcat.addServlet(ctx, servletName, new CallbackServlet());
-            ctx.addServletMappingDecoded(CALLBACK_CONTEXT_1, servletName);
-            ctx.addServletMappingDecoded(CALLBACK_CONTEXT_2, servletName);
+            final String callbackName = "callback";
+            Tomcat.addServlet(ctx, callbackName, new CallbackServlet());
+            ctx.addServletMappingDecoded(CALLBACK_CONTEXT_1, callbackName);
+            ctx.addServletMappingDecoded(CALLBACK_CONTEXT_2, callbackName);
+            final String logoutName = "logout";
+            Tomcat.addServlet(ctx, logoutName, new LogoutServlet());
+            ctx.addServletMappingDecoded(LOGOUT_CONTEXT_1, logoutName);
         }
 
         server.getService().addConnector(httpsConnector);
@@ -218,7 +226,7 @@ abstract class AbstractOIDCTest {
         String password = "ecila";
 
         // Login to the client page successfully
-        WebClient webClient = setupWebClient(user, password);
+        WebClient webClient = setupWebClientIDP(user, password);
         HtmlPage loginPage = login(url, webClient);
         final String bodyTextContent = loginPage.getBody().getTextContent();
         assertTrue(bodyTextContent.contains("Registered Clients"));
@@ -226,7 +234,7 @@ abstract class AbstractOIDCTest {
         // Now try to register a new client
         HtmlPage registeredClientPage =
             registerNewClient(webClient, url, "new-client", REDIRECT_URL_1,
-                              "https://cxf.apache.org", "https://localhost:12345");
+                              "https://cxf.apache.org", LOGOUT_URL_1);
         String registeredClientPageBody = registeredClientPage.getBody().getTextContent();
         assertTrue(registeredClientPageBody.contains("Registered Clients"));
         assertTrue(registeredClientPageBody.contains("new-client"));
@@ -300,7 +308,7 @@ abstract class AbstractOIDCTest {
         String password = "ecila";
 
         // Login to the client page successfully
-        WebClient webClient = setupWebClient(user, password);
+        WebClient webClient = setupWebClientIDP(user, password);
         HtmlPage loginPage = login(url, webClient);
         final String bodyTextContent = loginPage.getBody().getTextContent();
         assertTrue(bodyTextContent.contains("Registered Clients"));
@@ -348,7 +356,7 @@ abstract class AbstractOIDCTest {
         String password = "ecila";
 
         // Login to the client page successfully
-        WebClient webClient = setupWebClient(user, password);
+        WebClient webClient = setupWebClientIDP(user, password);
         HtmlPage loginPage = login(url, webClient);
         final String bodyTextContent = loginPage.getBody().getTextContent();
         assertTrue(bodyTextContent.contains("Registered Clients"));
@@ -390,7 +398,7 @@ abstract class AbstractOIDCTest {
         String password = "bob";
 
         // Login to the client page successfully
-        WebClient webClient = setupWebClient(user, password);
+        WebClient webClient = setupWebClientIDP(user, password);
         HtmlPage loginPage = login(url, webClient);
         final String bodyTextContent = loginPage.getBody().getTextContent();
         assertTrue(bodyTextContent.contains("Registered Clients"));
@@ -415,40 +423,20 @@ abstract class AbstractOIDCTest {
         String password = "ecila";
 
         // Login to the OIDC token endpoint + get the authorization code
-        WebClient webClient = setupWebClient(user, password);
-        String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
-        assertNotNull(authorizationCode);
+        final String authorizationCode;
+        try (WebClient webClient = setupWebClientIDP(user, password)) {
+            authorizationCode = loginAndGetAuthorizationCode(url, webClient);
+        }
 
         // Now use the code to get an IdToken
-
-        url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/token";
-        WebRequest request = new WebRequest(new URL(url), HttpMethod.POST);
-
-        request.setRequestParameters(Arrays.asList(
-            new NameValuePair("client_id", storedClientId),
-            new NameValuePair("grant_type", "authorization_code"),
-            new NameValuePair("code", authorizationCode)));
-
-        WebClient webClient2 = setupWebClient("", "");
-        String data = storedClientId + ":" + storedClientPassword;
-        String authorizationHeader = "Basic "
-            + Base64.getEncoder().encodeToString(data.getBytes(StandardCharsets.UTF_8));
-        webClient2.addRequestHeader("Authorization", authorizationHeader);
-        final UnexpectedPage responsePage = webClient2.getPage(request);
-        String response = responsePage.getWebResponse().getContentAsString();
+        final String rawToken = getRawToken(authorizationCode, storedClientId, storedClientPassword);
 
         // Check the IdToken
-        String idToken = getIdToken(response);
-        assertNotNull(idToken);
-        validateIdToken(idToken, storedClientId);
-
-        webClient.close();
-        webClient2.close();
+        validateIdToken(getIdToken(rawToken), storedClientId);
     }
 
     @org.junit.Test
     public void testOIDCLoginForClient2() throws Exception {
-
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize"
             + "?client_id=" + storedClient2Id
             + "&response_type=code"
@@ -457,35 +445,16 @@ abstract class AbstractOIDCTest {
         String password = "ecila";
 
         // Login to the OIDC token endpoint + get the authorization code
-        WebClient webClient = setupWebClient(user, password);
-        String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
-        assertNotNull(authorizationCode);
+        final String authorizationCode;
+        try (WebClient webClient = setupWebClientIDP(user, password)) {
+            authorizationCode = loginAndGetAuthorizationCode(url, webClient);
+        }
 
         // Now use the code to get an IdToken
-
-        url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/token";
-        WebRequest request = new WebRequest(new URL(url), HttpMethod.POST);
-
-        request.setRequestParameters(Arrays.asList(
-            new NameValuePair("client_id", storedClient2Id),
-            new NameValuePair("grant_type", "authorization_code"),
-            new NameValuePair("code", authorizationCode)));
-
-        WebClient webClient2 = setupWebClient("", "");
-        String data = storedClient2Id + ":" + storedClient2Password;
-        String authorizationHeader = "Basic "
-            + Base64.getEncoder().encodeToString(data.getBytes(StandardCharsets.UTF_8));
-        webClient2.addRequestHeader("Authorization", authorizationHeader);
-        final UnexpectedPage responsePage = webClient2.getPage(request);
-        String response = responsePage.getWebResponse().getContentAsString();
+        final String rawToken = getRawToken(authorizationCode, storedClient2Id, storedClient2Password);
 
         // Check the IdToken
-        String idToken = getIdToken(response);
-        assertNotNull(idToken);
-        validateIdToken(idToken, storedClient2Id);
-
-        webClient.close();
-        webClient2.close();
+        validateIdToken(getIdToken(rawToken), storedClient2Id);
     }
 
     @org.junit.Test
@@ -499,33 +468,15 @@ abstract class AbstractOIDCTest {
         String password = "ecila";
 
         // Login to the OIDC token endpoint + get the authorization code
-        WebClient webClient = setupWebClient(user, password);
-        String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
-        assertNotNull(authorizationCode);
+        try (WebClient webClient = setupWebClientIDP(user, password)) {
+            String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
 
-        // Now try and get a token for the second client
-        url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/token";
-        WebRequest request = new WebRequest(new URL(url), HttpMethod.POST);
-
-        request.setRequestParameters(Arrays.asList(
-            new NameValuePair("client_id", storedClientId),
-            new NameValuePair("grant_type", "authorization_code"),
-            new NameValuePair("code", authorizationCode)));
-
-        WebClient webClient2 = setupWebClient("", "");
-        String data = storedClient2Id + ":" + storedClient2Password;
-        String authorizationHeader = "Basic "
-            + Base64.getEncoder().encodeToString(data.getBytes(StandardCharsets.UTF_8));
-        webClient2.addRequestHeader("Authorization", authorizationHeader);
-        webClient2.getOptions().setJavaScriptEnabled(false);
-        try {
-            webClient2.getPage(request);
+            // Now try and get a token for the second client
+            getRawToken(authorizationCode, storedClient2Id, storedClient2Password);
             fail();
         } catch (FailingHttpStatusCodeException ex) {
             assertEquals(Status.BAD_REQUEST.getStatusCode(), ex.getStatusCode());
         }
-
-        webClient2.close();
     }
 
     @org.junit.Test
@@ -539,7 +490,7 @@ abstract class AbstractOIDCTest {
         String password = "ecila";
 
         // Login to the OIDC token endpoint + get the authorization code
-        try (WebClient webClient = setupWebClient(user, password)) {
+        try (WebClient webClient = setupWebClientIDP(user, password)) {
             final String response = loginAndGetAuthorizationCode(url, webClient);
             assertTrue(response.contains("invalid_request"));
         }
@@ -556,7 +507,7 @@ abstract class AbstractOIDCTest {
         String password = "ecila";
 
         // Login to the OIDC token endpoint + get the authorization code
-        try (WebClient webClient = setupWebClient(user, password)) {
+        try (WebClient webClient = setupWebClientIDP(user, password)) {
             final String response = loginAndGetAuthorizationCode(url, webClient);
             assertTrue(response.contains("invalid_request"));
         }
@@ -574,7 +525,7 @@ abstract class AbstractOIDCTest {
         String password = "ecila";
 
         // Login to the OIDC token endpoint + get the authorization code
-        try (WebClient webClient = setupWebClient(user, password);) {
+        try (WebClient webClient = setupWebClientIDP(user, password)) {
             loginAndGetAuthorizationCode(url, webClient);
         } catch (FailingHttpStatusCodeException e) {
             assertEquals(Status.BAD_REQUEST.getStatusCode(), e.getStatusCode());
@@ -588,17 +539,16 @@ abstract class AbstractOIDCTest {
         String password = "ecila";
 
         // Login to the client page successfully
-        WebClient webClient = setupWebClient(user, password);
-        HtmlPage loginPage = login(url, webClient);
-        final String bodyTextContent = loginPage.getBody().getTextContent();
-        assertTrue(bodyTextContent.contains("Registered Clients"));
+        try (WebClient webClient = setupWebClientIDP(user, password)) {
+            HtmlPage loginPage = login(url, webClient);
+            final String bodyTextContent = loginPage.getBody().getTextContent();
+            assertTrue(bodyTextContent.contains("Registered Clients"));
 
-        // Now try to register a new client
-        HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1//",
+            // Now try to register a new client
+            HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1//",
                           "https://cxf.apache.org", "https://localhost:12345");
-        assertTrue(errorPage.asText().contains("Invalid Client Registration"));
-
-        webClient.close();
+            assertTrue(errorPage.asText().contains("Invalid Client Registration"));
+        }
     }
 
     @org.junit.Test
@@ -608,17 +558,16 @@ abstract class AbstractOIDCTest {
         String password = "ecila";
 
         // Login to the client page successfully
-        WebClient webClient = setupWebClient(user, password);
-        HtmlPage loginPage = login(url, webClient);
-        final String bodyTextContent = loginPage.getBody().getTextContent();
-        assertTrue(bodyTextContent.contains("Registered Clients"));
+        try (WebClient webClient = setupWebClientIDP(user, password)) {
+            HtmlPage loginPage = login(url, webClient);
+            final String bodyTextContent = loginPage.getBody().getTextContent();
+            assertTrue(bodyTextContent.contains("Registered Clients"));
 
-        // Now try to register a new client
-        HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1#fragment",
+            // Now try to register a new client
+            HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1#fragment",
                           "https://cxf.apache.org", "https://localhost:12345");
-        assertTrue(errorPage.asText().contains("Invalid Client Registration"));
-
-        webClient.close();
+            assertTrue(errorPage.asText().contains("Invalid Client Registration"));
+        }
     }
 
     @org.junit.Test
@@ -628,17 +577,16 @@ abstract class AbstractOIDCTest {
         String password = "ecila";
 
         // Login to the client page successfully
-        WebClient webClient = setupWebClient(user, password);
-        HtmlPage loginPage = login(url, webClient);
-        final String bodyTextContent = loginPage.getBody().getTextContent();
-        assertTrue(bodyTextContent.contains("Registered Clients"));
+        try (WebClient webClient = setupWebClientIDP(user, password)) {
+            HtmlPage loginPage = login(url, webClient);
+            final String bodyTextContent = loginPage.getBody().getTextContent();
+            assertTrue(bodyTextContent.contains("Registered Clients"));
 
-        // Now try to register a new client
-        HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1/",
+            // Now try to register a new client
+            HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1/",
                           "https://cxf.apache.org//", "https://localhost:12345");
-        assertTrue(errorPage.asText().contains("Invalid Client Registration"));
-
-        webClient.close();
+            assertTrue(errorPage.asText().contains("Invalid Client Registration"));
+        }
     }
 
     @org.junit.Test
@@ -648,17 +596,16 @@ abstract class AbstractOIDCTest {
         String password = "ecila";
 
         // Login to the client page successfully
-        WebClient webClient = setupWebClient(user, password);
-        HtmlPage loginPage = login(url, webClient);
-        final String bodyTextContent = loginPage.getBody().getTextContent();
-        assertTrue(bodyTextContent.contains("Registered Clients"));
+        try (WebClient webClient = setupWebClientIDP(user, password)) {
+            HtmlPage loginPage = login(url, webClient);
+            final String bodyTextContent = loginPage.getBody().getTextContent();
+            assertTrue(bodyTextContent.contains("Registered Clients"));
 
-        // Now try to register a new client
-        HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1/",
+            // Now try to register a new client
+            HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1/",
                           "https://cxf.apache.org/", "https://localhost:12345//");
-        assertTrue(errorPage.asText().contains("Invalid Client Registration"));
-
-        webClient.close();
+            assertTrue(errorPage.asText().contains("Invalid Client Registration"));
+        }
     }
 
     @org.junit.Test
@@ -668,17 +615,16 @@ abstract class AbstractOIDCTest {
         String password = "ecila";
 
         // Login to the client page successfully
-        WebClient webClient = setupWebClient(user, password);
-        HtmlPage loginPage = login(url, webClient);
-        final String bodyTextContent = loginPage.getBody().getTextContent();
-        assertTrue(bodyTextContent.contains("Registered Clients"));
+        try (WebClient webClient = setupWebClientIDP(user, password)) {
+            HtmlPage loginPage = login(url, webClient);
+            final String bodyTextContent = loginPage.getBody().getTextContent();
+            assertTrue(bodyTextContent.contains("Registered Clients"));
 
-        // Now try to register a new client
-        HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1",
+            // Now try to register a new client
+            HtmlPage errorPage = registerNewClient(webClient, url, "asfxyz", "https://127.0.0.1",
                           "https://cxf.apache.org#fragment", "https://localhost:12345");
-        assertTrue(errorPage.asText().contains("Invalid Client Registration"));
-
-        webClient.close();
+            assertTrue(errorPage.asText().contains("Invalid Client Registration"));
+        }
     }
 
     @org.junit.Test
@@ -691,15 +637,12 @@ abstract class AbstractOIDCTest {
             new NameValuePair("client_secret", "ecila"),
             new NameValuePair("grant_type", "client_credentials")));
 
-        final WebClient webClient = new WebClient();
-        webClient.getOptions().setUseInsecureSSL(true);
-        webClient.getOptions().setJavaScriptEnabled(false);
-        final UnexpectedPage responsePage = webClient.getPage(request);
-        String response = responsePage.getWebResponse().getContentAsString();
-
-        assertTrue(response.contains("access_token"));
-
-        webClient.close();
+        try (WebClient webClient = new WebClient()) {
+            webClient.getOptions().setUseInsecureSSL(true);
+            webClient.getOptions().setJavaScriptEnabled(false);
+            final String response = webClient.getPage(request).getWebResponse().getContentAsString();
+            assertTrue(response.contains("access_token"));
+        }
     }
 
     @org.junit.Test
@@ -709,7 +652,7 @@ abstract class AbstractOIDCTest {
         String password = "ecila";
 
         // Login to the client page successfully
-        WebClient webClient = setupWebClient(user, password);
+        WebClient webClient = setupWebClientIDP(user, password);
         HtmlPage loginPage = login(url, webClient);
         final String bodyTextContent = loginPage.getBody().getTextContent();
         assertTrue(bodyTextContent.contains("Registered Clients"));
@@ -747,31 +690,25 @@ abstract class AbstractOIDCTest {
         String password = "ecila";
 
         // Login to the OIDC token endpoint + get the authorization code
-        WebClient webClient = setupWebClient(user, password);
+        WebClient webClient = setupWebClientIDP(user, password);
         String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
-        assertNotNull(authorizationCode);
 
-        // 2. Get another authorization code without username/password. This should work as we are
-        // logged on
+        // 2. Get another authorization code without username/password. This should work as we are logged on
         webClient.getCredentialsProvider().clear();
 
         authorizationCode = webClient.getPage(url).getWebResponse().getContentAsString();
         assertNotNull(authorizationCode);
 
         // 3. Log out
-        String logoutUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/logout"
-            + "?client_id=" + storedClientId;
+        URL logoutUrl =
+            UriBuilder.fromUri("https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/logout")
+                .queryParam("client_id", storedClientId)
+                .build().toURL();
 
-        webClient.getOptions().setJavaScriptEnabled(false);
-        try {
-            webClient.getPage(logoutUrl);
-            fail();
-        } catch (HttpHostConnectException ex) {
-            assertTrue(ex.getMessage().contains("Connect to localhost:12345"));
-        }
+        final String logoutContent = webClient.getPage(logoutUrl).getWebResponse().getContentAsString();
+        assertEquals(LOGOUT_MSG, logoutContent);
 
-        // 4. Get another authorization code without username/password. This should fail as we have
-        // logged out
+        // 4. Get another authorization code without username/password. This should fail as we have logged out
         try {
             loginAndGetAuthorizationCode(url, webClient);
             fail("Failure expected after logout");
@@ -793,57 +730,71 @@ abstract class AbstractOIDCTest {
         String password = "ecila";
 
         // Login to the OIDC token endpoint + get the authorization code
-        WebClient webClient = setupWebClient(user, password);
-        String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
-        assertNotNull(authorizationCode);
-        webClient.getCredentialsProvider().clear();
+        WebClient webClient = setupWebClientIDP(user, password);
+        final String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
 
         // Now use the code to get an IdToken
-        WebClient webClient2 = setupWebClient("", "");
-        String data = storedClientId + ":" + storedClientPassword;
-        String authorizationHeader = "Basic "
-            + Base64.getEncoder().encodeToString(data.getBytes(StandardCharsets.UTF_8));
-        webClient2.addRequestHeader("Authorization", authorizationHeader);
-        String tokenUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/token";
-        WebRequest request = new WebRequest(new URL(tokenUrl), HttpMethod.POST);
-
-        request.setRequestParameters(Arrays.asList(
-            new NameValuePair("client_id", storedClientId),
-            new NameValuePair("grant_type", "authorization_code"),
-            new NameValuePair("code", authorizationCode)));
-
-        final UnexpectedPage responsePage = webClient2.getPage(request);
-        String response = responsePage.getWebResponse().getContentAsString();
+        final String rawToken = getRawToken(authorizationCode, storedClientId, storedClientPassword);
 
         // Check the IdToken
-        String idToken = getIdToken(response);
-        assertNotNull(idToken);
+        String idToken = getIdToken(rawToken);
         validateIdToken(idToken, storedClientId);
 
-        webClient2.close();
-
         // 2. Log out using the token hint
-        String logoutUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/logout"
-            + "?id_token_hint=" + idToken;
+        URL logoutUrl =
+            UriBuilder.fromUri("https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/logout")
+                .queryParam("id_token_hint", idToken)
+                //.queryParam("post_logout_redirect_uri", LOGOUT_URL_1)
+                .build().toURL();
 
-        webClient.getOptions().setJavaScriptEnabled(false);
-        try {
-            webClient.getPage(logoutUrl);
-            fail();
-        } catch (Exception ex) {
-            assertTrue(ex.getMessage().contains("Connect to localhost:12345"));
-        }
+        final String logoutContent = webClient.getPage(logoutUrl).getWebResponse().getContentAsString();
+        assertEquals(LOGOUT_MSG, logoutContent);
 
-        // 3. Get another authorization code without username/password. This should fail as we have
-        // logged out
+        // 3. Get another authorization code without username/password. This should fail as we have logged out
         try {
             loginAndGetAuthorizationCode(url, webClient);
             fail("Failure expected after logout");
-        } catch (Exception ex) {
-            assertTrue(ex.getMessage().contains("401"));
+        } catch (FailingHttpStatusCodeException ex) {
+            assertEquals(Status.UNAUTHORIZED.getStatusCode(), ex.getStatusCode());
         }
 
         webClient.close();
+    }
+
+    @org.junit.Test
+    public void testLogoutWrongPostLogoutRedirectUri() throws Exception {
+        // 1. Log in
+        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize"
+            + "?client_id=" + storedClientId
+            + "&response_type=code"
+            + "&scope=openid";
+        String user = "alice";
+        String password = "ecila";
+
+        // Login to the OIDC token endpoint + get the authorization code
+        WebClient webClient = setupWebClientIDP(user, password);
+        String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
+
+        // Now use the code to get an IdToken
+        final String rawToken = getRawToken(authorizationCode, storedClientId, storedClientPassword);
+
+        // Check the IdToken
+        String idToken = getIdToken(rawToken);
+        validateIdToken(idToken, storedClientId);
+
+        // 2. Log out using the token hint
+        URL logoutUrl =
+            UriBuilder.fromUri("https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/logout")
+                .queryParam("id_token_hint", idToken)
+                .queryParam("post_logout_redirect_uri", "https://localhost:12345")
+                .build().toURL();
+
+        try {
+            webClient.getPage(logoutUrl);
+            fail("Failure expected using invalid post_logout_redirect_uri");
+        } catch (FailingHttpStatusCodeException e) {
+            assertEquals(Status.BAD_REQUEST.getStatusCode(), e.getStatusCode());
+        } 
     }
 
     // Test that the form has the correct CSRF token in it when creating a client
@@ -854,7 +805,7 @@ abstract class AbstractOIDCTest {
         String password = "ecila";
 
         // Login to the client page successfully
-        WebClient webClient = setupWebClient(user, password);
+        WebClient webClient = setupWebClientIDP(user, password);
         HtmlPage loginPage = login(url, webClient);
         final String bodyTextContent = loginPage.getBody().getTextContent();
         assertTrue(bodyTextContent.contains("Registered Clients"));
@@ -889,35 +840,16 @@ abstract class AbstractOIDCTest {
         String password = "ecila";
 
         // Login to the OIDC token endpoint + get the authorization code
-        WebClient webClient = setupWebClient(user, password);
-        String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
-        assertNotNull(authorizationCode);
+        final String authorizationCode;
+        try (WebClient webClient = setupWebClientIDP(user, password)) {
+            authorizationCode = loginAndGetAuthorizationCode(url, webClient);
+        }
 
         // Now use the code to get an IdToken
-
-        url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/token";
-        WebRequest request = new WebRequest(new URL(url), HttpMethod.POST);
-
-        request.setRequestParameters(Arrays.asList(
-            new NameValuePair("client_id", storedClientId),
-            new NameValuePair("grant_type", "authorization_code"),
-            new NameValuePair("code", authorizationCode)));
-
-        WebClient webClient2 = setupWebClient("", "");
-        String data = storedClientId + ":" + storedClientPassword;
-        String authorizationHeader = "Basic "
-            + Base64.getEncoder().encodeToString(data.getBytes(StandardCharsets.UTF_8));
-        webClient2.addRequestHeader("Authorization", authorizationHeader);
-        final UnexpectedPage responsePage = webClient2.getPage(request);
-        String response = responsePage.getWebResponse().getContentAsString();
+        final String rawToken = getRawToken(authorizationCode, storedClientId, storedClientPassword);
 
         // Check the IdToken
-        String idToken = getIdToken(response);
-        assertNotNull(idToken);
-        validateIdToken(idToken, storedClientId, "User");
-
-        webClient.close();
-        webClient2.close();
+        validateIdToken(getIdToken(rawToken), storedClientId, "User");
     }
 
     @org.junit.Test
@@ -931,35 +863,16 @@ abstract class AbstractOIDCTest {
         String password = "ecila";
 
         // Login to the OIDC token endpoint + get the authorization code
-        WebClient webClient = setupWebClient(user, password);
-        String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
-        assertNotNull(authorizationCode);
+        final String authorizationCode;
+        try (WebClient webClient = setupWebClientIDP(user, password)) {
+            authorizationCode = loginAndGetAuthorizationCode(url, webClient);
+        }
 
         // Now use the code to get an IdToken
-
-        url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/token";
-        WebRequest request = new WebRequest(new URL(url), HttpMethod.POST);
-
-        request.setRequestParameters(Arrays.asList(
-            new NameValuePair("client_id", storedClientId),
-            new NameValuePair("grant_type", "authorization_code"),
-            new NameValuePair("code", authorizationCode)));
-
-        WebClient webClient2 = setupWebClient("", "");
-        String data = storedClientId + ":" + storedClientPassword;
-        String authorizationHeader = "Basic "
-            + Base64.getEncoder().encodeToString(data.getBytes(StandardCharsets.UTF_8));
-        webClient2.addRequestHeader("Authorization", authorizationHeader);
-        final UnexpectedPage responsePage = webClient2.getPage(request);
-        String response = responsePage.getWebResponse().getContentAsString();
+        final String rawToken = getRawToken(authorizationCode, storedClientId, storedClientPassword);
 
         // Check the IdToken
-        String idToken = getIdToken(response);
-        assertNotNull(idToken);
-        validateIdToken(idToken, storedClientId, "User");
-
-        webClient.close();
-        webClient2.close();
+        validateIdToken(getIdToken(rawToken), storedClientId, "User");
     }
 
     @org.junit.Test
@@ -973,35 +886,19 @@ abstract class AbstractOIDCTest {
         String password = "ecila";
 
         // Login to the OIDC token endpoint + get the authorization code
-        WebClient webClient = setupWebClient(user, password);
-        String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
-        assertNotNull(authorizationCode);
+        final String authorizationCode;
+        try (WebClient webClient = setupWebClientIDP(user, password)) {
+            authorizationCode = loginAndGetAuthorizationCode(url, webClient);
+        }
 
         // Now use the code to get an IdToken
-
-        url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/token";
-        WebRequest request = new WebRequest(new URL(url), HttpMethod.POST);
-
-        request.setRequestParameters(Arrays.asList(
-            new NameValuePair("client_id", storedClientId),
-            new NameValuePair("grant_type", "authorization_code"),
-            new NameValuePair("code", authorizationCode)));
-
-        WebClient webClient2 = setupWebClient("", "");
-        String data = storedClientId + ":" + storedClientPassword;
-        String authorizationHeader = "Basic "
-            + Base64.getEncoder().encodeToString(data.getBytes(StandardCharsets.UTF_8));
-        webClient2.addRequestHeader("Authorization", authorizationHeader);
-        final UnexpectedPage responsePage = webClient2.getPage(request);
-        String response = responsePage.getWebResponse().getContentAsString();
+        final String rawToken = getRawToken(authorizationCode, storedClientId, storedClientPassword);
 
         // Check the IdToken
-        String idToken = getIdToken(response);
-        assertNotNull(idToken);
-        validateIdToken(idToken, storedClientId);
+        validateIdToken(getIdToken(rawToken), storedClientId);
 
         // Get the access token
-        String accessToken = parseToken(response, "access_token");
+        String accessToken = parseToken(rawToken, "access_token");
         assertNotNull(accessToken);
 
         // Introspect the token and check it's valid
@@ -1010,8 +907,8 @@ abstract class AbstractOIDCTest {
         introspectionRequest.setRequestParameters(Arrays.asList(
             new NameValuePair("token", accessToken)));
 
-        UnexpectedPage introspectionResponsePage = webClient2.getPage(introspectionRequest);
-        String introspectionResponse = introspectionResponsePage.getWebResponse().getContentAsString();
+        WebClient webClient2 = setupWebClientRP(storedClientId, storedClientPassword);
+        String introspectionResponse = webClient2.getPage(introspectionRequest).getWebResponse().getContentAsString();
 
         assertTrue(introspectionResponse.contains("\"active\":true"));
 
@@ -1026,12 +923,10 @@ abstract class AbstractOIDCTest {
         // Now introspect the token again and check it's not valid
         url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/introspect";
 
-        introspectionResponsePage = webClient2.getPage(introspectionRequest);
-        introspectionResponse = introspectionResponsePage.getWebResponse().getContentAsString();
+        introspectionResponse = webClient2.getPage(introspectionRequest).getWebResponse().getContentAsString();
 
         assertTrue(introspectionResponse.contains("\"active\":false"));
 
-        webClient.close();
         webClient2.close();
     }
 
@@ -1046,35 +941,19 @@ abstract class AbstractOIDCTest {
         String password = "ecila";
 
         // Login to the OIDC token endpoint + get the authorization code
-        WebClient webClient = setupWebClient(user, password);
-        String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
-        assertNotNull(authorizationCode);
+        final String authorizationCode;
+        try (WebClient webClient = setupWebClientIDP(user, password)) {
+            authorizationCode = loginAndGetAuthorizationCode(url, webClient);
+        }
 
         // Now use the code to get an IdToken
-
-        url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/token";
-        WebRequest request = new WebRequest(new URL(url), HttpMethod.POST);
-
-        request.setRequestParameters(Arrays.asList(
-            new NameValuePair("client_id", storedClientId),
-            new NameValuePair("grant_type", "authorization_code"),
-            new NameValuePair("code", authorizationCode)));
-
-        WebClient webClient2 = setupWebClient("", "");
-        String data = storedClientId + ":" + storedClientPassword;
-        String authorizationHeader = "Basic "
-            + Base64.getEncoder().encodeToString(data.getBytes(StandardCharsets.UTF_8));
-        webClient2.addRequestHeader("Authorization", authorizationHeader);
-        final UnexpectedPage responsePage = webClient2.getPage(request);
-        String response = responsePage.getWebResponse().getContentAsString();
+        final String rawToken = getRawToken(authorizationCode, storedClientId, storedClientPassword);
 
         // Check the IdToken
-        String idToken = getIdToken(response);
-        assertNotNull(idToken);
-        validateIdToken(idToken, storedClientId);
+        validateIdToken(getIdToken(rawToken), storedClientId);
 
         // Get the access token
-        String accessToken = parseToken(response, "access_token");
+        String accessToken = parseToken(rawToken, "access_token");
         assertNotNull(accessToken);
 
         // Introspect the token and check it's valid
@@ -1083,34 +962,28 @@ abstract class AbstractOIDCTest {
         introspectionRequest.setRequestParameters(Arrays.asList(
             new NameValuePair("token", accessToken)));
 
-        UnexpectedPage introspectionResponsePage = webClient2.getPage(introspectionRequest);
-        String introspectionResponse = introspectionResponsePage.getWebResponse().getContentAsString();
+        WebClient webClient2 = setupWebClientRP(storedClientId, storedClientPassword);
+        String introspectionResponse = webClient2.getPage(introspectionRequest).getWebResponse().getContentAsString();
 
         assertTrue(introspectionResponse.contains("\"active\":true"));
 
         // Now try to revoke the token as the other client
-        WebClient webClient3 = setupWebClient("", "");
-        String data2 = storedClient2Id + ":" + storedClient2Password;
-        String authorizationHeader2 = "Basic "
-            + Base64.getEncoder().encodeToString(data2.getBytes(StandardCharsets.UTF_8));
-        webClient3.addRequestHeader("Authorization", authorizationHeader2);
-        url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/revoke";
-        WebRequest revocationRequest = new WebRequest(new URL(url), HttpMethod.POST);
-        revocationRequest.setRequestParameters(Arrays.asList(
-            new NameValuePair("token", accessToken)));
+        try (WebClient webClient3 = setupWebClientRP(storedClient2Id, storedClient2Password)) {
+            url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/revoke";
+            WebRequest revocationRequest = new WebRequest(new URL(url), HttpMethod.POST);
+            revocationRequest.setRequestParameters(Arrays.asList(
+                new NameValuePair("token", accessToken)));
 
-        webClient3.getPage(revocationRequest);
-        webClient3.close();
+            webClient3.getPage(revocationRequest);
+        }
 
         // Now introspect the token again and check it's still valid
         url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/introspect";
 
-        introspectionResponsePage = webClient2.getPage(introspectionRequest);
-        introspectionResponse = introspectionResponsePage.getWebResponse().getContentAsString();
+        introspectionResponse = webClient2.getPage(introspectionRequest).getWebResponse().getContentAsString();
 
         assertTrue(introspectionResponse.contains("\"active\":true"));
 
-        webClient.close();
         webClient2.close();
     }
 
@@ -1118,43 +991,49 @@ abstract class AbstractOIDCTest {
     public void testJWKKeyService() throws Exception {
 
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/jwk/keys";
-        String user = "alice";
-        String password = "ecila";
+//        String user = "alice";
+//        String password = "ecila";
 
-        WebClient webClient = setupWebClient(user, password);
-        final UnexpectedPage responsePage = webClient.getPage(url);
-        String response = responsePage.getWebResponse().getContentAsString();
+        final String response;
+        try (WebClient webClient = setupWebClientIDP("", "")) {
+            response = webClient.getPage(url).getWebResponse().getContentAsString();
+        }
         assertTrue(response.contains("alice"));
         assertTrue(response.contains("RSA"));
         assertTrue(response.contains("\"e\":"));
         assertFalse(response.contains("\"d\":"));
-
-        webClient.close();
     }
 
     @org.junit.Test
     public void testJWKKeyService2() throws Exception {
 
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/jwk2/keys";
-        String user = "alice";
-        String password = "ecila";
+//        String user = "alice";
+//        String password = "ecila";
 
-        WebClient webClient = setupWebClient(user, password);
-        final UnexpectedPage responsePage = webClient.getPage(url);
-        String response = responsePage.getWebResponse().getContentAsString();
+        final String response;
+        try (WebClient webClient = setupWebClientIDP("", "")) {
+            response = webClient.getPage(url).getWebResponse().getContentAsString();
+        }
         assertTrue(response.contains("2011-04-29"));
         assertTrue(response.contains("RSA"));
         assertTrue(response.contains("\"e\":"));
         assertFalse(response.contains("\"d\":"));
-
-        webClient.close();
     }
 
-    private static WebClient setupWebClient(String user, String password) {
+    private static WebClient setupWebClientIDP(String user, String password) {
+        return setupWebClient(IDP_HTTPS_PORT, user, password);
+    }
+
+    private static WebClient setupWebClientRP(String user, String password) {
+        return setupWebClient(Integer.parseInt(RP_HTTPS_PORT), user, password);
+    }
+
+    private static WebClient setupWebClient(int port, String user, String password) {
         final WebClient webClient = new WebClient();
         webClient.getOptions().setUseInsecureSSL(true);
         webClient.getCredentialsProvider().setCredentials(
-            new AuthScope("localhost", IDP_HTTPS_PORT),
+            new AuthScope("localhost", port),
             new UsernamePasswordCredentials(user, password));
 
         webClient.getOptions().setJavaScriptEnabled(false);
@@ -1162,11 +1041,13 @@ abstract class AbstractOIDCTest {
         return webClient;
     }
 
-    private static HtmlPage login(String url, WebClient webClient) throws IOException {
+    private static <P extends Page> P login(String url, WebClient webClient) throws IOException {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
         assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+
+        webClient.getCredentialsProvider().clear();
 
         // Test the SAML Version here
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
@@ -1190,50 +1071,46 @@ abstract class AbstractOIDCTest {
     private static String loginAndGetAuthorizationCode(
         String url, WebClient webClient
     ) throws Exception {
-        webClient.getOptions().setJavaScriptEnabled(false);
-        final HtmlPage idpPage = webClient.getPage(url);
-        webClient.getOptions().setJavaScriptEnabled(true);
-        assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        final String authorizationCode = login(url, webClient).getWebResponse().getContentAsString();
+        assertNotNull(authorizationCode);
+        return authorizationCode;
+    }
 
-        DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
+    private String getRawToken(String authorizationCode, String user, String password) throws IOException {
+        try (WebClient webClient = setupWebClientRP(user, password)) {
+            String tokenUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/token";
+            WebRequest request = new WebRequest(new URL(tokenUrl), HttpMethod.POST);
 
-        String wresult = null;
-        for (DomElement result : results) {
-            if ("wresult".equals(result.getAttributeNS(null, "name"))) {
-                wresult = result.getAttributeNS(null, "value");
-                break;
-            }
+            request.setRequestParameters(Arrays.asList(
+                new NameValuePair("client_id", storedClientId),
+                new NameValuePair("grant_type", "authorization_code"),
+                new NameValuePair("code", authorizationCode)));
+    
+            return webClient.getPage(request).getWebResponse().getContentAsString();
         }
-        assertTrue(wresult != null
-            && wresult.contains("urn:oasis:names:tc:SAML:2.0:cm:bearer"));
-
-        final HtmlForm form = idpPage.getFormByName("signinresponseform");
-        Page page = form.getInputByName("_eventId_submit").click();
-        return page.getWebResponse().getContentAsString();
     }
 
-    private static String getIdToken(String parentString) {
-        return parseToken(parentString, "id_token");
+    private static String getIdToken(String jsonToken) {
+        return parseToken(jsonToken, "id_token");
     }
 
-    private static String parseToken(String parentString, String tag) {
+    private static String parseToken(String jsonToken, String tag) {
         String foundString =
-            parentString.substring(parentString.indexOf(tag)
+            jsonToken.substring(jsonToken.indexOf(tag)
                                    + (tag + "\":\"").length());
-        int ampersandIndex = foundString.indexOf('"');
-        if (ampersandIndex < 1) {
-            ampersandIndex = foundString.length();
+        int quoteIndex = foundString.indexOf('"');
+        if (quoteIndex < 1) {
+            quoteIndex = foundString.length();
         }
-        return foundString.substring(0, ampersandIndex);
+        return foundString.substring(0, quoteIndex);
     }
 
-    private void validateIdToken(String idToken, String audience)
-        throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+    private void validateIdToken(String idToken, String audience) {
         validateIdToken(idToken, audience, null);
     }
 
-    private void validateIdToken(String idToken, String audience, String role)
-        throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+    private void validateIdToken(String idToken, String audience, String role) {
+        assertNotNull(idToken);
         JwsJwtCompactConsumer jwtConsumer = new JwsJwtCompactConsumer(idToken);
         JwtToken jwt = jwtConsumer.getJwtToken();
 
@@ -1248,17 +1125,10 @@ abstract class AbstractOIDCTest {
         if (role != null) {
             List<String> roles = jwt.getClaims().getListStringProperty("roles");
             assertNotNull(roles);
-            assertFalse(roles.isEmpty());
-            assertEquals(role, roles.get(0));
+            assertTrue(roles.contains(role));
         }
 
-        KeyStore keystore = KeyStore.getInstance("JKS");
-        keystore.load(Loader.getResource("oidc.jks").openStream(), "password".toCharArray());
-        Certificate cert = keystore.getCertificate("alice");
-        assertNotNull(cert);
-
-        assertTrue(jwtConsumer.verifySignatureWith((X509Certificate)cert,
-                                                          SignatureAlgorithm.RS256));
+        assertTrue(jwtConsumer.verifySignatureWith(oidcCertificate, SignatureAlgorithm.RS256));
     }
 
     @SuppressWarnings("serial")
@@ -1267,9 +1137,15 @@ abstract class AbstractOIDCTest {
         public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
             final String code = req.getParameter("code");
             if (null != code) {
-                res.getOutputStream().write(code.getBytes());
+                res.getWriter().write(code);
             }
         }
     }
 
+    @SuppressWarnings("serial")
+    public static class LogoutServlet extends GenericServlet {
+        public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
+            res.getWriter().write(LOGOUT_MSG);
+        }
+    }
 }

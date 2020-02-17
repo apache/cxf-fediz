@@ -51,10 +51,4 @@ public class OIDCSpringTest extends AbstractOIDCTest {
         // Not working with Spring
     }
 
-    @Override
-    @org.junit.Test
-    public void testLogoutViaTokenHint() throws Exception {
-        // Not working with Spring
-    }
-
 }
