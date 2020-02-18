@@ -27,7 +27,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.KeyStore;
-import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -35,6 +34,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 import javax.servlet.GenericServlet;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -64,7 +66,10 @@ import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
+import org.apache.cxf.rs.security.jose.common.JoseConstants;
 import org.apache.cxf.rs.security.jose.jwa.SignatureAlgorithm;
+import org.apache.cxf.rs.security.jose.jwk.JsonWebKeys;
+import org.apache.cxf.rs.security.jose.jwk.JwkUtils;
 import org.apache.cxf.rs.security.jose.jws.JwsJwtCompactConsumer;
 import org.apache.cxf.rs.security.jose.jwt.JwtConstants;
 import org.apache.cxf.rs.security.jose.jwt.JwtToken;
@@ -74,6 +79,7 @@ import org.apache.wss4j.common.util.Loader;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -97,8 +103,6 @@ abstract class AbstractOIDCTest {
     private static Tomcat idpServer;
     private static Tomcat rpServer;
 
-    private static X509Certificate oidcCertificate;
-
     private static String storedClientId;
     private static String storedClient2Id;
     private static String storedClientPassword;
@@ -111,12 +115,15 @@ abstract class AbstractOIDCTest {
         idpServer = startServer(IDP_HTTPS_PORT, null, null);
         rpServer = startServer(Integer.parseInt(RP_HTTPS_PORT), servletContextName, fedizConfigPath);
 
-        try (InputStream is = Loader.getResource("oidc.jks").openStream()) {
-            KeyStore keystore = KeyStore.getInstance("JKS");
-            keystore.load(is, "password".toCharArray());
-            oidcCertificate = (X509Certificate) keystore.getCertificate("alice");
-            assertNotNull(oidcCertificate);
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        try (InputStream is = Loader.getResource("/server.jks").openStream()) {
+            final KeyStore keyStore = KeyStore.getInstance("JKS");
+            keyStore.load(is, "tompass".toCharArray());
+            tmf.init(keyStore);
         }
+        SSLContext sc = SSLContext.getInstance("SSL");
+        sc.init(null, tmf.getTrustManagers(), new java.security.SecureRandom()); 
+        HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
 
         loginToClientsPage(RP_HTTPS_PORT, servletContextName);
     }
@@ -221,7 +228,7 @@ abstract class AbstractOIDCTest {
 
     // Runs as BeforeClass: Login to the OIDC Clients page + create two new clients
     private static void loginToClientsPage(String rpPort, String servletContext) throws Exception {
-        String url = "https://localhost:" + rpPort + "/" + servletContext + "/console/clients";
+        URL url = oidcEndpoint(servletContext, "/console/clients");
         String user = "alice";
         String password = "ecila";
 
@@ -276,7 +283,7 @@ abstract class AbstractOIDCTest {
         webClient.close();
     }
 
-    private static HtmlPage registerNewClient(WebClient webClient, String url,
+    private static HtmlPage registerNewClient(WebClient webClient, URL url,
                                             String clientName, String redirectURI,
                                             String clientAudience,
                                             String logoutURI) throws Exception {
@@ -303,7 +310,7 @@ abstract class AbstractOIDCTest {
     // Runs as AfterClass: Login to the OIDC Clients page + delete the created clients!
     private static void loginToClientsPageAndDeleteClient(String rpPort, String servletContext)
             throws Exception {
-        String url = "https://localhost:" + rpPort + "/" + servletContext + "/console/clients";
+        URL url = oidcEndpoint(servletContext, "/console/clients");
         String user = "alice";
         String password = "ecila";
 
@@ -337,7 +344,7 @@ abstract class AbstractOIDCTest {
         webClient.close();
     }
 
-    private static HtmlPage deleteClient(WebClient webClient, String url, String clientId) throws Exception {
+    private static HtmlPage deleteClient(WebClient webClient, URL url, String clientId) throws Exception {
         HtmlPage clientPage = webClient.getPage(url + "/" + clientId);
 
         final HtmlForm deleteForm = clientPage.getFormByName("deleteForm");
@@ -351,7 +358,7 @@ abstract class AbstractOIDCTest {
     // Test that we managed to create the clients ok
     @org.junit.Test
     public void testCreatedClients() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/console/clients";
+        final URL url = oidcEndpoint("/console/clients");
         String user = "alice";
         String password = "ecila";
 
@@ -393,7 +400,7 @@ abstract class AbstractOIDCTest {
     // Test that "bob" can't see the clients created by "alice"
     @org.junit.Test
     public void testRegisteredClientsAsBob() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/console/clients";
+        final URL url = oidcEndpoint("/console/clients");
         String user = "bob";
         String password = "bob";
 
@@ -415,10 +422,11 @@ abstract class AbstractOIDCTest {
     @org.junit.Test
     public void testOIDCLoginForClient1() throws Exception {
 
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize"
-            + "?client_id=" + storedClientId
-            + "&response_type=code"
-            + "&scope=openid";
+        final URL url = oidcEndpointBuilder("/idp/authorize")
+            .queryParam("client_id", storedClientId)
+            .queryParam("response_type", "code")
+            .queryParam("scope", "openid")
+            .build().toURL();
         String user = "alice";
         String password = "ecila";
 
@@ -437,10 +445,11 @@ abstract class AbstractOIDCTest {
 
     @org.junit.Test
     public void testOIDCLoginForClient2() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize"
-            + "?client_id=" + storedClient2Id
-            + "&response_type=code"
-            + "&scope=openid";
+        final URL url = oidcEndpointBuilder("/idp/authorize")
+            .queryParam("client_id", storedClient2Id)
+            .queryParam("response_type", "code")
+            .queryParam("scope", "openid")
+            .build().toURL();
         String user = "alice";
         String password = "ecila";
 
@@ -460,10 +469,11 @@ abstract class AbstractOIDCTest {
     @org.junit.Test
     public void testUsingCodeForOtherClient() throws Exception {
         // Get the code for the first client
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize"
-            + "?client_id=" + storedClientId
-            + "&response_type=code"
-            + "&scope=openid";
+        final URL url = oidcEndpointBuilder("/idp/authorize")
+            .queryParam("client_id", storedClientId)
+            .queryParam("response_type", "code")
+            .queryParam("scope", "openid")
+            .build().toURL();
         String user = "alice";
         String password = "ecila";
 
@@ -481,11 +491,11 @@ abstract class AbstractOIDCTest {
 
     @org.junit.Test
     public void testBadClientId() throws Exception {
-
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize"
-            + "?client_id=" + storedClientId.substring(1)
-            + "&response_type=code"
-            + "&scope=openid";
+        final URL url = oidcEndpointBuilder("/idp/authorize")
+            .queryParam("client_id", storedClientId.substring(1))
+            .queryParam("response_type", "code")
+            .queryParam("scope", "openid")
+            .build().toURL();
         String user = "alice";
         String password = "ecila";
 
@@ -498,11 +508,11 @@ abstract class AbstractOIDCTest {
 
     @org.junit.Test
     public void testEmptyClientId() throws Exception {
-
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize"
-            + "?client_id="
-            + "&response_type=code"
-            + "&scope=openid";
+        final URL url = oidcEndpointBuilder("/idp/authorize")
+            .queryParam("client_id", "")
+            .queryParam("response_type", "code")
+            .queryParam("scope", "openid")
+            .build().toURL();
         String user = "alice";
         String password = "ecila";
 
@@ -515,12 +525,12 @@ abstract class AbstractOIDCTest {
 
     @org.junit.Test
     public void testIncorrectRedirectURI() throws Exception {
-
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize"
-            + "?client_id=" + storedClientId
-            + "&response_type=code"
-            + "&scope=openid"
-            + "&redirect_uri=https://127.0.0.5";
+        final URL url = oidcEndpointBuilder("/idp/authorize")
+            .queryParam("client_id", storedClientId)
+            .queryParam("response_type", "code")
+            .queryParam("scope", "openid")
+            .queryParam("redirect_uri", "https://127.0.0.5")
+            .build().toURL();
         String user = "alice";
         String password = "ecila";
 
@@ -534,7 +544,7 @@ abstract class AbstractOIDCTest {
 
     @org.junit.Test
     public void testCreateClientWithInvalidRegistrationURI() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/console/clients";
+        final URL url = oidcEndpoint("/console/clients");
         String user = "alice";
         String password = "ecila";
 
@@ -553,7 +563,7 @@ abstract class AbstractOIDCTest {
 
     @org.junit.Test
     public void testCreateClientWithRegistrationURIFragment() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/console/clients";
+        final URL url = oidcEndpoint("/console/clients");
         String user = "alice";
         String password = "ecila";
 
@@ -572,7 +582,7 @@ abstract class AbstractOIDCTest {
 
     @org.junit.Test
     public void testCreateClientWithInvalidAudienceURI() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/console/clients";
+        final URL url = oidcEndpoint("/console/clients");
         String user = "alice";
         String password = "ecila";
 
@@ -591,7 +601,7 @@ abstract class AbstractOIDCTest {
 
     @org.junit.Test
     public void testCreateClientWithInvalidLogoutURI() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/console/clients";
+        final URL url = oidcEndpoint("/console/clients");
         String user = "alice";
         String password = "ecila";
 
@@ -610,7 +620,7 @@ abstract class AbstractOIDCTest {
 
     @org.junit.Test
     public void testCreateClientWithAudienceURIFragment() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/console/clients";
+        final URL url = oidcEndpoint("/console/clients");
         String user = "alice";
         String password = "ecila";
 
@@ -629,8 +639,8 @@ abstract class AbstractOIDCTest {
 
     @org.junit.Test
     public void testClientCredentialsSTS() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/token";
-        WebRequest request = new WebRequest(new URL(url), HttpMethod.POST);
+        final URL url = oidcEndpoint("/oauth2/token");
+        WebRequest request = new WebRequest(url, HttpMethod.POST);
 
         request.setRequestParameters(Arrays.asList(
             new NameValuePair("client_id", "alice"),
@@ -647,7 +657,7 @@ abstract class AbstractOIDCTest {
 
     @org.junit.Test
     public void testCreateClientWithSupportedTLD() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/console/clients";
+        final URL url = oidcEndpoint("/console/clients");
         String user = "alice";
         String password = "ecila";
 
@@ -682,22 +692,24 @@ abstract class AbstractOIDCTest {
     @org.junit.Test
     public void testLogout() throws Exception {
         // 1. Log in
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize"
-            + "?client_id=" + storedClientId
-            + "&response_type=code"
-            + "&scope=openid";
+        final URL url = oidcEndpointBuilder("/idp/authorize")
+            .queryParam("client_id", storedClientId)
+            .queryParam("response_type", "code")
+            .queryParam("scope", "openid")
+            .build().toURL();
         String user = "alice";
         String password = "ecila";
 
         // Login to the OIDC token endpoint + get the authorization code
         WebClient webClient = setupWebClientIDP(user, password);
-        String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
+        final String authorizationCode1 = loginAndGetAuthorizationCode(url, webClient);
 
         // 2. Get another authorization code without username/password. This should work as we are logged on
         webClient.getCredentialsProvider().clear();
 
-        authorizationCode = webClient.getPage(url).getWebResponse().getContentAsString();
-        assertNotNull(authorizationCode);
+        final String authorizationCode2 = webClient.getPage(url).getWebResponse().getContentAsString();
+        assertNotNull(authorizationCode2);
+        assertNotEquals(authorizationCode1, authorizationCode2);
 
         // 3. Log out
         URL logoutUrl =
@@ -722,16 +734,18 @@ abstract class AbstractOIDCTest {
     @org.junit.Test
     public void testLogoutViaTokenHint() throws Exception {
         // 1. Log in
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize"
-            + "?client_id=" + storedClientId
-            + "&response_type=code"
-            + "&scope=openid";
+        final URL url = oidcEndpointBuilder("/idp/authorize")
+            .queryParam("client_id", storedClientId)
+            .queryParam("response_type", "code")
+            .queryParam("scope", "openid")
+            .build().toURL();
         String user = "alice";
         String password = "ecila";
 
         // Login to the OIDC token endpoint + get the authorization code
         WebClient webClient = setupWebClientIDP(user, password);
         final String authorizationCode = loginAndGetAuthorizationCode(url, webClient);
+        webClient.getCredentialsProvider().clear();
 
         // Now use the code to get an IdToken
         final String rawToken = getRawToken(authorizationCode, storedClientId, storedClientPassword);
@@ -764,10 +778,11 @@ abstract class AbstractOIDCTest {
     @org.junit.Test
     public void testLogoutWrongPostLogoutRedirectUri() throws Exception {
         // 1. Log in
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize"
-            + "?client_id=" + storedClientId
-            + "&response_type=code"
-            + "&scope=openid";
+        final URL url = oidcEndpointBuilder("/idp/authorize")
+            .queryParam("client_id", storedClientId)
+            .queryParam("response_type", "code")
+            .queryParam("scope", "openid")
+            .build().toURL();
         String user = "alice";
         String password = "ecila";
 
@@ -800,7 +815,7 @@ abstract class AbstractOIDCTest {
     // Test that the form has the correct CSRF token in it when creating a client
     @org.junit.Test
     public void testCSRFClientRegistration() throws Exception {
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/console/clients";
+        final URL url = oidcEndpoint("/console/clients");
         String user = "alice";
         String password = "ecila";
 
@@ -812,7 +827,7 @@ abstract class AbstractOIDCTest {
 
         // Register a new client
 
-        WebRequest request = new WebRequest(new URL(url), HttpMethod.POST);
+        WebRequest request = new WebRequest(url, HttpMethod.POST);
         request.setRequestParameters(Arrays.asList(
             new NameValuePair("client_name", "bad_client"),
             new NameValuePair("client_type", "confidential"),
@@ -830,12 +845,12 @@ abstract class AbstractOIDCTest {
 
     @org.junit.Test
     public void testOIDCLoginForClient1WithRoles() throws Exception {
-
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize"
-            + "?client_id=" + storedClientId
-            + "&response_type=code"
-            + "&scope=openid"
-            + "&claims=roles";
+        final URL url = oidcEndpointBuilder("/idp/authorize")
+            .queryParam("client_id", storedClientId)
+            .queryParam("response_type", "code")
+            .queryParam("scope", "openid")
+            .queryParam("claims", "roles")
+            .build().toURL();
         String user = "alice";
         String password = "ecila";
 
@@ -854,11 +869,11 @@ abstract class AbstractOIDCTest {
 
     @org.junit.Test
     public void testOIDCLoginForClient1WithRolesScope() throws Exception {
-
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize"
-            + "?client_id=" + storedClientId
-            + "&response_type=code"
-            + "&scope=openid%20roles";
+        final URL url = oidcEndpointBuilder("/idp/authorize")
+            .queryParam("client_id", storedClientId)
+            .queryParam("response_type", "code")
+            .queryParam("scope", "openid roles")
+            .build().toURL();
         String user = "alice";
         String password = "ecila";
 
@@ -877,11 +892,11 @@ abstract class AbstractOIDCTest {
 
     @org.junit.Test
     public void testAccessTokenRevocation() throws Exception {
-
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize"
-            + "?client_id=" + storedClientId
-            + "&response_type=code"
-            + "&scope=openid";
+        final URL url = oidcEndpointBuilder("/idp/authorize")
+            .queryParam("client_id", storedClientId)
+            .queryParam("response_type", "code")
+            .queryParam("scope", "openid")
+            .build().toURL();
         String user = "alice";
         String password = "ecila";
 
@@ -902,8 +917,7 @@ abstract class AbstractOIDCTest {
         assertNotNull(accessToken);
 
         // Introspect the token and check it's valid
-        url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/introspect";
-        WebRequest introspectionRequest = new WebRequest(new URL(url), HttpMethod.POST);
+        WebRequest introspectionRequest = new WebRequest(oidcEndpoint("/oauth2/introspect"), HttpMethod.POST);
         introspectionRequest.setRequestParameters(Arrays.asList(
             new NameValuePair("token", accessToken)));
 
@@ -913,16 +927,13 @@ abstract class AbstractOIDCTest {
         assertTrue(introspectionResponse.contains("\"active\":true"));
 
         // Now revoke the token
-        url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/revoke";
-        WebRequest revocationRequest = new WebRequest(new URL(url), HttpMethod.POST);
+        WebRequest revocationRequest = new WebRequest(oidcEndpoint("/oauth2/revoke"), HttpMethod.POST);
         revocationRequest.setRequestParameters(Arrays.asList(
             new NameValuePair("token", accessToken)));
 
         webClient2.getPage(revocationRequest);
 
         // Now introspect the token again and check it's not valid
-        url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/introspect";
-
         introspectionResponse = webClient2.getPage(introspectionRequest).getWebResponse().getContentAsString();
 
         assertTrue(introspectionResponse.contains("\"active\":false"));
@@ -932,11 +943,11 @@ abstract class AbstractOIDCTest {
 
     @org.junit.Test
     public void testAccessTokenRevocationWrongClient() throws Exception {
-
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/idp/authorize"
-            + "?client_id=" + storedClientId
-            + "&response_type=code"
-            + "&scope=openid";
+        final URL url = oidcEndpointBuilder("/idp/authorize")
+            .queryParam("client_id", storedClientId)
+            .queryParam("response_type", "code")
+            .queryParam("scope", "openid")
+            .build().toURL();
         String user = "alice";
         String password = "ecila";
 
@@ -957,8 +968,7 @@ abstract class AbstractOIDCTest {
         assertNotNull(accessToken);
 
         // Introspect the token and check it's valid
-        url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/introspect";
-        WebRequest introspectionRequest = new WebRequest(new URL(url), HttpMethod.POST);
+        WebRequest introspectionRequest = new WebRequest(oidcEndpoint("/oauth2/introspect"), HttpMethod.POST);
         introspectionRequest.setRequestParameters(Arrays.asList(
             new NameValuePair("token", accessToken)));
 
@@ -969,8 +979,7 @@ abstract class AbstractOIDCTest {
 
         // Now try to revoke the token as the other client
         try (WebClient webClient3 = setupWebClientRP(storedClient2Id, storedClient2Password)) {
-            url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/revoke";
-            WebRequest revocationRequest = new WebRequest(new URL(url), HttpMethod.POST);
+            WebRequest revocationRequest = new WebRequest(oidcEndpoint("/oauth2/revoke"), HttpMethod.POST);
             revocationRequest.setRequestParameters(Arrays.asList(
                 new NameValuePair("token", accessToken)));
 
@@ -978,8 +987,6 @@ abstract class AbstractOIDCTest {
         }
 
         // Now introspect the token again and check it's still valid
-        url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/introspect";
-
         introspectionResponse = webClient2.getPage(introspectionRequest).getWebResponse().getContentAsString();
 
         assertTrue(introspectionResponse.contains("\"active\":true"));
@@ -988,37 +995,33 @@ abstract class AbstractOIDCTest {
     }
 
     @org.junit.Test
-    public void testJWKKeyService() throws Exception {
-
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/jwk/keys";
-//        String user = "alice";
-//        String password = "ecila";
-
-        final String response;
-        try (WebClient webClient = setupWebClientIDP("", "")) {
-            response = webClient.getPage(url).getWebResponse().getContentAsString();
-        }
-        assertTrue(response.contains("alice"));
-        assertTrue(response.contains("RSA"));
-        assertTrue(response.contains("\"e\":"));
-        assertFalse(response.contains("\"d\":"));
-    }
-
-    @org.junit.Test
     public void testJWKKeyService2() throws Exception {
-
-        String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/jwk2/keys";
-//        String user = "alice";
-//        String password = "ecila";
-
         final String response;
-        try (WebClient webClient = setupWebClientIDP("", "")) {
-            response = webClient.getPage(url).getWebResponse().getContentAsString();
+        try (WebClient webClient = setupWebClientRP("", "")) {
+            response = webClient.getPage(oidcEndpoint("/jwk2/keys")).getWebResponse().getContentAsString();
         }
         assertTrue(response.contains("2011-04-29"));
         assertTrue(response.contains("RSA"));
         assertTrue(response.contains("\"e\":"));
         assertFalse(response.contains("\"d\":"));
+    }
+
+    private URL oidcEndpoint(String path) throws IOException {
+        return oidcEndpoint(getServletContextName(), path);
+    }
+
+    private UriBuilder oidcEndpointBuilder(String path) throws IOException {
+        return oidcEndpointBuilder(getServletContextName(), path);
+    }
+
+    private static URL oidcEndpoint(String servletContext, String path) throws IOException {
+        return oidcEndpointBuilder(servletContext, path)
+            .build().toURL();
+    }
+
+    private static UriBuilder oidcEndpointBuilder(String servletContext, String path) throws IOException {
+        return UriBuilder.fromUri("https://localhost:" + RP_HTTPS_PORT + '/' + servletContext)
+            .path(path);
     }
 
     private static WebClient setupWebClientIDP(String user, String password) {
@@ -1041,13 +1044,11 @@ abstract class AbstractOIDCTest {
         return webClient;
     }
 
-    private static <P extends Page> P login(String url, WebClient webClient) throws IOException {
+    private static <P extends Page> P login(URL url, WebClient webClient) throws IOException {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
         assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
-
-        webClient.getCredentialsProvider().clear();
 
         // Test the SAML Version here
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
@@ -1069,7 +1070,7 @@ abstract class AbstractOIDCTest {
     }
 
     private static String loginAndGetAuthorizationCode(
-        String url, WebClient webClient
+        URL url, WebClient webClient
     ) throws Exception {
         final String authorizationCode = login(url, webClient).getWebResponse().getContentAsString();
         assertNotNull(authorizationCode);
@@ -1078,8 +1079,7 @@ abstract class AbstractOIDCTest {
 
     private String getRawToken(String authorizationCode, String user, String password) throws IOException {
         try (WebClient webClient = setupWebClientRP(user, password)) {
-            String tokenUrl = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/oauth2/token";
-            WebRequest request = new WebRequest(new URL(tokenUrl), HttpMethod.POST);
+            WebRequest request = new WebRequest(oidcEndpoint("/oauth2/token"), HttpMethod.POST);
 
             request.setRequestParameters(Arrays.asList(
                 new NameValuePair("client_id", storedClientId),
@@ -1105,11 +1105,11 @@ abstract class AbstractOIDCTest {
         return foundString.substring(0, quoteIndex);
     }
 
-    private void validateIdToken(String idToken, String audience) {
+    private void validateIdToken(String idToken, String audience) throws IOException {
         validateIdToken(idToken, audience, null);
     }
 
-    private void validateIdToken(String idToken, String audience, String role) {
+    private void validateIdToken(String idToken, String audience, String role) throws IOException {
         assertNotNull(idToken);
         JwsJwtCompactConsumer jwtConsumer = new JwsJwtCompactConsumer(idToken);
         JwtToken jwt = jwtConsumer.getJwtToken();
@@ -1128,7 +1128,13 @@ abstract class AbstractOIDCTest {
             assertTrue(roles.contains(role));
         }
 
-        assertTrue(jwtConsumer.verifySignatureWith(oidcCertificate, SignatureAlgorithm.RS256));
+        // TODO: jwt.getJwsHeader(JoseConstants.HEADER_KEY_ID))
+        assertTrue(jwtConsumer.verifySignatureWith(jsonWebKeys().getKeys().get(0),
+            SignatureAlgorithm.valueOf(jwt.getJwsHeader(JoseConstants.HEADER_ALGORITHM).toString())));
+    }
+
+    private JsonWebKeys jsonWebKeys() throws IOException {
+        return JwkUtils.readJwkSet(oidcEndpointBuilder("/jwk/keys").build());
     }
 
     @SuppressWarnings("serial")
