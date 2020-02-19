@@ -40,10 +40,8 @@
         <property name="disableLogoutAddressValidation" value="true"/>
         <property name="supportedProtocols">
             <util:list>
-                <value>http://docs.oasis-open.org/wsfed/federation/200706
-                </value>
-                <value>http://docs.oasis-open.org/ws-sx/ws-trust/200512
-                </value>
+                <value>http://docs.oasis-open.org/wsfed/federation/200706</value>
+                <value>http://docs.oasis-open.org/ws-sx/ws-trust/200512</value>
             </util:list>
         </property>
         <property name="tokenTypesOffered">
@@ -54,7 +52,8 @@
         </property>
         <property name="authenticationURIs">
             <util:map>
-                <entry key="default" value="federation/up" />
+                <entry key="default"
+                       value="federation/up" />
                 <entry key="http://docs.oasis-open.org/wsfed/authorization/200706/authntypes/SslAndKey" 
                        value="federation/krb" />
                 <entry key="http://docs.oasis-open.org/wsfed/authorization/200706/authntypes/default"
@@ -110,7 +109,7 @@
         <property name="passiveRequestorEndpointConstraint" 
                   value="https://localhost:(\d)*/(\w)*helloworld(\w)*/secure/.*" />
     </bean>
-    
+
     <bean id="srv-oidc" class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationEntity">
         <property name="realm" value="urn:org:apache:cxf:fediz:oidc" />
         <property name="protocol" value="http://docs.oasis-open.org/wsfed/federation/200706" />
@@ -124,11 +123,6 @@
     
     <bean class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationClaimEntity">
         <property name="application" ref="srv-fedizhelloworld" />
-        <property name="claim" ref="claim_role" />
-        <property name="optional" value="false" />
-    </bean>
-    <bean class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationClaimEntity">
-        <property name="application" ref="srv-oidc" />
         <property name="claim" ref="claim_role" />
         <property name="optional" value="false" />
     </bean>
@@ -147,7 +141,28 @@
         <property name="claim" ref="claim_email" />
         <property name="optional" value="false" />
     </bean>
-    
+    <bean class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationClaimEntity">
+        <property name="application" ref="srv-oidc" />
+        <property name="claim" ref="claim_role" />
+        <property name="optional" value="false" />
+    </bean>
+
+    <bean class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationClaimEntity">
+        <property name="application" ref="srv-oidc" />
+        <property name="claim" ref="claim_givenname" />
+        <property name="optional" value="false" />
+    </bean>
+    <bean class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationClaimEntity">
+        <property name="application" ref="srv-oidc" />
+        <property name="claim" ref="claim_surname" />
+        <property name="optional" value="false" />
+    </bean>
+    <bean class="org.apache.cxf.fediz.service.idp.service.jpa.ApplicationClaimEntity">
+        <property name="application" ref="srv-oidc" />
+        <property name="claim" ref="claim_email" />
+        <property name="optional" value="false" />
+    </bean>
+
     <bean id="claim_role"
         class="org.apache.cxf.fediz.service.idp.service.jpa.ClaimEntity">
         <property name="claimType"

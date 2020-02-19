@@ -96,9 +96,9 @@ abstract class AbstractOIDCTest {
     private static final Integer RP_HTTPS_PORT = Integer.getInteger("rp.https.port");
 
     private static final String CALLBACK_CONTEXT = "/callback";
-    private static final String REDIRECT_URL = "https://127.0.0.1:" + RP_HTTPS_PORT + CALLBACK_CONTEXT;
+    private static final String REDIRECT_URL = "https://localhost:" + RP_HTTPS_PORT + CALLBACK_CONTEXT;
     private static final String LOGOUT_CONTEXT = "/logout";
-    private static final String LOGOUT_URL = "https://127.0.0.1:" + RP_HTTPS_PORT + LOGOUT_CONTEXT;
+    private static final String LOGOUT_URL = "https://localhost:" + RP_HTTPS_PORT + LOGOUT_CONTEXT;
     private static final String LOGOUT_MSG = "logout";
 
     private static Tomcat idpServer;
