@@ -1,0 +1,1 @@
+docker run -p 8443:8443 org.apache.cxf.fediz/fediz-oidc-docker:1.5.0-SNAPSHOT

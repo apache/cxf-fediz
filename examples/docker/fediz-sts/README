@@ -1,0 +1,1 @@
+docker run -p 9443:9443 org.apache.cxf.fediz/fediz-sts-docker:1.5.0-SNAPSHOT
