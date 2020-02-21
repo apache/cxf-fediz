@@ -743,7 +743,6 @@ abstract class AbstractOIDCTest {
             login(clientsUrl, webClient);
 
             // Register a new client
-
             WebRequest request = new WebRequest(clientsUrl, HttpMethod.POST);
             request.setRequestParameters(Arrays.asList(
                 new NameValuePair("client_name", "bad_client"),
@@ -768,7 +767,7 @@ abstract class AbstractOIDCTest {
             .queryParam("claims", "roles")
             .build().toURL();
 
-        // Login to the OIDC token endpoint + get the authorization code
+        // Login to the OIDC authorization endpoint + get the authorization code
         final String authorizationCode = loginAndGetAuthorizationCode(authorizationUrl, "alice", "ecila");
 
         // Now use the code to get an IdToken
@@ -787,7 +786,7 @@ abstract class AbstractOIDCTest {
             .queryParam("scope", "openid roles")
             .build().toURL();
 
-        // Login to the OIDC token endpoint + get the authorization code
+        // Login to the OIDC authorization endpoint + get the authorization code
         final String authorizationCode = loginAndGetAuthorizationCode(authorizationUrl, "alice", "ecila");
 
         // Now use the code to get an IdToken
@@ -796,6 +795,44 @@ abstract class AbstractOIDCTest {
 
         // Check the IdToken
         validateIdToken(getIdToken(json), confidentialClientId, "User");
+    }
+
+    @org.junit.Test
+    public void testOIDCLoginForPublicClientWithRefreshTokenScope() throws Exception {
+        final URL authorizationUrl = oidcEndpointBuilder("/idp/authorize")
+            .queryParam("client_id", publicClientId)
+            .queryParam("response_type", "code")
+            .queryParam("scope", "openid refreshToken")
+            .queryParam("redirect_uri", REDIRECT_URL)
+            .build().toURL();
+
+        // Login to the OIDC authorization endpoint + get the authorization code
+        final String authorizationCode;
+        try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
+            final HtmlPage confirmationPage = login(authorizationUrl, webClient);
+            final HtmlForm form = confirmationPage.getForms().get(0);
+            authorizationCode = form.getButtonByName("oauthDecision").click().getWebResponse().getContentAsString();
+        }
+
+        // Now use the code to get an IdToken
+        Map<String, Object> json = getTokenJson(authorizationCode, publicClientId, null);
+
+        // Get the access token
+        final String accessToken = json.get("access_token").toString();
+
+        // Refresh access token
+        try (WebClient webClient = setupWebClient()) {
+            WebRequest request = new WebRequest(oidcEndpoint("/oauth2/token"), HttpMethod.POST);
+
+            request.setRequestParameters(Arrays.asList(
+                new NameValuePair("client_id", publicClientId),
+                new NameValuePair("grant_type", "refresh_token"),
+                new NameValuePair("refresh_token", json.get("refresh_token").toString())));
+
+            json = new JsonMapObjectReaderWriter().fromJson(
+                webClient.getPage(request).getWebResponse().getContentAsString());
+            assertNotEquals(accessToken, json.get("access_token").toString());
+        }
     }
 
     @org.junit.Test
@@ -863,7 +900,7 @@ abstract class AbstractOIDCTest {
         validateIdToken(getIdToken(json), confidentialClientId);
 
         // Get the access token
-        String accessToken = json.get("access_token").toString();
+        final String accessToken = json.get("access_token").toString();
 
         // Introspect the token and check it's valid
         WebRequest introspectionRequest = new WebRequest(oidcEndpoint("/oauth2/introspect"), HttpMethod.POST);
