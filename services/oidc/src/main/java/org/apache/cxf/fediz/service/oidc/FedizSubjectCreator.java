@@ -109,7 +109,7 @@ public class FedizSubjectCreator implements SubjectCreator {
         }
         // Check if default issuer, issuedAt values have to be set
         if (issuer != null) {
-            String realIssuer = null;
+            final String realIssuer;
             if (issuer.startsWith("/")) {
                 UriBuilder ub = mc.getUriInfo().getBaseUriBuilder();
                 URI uri = ub.path(issuer).build();

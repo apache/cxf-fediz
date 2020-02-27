@@ -24,7 +24,6 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
-import org.apache.commons.text.StringEscapeUtils;
 import org.apache.cxf.fediz.core.spi.HomeRealmCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,16 +43,16 @@ public class LoginHintHomeRealmDiscovery implements CallbackHandler {
         for (int i = 0; i < callbacks.length; i++) {
             if (callbacks[i] instanceof HomeRealmCallback) {
                 HomeRealmCallback callback = (HomeRealmCallback) callbacks[i];
-                String loginHint = (String)callback.getRequest().getParameter("login_hint");
-                if (loginHint == null || loginHint.length() == 0) {
+                final String loginHint = (String)callback.getRequest().getParameter("login_hint");
+                if (loginHint == null || loginHint.isEmpty()) {
                     LOG.debug("No login_hint found in request to set home realm");
                 } else {
                     String[] homeRealm = loginHint.split("@");
                     if (homeRealm.length == 2) {
-                        LOG.debug("Home realm '{}' found in request", StringEscapeUtils.escapeHtml4(homeRealm[1]));
+                        LOG.debug("Home realm '{}' found in request", homeRealm[1]);
                         callback.setHomeRealm(homeRealm[1]);
                     } else {
-                        LOG.warn("login_hint is not an email address: {}", StringEscapeUtils.escapeHtml4(loginHint));
+                        LOG.warn("login_hint is not an email address: {}", loginHint);
                     }
                 }
             } else {
