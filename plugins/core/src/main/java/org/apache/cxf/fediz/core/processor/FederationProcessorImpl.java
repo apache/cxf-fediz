@@ -24,7 +24,6 @@ import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.security.cert.Certificate;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -83,6 +82,9 @@ import org.apache.wss4j.dom.processor.Processor;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.net.URLEncoder.encode;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class FederationProcessorImpl extends AbstractFedizProcessor {
 
@@ -354,7 +356,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         throws ProcessingException {
 
         String redirectURL = null;
-        RequestState requestState = null;
+        final RequestState requestState;
         try {
             if (!(config.getProtocol() instanceof FederationProtocol)) {
                 LOG.error("Unsupported protocol");
@@ -363,7 +365,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
 
             String issuerURL = resolveIssuer(request, config);
             LOG.debug("Issuer url: {}", issuerURL);
-            if (issuerURL != null && issuerURL.length() > 0) {
+            if (issuerURL != null && !issuerURL.isEmpty()) {
                 redirectURL = issuerURL;
             }
 
@@ -382,7 +384,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             String signInQuery = resolveSignInQuery(request, config);
             LOG.debug("SignIn Query: {}", signInQuery);
 
-            String wctx = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+            String wctx = encode(UUID.randomUUID().toString(), UTF_8.name());
             StringBuffer requestURL = request.getRequestURL();
             String params = request.getQueryString();
             if (params != null && !params.isEmpty()) {
@@ -399,7 +401,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             sb.append(FederationConstants.PARAM_ACTION).append('=').append(FederationConstants.ACTION_SIGNIN);
 
             String reply = resolveReply(request, config);
-            if (reply == null || reply.length() == 0) {
+            if (reply == null || reply.isEmpty()) {
                 reply = request.getRequestURL().toString();
             } else {
                 try {
@@ -414,41 +416,38 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             }
 
             LOG.debug("wreply={}", reply);
-            sb.append('&').append(FederationConstants.PARAM_REPLY).append('=');
-            sb.append(URLEncoder.encode(reply, "UTF-8"));
+            sb.append('&').append(FederationConstants.PARAM_REPLY).append('=')
+                .append(encode(reply, UTF_8.name()));
 
             String realm = resolveWTRealm(request, config);
             LOG.debug("wtrealm={}", realm);
 
             // add wtrealm parameter
-            sb.append('&').append(FederationConstants.PARAM_TREALM).append('=').append(URLEncoder
-                                                                                           .encode(realm, "UTF-8"));
+            sb.append('&').append(FederationConstants.PARAM_TREALM).append('=')
+                .append(encode(realm, UTF_8.name()));
 
             // add authentication type parameter wauth if set
-            if (wAuth != null && wAuth.length() > 0) {
-                sb.append('&').append(FederationConstants.PARAM_AUTH_TYPE).append('=').append(URLEncoder
-                                                                                                  .encode(wAuth,
-                                                                                                          "UTF-8"));
+            if (wAuth != null && !wAuth.isEmpty()) {
+                sb.append('&').append(FederationConstants.PARAM_AUTH_TYPE).append('=')
+                    .append(encode(wAuth, UTF_8.name()));
             }
 
             // add tokenRequest parameter wreq if set
-            if (wReq != null && wReq.length() > 0) {
-                sb.append('&').append(FederationConstants.PARAM_REQUEST).append('=').append(URLEncoder.encode(wReq,
-                                                                                                              "UTF-8"));
+            if (wReq != null && !wReq.isEmpty()) {
+                sb.append('&').append(FederationConstants.PARAM_REQUEST).append('=')
+                    .append(encode(wReq, UTF_8.name()));
             }
 
             // add home realm parameter whr if set
-            if (homeRealm != null && homeRealm.length() > 0) {
-                sb.append('&').append(FederationConstants.PARAM_HOME_REALM).append('=').append(URLEncoder
-                                                                                                   .encode(homeRealm,
-                                                                                                           "UTF-8"));
+            if (homeRealm != null && !homeRealm.isEmpty()) {
+                sb.append('&').append(FederationConstants.PARAM_HOME_REALM).append('=')
+                    .append(encode(homeRealm, UTF_8.name()));
             }
 
             // add freshness parameter wfresh if set
-            if (freshness != null && freshness.length() > 0) {
-                sb.append('&').append(FederationConstants.PARAM_FRESHNESS).append('=').append(URLEncoder
-                                                                                                  .encode(freshness,
-                                                                                                          "UTF-8"));
+            if (freshness != null && !freshness.isEmpty()) {
+                sb.append('&').append(FederationConstants.PARAM_FRESHNESS).append('=')
+                    .append(encode(freshness, UTF_8.name()));
             }
 
             // add current time parameter wct
@@ -456,18 +455,18 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             DateTimeFormatter formatter = DateUtil.getDateTimeFormatter(true);
             String wct = now.atZone(ZoneOffset.UTC).format(formatter);
             sb.append('&').append(FederationConstants.PARAM_CURRENT_TIME).append('=')
-                .append(URLEncoder.encode(wct, "UTF-8"));
+                .append(encode(wct, UTF_8.name()));
 
             LOG.debug("wctx={}", wctx);
-            sb.append('&').append(FederationConstants.PARAM_CONTEXT).append('=');
-            sb.append(URLEncoder.encode(wctx, "UTF-8"));
+            sb.append('&').append(FederationConstants.PARAM_CONTEXT).append('=')
+                .append(encode(wctx, UTF_8.name()));
 
             // add signin query extensions
             if (signInQuery != null && signInQuery.length() > 0) {
                 sb.append('&').append(signInQuery);
             }
 
-            redirectURL = redirectURL + "?" + sb.toString();
+            redirectURL = redirectURL + '?' + sb.toString();
         } catch (Exception ex) {
             LOG.error("Failed to create SignInRequest", ex);
             throw new ProcessingException("Failed to create SignInRequest", ex);
@@ -492,7 +491,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
 
             String issuerURL = resolveIssuer(request, config);
             LOG.debug("Issuer url: {}", issuerURL);
-            if (issuerURL != null && issuerURL.length() > 0) {
+            if (issuerURL != null && !issuerURL.isEmpty()) {
                 redirectURL = issuerURL;
             }
 
@@ -529,16 +528,16 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                 }
 
                 LOG.debug("wreply={}", logoutRedirectTo);
-                sb.append('&').append(FederationConstants.PARAM_REPLY).append('=');
-                sb.append(URLEncoder.encode(logoutRedirectTo, "UTF-8"));
+                sb.append('&').append(FederationConstants.PARAM_REPLY).append('=')
+                    .append(encode(logoutRedirectTo, UTF_8.name()));
             }
 
             String realm = resolveWTRealm(request, config);
             LOG.debug("wtrealm={}", realm);
 
             // add wtrealm parameter
-            sb.append('&').append(FederationConstants.PARAM_TREALM).append('=').append(URLEncoder
-                                                                                           .encode(realm, "UTF-8"));
+            sb.append('&').append(FederationConstants.PARAM_TREALM).append('=')
+                .append(encode(realm, UTF_8.name()));
 
             String signOutQuery = resolveSignOutQuery(request, config);
             LOG.debug("SignIn Query: {}", signOutQuery);
@@ -548,7 +547,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                 sb.append('&').append(signOutQuery);
             }
 
-            redirectURL = redirectURL + "?" + sb.toString();
+            redirectURL = redirectURL + '?' + sb.toString();
         } catch (Exception ex) {
             LOG.error("Failed to create SignInRequest", ex);
             throw new ProcessingException("Failed to create SignInRequest");
@@ -579,7 +578,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                         if (sbQuery.length() > 0) {
                             sbQuery.append('&');
                         }
-                        sbQuery.append(entry.getKey()).append('=').append(URLEncoder.encode(entry.getValue(), "UTF-8"));
+                        sbQuery.append(entry.getKey()).append('=').append(encode(entry.getValue(), UTF_8.name()));
                     }
                     signInQuery = sbQuery.toString();
                 }
@@ -623,7 +622,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                         if (sbQuery.length() > 0) {
                             sbQuery.append('&');
                         }
-                        sbQuery.append(entry.getKey()).append('=').append(URLEncoder.encode(entry.getValue(), "UTF-8"));
+                        sbQuery.append(entry.getKey()).append('=').append(encode(entry.getValue(), UTF_8.name()));
                     }
                     signOutQuery = sbQuery.toString();
                 }
