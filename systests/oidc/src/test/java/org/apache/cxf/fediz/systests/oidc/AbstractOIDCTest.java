@@ -68,12 +68,12 @@ import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
 import org.apache.cxf.jaxrs.json.basic.JsonMapObjectReaderWriter;
-import org.apache.cxf.rs.security.jose.common.JoseConstants;
 import org.apache.cxf.rs.security.jose.jwa.SignatureAlgorithm;
 import org.apache.cxf.rs.security.jose.jwk.JsonWebKeys;
 import org.apache.cxf.rs.security.jose.jwk.JwkUtils;
+import org.apache.cxf.rs.security.jose.jws.JwsHeaders;
 import org.apache.cxf.rs.security.jose.jws.JwsJwtCompactConsumer;
-import org.apache.cxf.rs.security.jose.jwt.JwtConstants;
+import org.apache.cxf.rs.security.jose.jwt.JwtClaims;
 import org.apache.cxf.rs.security.jose.jwt.JwtToken;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -1036,24 +1036,25 @@ abstract class AbstractOIDCTest {
     private void validateIdToken(String idToken, String audience, String role) throws IOException {
         JwsJwtCompactConsumer jwtConsumer = new JwsJwtCompactConsumer(idToken);
         JwtToken jwt = jwtConsumer.getJwtToken();
+        JwtClaims jwtClaims = jwt.getClaims();
 
         // Validate claims
-        assertEquals("alice", jwt.getClaim("preferred_username"));
-        assertEquals("accounts.fediz.com", jwt.getClaim(JwtConstants.CLAIM_ISSUER));
-        assertEquals(audience, jwt.getClaim(JwtConstants.CLAIM_AUDIENCE));
-        assertNotNull(jwt.getClaim(JwtConstants.CLAIM_EXPIRY));
-        assertNotNull(jwt.getClaim(JwtConstants.CLAIM_ISSUED_AT));
+        assertEquals("alice", jwtClaims.getClaim("preferred_username"));
+        assertEquals("accounts.fediz.com", jwtClaims.getIssuer());
+        assertEquals(audience, jwtClaims.getAudience());
+        assertNotNull(jwtClaims.getIssuedAt());
+        assertNotNull(jwtClaims.getExpiryTime());
 
         // Check role
         if (role != null) {
-            List<String> roles = jwt.getClaims().getListStringProperty("roles");
+            List<String> roles = jwtClaims.getListStringProperty("roles");
             assertNotNull(roles);
             assertTrue(roles.contains(role));
         }
 
-        // TODO: jwt.getJwsHeader(JoseConstants.HEADER_KEY_ID))
-        assertTrue(jwtConsumer.verifySignatureWith(jsonWebKeys().getKeys().get(0),
-            SignatureAlgorithm.valueOf(jwt.getJwsHeader(JoseConstants.HEADER_ALGORITHM).toString())));
+        JwsHeaders jwsHeaders = jwt.getJwsHeaders();
+        assertTrue(jwtConsumer.verifySignatureWith(
+            jsonWebKeys().getKey(jwsHeaders.getKeyId()), SignatureAlgorithm.valueOf(jwsHeaders.getAlgorithm())));
     }
 
     private JsonWebKeys jsonWebKeys() throws IOException {
