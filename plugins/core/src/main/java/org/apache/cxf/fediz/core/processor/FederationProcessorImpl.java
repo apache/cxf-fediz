@@ -108,14 +108,13 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             LOG.error("Unsupported protocol");
             throw new IllegalStateException("Unsupported protocol");
         }
-        FedizResponse response = null;
+
         if (FederationConstants.ACTION_SIGNIN.equals(request.getAction())) {
-            response = this.processSignInRequest(request, config);
+            return processSignInRequest(request, config);
         } else {
             LOG.error("Invalid action '" + request.getAction() + "'");
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
-        return response;
     }
 
     public Document getMetaData(HttpServletRequest request, FedizContext config) throws ProcessingException {
@@ -124,7 +123,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
 
     protected FedizResponse processSignInRequest(FedizRequest request, FedizContext config) throws ProcessingException {
 
-        Document doc = null;
+        final Document doc;
         Element el = null;
         try {
             doc = DOMUtils.readXml(new StringReader(request.getResponseToken()));
@@ -142,12 +141,12 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             LOG.warn("Unexpected root element of wresult: '" + (el == null ? "null" : el.getLocalName()) + "'");
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
-        el = DOMUtils.getFirstElement(el);
+
         Element rst = null;
         Element lifetimeElem = null;
         String tt = null;
 
-        while (el != null) {
+        for (el = DOMUtils.getFirstElement(el); el != null; el = DOMUtils.getNextElement(el)) {
             String ln = el.getLocalName();
             if (FederationConstants.WS_TRUST_13_NS.equals(el.getNamespaceURI())
                 || FederationConstants.WS_TRUST_2005_02_NS.equals(el.getNamespaceURI())) {
@@ -159,7 +158,6 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
                     tt = DOMUtils.getContent(el);
                 }
             }
-            el = DOMUtils.getNextElement(el);
         }
 
         if (LOG.isDebugEnabled()) {
@@ -179,9 +177,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         LifeTime lifeTime = null;
         if (lifetimeElem != null) {
             lifeTime = processLifeTime(lifetimeElem);
-        }
 
-        if (lifeTime != null) {
             Instant rightNow = Instant.now();
             if (rightNow.isAfter(lifeTime.getExpires())) {
                 LOG.warn("RSTR Lifetime expired");
@@ -207,7 +203,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         TokenValidatorResponse validatorResponse = validateToken(rst, tt, config, request.getCerts());
 
         // Check whether token already used for signin
-        Instant expires = null;
+        final Instant expires;
         if (lifeTime != null && lifeTime.getExpires() != null) {
             expires = lifeTime.getExpires();
         } else {
@@ -246,10 +242,9 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
 
     private TokenValidatorResponse validateToken(Element token, String tokenType, FedizContext config,
         Certificate[] certs) throws ProcessingException {
-        TokenValidatorResponse validatorResponse = null;
         List<TokenValidator> validators = ((FederationProtocol)config.getProtocol()).getTokenValidators();
         for (TokenValidator validator : validators) {
-            boolean canHandle = false;
+            final boolean canHandle;
             if (tokenType != null) {
                 canHandle = validator.canHandleTokenType(tokenType);
             } else {
@@ -258,21 +253,20 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
             if (canHandle) {
                 try {
                     TokenValidatorRequest validatorRequest = new TokenValidatorRequest(token, certs);
-                    validatorResponse = validator.validateAndProcessToken(validatorRequest, config);
+                    return validator.validateAndProcessToken(validatorRequest, config);
                 } catch (ProcessingException ex) {
                     throw ex;
                 } catch (Exception ex) {
                     LOG.warn("Failed to validate token", ex);
                     throw new ProcessingException(TYPE.TOKEN_INVALID);
                 }
-                break;
             } else {
                 LOG.warn("No security token validator found for '" + tokenType + "'");
                 throw new ProcessingException(TYPE.BAD_REQUEST);
             }
         }
 
-        return validatorResponse;
+        return null;
     }
 
     private Element decryptEncryptedRST(Element encryptedRST, FedizContext config) throws ProcessingException {
