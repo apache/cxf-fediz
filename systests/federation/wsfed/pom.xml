@@ -269,25 +269,6 @@
                             </resources>              
                         </configuration>            
                     </execution>
-                    <execution>
-                        <id>copy-entities-to-oidc-idp</id>
-                        <phase>generate-test-sources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/target/tomcat/idpoidc/webapps/idpoidc/WEB-INF</outputDirectory>
-                            <resources>          
-                                <resource>
-                                    <directory>${basedir}/src/test/resources</directory>
-                                    <includes>
-                                        <include>cxf-service.xml</include>
-                                    </includes>
-                                    <filtering>true</filtering>
-                                </resource>
-                            </resources>              
-                        </configuration>            
-                    </execution>
                 </executions>
             </plugin>
             <plugin>
