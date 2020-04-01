@@ -25,7 +25,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.servlet.ServletException;
 
@@ -218,8 +218,6 @@ public class WSFedTest {
     @org.junit.Test
     public void testWSFederation() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/wsfed/secure/fedservlet";
-        // System.out.println(url);
-        // Thread.sleep(60 * 2 * 1000);
         String user = "ALICE";  // realm b credentials
         String password = "ECILA";
 
@@ -249,8 +247,6 @@ public class WSFedTest {
     @org.junit.Test
     public void testSAMLSSOFedizIdP() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/samlsso/secure/fedservlet";
-        // System.out.println(url);
-        // Thread.sleep(60 * 2 * 1000);
         String user = "ALICE";  // realm b credentials
         String password = "ECILA";
 
@@ -280,8 +276,6 @@ public class WSFedTest {
     @org.junit.Test
     public void testSAMLSSOCustom() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/samlssocustom/secure/fedservlet";
-        // System.out.println("URL: " + url);
-        // Thread.sleep(60 * 2 * 1000);
         String user = "ALICE";  // realm b credentials
         String password = "ECILA";
 
@@ -311,8 +305,6 @@ public class WSFedTest {
     @org.junit.Test
     public void testSAMLSSOCustomPostBinding() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/samlssocustompost/secure/fedservlet";
-        // System.out.println("URL: " + url);
-        // Thread.sleep(60 * 2 * 1000);
         String user = "ALICE";  // realm b credentials
         String password = "ECILA";
 
@@ -507,18 +499,18 @@ public class WSFedTest {
 
         WebRequest request = new WebRequest(new URL(oidcForm.getActionAttribute()), HttpMethod.POST);
 
-        request.setRequestParameters(new ArrayList<NameValuePair>());
-        String clientId = oidcForm.getInputByName("client_id").getValueAttribute();
-        request.getRequestParameters().add(new NameValuePair("client_id", clientId));
-        String redirectUri = oidcForm.getInputByName("redirect_uri").getValueAttribute();
-        request.getRequestParameters().add(new NameValuePair("redirect_uri", redirectUri));
-        String scope = oidcForm.getInputByName("scope").getValueAttribute();
-        request.getRequestParameters().add(new NameValuePair("scope", scope));
-        String state = oidcForm.getInputByName("state").getValueAttribute();
-        request.getRequestParameters().add(new NameValuePair("state", state));
-        String authToken = oidcForm.getInputByName("session_authenticity_token").getValueAttribute();
-        request.getRequestParameters().add(new NameValuePair("session_authenticity_token", authToken));
-        request.getRequestParameters().add(new NameValuePair("oauthDecision", "allow"));
+        request.setRequestParameters(Arrays.asList(
+            new NameValuePair("client_id",
+                oidcForm.getInputByName("client_id").getValueAttribute()),
+            new NameValuePair("redirect_uri",
+                oidcForm.getInputByName("redirect_uri").getValueAttribute()),
+            new NameValuePair("scope",
+                oidcForm.getInputByName("scope").getValueAttribute()),
+            new NameValuePair("state",
+                oidcForm.getInputByName("state").getValueAttribute()),
+            new NameValuePair("session_authenticity_token",
+                oidcForm.getInputByName("session_authenticity_token").getValueAttribute()),
+            new NameValuePair("oauthDecision", "allow")));
 
         HtmlPage idpPage = webClient.getPage(request);
 
