@@ -77,7 +77,6 @@ public class ClientRegistrationService {
     private static final Logger LOG = LogUtils.getL7dLogger(ClientRegistrationService.class);
 
     private final Map<String, Collection<Client>> registrations = new HashMap<>();
-    private final Map<String, Set<String>> clientNames = new HashMap<>();
     private OAuthDataProvider dataProvider;
     private ClientRegistrationProvider clientProvider;
     private Map<String, String> homeRealms = Collections.emptyMap();
@@ -121,6 +120,18 @@ public class ClientRegistrationService {
         return null;
     }
 
+    @GET
+    @Produces(MediaType.TEXT_HTML)
+    @Path("/{id}/edit")
+    public EditClient editClient(@PathParam("id") String id) {
+        checkSecurityContext();
+        for (Client c : getClientRegistrations()) {
+            if (c.getClientId().equals(id)) {
+                return new EditClient(c, homeRealms);
+            }
+        }
+        return null;
+    }
 
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -138,10 +149,6 @@ public class ClientRegistrationService {
             if (c.getClientId().equals(id)) {
                 clientProvider.removeClient(id);
                 it.remove();
-                Set<String> names = clientNames.get(getUserName());
-                if (names != null) {
-                    names.remove(c.getApplicationName());
-                }
                 break;
             }
         }
@@ -159,7 +166,7 @@ public class ClientRegistrationService {
 
         Client c = getRegisteredClient(id);
         if (c == null) {
-            throwInvalidRegistrationException("The client id is invalid");
+            throw new InvalidRegistrationException("The client id is invalid");
         }
         if (c.isConfidential()) {
             c.setClientSecret(generateClientSecret());
@@ -175,7 +182,7 @@ public class ClientRegistrationService {
         checkSecurityContext();
         Client c = getRegisteredClient(id);
         if (c == null) {
-            throwInvalidRegistrationException("The client id is invalid");
+            throw new InvalidRegistrationException("The client id is invalid");
         }
         return doGetClientIssuedTokens(c);
     }
@@ -220,7 +227,7 @@ public class ClientRegistrationService {
 
         Client c = getRegisteredClient(clientId);
         if (c == null) {
-            throwInvalidRegistrationException("The client id is invalid");
+            throw new InvalidRegistrationException("The client id is invalid");
         }
         dataProvider.revokeToken(c, tokenId, tokenType);
         return doGetClientIssuedTokens(c);
@@ -234,7 +241,7 @@ public class ClientRegistrationService {
         if (dataProvider instanceof AuthorizationCodeDataProvider) {
             Client c = getRegisteredClient(id);
             if (c == null) {
-                throwInvalidRegistrationException("The client id is invalid");
+                throw new InvalidRegistrationException("The client id is invalid");
             }
             UserSubject subject = new OidcUserSubject(getUserName());
             Collection<ServerAuthorizationCodeGrant> codeGrants = new TreeSet<>(
@@ -282,14 +289,14 @@ public class ClientRegistrationService {
 
             // Client Name
             if (StringUtils.isEmpty(appName)) {
-                throwInvalidRegistrationException("The client name must not be empty");
+                throw new InvalidRegistrationException("The client name must not be empty");
             }
             // Client Type
             if (StringUtils.isEmpty(appType)) {
-                throwInvalidRegistrationException("The client type must not be empty");
+                throw new InvalidRegistrationException("The client type must not be empty");
             }
             if (!("confidential".equals(appType) || "public".equals(appType))) {
-                throwInvalidRegistrationException("An invalid client type was specified: "
+                throw new InvalidRegistrationException("An invalid client type was specified: "
                     + StringEscapeUtils.escapeHtml4(appType));
             }
             // Client ID
@@ -310,66 +317,130 @@ public class ClientRegistrationService {
             // Client Registration Time
             newClient.setRegisteredAt(System.currentTimeMillis() / 1000);
 
-            // Client Realm
-            if (homeRealm != null) {
-                newClient.setHomeRealm(homeRealm);
-                if (homeRealms.containsKey(homeRealm)) {
-                    newClient.getProperties().put("homeRealmAlias", homeRealms.get(homeRealm));
-                }
-            }
-
-            // Client Redirect URIs
-            if (!StringUtils.isEmpty(redirectURI)) {
-                String[] allUris = redirectURI.trim().split(" ");
-                List<String> redirectUris = new ArrayList<>(allUris.length);
-                for (String uri : allUris) {
-                    if (!StringUtils.isEmpty(uri)) {
-                        if (!isValidURI(uri, false)) {
-                            throwInvalidRegistrationException("An invalid redirect URI was specified: "
-                                + StringEscapeUtils.escapeHtml4(uri));
-                        }
-                        redirectUris.add(uri);
-                    }
-                }
-                newClient.setRedirectUris(redirectUris);
-            }
-            // Client Logout URI
-            if (!StringUtils.isEmpty(logoutURI)) {
-                String[] logoutUris = logoutURI.split(" ");
-                for (String uri : logoutUris) {
-                    if (!isValidURI(uri, false)) {
-                        throwInvalidRegistrationException("An invalid logout URI was specified: "
-                            + StringEscapeUtils.escapeHtml4(uri));
-                    }
-                }
-                //TODO: replace this code with newClient.setLogoutUri() once it becomes available
-                newClient.getProperties().put("post_logout_redirect_uris", logoutURI);
-            }
-
-            // Client Audience URIs
-            if (!StringUtils.isEmpty(audience)) {
-                String[] auds = audience.trim().split(" ");
-                List<String> registeredAuds = new ArrayList<>(auds.length);
-                for (String aud : auds) {
-                    if (!StringUtils.isEmpty(aud)) {
-                        if (!isValidURI(aud, true)) {
-                            throwInvalidRegistrationException("An invalid audience URI was specified: "
-                                + StringEscapeUtils.escapeHtml4(aud));
-                        }
-                        registeredAuds.add(aud);
-                    }
-                }
-                newClient.setRegisteredAudiences(registeredAuds);
-            }
+            updateClientDetails(newClient, audience, redirectURI, logoutURI, homeRealm);
 
             // Client Scopes
             if (clientScopes != null && !clientScopes.isEmpty()) {
                 newClient.setRegisteredScopes(new ArrayList<>(clientScopes.keySet()));
             }
+
             return Response.ok(registerNewClient(newClient)).build();
         } catch (InvalidRegistrationException ex) {
             // For the view handlers to handle it
             return Response.ok(new InvalidRegistration(ex.getMessage())).build();
+        }
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.TEXT_HTML)
+    @Path("/{id}")
+    public Response editForm(@PathParam("id") String clientId,
+                             @FormParam("client_name") String appName,
+                             @FormParam("client_audience") String audience,
+                             @FormParam("client_redirectURI") String redirectURI,
+                             @FormParam("client_logoutURI") String logoutURI,
+                             @FormParam("client_homeRealm") String homeRealm,
+                             @FormParam("client_csrfToken") String csrfToken
+    ) {
+        try {
+            // CSRF
+            checkCSRFToken(csrfToken);
+            // checkSecurityContext();
+            Client client = getRegisteredClient(clientId);
+
+            // Client Name
+            if (StringUtils.isEmpty(appName)) {
+                throw new InvalidRegistrationException("The client name must not be empty");
+            }
+
+            updateClientDetails(client, audience, redirectURI, logoutURI, homeRealm);
+
+            if (!client.getApplicationName().equals(appName)) {
+                Collection<Client> clientRegistrations = getClientRegistrations(
+                    client.getResourceOwnerSubject().getLogin());
+                for (Iterator<Client> it = clientRegistrations.iterator(); it.hasNext();) {
+                    Client c = it.next();
+                    if (c.getClientId().equals(clientId)) {
+                        it.remove();
+                        break;
+                    }
+                }
+                client.setApplicationName(appName);
+                updateClientApplicationName(client, clientRegistrations);
+                clientRegistrations.add(client);
+            }
+
+            clientProvider.setClient(client);
+
+            return Response.ok(client).build();
+        } catch (InvalidRegistrationException ex) {
+            // For the view handlers to handle it
+            return Response.ok(new InvalidRegistration(ex.getMessage())).build();
+        }
+    }
+
+    private void updateClientDetails(final Client client,
+        String audience, String redirectURI, String logoutURI, String homeRealm) {
+        // Client Redirect URIs
+        if (!StringUtils.isEmpty(redirectURI)) {
+            String[] allUris = redirectURI.trim().split(" ");
+            List<String> redirectUris = new ArrayList<>(allUris.length);
+            for (String uri : allUris) {
+                if (!StringUtils.isEmpty(uri)) {
+                    if (!isValidURI(uri, false)) {
+                        throw new InvalidRegistrationException("An invalid redirect URI was specified: "
+                            + StringEscapeUtils.escapeHtml4(uri));
+                    }
+                    redirectUris.add(uri);
+                }
+            }
+            client.setRedirectUris(redirectUris);
+        } else {
+            client.setRedirectUris(null);
+        }
+
+        // Client Logout URI
+        if (!StringUtils.isEmpty(logoutURI)) {
+            String[] logoutUris = logoutURI.split(" ");
+            for (String uri : logoutUris) {
+                if (!isValidURI(uri, false)) {
+                    throw new InvalidRegistrationException("An invalid logout URI was specified: "
+                        + StringEscapeUtils.escapeHtml4(uri));
+                }
+            }
+            //TODO: replace this code with newClient.setLogoutUri() once it becomes available
+            client.getProperties().put("post_logout_redirect_uris", logoutURI);
+        } else {
+            client.getProperties().remove("post_logout_redirect_uris");
+        }
+
+        // Client Audience URIs
+        if (!StringUtils.isEmpty(audience)) {
+            String[] auds = audience.trim().split(" ");
+            List<String> registeredAuds = new ArrayList<>(auds.length);
+            for (String aud : auds) {
+                if (!StringUtils.isEmpty(aud)) {
+                    if (!isValidURI(aud, true)) {
+                        throw new InvalidRegistrationException("An invalid audience URI was specified: "
+                            + StringEscapeUtils.escapeHtml4(aud));
+                    }
+                    registeredAuds.add(aud);
+                }
+            }
+            client.setRegisteredAudiences(registeredAuds);
+        } else {
+            client.setRegisteredAudiences(null);
+        }
+
+        // Client Realm
+        if (homeRealm != null) {
+            client.setHomeRealm(homeRealm);
+            if (homeRealms.containsKey(homeRealm)) {
+                client.getProperties().put("homeRealmAlias", homeRealms.get(homeRealm));
+            } else {
+                client.getProperties().remove("homeRealmAlias");
+            }
         }
     }
 
@@ -388,12 +459,8 @@ public class ClientRegistrationService {
         String savedToken = CSRFUtils.getCSRFToken(httpRequest, false);
         if (StringUtils.isEmpty(csrfToken) || StringUtils.isEmpty(savedToken)
             || !savedToken.equals(csrfToken)) {
-            throwInvalidRegistrationException("Invalid CSRF Token");
+            throw new InvalidRegistrationException("Invalid CSRF Token");
         }
-    }
-
-    private void throwInvalidRegistrationException(String error) {
-        throw new InvalidRegistrationException(error);
     }
 
     private static boolean isValidURI(String uri, boolean requireHttps) {
@@ -439,13 +506,21 @@ public class ClientRegistrationService {
     }
 
     protected RegisteredClients registerNewClient(Client newClient) {
-        String userName = newClient.getResourceOwnerSubject().getLogin();
-        Set<String> names = clientNames.get(userName);
-        if (names == null) {
-            names = new HashSet<>();
-            clientNames.put(userName, names);
-        } else if (names.contains(newClient.getApplicationName())) {
-            String newName = newClient.getApplicationName();
+        Collection<Client> clientRegistrations = getClientRegistrations(newClient.getResourceOwnerSubject().getLogin());
+        updateClientApplicationName(newClient, clientRegistrations);
+
+        clientProvider.setClient(newClient);
+        clientRegistrations.add(newClient);
+        return new RegisteredClients(clientRegistrations);
+    }
+
+    private static void updateClientApplicationName(Client client, Collection<Client> clientRegistrations) {
+        Set<String> names = new HashSet<>();
+        for (Client c : clientRegistrations) {
+            names.add(c.getApplicationName());
+        }
+        if (names.contains(client.getApplicationName())) {
+            String newName = client.getApplicationName();
             SortedSet<Integer> numbers = new TreeSet<>();
             for (String name : names) {
                 if (name.startsWith(newName) && !name.equals(newName)) {
@@ -457,19 +532,12 @@ public class ClientRegistrationService {
                 }
             }
             int nextNumber = numbers.isEmpty() ? 2 : numbers.last() + 1;
-            newClient.setApplicationName(newName + nextNumber);
+            client.setApplicationName(newName + nextNumber);
         }
-        names.add(newClient.getApplicationName());
-
-        clientProvider.setClient(newClient);
-        Collection<Client> clientRegistrations = getClientRegistrations();
-        clientRegistrations.add(newClient);
-        return new RegisteredClients(clientRegistrations);
     }
 
     protected Collection<Client> getClientRegistrations() {
-        String userName = getUserName();
-        return getClientRegistrations(userName);
+        return getClientRegistrations(getUserName());
     }
 
     protected Collection<Client> getClientRegistrations(String userName) {
@@ -500,12 +568,6 @@ public class ClientRegistrationService {
             if (c.getResourceOwnerSubject() != null) {
                 String userName = c.getResourceOwnerSubject().getLogin();
                 getClientRegistrations(userName).add(c);
-                Set<String> names = clientNames.get(userName);
-                if (names == null) {
-                    names = new HashSet<>();
-                    clientNames.put(userName, names);
-                }
-                names.add(c.getApplicationName());
             }
         }
     }

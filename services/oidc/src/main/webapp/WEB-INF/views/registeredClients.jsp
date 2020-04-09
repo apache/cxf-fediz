@@ -61,7 +61,7 @@
                Date date = new Date(client.getRegisteredAt() * 1000);
                String created = dateFormat.format(date);
 		   %>
-           <%=    created %><br/>
+           <%=    created %>
            </td>
            <td>
            <% if(client.getRedirectUris() != null) {

@@ -9,11 +9,6 @@
 
 <%
 	Client client = (Client)request.getAttribute("data");
-	String clientType = client.isConfidential() ? "Confidential" : "Public";
-	String homeRealmAlias = client.getProperties().get("homeRealmAlias");
-	if (homeRealmAlias == null || homeRealmAlias.trim().isEmpty()) {
-	    homeRealmAlias = "Default - User selection at login";
-	} 
     String basePath = request.getContextPath() + request.getServletPath();
     if (!basePath.endsWith("/")) {
         basePath += "/";
@@ -77,7 +72,7 @@
 </head>
 <body>
 <div class="padded">
-<h1><%= StringEscapeUtils.escapeHtml4(client.getApplicationName()) %></h1>
+<h1><a href="<%= basePath + "console/clients/" + client.getClientId() + "/edit" %>"><%= StringEscapeUtils.escapeHtml4(client.getApplicationName()) %></a></h1>
 <br/>
 <table border="1" id=client>
     <%
@@ -90,7 +85,7 @@
                <%= client.getClientId() %>
            </td>
            <td>
-               <%= clientType %>
+               <%= client.isConfidential() ? "Confidential" : "Public" %>
            </td> 
            <td>
            <%
@@ -110,7 +105,7 @@
                Date date = new Date(client.getRegisteredAt() * 1000);
                String created = dateFormat.format(date);
 		   %>
-           <%=    created %><br/>
+           <%=    created %>
            
            </td>
            
@@ -126,6 +121,11 @@
 <b>Home Realm</b>
 </td>
 <td>
+<%  String homeRealmAlias = client.getProperties().get("homeRealmAlias");
+    if (homeRealmAlias == null || homeRealmAlias.trim().isEmpty()) {
+        homeRealmAlias = "Default - User selection at login";
+    }
+%> 
     <%=  homeRealmAlias %>
 </td>
 </tr>
@@ -185,10 +185,10 @@
     <div class="form-line">
         <input type="hidden" value="<%=token%>" name="client_csrfToken" />
     </div>
-     <div data-type="control_button" class="form-line">
-	<button name="submit_reset_button" class="form-submit-button" type="submit">Reset Client Secret</button>
+    <div data-type="control_button" class="form-line">
+        <button name="submit_reset_button" class="form-submit-button" type="submit">Reset Client Secret</button>
+    </div>
 </form>
-     </div> 
 </td>
 <%
     }
@@ -198,9 +198,9 @@
     <div class="form-line">
         <input type="hidden" value="<%=token%>" name="client_csrfToken" />
     </div>
-        <div data-type="control_button" class="form-line">
-	<button name="submit_delete_button" class="form-submit-button" type="submit">Delete Client</button>
-        </div>
+    <div data-type="control_button" class="form-line">
+       <button name="submit_delete_button" class="form-submit-button" type="submit">Delete Client</button>
+    </div>
 </form>
 </td>
 </tr>

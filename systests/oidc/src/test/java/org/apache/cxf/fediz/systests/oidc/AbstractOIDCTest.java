@@ -371,7 +371,7 @@ abstract class AbstractOIDCTest {
             assertNotNull(clientId);
 
             // Check the Date
-            String date = table.getCellAt(1, 2).asText().trim(); // <br/>
+            String date = table.getCellAt(1, 2).asText();
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.US);
             dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
             assertEquals(dateFormat.format(new Date()), date);
@@ -379,6 +379,47 @@ abstract class AbstractOIDCTest {
             // Check the redirect URI
             String redirectURI = table.getCellAt(1, 3).asText().trim(); // <br/>
             assertTrue(REDIRECT_URL.equals(redirectURI));
+        }
+    }
+
+    @org.junit.Test
+    public void testEditClient() throws Exception {
+        try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
+            HtmlPage registeredClientPage = login(oidcEndpointBuilder("/console/clients/" + publicClientId),
+                webClient);
+
+            final HtmlPage editClientPage = registeredClientPage.getAnchorByText("public-client").click();
+
+            final HtmlForm form = editClientPage.getForms().get(0);
+
+            // Set new client values
+            final HtmlTextInput clientNameInput = form.getInputByName("client_name");
+            final String newClientName = "public-client-modified";
+            clientNameInput.setValueAttribute(newClientName);
+            final HtmlSelect clientTypeSelect = form.getSelectByName("client_type");
+            assertTrue(clientTypeSelect.isDisabled());
+            final HtmlTextInput redirectURIInput = form.getInputByName("client_redirectURI");
+            assertEquals(REDIRECT_URL, redirectURIInput.getText());
+            final HtmlTextInput clientAudienceURIInput = form.getInputByName("client_audience");
+            assertEquals("https://ws.apache.org", clientAudienceURIInput.getText());
+            final HtmlTextInput clientLogoutURI = form.getInputByName("client_logoutURI");
+            assertEquals(LOGOUT_URL, clientLogoutURI.getText());
+
+            registeredClientPage = form.getButtonByName("submit_button").click();
+            assertNotNull(registeredClientPage.getAnchorByText(newClientName));
+
+            final HtmlPage registeredClientsPage = registeredClientPage.getAnchorByText("registered Clients").click();
+
+            HtmlTable table = registeredClientsPage.getHtmlElementById("registered_clients");
+            assertEquals("2 clients", table.getRows().size(), 3);
+            boolean updatedClientFound = false;
+            for (final HtmlTableRow row : table.getRows()) {
+                if (newClientName.equals(row.getCell(0).asText())) {
+                    updatedClientFound = true;
+                    break;
+                }
+            }
+            assertTrue(updatedClientFound);
         }
     }
 
