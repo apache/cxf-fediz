@@ -23,7 +23,6 @@ package org.apache.cxf.fediz.samlsso.example;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.zip.DataFormatException;
@@ -182,12 +181,13 @@ public class SamlSso {
     }
 
     protected AuthnRequest extractRequest(String samlRequest) throws Base64Exception,
-        DataFormatException, XMLStreamException, UnsupportedEncodingException, WSSecurityException {
+        DataFormatException, XMLStreamException, IOException, WSSecurityException {
         byte[] deflatedToken = Base64Utility.decode(samlRequest);
 
-        InputStream tokenStream = new DeflateEncoderDecoder().inflateToken(deflatedToken);
-
-        Document responseDoc = StaxUtils.read(new InputStreamReader(tokenStream, StandardCharsets.UTF_8));
+        final Document responseDoc;
+        try (InputStream tokenStream = new DeflateEncoderDecoder().inflateToken(deflatedToken)) {
+            responseDoc = StaxUtils.read(new InputStreamReader(tokenStream, StandardCharsets.UTF_8));
+        }
         AuthnRequest request =
             (AuthnRequest)OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
         System.out.println(DOM2Writer.nodeToString(responseDoc));
@@ -196,9 +196,10 @@ public class SamlSso {
 
     protected javax.ws.rs.core.Response postBindingResponse(String relayState, String racs, String responseStr)
         throws IOException {
-        InputStream inputStream = this.getClass().getResourceAsStream("/TemplateSAMLResponse.xml");
-        String responseTemplate = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
-        inputStream.close();
+        String responseTemplate;
+        try (InputStream inputStream = this.getClass().getResourceAsStream("/TemplateSAMLResponse.xml")) {
+            responseTemplate = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
+        }
 
         // Perform Redirect to RACS
         responseTemplate = responseTemplate.replace("%RESPONSE_URL%", racs);
@@ -218,5 +219,3 @@ public class SamlSso {
     }
 
 }
-
-

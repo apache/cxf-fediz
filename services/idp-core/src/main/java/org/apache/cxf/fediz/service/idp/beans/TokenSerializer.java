@@ -50,6 +50,13 @@ public class TokenSerializer {
             try {
                 TransformerFactory tf = TransformerFactory.newInstance();
                 tf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+                try {
+                    tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+                    tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+                } catch (IllegalArgumentException ex) {
+                    // ignore
+                }
+
                 Transformer t = tf.newTransformer();
                 t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
                 t.transform(new DOMSource(rpToken), new StreamResult(sw));

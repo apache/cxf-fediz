@@ -20,6 +20,7 @@
 package org.apache.cxf.fediz.systests.tomcat;
 
 import org.apache.cxf.fediz.systests.common.AbstractClientCertTests;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 

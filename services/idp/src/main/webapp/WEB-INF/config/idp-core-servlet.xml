@@ -35,9 +35,9 @@
     <context:component-scan base-package="org.apache.cxf.fediz.service.idp.beans" />
 
     <mvc:resources mapping="/images/**" location="/resources/images/" />
-    
+
     <mvc:resources mapping="/swagger/**" location="/resources/swagger/" />
-    
+
     <mvc:view-controller path="/" view-name="index" />
     <mvc:view-controller path="/federation/up/login" view-name="signinform" />
 

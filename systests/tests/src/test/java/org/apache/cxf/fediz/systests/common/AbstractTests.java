@@ -55,6 +55,7 @@ import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.wss4j.dom.engine.WSSConfig;
 import org.apache.xml.security.keys.KeyInfo;
 import org.apache.xml.security.signature.XMLSignature;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -62,10 +63,6 @@ public abstract class AbstractTests {
 
     static {
         WSSConfig.init();
-    }
-
-    public AbstractTests() {
-        super();
     }
 
     public abstract String getServletContextName();

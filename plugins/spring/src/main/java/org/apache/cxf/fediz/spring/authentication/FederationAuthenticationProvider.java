@@ -37,7 +37,6 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper;
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
@@ -87,7 +86,7 @@ public class FederationAuthenticationProvider implements AuthenticationProvider,
         Assert.notNull(this.federationConfig, "FederationConfig cannot be null.");
     }
 
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+    public Authentication authenticate(Authentication authentication) {
         if (!supports(authentication.getClass())) {
             return null;
         }
@@ -107,8 +106,7 @@ public class FederationAuthenticationProvider implements AuthenticationProvider,
         return result;
     }
 
-    private FederationAuthenticationToken authenticateNow(final Authentication authentication)
-        throws AuthenticationException {
+    private FederationAuthenticationToken authenticateNow(final Authentication authentication) {
         try {
             FedizRequest wfReq = (FedizRequest)authentication.getCredentials();
 

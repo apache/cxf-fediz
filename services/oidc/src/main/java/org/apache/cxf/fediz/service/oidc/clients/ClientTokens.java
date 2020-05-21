@@ -18,8 +18,8 @@
  */
 package org.apache.cxf.fediz.service.oidc.clients;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Collection;
+import java.util.Collections;
 
 import org.apache.cxf.rs.security.oauth2.common.Client;
 import org.apache.cxf.rs.security.oauth2.common.ServerAccessToken;
@@ -27,11 +27,11 @@ import org.apache.cxf.rs.security.oauth2.tokens.refresh.RefreshToken;
 
 public class ClientTokens {
     private Client client;
-    private List<ServerAccessToken> accessTokens = new LinkedList<>();
-    private List<RefreshToken> refreshTokens = new LinkedList<>();
+    private Collection<ServerAccessToken> accessTokens = Collections.emptyList();
+    private Collection<RefreshToken> refreshTokens = Collections.emptyList();
     public ClientTokens(Client c,
-                              List<ServerAccessToken> accessTokens,
-                              List<RefreshToken> refreshTokens) {
+        Collection<ServerAccessToken> accessTokens,
+        Collection<RefreshToken> refreshTokens) {
         this.client = c;
         this.accessTokens = accessTokens;
         this.refreshTokens = refreshTokens;
@@ -39,10 +39,10 @@ public class ClientTokens {
     public Client getClient() {
         return client;
     }
-    public List<ServerAccessToken> getAccessTokens() {
+    public Collection<ServerAccessToken> getAccessTokens() {
         return accessTokens;
     }
-    public List<RefreshToken> getRefreshTokens() {
+    public Collection<RefreshToken> getRefreshTokens() {
         return refreshTokens;
     }
 }

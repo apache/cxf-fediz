@@ -22,15 +22,12 @@ package org.apache.cxf.fediz.service.oidc.clients;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,6 +58,7 @@ import org.apache.cxf.common.util.StringUtils;
 import org.apache.cxf.fediz.service.oidc.CSRFUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.jaxrs.utils.ExceptionUtils;
+import org.apache.cxf.rs.security.oauth2.common.AccessToken;
 import org.apache.cxf.rs.security.oauth2.common.Client;
 import org.apache.cxf.rs.security.oauth2.common.ServerAccessToken;
 import org.apache.cxf.rs.security.oauth2.common.UserSubject;
@@ -78,11 +76,11 @@ public class ClientRegistrationService {
 
     private static final Logger LOG = LogUtils.getL7dLogger(ClientRegistrationService.class);
 
-    private Map<String, Collection<Client>> registrations = new HashMap<>();
-    private Map<String, Set<String>> clientNames = new HashMap<>();
+    private final Map<String, Collection<Client>> registrations = new HashMap<>();
+    private final Map<String, Set<String>> clientNames = new HashMap<>();
     private OAuthDataProvider dataProvider;
     private ClientRegistrationProvider clientProvider;
-    private Map<String, String> homeRealms = new LinkedHashMap<>();
+    private Map<String, String> homeRealms = Collections.emptyMap();
     private boolean protectIdTokenWithClientSecret;
     private Map<String, String> clientScopes;
 
@@ -183,14 +181,12 @@ public class ClientRegistrationService {
     }
 
     protected ClientTokens doGetClientIssuedTokens(Client c) {
-        Comparator<ServerAccessToken> tokenComp = new TokenComparator();
+        Comparator<AccessToken> tokenComp = Comparator.comparingLong(AccessToken::getIssuedAt);
         UserSubject subject = new OidcUserSubject(getUserName());
-        List<ServerAccessToken> accessTokens =
-            new ArrayList<>(dataProvider.getAccessTokens(c, subject));
-        Collections.sort(accessTokens, tokenComp);
-        List<RefreshToken> refreshTokens =
-                new ArrayList<>(dataProvider.getRefreshTokens(c, subject));
-        Collections.sort(refreshTokens, tokenComp);
+        Collection<ServerAccessToken> accessTokens = new TreeSet<>(tokenComp);
+        accessTokens.addAll(dataProvider.getAccessTokens(c, subject));
+        Collection<RefreshToken> refreshTokens = new TreeSet<>(tokenComp);
+        refreshTokens.addAll(dataProvider.getRefreshTokens(c, subject));
         return new ClientTokens(c, accessTokens, refreshTokens);
     }
     @POST
@@ -241,9 +237,9 @@ public class ClientRegistrationService {
                 throwInvalidRegistrationException("The client id is invalid");
             }
             UserSubject subject = new OidcUserSubject(getUserName());
-            List<ServerAuthorizationCodeGrant> codeGrants = new ArrayList<>(
-               ((AuthorizationCodeDataProvider)dataProvider).getCodeGrants(c, subject));
-            Collections.sort(codeGrants, new CodeGrantComparator());
+            Collection<ServerAuthorizationCodeGrant> codeGrants = new TreeSet<>(
+                Comparator.comparingLong(ServerAuthorizationCodeGrant::getIssuedAt));
+            codeGrants.addAll(((AuthorizationCodeDataProvider)dataProvider).getCodeGrants(c, subject));
             return new ClientCodeGrants(c, codeGrants);
         }
         return null;
@@ -325,7 +321,7 @@ public class ClientRegistrationService {
             // Client Redirect URIs
             if (!StringUtils.isEmpty(redirectURI)) {
                 String[] allUris = redirectURI.trim().split(" ");
-                List<String> redirectUris = new LinkedList<>();
+                List<String> redirectUris = new ArrayList<>(allUris.length);
                 for (String uri : allUris) {
                     if (!StringUtils.isEmpty(uri)) {
                         if (!isValidURI(uri, false)) {
@@ -353,7 +349,7 @@ public class ClientRegistrationService {
             // Client Audience URIs
             if (!StringUtils.isEmpty(audience)) {
                 String[] auds = audience.trim().split(" ");
-                List<String> registeredAuds = new LinkedList<>();
+                List<String> registeredAuds = new ArrayList<>(auds.length);
                 for (String aud : auds) {
                     if (!StringUtils.isEmpty(aud)) {
                         if (!isValidURI(aud, true)) {
@@ -368,7 +364,7 @@ public class ClientRegistrationService {
 
             // Client Scopes
             if (clientScopes != null && !clientScopes.isEmpty()) {
-                newClient.setRegisteredScopes(new ArrayList<String>(clientScopes.keySet()));
+                newClient.setRegisteredScopes(new ArrayList<>(clientScopes.keySet()));
             }
             return Response.ok(registerNewClient(newClient)).build();
         } catch (InvalidRegistrationException ex) {
@@ -400,9 +396,9 @@ public class ClientRegistrationService {
         throw new InvalidRegistrationException(error);
     }
 
-    private boolean isValidURI(String uri, boolean requireHttps) {
+    private static boolean isValidURI(String uri, boolean requireHttps) {
 
-        UrlValidator urlValidator = null;
+        final UrlValidator urlValidator;
 
         if (requireHttps) {
             String[] schemes = {"https"};
@@ -479,7 +475,9 @@ public class ClientRegistrationService {
     protected Collection<Client> getClientRegistrations(String userName) {
         Collection<Client> userClientRegs = registrations.get(userName);
         if (userClientRegs == null) {
-            userClientRegs = new TreeSet<>(new ClientComparator());
+            // or the registration date comparison - this can be driven from UI
+            // example, Sort Clients By Name/Date/etc
+            userClientRegs = new TreeSet<>(Comparator.comparing(Client::getApplicationName));
             registrations.put(userName, userClientRegs);
         }
         return userClientRegs;
@@ -536,9 +534,8 @@ public class ClientRegistrationService {
         // Support additional top level domains
         if (additionalTLDs != null && !additionalTLDs.isEmpty()) {
             try {
-                String[] tldsToAddArray = additionalTLDs.toArray(new String[0]);
-                LOG.info("Adding the following additional Top Level Domains: " + Arrays.toString(tldsToAddArray));
-                DomainValidator.updateTLDOverride(ArrayType.GENERIC_PLUS, tldsToAddArray);
+                LOG.info("Adding the following additional Top Level Domains: " + additionalTLDs);
+                DomainValidator.updateTLDOverride(ArrayType.GENERIC_PLUS, additionalTLDs.toArray(new String[0]));
             } catch (IllegalStateException ex) {
                 //
             }
@@ -549,30 +546,4 @@ public class ClientRegistrationService {
         this.userRole = userRole;
     }
 
-    private static class ClientComparator implements Comparator<Client> {
-
-        @Override
-        public int compare(Client c1, Client c2) {
-            // or the registration date comparison - this can be driven from UI
-            // example, Sort Clients By Name/Date/etc
-            return c1.getApplicationName().compareTo(c2.getApplicationName());
-        }
-
-    }
-    private static class TokenComparator implements Comparator<ServerAccessToken> {
-
-        @Override
-        public int compare(ServerAccessToken t1, ServerAccessToken t2) {
-            return Long.compare(t1.getIssuedAt(), t2.getIssuedAt());
-        }
-
-    }
-    private static class CodeGrantComparator implements Comparator<ServerAuthorizationCodeGrant> {
-
-        @Override
-        public int compare(ServerAuthorizationCodeGrant g1, ServerAuthorizationCodeGrant g2) {
-            return Long.compare(g1.getIssuedAt(), g2.getIssuedAt());
-        }
-
-    }
 }

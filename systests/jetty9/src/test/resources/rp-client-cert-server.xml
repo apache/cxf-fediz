@@ -33,6 +33,7 @@
       <Set name="KeyManagerPassword">tompass</Set>
       <Set name="TrustStorePath">./target/test-classes/server.jks</Set>
       <Set name="TrustStorePassword">tompass</Set>
+      <Set name="EndpointIdentificationAlgorithm"></Set>
       <Set name="WantClientAuth">true</Set>
     </New>
    
@@ -76,7 +77,7 @@
          </New>
       </Arg>
     </Call>
-    
+
     <Set name="handler">
       <New class="org.eclipse.jetty.server.handler.HandlerList">
         <Set name="handlers">
@@ -111,7 +112,7 @@
                   </Set>
                 </Get>
               </New>
-            </Item>		
+            </Item>
           </Array>
         </Set>
       </New>

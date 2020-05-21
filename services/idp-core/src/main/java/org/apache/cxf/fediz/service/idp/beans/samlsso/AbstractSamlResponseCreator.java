@@ -98,9 +98,9 @@ abstract class AbstractSamlResponseCreator {
         String sigAlgo = SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA1;
         String pubKeyAlgo = issuerCerts[0].getPublicKey().getAlgorithm();
         LOG.debug("automatic sig algo detection: {}", pubKeyAlgo);
-        if (pubKeyAlgo.equalsIgnoreCase("DSA")) {
+        if ("DSA".equalsIgnoreCase(pubKeyAlgo)) {
             sigAlgo = SignatureConstants.ALGO_ID_SIGNATURE_DSA;
-        } else if (pubKeyAlgo.equalsIgnoreCase("EC")) {
+        } else if ("EC".equalsIgnoreCase(pubKeyAlgo)) {
             sigAlgo = SignatureConstants.ALGO_ID_SIGNATURE_ECDSA_SHA1;
         }
         LOG.debug("Using Signature algorithm {}", sigAlgo);

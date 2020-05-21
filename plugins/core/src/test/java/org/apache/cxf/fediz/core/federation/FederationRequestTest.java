@@ -33,6 +33,7 @@ import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.processor.FederationProcessorImpl;
 import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.core.processor.RedirectionResponse;
+
 import org.easymock.EasyMock;
 import org.junit.AfterClass;
 import org.junit.Assert;

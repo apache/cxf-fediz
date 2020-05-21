@@ -18,26 +18,13 @@
   under the License.
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:cxf="http://cxf.apache.org/core"
-    xmlns:jaxws="http://cxf.apache.org/jaxws"
-    xmlns:test="http://apache.org/hello_world_soap_http"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:util="http://www.springframework.org/schema/util"
-    xmlns:http="http://cxf.apache.org/transports/http/configuration"
-    xmlns:sec="http://cxf.apache.org/configuration/security"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="
-        http://cxf.apache.org/core
-        http://cxf.apache.org/schemas/core.xsd
         http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
-        http://cxf.apache.org/jaxws
-        http://cxf.apache.org/schemas/jaxws.xsd
         http://www.springframework.org/schema/util
-        http://www.springframework.org/schema/util/spring-util-4.3.xsd
-        http://cxf.apache.org/transports/http/configuration
-        http://cxf.apache.org/schemas/configuration/http-conf.xsd
-        http://cxf.apache.org/configuration/security
-        http://cxf.apache.org/schemas/configuration/security.xsd">
+        http://www.springframework.org/schema/util/spring-util-4.3.xsd">
 
     <bean id="identityMapper"
         class="org.apache.cxf.fediz.service.sts.realms.IdentityMapperImpl" />
@@ -59,14 +46,14 @@
 
     <bean id="realmA" class="org.apache.cxf.sts.token.realm.RealmProperties">
         <property name="issuer" value="STS Realm A" />
-        <property name="signaturePropertiesFile" value="stsKeystoreA.properties" />
+        <property name="signatureCryptoProperties" value="stsKeystoreA.properties" />
         <property name="callbackHandlerClass"
             value="org.apache.cxf.fediz.service.sts.PasswordCallbackHandler" />
     </bean>
 
     <bean id="realmB" class="org.apache.cxf.sts.token.realm.RealmProperties">
         <property name="issuer" value="STS Realm B" />
-        <property name="signaturePropertiesFile" value="stsKeystoreB.properties" />
+        <property name="signatureCryptoProperties" value="stsKeystoreB.properties" />
         <property name="callbackHandlerClass"
             value="org.apache.cxf.fediz.service.sts.PasswordCallbackHandler" />
     </bean>
@@ -77,4 +64,3 @@
     </util:map>
     
 </beans>
-

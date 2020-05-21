@@ -34,7 +34,7 @@ public class UriRealmParser implements RealmParser {
     private Map<String, Object> realmMap;
 
     @Override
-    public String parseRealm(Map<String, Object> messageContext) throws STSException {
+    public String parseRealm(Map<String, Object> messageContext) {
         String url = (String)messageContext.get("org.apache.cxf.request.url");
 
         // Get the realm of the request url

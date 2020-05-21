@@ -34,6 +34,7 @@
             <groupId>net.sourceforge.htmlunit</groupId>
             <artifactId>htmlunit</artifactId>
             <version>${htmlunit.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
@@ -83,6 +84,7 @@
             <version>${cxf.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- org.apache.cxf.ws.security.trust.STSLoginModule -->
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-ws-security</artifactId>
@@ -150,6 +152,7 @@
                                     <type>war</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/tomcat/rp/webapps/fediz-oidc-tomcat</outputDirectory>
+                                    <excludes>META-INF/context.xml,**/jakarta.xml.bind-api-*.jar</excludes>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz</groupId>
@@ -158,6 +161,7 @@
                                     <type>war</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/tomcat/rp/webapps/fediz-oidc-spring</outputDirectory>
+                                    <excludes>META-INF/context.xml</excludes>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz.systests</groupId>
@@ -185,7 +189,7 @@
                         <configuration>
                             <outputDirectory>${project.build.directory}/tomcat/rp/webapps/fediz-oidc-tomcat/WEB-INF/lib</outputDirectory>
                             <includeScope>compile</includeScope>
-                            <excludeGroupIds>org.springframework.security,org.apache.cxf.fediz</excludeGroupIds>
+                            <excludeGroupIds>org.springframework.security,org.apache.cxf.fediz,jakarta.xml.bind</excludeGroupIds>
                         </configuration>
                     </execution>
                     <execution>
@@ -212,7 +216,7 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${project.build.directory}/tomcat/idp/webapps/fediz-idp/WEB-INF/classes</outputDirectory>
-                            <resources>          
+                            <resources>
                                 <resource>
                                     <directory>${basedir}/src/test/resources/realma</directory>
                                     <includes>
@@ -231,7 +235,7 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${project.build.directory}/tomcat/rp/webapps/fediz-oidc-tomcat/WEB-INF</outputDirectory>
-                            <resources>          
+                            <resources>
                                 <resource>
                                     <directory>${basedir}/src/test/resources/oidc</directory>
                                     <includes>
@@ -268,27 +272,6 @@
                                     <filtering>true</filtering>
                                 </resource>
                             </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.8</version>
-                <executions>
-                    <execution>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <tasks>
-                                <delete>
-                                    <fileset dir="${project.build.directory}/tomcat/rp/webapps/fediz-oidc-tomcat/META-INF" includes="context.xml" />
-                                    <fileset dir="${project.build.directory}/tomcat/rp/webapps/fediz-oidc-spring/META-INF" includes="context.xml" />
-                                </delete>
-                            </tasks>
                         </configuration>
                     </execution>
                 </executions>

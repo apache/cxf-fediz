@@ -38,7 +38,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Element;
 
-import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.FedizPrincipal;
@@ -63,7 +63,7 @@ public class FederationServlet extends HttpServlet {
         out.println("<body>");
         out.println("<h1>Hello World</h1>");
         out.println("Hello world<br>");
-        out.println("Request url: " + request.getRequestURL().toString() + "<p>");
+        out.println("Request url: "); out.println(request.getRequestURL()); out.println("<p>");
 
 
         out.println("<br><b>User</b><p>");
@@ -102,7 +102,7 @@ public class FederationServlet extends HttpServlet {
                 transformer.transform(new DOMSource(el),
                                       new StreamResult(buffer));
                 token = buffer.toString();
-                out.println("<p>" + StringEscapeUtils.escapeXml(token));
+                out.println("<p>" + StringEscapeUtils.escapeXml11(token));
             } catch (Exception ex) {
                 out.println("<p>Failed to transform cached element to string: " + ex.toString());
             }

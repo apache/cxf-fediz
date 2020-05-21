@@ -21,6 +21,7 @@ package org.apache.cxf.fediz.core.config;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.security.auth.callback.CallbackHandler;
 
@@ -44,22 +45,20 @@ public abstract class Protocol {
     private Object reply;
 
     public Protocol(ProtocolType protocolType) {
-        super();
         this.protocolType = protocolType;
 
         if (protocolType.getTokenValidators() != null && protocolType.getTokenValidators().getValidator() != null) {
             for (String validatorClassname : protocolType.getTokenValidators().getValidator()) {
-                Object obj = null;
                 try {
-                    obj = ClassLoaderUtils.loadClass(validatorClassname, this.getClass()).newInstance();
+                    Object obj = ClassLoaderUtils.loadClass(validatorClassname, this.getClass()).newInstance();
+                    if (obj instanceof TokenValidator) {
+                        validators.add((TokenValidator)obj);
+                    } else {
+                        LOG.error("Invalid TokenValidator implementation class: '" + validatorClassname + "'");
+                    }
                 } catch (Exception ex) {
                     LOG.error("Failed to instantiate TokenValidator implementation class: '"
                               + validatorClassname + "'\n" + ex.getClass().getCanonicalName() + ": " + ex.getMessage());
-                }
-                if (obj instanceof TokenValidator) {
-                    validators.add((TokenValidator)obj);
-                } else if (obj != null) {
-                    LOG.error("Invalid TokenValidator implementation class: '" + validatorClassname + "'");
                 }
             }
         }
@@ -81,15 +80,7 @@ public abstract class Protocol {
         if (!(obj instanceof Protocol)) {
             return false;
         }
-
-        Protocol that = (Protocol)obj;
-        if (protocolType != null && !protocolType.equals(that.getProtocolType())) {
-            return false;
-        } else if (protocolType == null && that.getProtocolType() != null) {
-            return false;
-        }
-
-        return true;
+        return Objects.equals(protocolType, ((Protocol) obj).getProtocolType());
     }
 
     public String toString() {

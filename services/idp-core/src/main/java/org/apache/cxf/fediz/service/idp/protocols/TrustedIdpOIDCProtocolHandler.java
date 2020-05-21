@@ -165,17 +165,19 @@ public class TrustedIdpOIDCProtocolHandler extends AbstractTrustedIdpOAuth2Proto
                 JwsJwtCompactConsumer jwtConsumer = new JwsJwtCompactConsumer(idToken);
                 JwtToken jwt = jwtConsumer.getJwtToken();
 
-                if (jwt != null && jwt.getClaims() != null && LOG.isDebugEnabled()) {
-                    LOG.debug("Received Claims:");
-                    for (Map.Entry<String, Object> claim : jwt.getClaims().asMap().entrySet()) {
-                        LOG.debug(claim.getKey() + ": " + claim.getValue());
+                if (LOG.isDebugEnabled()) {
+                    if (jwt.getClaims() != null) {
+                        LOG.debug("Received Claims:");
+                        for (Map.Entry<String, Object> claim : jwt.getClaims().asMap().entrySet()) {
+                            LOG.debug(claim.getKey() + ": " + claim.getValue());
+                        }
                     }
-                }
 
-                if (jwt != null && jwt.getJwsHeaders() != null && LOG.isDebugEnabled()) {
-                    LOG.debug("Received JWS Headers:");
-                    for (Map.Entry<String, Object> header : jwt.getJwsHeaders().asMap().entrySet()) {
-                        LOG.debug(header.getKey() + ": " + header.getValue());
+                    if (jwt.getJwsHeaders() != null) {
+                        LOG.debug("Received JWS Headers:");
+                        for (Map.Entry<String, Object> header : jwt.getJwsHeaders().asMap().entrySet()) {
+                            LOG.debug(header.getKey() + ": " + header.getValue());
+                        }
                     }
                 }
 
@@ -202,7 +204,7 @@ public class TrustedIdpOIDCProtocolHandler extends AbstractTrustedIdpOAuth2Proto
                     LOG.debug("No claim available in the token for {}", subjectName);
                     subjectName = "preferred_username";
                     LOG.debug("Falling back to use subject claim name {}", subjectName);
-                    if (subjectName == null || jwt.getClaim(subjectName) == null) {
+                    if (jwt.getClaim(subjectName) == null) {
                         subjectName = JwtConstants.CLAIM_SUBJECT;
                         LOG.debug("No claim available in the token for preferred_username. "
                                   + "Falling back to use {}", subjectName);

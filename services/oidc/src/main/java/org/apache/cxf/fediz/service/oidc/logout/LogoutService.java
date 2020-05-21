@@ -33,7 +33,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.cxf.common.util.StringUtils;
 import org.apache.cxf.fediz.service.oidc.FedizSubjectCreator;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.rs.security.jose.common.JoseException;
@@ -110,12 +110,13 @@ public class LogoutService extends JoseJwtConsumer {
         }
         return new IdToken(token.getClaims());
     }
-    private URI getClientLogoutUri(Client client, MultivaluedMap<String, String> params) {
+
+    private static URI getClientLogoutUri(final Client client, final MultivaluedMap<String, String> params) {
         String logoutUriProp = client.getProperties().get(CLIENT_LOGOUT_URIS);
         // logoutUriProp is guaranteed to be not null at this point
         String[] uris = logoutUriProp.split(" ");
-        String uriStr = null;
         String clientLogoutUriParam = params.getFirst(CLIENT_LOGOUT_URI);
+        final String uriStr;
         if (uris.length > 1) {
             if (clientLogoutUriParam == null
                     || !new HashSet<>(Arrays.asList(uris)).contains(clientLogoutUriParam)) {
@@ -154,11 +155,12 @@ public class LogoutService extends JoseJwtConsumer {
         }
         return c;
     }
-    private URI getAbsoluteIdpLogoutUri(Client client, MultivaluedMap<String, String> params) {
-        UriBuilder ub = mc.getUriInfo().getAbsolutePathBuilder();
-        ub.path(relativeIdpLogoutUri);
-        ub.queryParam("wreply", getClientLogoutUri(client, params));
-        ub.queryParam(OAuthConstants.CLIENT_ID, client.getClientId());
+
+    private URI getAbsoluteIdpLogoutUri(final Client client, final MultivaluedMap<String, String> params) {
+        UriBuilder ub = mc.getUriInfo().getAbsolutePathBuilder()
+            .path(relativeIdpLogoutUri)
+            .queryParam("wreply", getClientLogoutUri(client, params))
+            .queryParam(OAuthConstants.CLIENT_ID, client.getClientId());
         return ub.build().normalize();
     }
 

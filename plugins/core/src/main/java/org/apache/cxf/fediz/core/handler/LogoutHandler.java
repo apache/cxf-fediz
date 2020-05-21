@@ -207,21 +207,14 @@ public class LogoutHandler implements RequestHandler<Boolean> {
         }
         int read = 0;
         byte[] buf = new byte[1024];
-        try {
+        try (ServletOutputStream responseOutputStream = response.getOutputStream()) {
             response.setContentType("image/jpeg");
-            ServletOutputStream responseOutputStream = response.getOutputStream();
             while ((read = inputStream.read(buf)) != -1) {
                 responseOutputStream.write(buf, 0, read);
             }
             responseOutputStream.flush();
         } catch (IOException e) {
             LOG.error("Could not send logout image: {}", e.getMessage());
-        } finally {
-            try {
-                inputStream.close();
-            } catch (IOException e) {
-                // ignore
-            }
         }
     }
 

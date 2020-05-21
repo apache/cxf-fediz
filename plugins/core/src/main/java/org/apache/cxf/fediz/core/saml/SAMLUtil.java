@@ -83,8 +83,7 @@ public final class SAMLUtil  {
         if (subjectCerts != null && subjectCerts.length > 0
             && tlsCerts[0].equals(subjectCerts[0])) {
             return true;
-        } else if (subjectPublicKey != null
-            && tlsCerts[0].getPublicKey().equals(subjectPublicKey)) {
+        } else if (tlsCerts[0].getPublicKey().equals(subjectPublicKey)) {
             return true;
         }
 

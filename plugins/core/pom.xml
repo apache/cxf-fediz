@@ -29,8 +29,7 @@
     <name>Apache Fediz Plugin Core</name>
     <packaging>bundle</packaging>
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <cxf.xjc-utils.version>3.3.0</cxf.xjc-utils.version>
+        <cxf.xjc-utils.version>3.3.1</cxf.xjc-utils.version>
     </properties>
     <dependencies>
         <dependency>
@@ -70,7 +69,7 @@
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
+            <artifactId>javax.servlet-api</artifactId>
             <version>${servlet.version}</version>
             <scope>provided</scope>
         </dependency>
@@ -145,8 +144,6 @@
                               org.apache.wss4j.dom.*,
                               javax.xml.crypto.*,
                               org.apache.xml.security.*,
-                              org.bouncycastle.*;resolution:=optional,
-                              org.apache.jcp.xml.dsig.internal.dom.*,
                               org.opensaml.*;resolution:=optional,
                               *;resolution:=optional
                         </Import-Package>

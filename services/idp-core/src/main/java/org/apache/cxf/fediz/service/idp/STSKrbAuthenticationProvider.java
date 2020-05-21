@@ -45,7 +45,6 @@ import org.ietf.jgss.Oid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 
 /**
@@ -65,7 +64,7 @@ public class STSKrbAuthenticationProvider extends STSAuthenticationProvider {
 
 
     @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+    public Authentication authenticate(Authentication authentication) {
         // We only handle KerberosServiceRequestTokens
         if (!(authentication instanceof KerberosServiceRequestToken)) {
             return null;

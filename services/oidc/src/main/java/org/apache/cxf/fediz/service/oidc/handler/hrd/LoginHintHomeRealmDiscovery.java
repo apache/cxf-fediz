@@ -44,8 +44,8 @@ public class LoginHintHomeRealmDiscovery implements CallbackHandler {
         for (int i = 0; i < callbacks.length; i++) {
             if (callbacks[i] instanceof HomeRealmCallback) {
                 HomeRealmCallback callback = (HomeRealmCallback) callbacks[i];
-                String loginHint = (String)callback.getRequest().getParameter("login_hint");
-                if (loginHint == null || loginHint.length() == 0) {
+                final String loginHint = (String)callback.getRequest().getParameter("login_hint");
+                if (loginHint == null || loginHint.isEmpty()) {
                     LOG.debug("No login_hint found in request to set home realm");
                 } else {
                     String[] homeRealm = loginHint.split("@");

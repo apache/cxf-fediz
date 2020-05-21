@@ -125,8 +125,8 @@ public class MetadataWriter {
                 if (hasSigningKey) {
                     Document doc = DOMUtils.readXml(is);
                     Document result = SignatureUtils.signMetaInfo(
-                        config.getSigningKey().getCrypto(), config.getSigningKey().getKeyAlias(), config.getSigningKey().getKeyPassword(),
-                        doc, referenceID);
+                        config.getSigningKey().getCrypto(), config.getSigningKey().getKeyAlias(),
+                        config.getSigningKey().getKeyPassword(), doc, referenceID);
                     if (result != null) {
                         return result;
                     } else {

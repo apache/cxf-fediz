@@ -45,16 +45,4 @@ public class OIDCSpringTest extends AbstractOIDCTest {
         return SERVLET_CONTEXT_NAME;
     }
 
-    @Override
-    @org.junit.Test
-    public void testClientCredentialsSTS() throws Exception {
-        // Not working with Spring
-    }
-
-    @Override
-    @org.junit.Test
-    public void testLogoutViaTokenHint() throws Exception {
-        // Not working with Spring
-    }
-
 }

@@ -1,4 +1,4 @@
-Apache CXF Fediz 1.4.5 Release Notes
+Apache CXF Fediz 1.4.6 Release Notes
 ------------------------------------
 
 1. Overview
@@ -64,6 +64,16 @@ N.A.
 
 
 8. Specific issues, features, and improvements fixed in this version
+
+Release Notes - CXF-Fediz - Version 1.4.6
+
+Bug
+
+    [FEDIZ-232] - 'wctx' parameter mandatory but protocol does not require
+    [FEDIZ-234] - Escape logging output in LoginHintHomeRealmDiscovery
+    [FEDIZ-236] - Geeting HTTP 401 error on first login using SAML
+    [FEDIZ-239] - Add an underscore prefix to the SAML Ids to make them schema compliant
+
 
 Release Notes - CXF-Fediz - Version 1.4.5
 

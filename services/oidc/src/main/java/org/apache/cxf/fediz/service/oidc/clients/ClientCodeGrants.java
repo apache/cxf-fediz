@@ -18,16 +18,16 @@
  */
 package org.apache.cxf.fediz.service.oidc.clients;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Collection;
+import java.util.Collections;
 
 import org.apache.cxf.rs.security.oauth2.common.Client;
 import org.apache.cxf.rs.security.oauth2.grants.code.ServerAuthorizationCodeGrant;
 
 public class ClientCodeGrants {
     private Client client;
-    private List<ServerAuthorizationCodeGrant> codeGrants = new LinkedList<>();
-    public ClientCodeGrants(Client c, List<ServerAuthorizationCodeGrant> codeGrants) {
+    private Collection<ServerAuthorizationCodeGrant> codeGrants = Collections.emptyList();
+    public ClientCodeGrants(Client c, Collection<ServerAuthorizationCodeGrant> codeGrants) {
         this.client = c;
         this.codeGrants = codeGrants;
     }
@@ -37,10 +37,10 @@ public class ClientCodeGrants {
     public void setClient(Client client) {
         this.client = client;
     }
-    public List<ServerAuthorizationCodeGrant> getCodeGrants() {
+    public Collection<ServerAuthorizationCodeGrant> getCodeGrants() {
         return codeGrants;
     }
-    public void setCodeGrants(List<ServerAuthorizationCodeGrant> codeGrants) {
+    public void setCodeGrants(Collection<ServerAuthorizationCodeGrant> codeGrants) {
         this.codeGrants = codeGrants;
     }
 

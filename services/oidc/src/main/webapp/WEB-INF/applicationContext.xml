@@ -141,7 +141,9 @@
         </jaxrs:providers>
     </jaxrs:server>
     
-    <bean id="keyPasswordProvider" class="org.apache.cxf.fediz.service.oidc.PrivateKeyPasswordProviderImpl"/>
+    <bean id="keyPasswordProvider" class="org.apache.cxf.fediz.service.oidc.PrivateKeyPasswordProviderImpl">
+        <property name="password" value="password"/>
+    </bean>
     
     <!-- Client Registration Service -->
     <bean id="clientRegService" init-method="init" 

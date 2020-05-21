@@ -20,8 +20,6 @@
 package org.apache.cxf.fediz.systests.tomcat;
 
 
-import static org.junit.Assert.assertNotNull;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -37,20 +35,22 @@ import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
 
-public class TomcatLauncher {
+import static org.junit.Assert.assertNotNull;
 
-    private static final String idpHttpsPort = System.getProperty("idp.https.port");
-    private static final String rpHttpsPort = System.getProperty("rp.https.port");
+public abstract class TomcatLauncher {
+
+    private static final String IDP_HTTPS_PORT = System.getProperty("idp.https.port");
+    private static final String RP_HTTPS_PORT = System.getProperty("rp.https.port");
 
     private static Tomcat idpServer;
     private static Tomcat rpServer;
 
     public static void startServer(String servletContextName) throws Exception {
-        assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
-        assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
+        assertNotNull("Property 'idp.https.port' null", IDP_HTTPS_PORT);
+        assertNotNull("Property 'rp.https.port' null", RP_HTTPS_PORT);
 
-        idpServer = startServer(idpHttpsPort, null);
-        rpServer = startServer(rpHttpsPort, servletContextName);
+        idpServer = startServer(IDP_HTTPS_PORT, null);
+        rpServer = startServer(RP_HTTPS_PORT, servletContextName);
     }
 
     private static Tomcat startServer(String port, String servletContextName)
@@ -96,7 +96,7 @@ public class TomcatLauncher {
             try (InputStream is = TomcatLauncher.class.getResourceAsStream("/fediz_config.xml")) {
                 byte[] content = new byte[is.available()];
                 is.read(content);
-                Files.write(fedizConfig, new String(content).replace("${idp.https.port}", idpHttpsPort).getBytes());
+                Files.write(fedizConfig, new String(content).replace("${idp.https.port}", IDP_HTTPS_PORT).getBytes());
             }
 
             FederationAuthenticator fa = new FederationAuthenticator();
@@ -125,11 +125,11 @@ public class TomcatLauncher {
     }
 
     public static String getIdpHttpsPort() {
-        return idpHttpsPort;
+        return IDP_HTTPS_PORT;
     }
 
     public static String getRpHttpsPort() {
-        return rpHttpsPort;
+        return RP_HTTPS_PORT;
     }
 
 }

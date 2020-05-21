@@ -32,10 +32,6 @@ import org.apache.cxf.rs.security.oauth2.provider.OAuthServiceException;
  */
 public class EHCacheOIDCTokenProvider extends JCacheCodeDataProvider {
 
-    public EHCacheOIDCTokenProvider() throws Exception {
-        super();
-    }
-
     @Override
     public List<OAuthPermission> convertScopeToPermissions(Client client, List<String> requestedScopes) {
         if (requestedScopes.isEmpty()) {

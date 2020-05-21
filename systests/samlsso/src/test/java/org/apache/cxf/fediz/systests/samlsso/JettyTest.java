@@ -19,12 +19,14 @@
 
 package org.apache.cxf.fediz.systests.samlsso;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.cxf.fediz.systests.common.AbstractTests;
+
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -35,89 +37,77 @@ import org.junit.Ignore;
  */
 public class JettyTest extends AbstractTests {
 
-    static String idpHttpsPort;
-    static String rpHttpsPort;
+    private static final String IDP_HTTPS_PORT = System.getProperty("idp.https.port");
+    private static final String RP_HTTPS_PORT = System.getProperty("rp.jetty.https.port");
 
     private static Tomcat idpServer;
 
     @BeforeClass
-    public static void init() {
-        idpHttpsPort = System.getProperty("idp.https.port");
-        Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
-        rpHttpsPort = System.getProperty("rp.jetty.https.port");
-        Assert.assertNotNull("Property 'rp.jetty.https.port' null", rpHttpsPort);
+    public static void init() throws Exception {
+        Assert.assertNotNull("Property 'idp.https.port' null", IDP_HTTPS_PORT);
+        Assert.assertNotNull("Property 'rp.jetty.https.port' null", RP_HTTPS_PORT);
 
         initIdp();
 
-        JettyUtils.initRpServer();
-        JettyUtils.startRpServer();
+        JettyUtils.initRpServer("rp-server.xml");
     }
 
     @AfterClass
-    public static void cleanup() {
-        try {
-            if (idpServer != null && idpServer.getServer() != null
-                && idpServer.getServer().getState() != LifecycleState.DESTROYED) {
-                if (idpServer.getServer().getState() != LifecycleState.STOPPED) {
-                    idpServer.stop();
-                }
-                idpServer.destroy();
+    public static void cleanup() throws Exception {
+        if (idpServer != null && idpServer.getServer() != null
+            && idpServer.getServer().getState() != LifecycleState.DESTROYED) {
+            if (idpServer.getServer().getState() != LifecycleState.STOPPED) {
+                idpServer.stop();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+            idpServer.destroy();
         }
 
         JettyUtils.stopRpServer();
     }
 
-    private static void initIdp() {
-        try {
-            idpServer = new Tomcat();
-            idpServer.setPort(0);
-            String currentDir = new File(".").getCanonicalPath();
-            String baseDir = currentDir + File.separator + "target";
-            idpServer.setBaseDir(baseDir);
+    private static void initIdp() throws Exception {
+        idpServer = new Tomcat();
+        idpServer.setPort(0);
+        final Path targetDir = Paths.get("target").toAbsolutePath();
+        idpServer.setBaseDir(targetDir.toString());
 
-            idpServer.getHost().setAppBase("tomcat/idp/webapps");
-            idpServer.getHost().setAutoDeploy(true);
-            idpServer.getHost().setDeployOnStartup(true);
+        idpServer.getHost().setAppBase("tomcat/idp/webapps");
+        idpServer.getHost().setAutoDeploy(true);
+        idpServer.getHost().setDeployOnStartup(true);
 
-            Connector httpsConnector = new Connector();
-            httpsConnector.setPort(Integer.parseInt(idpHttpsPort));
-            httpsConnector.setSecure(true);
-            httpsConnector.setScheme("https");
-            httpsConnector.setAttribute("keyAlias", "mytomidpkey");
-            httpsConnector.setAttribute("keystorePass", "tompass");
-            httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
-            httpsConnector.setAttribute("truststorePass", "tompass");
-            httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
-            httpsConnector.setAttribute("clientAuth", "want");
-            // httpsConnector.setAttribute("clientAuth", "false");
-            httpsConnector.setAttribute("sslProtocol", "TLS");
-            httpsConnector.setAttribute("SSLEnabled", true);
+        Connector httpsConnector = new Connector();
+        httpsConnector.setPort(Integer.parseInt(IDP_HTTPS_PORT));
+        httpsConnector.setSecure(true);
+        httpsConnector.setScheme("https");
+        httpsConnector.setAttribute("keyAlias", "mytomidpkey");
+        httpsConnector.setAttribute("keystorePass", "tompass");
+        httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
+        httpsConnector.setAttribute("truststorePass", "tompass");
+        httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
+        httpsConnector.setAttribute("clientAuth", "want");
+        // httpsConnector.setAttribute("clientAuth", "false");
+        httpsConnector.setAttribute("sslProtocol", "TLS");
+        httpsConnector.setAttribute("SSLEnabled", true);
 
-            idpServer.getService().addConnector(httpsConnector);
+        idpServer.getService().addConnector(httpsConnector);
 
-            File stsWebapp = new File(baseDir + File.separator + idpServer.getHost().getAppBase(), "fediz-idp-sts");
-            idpServer.addWebapp("/fediz-idp-sts", stsWebapp.getAbsolutePath());
+        Path stsWebapp = targetDir.resolve(idpServer.getHost().getAppBase()).resolve("fediz-idp-sts");
+        idpServer.addWebapp("/fediz-idp-sts", stsWebapp.toString());
 
-            File idpWebapp = new File(baseDir + File.separator + idpServer.getHost().getAppBase(), "fediz-idp");
-            idpServer.addWebapp("/fediz-idp", idpWebapp.getAbsolutePath());
+        Path idpWebapp = targetDir.resolve(idpServer.getHost().getAppBase()).resolve("fediz-idp");
+        idpServer.addWebapp("/fediz-idp", idpWebapp.toString());
 
-            idpServer.start();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        idpServer.start();
     }
 
     @Override
     public String getIdpHttpsPort() {
-        return idpHttpsPort;
+        return IDP_HTTPS_PORT;
     }
 
     @Override
     public String getRpHttpsPort() {
-        return rpHttpsPort;
+        return RP_HTTPS_PORT;
     }
 
     @Override

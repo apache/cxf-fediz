@@ -254,7 +254,7 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
         String pubKeyAlgo = cert.getPublicKey().getAlgorithm();
         String jceSigAlgo = "SHA1withRSA";
         LOG.debug("automatic sig algo detection: " + pubKeyAlgo);
-        if (pubKeyAlgo.equalsIgnoreCase("DSA")) {
+        if ("DSA".equalsIgnoreCase(pubKeyAlgo)) {
             sigAlgo = SSOConstants.DSA_SHA1;
             jceSigAlgo = "SHA1withDSA";
         }

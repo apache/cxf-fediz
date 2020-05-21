@@ -31,6 +31,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+
 import org.junit.Assert;
 
 /**
@@ -66,8 +67,8 @@ public final class HTTPTestUtils {
         return rpPage.getBody().getTextContent();
     }
 
-    public static String loginWithCookieManager(String url, String user, String password,
-                                                String idpPort, String formName, CookieManager cookieManager) throws IOException {
+    public static String loginWithCookieManager(String url, String user, String password, String idpPort,
+            String formName, CookieManager cookieManager) throws IOException {
         final WebClient webClient = new WebClient();
         webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);

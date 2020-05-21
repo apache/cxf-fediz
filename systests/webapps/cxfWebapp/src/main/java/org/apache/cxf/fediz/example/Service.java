@@ -19,8 +19,6 @@
 package org.apache.cxf.fediz.example;
 
 import java.security.Principal;
-import java.util.Arrays;
-import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.GET;
@@ -78,23 +76,19 @@ public class Service {
     @GET
     @Produces("text/html")
     public String doGetTest(@Context UriInfo uriInfo) throws Exception {
-        StringBuilder out = new StringBuilder();
-        out.append("<html>\n");
-        out.append("<head><title>WS Federation Systests Examples</title></head>\n");
-        out.append("<body>\n");
-        out.append("<P><H3>Secure Test</H3><P></P>");
-        out.append("</body>\n");
-
-        return out.toString();
+        return "<html>\n"
+            + "<head><title>WS Federation Systests Examples</title></head>\n"
+            + "<body>\n"
+            + "<P><H3>Secure Test</H3><P></P>"
+            + "</body>\n";
     }
 
     private String doGet(@Context UriInfo uriInfo) throws Exception {
-
-        StringBuilder out = new StringBuilder();
+        StringBuilder out = new StringBuilder(197);
         out.append("<html>\n");
         out.append("<head><title>WS Federation Systests Examples</title></head>\n");
         out.append("<body>\n");
-        out.append("<p>Request url: " + uriInfo.getAbsolutePath() + "</p>\n");
+        out.append("<p>Request url: ").append(uriInfo.getAbsolutePath()).append("</p>\n");
 
         out.append("<p>userPrincipal=");
         Principal p = messageContext.getSecurityContext().getUserPrincipal();
@@ -103,7 +97,7 @@ public class Service {
         }
         out.append("</p>\n");
 
-        List<String> roleListToCheck = Arrays.asList("Admin", "Manager", "User", "Authenticated");
+        String[] roleListToCheck = new String[]{"Admin", "Manager", "User", "Authenticated"};
         for (String item: roleListToCheck) {
             out.append("<p>role:" + item + "="
                 + ((messageContext.getSecurityContext().isUserInRole(item)) ? "true" : "false")

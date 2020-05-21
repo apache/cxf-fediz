@@ -43,8 +43,8 @@
     -->
     <util:map id="supportedClaims">
         <entry key="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role" value="roles" />
-    </util:map> 
-    
+    </util:map>
+
     <!-- 
         List of required scopes that must be available in request URIs when
         client redirects users to OIDC
@@ -60,17 +60,16 @@
     <util:list id="invisibleToClientScopes">
         <value>refreshToken</value>
     </util:list>
-    
+
     <!-- 
         To support the alternative data persistence strategies: either register a custom
         AbstractCodeDataProvider extension or implement AuthorizationCodeDataProvider directly
-    -->     
+    -->
     <bean id="oauthProvider" 
           class="org.apache.cxf.fediz.service.oidc.OAuthDataProviderImpl"
           init-method="init" destroy-method="close">
         <!-- List of accepted scopes -->  
         <property name="supportedScopes" ref="supportedScopes"/>
-
         <!-- 
              List of scopes that the consent/authorization form should make 
              selected by default. For example, asking a user to do an extra click
@@ -86,15 +85,14 @@
         <!--
         <property name="supportPreauthorizedTokens" value="true"/>
         -->
-        
     </bean>
 
-    <!-- Custom SubjectCreator where IdToken is created -->    
+    <!-- Custom SubjectCreator where IdToken is created -->
     <bean id="subjectCreator" class="org.apache.cxf.fediz.service.oidc.FedizSubjectCreator">
         <property name="idTokenIssuer" value="accounts.fediz.com"/>
-        <!-- List of additional claims which can be optionally added to IdToken -->  
+        <!-- List of additional claims which can be optionally added to IdToken -->
         <property name="supportedClaims" ref="supportedClaims"/>
     </bean>
-         
+
 </beans>
 

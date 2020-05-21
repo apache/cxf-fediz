@@ -18,7 +18,6 @@
  */
 package org.apache.cxf.fediz.service.idp.integrationtests;
 
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -40,6 +39,7 @@ import org.apache.cxf.fediz.service.idp.rest.Claims;
 import org.apache.cxf.fediz.service.idp.rest.Entitlements;
 import org.apache.cxf.fediz.service.idp.rest.Idps;
 import org.apache.cxf.fediz.service.idp.rest.Roles;
+
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -87,7 +87,7 @@ public class RestITTest {
     }
 
     @Test
-    public void testGetAllIdps() throws UnsupportedEncodingException, MalformedURLException {
+    public void testGetAllIdps() throws MalformedURLException {
         String address = "https://localhost:" + idpHttpsPort + "/" + getContextName() + "/services/rs";
         Client client = ClientBuilder.newClient();
         Idps idps = client.target(address).path("idps")
@@ -160,7 +160,7 @@ public class RestITTest {
     }
 
     @Test
-    public void testReadExistingIdpEmbeddedTrustedIdps() throws UnsupportedEncodingException {
+    public void testReadExistingIdpEmbeddedTrustedIdps() {
         String address = "https://localhost:" + idpHttpsPort + "/" + getContextName() + "/services/rs";
         Client client = ClientBuilder.newClient();
 
@@ -178,7 +178,7 @@ public class RestITTest {
     }
 
     @Test
-    public void testAddClaimToApplication() throws UnsupportedEncodingException {
+    public void testAddClaimToApplication() {
 
         String address = "https://localhost:" + idpHttpsPort + "/" + getContextName() + "/services/rs";
         Client client = ClientBuilder.newClient();
@@ -217,7 +217,7 @@ public class RestITTest {
     }
 
     @Test
-    public void testGetAllClaims() throws UnsupportedEncodingException, MalformedURLException {
+    public void testGetAllClaims() {
         String address = "https://localhost:" + idpHttpsPort + "/" + getContextName() + "/services/rs";
         Client client = ClientBuilder.newClient();
         Claims claims = client.target(address).path("claims")
@@ -227,7 +227,7 @@ public class RestITTest {
     }
 
     @Test
-    public void testGetAllEntitlements() throws UnsupportedEncodingException, MalformedURLException {
+    public void testGetAllEntitlements() {
         String address = "https://localhost:" + idpHttpsPort + "/" + getContextName() + "/services/rs";
         Client client = ClientBuilder.newClient();
         Entitlements entitlements = client.target(address).path("entitlements")
@@ -237,7 +237,7 @@ public class RestITTest {
     }
 
     @Test
-    public void testGetAllRoles() throws UnsupportedEncodingException, MalformedURLException {
+    public void testGetAllRoles() {
         String address = "https://localhost:" + idpHttpsPort + "/" + getContextName() + "/services/rs";
         Client client = ClientBuilder.newClient();
         Roles roles = client.target(address).path("roles")
@@ -246,8 +246,8 @@ public class RestITTest {
         Assert.assertEquals(2, roles.getRoles().size());
     }
 
-    private String getBasicAuthentication(String username, String password) throws UnsupportedEncodingException {
-        String token = username + ":" + password;
+    private static String getBasicAuthentication(String username, String password) {
+        String token = username + ':' + password;
         return "Basic " + Base64.getEncoder().encodeToString(token.getBytes());
     }
 

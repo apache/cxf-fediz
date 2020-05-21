@@ -25,6 +25,6 @@ import javax.ws.rs.core.Application;
 
 public class FederationApplication extends Application {
     public Set<Object> getSingletons() {
-        return Collections.<Object>singleton(new FederationService());
+        return Collections.singleton(new FederationService());
     }
 }

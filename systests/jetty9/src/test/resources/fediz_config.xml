@@ -28,8 +28,7 @@
         </audienceUris>
         <certificateStores>
             <trustManager>
-                <keyStore file="clienttrust.jks" password="storepass"
-                          type="JKS" />
+                <keyStore file="clienttrust.jks" password="storepass" type="JKS" />
             </trustManager>
         </certificateStores>
         <trustedIssuers>
@@ -63,8 +62,7 @@
         </audienceUris>
         <certificateStores>
             <trustManager>
-                <keyStore file="clienttrust.jks" password="storepass"
-                          type="JKS" />
+                <keyStore file="clienttrust.jks" password="storepass" type="JKS" />
             </trustManager>
         </certificateStores>
         <trustedIssuers>
@@ -97,8 +95,7 @@
         </audienceUris>
         <certificateStores>
             <trustManager>
-                <keyStore file="clienttrust.jks" password="storepass"
-                          type="JKS" />
+                <keyStore file="clienttrust.jks" password="storepass" type="JKS" />
             </trustManager>
         </certificateStores>
         <trustedIssuers>

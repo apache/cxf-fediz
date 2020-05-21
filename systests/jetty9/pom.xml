@@ -29,11 +29,6 @@
     <artifactId>fediz-systests-jetty9</artifactId>
     <name>Apache Fediz Systests for Jetty 9</name>
     <packaging>jar</packaging>
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <tomcat8.version>8.5.34</tomcat8.version>
-    </properties>
     <dependencies>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
@@ -88,17 +83,24 @@
             <artifactId>hsqldb</artifactId>
             <version>${hsqldb.version}</version>
             <scope>test</scope>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-core</artifactId>
-            <version>${tomcat8.version}</version>
+            <version>${tomcat.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-jasper</artifactId>
-            <version>${tomcat8.version}</version>
+            <version>${tomcat.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Tomcat 9.x implements the Servlet 4.0 -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>${servlet.version}</version>
             <scope>test</scope>
         </dependency>
          <dependency>
@@ -208,7 +210,7 @@
                                     <type>war</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>target/rp/</outputDirectory>
-                                </artifactItem>                             
+                                </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz.systests.webapps</groupId>
                                     <artifactId>fediz-systests-webapps-springPreauth</artifactId>
@@ -216,7 +218,7 @@
                                     <type>war</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>target/rp/</outputDirectory>
-                                </artifactItem>      
+                                </artifactItem>
                             </artifactItems>
                             <outputAbsoluteArtifactFilename>true</outputAbsoluteArtifactFilename>
                             <outputDirectory>target</outputDirectory>
@@ -238,7 +240,7 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${basedir}/target/tomcat/idp/webapps/fediz-idp/WEB-INF/classes</outputDirectory>
-                            <resources>          
+                            <resources>
                                 <resource>
                                     <directory>${basedir}/src/test/resources/realma</directory>
                                     <includes>
@@ -246,8 +248,8 @@
                                     </includes>
                                     <filtering>true</filtering>
                                 </resource>
-                            </resources>              
-                        </configuration>            
+                            </resources>
+                        </configuration>
                     </execution>
                     <execution>
                         <id>copy-customised-sts-config</id>
@@ -257,7 +259,7 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${basedir}/target/tomcat/idp/webapps/fediz-idp-sts/WEB-INF</outputDirectory>
-                            <resources>          
+                            <resources>
                                 <resource>
                                     <directory>${basedir}/src/test/resources/realma</directory>
                                     <includes>
@@ -265,9 +267,9 @@
                                     </includes>
                                     <filtering>false</filtering>
                                 </resource>
-                            </resources>              
-                            <overwrite>true</overwrite>       
-                        </configuration>            
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -306,5 +308,5 @@
             </plugin>
         </plugins>
     </build>
-    
+
 </project>

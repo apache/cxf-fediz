@@ -34,10 +34,6 @@ public class OAuthDataProviderImpl extends JCacheCodeDataProvider {
         new HashSet<>(Arrays.asList(OAuthConstants.CLIENT_CREDENTIALS_GRANT, 
                                     OAuthConstants.RESOURCE_OWNER_GRANT));
 
-    public OAuthDataProviderImpl() throws Exception {
-        super();
-    }
-
     @Override
     protected void checkRequestedScopes(Client client, List<String> requestedScopes) {
         String grantType = super.getCurrentRequestedGrantType();
@@ -46,4 +42,5 @@ public class OAuthDataProviderImpl extends JCacheCodeDataProvider {
             throw new OAuthServiceException("Required scopes are missing");
         }
     }
+
 }

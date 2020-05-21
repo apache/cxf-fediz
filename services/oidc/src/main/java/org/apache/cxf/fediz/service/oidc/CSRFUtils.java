@@ -41,7 +41,7 @@ public final class CSRFUtils {
 
             // If no existing token then create a new one, save it, and return it
             if (create) {
-                String token = StringUtils.toHexString(CryptoUtils.generateSecureRandomBytes(16));
+                String token = StringUtils.toHexString(CryptoUtils.generateSecureRandomBytes(32));
                 request.getSession().setAttribute(CSRF_TOKEN, token);
                 return token;
             }

@@ -30,8 +30,6 @@
     <name>Apache Fediz Custom Systests</name>
     <packaging>jar</packaging>
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
     <dependencies>
         <dependency>
@@ -58,12 +56,12 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-bindings-soap</artifactId>
             <version>${cxf.version}</version>
             <scope>test</scope>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>org.apache.cxf.services.sts</groupId>
             <artifactId>cxf-services-sts-core</artifactId>
@@ -169,6 +167,7 @@
                                     <type>war</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>target/tomcat/rp/webapps/simpleWebapp</outputDirectory>
+                                    <excludes>**/jakarta.xml.bind-api-*.jar</excludes>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz.systests</groupId>
@@ -200,7 +199,7 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${basedir}/target/tomcat/idp/webapps/fediz-idp/WEB-INF/config</outputDirectory>
-                            <resources>          
+                            <resources>
                                 <resource>
                                     <directory>${basedir}/src/test/resources/realma</directory>
                                     <includes>
@@ -208,9 +207,9 @@
                                     </includes>
                                     <filtering>false</filtering>
                                 </resource>
-                            </resources>       
-                            <overwrite>true</overwrite>       
-                        </configuration>            
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
                     </execution>
                     <execution>
                         <id>copy-customised-sts-client</id>
@@ -228,9 +227,9 @@
                                     </includes>
                                     <filtering>false</filtering>
                                 </resource>
-                            </resources>       
-                            <overwrite>true</overwrite>       
-                        </configuration>            
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
                     </execution>
                     <execution>
                         <id>copy-customised-sts-config</id>
@@ -240,7 +239,7 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${basedir}/target/tomcat/idp/webapps/fediz-idp-sts/WEB-INF/endpoints</outputDirectory>
-                            <resources>          
+                            <resources>
                                 <resource>
                                     <directory>${basedir}/src/test/resources</directory>
                                     <includes>
@@ -248,9 +247,9 @@
                                     </includes>
                                     <filtering>false</filtering>
                                 </resource>
-                            </resources>              
-                            <overwrite>true</overwrite>       
-                        </configuration>            
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
                     </execution>
                     <execution>
                         <id>copy-customised-sts-config2</id>
@@ -260,7 +259,7 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${basedir}/target/tomcat/idp/webapps/fediz-idp-sts/WEB-INF/data</outputDirectory>
-                            <resources>          
+                            <resources>
                                 <resource>
                                     <directory>${basedir}/src/test/resources</directory>
                                     <includes>
@@ -268,9 +267,9 @@
                                     </includes>
                                     <filtering>false</filtering>
                                 </resource>
-                            </resources>              
-                            <overwrite>true</overwrite>       
-                        </configuration>            
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
                     </execution>
                     <execution>
                         <id>copy-custom-validator</id>
@@ -280,7 +279,7 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${basedir}/target/tomcat/idp/webapps/fediz-idp-sts/WEB-INF/classes/custom</outputDirectory>
-                            <resources>          
+                            <resources>
                                 <resource>
                                     <directory>${basedir}/target/test-classes/custom</directory>
                                     <includes>
@@ -288,9 +287,9 @@
                                     </includes>
                                     <filtering>false</filtering>
                                 </resource>
-                            </resources>              
-                            <overwrite>true</overwrite>       
-                        </configuration>            
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

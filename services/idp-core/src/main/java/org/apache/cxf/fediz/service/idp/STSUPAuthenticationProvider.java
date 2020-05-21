@@ -34,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
@@ -52,7 +51,7 @@ public class STSUPAuthenticationProvider extends STSAuthenticationProvider {
     private RequestCache requestCache = new HttpSessionRequestCache();
 
     @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+    public Authentication authenticate(Authentication authentication) {
         // We only handle UsernamePasswordAuthenticationTokens
         if (!(authentication instanceof UsernamePasswordAuthenticationToken)) {
             return null;

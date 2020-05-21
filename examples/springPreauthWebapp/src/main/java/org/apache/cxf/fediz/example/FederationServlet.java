@@ -38,13 +38,13 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Element;
 
-import org.apache.commons.text.StringEscapeUtils;
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.FedizPrincipal;
 import org.apache.cxf.fediz.core.SecurityTokenThreadLocal;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.util.HtmlUtils;
 
 
 public class FederationServlet extends HttpServlet {
@@ -65,7 +65,7 @@ public class FederationServlet extends HttpServlet {
         out.println("<body>");
         out.println("<h1>Hello World</h1>");
         out.println("Hello world<br>");
-        out.println("Request url: " + request.getRequestURL().toString() + "<p>");
+        out.println("Request url: "); out.println(request.getRequestURL()); out.println("<p>");
 
 
         out.println("<br><b>User</b><p>");
@@ -103,7 +103,6 @@ public class FederationServlet extends HttpServlet {
         Element el = SecurityTokenThreadLocal.getToken();
         if (el != null) {
             out.println("<p>Bootstrap token...");
-            String token = null;
             try {
                 TransformerFactory transFactory = TransformerFactory.newInstance();
                 Transformer transformer = transFactory.newTransformer();
@@ -111,8 +110,8 @@ public class FederationServlet extends HttpServlet {
                 transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
                 transformer.transform(new DOMSource(el),
                                       new StreamResult(buffer));
-                token = buffer.toString();
-                out.println("<p>" + StringEscapeUtils.escapeXml11(token));
+                String token = buffer.toString();
+                out.println("<p>" + HtmlUtils.htmlEscape(token));
             } catch (Exception ex) {
                 out.println("<p>Failed to transform cached element to string: " + ex.toString());
             }

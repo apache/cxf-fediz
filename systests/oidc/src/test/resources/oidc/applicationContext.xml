@@ -125,6 +125,21 @@
         </jaxrs:properties>
     </jaxrs:server>
     
+    <bean id="oidcKeysService2" class="org.apache.cxf.rs.security.oidc.idp.OidcKeysService"/>
+    <jaxrs:server address="/jwk2">
+        <jaxrs:serviceBeans>
+           <ref bean="oidcKeysService2"/>
+        </jaxrs:serviceBeans>
+        <jaxrs:providers>
+            <ref bean="corsFilter"/>
+            <bean class="org.apache.cxf.rs.security.jose.jaxrs.JsonWebKeysProvider"/>
+        </jaxrs:providers>
+        <jaxrs:properties>
+             <entry key="rs.security.keystore.type" value="jwk" />
+             <entry key="rs.security.keystore.alias" value="2011-04-29"/>
+             <entry key="rs.security.keystore.file" value="jwkPrivateSet.txt" />
+        </jaxrs:properties>
+    </jaxrs:server>
     
     <bean id="oauth2TokenValidationFilter" class="org.apache.cxf.rs.security.oauth2.filters.OAuthRequestFilter">
          <property name="dataProvider" ref="oauthProvider"/>
@@ -147,7 +162,9 @@
         </jaxrs:providers>
     </jaxrs:server>
     
-    <bean id="keyPasswordProvider" class="org.apache.cxf.fediz.service.oidc.PrivateKeyPasswordProviderImpl"/>
+    <bean id="keyPasswordProvider" class="org.apache.cxf.fediz.service.oidc.PrivateKeyPasswordProviderImpl">
+        <property name="password" value="password"/>
+    </bean>
     
     <!-- Client Registration Service -->
     <bean id="clientRegService" init-method="init" 
@@ -218,11 +235,11 @@
     <bean id="refreshTokenHandler" class="org.apache.cxf.rs.security.oauth2.grants.refresh.RefreshTokenGrantHandler">
         <property name="dataProvider" ref="oauthProvider"/>
     </bean>
-    
+
     <bean id="clientCredsHandler" class="org.apache.cxf.rs.security.oauth2.grants.clientcred.ClientCredentialsGrantHandler">
         <property name="dataProvider" ref="oauthProvider"/>
     </bean>
-        
+
     <util:list id="grantHandlers">
         <ref bean="refreshTokenHandler"/>
         <!-- Add more custom grant handlers as needed -->
@@ -270,6 +287,7 @@
             <entry key="rs.security.signature.properties" value="rs.security.properties"/>
         </jaxrs:properties>
      </jaxrs:server>
+
      <http:conduit name="*.http-conduit">
         <http:tlsClientParameters
             disableCNCheck="true">
@@ -278,6 +296,5 @@
             </sec:trustManagers>
         </http:tlsClientParameters>
     </http:conduit>
-     
-</beans>
 
+</beans>

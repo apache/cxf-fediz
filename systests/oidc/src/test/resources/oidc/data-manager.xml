@@ -90,12 +90,12 @@
         <property name="authenticationStrategy" ref="authenticationStrategy"/>
     </bean>
 
-    <!-- Custom SubjectCreator where IdToken is created -->    
+    <!-- Custom SubjectCreator where IdToken is created -->
     <bean id="subjectCreator" class="org.apache.cxf.fediz.service.oidc.FedizSubjectCreator">
         <property name="idTokenIssuer" value="accounts.fediz.com"/>
         <!-- List of additional claims which can be optionally added to IdToken -->
         <property name="supportedClaims" ref="supportedClaims"/>
     </bean>
-         
+
 </beans>
 

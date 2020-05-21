@@ -21,15 +21,13 @@ package org.apache.cxf.fediz.example;
 
 import java.io.StringWriter;
 import java.security.Principal;
-import java.util.Arrays;
-import java.util.List;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.transform.OutputKeys;
@@ -40,12 +38,11 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Element;
 
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.cxf.fediz.core.Claim;
 import org.apache.cxf.fediz.core.ClaimCollection;
 import org.apache.cxf.fediz.core.FedizPrincipal;
 import org.apache.cxf.fediz.core.SecurityTokenThreadLocal;
-
+import org.springframework.web.util.HtmlUtils;
 
 
 @Path("/")
@@ -61,27 +58,26 @@ public class FederationService {
     @GET
     public Response getTokenInfo() {
 
-        ResponseBuilder rb = Response.ok().type("text/html");
+        StringBuilder out = new StringBuilder(297)
+            .append("<html>")
+            .append("<head><title>WS Federation Spring Security Example</title></head>")
+            .append("<body>")
+            .append("<h1>Hello World</h1>")
+            .append("Hello world<br>");
 
-        StringBuilder out = new StringBuilder();
-        out.append("<html>");
-        out.append("<head><title>WS Federation Spring Security Example</title></head>");
-        out.append("<body>");
-        out.append("<h1>Hello World</h1>");
-        out.append("Hello world<br>");
-        out.append("Request url: " + uriInfo.getAbsolutePath().toString() + "<p>");
+        out.append("Request url: ").append(uriInfo.getAbsolutePath()).append("<p>");
 
         out.append("<br><b>User</b><p>");
         Principal p = securityContext.getUserPrincipal();
         if (p != null) {
-            out.append("Principal: " + p.getName() + "<p>");
+            out.append("Principal: ").append(p.getName()).append("<p>");
         }
 
         out.append("<br><b>Roles</b><p>");
-        List<String> roleListToCheck = Arrays.asList("Admin", "Manager", "User", "Authenticated");
+        String[] roleListToCheck = new String[]{"Admin", "Manager", "User", "Authenticated"};
         for (String item: roleListToCheck) {
-            out.append("Has role '" + item + "': "
-                + ((securityContext.isUserInRole(item)) ? "<b>yes</b>" : "no") + "<p>");
+            out.append("Has role '").append(item).append("': ").append(
+                securityContext.isUserInRole(item) ? "<b>yes</b>" : "no").append("<p>");
         }
 
         if (p instanceof FedizPrincipal) {
@@ -90,7 +86,7 @@ public class FederationService {
             out.append("<br><b>Claims</b><p>");
             ClaimCollection claims = fp.getClaims();
             for (Claim c: claims) {
-                out.append(c.getClaimType().toString() + ": " + c.getValue() + "<p>");
+                out.append(c.getClaimType()).append(": ").append(c.getValue()).append("<p>");
             }
         } else {
             out.append("Principal is not instance of FedizPrincipal");
@@ -99,19 +95,17 @@ public class FederationService {
         Element el = SecurityTokenThreadLocal.getToken();
         if (el != null) {
             out.append("<p>Bootstrap token...");
-            String token = null;
             try {
                 TransformerFactory transFactory = TransformerFactory.newInstance();
                 Transformer transformer = transFactory.newTransformer();
                 StringWriter buffer = new StringWriter();
                 transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
                 transformer.transform(new DOMSource(el), new StreamResult(buffer));
-                token = buffer.toString();
-                @SuppressWarnings("deprecation")
-                String escapedXml = StringEscapeUtils.escapeXml(token);
-                out.append("<p>" + escapedXml);
+                String token = buffer.toString();
+                String escapedXml = HtmlUtils.htmlEscape(token);
+                out.append("<p>").append(escapedXml);
             } catch (Exception ex) {
-                out.append("<p>Failed to transform cached element to string: " + ex.toString());
+                out.append("<p>Failed to transform cached element to string: ").append(ex.toString());
             }
         } else {
             out.append("<p>Bootstrap token not cached in thread local storage");
@@ -119,7 +113,7 @@ public class FederationService {
 
         out.append("</body>");
 
-        return rb.entity(out.toString()).build();
+        return Response.ok().type(MediaType.TEXT_HTML).entity(out.toString()).build();
     }
 
 }

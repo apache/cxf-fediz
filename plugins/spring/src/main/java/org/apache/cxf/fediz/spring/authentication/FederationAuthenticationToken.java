@@ -86,12 +86,7 @@ public class FederationAuthenticationToken extends AbstractAuthenticationToken
     }
 
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(super.toString());
-        sb.append(" Response: ").append(this.response);
-        sb.append(" Credentials: ").append(this.credentials);
-
-        return sb.toString();
+        return super.toString() + " Response: " + response + " Credentials: " + credentials;
     }
 
     @Override

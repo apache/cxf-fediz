@@ -19,7 +19,6 @@
 
 package org.apache.cxf.fediz.example;
 
-import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
@@ -37,8 +36,7 @@ public class ApplicationContextProvider implements ApplicationContextAware {
         super();
     }
 
-    public void setApplicationContext(ApplicationContext applicationContext)
-        throws BeansException {
+    public void setApplicationContext(ApplicationContext applicationContext) {
 
         ApplicationContextProvider.ctx = applicationContext;
     }

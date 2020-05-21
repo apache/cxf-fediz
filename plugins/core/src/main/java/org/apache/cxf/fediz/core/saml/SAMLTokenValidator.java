@@ -192,8 +192,7 @@ public class SAMLTokenValidator implements TokenValidator {
             if (assertion.getSamlVersion().equals(SAMLVersion.VERSION_20)) {
                 claims = parseClaimsInAssertion(assertion.getSaml2());
                 audience = getAudienceRestriction(assertion.getSaml2());
-            } else if (assertion.getSamlVersion()
-                    .equals(SAMLVersion.VERSION_11)) {
+            } else if (assertion.getSamlVersion().equals(SAMLVersion.VERSION_11)) {
                 claims = parseClaimsInAssertion(assertion.getSaml1());
                 audience = getAudienceRestriction(assertion.getSaml1());
             } else {
@@ -218,47 +217,14 @@ public class SAMLTokenValidator implements TokenValidator {
         }
     }
 
-    @Deprecated
-    protected List<String> parseRoles(FedizContext config, List<Claim> claims) {
-        List<String> roles = null;
-        Protocol protocol = config.getProtocol();
-        if (protocol.getRoleURI() != null) {
-            URI roleURI = URI.create(protocol.getRoleURI());
-            String delim = protocol.getRoleDelimiter();
-            for (Claim c : claims) {
-                if (roleURI.equals(c.getClaimType())) {
-                    Object oValue = c.getValue();
-                    if ((oValue instanceof String) && !"".equals(oValue)) {
-                        if (delim == null) {
-                            roles = Collections.singletonList((String)oValue);
-                        } else {
-                            roles = parseRoles((String)oValue, delim);
-                        }
-                    } else if ((oValue instanceof List<?>) && !((List<?>)oValue).isEmpty()) {
-                        @SuppressWarnings("unchecked")
-                        List<String> values = (List<String>)oValue;
-                        roles = Collections.unmodifiableList(values);
-                    } else if (!((oValue instanceof String) || (oValue instanceof List<?>))) {
-                        LOG.error("Unsupported value type of Claim value");
-                        throw new IllegalStateException("Unsupported value type of Claim value");
-                    }
-                    claims.remove(c);
-                    break;
-                }
-            }
-        }
-
-        return roles;
-    }
-    
     protected List<Claim> parseRoleClaim(FedizContext config, List<Claim> claims) {
-        List<String> roles = null;
         Protocol protocol = config.getProtocol();
         if (protocol.getRoleURI() != null) {
             URI roleURI = URI.create(protocol.getRoleURI());
             String delim = protocol.getRoleDelimiter();
             for (Claim c : claims) {
                 if (roleURI.equals(c.getClaimType())) {
+                    final List<String> roles;
                     Object oValue = c.getValue();
                     if (oValue instanceof String) {
                         if (delim == null || "".equals(oValue)) {
@@ -270,7 +236,7 @@ public class SAMLTokenValidator implements TokenValidator {
                         @SuppressWarnings("unchecked")
                         List<String> values = (List<String>)oValue;
                         roles = Collections.unmodifiableList(values);
-                    } else if (!((oValue instanceof String) || (oValue instanceof List<?>))) {
+                    } else {
                         LOG.error("Unsupported value type of Claim value");
                         throw new IllegalStateException("Unsupported value type of Claim value");
                     }

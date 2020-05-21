@@ -46,7 +46,7 @@ public class FederationProtocol extends Protocol {
         // Fediz chooses the first validator in the list if its
         // canHandleToken or canHandleTokenType method return true
         SAMLTokenValidator validator = new SAMLTokenValidator();
-        getTokenValidators().add(getTokenValidators().size(), validator);
+        getTokenValidators().add(validator);
     }
 
     protected FederationProtocolType getFederationProtocol() {
