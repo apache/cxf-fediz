@@ -267,11 +267,6 @@ public class FederationAuthenticator extends FormAuthenticator {
         Session session = request.getSessionInternal();
         LOG.debug("Restore request from session '{}'", session.getIdInternal());
 
-        // Get principal from session, register, and then remove it
-        Principal principal = (Principal)session.getNote(Constants.FORM_PRINCIPAL_NOTE);
-        register(request, response, principal, FederationConstants.WSFED_METHOD, null, null);
-        request.removeNote(Constants.FORM_PRINCIPAL_NOTE);
-
         if (restoreRequest(request)) {
             LOG.debug("Proceed to restored request");
             return true;

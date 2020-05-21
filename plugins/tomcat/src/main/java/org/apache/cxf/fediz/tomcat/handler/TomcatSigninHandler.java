@@ -66,8 +66,8 @@ public class TomcatSigninHandler extends SigninHandler<FedizPrincipal> {
 
         Session session = ((Request)request).getSessionInternal();
 
-        // Save the authenticated Principal in our session
-        session.setNote(Constants.FORM_PRINCIPAL_NOTE, principal);
+        // Register the authenticated Principal
+        register((Request) request, response, principal, FederationConstants.WSFED_METHOD, null, null);
 
         // Save Federation response in our session
         session.setNote(FederationAuthenticator.FEDERATION_NOTE, wfRes);
