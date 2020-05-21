@@ -202,6 +202,8 @@ public class FederationAuthenticator extends FormAuthenticator {
         if (signinHandler.canHandleRequest(request)) {
             FedizPrincipal principal = signinHandler.handleRequest(request, response);
             if (principal != null) {
+                // Register the authenticated Principal
+                register(request, response, principal, FederationConstants.WSFED_METHOD, null, null);
                 LOG.debug("Authentication of '{}' was successful", principal);
                 resumeRequest(signinHandler.getContextParameter(request), request, response);
             } else {

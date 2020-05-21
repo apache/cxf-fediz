@@ -27,7 +27,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.Session;
-import org.apache.catalina.authenticator.Constants;
 import org.apache.catalina.connector.Request;
 import org.apache.cxf.fediz.core.FedizPrincipal;
 import org.apache.cxf.fediz.core.config.FedizContext;
@@ -65,9 +64,6 @@ public class TomcatSigninHandler extends SigninHandler<FedizPrincipal> {
                                                                wfRes.getClaims(), wfRes.getToken());
 
         Session session = ((Request)request).getSessionInternal();
-
-        // Register the authenticated Principal
-        register((Request) request, response, principal, FederationConstants.WSFED_METHOD, null, null);
 
         // Save Federation response in our session
         session.setNote(FederationAuthenticator.FEDERATION_NOTE, wfRes);
