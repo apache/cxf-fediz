@@ -72,7 +72,7 @@ public class FederationAuthenticator extends FormAuthenticator {
     protected static final String INFO = "org.apache.cxf.fediz.tomcat.WsFedAuthenticator/1.0";
     protected static final String TRUSTED_ISSUER = "org.apache.cxf.fediz.tomcat.TRUSTED_ISSUER";
 
-    private static final Logger LOG = LoggerFactory.getLogger(FormAuthenticator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FederationAuthenticator.class);
 
     /**
      * Fediz Configuration file
