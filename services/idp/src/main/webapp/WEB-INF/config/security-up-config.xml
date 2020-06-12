@@ -24,7 +24,7 @@
         http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
         http://www.springframework.org/schema/security
-        http://www.springframework.org/schema/security/spring-security-3.2.xsd
+        http://www.springframework.org/schema/security/spring-security.xsd
         ">
 
     <!-- DISABLE in production as it might log confidential information about the user -->
@@ -47,11 +47,11 @@
 		username-parameter="username" 
 		password-parameter="password"
 	/-->
-	<security:logout logout-url="/federation/up/logout" 
-		logout-success-url="/federation/up/login?out" 
-		delete-cookies="FEDIZ_HOME_REALM,JSESSIONID" 
-		invalidate-session="true" 
-	/>
+        <security:logout logout-url="/federation/up/logout"
+            logout-success-url="/federation/up/login?out"
+            delete-cookies="FEDIZ_HOME_REALM,JSESSIONID"
+            invalidate-session="true"
+        />
 
         <security:headers>
             <security:content-type-options />
@@ -62,6 +62,7 @@
     
     <!-- HTTP/BA entry point for SAML SSO -->
     <security:http pattern="/saml/up/**" use-expressions="true">
+        <security:csrf disabled="true"/>
 		<security:intercept-url requires-channel="https" pattern="/saml/up/login*" access="isAuthenticated()" />
         <security:custom-filter after="CHANNEL_FILTER" ref="stsUPPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
@@ -74,11 +75,11 @@
 		username-parameter="username" 
 		password-parameter="password"
 	/-->
-	<security:logout logout-url="/saml/up/logout" 
-		logout-success-url="/saml/up/login?out" 
-		delete-cookies="FEDIZ_HOME_REALM,JSESSIONID" 
-		invalidate-session="true" 
-	/>
+        <security:logout logout-url="/saml/up/logout"
+            logout-success-url="/saml/up/login?out"
+            delete-cookies="FEDIZ_HOME_REALM,JSESSIONID"
+            invalidate-session="true"
+        />
 
         <security:headers>
             <security:content-type-options />
