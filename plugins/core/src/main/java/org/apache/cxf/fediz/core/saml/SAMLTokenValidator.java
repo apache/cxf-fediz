@@ -40,6 +40,7 @@ import org.apache.cxf.fediz.core.TokenValidatorResponse;
 import org.apache.cxf.fediz.core.config.CertificateValidationMethod;
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.config.Protocol;
+import org.apache.cxf.fediz.core.config.SAMLProtocol;
 import org.apache.cxf.fediz.core.config.TrustManager;
 import org.apache.cxf.fediz.core.config.TrustedIssuer;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
@@ -96,75 +97,81 @@ public class SAMLTokenValidator implements TokenValidator {
             // PasswordCallbackHandler(password));
 
             SamlAssertionWrapper assertion = new SamlAssertionWrapper(token);
-            if (!assertion.isSigned()) {
-                LOG.warn("Assertion is not signed");
-                throw new ProcessingException(TYPE.TOKEN_NO_SIGNATURE);
-            }
-            // Verify the signature
-            Signature sig = assertion.getSignature();
-            KeyInfo keyInfo = sig.getKeyInfo();
-            SAMLKeyInfo samlKeyInfo =
-                org.apache.wss4j.common.saml.SAMLUtil.getCredentialFromKeyInfo(
-                    keyInfo.getDOM(), new WSSSAMLKeyInfoProcessor(requestData),
-                    requestData.getSigVerCrypto()
-                );
-            assertion.verifySignature(samlKeyInfo);
-
-            // Parse the subject if it exists
-            assertion.parseSubject(
-                new WSSSAMLKeyInfoProcessor(requestData), requestData.getSigVerCrypto(),
-                requestData.getCallbackHandler()
-            );
-
-            // Now verify trust on the signature
-            Credential trustCredential = new Credential();
-            trustCredential.setPublicKey(samlKeyInfo.getPublicKey());
-            trustCredential.setCertificates(samlKeyInfo.getCerts());
-            trustCredential.setSamlAssertion(assertion);
-
-            SamlAssertionValidator trustValidator = new SamlAssertionValidator();
-            trustValidator.setFutureTTL(config.getMaximumClockSkew().intValue());
-
-            boolean trusted = false;
+            
+            boolean doNotEnforceAssertionsSigned =
+                    ((SAMLProtocol)config.getProtocol()).isDoNotEnforceAssertionsSigned();
+            
+            boolean trusted = doNotEnforceAssertionsSigned;
             String assertionIssuer = assertion.getIssuerString();
-
-            List<TrustedIssuer> trustedIssuers = config.getTrustedIssuers();
-            for (TrustedIssuer ti : trustedIssuers) {
-                Pattern subjectConstraint = ti.getCompiledSubject();
-                List<Pattern> subjectConstraints = new ArrayList<>(1);
-                if (subjectConstraint != null) {
-                    subjectConstraints.add(subjectConstraint);
+            
+            if (!doNotEnforceAssertionsSigned) {
+                if (!assertion.isSigned()) {
+                    LOG.warn("Assertion is not signed");
+                    throw new ProcessingException(TYPE.TOKEN_NO_SIGNATURE);
                 }
+                // Verify the signature
+                Signature sig = assertion.getSignature();
+                KeyInfo keyInfo = sig.getKeyInfo();
+                SAMLKeyInfo samlKeyInfo =
+                    org.apache.wss4j.common.saml.SAMLUtil.getCredentialFromKeyInfo(
+                        keyInfo.getDOM(), new WSSSAMLKeyInfoProcessor(requestData),
+                        requestData.getSigVerCrypto()
+                    );
+                assertion.verifySignature(samlKeyInfo);
 
-                if (ti.getCertificateValidationMethod().equals(CertificateValidationMethod.CHAIN_TRUST)) {
-                    trustValidator.setSubjectConstraints(subjectConstraints);
-                    trustValidator.setSignatureTrustType(TrustType.CHAIN_TRUST_CONSTRAINTS);
-                } else if (ti.getCertificateValidationMethod().equals(CertificateValidationMethod.PEER_TRUST)) {
-                    trustValidator.setSignatureTrustType(TrustType.PEER_TRUST);
-                } else {
-                    throw new IllegalStateException("Unsupported certificate validation method: "
-                                                    + ti.getCertificateValidationMethod());
-                }
-                try {
-                    for (TrustManager tm: config.getCertificateStores()) {
-                        try {
-                            requestData.setSigVerCrypto(tm.getCrypto());
-                            trustValidator.validate(trustCredential, requestData);
-                            trusted = true;
-                            break;
-                        } catch (Exception ex) {
-                            LOG.debug("Issuer '{}' not validated in keystore '{}'",
-                                      ti.getName(), tm.getName());
+                // Parse the subject if it exists
+                assertion.parseSubject(
+                    new WSSSAMLKeyInfoProcessor(requestData), requestData.getSigVerCrypto(),
+                    requestData.getCallbackHandler()
+                );
+
+                // Now verify trust on the signature
+                Credential trustCredential = new Credential();
+                trustCredential.setPublicKey(samlKeyInfo.getPublicKey());
+                trustCredential.setCertificates(samlKeyInfo.getCerts());
+                trustCredential.setSamlAssertion(assertion);
+
+                SamlAssertionValidator trustValidator = new SamlAssertionValidator();
+                trustValidator.setFutureTTL(config.getMaximumClockSkew().intValue());
+           
+                List<TrustedIssuer> trustedIssuers = config.getTrustedIssuers();
+                for (TrustedIssuer ti : trustedIssuers) {
+                    Pattern subjectConstraint = ti.getCompiledSubject();
+                    List<Pattern> subjectConstraints = new ArrayList<>(1);
+                    if (subjectConstraint != null) {
+                        subjectConstraints.add(subjectConstraint);
+                    }
+                
+                    if (ti.getCertificateValidationMethod().equals(CertificateValidationMethod.CHAIN_TRUST)) {
+                        trustValidator.setSubjectConstraints(subjectConstraints);
+                        trustValidator.setSignatureTrustType(TrustType.CHAIN_TRUST_CONSTRAINTS);
+                    } else if (ti.getCertificateValidationMethod().equals(CertificateValidationMethod.PEER_TRUST)) {
+                        trustValidator.setSignatureTrustType(TrustType.PEER_TRUST);
+                    } else {
+                        throw new IllegalStateException("Unsupported certificate validation method: "
+                                                        + ti.getCertificateValidationMethod());
+                    }
+                    try {
+                        for (TrustManager tm: config.getCertificateStores()) {
+                            try {
+                                requestData.setSigVerCrypto(tm.getCrypto());
+                                trustValidator.validate(trustCredential, requestData);
+                                trusted = true;
+                                break;
+                            } catch (Exception ex) {
+                                LOG.debug("Issuer '{}' not validated in keystore '{}'",
+                                          ti.getName(), tm.getName());
+                            }
                         }
-                    }
-                    if (trusted) {
-                        break;
-                    }
-
-                } catch (Exception ex) {
-                    if (LOG.isInfoEnabled()) {
-                        LOG.info("Issuer '" + assertionIssuer + "' doesn't match trusted issuer '" + ti.getName()
-                                 + "': " + ex.getMessage());
+                        if (trusted) {
+                            break;
+                        }
+                
+                    } catch (Exception ex) {
+                        if (LOG.isInfoEnabled()) {
+                            LOG.info("Issuer '" + assertionIssuer + "' doesn't match trusted issuer '" + ti.getName()
+                                     + "': " + ex.getMessage());
+                        }
                     }
                 }
             }
