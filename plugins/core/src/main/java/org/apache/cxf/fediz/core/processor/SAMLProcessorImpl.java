@@ -434,7 +434,11 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             ssoResponseValidator.setIssuerIDP(requestState != null ? requestState.getIdpServiceAddress() : null);
             ssoResponseValidator.setRequestId(requestState != null ? requestState.getRequestId() : null);
             ssoResponseValidator.setSpIdentifier(requestState != null ? requestState.getIssuerId() : null);
-            ssoResponseValidator.setEnforceAssertionsSigned(true);
+            
+            boolean doNotEnforceAssertionsSigned =
+                    ((SAMLProtocol)config.getProtocol()).isDoNotEnforceAssertionsSigned();
+            ssoResponseValidator.setEnforceAssertionsSigned(!doNotEnforceAssertionsSigned);
+            
             ssoResponseValidator.setReplayCache(config.getTokenReplayCache());
 
             return ssoResponseValidator.validateSamlResponse(samlResponse, false);
