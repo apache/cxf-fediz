@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigInteger;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 import javax.security.auth.callback.CallbackHandler;
@@ -272,15 +274,61 @@ public class ClaimsProcessorTest {
         Assert.assertEquals("ALICE", lastname);
     }
 
+    @org.junit.Test
+    public void testNonURIClaimType() throws Exception {
+        String originalClaimValue = "Alice";
+        String claimsProcessorClass = null;
+
+        String customClaim = "custom_claim1234";
+        FedizResponse wfRes = performLogin(customClaim, false, originalClaimValue, claimsProcessorClass);
+        Object claimValue = null;
+        for (Claim c : wfRes.getClaims()) {
+            if (customClaim.equals(c.getClaimType().toString())) {
+                claimValue = c.getValue();
+            }
+        }
+
+        Assert.assertEquals(originalClaimValue, claimValue);
+    }
+
+    @org.junit.Test
+    @org.junit.Ignore // Re-enable once PR gets merged
+    public void testNonURIClaimTypeWithSpace() throws Exception {
+        String originalClaimValue = "Alice";
+        String claimsProcessorClass = null;
+
+        String customClaim = "custom_ claim1234";
+        FedizResponse wfRes = performLogin(customClaim, false, originalClaimValue, claimsProcessorClass);
+        String encodedClaim = URLEncoder.encode(customClaim, StandardCharsets.UTF_8.name());
+
+        Object claimValue = null;
+        for (Claim c : wfRes.getClaims()) {
+            if (encodedClaim.equals(c.getClaimType().toString())) {
+                claimValue = c.getValue();
+            }
+        }
+
+        Assert.assertEquals(originalClaimValue, claimValue);
+    }
+
     private FedizResponse performLogin(String claimType, String claimValue, String claimsProcessorClass)
-        throws WSSecurityException, IOException, UnsupportedCallbackException, JAXBException, ProcessingException,
-        SAXException, ParserConfigurationException {
+            throws WSSecurityException, IOException, UnsupportedCallbackException, JAXBException, ProcessingException,
+            SAXException, ParserConfigurationException {
+        return performLogin(claimType, true, claimValue, claimsProcessorClass);
+    }
+
+    private FedizResponse performLogin(String claimType, boolean setClaimNameFormat,
+                                       String claimValue, String claimsProcessorClass)
+            throws WSSecurityException, IOException, UnsupportedCallbackException, JAXBException, ProcessingException,
+            SAXException, ParserConfigurationException {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
         callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
         callbackHandler.setIssuer(ISSUER);
         callbackHandler.setSubjectName("alice");
-        callbackHandler.setAttributeNameFormat(ClaimTypes.URI_BASE.toString());
+        if (setClaimNameFormat) {
+            callbackHandler.setAttributeNameFormat(ClaimTypes.URI_BASE.toString());
+        }
         callbackHandler.setCustomClaimName(claimType);
         callbackHandler.setCustomAttributeValues(Collections.singletonList(claimValue));
 
