@@ -397,7 +397,7 @@ public class ClientRegistrationService {
             }
             client.setRedirectUris(redirectUris);
         } else {
-            client.setRedirectUris(null);
+            client.setRedirectUris(Collections.emptyList());
         }
 
         // Client Logout URI
@@ -430,7 +430,7 @@ public class ClientRegistrationService {
             }
             client.setRegisteredAudiences(registeredAuds);
         } else {
-            client.setRegisteredAudiences(null);
+            client.setRegisteredAudiences(Collections.emptyList());
         }
 
         // Client Realm
