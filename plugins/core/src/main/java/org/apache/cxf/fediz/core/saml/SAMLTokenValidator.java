@@ -19,7 +19,9 @@
 
 package org.apache.cxf.fediz.core.saml;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -339,12 +341,18 @@ public class SAMLTokenValidator implements TokenValidator {
                 // Value of Attribute Name not fully qualified
                 // if NameFormat is http://schemas.xmlsoap.org/ws/2005/05/identity/claims
                 // but ClaimType value must be fully qualified as Namespace attribute goes away
-                URI attrName = URI.create(attribute.getName());
+                String attributeName;
+                try {
+                    attributeName = URLEncoder.encode(attribute.getName(), "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    attributeName = attribute.getName();
+                }
+                URI attrName = URI.create(attributeName);
                 if (ClaimTypes.URI_BASE.toString().equals(attribute.getNameFormat())
                     && !attrName.isAbsolute()) {
-                    c.setClaimType(URI.create(ClaimTypes.URI_BASE + "/" + attribute.getName()));
+                    c.setClaimType(URI.create(ClaimTypes.URI_BASE + "/" + attributeName));
                 } else {
-                    c.setClaimType(URI.create(attribute.getName()));
+                    c.setClaimType(attrName);
                 }
                 c.setIssuer(assertion.getIssuer().getNameQualifier());
 
