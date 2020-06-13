@@ -22,6 +22,7 @@ package org.apache.cxf.fediz.core.saml;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -272,7 +273,7 @@ public class SAMLTokenValidator implements TokenValidator {
                 Claim c = new Claim();
                 c.setIssuer(assertion.getIssuer());
                 if (attribute.getAttributeNamespace() != null) {
-                    URI attrName = URI.create(attribute.getAttributeName());
+                    URI attrName = parseAttributeName(attribute.getAttributeName());
                     if (attrName.isAbsolute()) {
                         // Workaround for CXF-4484
                         c.setClaimType(attrName);
@@ -288,14 +289,14 @@ public class SAMLTokenValidator implements TokenValidator {
                     } else {
                         if (attribute.getAttributeNamespace().endsWith("/")) {
                             c.setClaimType(URI.create(attribute.getAttributeNamespace()
-                                                      + attribute.getAttributeName()));
+                                                      + attrName.toString()));
                         } else {
                             c.setClaimType(URI.create(attribute.getAttributeNamespace()
-                                                      + "/" + attribute.getAttributeName()));
+                                                      + "/" + attrName.toString()));
                         }
                     }
                 } else {
-                    c.setClaimType(URI.create(attribute.getAttributeName()));
+                    c.setClaimType(parseAttributeName(attribute.getAttributeName()));
                 }
                 List<String> valueList = new ArrayList<>();
                 for (XMLObject attributeValue : attribute.getAttributeValues()) {
@@ -309,6 +310,19 @@ public class SAMLTokenValidator implements TokenValidator {
         }
         collection.addAll(claimsMap.values());
         return collection;
+    }
+    
+    private URI parseAttributeName(String attributeName) {
+        try {
+            return URI.create(attributeName);
+        } catch (IllegalArgumentException ex) {
+            // Maybe the string has a space in it...
+            try {
+                return URI.create(URLEncoder.encode(attributeName, StandardCharsets.UTF_8.name()));
+            } catch (UnsupportedEncodingException e) {
+                throw new IllegalStateException("Unsupported Claim type");
+            }
+        }
     }
 
     protected List<Claim> parseClaimsInAssertion(
@@ -334,16 +348,10 @@ public class SAMLTokenValidator implements TokenValidator {
                 // Value of Attribute Name not fully qualified
                 // if NameFormat is http://schemas.xmlsoap.org/ws/2005/05/identity/claims
                 // but ClaimType value must be fully qualified as Namespace attribute goes away
-                String attributeName;
-                try {
-                    attributeName = URLEncoder.encode(attribute.getName(), "UTF-8");
-                } catch (UnsupportedEncodingException e) {
-                    attributeName = attribute.getName();
-                }
-                URI attrName = URI.create(attributeName);
+                URI attrName = parseAttributeName(attribute.getName());
                 if (ClaimTypes.URI_BASE.toString().equals(attribute.getNameFormat())
                     && !attrName.isAbsolute()) {
-                    c.setClaimType(URI.create(ClaimTypes.URI_BASE + "/" + attributeName));
+                    c.setClaimType(URI.create(ClaimTypes.URI_BASE + "/" + attrName.toString()));
                 } else {
                     c.setClaimType(attrName);
                 }
