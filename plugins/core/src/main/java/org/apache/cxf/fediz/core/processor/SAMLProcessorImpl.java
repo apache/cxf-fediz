@@ -315,7 +315,9 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
                 for (EncryptedAssertion encryptedAssertion : responseObject.getEncryptedAssertions()) {
                 
                     Assertion decrypted = decrypter.decrypt(encryptedAssertion);
-                    LOG.debug("Decrypted:" + DOM2Writer.nodeToString(decrypted.getDOM()));
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Decrypted assertion: {}", DOM2Writer.nodeToString(decrypted.getDOM()));
+                    }
                     responseObject.getAssertions().add(decrypted);
                 }
             } catch (Exception e) {
