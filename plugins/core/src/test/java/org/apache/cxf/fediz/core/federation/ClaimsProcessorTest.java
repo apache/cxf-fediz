@@ -292,7 +292,6 @@ public class ClaimsProcessorTest {
     }
 
     @org.junit.Test
-    @org.junit.Ignore // Re-enable once PR gets merged
     public void testNonURIClaimTypeWithSpace() throws Exception {
         String originalClaimValue = "Alice";
         String claimsProcessorClass = null;
