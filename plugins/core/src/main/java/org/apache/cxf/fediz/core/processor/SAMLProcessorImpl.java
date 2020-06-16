@@ -198,6 +198,11 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
                 try {
                     TokenValidatorRequest validatorRequest =
                         new TokenValidatorRequest(token, request.getCerts());
+                    boolean doNotEnforceAssertionsSigned =
+                            ((SAMLProtocol)config.getProtocol()).isDoNotEnforceEncryptedAssertionsSigned()
+                            && !((org.opensaml.saml.saml2.core.Response)responseObject).getEncryptedAssertions()
+                            .isEmpty();
+                    validatorRequest.setEnforceTokenSigned(!doNotEnforceAssertionsSigned);
                     validatorResponse = validator.validateAndProcessToken(validatorRequest, config);
                 } catch (ProcessingException ex) {
                     throw ex;
@@ -365,7 +370,8 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             ssoResponseValidator.setSpIdentifier(requestState != null ? requestState.getIssuerId() : null);
             
             boolean doNotEnforceAssertionsSigned =
-                    ((SAMLProtocol)config.getProtocol()).isDoNotEnforceAssertionsSigned();
+                    ((SAMLProtocol)config.getProtocol()).isDoNotEnforceEncryptedAssertionsSigned()
+                    && !samlResponse.getEncryptedAssertions().isEmpty();
             ssoResponseValidator.setEnforceAssertionsSigned(!doNotEnforceAssertionsSigned);
             
             ssoResponseValidator.setReplayCache(config.getTokenReplayCache());

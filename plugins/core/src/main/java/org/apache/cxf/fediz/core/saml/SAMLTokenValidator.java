@@ -40,7 +40,6 @@ import org.apache.cxf.fediz.core.TokenValidatorResponse;
 import org.apache.cxf.fediz.core.config.CertificateValidationMethod;
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.config.Protocol;
-import org.apache.cxf.fediz.core.config.SAMLProtocol;
 import org.apache.cxf.fediz.core.config.TrustManager;
 import org.apache.cxf.fediz.core.config.TrustedIssuer;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
@@ -98,8 +97,7 @@ public class SAMLTokenValidator implements TokenValidator {
 
             SamlAssertionWrapper assertion = new SamlAssertionWrapper(token);
             
-            boolean doNotEnforceAssertionsSigned =
-                    ((SAMLProtocol)config.getProtocol()).isDoNotEnforceAssertionsSigned();
+            boolean doNotEnforceAssertionsSigned = !request.isEnforceTokenSigned();
             
             boolean trusted = doNotEnforceAssertionsSigned;
             String assertionIssuer = assertion.getIssuerString();
