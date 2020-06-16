@@ -53,11 +53,23 @@ public class SAMLProtocol extends Protocol {
     }
 
     public boolean isSignRequest() {
-        return getSAMLProtocol().isSignRequest();
+        if (getSAMLProtocol().getSignRequest() != null) {
+            return getSAMLProtocol().getSignRequest().isValue();
+        } else {
+            return false;
+        }
+    }
+    
+    public SignAlgorithm getSignRequestAlgorithm() {
+        if (getSAMLProtocol().getSignRequest() != null && getSAMLProtocol().getSignRequest().getAlgorithm() != null) {
+            return SignAlgorithm.fromValue(getSAMLProtocol().getSignRequest().getAlgorithm().value());
+        }
+        
+        return SignAlgorithm.SHA1;
     }
 
     public void setSignRequest(boolean signRequest) {
-        getSAMLProtocol().setSignRequest(signRequest);
+        getSAMLProtocol().getSignRequest().setValue(signRequest);
     }
 
     public SAMLPRequestBuilder getSAMLPRequestBuilder() {
