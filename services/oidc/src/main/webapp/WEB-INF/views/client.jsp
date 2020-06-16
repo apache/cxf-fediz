@@ -20,55 +20,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title>API Client Information</title>
-    <STYLE TYPE="text/css">
-    	table {
-		    border-collapse: collapse;
-		}
-		table th {
-		    background-color: #f0f0f0;
-		    border-color: #ccc;
-		    border-style: solid;
-		    border-width: 1px;
-                    padding: 3px 4px;
-		    text-align: center;
-		}
-		table td {
-		    border-color: #ccc;
-		    border-style: solid;
-                    border-width: 1px;
-                    padding: 3px 4px;
-		}
-
-
-
-.table_no_border {
-    border-collapse: collapse;
-}
-.table_no_border .td_no_border {
-    padding: 0;
-    border-width: 0px;
-}
-
-
-		
-.form {
-	max-width: 425px;
-	margin-bottom: 25px;
-	margin-left: auto;
-	margin-right: auto;
-}
-
-.form-line {
-	margin: 6 0 6 0;
-	padding: 12 12 12 12;
-}
-
-.form-submit-button {
-	padding: 4px;
-	text-align: center;
-}
-		
-	</STYLE>
+    <link rel="stylesheet" href="<%= basePath %>static/styles.css">
 </head>
 <body>
 <div class="padded">
