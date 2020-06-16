@@ -1557,7 +1557,6 @@ public class SAMLResponseTest {
     }
 
     @org.junit.Test
-    @org.junit.Ignore // TODO https://issues.apache.org/jira/browse/FEDIZ-247
     public void validateEncryptedSAMLResponse() throws Exception {
         // Mock up a Request
         //FedizContext config = getFederationConfigurator().getFedizContext("ROOT");

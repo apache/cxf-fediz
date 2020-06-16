@@ -315,10 +315,14 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
                 for (EncryptedAssertion encryptedAssertion : responseObject.getEncryptedAssertions()) {
                 
                     Assertion decrypted = decrypter.decrypt(encryptedAssertion);
+                    Element decryptedToken = decrypted.getDOM();
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("Decrypted assertion: {}", DOM2Writer.nodeToString(decrypted.getDOM()));
+                        LOG.debug("Decrypted assertion: {}", DOM2Writer.nodeToString(decryptedToken));
                     }
                     responseObject.getAssertions().add(decrypted);
+                    // Add the decrypted Assertion to the Response DOM, as otherwise there's a problem with
+                    // doc.getElementById() when trying to verify the signature of the decrypted assertion
+                    decryptedToken.getOwnerDocument().getDocumentElement().appendChild(decryptedToken);
                 }
             } catch (Exception e) {
                 LOG.debug("Cannot decrypt assertions", e);
