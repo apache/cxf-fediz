@@ -29,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.security.Signature;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
@@ -48,6 +49,7 @@ import org.apache.cxf.fediz.core.TokenValidator;
 import org.apache.cxf.fediz.core.TokenValidatorRequest;
 import org.apache.cxf.fediz.core.TokenValidatorResponse;
 import org.apache.cxf.fediz.core.config.FedizContext;
+import org.apache.cxf.fediz.core.config.KeyManager;
 import org.apache.cxf.fediz.core.config.SAMLProtocol;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
@@ -57,6 +59,7 @@ import org.apache.cxf.fediz.core.samlsso.SAMLPRequestBuilder;
 import org.apache.cxf.fediz.core.samlsso.SAMLProtocolResponseValidator;
 import org.apache.cxf.fediz.core.samlsso.SAMLSSOResponseValidator;
 import org.apache.cxf.fediz.core.samlsso.SSOValidatorResponse;
+import org.apache.cxf.fediz.core.util.CertsUtils;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.ext.WSSecurityException;
@@ -65,10 +68,20 @@ import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.wss4j.dom.WSConstants;
 import org.opensaml.core.xml.XMLObject;
-import org.opensaml.saml.common.xml.SAMLConstants;
+import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.saml.saml2.core.AuthnRequest;
+import org.opensaml.saml.saml2.core.EncryptedAssertion;
 import org.opensaml.saml.saml2.core.LogoutRequest;
 import org.opensaml.saml.saml2.core.StatusResponseType;
+import org.opensaml.saml.saml2.encryption.Decrypter;
+import org.opensaml.saml.saml2.encryption.EncryptedElementTypeEncryptedKeyResolver;
+import org.opensaml.security.x509.BasicX509Credential;
+import org.opensaml.xmlsec.encryption.support.ChainingEncryptedKeyResolver;
+import org.opensaml.xmlsec.encryption.support.EncryptedKeyResolver;
+import org.opensaml.xmlsec.encryption.support.InlineEncryptedKeyResolver;
+import org.opensaml.xmlsec.encryption.support.SimpleKeyInfoReferenceEncryptedKeyResolver;
+import org.opensaml.xmlsec.encryption.support.SimpleRetrievalMethodEncryptedKeyResolver;
+import org.opensaml.xmlsec.keyinfo.impl.StaticKeyInfoCredentialResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -172,6 +185,9 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
         if (!(responseObject instanceof org.opensaml.saml.saml2.core.Response)) {
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
+        
+        // Decrypt encrypted assertions
+        decryptEncryptedAssertions((org.opensaml.saml.saml2.core.Response) responseObject, config);
 
         // Validate the Response
         validateSamlResponseProtocol((org.opensaml.saml.saml2.core.Response)responseObject, config);
@@ -182,14 +198,13 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
 
         // Validate the internal assertion(s)
         TokenValidatorResponse validatorResponse = null;
-        List<Element> assertions =
-            DOMUtils.getChildrenWithName(el, SAMLConstants.SAML20_NS, "Assertion");
+        List<Assertion> assertions = ((org.opensaml.saml.saml2.core.Response)responseObject).getAssertions();
 
         if (assertions.isEmpty()) {
             LOG.debug("No Assertion extracted from SAML Response");
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
-        Element token = assertions.get(0);
+        Element token = assertions.get(0).getDOM();
 
         List<TokenValidator> validators = protocol.getTokenValidators();
         for (TokenValidator validator : validators) {
@@ -252,6 +267,64 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
                 validatorResponse.getUniqueTokenId());
 
         return fedResponse;
+    }
+
+    private void decryptEncryptedAssertions(org.opensaml.saml.saml2.core.Response responseObject, FedizContext config)
+            throws ProcessingException {
+        if (responseObject.getEncryptedAssertions() != null && !responseObject.getEncryptedAssertions().isEmpty()) {
+            KeyManager decryptionKeyManager = config.getDecryptionKey();
+            if (decryptionKeyManager == null || decryptionKeyManager.getCrypto() == null) {
+                LOG.debug("We must have a decryption Crypto instance configured to decrypt encrypted tokens");
+                throw new ProcessingException(TYPE.BAD_REQUEST);
+            }
+            String keyPassword = decryptionKeyManager.getKeyPassword();
+            if (keyPassword == null) {
+                LOG.debug("We must have a decryption key password to decrypt encrypted tokens");
+                throw new ProcessingException(TYPE.BAD_REQUEST);
+            }
+     
+            String keyAlias = decryptionKeyManager.getKeyAlias();
+            if (keyAlias == null) {
+                LOG.debug("No alias configured for decrypt");
+                throw new ProcessingException(TYPE.BAD_REQUEST);
+            }
+            
+            try {
+                // Get the private key
+                PrivateKey privateKey = decryptionKeyManager.getCrypto().getPrivateKey(keyAlias, keyPassword);
+                if (privateKey == null) {
+                    LOG.debug("No private key available");
+                    throw new ProcessingException(TYPE.BAD_REQUEST);
+                }
+                
+                BasicX509Credential cred = new BasicX509Credential(
+                    CertsUtils.getX509CertificateFromCrypto(decryptionKeyManager.getCrypto(), keyAlias));
+                cred.setPrivateKey(privateKey);
+                
+                StaticKeyInfoCredentialResolver resolver = new StaticKeyInfoCredentialResolver(cred);
+                
+                ChainingEncryptedKeyResolver keyResolver = new ChainingEncryptedKeyResolver(
+                        Arrays.<EncryptedKeyResolver>asList(
+                                new InlineEncryptedKeyResolver(),
+                                new EncryptedElementTypeEncryptedKeyResolver(), 
+                                new SimpleRetrievalMethodEncryptedKeyResolver(),
+                                new SimpleKeyInfoReferenceEncryptedKeyResolver()));
+                
+                Decrypter decrypter = new Decrypter(null, resolver, keyResolver);
+                
+                for (EncryptedAssertion encryptedAssertion : responseObject.getEncryptedAssertions()) {
+                
+                    Assertion decrypted = decrypter.decrypt(encryptedAssertion);
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Decrypted assertion: {}", DOM2Writer.nodeToString(decrypted.getDOM()));
+                    }
+                    responseObject.getAssertions().add(decrypted);
+                }
+            } catch (Exception e) {
+                LOG.debug("Cannot decrypt assertions", e);
+                throw new ProcessingException(TYPE.BAD_REQUEST);
+            }
+        }
     }
 
     private FedizResponse processSignOutResponse(FedizRequest request, FedizContext config) throws ProcessingException {
