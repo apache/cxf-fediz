@@ -52,6 +52,7 @@ import org.apache.cxf.fediz.core.RequestState;
 import org.apache.cxf.fediz.core.SAML2CallbackHandler;
 import org.apache.cxf.fediz.core.config.FedizConfigurator;
 import org.apache.cxf.fediz.core.config.FedizContext;
+import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
@@ -86,6 +87,7 @@ import org.junit.BeforeClass;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Some tests for processing SAMLResponses containing EncryptedAssertions using the SAMLProcessorImpl
@@ -150,7 +152,6 @@ public class SAMLEncryptedResponseTest {
     @org.junit.Test
     public void validateSignedEncryptedSAMLResponse() throws Exception {
         // Mock up a Request
-        //FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
         FedizContext config =
                 getFederationConfigurator().getFedizContext("ROOT_DECRYPTION");
 
@@ -199,12 +200,10 @@ public class SAMLEncryptedResponseTest {
     }
 
     @org.junit.Test
-    @org.junit.Ignore // TODO re-enable once we support unsigned encrypted assertions
     public void validateUnsignedEncryptedSAMLResponse() throws Exception {
         // Mock up a Request
-        //FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
         FedizContext config =
-                getFederationConfigurator().getFedizContext("ROOT_DECRYPTION");
+                getFederationConfigurator().getFedizContext("ROOT_DECRYPTION_ALLOW_UNSIGNED");
 
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
 
@@ -248,6 +247,53 @@ public class SAMLEncryptedResponseTest {
                 .size());
         Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
         assertClaims(wfRes.getClaims(), ClaimTypes.COUNTRY);
+    }
+
+    @org.junit.Test
+    public void rejectUnsignedEncryptedAssertionByDefault() throws Exception {
+        // Mock up a Request
+        FedizContext config =
+                getFederationConfigurator().getFedizContext("ROOT_DECRYPTION");
+
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                TEST_IDP_ISSUER,
+                requestId,
+                TEST_REQUEST_URL,
+                (String)config.getProtocol().getIssuer(),
+                null,
+                relayState,
+                System.currentTimeMillis());
+
+        // Create SAML Response
+        SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
+        callbackHandler.setAlsoAddAuthnStatement(true);
+        callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        callbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        callbackHandler.setIssuer(TEST_IDP_ISSUER);
+        callbackHandler.setSubjectName(TEST_USER);
+        String responseStr = createSamlResponseStr(callbackHandler, requestId, false);
+
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(responseStr);
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+        wfReq.setRequestState(requestState);
+
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            fail("Failure expected on an unsigned token");
+        } catch (ProcessingException ex) {
+            // expected
+        }
     }
 
     private String createSamlResponseStr(AbstractSAMLCallbackHandler saml2CallbackHandler,
