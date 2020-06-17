@@ -19,19 +19,19 @@
 
 package org.apache.cxf.fediz.core.config;
 
-import org.apache.cxf.fediz.core.config.jaxb.SignAlgorithmType;
+import org.apache.cxf.fediz.core.config.jaxb.SignatureDigestAlgorithmType;
 
-public enum SignAlgorithm {
+public enum SignatureDigestAlgorithm {
 
-    SHA1("SHA1"),
-    SHA256("SHA256");
+    RSA_SHA1("RSA_SHA1"),
+    RSA_SHA256("RSA_SHA256");
 
     private final String value;
 
-    SignAlgorithm(String v) {
+    SignatureDigestAlgorithm(String v) {
         value = v;
     }
-    SignAlgorithm(SignAlgorithmType type) {
+    SignatureDigestAlgorithm(SignatureDigestAlgorithmType type) {
         value = type.value();
     }
 
@@ -39,8 +39,8 @@ public enum SignAlgorithm {
         return value;
     }
 
-    public static SignAlgorithm fromValue(String v) {
-        for (SignAlgorithm c: SignAlgorithm.values()) {
+    public static SignatureDigestAlgorithm fromValue(String v) {
+        for (SignatureDigestAlgorithm c: SignatureDigestAlgorithm.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

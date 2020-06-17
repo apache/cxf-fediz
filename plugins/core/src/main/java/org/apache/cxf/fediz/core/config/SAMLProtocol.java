@@ -60,12 +60,12 @@ public class SAMLProtocol extends Protocol {
         }
     }
     
-    public SignAlgorithm getSignRequestAlgorithm() {
+    public SignatureDigestAlgorithm getSignRequestAlgorithm() {
         if (getSAMLProtocol().getSignRequest() != null && getSAMLProtocol().getSignRequest().getAlgorithm() != null) {
-            return SignAlgorithm.fromValue(getSAMLProtocol().getSignRequest().getAlgorithm().value());
+            return SignatureDigestAlgorithm.fromValue(getSAMLProtocol().getSignRequest().getAlgorithm().value());
         }
         
-        return SignAlgorithm.SHA1;
+        return SignatureDigestAlgorithm.RSA_SHA1;
     }
 
     public void setSignRequest(boolean signRequest) {

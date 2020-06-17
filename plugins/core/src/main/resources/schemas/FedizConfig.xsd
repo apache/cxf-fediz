@@ -209,15 +209,15 @@
      <xs:complexType name="SignRequestType">
         <xs:simpleContent>
             <xs:extension base="xs:boolean">
-                <xs:attribute name="algorithm" type="signAlgorithmType" />
+                <xs:attribute name="algorithm" type="signatureDigestAlgorithmType" />
             </xs:extension>
         </xs:simpleContent>
     </xs:complexType>
     
-    <xs:simpleType name="signAlgorithmType">
+    <xs:simpleType name="signatureDigestAlgorithmType">
         <xs:restriction base="xs:string">
-            <xs:enumeration value="SHA1" />
-            <xs:enumeration value="SHA256" />
+            <xs:enumeration value="RSA_SHA1" />
+            <xs:enumeration value="RSA_SHA256" />
         </xs:restriction>
     </xs:simpleType>
 

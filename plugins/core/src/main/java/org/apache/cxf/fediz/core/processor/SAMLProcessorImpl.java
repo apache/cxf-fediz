@@ -497,11 +497,11 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             jceSigAlgo = "SHA1withDSA";
         } else {
             switch(((SAMLProtocol)config.getProtocol()).getSignRequestAlgorithm()) {
-            case SHA1:
+            case RSA_SHA1:
                 sigAlgo = WSConstants.RSA_SHA1;
                 jceSigAlgo = "SHA1withRSA";
                 break;
-            case SHA256:
+            case RSA_SHA256:
                 sigAlgo = WSConstants.RSA_SHA256;
                 jceSigAlgo = "SHA256withRSA";
                 break;
