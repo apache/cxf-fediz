@@ -28,6 +28,7 @@ public class TokenValidatorRequest {
 
     private final Element token;
     private final Certificate[] certs;
+    private boolean enforceTokenSigned = true;
 
     public TokenValidatorRequest(Element token, Certificate[] certs) {
         this.token = token;
@@ -48,7 +49,12 @@ public class TokenValidatorRequest {
         }
         return null;
     }
-
-
-
+    
+    public void setEnforceTokenSigned(boolean enforceTokenSigned) {
+        this.enforceTokenSigned = enforceTokenSigned;
+    }
+    
+    public boolean isEnforceTokenSigned() {
+        return this.enforceTokenSigned;
+    }
 }

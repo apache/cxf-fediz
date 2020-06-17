@@ -103,6 +103,10 @@ public class SAMLProtocol extends Protocol {
     public boolean isDoNotEnforceKnownIssuer() {
         return getSAMLProtocol().isDoNotEnforceKnownIssuer();
     }
+    
+    public boolean isDoNotEnforceEncryptedAssertionsSigned() {
+        return getSAMLProtocol().isDoNotEnforceEncryptedAssertionsSigned();
+    }
 
     public void setDoNotEnforceKnownIssuer(boolean doNotEnforceKnownIssuer) {
         getSAMLProtocol().setDoNotEnforceKnownIssuer(doNotEnforceKnownIssuer);

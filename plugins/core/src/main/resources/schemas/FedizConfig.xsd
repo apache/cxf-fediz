@@ -172,6 +172,7 @@
                     <xs:element ref="disableDeflateEncoding" />
                     <xs:element ref="disableClientAddressCheck" />
                     <xs:element ref="doNotEnforceKnownIssuer" />
+                    <xs:element ref="doNotEnforceEncryptedAssertionsSigned" />
                     <xs:element ref="issuerLogoutURL" />
                 </xs:sequence>
                 <xs:attribute name="version" use="required" type="xs:string" />
@@ -189,6 +190,7 @@
     <xs:element name="authnRequestBuilder" type="xs:string" />
     <xs:element name="disableDeflateEncoding" type="xs:boolean" />
     <xs:element name="doNotEnforceKnownIssuer" type="xs:boolean" />
+    <xs:element name="doNotEnforceEncryptedAssertionsSigned" type="xs:boolean" />
     <xs:element name="issuerLogoutURL" type="xs:string" />
     <xs:element name="disableClientAddressCheck" type="xs:boolean"/>
 
