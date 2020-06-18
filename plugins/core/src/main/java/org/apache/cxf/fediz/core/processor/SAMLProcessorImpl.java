@@ -582,6 +582,19 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
         if (privateKey.getAlgorithm().equalsIgnoreCase("DSA")) {
             sigAlgo = WSConstants.DSA;
             jceSigAlgo = "SHA1withDSA";
+        } else {
+            switch(((SAMLProtocol)config.getProtocol()).getSignRequestAlgorithm()) {
+            case RSA_SHA1:
+                sigAlgo = WSConstants.RSA_SHA1;
+                jceSigAlgo = "SHA1withRSA";
+                break;
+            case RSA_SHA256:
+                sigAlgo = WSConstants.RSA_SHA256;
+                jceSigAlgo = "SHA256withRSA";
+                break;
+            default:
+                throw new ProcessingException("Unknown sign algorithm");
+            }
         }
         LOG.debug("Using Signature algorithm " + sigAlgo);
 
