@@ -11,6 +11,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title>Invalid Client Registration</title>
+    <link rel="stylesheet" href="<%= basePath %>static/styles.css">
 </head>
 <body>
 <div class="padded">
