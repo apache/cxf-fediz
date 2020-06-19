@@ -1,4 +1,4 @@
-Apache CXF Fediz 1.4.6 Release Notes
+Apache CXF Fediz 1.5.0 Release Notes
 ------------------------------------
 
 1. Overview
@@ -28,7 +28,7 @@ client authentication
 Before installing Apache CXF Fediz, make sure the following products,
 with the specified versions, are installed on your system:
 
-    * Java 7 Development Kit or higher
+    * Java 8 Development Kit or higher
     * Apache Maven 3.x to build the samples
 
 3. Installation Procedures
@@ -64,6 +64,35 @@ N.A.
 
 
 8. Specific issues, features, and improvements fixed in this version
+
+Release Notes - CXF-Fediz - Version 1.5.0
+
+Bug
+
+    [FEDIZ-232] - 'wctx' parameter mandatory but protocol does not require
+    [FEDIZ-234] - Escape logging output in LoginHintHomeRealmDiscovery
+    [FEDIZ-235] - Set unique=true for the OpenJPA Index values
+    [FEDIZ-239] - Add an underscore prefix to the SAML Ids to make them schema compliant
+    [FEDIZ-243] - Fediz tomcat valve is broken with recent tomcat version
+
+New Feature
+
+    [FEDIZ-245] - OIDC: Client Update
+
+Improvement
+
+    [FEDIZ-242] - Remove Swagger UI from IdP
+    [FEDIZ-244] - Update to Tomcat 9.0.35
+    [FEDIZ-248] - OIDC UI: shared stylesheet
+
+Task
+
+    [FEDIZ-204] - Drop Tomcat7, Jetty8, Spring Sec 2, 3 containers
+    [FEDIZ-230] - Support Jetty 9.4
+    [FEDIZ-231] - Upgrade to Tomcat 9
+    [FEDIZ-246] - Update IdP to use Spring Security 4
+    [FEDIZ-247] - Add support for EncryptedAssertions for SAML SSO
+
 
 Release Notes - CXF-Fediz - Version 1.4.6
 
