@@ -24,25 +24,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title>Client Refresh Tokens</title>
-    <STYLE TYPE="text/css">
-    	table {
-		    border-collapse: collapse;
-		}
-		table th {
-		    background-color: #f0f0f0;
-		    border-color: #ccc;
-		    border-style: solid;
-		    border-width: 1px;
-		    padding: 3px 4px;
-		    text-align: center;
-		}
-		table td {
-		    border-color: #ccc;
-		    border-style: solid;
-		    border-width: 1px;
-		    padding: 3px 4px;
-		}
-	</STYLE>
+    <link rel="stylesheet" href="<%= basePath %>static/styles.css">
 </head>
 <body>
 <div class="padded">

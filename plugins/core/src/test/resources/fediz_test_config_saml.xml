@@ -213,8 +213,38 @@
 				<claimType type="a particular claim type" optional="true" />
 			</claimTypesRequested>
 		</protocol>
-	</contextConfig>	
-	
+	</contextConfig>
+
+	<contextConfig name="SIGNED_ROOT_SHA256">
+		<audienceUris>
+			<audienceItem>http://host_one:port/url</audienceItem>
+		</audienceUris>
+		<certificateStores>
+			<trustManager>
+				<keyStore file="ststrust.jks" password="storepass"
+						  type="JKS" />
+			</trustManager>
+		</certificateStores>
+		<signingKey keyPassword="stskpass" keyAlias="mystskey">
+			<keyStore file="stsstore.jks" password="stsspass" type="JKS" />
+		</signingKey>
+		<trustedIssuers>
+			<issuer certificateValidation="PeerTrust" />
+		</trustedIssuers>
+
+		<maximumClockSkew>1000</maximumClockSkew>
+		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				  xsi:type="samlProtocolType" version="1.2">
+			<signRequest algorithm="RSA_SHA256">true</signRequest>
+			<issuer>http://url_to_the_issuer</issuer>
+			<roleDelimiter>;</roleDelimiter>
+			<roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
+			<claimTypesRequested>
+				<claimType type="a particular claim type" optional="true" />
+			</claimTypesRequested>
+		</protocol>
+	</contextConfig>
+
 	<contextConfig name="CLIENT_TRUST">
 		<audienceUris>
 			<audienceItem>http://host_one:port/url</audienceItem>
@@ -331,5 +361,70 @@
 		<requestStateValidation>false</requestStateValidation>
 		<logoutURL>secure/logout</logoutURL>
         <logoutRedirectTo>/redir.html</logoutRedirectTo>
+	</contextConfig>
+
+	<contextConfig name="ROOT_DECRYPTION">
+		<audienceUris>
+			<audienceItem>http://host_one:port/url</audienceItem>
+		</audienceUris>
+		<certificateStores>
+			<trustManager>
+				<keyStore file="ststrust.jks" password="storepass"
+						  type="JKS" />
+			</trustManager>
+		</certificateStores>
+		<trustedIssuers>
+			<issuer certificateValidation="PeerTrust" />
+		</trustedIssuers>
+		<tokenDecryptionKey keyPassword="stskpass" keyAlias="mystskey">
+			<keyStore file="stsstore.jks" password="stsspass" type="JKS" />
+		</tokenDecryptionKey>
+
+		<maximumClockSkew>1000</maximumClockSkew>
+		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				  xsi:type="samlProtocolType" version="1.2">
+			<issuer>http://url_to_the_issuer</issuer>
+			<roleDelimiter>;</roleDelimiter>
+			<roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
+			<claimTypesRequested>
+				<claimType type="a particular claim type" optional="true" />
+			</claimTypesRequested>
+		</protocol>
+
+		<logoutURL>secure/logout</logoutURL>
+		<logoutRedirectTo>/redir.html</logoutRedirectTo>
+	</contextConfig>
+
+	<contextConfig name="ROOT_DECRYPTION_ALLOW_UNSIGNED">
+		<audienceUris>
+			<audienceItem>http://host_one:port/url</audienceItem>
+		</audienceUris>
+		<certificateStores>
+			<trustManager>
+				<keyStore file="ststrust.jks" password="storepass"
+						  type="JKS" />
+			</trustManager>
+		</certificateStores>
+		<trustedIssuers>
+			<issuer certificateValidation="PeerTrust" />
+		</trustedIssuers>
+		<tokenDecryptionKey keyPassword="stskpass" keyAlias="mystskey">
+			<keyStore file="stsstore.jks" password="stsspass" type="JKS" />
+		</tokenDecryptionKey>
+
+		<maximumClockSkew>1000</maximumClockSkew>
+		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				  xsi:type="samlProtocolType" version="1.2">
+			<issuer>http://url_to_the_issuer</issuer>
+			<roleDelimiter>;</roleDelimiter>
+			<roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
+			<claimTypesRequested>
+				<claimType type="a particular claim type" optional="true" />
+			</claimTypesRequested>
+			<doNotEnforceEncryptedAssertionsSigned>true</doNotEnforceEncryptedAssertionsSigned>
+		</protocol>
+
+		<logoutURL>secure/logout</logoutURL>
+		<logoutRedirectTo>/redir.html</logoutRedirectTo>
 	</contextConfig>
 </FedizConfig>

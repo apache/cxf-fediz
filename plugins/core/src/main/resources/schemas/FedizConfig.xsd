@@ -172,6 +172,7 @@
                     <xs:element ref="disableDeflateEncoding" />
                     <xs:element ref="disableClientAddressCheck" />
                     <xs:element ref="doNotEnforceKnownIssuer" />
+                    <xs:element ref="doNotEnforceEncryptedAssertionsSigned" />
                     <xs:element ref="issuerLogoutURL" />
                 </xs:sequence>
                 <xs:attribute name="version" use="required" type="xs:string" />
@@ -185,10 +186,11 @@
     <xs:element name="applicationServiceURL" type="xs:string" />
     <xs:element name="metadataURI" type="xs:string" />
 
-    <xs:element name="signRequest" type="xs:boolean" />
+    <xs:element name="signRequest" type="SignRequestType" />
     <xs:element name="authnRequestBuilder" type="xs:string" />
     <xs:element name="disableDeflateEncoding" type="xs:boolean" />
     <xs:element name="doNotEnforceKnownIssuer" type="xs:boolean" />
+    <xs:element name="doNotEnforceEncryptedAssertionsSigned" type="xs:boolean" />
     <xs:element name="issuerLogoutURL" type="xs:string" />
     <xs:element name="disableClientAddressCheck" type="xs:boolean"/>
 
@@ -205,6 +207,21 @@
             <xs:element ref="reply" />
         </xs:sequence>
     </xs:complexType>
+    
+     <xs:complexType name="SignRequestType">
+        <xs:simpleContent>
+            <xs:extension base="xs:boolean">
+                <xs:attribute name="algorithm" type="signatureDigestAlgorithmType" />
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    
+    <xs:simpleType name="signatureDigestAlgorithmType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="RSA_SHA1" />
+            <xs:enumeration value="RSA_SHA256" />
+        </xs:restriction>
+    </xs:simpleType>
 
     <xs:complexType name="CallbackType">
         <xs:simpleContent>

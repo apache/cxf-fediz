@@ -43,7 +43,6 @@
             <homeRealm type="Class">org.apache.cxf.fediz.service.oidc.handler.hrd.LoginHintHomeRealmDiscovery,org.apache.cxf.fediz.service.oidc.handler.hrd.ClientIdHomeRealmDiscovery</homeRealm>
 			<roleDelimiter>,</roleDelimiter>
 			<roleURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role</roleURI>
-			<homeRealm type="String">urn:org:apache:cxf:fediz:idp:realm-A</homeRealm>
 			<claimTypesRequested>
 				<claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role" optional="false" />
 				<claimType type="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname" optional="true" />

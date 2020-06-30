@@ -54,8 +54,8 @@
     <springsec:debug />
 
     <springsec:http entry-point-ref="federationEntryPoint" use-expressions="true">
-        <springsec:intercept-url pattern="/idp/*" access="isAuthenticated()"/>
-        <springsec:intercept-url pattern="/console/*" access="isAuthenticated()"/>
+        <springsec:intercept-url pattern="/idp/**" access="isAuthenticated()"/>
+        <springsec:intercept-url pattern="/console/**" access="isAuthenticated()"/>
         <springsec:custom-filter ref="federationFilter" after="BASIC_AUTH_FILTER" />
         <springsec:custom-filter ref="logoutFilter" position="LOGOUT_FILTER"/>
         <springsec:custom-filter ref="federationSignOutCleanupFilter" position="PRE_AUTH_FILTER"/>

@@ -12,7 +12,7 @@ fediz is integrated into spring security natively.
 
 The Spring Security reference documentation provides more background information
 about Pre-Authentication support in Spring Security:
-http://static.springsource.org/spring-security/site/docs/3.2.x/reference/springsecurity-single.html#preauth
+https://docs.spring.io/spring-security/site/docs/4.2.x/reference/htmlsingle/#preauth
 
 Running this sample consists of four steps:
 
@@ -27,7 +27,7 @@ Configure the Tomcat-IDP
 ------------------------
 Make sure the separate Tomcat instance hosting the Fediz IDP and IDP
 STS has been configured and is running as described here:  
-http://cxf.apache.org/fediz-idp.html.  Confirm the STS is active by
+http://cxf.apache.org/fediz-idp-11.html.  Confirm the STS is active by
 checking that the WSDL is viewable from the browser using the URL given
 on that page--don't proceed further unless it is.
 
@@ -77,7 +77,7 @@ a) Deploying the demo to Tomcat
 -------------------------------
 First copy this sample's Fediz Configuration file (src/main/config/fediz_config.xml)
 into the Tomcat-RP's conf folder.  This configuration references the 
-Java keystore 'rp-ssl-server.jks' available in Fediz' examples/samplekeys folder 
+Java keystore 'ststrust.jks' available in Fediz' examples/samplekeys folder 
 but should already be in the Tomcat RP's root folder when you configured this
 instance as stated in the prerequisites.
 
@@ -89,7 +89,7 @@ b) Deploying the demo to Jetty
 ------------------------------
 First copy this sample's Fediz Configuration file (src/main/config/fediz_config.xml)
 into the Jetty-RP's etc folder.  This configuration references the 
-Java keystore 'rp-ssl-server.jks' available in Fediz' examples/samplekeys folder 
+Java keystore 'ststrust.jks' available in Fediz' examples/samplekeys folder 
 but should already be in the Jetty RP's root folder when you configured this
 instance as stated in the prerequisites.
 

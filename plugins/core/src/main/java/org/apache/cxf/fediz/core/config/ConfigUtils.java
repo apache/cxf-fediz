@@ -43,26 +43,25 @@ final class ConfigUtils {
         if (cbt.getType() == null || cbt.getType().equals(ArgumentType.STRING)) {
             return cbt.getValue();
         } else if (cbt.getType().equals(ArgumentType.CLASS)) {
-            List<Object> handler = new ArrayList<>();
-            String[] cbtHandler = cbt.getValue().split(",");
+            final String[] cbtHandler = cbt.getValue().split(",");
+            // Backward compatible return handler directly if only one is configured
+            final List<Object> handlers = cbtHandler.length == 1 ? null : new ArrayList<>(cbtHandler.length);
             for (String cbh : cbtHandler) {
                 try {
-                    if (classLoader == null) {
-                        handler.add(ClassLoaderUtils.loadClass(cbh, ConfigUtils.class).newInstance());
+                    final Object handler = (classLoader == null
+                        ? ClassLoaderUtils.loadClass(cbh, ConfigUtils.class)
+                        : classLoader.loadClass(cbh)).getDeclaredConstructor().newInstance();
+                    if (handlers != null) {
+                        handlers.add(handler);
                     } else {
-                        handler.add(classLoader.loadClass(cbh).newInstance());
+                        return handler;
                     }
                 } catch (Exception e) {
                     LOG.error("Failed to create instance of " + cbh, e);
                     //throw new IllegalStateException("Failed to create instance of " + cbt.getValue());
                 }
             }
-            if (handler.size() == 1) {
-                // Backward compatible return handler directly if only one is configured
-                return handler.get(0);
-            } else {
-                return handler;
-            }
+            return handlers;
         } else {
             LOG.error("Only String and Class are supported for '{}'", name);
             throw new IllegalStateException("Only String and Class are supported for '" + name + "'");

@@ -51,7 +51,6 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.DomNodeList;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -69,12 +68,12 @@ import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
 import org.apache.cxf.jaxrs.json.basic.JsonMapObjectReaderWriter;
-import org.apache.cxf.rs.security.jose.common.JoseConstants;
 import org.apache.cxf.rs.security.jose.jwa.SignatureAlgorithm;
 import org.apache.cxf.rs.security.jose.jwk.JsonWebKeys;
 import org.apache.cxf.rs.security.jose.jwk.JwkUtils;
+import org.apache.cxf.rs.security.jose.jws.JwsHeaders;
 import org.apache.cxf.rs.security.jose.jws.JwsJwtCompactConsumer;
-import org.apache.cxf.rs.security.jose.jwt.JwtConstants;
+import org.apache.cxf.rs.security.jose.jwt.JwtClaims;
 import org.apache.cxf.rs.security.jose.jwt.JwtToken;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -100,6 +99,8 @@ abstract class AbstractOIDCTest {
     private static final String LOGOUT_CONTEXT = "/logout";
     private static final String LOGOUT_URL = "https://localhost:" + RP_HTTPS_PORT + LOGOUT_CONTEXT;
     private static final String LOGOUT_MSG = "logout";
+
+    private static final String HOME_REALM = "urn:org:apache:cxf:fediz:idp:realm-A";
 
     private static Tomcat idpServer;
     private static Tomcat rpServer;
@@ -225,15 +226,16 @@ abstract class AbstractOIDCTest {
     private static void loginToClientsPage(String servletContext) throws IOException {
         // Login to the client page successfully
         try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
-            final URL clientsUrl = oidcEndpoint(servletContext, "/console/clients");
-            HtmlPage registeredClientsPage = login(clientsUrl, webClient);
+            final UriBuilder clientsUrl = oidcEndpointBuilder(servletContext, "/console/clients/{path}");
+
+            HtmlPage registeredClientsPage = login(clientsUrl.resolveTemplate("path", ""), webClient);
             String registeredClientsPageBody = registeredClientsPage.getBody().getTextContent();
             assertTrue(registeredClientsPageBody.contains("Registered Clients"));
 
             // Now try to register a new client
-            registeredClientsPage =
-                registerNewClient(webClient, clientsUrl, "confidential-client", REDIRECT_URL,
-                                  "https://cxf.apache.org", LOGOUT_URL);
+            registeredClientsPage = registerConfidentialClient(
+                webClient.getPage(clientsUrl.resolveTemplate("path", "register").build().toURL()),
+                "confidential-client", REDIRECT_URL, "https://cxf.apache.org", LOGOUT_URL);
             registeredClientsPageBody = registeredClientsPage.getBody().getTextContent();
             assertTrue(registeredClientsPageBody.contains("confidential-client"));
             assertTrue(registeredClientsPageBody.contains(REDIRECT_URL));
@@ -241,12 +243,14 @@ abstract class AbstractOIDCTest {
             confidentialClientId = getClientIdByName("confidential-client", registeredClientsPage);
 
             // Get the password
-            confidentialClientSecret = getClientSecret(webClient, clientsUrl, confidentialClientId);
+            confidentialClientSecret = getClientSecret(
+                webClient.getPage(clientsUrl.resolveTemplate("path", confidentialClientId).build().toURL()),
+                confidentialClientId);
 
             // Register public client
-            registeredClientsPage =
-                registerNewClient(webClient, clientsUrl, "public-client", REDIRECT_URL,
-                                  "https://ws.apache.org", LOGOUT_URL, false);
+            registeredClientsPage = registerClient(
+                webClient.getPage(clientsUrl.resolveTemplate("path", "register").build().toURL()),
+                "public-client", REDIRECT_URL, "https://ws.apache.org", LOGOUT_URL, false);
             registeredClientsPageBody = registeredClientsPage.getBody().getTextContent();
             assertTrue(registeredClientsPageBody.contains("Registered Clients"));
             assertTrue(registeredClientsPageBody.contains("confidential-client"));
@@ -269,27 +273,25 @@ abstract class AbstractOIDCTest {
         throw new IllegalArgumentException("Client '" + clientName + "' not found");
     }
 
-    private static String getClientSecret(WebClient webClient, URL clientsUrl, String clientId) throws IOException {
-        final HtmlPage registeredClientPage = webClient.getPage(clientsUrl + "/" + clientId);
+    private static String getClientSecret(final HtmlPage registeredClientPage, String clientId) throws IOException {
         final HtmlTable table = registeredClientPage.getHtmlElementById("client");
         assertEquals(clientId, table.getCellAt(1, 0).asText());
         return table.getCellAt(1, 2).asText();
     }
 
-    private static HtmlPage registerNewClient(WebClient webClient, URL clientsUrl,
+    private static HtmlPage registerConfidentialClient(HtmlPage registerPage,
         String clientName, String redirectURI,
         String clientAudience,
         String logoutURI) throws IOException {
-        return registerNewClient(webClient, clientsUrl, clientName, redirectURI, clientAudience, logoutURI, true);
+        return registerClient(registerPage, clientName, redirectURI, clientAudience, logoutURI,
+            true);
     }
 
-    private static HtmlPage registerNewClient(WebClient webClient, URL clientsUrl,
+    private static HtmlPage registerClient(HtmlPage registerPage,
                                             String clientName, String redirectURI,
                                             String clientAudience,
                                             String logoutURI,
                                             boolean confidential) throws IOException {
-        HtmlPage registerPage = webClient.getPage(clientsUrl + "/register");
-
         final HtmlForm form = registerPage.getForms().get(0);
 
         // Set new client values
@@ -312,8 +314,8 @@ abstract class AbstractOIDCTest {
     private static void loginToClientsPageAndDeleteClient(String servletContext) throws IOException {
         // Login to the client page successfully
         try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
-            final URL clientsUrl = oidcEndpoint(servletContext, "/console/clients");
-            HtmlPage registeredClientsPage = login(clientsUrl, webClient);
+            final UriBuilder clientsUrl = oidcEndpointBuilder(servletContext, "/console/clients/{path}");
+            HtmlPage registeredClientsPage = login(clientsUrl.resolveTemplate("path", ""), webClient);
 
             // Get the client identifier
             HtmlTable table = registeredClientsPage.getHtmlElementById("registered_clients");
@@ -323,14 +325,16 @@ abstract class AbstractOIDCTest {
             assertNotNull(clientId2);
 
             // Now go to the specific client page
-            registeredClientsPage = deleteClient(webClient, clientsUrl, clientId);
+            registeredClientsPage =
+                deleteClient(webClient.getPage(clientsUrl.resolveTemplate("path", clientId).build().toURL()));
 
             // Check we have one more registered clients
             table = registeredClientsPage.getHtmlElementById("registered_clients");
             assertEquals(2, table.getRowCount());
 
             // Now delete the other client
-            registeredClientsPage = deleteClient(webClient, clientsUrl, clientId2);
+            registeredClientsPage =
+                deleteClient(webClient.getPage(clientsUrl.resolveTemplate("path", clientId2).build().toURL()));
 
             // Check we have no more registered clients
             table = registeredClientsPage.getHtmlElementById("registered_clients");
@@ -338,10 +342,8 @@ abstract class AbstractOIDCTest {
         }
     }
 
-    private static HtmlPage deleteClient(WebClient webClient, URL clientsUrl, String clientId) throws IOException {
-        HtmlPage clientPage = webClient.getPage(clientsUrl + "/" + clientId);
-
-        final HtmlForm deleteForm = clientPage.getFormByName("deleteForm");
+    private static HtmlPage deleteClient(final HtmlPage registeredClientPage) throws IOException {
+        final HtmlForm deleteForm = registeredClientPage.getFormByName("deleteForm");
         assertNotNull(deleteForm);
 
         // Delete the client
@@ -352,50 +354,86 @@ abstract class AbstractOIDCTest {
     // Test that we managed to create the clients ok
     @org.junit.Test
     public void testCreatedClients() throws Exception {
-        final URL url = oidcEndpoint("/console/clients");
-
         // Login to the client page successfully
-        WebClient webClient = setupWebClientIDP("alice", "ecila");
-        HtmlPage loginPage = login(url, webClient);
-        final String bodyTextContent = loginPage.getBody().getTextContent();
-        assertTrue(bodyTextContent.contains("Registered Clients"));
+        try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
+            final HtmlPage registeredClientsPage = login(oidcEndpointBuilder("/console/clients"), webClient);
+            final String bodyTextContent = registeredClientsPage.getBody().getTextContent();
+            assertTrue(bodyTextContent.contains("Registered Clients"));
 
-        // Get the new client identifier
-        HtmlTable table = loginPage.getHtmlElementById("registered_clients");
+            // Get the new client identifier
+            HtmlTable table = registeredClientsPage.getHtmlElementById("registered_clients");
 
-        // 2 clients
-        assertEquals(table.getRows().size(), 3);
+            // 2 clients
+            assertEquals(table.getRows().size(), 3);
 
-        // Now check the first client
-        String clientId = table.getCellAt(1, 1).asText();
-        assertNotNull(clientId);
+            // Now check the first client
+            String clientId = table.getCellAt(1, 1).asText();
+            assertNotNull(clientId);
 
-        // Check the Date
-        String date = table.getCellAt(1, 2).asText().trim(); // <br/>
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.US);
-        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-        assertEquals(dateFormat.format(new Date()), date);
+            // Check the Date
+            String date = table.getCellAt(1, 2).asText();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.US);
+            dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+            assertEquals(dateFormat.format(new Date()), date);
 
-        // Check the redirect URI
-        String redirectURI = table.getCellAt(1, 3).asText().trim(); // <br/>
-        assertTrue(REDIRECT_URL.equals(redirectURI));
+            // Check the redirect URI
+            String redirectURI = table.getCellAt(1, 3).asText().trim(); // <br/>
+            assertTrue(REDIRECT_URL.equals(redirectURI));
+        }
+    }
 
-        webClient.close();
+    @org.junit.Test
+    public void testEditClient() throws Exception {
+        try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
+            HtmlPage registeredClientPage = login(oidcEndpointBuilder("/console/clients/" + publicClientId),
+                webClient);
+
+            final HtmlPage editClientPage = registeredClientPage.getAnchorByText("public-client").click();
+
+            final HtmlForm form = editClientPage.getForms().get(0);
+
+            // Set new client values
+            final HtmlTextInput clientNameInput = form.getInputByName("client_name");
+            final String newClientName = "public-client-modified";
+            clientNameInput.setValueAttribute(newClientName);
+            final HtmlSelect clientTypeSelect = form.getSelectByName("client_type");
+            assertTrue(clientTypeSelect.isDisabled());
+            final HtmlTextInput redirectURIInput = form.getInputByName("client_redirectURI");
+            assertEquals(REDIRECT_URL, redirectURIInput.getText());
+            final HtmlTextInput clientAudienceURIInput = form.getInputByName("client_audience");
+            assertEquals("https://ws.apache.org", clientAudienceURIInput.getText());
+            final HtmlTextInput clientLogoutURI = form.getInputByName("client_logoutURI");
+            assertEquals(LOGOUT_URL, clientLogoutURI.getText());
+
+            registeredClientPage = form.getButtonByName("submit_button").click();
+            assertNotNull(registeredClientPage.getAnchorByText(newClientName));
+
+            final HtmlPage registeredClientsPage = registeredClientPage.getAnchorByText("registered Clients").click();
+
+            HtmlTable table = registeredClientsPage.getHtmlElementById("registered_clients");
+            assertEquals("2 clients", table.getRows().size(), 3);
+            boolean updatedClientFound = false;
+            for (final HtmlTableRow row : table.getRows()) {
+                if (newClientName.equals(row.getCell(0).asText())) {
+                    updatedClientFound = true;
+                    break;
+                }
+            }
+            assertTrue(updatedClientFound);
+        }
     }
 
     // Test that "bob" can't see the clients created by "alice"
     @org.junit.Test
     public void testRegisteredClientsAsBob() throws Exception {
-        final URL url = oidcEndpoint("/console/clients");
-
         // Login to the client page successfully
         try (WebClient webClient = setupWebClientIDP("bob", "bob")) {
-            HtmlPage loginPage = login(url, webClient);
-            final String bodyTextContent = loginPage.getBody().getTextContent();
+            final HtmlPage registeredClientsPage = login(oidcEndpointBuilder("/console/clients"), webClient);
+            final String bodyTextContent = registeredClientsPage.getBody().getTextContent();
             assertTrue(bodyTextContent.contains("Registered Clients"));
 
             // Get the new client identifier
-            HtmlTable table = loginPage.getHtmlElementById("registered_clients");
+            HtmlTable table = registeredClientsPage.getHtmlElementById("registered_clients");
 
             // no clients
             assertEquals(table.getRows().size(), 1);
@@ -404,26 +442,25 @@ abstract class AbstractOIDCTest {
 
     @org.junit.Test
     public void testOIDCLoginForConfidentialClient() throws IOException {
-        final URL authorizationUrl = oidcEndpointBuilder("/idp/authorize")
+        final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
             .queryParam("client_id", confidentialClientId)
             .queryParam("response_type", "code")
-            .queryParam("scope", "openid")
-            .build().toURL();
+            .queryParam("scope", "openid");
         testOIDCLogin(authorizationUrl, confidentialClientId, confidentialClientSecret);
     }
 
     @org.junit.Test
     public void testOIDCLoginForPublicClient() throws IOException {
-        final URL authorizationUrl = oidcEndpointBuilder("/idp/authorize")
+        final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
             .queryParam("client_id", publicClientId)
             .queryParam("response_type", "code")
             .queryParam("scope", "openid")
-            .queryParam("redirect_uri", REDIRECT_URL)
-            .build().toURL();
+            .queryParam("redirect_uri", REDIRECT_URL);
         testOIDCLogin(authorizationUrl, publicClientId, null);
     }
 
-    private void testOIDCLogin(final URL authorizationUrl, String clientId, String clientSecret) throws IOException {
+    private void testOIDCLogin(final UriBuilder authorizationUrl, String clientId, String clientSecret)
+        throws IOException {
         // Login to the OIDC token endpoint + get the authorization code
         final String authorizationCode = loginAndGetAuthorizationCode(authorizationUrl, "alice", "ecila");
 
@@ -437,11 +474,10 @@ abstract class AbstractOIDCTest {
     @org.junit.Test
     public void testUsingCodeForOtherClient() throws Exception {
         // Get the code for the first client
-        final URL authorizationUrl = oidcEndpointBuilder("/idp/authorize")
+        final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
             .queryParam("client_id", confidentialClientId)
             .queryParam("response_type", "code")
-            .queryParam("scope", "openid")
-            .build().toURL();
+            .queryParam("scope", "openid");
 
         // Login to the OIDC token endpoint + get the authorization code
         final String authorizationCode = loginAndGetAuthorizationCode(authorizationUrl, "alice", "ecila");
@@ -456,11 +492,10 @@ abstract class AbstractOIDCTest {
 
     @org.junit.Test
     public void testBadClientId() throws Exception {
-        final URL authorizationUrl = oidcEndpointBuilder("/idp/authorize")
+        final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
             .queryParam("client_id", confidentialClientId.substring(1))
             .queryParam("response_type", "code")
-            .queryParam("scope", "openid")
-            .build().toURL();
+            .queryParam("scope", "openid");
 
         // Login to the OIDC token endpoint + get the authorization code
         final String response = loginAndGetAuthorizationCode(authorizationUrl, "alice", "ecila");
@@ -469,11 +504,10 @@ abstract class AbstractOIDCTest {
 
     @org.junit.Test
     public void testEmptyClientId() throws Exception {
-        final URL authorizationUrl = oidcEndpointBuilder("/idp/authorize")
+        final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
             .queryParam("client_id", "")
             .queryParam("response_type", "code")
-            .queryParam("scope", "openid")
-            .build().toURL();
+            .queryParam("scope", "openid");
 
         // Login to the OIDC token endpoint + get the authorization code
         final String response = loginAndGetAuthorizationCode(authorizationUrl, "alice", "ecila");
@@ -482,12 +516,11 @@ abstract class AbstractOIDCTest {
 
     @org.junit.Test
     public void testIncorrectRedirectURI() throws Exception {
-        final URL authorizationUrl = oidcEndpointBuilder("/idp/authorize")
+        final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
             .queryParam("client_id", confidentialClientId)
             .queryParam("response_type", "code")
             .queryParam("scope", "openid")
-            .queryParam("redirect_uri", "https://127.0.0.5")
-            .build().toURL();
+            .queryParam("redirect_uri", "https://127.0.0.5");
 
         // Login to the OIDC token endpoint + get the authorization code
         try {
@@ -501,11 +534,10 @@ abstract class AbstractOIDCTest {
     public void testCreateClientWithInvalidRegistrationURI() throws Exception {
         // Login to the client page successfully
         try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
-            final URL clientsUrl = oidcEndpoint("/console/clients");
-            login(clientsUrl, webClient);
+            final HtmlPage registerPage = login(oidcEndpointBuilder("/console/clients/register"), webClient);
 
             // Now try to register a new client
-            HtmlPage errorPage = registerNewClient(webClient, clientsUrl, "asfxyz", "https://127.0.0.1//",
+            HtmlPage errorPage = registerConfidentialClient(registerPage, "asfxyz", "https://127.0.0.1//",
                           "https://cxf.apache.org", "https://localhost:12345");
             assertTrue(errorPage.asText().contains("Invalid Client Registration"));
         }
@@ -515,11 +547,10 @@ abstract class AbstractOIDCTest {
     public void testCreateClientWithRegistrationURIFragment() throws Exception {
         // Login to the client page successfully
         try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
-            final URL clientsUrl = oidcEndpoint("/console/clients");
-            login(clientsUrl, webClient);
+            final HtmlPage registerPage = login(oidcEndpointBuilder("/console/clients/register"), webClient);
 
             // Now try to register a new client
-            HtmlPage errorPage = registerNewClient(webClient, clientsUrl, "asfxyz", "https://127.0.0.1#fragment",
+            HtmlPage errorPage = registerConfidentialClient(registerPage, "asfxyz", "https://127.0.0.1#fragment",
                           "https://cxf.apache.org", "https://localhost:12345");
             assertTrue(errorPage.asText().contains("Invalid Client Registration"));
         }
@@ -529,11 +560,10 @@ abstract class AbstractOIDCTest {
     public void testCreateClientWithInvalidAudienceURI() throws Exception {
         // Login to the client page successfully
         try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
-            final URL clientsUrl = oidcEndpoint("/console/clients");
-            login(clientsUrl, webClient);
+            final HtmlPage registerPage = login(oidcEndpointBuilder("/console/clients/register"), webClient);
 
             // Now try to register a new client
-            HtmlPage errorPage = registerNewClient(webClient, clientsUrl, "asfxyz", "https://127.0.0.1/",
+            HtmlPage errorPage = registerConfidentialClient(registerPage, "asfxyz", "https://127.0.0.1/",
                           "https://cxf.apache.org//", "https://localhost:12345");
             assertTrue(errorPage.asText().contains("Invalid Client Registration"));
         }
@@ -543,11 +573,10 @@ abstract class AbstractOIDCTest {
     public void testCreateClientWithInvalidLogoutURI() throws Exception {
         // Login to the client page successfully
         try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
-            final URL clientsUrl = oidcEndpoint("/console/clients");
-            login(clientsUrl, webClient);
+            final HtmlPage registerPage = login(oidcEndpointBuilder("/console/clients/register"), webClient);
 
             // Now try to register a new client
-            HtmlPage errorPage = registerNewClient(webClient, clientsUrl, "asfxyz", "https://127.0.0.1/",
+            HtmlPage errorPage = registerConfidentialClient(registerPage, "asfxyz", "https://127.0.0.1/",
                           "https://cxf.apache.org/", "https://localhost:12345//");
             assertTrue(errorPage.asText().contains("Invalid Client Registration"));
         }
@@ -557,11 +586,10 @@ abstract class AbstractOIDCTest {
     public void testCreateClientWithAudienceURIFragment() throws Exception {
         // Login to the client page successfully
         try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
-            final URL clientsUrl = oidcEndpoint("/console/clients");
-            login(clientsUrl, webClient);
+            final HtmlPage registerPage = login(oidcEndpointBuilder("/console/clients/register"), webClient);
 
             // Now try to register a new client
-            HtmlPage errorPage = registerNewClient(webClient, clientsUrl, "asfxyz", "https://127.0.0.1",
+            HtmlPage errorPage = registerConfidentialClient(registerPage, "asfxyz", "https://127.0.0.1",
                           "https://cxf.apache.org#fragment", "https://localhost:12345");
             assertTrue(errorPage.asText().contains("Invalid Client Registration"));
         }
@@ -587,11 +615,11 @@ abstract class AbstractOIDCTest {
     public void testCreateClientWithSupportedTLD() throws Exception {
         // Login to the client page successfully
         try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
-            final URL clientsUrl = oidcEndpoint("/console/clients");
-            login(clientsUrl, webClient);
+            final UriBuilder clientsUrl = oidcEndpointBuilder("/console/clients/{path}");
+            final HtmlPage registerPage = login(clientsUrl.resolveTemplate("path", "register"), webClient);
 
             // Register a client with a supported TLD
-            HtmlPage registeredClientsPage = registerNewClient(webClient, clientsUrl, "tld1", "https://www.apache.corp",
+            HtmlPage registeredClientsPage = registerConfidentialClient(registerPage, "tld1", "https://www.apache.corp",
                 "https://cxf.apache.org", "https://localhost:12345");
             String registeredClientPageBody = registeredClientsPage.getBody().getTextContent();
             assertTrue(registeredClientPageBody.contains("tld1"));
@@ -600,30 +628,30 @@ abstract class AbstractOIDCTest {
             final String clientId = getClientIdByName("tld1", registeredClientsPage);
 
             // Register a client with an unsupported TLD
-            HtmlPage errorPage = registerNewClient(webClient, clientsUrl, "tld2", "https://www.apache.corp2",
+            HtmlPage errorPage = registerConfidentialClient(registerPage, "tld2", "https://www.apache.corp2",
                                                    "https://cxf.apache.org", "https://localhost:12345");
             assertTrue(errorPage.asText().contains("Invalid Client Registration"));
 
             // Delete the first client above
-            deleteClient(webClient, clientsUrl, clientId);
+            deleteClient(webClient.getPage(clientsUrl.resolveTemplate("path", clientId).build().toURL()));
         }
     }
 
     @org.junit.Test
     public void testLogout() throws Exception {
         // 1. Log in
-        final URL authorizationUrl = oidcEndpointBuilder("/idp/authorize")
+        final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
             .queryParam("client_id", confidentialClientId)
             .queryParam("response_type", "code")
-            .queryParam("scope", "openid")
-            .build().toURL();
+            .queryParam("scope", "openid");
 
         // Login to the OIDC token endpoint + get the authorization code
         try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
             final String authorizationCode = login(authorizationUrl, webClient).getWebResponse().getContentAsString();
 
             // 2. Get another authorization code without username/password. This should work as we are logged on
-            final String authorizationCode2 = webClient.getPage(authorizationUrl).getWebResponse().getContentAsString();
+            final String authorizationCode2 =
+                webClient.getPage(authorizationUrl.build().toURL()).getWebResponse().getContentAsString();
             assertNotNull(authorizationCode2);
             assertNotEquals(authorizationCode, authorizationCode2);
 
@@ -637,7 +665,7 @@ abstract class AbstractOIDCTest {
 
             // 4. Get another authorization code without username/password. This should fail as we have logged out
             try {
-                webClient.getPage(authorizationUrl);
+                webClient.getPage(authorizationUrl.build().toURL());
                 fail("Failure expected after logout");
             } catch (FailingHttpStatusCodeException ex) {
                 assertEquals(Status.UNAUTHORIZED.getStatusCode(), ex.getStatusCode());
@@ -647,26 +675,24 @@ abstract class AbstractOIDCTest {
 
     @org.junit.Test
     public void testLogoutForConfidentialClientViaTokenHint() throws IOException {
-        final URL authorizationUrl = oidcEndpointBuilder("/idp/authorize")
+        final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
             .queryParam("client_id", confidentialClientId)
             .queryParam("response_type", "code")
-            .queryParam("scope", "openid")
-            .build().toURL();
+            .queryParam("scope", "openid");
         testLogoutViaTokenHint(authorizationUrl, confidentialClientId, confidentialClientSecret);
     }
 
     @org.junit.Test
     public void testLogoutForPublicClientViaTokenHint() throws IOException {
-        final URL authorizationUrl = oidcEndpointBuilder("/idp/authorize")
+        final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
             .queryParam("client_id", publicClientId)
             .queryParam("response_type", "code")
             .queryParam("scope", "openid")
-            .queryParam("redirect_uri", REDIRECT_URL)
-            .build().toURL();
+            .queryParam("redirect_uri", REDIRECT_URL);
         testLogoutViaTokenHint(authorizationUrl, publicClientId, null);
     }
 
-    private void testLogoutViaTokenHint(final URL authorizationUrl, String clientId, String clientSecret)
+    private void testLogoutViaTokenHint(final UriBuilder authorizationUrl, String clientId, String clientSecret)
         throws IOException {
         // 1. Login to the OIDC authorization endpoint + get the authorization code
         try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
@@ -690,7 +716,7 @@ abstract class AbstractOIDCTest {
 
             // 3. Get another authorization code without username/password. This should fail as we have logged out
             try {
-                webClient.getPage(authorizationUrl);
+                webClient.getPage(authorizationUrl.build().toURL());
                 fail("Failure expected after logout");
             } catch (FailingHttpStatusCodeException ex) {
                 assertEquals(Status.UNAUTHORIZED.getStatusCode(), ex.getStatusCode());
@@ -701,11 +727,10 @@ abstract class AbstractOIDCTest {
     @org.junit.Test
     public void testLogoutWrongPostLogoutRedirectUri() throws Exception {
         // 1. Log in
-        final URL authorizationUrl = oidcEndpointBuilder("/idp/authorize")
+        final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
             .queryParam("client_id", confidentialClientId)
             .queryParam("response_type", "code")
-            .queryParam("scope", "openid")
-            .build().toURL();
+            .queryParam("scope", "openid");
 
         // Login to the OIDC token endpoint + get the authorization code
         try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
@@ -739,12 +764,11 @@ abstract class AbstractOIDCTest {
     public void testCSRFClientRegistration() throws Exception {
         // Login to the client page successfully
         try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
-            final URL clientsUrl = oidcEndpoint("/console/clients");
+            final UriBuilder clientsUrl = oidcEndpointBuilder("/console/clients");
             login(clientsUrl, webClient);
 
             // Register a new client
-
-            WebRequest request = new WebRequest(clientsUrl, HttpMethod.POST);
+            WebRequest request = new WebRequest(clientsUrl.build().toURL(), HttpMethod.POST);
             request.setRequestParameters(Arrays.asList(
                 new NameValuePair("client_name", "bad_client"),
                 new NameValuePair("client_type", "confidential"),
@@ -761,14 +785,13 @@ abstract class AbstractOIDCTest {
 
     @org.junit.Test
     public void testOIDCLoginForConfidentialClientWithRoles() throws Exception {
-        final URL authorizationUrl = oidcEndpointBuilder("/idp/authorize")
+        final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
             .queryParam("client_id", confidentialClientId)
             .queryParam("response_type", "code")
             .queryParam("scope", "openid")
-            .queryParam("claims", "roles")
-            .build().toURL();
+            .queryParam("claims", "roles");
 
-        // Login to the OIDC token endpoint + get the authorization code
+        // Login to the OIDC authorization endpoint + get the authorization code
         final String authorizationCode = loginAndGetAuthorizationCode(authorizationUrl, "alice", "ecila");
 
         // Now use the code to get an IdToken
@@ -781,13 +804,12 @@ abstract class AbstractOIDCTest {
 
     @org.junit.Test
     public void testOIDCLoginForConfidentialClientWithRolesScope() throws Exception {
-        final URL authorizationUrl = oidcEndpointBuilder("/idp/authorize")
+        final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
             .queryParam("client_id", confidentialClientId)
             .queryParam("response_type", "code")
-            .queryParam("scope", "openid roles")
-            .build().toURL();
+            .queryParam("scope", "openid roles");
 
-        // Login to the OIDC token endpoint + get the authorization code
+        // Login to the OIDC authorization endpoint + get the authorization code
         final String authorizationCode = loginAndGetAuthorizationCode(authorizationUrl, "alice", "ecila");
 
         // Now use the code to get an IdToken
@@ -799,12 +821,48 @@ abstract class AbstractOIDCTest {
     }
 
     @org.junit.Test
+    public void testOIDCLoginForPublicClientWithRefreshTokenScope() throws Exception {
+        final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
+            .queryParam("client_id", publicClientId)
+            .queryParam("response_type", "code")
+            .queryParam("scope", "openid refreshToken")
+            .queryParam("redirect_uri", REDIRECT_URL);
+
+        // Login to the OIDC authorization endpoint + get the authorization code
+        final String authorizationCode;
+        try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
+            final HtmlPage confirmationPage = login(authorizationUrl, webClient);
+            final HtmlForm form = confirmationPage.getForms().get(0);
+            authorizationCode = form.getButtonByName("oauthDecision").click().getWebResponse().getContentAsString();
+        }
+
+        // Now use the code to get an IdToken
+        Map<String, Object> json = getTokenJson(authorizationCode, publicClientId, null);
+
+        // Get the access token
+        final String accessToken = json.get("access_token").toString();
+
+        // Refresh access token
+        try (WebClient webClient = setupWebClient()) {
+            WebRequest request = new WebRequest(oidcEndpoint("/oauth2/token"), HttpMethod.POST);
+
+            request.setRequestParameters(Arrays.asList(
+                new NameValuePair("client_id", publicClientId),
+                new NameValuePair("grant_type", "refresh_token"),
+                new NameValuePair("refresh_token", json.get("refresh_token").toString())));
+
+            json = new JsonMapObjectReaderWriter().fromJson(
+                webClient.getPage(request).getWebResponse().getContentAsString());
+            assertNotEquals(accessToken, json.get("access_token").toString());
+        }
+    }
+
+    @org.junit.Test
     public void testAccessTokenRevocation() throws Exception {
-        final URL authorizationUrl = oidcEndpointBuilder("/idp/authorize")
+        final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
             .queryParam("client_id", confidentialClientId)
             .queryParam("response_type", "code")
-            .queryParam("scope", "openid")
-            .build().toURL();
+            .queryParam("scope", "openid");
 
         // Login to the OIDC token endpoint + get the authorization code
         final String authorizationCode = loginAndGetAuthorizationCode(authorizationUrl, "alice", "ecila");
@@ -846,11 +904,10 @@ abstract class AbstractOIDCTest {
 
     @org.junit.Test
     public void testAccessTokenRevocationWrongClient() throws Exception {
-        final URL authorizationUrl = oidcEndpointBuilder("/idp/authorize")
+        final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
             .queryParam("client_id", confidentialClientId)
             .queryParam("response_type", "code")
-            .queryParam("scope", "openid")
-            .build().toURL();
+            .queryParam("scope", "openid");
 
         // Login to the OIDC token endpoint + get the authorization code
         final String authorizationCode = loginAndGetAuthorizationCode(authorizationUrl, "alice", "ecila");
@@ -863,46 +920,48 @@ abstract class AbstractOIDCTest {
         validateIdToken(getIdToken(json), confidentialClientId);
 
         // Get the access token
-        String accessToken = json.get("access_token").toString();
+        final String accessToken = json.get("access_token").toString();
 
         // Introspect the token and check it's valid
         WebRequest introspectionRequest = new WebRequest(oidcEndpoint("/oauth2/introspect"), HttpMethod.POST);
         introspectionRequest.setRequestParameters(Arrays.asList(
             new NameValuePair("token", accessToken)));
 
-        WebClient webClient2 = setupWebClientRP(confidentialClientId, confidentialClientSecret);
-        String introspectionResponse = webClient2.getPage(introspectionRequest).getWebResponse().getContentAsString();
+        try (WebClient webClient = setupWebClientRP(confidentialClientId, confidentialClientSecret)) {
+            String introspectionResponse =
+                webClient.getPage(introspectionRequest).getWebResponse().getContentAsString();
 
-        assertTrue(introspectionResponse.contains("\"active\":true"));
+            assertTrue(introspectionResponse.contains("\"active\":true"));
 
-        try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
-            final URL clientsUrl = oidcEndpoint("/console/clients");
-            login(clientsUrl, webClient);
+            try (WebClient webClient2 = setupWebClientIDP("alice", "ecila")) {
+                final UriBuilder clientsUrl = oidcEndpointBuilder("/console/clients/{path}");
+                final HtmlPage registerPage = login(clientsUrl.resolveTemplate("path", "register"), webClient2);
 
-            HtmlPage registeredClientsPage = registerNewClient(webClient, clientsUrl, "client3",
-                "https://localhost:12345", "https://cxf.apache.org", "https://localhost:12345");
+                HtmlPage registeredClientsPage = registerConfidentialClient(registerPage, "client3",
+                    "https://localhost:12345", "https://cxf.apache.org", "https://localhost:12345");
 
-            final String clientId = getClientIdByName("client3", registeredClientsPage);
-            final String clientSecret = getClientSecret(webClient, clientsUrl, clientId);
+                final String clientId = getClientIdByName("client3", registeredClientsPage);
+                final HtmlPage registeredClientPage = webClient2
+                    .getPage(clientsUrl.resolveTemplate("path", clientId).build().toURL());
+                final String clientSecret = getClientSecret(registeredClientPage, clientId);
 
-            // Now try to revoke the token as the other client
-            try (WebClient webClient3 = setupWebClientRP(clientId, clientSecret)) {
-                WebRequest revocationRequest = new WebRequest(oidcEndpoint("/oauth2/revoke"), HttpMethod.POST);
-                revocationRequest.setRequestParameters(Arrays.asList(
-                    new NameValuePair("token", accessToken)));
+                // Now try to revoke the token as the other client
+                try (WebClient webClient3 = setupWebClientRP(clientId, clientSecret)) {
+                    WebRequest revocationRequest = new WebRequest(oidcEndpoint("/oauth2/revoke"), HttpMethod.POST);
+                    revocationRequest.setRequestParameters(Arrays.asList(
+                        new NameValuePair("token", accessToken)));
 
-                webClient3.getPage(revocationRequest);
-            } finally {
-                deleteClient(webClient, clientsUrl, clientId);
+                    webClient3.getPage(revocationRequest);
+                } finally {
+                    deleteClient(registeredClientPage);
+                }
             }
+
+            // Now introspect the token again and check it's still valid
+            introspectionResponse = webClient.getPage(introspectionRequest).getWebResponse().getContentAsString();
+
+            assertTrue(introspectionResponse.contains("\"active\":true"));
         }
-
-        // Now introspect the token again and check it's still valid
-        introspectionResponse = webClient2.getPage(introspectionRequest).getWebResponse().getContentAsString();
-
-        assertTrue(introspectionResponse.contains("\"active\":true"));
-
-        webClient2.close();
     }
 
     @org.junit.Test
@@ -926,8 +985,7 @@ abstract class AbstractOIDCTest {
     }
 
     private static URL oidcEndpoint(String servletContext, String path) throws IOException {
-        return oidcEndpointBuilder(servletContext, path)
-            .build().toURL();
+        return oidcEndpointBuilder(servletContext, path).build().toURL();
     }
 
     private static UriBuilder oidcEndpointBuilder(String servletContext, String path) throws IOException {
@@ -959,24 +1017,24 @@ abstract class AbstractOIDCTest {
         return webClient;
     }
 
-    private static <P extends Page> P login(URL url, WebClient webClient) throws IOException {
-        final HtmlPage idpPage = webClient.getPage(url);
+    private static <P extends Page> P login(final UriBuilder uriBuilder, final WebClient webClient)
+        throws IOException {
+        final HtmlPage idpPage = webClient.getPage(
+            uriBuilder.queryParam("login_hint", "blabla@" + HOME_REALM).build().toURL());
         assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         webClient.getCredentialsProvider().clear();
 
         // Test the SAML Version here
-        DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
-
         String wresult = null;
-        for (DomElement result : results) {
+        for (DomElement result : idpPage.getElementsByTagName("input")) {
             if ("wresult".equals(result.getAttributeNS(null, "name"))) {
                 wresult = result.getAttributeNS(null, "value");
+                assertTrue(wresult.contains("urn:oasis:names:tc:SAML:2.0:cm:bearer"));
                 break;
             }
         }
-        assertTrue(wresult != null
-            && wresult.contains("urn:oasis:names:tc:SAML:2.0:cm:bearer"));
+        assertNotNull(wresult);
 
         final HtmlForm form = idpPage.getFormByName("signinresponseform");
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
@@ -984,7 +1042,7 @@ abstract class AbstractOIDCTest {
         return button.click();
     }
 
-    private static String loginAndGetAuthorizationCode(URL authorizationUrl, String user, String password)
+    private static String loginAndGetAuthorizationCode(UriBuilder authorizationUrl, String user, String password)
         throws IOException {
         try (WebClient webClient = setupWebClientIDP(user, password)) {
             final String authorizationCode = login(authorizationUrl, webClient).getWebResponse().getContentAsString();
@@ -1019,24 +1077,25 @@ abstract class AbstractOIDCTest {
     private void validateIdToken(String idToken, String audience, String role) throws IOException {
         JwsJwtCompactConsumer jwtConsumer = new JwsJwtCompactConsumer(idToken);
         JwtToken jwt = jwtConsumer.getJwtToken();
+        JwtClaims jwtClaims = jwt.getClaims();
 
         // Validate claims
-        assertEquals("alice", jwt.getClaim("preferred_username"));
-        assertEquals("accounts.fediz.com", jwt.getClaim(JwtConstants.CLAIM_ISSUER));
-        assertEquals(audience, jwt.getClaim(JwtConstants.CLAIM_AUDIENCE));
-        assertNotNull(jwt.getClaim(JwtConstants.CLAIM_EXPIRY));
-        assertNotNull(jwt.getClaim(JwtConstants.CLAIM_ISSUED_AT));
+        assertEquals("alice", jwtClaims.getClaim("preferred_username"));
+        assertEquals("accounts.fediz.com", jwtClaims.getIssuer());
+        assertEquals(audience, jwtClaims.getAudience());
+        assertNotNull(jwtClaims.getIssuedAt());
+        assertNotNull(jwtClaims.getExpiryTime());
 
         // Check role
         if (role != null) {
-            List<String> roles = jwt.getClaims().getListStringProperty("roles");
+            List<String> roles = jwtClaims.getListStringProperty("roles");
             assertNotNull(roles);
             assertTrue(roles.contains(role));
         }
 
-        // TODO: jwt.getJwsHeader(JoseConstants.HEADER_KEY_ID))
-        assertTrue(jwtConsumer.verifySignatureWith(jsonWebKeys().getKeys().get(0),
-            SignatureAlgorithm.valueOf(jwt.getJwsHeader(JoseConstants.HEADER_ALGORITHM).toString())));
+        JwsHeaders jwsHeaders = jwt.getJwsHeaders();
+        assertTrue(jwtConsumer.verifySignatureWith(
+            jsonWebKeys().getKey(jwsHeaders.getKeyId()), SignatureAlgorithm.valueOf(jwsHeaders.getAlgorithm())));
     }
 
     private JsonWebKeys jsonWebKeys() throws IOException {

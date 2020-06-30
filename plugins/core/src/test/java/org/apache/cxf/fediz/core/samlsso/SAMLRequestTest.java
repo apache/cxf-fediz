@@ -42,6 +42,7 @@ import org.apache.cxf.fediz.core.processor.RedirectionResponse;
 import org.apache.cxf.fediz.core.processor.SAMLProcessorImpl;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.wss4j.common.saml.OpenSAMLUtil;
+import org.apache.wss4j.dom.WSConstants;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.LogoutRequest;
 
@@ -201,6 +202,34 @@ public class SAMLRequestTest {
         String signature =
             redirectionURL.substring(redirectionURL.indexOf("Signature=") + "Signature=".length());
         Assert.assertTrue(signature != null && signature.length() > 0);
+        String signatureAlg =
+                redirectionURL.substring(redirectionURL.indexOf("SigAlg=") + "SigAlg=".length(),
+                        redirectionURL.indexOf('&', redirectionURL.indexOf("SigAlg=")));
+        Assert.assertEquals(WSConstants.RSA_SHA1, URLDecoder.decode(signatureAlg, "UTF-8"));
+    }
+
+    @org.junit.Test
+    public void testSignedSAMLAuthnRequestSHA256() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("SIGNED_ROOT_SHA256");
+
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL)).times(1, 2);
+        EasyMock.expect(req.getContextPath()).andReturn(TEST_REQUEST_URI);
+        EasyMock.expect(req.getRequestURI()).andReturn(TEST_REQUEST_URI).times(1, 2);
+        EasyMock.replay(req);
+
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        RedirectionResponse response = wfProc.createSignInRequest(req, config);
+
+        String redirectionURL = response.getRedirectionURL();
+        String signature =
+                redirectionURL.substring(redirectionURL.indexOf("Signature=") + "Signature=".length());
+        Assert.assertTrue(signature != null && signature.length() > 0);
+        String signatureAlg =
+                redirectionURL.substring(redirectionURL.indexOf("SigAlg=") + "SigAlg=".length(),
+                        redirectionURL.indexOf('&', redirectionURL.indexOf("SigAlg=")));
+        Assert.assertEquals(WSConstants.RSA_SHA256, URLDecoder.decode(signatureAlg, "UTF-8"));
     }
 
     @org.junit.Test

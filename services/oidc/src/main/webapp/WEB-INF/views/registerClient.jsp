@@ -1,5 +1,5 @@
 <%@ page
-	import="javax.servlet.http.HttpServletRequest,java.util.Map,java.util.Iterator,org.apache.cxf.fediz.service.oidc.clients.RegisterClient,
+	import="javax.servlet.http.HttpServletRequest, java.util.Map, org.apache.cxf.fediz.service.oidc.clients.RegisterClient,
 	org.apache.cxf.fediz.service.oidc.CSRFUtils"
 %>
 <%
@@ -15,55 +15,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <title>Client Registration Form</title>
-<style TYPE="text/css">
-<!--
-h2 {
-	font-size: 1.5em;
-	font-family: verdana, arial, helvetica, sans-serif;
-	margin: 0;
-	text-align: center;
-}
-
-.header-text {
-	border-bottom: 1px solid gray;
-	padding: 24px 0;
-	margin: 12px 36px 12px;
-}
-
-label {
-	font-weight: bold;
-	margin-bottom: 9px;
-	display: block;
-	white-space: normal;
-}
-
-.form {
-	max-width: 425px;
-	margin-bottom: 25px;
-	margin-left: auto;
-	margin-right: auto;
-}
-
-.form-line {
-	margin: 6 0 6 0;
-	padding: 12 36 12 36;
-}
-
-.form-required {
-	color: red;
-	margin-left: 5px;
-}
-
-input, select, button {
-	width: 100%;
-}
-
-.form-submit-button {
-	padding: 4px;
-	text-align: center;
-}
--->
-</style>
+    <link rel="stylesheet" href="<%= basePath %>static/styles.css">
 </head>
 <body>
 	<form action="<%=basePath%>console/clients" method="POST">
@@ -104,17 +56,13 @@ input, select, button {
 			<div class="form-line">
 				<label for="client_homeRealm" id="label_homeRealm" class="form-label"> Home Realm </label>
 				<select name="client_homeRealm" id="input_homeRealm">
-					<option value="" selected>Default - User selection at login</option>
+					<option value="" selected="selected">Default - User selection at login</option>
 					<%
-					    if (!reg.getHomeRealms().entrySet().isEmpty()) {
-							Iterator<Map.Entry<String, String>> it = reg.getHomeRealms().entrySet().iterator();
-					    	while (it.hasNext()) {
-								Map.Entry<String, String> e = it.next();
+                        for (Map.Entry<String, String> entry : reg.getHomeRealms().entrySet()) {
 					%>
-					<option value="<%=e.getKey()%>"><%=e.getValue()%></option>
+					<option value="<%=entry.getKey()%>"><%=entry.getValue()%></option>
 					<%
-					    	}
-						}
+                        }
 					%>
 				</select>
 			</div>

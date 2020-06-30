@@ -96,6 +96,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -1225,7 +1226,7 @@ public class SAMLResponseTest {
 
         NodeList assertionNodes =
             policyElement.getElementsByTagNameNS(WSConstants.SAML2_NS, "Assertion");
-        Assert.assertTrue(assertionNodes != null && assertionNodes.getLength() == 1);
+        assertTrue(assertionNodes != null && assertionNodes.getLength() == 1);
 
         Element assertionElement = (Element)assertionNodes.item(0);
 
@@ -1578,6 +1579,7 @@ public class SAMLResponseTest {
         SAMLCallback samlCallback = new SAMLCallback();
         SAMLUtil.doSAMLCallback(saml2CallbackHandler, samlCallback);
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
+
         Element response = createSamlResponse(assertion, "mystskey", true, requestId);
         return encodeResponse(response);
     }
@@ -1596,7 +1598,6 @@ public class SAMLResponseTest {
         }
 
         DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-        Document doc = docBuilder.newDocument();
 
         Status status =
             SAML2PResponseComponentBuilder.createStatus(
@@ -1606,9 +1607,9 @@ public class SAMLResponseTest {
             SAML2PResponseComponentBuilder.createSAMLResponse(requestID,
                                                               assertion.getIssuerString(),
                                                               status);
-
         response.getAssertions().add(assertion.getSaml2());
 
+        Document doc = docBuilder.newDocument();
         Element policyElement = OpenSAMLUtil.toDom(response, doc);
         doc.appendChild(policyElement);
 
@@ -1704,7 +1705,7 @@ public class SAMLResponseTest {
                 break;
             }
         }
-        Assert.assertTrue(found);
+        assertTrue(found);
     }
 
     private String encodeResponse(Element response) throws IOException {
@@ -1714,6 +1715,5 @@ public class SAMLResponseTest {
 
         return Base64.getEncoder().encodeToString(deflatedBytes);
     }
-
 
 }

@@ -19,7 +19,10 @@
 
 package org.apache.cxf.fediz.core.saml;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -96,75 +99,80 @@ public class SAMLTokenValidator implements TokenValidator {
             // PasswordCallbackHandler(password));
 
             SamlAssertionWrapper assertion = new SamlAssertionWrapper(token);
-            if (!assertion.isSigned()) {
-                LOG.warn("Assertion is not signed");
-                throw new ProcessingException(TYPE.TOKEN_NO_SIGNATURE);
-            }
-            // Verify the signature
-            Signature sig = assertion.getSignature();
-            KeyInfo keyInfo = sig.getKeyInfo();
-            SAMLKeyInfo samlKeyInfo =
-                org.apache.wss4j.common.saml.SAMLUtil.getCredentialFromKeyInfo(
-                    keyInfo.getDOM(), new WSSSAMLKeyInfoProcessor(requestData),
-                    requestData.getSigVerCrypto()
-                );
-            assertion.verifySignature(samlKeyInfo);
-
-            // Parse the subject if it exists
-            assertion.parseSubject(
-                new WSSSAMLKeyInfoProcessor(requestData), requestData.getSigVerCrypto(),
-                requestData.getCallbackHandler()
-            );
-
-            // Now verify trust on the signature
-            Credential trustCredential = new Credential();
-            trustCredential.setPublicKey(samlKeyInfo.getPublicKey());
-            trustCredential.setCertificates(samlKeyInfo.getCerts());
-            trustCredential.setSamlAssertion(assertion);
-
-            SamlAssertionValidator trustValidator = new SamlAssertionValidator();
-            trustValidator.setFutureTTL(config.getMaximumClockSkew().intValue());
-
-            boolean trusted = false;
+            
+            boolean doNotEnforceAssertionsSigned = !request.isEnforceTokenSigned();
+            
+            boolean trusted = doNotEnforceAssertionsSigned;
             String assertionIssuer = assertion.getIssuerString();
-
-            List<TrustedIssuer> trustedIssuers = config.getTrustedIssuers();
-            for (TrustedIssuer ti : trustedIssuers) {
-                Pattern subjectConstraint = ti.getCompiledSubject();
-                List<Pattern> subjectConstraints = new ArrayList<>(1);
-                if (subjectConstraint != null) {
-                    subjectConstraints.add(subjectConstraint);
+            
+            if (!doNotEnforceAssertionsSigned) {
+                if (!assertion.isSigned()) {
+                    LOG.warn("Assertion is not signed");
+                    throw new ProcessingException(TYPE.TOKEN_NO_SIGNATURE);
                 }
+                // Verify the signature
+                Signature sig = assertion.getSignature();
+                KeyInfo keyInfo = sig.getKeyInfo();
+                SAMLKeyInfo samlKeyInfo =
+                    org.apache.wss4j.common.saml.SAMLUtil.getCredentialFromKeyInfo(
+                        keyInfo.getDOM(), new WSSSAMLKeyInfoProcessor(requestData),
+                        requestData.getSigVerCrypto()
+                    );
+                assertion.verifySignature(samlKeyInfo);
 
-                if (ti.getCertificateValidationMethod().equals(CertificateValidationMethod.CHAIN_TRUST)) {
-                    trustValidator.setSubjectConstraints(subjectConstraints);
-                    trustValidator.setSignatureTrustType(TrustType.CHAIN_TRUST_CONSTRAINTS);
-                } else if (ti.getCertificateValidationMethod().equals(CertificateValidationMethod.PEER_TRUST)) {
-                    trustValidator.setSignatureTrustType(TrustType.PEER_TRUST);
-                } else {
-                    throw new IllegalStateException("Unsupported certificate validation method: "
-                                                    + ti.getCertificateValidationMethod());
-                }
-                try {
-                    for (TrustManager tm: config.getCertificateStores()) {
-                        try {
-                            requestData.setSigVerCrypto(tm.getCrypto());
-                            trustValidator.validate(trustCredential, requestData);
-                            trusted = true;
-                            break;
-                        } catch (Exception ex) {
-                            LOG.debug("Issuer '{}' not validated in keystore '{}'",
-                                      ti.getName(), tm.getName());
+                // Parse the subject if it exists
+                assertion.parseSubject(
+                    new WSSSAMLKeyInfoProcessor(requestData), requestData.getSigVerCrypto(),
+                    requestData.getCallbackHandler()
+                );
+
+                // Now verify trust on the signature
+                Credential trustCredential = new Credential();
+                trustCredential.setPublicKey(samlKeyInfo.getPublicKey());
+                trustCredential.setCertificates(samlKeyInfo.getCerts());
+                trustCredential.setSamlAssertion(assertion);
+
+                SamlAssertionValidator trustValidator = new SamlAssertionValidator();
+                trustValidator.setFutureTTL(config.getMaximumClockSkew().intValue());
+           
+                List<TrustedIssuer> trustedIssuers = config.getTrustedIssuers();
+                for (TrustedIssuer ti : trustedIssuers) {
+                    Pattern subjectConstraint = ti.getCompiledSubject();
+                    List<Pattern> subjectConstraints = new ArrayList<>(1);
+                    if (subjectConstraint != null) {
+                        subjectConstraints.add(subjectConstraint);
+                    }
+                
+                    if (ti.getCertificateValidationMethod().equals(CertificateValidationMethod.CHAIN_TRUST)) {
+                        trustValidator.setSubjectConstraints(subjectConstraints);
+                        trustValidator.setSignatureTrustType(TrustType.CHAIN_TRUST_CONSTRAINTS);
+                    } else if (ti.getCertificateValidationMethod().equals(CertificateValidationMethod.PEER_TRUST)) {
+                        trustValidator.setSignatureTrustType(TrustType.PEER_TRUST);
+                    } else {
+                        throw new IllegalStateException("Unsupported certificate validation method: "
+                                                        + ti.getCertificateValidationMethod());
+                    }
+                    try {
+                        for (TrustManager tm: config.getCertificateStores()) {
+                            try {
+                                requestData.setSigVerCrypto(tm.getCrypto());
+                                trustValidator.validate(trustCredential, requestData);
+                                trusted = true;
+                                break;
+                            } catch (Exception ex) {
+                                LOG.debug("Issuer '{}' not validated in keystore '{}'",
+                                          ti.getName(), tm.getName());
+                            }
                         }
-                    }
-                    if (trusted) {
-                        break;
-                    }
-
-                } catch (Exception ex) {
-                    if (LOG.isInfoEnabled()) {
-                        LOG.info("Issuer '" + assertionIssuer + "' doesn't match trusted issuer '" + ti.getName()
-                                 + "': " + ex.getMessage());
+                        if (trusted) {
+                            break;
+                        }
+                
+                    } catch (Exception ex) {
+                        if (LOG.isInfoEnabled()) {
+                            LOG.info("Issuer '" + assertionIssuer + "' doesn't match trusted issuer '" + ti.getName()
+                                     + "': " + ex.getMessage());
+                        }
                     }
                 }
             }
@@ -192,8 +200,7 @@ public class SAMLTokenValidator implements TokenValidator {
             if (assertion.getSamlVersion().equals(SAMLVersion.VERSION_20)) {
                 claims = parseClaimsInAssertion(assertion.getSaml2());
                 audience = getAudienceRestriction(assertion.getSaml2());
-            } else if (assertion.getSamlVersion()
-                    .equals(SAMLVersion.VERSION_11)) {
+            } else if (assertion.getSamlVersion().equals(SAMLVersion.VERSION_11)) {
                 claims = parseClaimsInAssertion(assertion.getSaml1());
                 audience = getAudienceRestriction(assertion.getSaml1());
             } else {
@@ -218,47 +225,14 @@ public class SAMLTokenValidator implements TokenValidator {
         }
     }
 
-    @Deprecated
-    protected List<String> parseRoles(FedizContext config, List<Claim> claims) {
-        List<String> roles = null;
-        Protocol protocol = config.getProtocol();
-        if (protocol.getRoleURI() != null) {
-            URI roleURI = URI.create(protocol.getRoleURI());
-            String delim = protocol.getRoleDelimiter();
-            for (Claim c : claims) {
-                if (roleURI.equals(c.getClaimType())) {
-                    Object oValue = c.getValue();
-                    if ((oValue instanceof String) && !"".equals(oValue)) {
-                        if (delim == null) {
-                            roles = Collections.singletonList((String)oValue);
-                        } else {
-                            roles = parseRoles((String)oValue, delim);
-                        }
-                    } else if ((oValue instanceof List<?>) && !((List<?>)oValue).isEmpty()) {
-                        @SuppressWarnings("unchecked")
-                        List<String> values = (List<String>)oValue;
-                        roles = Collections.unmodifiableList(values);
-                    } else if (!((oValue instanceof String) || (oValue instanceof List<?>))) {
-                        LOG.error("Unsupported value type of Claim value");
-                        throw new IllegalStateException("Unsupported value type of Claim value");
-                    }
-                    claims.remove(c);
-                    break;
-                }
-            }
-        }
-
-        return roles;
-    }
-    
     protected List<Claim> parseRoleClaim(FedizContext config, List<Claim> claims) {
-        List<String> roles = null;
         Protocol protocol = config.getProtocol();
         if (protocol.getRoleURI() != null) {
             URI roleURI = URI.create(protocol.getRoleURI());
             String delim = protocol.getRoleDelimiter();
             for (Claim c : claims) {
                 if (roleURI.equals(c.getClaimType())) {
+                    final List<String> roles;
                     Object oValue = c.getValue();
                     if (oValue instanceof String) {
                         if (delim == null || "".equals(oValue)) {
@@ -304,7 +278,7 @@ public class SAMLTokenValidator implements TokenValidator {
                 Claim c = new Claim();
                 c.setIssuer(assertion.getIssuer());
                 if (attribute.getAttributeNamespace() != null) {
-                    URI attrName = URI.create(attribute.getAttributeName());
+                    URI attrName = parseAttributeName(attribute.getAttributeName());
                     if (attrName.isAbsolute()) {
                         // Workaround for CXF-4484
                         c.setClaimType(attrName);
@@ -320,14 +294,14 @@ public class SAMLTokenValidator implements TokenValidator {
                     } else {
                         if (attribute.getAttributeNamespace().endsWith("/")) {
                             c.setClaimType(URI.create(attribute.getAttributeNamespace()
-                                                      + attribute.getAttributeName()));
+                                                      + attrName.toString()));
                         } else {
                             c.setClaimType(URI.create(attribute.getAttributeNamespace()
-                                                      + "/" + attribute.getAttributeName()));
+                                                      + "/" + attrName.toString()));
                         }
                     }
                 } else {
-                    c.setClaimType(URI.create(attribute.getAttributeName()));
+                    c.setClaimType(parseAttributeName(attribute.getAttributeName()));
                 }
                 List<String> valueList = new ArrayList<>();
                 for (XMLObject attributeValue : attribute.getAttributeValues()) {
@@ -341,6 +315,19 @@ public class SAMLTokenValidator implements TokenValidator {
         }
         collection.addAll(claimsMap.values());
         return collection;
+    }
+    
+    private URI parseAttributeName(String attributeName) {
+        try {
+            return URI.create(attributeName);
+        } catch (IllegalArgumentException ex) {
+            // Maybe the string has a space in it...
+            try {
+                return URI.create(URLEncoder.encode(attributeName, StandardCharsets.UTF_8.name()));
+            } catch (UnsupportedEncodingException e) {
+                throw new IllegalStateException("Unsupported Claim type");
+            }
+        }
     }
 
     protected List<Claim> parseClaimsInAssertion(
@@ -366,12 +353,12 @@ public class SAMLTokenValidator implements TokenValidator {
                 // Value of Attribute Name not fully qualified
                 // if NameFormat is http://schemas.xmlsoap.org/ws/2005/05/identity/claims
                 // but ClaimType value must be fully qualified as Namespace attribute goes away
-                URI attrName = URI.create(attribute.getName());
+                URI attrName = parseAttributeName(attribute.getName());
                 if (ClaimTypes.URI_BASE.toString().equals(attribute.getNameFormat())
                     && !attrName.isAbsolute()) {
-                    c.setClaimType(URI.create(ClaimTypes.URI_BASE + "/" + attribute.getName()));
+                    c.setClaimType(URI.create(ClaimTypes.URI_BASE + "/" + attrName.toString()));
                 } else {
-                    c.setClaimType(URI.create(attribute.getName()));
+                    c.setClaimType(attrName);
                 }
                 c.setIssuer(assertion.getIssuer().getNameQualifier());
 

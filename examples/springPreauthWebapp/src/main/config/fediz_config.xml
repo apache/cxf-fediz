@@ -36,6 +36,9 @@
 			<issuer certificateValidation="PeerTrust" />
 		</trustedIssuers>
 		<maximumClockSkew>1000</maximumClockSkew>
+		<signingKey keyAlias="mytomrpkey" keyPassword="tompass">
+			<keyStore file="rp-ssl-key.jks" password="tompass" type="JKS" />
+		</signingKey>
 		<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 			xsi:type="federationProtocolType" version="1.0.0">
 			<realm>urn:org:apache:cxf:fediz:fedizhelloworld</realm>
@@ -51,4 +54,3 @@
 		</protocol>
 	</contextConfig>
 </FedizConfig>
-

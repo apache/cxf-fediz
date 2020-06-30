@@ -18,36 +18,18 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title>Registered Clients</title>
-    <STYLE TYPE="text/css">
-    	table {
-		    border-collapse: collapse;
-		}
-		table th {
-		    background-color: #f0f0f0;
-		    border-color: #ccc;
-		    border-style: solid;
-		    border-width: 1px;
-		    padding: 3px 4px;
-		    text-align: center;
-		}
-		table td {
-		    border-color: #ccc;
-		    border-style: solid;
-		    border-width: 1px;
-		    padding: 3px 4px;
-		}
-	</STYLE>
+    <link rel="stylesheet" href="<%= basePath %>static/styles.css">
 </head>
 <body>
 <div class="padded">
 <h1>Registered Clients</h1>
 <br/>
-<table border="1" id=registered_clients>
+<table id="registered_clients">
     <tr><th>Name</th><th>ID</th><th>Creation Date</th><th>Redirect URI</th></tr> 
     <%
        SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.US);
        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-               
+
        for (Client client : regs) {
     %>
        <tr>
@@ -61,7 +43,7 @@
                Date date = new Date(client.getRegisteredAt() * 1000);
                String created = dateFormat.format(date);
 		   %>
-           <%=    created %><br/>
+           <%=    created %>
            </td>
            <td>
            <% if(client.getRedirectUris() != null) {

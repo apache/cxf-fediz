@@ -72,7 +72,7 @@ public class FederationAuthenticator extends FormAuthenticator {
     protected static final String INFO = "org.apache.cxf.fediz.tomcat.WsFedAuthenticator/1.0";
     protected static final String TRUSTED_ISSUER = "org.apache.cxf.fediz.tomcat.TRUSTED_ISSUER";
 
-    private static final Logger LOG = LoggerFactory.getLogger(FormAuthenticator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FederationAuthenticator.class);
 
     /**
      * Fediz Configuration file
@@ -202,6 +202,8 @@ public class FederationAuthenticator extends FormAuthenticator {
         if (signinHandler.canHandleRequest(request)) {
             FedizPrincipal principal = signinHandler.handleRequest(request, response);
             if (principal != null) {
+                // Register the authenticated Principal
+                register(request, response, principal, FederationConstants.WSFED_METHOD, null, null);
                 LOG.debug("Authentication of '{}' was successful", principal);
                 resumeRequest(signinHandler.getContextParameter(request), request, response);
             } else {
@@ -266,11 +268,6 @@ public class FederationAuthenticator extends FormAuthenticator {
 
         Session session = request.getSessionInternal();
         LOG.debug("Restore request from session '{}'", session.getIdInternal());
-
-        // Get principal from session, register, and then remove it
-        Principal principal = (Principal)session.getNote(Constants.FORM_PRINCIPAL_NOTE);
-        register(request, response, principal, FederationConstants.WSFED_METHOD, null, null);
-        request.removeNote(Constants.FORM_PRINCIPAL_NOTE);
 
         if (restoreRequest(request)) {
             LOG.debug("Proceed to restored request");

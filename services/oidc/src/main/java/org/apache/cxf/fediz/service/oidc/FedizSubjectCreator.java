@@ -109,7 +109,7 @@ public class FedizSubjectCreator implements SubjectCreator {
         }
         // Check if default issuer, issuedAt values have to be set
         if (issuer != null) {
-            String realIssuer = null;
+            final String realIssuer;
             if (issuer.startsWith("/")) {
                 UriBuilder ub = mc.getUriInfo().getBaseUriBuilder();
                 URI uri = ub.path(issuer).build();
@@ -137,15 +137,15 @@ public class FedizSubjectCreator implements SubjectCreator {
         idToken.setTokenId(OAuthUtils.generateRandomTokenKey());
 
         // Compute exp claim
-        long currentTimeInSecs = System.currentTimeMillis() / 1000L;
-        idToken.setIssuedAt(currentTimeInSecs);
+        final long iat = OAuthUtils.getIssuedAt();
+        idToken.setIssuedAt(iat);
         HttpSession httpSession = mc.getHttpServletRequest().getSession(false);
         if (timeToLive > 0) {
-            idToken.setExpiryTime(timeToLive);
+            idToken.setExpiryTime(iat + timeToLive);
         } else if (httpSession != null && httpSession.getMaxInactiveInterval() > 0) {
-            idToken.setExpiryTime(currentTimeInSecs + httpSession.getMaxInactiveInterval());
+            idToken.setExpiryTime(iat + httpSession.getMaxInactiveInterval());
         } else {
-            idToken.setExpiryTime(currentTimeInSecs + DEFAULT_TIME_TO_LIVE);
+            idToken.setExpiryTime(iat + DEFAULT_TIME_TO_LIVE);
         }
 
         List<String> requestedClaimsList = new ArrayList<>();

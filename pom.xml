@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.apache.cxf.fediz</groupId>
     <artifactId>fediz</artifactId>
-    <version>1.5.0-SNAPSHOT</version>
+    <version>1.5.1-SNAPSHOT</version>
     <name>Apache Fediz</name>
     <packaging>pom</packaging>
 
@@ -37,36 +37,36 @@
     </prerequisites>
 
     <properties>
-        <apacheds.version>2.0.0-M24</apacheds.version>
+        <apacheds.version>2.0.0.AM26</apacheds.version>
         <bval.version>2.0.3</bval.version>
         <commons.dbcp2.version>2.7.0</commons.dbcp2.version>
         <commons.logging.version>1.2</commons.logging.version>
         <commons.text.version>1.8</commons.text.version>
         <commons.validator.version>1.6</commons.validator.version>
-        <cxf.version>3.3.5</cxf.version>
+        <cxf.version>3.3.7</cxf.version>
         <cxf.build-utils.version>3.4.4</cxf.build-utils.version>
         <easymock.version>4.0.2</easymock.version>
         <ehcache.version>2.10.6</ehcache.version>
         <ehcache3.version>3.0.3</ehcache3.version>
         <jcache.version>1.0.0</jcache.version>
         <hsqldb.version>2.5.0</hsqldb.version>
-        <htmlunit.version>2.37.0</htmlunit.version>
-        <jackson.version>2.10.2</jackson.version>
+        <htmlunit.version>2.40.0</htmlunit.version>
+        <jackson.version>2.10.4</jackson.version>
         <jaxb.version>2.3.2</jaxb.version>
-        <jetty9.version>9.4.24.v20191120</jetty9.version>
+        <jetty9.version>9.4.28.v20200408</jetty9.version>
         <junit.version>4.13</junit.version>
-        <kerby.version>1.1.1</kerby.version>
+        <kerby.version>2.0.1</kerby.version>
         <log4j.version>1.2.17</log4j.version>
         <openjpa.version>3.1.0</openjpa.version>
         <servlet.version>3.1.0</servlet.version>
         <slf4j.version>1.7.30</slf4j.version>
-        <spring.version>4.3.26.RELEASE</spring.version>
-        <spring-ldap-core.version>2.3.2.RELEASE</spring-ldap-core.version>
-        <spring.security.version>4.2.13.RELEASE</spring.security.version>
+        <spring.version>4.3.27.RELEASE</spring.version>
+        <spring-ldap-core.version>2.3.3.RELEASE</spring-ldap-core.version>
+        <spring.security.version>4.2.17.RELEASE</spring.security.version>
         <spring-webflow.version>2.5.1.RELEASE</spring-webflow.version>
-        <tomcat.version>9.0.29</tomcat.version>
+        <tomcat.version>9.0.36</tomcat.version>
         <validation-api.version>2.0.2</validation-api.version>
-        <wss4j.version>2.2.4</wss4j.version>
+        <wss4j.version>2.2.5</wss4j.version>
 
         <tomcat.url>http://localhost:8080/manager/text</tomcat.url>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -452,7 +452,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>3.1.0</version>
+                    <version>3.1.1</version>
                     <dependencies>
                         <dependency>
                             <groupId>org.apache.cxf.build-utils</groupId>
@@ -462,7 +462,7 @@
                         <dependency>
                             <groupId>com.puppycrawl.tools</groupId>
                             <artifactId>checkstyle</artifactId>
-                            <version>8.28</version>
+                            <version>8.31</version>
                        </dependency>
                     </dependencies>
                     <configuration>

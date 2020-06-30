@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.apache.cxf.fediz</groupId>
         <artifactId>plugin</artifactId>
-        <version>1.5.0-SNAPSHOT</version>
+        <version>1.5.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>fediz-core</artifactId>
@@ -144,8 +144,6 @@
                               org.apache.wss4j.dom.*,
                               javax.xml.crypto.*,
                               org.apache.xml.security.*,
-                              org.bouncycastle.*;resolution:=optional,
-                              org.apache.jcp.xml.dsig.internal.dom.*,
                               org.opensaml.*;resolution:=optional,
                               *;resolution:=optional
                         </Import-Package>

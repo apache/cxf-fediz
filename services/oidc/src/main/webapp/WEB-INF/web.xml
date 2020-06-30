@@ -59,6 +59,14 @@
     <servlet>
         <servlet-name>FederationServlet</servlet-name>
         <servlet-class>org.apache.cxf.transport.servlet.CXFServlet</servlet-class>
+        <init-param>
+            <param-name>static-resources-list</param-name>
+            <param-value>/static/(\w)+.css</param-value>
+        </init-param>
+        <init-param>
+            <param-name>static-cache-control</param-name>
+            <param-value>public, max-age=31536000</param-value>
+        </init-param>
     </servlet>
 
     <servlet-mapping>

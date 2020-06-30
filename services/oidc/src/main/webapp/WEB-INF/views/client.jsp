@@ -9,11 +9,6 @@
 
 <%
 	Client client = (Client)request.getAttribute("data");
-	String clientType = client.isConfidential() ? "Confidential" : "Public";
-	String homeRealmAlias = client.getProperties().get("homeRealmAlias");
-	if (homeRealmAlias == null || homeRealmAlias.trim().isEmpty()) {
-	    homeRealmAlias = "Default - User selection at login";
-	} 
     String basePath = request.getContextPath() + request.getServletPath();
     if (!basePath.endsWith("/")) {
         basePath += "/";
@@ -25,59 +20,11 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title>API Client Information</title>
-    <STYLE TYPE="text/css">
-    	table {
-		    border-collapse: collapse;
-		}
-		table th {
-		    background-color: #f0f0f0;
-		    border-color: #ccc;
-		    border-style: solid;
-		    border-width: 1px;
-                    padding: 3px 4px;
-		    text-align: center;
-		}
-		table td {
-		    border-color: #ccc;
-		    border-style: solid;
-                    border-width: 1px;
-                    padding: 3px 4px;
-		}
-
-
-
-.table_no_border {
-    border-collapse: collapse;
-}
-.table_no_border .td_no_border {
-    padding: 0;
-    border-width: 0px;
-}
-
-
-		
-.form {
-	max-width: 425px;
-	margin-bottom: 25px;
-	margin-left: auto;
-	margin-right: auto;
-}
-
-.form-line {
-	margin: 6 0 6 0;
-	padding: 12 12 12 12;
-}
-
-.form-submit-button {
-	padding: 4px;
-	text-align: center;
-}
-		
-	</STYLE>
+    <link rel="stylesheet" href="<%= basePath %>static/styles.css">
 </head>
 <body>
 <div class="padded">
-<h1><%= StringEscapeUtils.escapeHtml4(client.getApplicationName()) %></h1>
+<h1><a href="<%= basePath + "console/clients/" + client.getClientId() + "/edit" %>"><%= StringEscapeUtils.escapeHtml4(client.getApplicationName()) %></a></h1>
 <br/>
 <table border="1" id=client>
     <%
@@ -90,7 +37,7 @@
                <%= client.getClientId() %>
            </td>
            <td>
-               <%= clientType %>
+               <%= client.isConfidential() ? "Confidential" : "Public" %>
            </td> 
            <td>
            <%
@@ -110,7 +57,7 @@
                Date date = new Date(client.getRegisteredAt() * 1000);
                String created = dateFormat.format(date);
 		   %>
-           <%=    created %><br/>
+           <%=    created %>
            
            </td>
            
@@ -126,6 +73,11 @@
 <b>Home Realm</b>
 </td>
 <td>
+<%  String homeRealmAlias = client.getProperties().get("homeRealmAlias");
+    if (homeRealmAlias == null || homeRealmAlias.trim().isEmpty()) {
+        homeRealmAlias = "Default - User selection at login";
+    }
+%> 
     <%=  homeRealmAlias %>
 </td>
 </tr>
@@ -185,10 +137,10 @@
     <div class="form-line">
         <input type="hidden" value="<%=token%>" name="client_csrfToken" />
     </div>
-     <div data-type="control_button" class="form-line">
-	<button name="submit_reset_button" class="form-submit-button" type="submit">Reset Client Secret</button>
+    <div data-type="control_button" class="form-line">
+        <button name="submit_reset_button" class="form-submit-button" type="submit">Reset Client Secret</button>
+    </div>
 </form>
-     </div> 
 </td>
 <%
     }
@@ -198,9 +150,9 @@
     <div class="form-line">
         <input type="hidden" value="<%=token%>" name="client_csrfToken" />
     </div>
-        <div data-type="control_button" class="form-line">
-	<button name="submit_delete_button" class="form-submit-button" type="submit">Delete Client</button>
-        </div>
+    <div data-type="control_button" class="form-line">
+       <button name="submit_delete_button" class="form-submit-button" type="submit">Delete Client</button>
+    </div>
 </form>
 </td>
 </tr>
