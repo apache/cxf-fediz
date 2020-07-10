@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.Enumeration;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -35,8 +35,6 @@ import org.apache.cxf.fediz.service.idp.service.ConfigService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.util.Assert;
@@ -49,11 +47,10 @@ import org.springframework.util.Assert;
  *
  */
 public class FedizEntryPoint implements AuthenticationEntryPoint,
-    InitializingBean, ApplicationContextAware {
+    InitializingBean {
 
     private static final Logger LOG = LoggerFactory.getLogger(FedizEntryPoint.class);
 
-    private ApplicationContext appContext;
     private ConfigService configService;
     private String realm;
     private Idp idpConfig;
@@ -75,7 +72,6 @@ public class FedizEntryPoint implements AuthenticationEntryPoint,
     }
 
     public void afterPropertiesSet() throws Exception {
-        Assert.notNull(this.appContext, "ApplicationContext cannot be null.");
         Assert.notNull(this.configService, "ConfigService cannot be null.");
         Assert.notNull(this.realm, "realm cannot be null.");
     }
@@ -99,18 +95,15 @@ public class FedizEntryPoint implements AuthenticationEntryPoint,
         }
 
         StringBuilder builder = new StringBuilder(extractFullContextPath(servletRequest))
-            .append(loginUri).append("?");
+            .append(loginUri).append('?');
 
         // Add the query parameters - URL encoding them for safety
-        @SuppressWarnings("unchecked")
-        Enumeration<String> names = servletRequest.getParameterNames();
-        while (names.hasMoreElements()) {
-            String name = names.nextElement();
-            String[] values = servletRequest.getParameterValues(name);
+        for (Map.Entry<String, String[]> parameter : servletRequest.getParameterMap().entrySet()) {
+            String[] values = parameter.getValue();
             if (values != null && values.length > 0) {
-                builder.append(name).append('=');
-                builder.append(URLEncoder.encode(values[0], "UTF-8"));
-                builder.append('&');
+                builder.append(parameter.getKey()).append('=')
+                    .append(URLEncoder.encode(values[0], "UTF-8"))
+                    .append('&');
             }
         }
         // Remove trailing ampersand
@@ -137,30 +130,25 @@ public class FedizEntryPoint implements AuthenticationEntryPoint,
 
     }
 
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) {
-        this.appContext = applicationContext;
-    }
-
     protected String extractFullContextPath(HttpServletRequest request) throws MalformedURLException {
-        String result = null;
+        String result;
         String contextPath = request.getContextPath();
         String requestUrl = request.getRequestURL().toString();
 
         String requestPath = new URL(requestUrl).getPath();
         // Cut request path of request url and add context path if not ROOT
-        if (requestPath != null && requestPath.length() > 0) {
+        if (requestPath != null && !requestPath.isEmpty()) {
             int lastIndex = requestUrl.lastIndexOf(requestPath);
             result = requestUrl.substring(0, lastIndex);
         } else {
             result = requestUrl;
         }
-        if (contextPath != null && contextPath.length() > 0) {
+        if (contextPath != null && !contextPath.isEmpty()) {
             // contextPath contains starting slash
-            result = result + contextPath;
+            result += contextPath;
         }
         if (result.charAt(result.length() - 1) != '/') {
-            result = result + "/";
+            result += '/';
         }
         return result;
     }
