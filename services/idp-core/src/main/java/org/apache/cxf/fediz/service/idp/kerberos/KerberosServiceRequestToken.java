@@ -120,10 +120,7 @@ public class KerberosServiceRequestToken extends AbstractAuthenticationToken {
             return false;
         }
         KerberosServiceRequestToken other = (KerberosServiceRequestToken) obj;
-        if (!Arrays.equals(token, other.token)) {       //NOPMD
-            return false;
-        }
-        return true;
+        return Arrays.equals(token, other.token);
     }
 
     /* (non-Javadoc)
