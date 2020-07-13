@@ -70,7 +70,7 @@ public class LogoutRedirectConstraintHandler implements CallbackHandler {
             if (logoutUri != null) {
                 List<String> uris = Arrays.asList(logoutUri.split(" "));
                 for (int i = 0; i < uris.size(); i++) {
-                    uris.set(i, "\\Q" + uris.get(i) + "\\E");
+                    uris.set(i, Pattern.quote(uris.get(i)));
                 }
                 return Pattern.compile("(" + String.join("|", uris) + ")");
             }
