@@ -12,7 +12,7 @@ Apache CXF Fediz provide the following features:
 * Role information encoded as AttributeStatement in SAML 1.1/2.0 tokens
 * Claims information provided by FederationPrincipal interface
 * Fediz IdP supports Resource and Requestor IDP role, Home Realm Discovery Service, ...
-* Support for Jetty, Tomcat, Websphere and Spring Security 2.0/3.1
+* Support for Jetty, Tomcat, Websphere and Spring Security 4.x
 * Support for logout in the RP and IdP
 * Support for logging on to the IdP via UsernamePassword, Kerberos and TLS
 client authentication
@@ -21,6 +21,7 @@ client authentication
 * Support to use the IDP as an identity broker with a remote SAML SSO IdP
 * Support to use the IDP as an identity broker with a remote OpenId Connect IdP
 * SAML SSO support in the IdP
+* OpenId Connect (OIDC)
 
 
 2. Installation Prerequisites 

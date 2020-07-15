@@ -18,6 +18,7 @@ Fediz includes the following feature set:
     Publish WS-Federation Metadata document
     Role information encoded as AttributeStatement in SAML 1.1/2.0 tokens
     Claims information provided by FederationPrincipal interface
+    OpenId Connect (OIDC)
 
 
 Export Notice
