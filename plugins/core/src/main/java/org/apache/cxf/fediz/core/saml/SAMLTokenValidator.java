@@ -23,9 +23,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyStore;
+import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +51,8 @@ import org.apache.cxf.fediz.core.config.TrustedIssuer;
 import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.core.saml.FedizSignatureTrustValidator.TrustType;
+import org.apache.cxf.fediz.core.util.CertsUtils;
+import org.apache.wss4j.common.crypto.Merlin;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.apache.wss4j.common.principal.SAMLTokenPrincipal;
 import org.apache.wss4j.common.principal.SAMLTokenPrincipalImpl;
@@ -84,6 +89,54 @@ public class SAMLTokenValidator implements TokenValidator {
         String ns = token.getNamespaceURI();
         return WSConstants.SAML2_NS.equals(ns) || WSConstants.SAML_NS.equals(ns);
     }
+    
+    private SAMLKeyInfo validateInCertificatesStore(SamlAssertionWrapper assertion, FedizContext config) 
+            throws WSSecurityException {
+        //Iterate through all trust certificates
+        for (TrustManager trustManager : config.getCertificateStores()) {
+            try {
+                if (trustManager.getTrustManagersType().getKeyStore().getType().equalsIgnoreCase("PEM")) {
+                    X509Certificate[] certificates = new X509Certificate[1];
+                    certificates[0] = CertsUtils.
+                            getX509CertificateFromFile(trustManager.getName(), config.getClassloader());
+                    
+                    SAMLKeyInfo samlKeyInfo = new SAMLKeyInfo(certificates);
+                    assertion.verifySignature(samlKeyInfo);
+                    return samlKeyInfo;
+                } else {
+                    if (trustManager.getCrypto() instanceof Merlin) {
+                        KeyStore keystore = ((Merlin) trustManager.getCrypto()).getKeyStore();
+                        Enumeration<String> allAliases = keystore.aliases();
+                        while (allAliases.hasMoreElements()) {
+                            String keyAlias = allAliases.nextElement();
+                            
+                            X509Certificate[] certificates = new X509Certificate[1];
+                            certificates[0] = CertsUtils.
+                                    getX509CertificateFromCrypto(trustManager.getCrypto(), keyAlias);
+                            
+                            SAMLKeyInfo samlKeyInfo = new SAMLKeyInfo(certificates);
+                            try {
+                                assertion.verifySignature(samlKeyInfo);
+                                return samlKeyInfo;
+                            } catch (WSSecurityException e) {
+                                if (LOG.isDebugEnabled()) {
+                                    LOG.debug("Attempt to validate signature with {} key in trust manager keystore", 
+                                            keyAlias, e);  
+                                }
+                            }
+                        }
+                    }
+                }
+ 
+            } catch (Exception e) {
+                LOG.debug("Signature validation failed", e);
+            }      
+        }
+        throw new WSSecurityException(
+                WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity",
+                new Object[] {"cannot get certificate or key"}
+            );
+    }
 
     public TokenValidatorResponse validateAndProcessToken(TokenValidatorRequest request,
             FedizContext config) throws ProcessingException {
@@ -113,12 +166,17 @@ public class SAMLTokenValidator implements TokenValidator {
                 // Verify the signature
                 Signature sig = assertion.getSignature();
                 KeyInfo keyInfo = sig.getKeyInfo();
-                SAMLKeyInfo samlKeyInfo =
-                    org.apache.wss4j.common.saml.SAMLUtil.getCredentialFromKeyInfo(
-                        keyInfo.getDOM(), new WSSSAMLKeyInfoProcessor(requestData),
-                        requestData.getSigVerCrypto()
-                    );
-                assertion.verifySignature(samlKeyInfo);
+                SAMLKeyInfo samlKeyInfo = null;
+                if (keyInfo != null) {
+                    samlKeyInfo =
+                        org.apache.wss4j.common.saml.SAMLUtil.getCredentialFromKeyInfo(
+                            keyInfo.getDOM(), new WSSSAMLKeyInfoProcessor(requestData),
+                            requestData.getSigVerCrypto()
+                        );
+                    assertion.verifySignature(samlKeyInfo);
+                } else {
+                    samlKeyInfo = validateInCertificatesStore(assertion, config);
+                }
 
                 // Parse the subject if it exists
                 assertion.parseSubject(
