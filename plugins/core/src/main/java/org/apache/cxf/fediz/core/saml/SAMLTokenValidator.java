@@ -99,17 +99,18 @@ public class SAMLTokenValidator implements TokenValidator {
             // PasswordCallbackHandler(password));
 
             SamlAssertionWrapper assertion = new SamlAssertionWrapper(token);
-            
+
             boolean doNotEnforceAssertionsSigned = !request.isEnforceTokenSigned();
-            
+
             boolean trusted = doNotEnforceAssertionsSigned;
             String assertionIssuer = assertion.getIssuerString();
-            
-            if (!doNotEnforceAssertionsSigned) {
-                if (!assertion.isSigned()) {
-                    LOG.warn("Assertion is not signed");
-                    throw new ProcessingException(TYPE.TOKEN_NO_SIGNATURE);
-                }
+
+            if (!doNotEnforceAssertionsSigned && !assertion.isSigned()) {
+                LOG.warn("Assertion is not signed");
+                throw new ProcessingException(TYPE.TOKEN_NO_SIGNATURE);
+            }
+
+            if (assertion.isSigned()) {
                 // Verify the signature
                 Signature sig = assertion.getSignature();
                 KeyInfo keyInfo = sig.getKeyInfo();
