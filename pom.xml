@@ -41,8 +41,8 @@
         <bval.version>2.0.3</bval.version>
         <commons.dbcp2.version>2.7.0</commons.dbcp2.version>
         <commons.logging.version>1.2</commons.logging.version>
-        <commons.text.version>1.8</commons.text.version>
-        <commons.validator.version>1.6</commons.validator.version>
+        <commons.text.version>1.9</commons.text.version>
+        <commons.validator.version>1.7</commons.validator.version>
         <cxf.version>3.3.7</cxf.version>
         <cxf.build-utils.version>3.4.4</cxf.build-utils.version>
         <easymock.version>4.0.2</easymock.version>
@@ -50,7 +50,7 @@
         <ehcache3.version>3.0.3</ehcache3.version>
         <jcache.version>1.0.0</jcache.version>
         <hsqldb.version>2.5.1</hsqldb.version>
-        <htmlunit.version>2.42.0</htmlunit.version>
+        <htmlunit.version>2.43.0</htmlunit.version>
         <jackson.version>2.10.4</jackson.version>
         <jaxb.version>2.3.2</jaxb.version>
         <jetty9.version>9.4.30.v20200611</jetty9.version>
@@ -62,7 +62,7 @@
         <slf4j.version>1.7.30</slf4j.version>
         <spring.version>5.2.8.RELEASE</spring.version>
         <spring-ldap-core.version>2.3.3.RELEASE</spring-ldap-core.version>
-        <spring.security.version>4.2.17.RELEASE</spring.security.version>
+        <spring.security.version>4.2.18.RELEASE</spring.security.version>
         <spring-webflow.version>2.5.1.RELEASE</spring-webflow.version>
         <tomcat.version>9.0.37</tomcat.version>
         <validation-api.version>2.0.2</validation-api.version>
@@ -299,7 +299,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>3.1.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.felix</groupId>
@@ -336,7 +336,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
-                    <version>3.0.1</version>
+                    <version>3.2.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
