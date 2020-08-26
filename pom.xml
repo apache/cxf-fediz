@@ -43,7 +43,7 @@
         <commons.logging.version>1.2</commons.logging.version>
         <commons.text.version>1.9</commons.text.version>
         <commons.validator.version>1.7</commons.validator.version>
-        <cxf.version>3.3.9</cxf.version>
+        <cxf.version>3.4.2</cxf.version>
         <cxf.build-utils.version>3.4.4</cxf.build-utils.version>
         <easymock.version>4.0.2</easymock.version>
         <ehcache.version>2.10.6</ehcache.version>
@@ -51,7 +51,7 @@
         <jcache.version>1.0.0</jcache.version>
         <hsqldb.version>2.5.1</hsqldb.version>
         <htmlunit.version>2.47.1</htmlunit.version>
-        <jackson.version>2.10.5</jackson.version>
+        <jackson.version>2.11.4</jackson.version>
         <jaxb.version>2.3.2</jaxb.version>
         <jetty9.version>9.4.36.v20210114</jetty9.version>
         <junit.version>4.13.2</junit.version>
@@ -66,7 +66,7 @@
         <spring-webflow.version>2.5.1.RELEASE</spring-webflow.version>
         <tomcat.version>9.0.43</tomcat.version>
         <validation-api.version>2.0.2</validation-api.version>
-        <wss4j.version>2.2.6</wss4j.version>
+        <wss4j.version>2.3.1</wss4j.version>
 
         <tomcat.url>http://localhost:8080/manager/text</tomcat.url>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

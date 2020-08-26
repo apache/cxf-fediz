@@ -94,9 +94,7 @@ public abstract class AbstractFedizProcessor implements FedizProcessor {
             if (!config.getTokenReplayCache().contains(tokenId)) {
                 // not cached
                 if (expires != null) {
-                    Instant now = Instant.now();
-                    long ttl = expires.getEpochSecond() - now.getEpochSecond();
-                    config.getTokenReplayCache().add(tokenId, ttl);
+                    config.getTokenReplayCache().add(tokenId, expires);
                 } else {
                     config.getTokenReplayCache().add(tokenId);
                 }
