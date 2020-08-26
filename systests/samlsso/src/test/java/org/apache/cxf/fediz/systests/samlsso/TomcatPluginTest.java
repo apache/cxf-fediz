@@ -97,15 +97,15 @@ public class TomcatPluginTest extends AbstractTests {
         httpsConnector.setPort(Integer.parseInt(port));
         httpsConnector.setSecure(true);
         httpsConnector.setScheme("https");
-        httpsConnector.setAttribute("keyAlias", "mytomidpkey");
-        httpsConnector.setAttribute("keystorePass", "tompass");
-        httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
-        httpsConnector.setAttribute("truststorePass", "tompass");
-        httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
-        httpsConnector.setAttribute("clientAuth", "want");
-        // httpsConnector.setAttribute("clientAuth", "false");
-        httpsConnector.setAttribute("sslProtocol", "TLS");
-        httpsConnector.setAttribute("SSLEnabled", true);
+        httpsConnector.setProperty("keyAlias", "mytomidpkey");
+        httpsConnector.setProperty("keystorePass", "tompass");
+        httpsConnector.setProperty("keystoreFile", "test-classes/server.jks");
+        httpsConnector.setProperty("truststorePass", "tompass");
+        httpsConnector.setProperty("truststoreFile", "test-classes/server.jks");
+        httpsConnector.setProperty("clientAuth", "want");
+        // httpsConnector.setProperty("clientAuth", "false");
+        httpsConnector.setProperty("sslProtocol", "TLS");
+        httpsConnector.setProperty("SSLEnabled", "true");
 
         server.getService().addConnector(httpsConnector);
 

@@ -99,15 +99,15 @@ public class IdpTest {
         httpsConnector.setPort(Integer.parseInt(port));
         httpsConnector.setSecure(true);
         httpsConnector.setScheme("https");
-        httpsConnector.setAttribute("keyAlias", "mytomidpkey");
-        httpsConnector.setAttribute("keystorePass", "tompass");
-        httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
-        httpsConnector.setAttribute("truststorePass", "tompass");
-        httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
-        httpsConnector.setAttribute("clientAuth", "want");
-        // httpsConnector.setAttribute("clientAuth", "false");
-        httpsConnector.setAttribute("sslProtocol", "TLS");
-        httpsConnector.setAttribute("SSLEnabled", true);
+        httpsConnector.setProperty("keyAlias", "mytomidpkey");
+        httpsConnector.setProperty("keystorePass", "tompass");
+        httpsConnector.setProperty("keystoreFile", "test-classes/server.jks");
+        httpsConnector.setProperty("truststorePass", "tompass");
+        httpsConnector.setProperty("truststoreFile", "test-classes/server.jks");
+        httpsConnector.setProperty("clientAuth", "want");
+        // httpsConnector.setProperty("clientAuth", "false");
+        httpsConnector.setProperty("sslProtocol", "TLS");
+        httpsConnector.setProperty("SSLEnabled", "true");
 
         server.getService().addConnector(httpsConnector);
 
@@ -811,13 +811,13 @@ public class IdpTest {
     // Send a query parameter that's too big
     @org.junit.Test
     public void testLargeQueryParameterRejected() throws Exception {
-        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
-        url += "wa=wsignin1.0";
-        url += "&whr=urn:org:apache:cxf:fediz:idp:realm-A";
-        url += "&wtrealm=urn:org:apache:cxf:fediz:fedizhelloworld";
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?"
+            + "wa=wsignin1.0"
+            + "&whr=urn:org:apache:cxf:fediz:idp:realm-A"
+            + "&wtrealm=urn:org:apache:cxf:fediz:fedizhelloworld";
 
-        StringBuilder sb = new StringBuilder("https://localhost:" + getRpHttpsPort() + "/"
-                + getServletContextName() + "/secure/fedservlet");
+        StringBuilder sb = new StringBuilder("https://localhost:").append(getRpHttpsPort()).append('/')
+                .append(getServletContextName()).append("/secure/fedservlet");
         for (int i = 0; i < 100; i++) {
             sb.append("aaaaaaaaaa");
         }
@@ -847,13 +847,13 @@ public class IdpTest {
     // Send a query parameter that's bigger than the accepted default, but is allowed by configuration
     @org.junit.Test
     public void testLargeQueryParameterAccepted() throws Exception {
-        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
-        url += "wa=wsignin1.0";
-        url += "&whr=urn:org:apache:cxf:fediz:idp:realm-A";
-        url += "&wtrealm=urn:org:apache:cxf:fediz:fedizhelloworld";
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?"
+            + "wa=wsignin1.0"
+            + "&whr=urn:org:apache:cxf:fediz:idp:realm-A"
+            + "&wtrealm=urn:org:apache:cxf:fediz:fedizhelloworld";
 
-        StringBuilder sb = new StringBuilder("https://localhost:" + getRpHttpsPort()
-                + "/" + getServletContextName() + "/secure/fedservlet");
+        StringBuilder sb = new StringBuilder("https://localhost:").append(getRpHttpsPort()).append('/')
+            .append(getServletContextName()).append("/secure/fedservlet");
         for (int i = 0; i < 50; i++) {
             sb.append("aaaaaaaaaa");
         }
