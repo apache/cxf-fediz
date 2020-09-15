@@ -60,7 +60,7 @@
         <openjpa.version>3.1.2</openjpa.version>
         <servlet.version>3.1.0</servlet.version>
         <slf4j.version>1.7.30</slf4j.version>
-        <spring.version>4.3.28.RELEASE</spring.version>
+        <spring.version>4.3.29.RELEASE</spring.version>
         <spring-ldap-core.version>2.3.3.RELEASE</spring-ldap-core.version>
         <spring.security.version>4.2.18.RELEASE</spring.security.version>
         <spring-webflow.version>2.5.1.RELEASE</spring-webflow.version>
