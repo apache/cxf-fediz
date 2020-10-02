@@ -522,6 +522,8 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             String urlEncodedRequest =
                 URLEncoder.encode(authnRequestEncoded, "UTF-8");
 
+            String signInQuery = resolveSignInQuery(request, config);
+
             StringBuilder sb = new StringBuilder();
             sb.append(SAMLSSOConstants.SAML_REQUEST).append('=').append(urlEncodedRequest);
             sb.append('&').append(SAMLSSOConstants.RELAY_STATE).append('=').append(relayState);
@@ -529,6 +531,11 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             if (((SAMLProtocol)config.getProtocol()).isSignRequest()) {
                 String signature = signRequest(config, sb);
                 sb.append('&').append(SAMLSSOConstants.SIGNATURE).append('=').append(signature);
+            }
+
+            // add signin query extensions
+            if (signInQuery != null && signInQuery.length() > 0) {
+                sb.append('&').append(signInQuery);
             }
 
             RedirectionResponse response = new RedirectionResponse();

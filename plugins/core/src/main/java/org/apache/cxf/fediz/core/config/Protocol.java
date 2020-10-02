@@ -43,6 +43,7 @@ public abstract class Protocol {
     private Object realm;
     private List<TokenValidator> validators = new ArrayList<>();
     private Object reply;
+    private Object signInQuery;
 
     public Protocol(ProtocolType protocolType) {
         this.protocolType = protocolType;
@@ -206,6 +207,27 @@ public abstract class Protocol {
             LOG.error("Unsupported 'Reply' object");
             throw new IllegalArgumentException("Unsupported 'Reply' object. Type must be "
                                                + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
+        }
+    }
+
+    public Object getSignInQuery() {
+        if (this.signInQuery != null) {
+            return this.signInQuery;
+        }
+        CallbackType cbt = getProtocolType().getSignInQuery();
+        this.signInQuery = ConfigUtils.loadCallbackType(cbt, "SignInQuery", getClassloader());
+        return this.signInQuery;
+    }
+
+    public void setSignInQuery(Object value) {
+        final boolean isString = value instanceof String;
+        final boolean isCallbackHandler = value instanceof CallbackHandler;
+        if (isString || isCallbackHandler) {
+            this.signInQuery = value;
+        } else {
+            LOG.error("Unsupported 'SignInQuery' object");
+            throw new IllegalArgumentException("Unsupported 'SignInQuery' object. Type must be java.lang.String or "
+                                                       + "javax.security.auth.callback.CallbackHandler.");
         }
     }
 
