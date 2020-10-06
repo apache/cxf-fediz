@@ -174,12 +174,12 @@ public class CallbackHandlerTest {
             tokenRequest.setType(ArgumentType.STRING);
             tokenRequest.setValue(TestCallbackHandler.TEST_WREQ);
             ((FederationProtocolType)protocol).setRequest(tokenRequest);
-
-            CallbackType signInQueryType = new CallbackType();
-            signInQueryType.setType(ArgumentType.STRING);
-            signInQueryType.setValue(TEST_SIGNIN_QUERY);
-            ((FederationProtocolType)protocol).setSignInQuery(signInQueryType);
         }
+
+        CallbackType signInQueryType = new CallbackType();
+        signInQueryType.setType(ArgumentType.STRING);
+        signInQueryType.setValue(TEST_SIGNIN_QUERY);
+        protocol.setSignInQuery(signInQueryType);
 
         return config;
     }
@@ -215,16 +215,16 @@ public class CallbackHandlerTest {
             tokenRequest.setValue(CALLBACKHANDLER_CLASS);
             ((FederationProtocolType)protocol).setRequest(tokenRequest);
 
-            CallbackType signInQueryType = new CallbackType();
-            signInQueryType.setType(ArgumentType.CLASS);
-            signInQueryType.setValue(CALLBACKHANDLER_CLASS);
-            ((FederationProtocolType)protocol).setSignInQuery(signInQueryType);
-
             CallbackType replyType = new CallbackType();
             replyType.setType(ArgumentType.CLASS);
             replyType.setValue(CALLBACKHANDLER_CLASS);
             ((FederationProtocolType)protocol).setReply(replyType);
         }
+
+        CallbackType signInQueryType = new CallbackType();
+        signInQueryType.setType(ArgumentType.CLASS);
+        signInQueryType.setValue(CALLBACKHANDLER_CLASS);
+        protocol.setSignInQuery(signInQueryType);
 
         return config;
     }
@@ -328,6 +328,16 @@ public class CallbackHandlerTest {
         issuerCB.handle(new Callback[] {callbackIDP});
         String issuerURL = callbackIDP.getIssuerUrl().toString();
         Assert.assertEquals(TestCallbackHandler.TEST_IDP, issuerURL);
+
+        Object signInQueryObj = protocol.getSignInQuery();
+        Assert.assertTrue(signInQueryObj instanceof CallbackHandler);
+        CallbackHandler siqCB = (CallbackHandler)signInQueryObj;
+        SignInQueryCallback callbackSIQ = new SignInQueryCallback(null);
+        siqCB.handle(new Callback[] {callbackSIQ});
+        Map<String, String> signinQueryMap = callbackSIQ.getSignInQueryParamMap();
+        Assert.assertEquals(2, signinQueryMap.size());
+        Assert.assertEquals("myid", signinQueryMap.get("pubid"));
+        Assert.assertEquals("<=>", signinQueryMap.get("testenc"));
     }
 
     @org.junit.Test
@@ -392,6 +402,11 @@ public class CallbackHandlerTest {
         Assert.assertTrue(issuerObj instanceof String);
         String issuerURL = (String)issuerObj;
         Assert.assertEquals(TestCallbackHandler.TEST_IDP, issuerURL);
+
+        Object signInQueryObj = protocol.getSignInQuery();
+        Assert.assertTrue(signInQueryObj instanceof String);
+        String signInQuery = (String)signInQueryObj;
+        Assert.assertEquals(TestCallbackHandler.TEST_SIGNIN_QUERY, signInQuery);
     }
 
 
