@@ -36,7 +36,6 @@ public class FederationProtocol extends Protocol {
     private Object authenticationType;
     private Object homeRealm;
     private Object freshness;
-    private Object signInQuery;
     private Object signOutQuery;
 
     public FederationProtocol(ProtocolType protocolType) {
@@ -116,27 +115,6 @@ public class FederationProtocol extends Protocol {
         } else {
             LOG.error("Unsupported 'Freshness' object");
             throw new IllegalArgumentException("Unsupported 'Freshness' object. Type must be "
-                                               + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
-        }
-    }
-
-    public Object getSignInQuery() {
-        if (this.signInQuery != null) {
-            return this.signInQuery;
-        }
-        CallbackType cbt = getFederationProtocol().getSignInQuery();
-        this.signInQuery = ConfigUtils.loadCallbackType(cbt, "SignInQuery", getClassloader());
-        return this.signInQuery;
-    }
-
-    public void setSignInQuery(Object value) {
-        final boolean isString = value instanceof String;
-        final boolean isCallbackHandler = value instanceof CallbackHandler;
-        if (isString || isCallbackHandler) {
-            this.signInQuery = value;
-        } else {
-            LOG.error("Unsupported 'SignInQuery' object");
-            throw new IllegalArgumentException("Unsupported 'SignInQuery' object. Type must be "
                                                + "java.lang.String or javax.security.auth.callback.CallbackHandler.");
         }
     }

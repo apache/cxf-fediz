@@ -25,6 +25,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -38,9 +39,13 @@ import org.apache.cxf.fediz.core.exception.ProcessingException.TYPE;
 import org.apache.cxf.fediz.core.spi.IDPCallback;
 import org.apache.cxf.fediz.core.spi.RealmCallback;
 import org.apache.cxf.fediz.core.spi.ReplyCallback;
+import org.apache.cxf.fediz.core.spi.SignInQueryCallback;
 import org.apache.cxf.fediz.core.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.net.URLEncoder.encode;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public abstract class AbstractFedizProcessor implements FedizProcessor {
 
@@ -179,5 +184,33 @@ public abstract class AbstractFedizProcessor implements FedizProcessor {
                 }
             }
         }
+    }
+
+    protected String resolveSignInQuery(HttpServletRequest request, FedizContext config) throws IOException,
+            UnsupportedCallbackException {
+        Object signInQueryObj = config.getProtocol().getSignInQuery();
+        String signInQuery = null;
+        if (signInQueryObj != null) {
+            if (signInQueryObj instanceof String) {
+                signInQuery = (String)signInQueryObj;
+            } else if (signInQueryObj instanceof CallbackHandler) {
+                CallbackHandler frCB = (CallbackHandler)signInQueryObj;
+                SignInQueryCallback callback = new SignInQueryCallback(request);
+                frCB.handle(new Callback[] {callback});
+                Map<String, String> signInQueryMap = callback.getSignInQueryParamMap();
+                if (signInQueryMap != null) {
+                    StringBuilder sbQuery = new StringBuilder();
+                    for (Map.Entry<String, String> entry : signInQueryMap.entrySet()) {
+                        if (sbQuery.length() > 0) {
+                            sbQuery.append('&');
+                        }
+                        sbQuery.append(entry.getKey()).append('=').append(encode(entry.getValue(), UTF_8.name()));
+                    }
+                    signInQuery = sbQuery.toString();
+                }
+
+            }
+        }
+        return signInQuery;
     }
 }

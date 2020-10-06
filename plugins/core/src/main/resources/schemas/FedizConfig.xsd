@@ -155,7 +155,6 @@
                     <xs:element ref="homeRealm" />
                     <xs:element ref="freshness" />
                     <xs:element ref="request" />
-                    <xs:element ref="signInQuery" />
                     <xs:element ref="signOutQuery" />
                 </xs:sequence>
                 <xs:attribute name="version" use="required" type="xs:string" />
@@ -205,6 +204,7 @@
             <xs:element ref="tokenValidators" />
             <xs:element ref="metadataURI" />
             <xs:element ref="reply" />
+            <xs:element ref="signInQuery" />
         </xs:sequence>
     </xs:complexType>
     
