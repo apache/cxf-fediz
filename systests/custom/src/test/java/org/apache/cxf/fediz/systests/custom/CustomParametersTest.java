@@ -86,20 +86,20 @@ public class CustomParametersTest {
         httpsConnector.setPort(Integer.parseInt(port));
         httpsConnector.setSecure(true);
         httpsConnector.setScheme("https");
-        httpsConnector.setAttribute("sslProtocol", "TLS");
-        httpsConnector.setAttribute("SSLEnabled", true);
-//        httpsConnector.setAttribute("keyAlias", "mytomidpkey");
-        httpsConnector.setAttribute("keystorePass", "tompass");
-        httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
+        httpsConnector.setProperty("sslProtocol", "TLS");
+        httpsConnector.setProperty("SSLEnabled", "true");
+//        httpsConnector.setProperty("keyAlias", "mytomidpkey");
+        httpsConnector.setProperty("keystorePass", "tompass");
+        httpsConnector.setProperty("keystoreFile", "test-classes/server.jks");
 
         server.getService().addConnector(httpsConnector);
 
         if (idp) {
             server.getHost().setAppBase("tomcat/idp/webapps");
 
-            httpsConnector.setAttribute("truststorePass", "tompass");
-            httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
-            httpsConnector.setAttribute("clientAuth", "want");
+            httpsConnector.setProperty("truststorePass", "tompass");
+            httpsConnector.setProperty("truststoreFile", "test-classes/server.jks");
+            httpsConnector.setProperty("clientAuth", "want");
 
             Path stsWebapp = targetDir.resolve(server.getHost().getAppBase()).resolve("fediz-idp-sts");
             server.addWebapp("/fediz-idp-sts", stsWebapp.toString());
@@ -109,7 +109,7 @@ public class CustomParametersTest {
         } else {
             server.getHost().setAppBase("tomcat/rp/webapps");
 
-            httpsConnector.setAttribute("clientAuth", "false");
+            httpsConnector.setProperty("clientAuth", "false");
 
             Path rpWebapp = targetDir.resolve(server.getHost().getAppBase()).resolve("simpleWebapp");
             Context cxt = server.addWebapp("/fedizhelloworld", rpWebapp.toString());

@@ -143,17 +143,17 @@ abstract class AbstractOIDCTest {
         httpsConnector.setPort(port);
         httpsConnector.setSecure(true);
         httpsConnector.setScheme("https");
-        httpsConnector.setAttribute("sslProtocol", "TLS");
-        httpsConnector.setAttribute("SSLEnabled", true);
-        httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
-        httpsConnector.setAttribute("keystorePass", "tompass");
+        httpsConnector.setProperty("sslProtocol", "TLS");
+        httpsConnector.setProperty("SSLEnabled", "true");
+        httpsConnector.setProperty("keystoreFile", "test-classes/server.jks");
+        httpsConnector.setProperty("keystorePass", "tompass");
 
         if (null == servletContextName) { // IDP
             server.getHost().setAppBase("tomcat/idp/webapps");
 
-            httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
-            httpsConnector.setAttribute("truststorePass", "tompass");
-            httpsConnector.setAttribute("clientAuth", "want");
+            httpsConnector.setProperty("truststoreFile", "test-classes/server.jks");
+            httpsConnector.setProperty("truststorePass", "tompass");
+            httpsConnector.setProperty("clientAuth", "want");
 
             Path stsWebapp = targetDir.resolve(server.getHost().getAppBase()).resolve("fediz-idp-sts");
             server.addWebapp("/fediz-idp-sts", stsWebapp.toString());
@@ -163,7 +163,7 @@ abstract class AbstractOIDCTest {
         } else { // RP
             server.getHost().setAppBase("tomcat/rp/webapps");
 
-            httpsConnector.setAttribute("clientAuth", "false");
+            httpsConnector.setProperty("clientAuth", "false");
 
             Path rpWebapp = targetDir.resolve(server.getHost().getAppBase()).resolve(servletContextName);
             Context ctx = server.addWebapp(servletContextName, rpWebapp.toString());

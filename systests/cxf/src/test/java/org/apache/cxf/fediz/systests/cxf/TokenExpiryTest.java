@@ -68,15 +68,15 @@ public class TokenExpiryTest extends AbstractExpiryTests {
             httpsConnector.setPort(Integer.parseInt(idpHttpsPort));
             httpsConnector.setSecure(true);
             httpsConnector.setScheme("https");
-            httpsConnector.setAttribute("keyAlias", "mytomidpkey");
-            httpsConnector.setAttribute("keystorePass", "tompass");
-            httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
-            httpsConnector.setAttribute("truststorePass", "tompass");
-            httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
-            httpsConnector.setAttribute("clientAuth", "want");
-            // httpsConnector.setAttribute("clientAuth", "false");
-            httpsConnector.setAttribute("sslProtocol", "TLS");
-            httpsConnector.setAttribute("SSLEnabled", true);
+            httpsConnector.setProperty("keyAlias", "mytomidpkey");
+            httpsConnector.setProperty("keystorePass", "tompass");
+            httpsConnector.setProperty("keystoreFile", "test-classes/server.jks");
+            httpsConnector.setProperty("truststorePass", "tompass");
+            httpsConnector.setProperty("truststoreFile", "test-classes/server.jks");
+            httpsConnector.setProperty("clientAuth", "want");
+            // httpsConnector.setProperty("clientAuth", "false");
+            httpsConnector.setProperty("sslProtocol", "TLS");
+            httpsConnector.setProperty("SSLEnabled", "true");
 
             idpServer.getService().addConnector(httpsConnector);
 
@@ -104,15 +104,15 @@ public class TokenExpiryTest extends AbstractExpiryTests {
             httpsConnector.setPort(Integer.parseInt(rpHttpsPort));
             httpsConnector.setSecure(true);
             httpsConnector.setScheme("https");
-            httpsConnector.setAttribute("keyAlias", "mytomidpkey");
-            httpsConnector.setAttribute("keystorePass", "tompass");
-            httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
-            httpsConnector.setAttribute("truststorePass", "tompass");
-            httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
-            // httpsConnector.setAttribute("clientAuth", "false");
-            httpsConnector.setAttribute("clientAuth", "want");
-            httpsConnector.setAttribute("sslProtocol", "TLS");
-            httpsConnector.setAttribute("SSLEnabled", true);
+            httpsConnector.setProperty("keyAlias", "mytomidpkey");
+            httpsConnector.setProperty("keystorePass", "tompass");
+            httpsConnector.setProperty("keystoreFile", "test-classes/server.jks");
+            httpsConnector.setProperty("truststorePass", "tompass");
+            httpsConnector.setProperty("truststoreFile", "test-classes/server.jks");
+            // httpsConnector.setProperty("clientAuth", "false");
+            httpsConnector.setProperty("clientAuth", "want");
+            httpsConnector.setProperty("sslProtocol", "TLS");
+            httpsConnector.setProperty("SSLEnabled", "true");
 
             rpServer.getService().addConnector(httpsConnector);
 

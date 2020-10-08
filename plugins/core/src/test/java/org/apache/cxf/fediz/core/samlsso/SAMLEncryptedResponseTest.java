@@ -371,38 +371,6 @@ public class SAMLEncryptedResponseTest {
         return encodeResponse(response);
     }
 
-    private Element createSamlResponse(SamlAssertionWrapper assertion, String alias,
-                                      boolean sign, String requestID)
-        throws IOException, UnsupportedCallbackException, WSSecurityException, Exception {
-        WSPasswordCallback[] cb = {
-            new WSPasswordCallback(alias, WSPasswordCallback.SIGNATURE)
-        };
-        cbPasswordHandler.handle(cb);
-        String password = cb[0].getPassword();
-
-        if (sign) {
-            assertion.signAssertion(alias, password, crypto, false);
-        }
-
-        DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-
-        Status status =
-            SAML2PResponseComponentBuilder.createStatus(
-                "urn:oasis:names:tc:SAML:2.0:status:Success", null
-            );
-        Response response =
-            SAML2PResponseComponentBuilder.createSAMLResponse(requestID,
-                                                              assertion.getIssuerString(),
-                                                              status);
-        response.getAssertions().add(assertion.getSaml2());
-
-        Document doc = docBuilder.newDocument();
-        Element policyElement = OpenSAMLUtil.toDom(response, doc);
-        doc.appendChild(policyElement);
-
-        return policyElement;
-    }
-
     private Element createEncryptedSamlResponse(SamlAssertionWrapper assertion, String alias,
                                        boolean sign, String requestID)
             throws IOException, UnsupportedCallbackException, WSSecurityException, Exception {

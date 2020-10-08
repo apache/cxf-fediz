@@ -1,4 +1,4 @@
-[![Build Status](https://builds.apache.org/view/A-D/view/CXF/job/CXF-Fediz/badge/icon?subject=Build)](https://builds.apache.org/view/A-D/view/CXF/job/CXF-Fediz/)
+[![Build Status](https://ci-builds.apache.org/job/CXF/job/CXF-Fediz/badge/icon?subject=Build)](https://ci-builds.apache.org/job/CXF/job/CXF-Fediz/)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.cxf.fediz/fediz/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.apache.cxf.fediz/fediz)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/apache/cxf-fediz)](https://lgtm.com/projects/g/apache/cxf-fediz/alerts/)
 

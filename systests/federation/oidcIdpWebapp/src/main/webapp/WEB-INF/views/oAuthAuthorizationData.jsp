@@ -86,7 +86,7 @@
                                 <td>
                                   <input type="checkbox" 
                                     <%
-                                      if (perm.isDefault() || authorizedScopes.contains(perm.getPermission())) {
+                                      if (perm.isDefaultPermission() || authorizedScopes.contains(perm.getPermission())) {
                                     %>
                                     disabled="disabled"
                                     <%
@@ -97,7 +97,7 @@
                                     value="allow"
                                   ><big><big><%= perm.getDescription() %></big></big></input>
                                     <%
-                                      if (perm.isDefault()) {
+                                      if (perm.isDefaultPermission()) {
                                     %>
                                     <input type="hidden" name="<%= perm.getPermission()%>_status" value="allow" />
                                     <%
