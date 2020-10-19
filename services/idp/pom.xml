@@ -92,7 +92,16 @@
                 <includes>
                     <include>**/*</include>
                 </includes>
+                <excludes>
+                    <exclude>**/*.jks</exclude>
+                </excludes>
                 <filtering>true</filtering>
+            </testResource>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <includes>
+                    <include>**/*.jks</include>
+                </includes>
             </testResource>
         </testResources>
         <plugins>
