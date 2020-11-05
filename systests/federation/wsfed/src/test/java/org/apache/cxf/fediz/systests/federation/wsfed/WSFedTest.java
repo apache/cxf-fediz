@@ -27,8 +27,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-import javax.servlet.ServletException;
-
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -98,8 +96,7 @@ public class WSFedTest {
         rpServer = startServer(ServerType.RP, RP_HTTPS_PORT);
     }
 
-    private static Tomcat startServer(ServerType serverType, String port)
-        throws ServletException, LifecycleException, IOException {
+    private static Tomcat startServer(ServerType serverType, String port) throws LifecycleException {
         Tomcat server = new Tomcat();
         server.setPort(0);
 

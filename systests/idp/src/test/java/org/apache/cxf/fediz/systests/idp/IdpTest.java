@@ -19,13 +19,10 @@
 
 package org.apache.cxf.fediz.systests.idp;
 
-import java.io.File;
-import java.io.IOException;
 import java.net.URLEncoder;
-import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Base64;
-
-import javax.servlet.ServletException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -49,6 +46,7 @@ import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.cxf.fediz.core.FederationConstants;
 import org.apache.cxf.fediz.core.util.DOMUtils;
+import org.apache.cxf.helpers.IOUtils;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.wss4j.dom.engine.WSSConfig;
@@ -83,13 +81,11 @@ public class IdpTest {
         WSSConfig.init();
     }
 
-    private static Tomcat startServer(boolean idp, String port)
-        throws ServletException, LifecycleException, IOException {
+    private static Tomcat startServer(boolean idp, String port) throws LifecycleException {
         Tomcat server = new Tomcat();
         server.setPort(0);
-        String currentDir = new File(".").getCanonicalPath();
-        String baseDir = currentDir + File.separator + "target";
-        server.setBaseDir(baseDir);
+        final Path targetDir = Paths.get("target").toAbsolutePath();
+        server.setBaseDir(targetDir.toString());
 
         server.getHost().setAppBase("tomcat/idp/webapps");
         server.getHost().setAutoDeploy(true);
@@ -111,11 +107,11 @@ public class IdpTest {
 
         server.getService().addConnector(httpsConnector);
 
-        File stsWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp-sts");
-        server.addWebapp("/fediz-idp-sts", stsWebapp.getAbsolutePath());
+        Path stsWebapp = targetDir.resolve(server.getHost().getAppBase()).resolve("fediz-idp-sts");
+        server.addWebapp("/fediz-idp-sts", stsWebapp.toString());
 
-        File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp");
-        server.addWebapp("/fediz-idp", idpWebapp.getAbsolutePath());
+        Path idpWebapp = targetDir.resolve(server.getHost().getAppBase()).resolve("fediz-idp");
+        server.addWebapp("/fediz-idp", idpWebapp.toString());
 
         server.start();
 
@@ -123,21 +119,17 @@ public class IdpTest {
     }
 
     @AfterClass
-    public static void cleanup() {
+    public static void cleanup() throws Exception {
         shutdownServer(idpServer);
     }
 
-    private static void shutdownServer(Tomcat server) {
-        try {
-            if (server != null && server.getServer() != null
-                && server.getServer().getState() != LifecycleState.DESTROYED) {
-                if (server.getServer().getState() != LifecycleState.STOPPED) {
-                    server.stop();
-                }
-                server.destroy();
+    private static void shutdownServer(Tomcat server) throws LifecycleException {
+        if (server != null && server.getServer() != null
+            && server.getServer().getState() != LifecycleState.DESTROYED) {
+            if (server.getServer().getState() != LifecycleState.STOPPED) {
+                server.stop();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+            server.destroy();
         }
     }
 
@@ -405,9 +397,7 @@ public class IdpTest {
         String wreply = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
         url += "&wreply=" + wreply;
 
-        String currentDir = new File(".").getCanonicalPath();
-        File f = new File(currentDir + "/src/test/resources/entity_wreq.xml");
-        String entity = new String(Files.readAllBytes(f.toPath()), "UTF-8");
+        String entity = IOUtils.toString(getClass().getResourceAsStream("/entity_wreq.xml"));
         String validWreq =
             "<RequestSecurityToken xmlns=\"http://docs.oasis-open.org/ws-sx/ws-trust/200512\">"
             + "<TokenType>&m;http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0</TokenType>"
@@ -445,9 +435,7 @@ public class IdpTest {
         String wreply = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
         url += "&wreply=" + wreply;
 
-        String currentDir = new File(".").getCanonicalPath();
-        File f = new File(currentDir + "/src/test/resources/entity_wreq2.xml");
-        String entity = new String(Files.readAllBytes(f.toPath()), "UTF-8");
+        String entity = IOUtils.toString(getClass().getResourceAsStream("/entity_wreq2.xml"));
         String validWreq =
             "<RequestSecurityToken xmlns=\"http://docs.oasis-open.org/ws-sx/ws-trust/200512\">"
             + "<TokenType>&m;http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0</TokenType>"

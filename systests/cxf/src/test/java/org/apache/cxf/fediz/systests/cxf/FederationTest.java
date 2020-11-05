@@ -19,7 +19,8 @@
 
 package org.apache.cxf.fediz.systests.cxf;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -29,6 +30,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 
+import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
@@ -52,7 +54,7 @@ public class FederationTest extends AbstractTests {
     private static Tomcat rpServer;
 
     @BeforeClass
-    public static void init() {
+    public static void init() throws Exception {
         idpHttpsPort = System.getProperty("idp.https.port");
         // idpHttpsPort = "12345";
         Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
@@ -63,95 +65,86 @@ public class FederationTest extends AbstractTests {
         initRp();
     }
 
-    private static void initIdp() {
-        try {
-            idpServer = new Tomcat();
-            idpServer.setPort(0);
-            String currentDir = new File(".").getCanonicalPath();
-            idpServer.setBaseDir(currentDir + File.separator + "target");
+    private static void initIdp() throws LifecycleException {
+        idpServer = new Tomcat();
+        idpServer.setPort(0);
+        final Path targetDir = Paths.get("target").toAbsolutePath();
+        idpServer.setBaseDir(targetDir.toString());
 
-            idpServer.getHost().setAppBase("tomcat/idp/webapps");
-            idpServer.getHost().setAutoDeploy(true);
-            idpServer.getHost().setDeployOnStartup(true);
+        idpServer.getHost().setAppBase("tomcat/idp/webapps");
+        idpServer.getHost().setAutoDeploy(true);
+        idpServer.getHost().setDeployOnStartup(true);
 
-            Connector httpsConnector = new Connector();
-            httpsConnector.setPort(Integer.parseInt(idpHttpsPort));
-            httpsConnector.setSecure(true);
-            httpsConnector.setScheme("https");
-            httpsConnector.setProperty("keyAlias", "mytomidpkey");
-            httpsConnector.setProperty("keystorePass", "tompass");
-            httpsConnector.setProperty("keystoreFile", "test-classes/server.jks");
-            httpsConnector.setProperty("truststorePass", "tompass");
-            httpsConnector.setProperty("truststoreFile", "test-classes/server.jks");
-            httpsConnector.setProperty("clientAuth", "want");
-            // httpsConnector.setProperty("clientAuth", "false");
-            httpsConnector.setProperty("sslProtocol", "TLS");
-            httpsConnector.setProperty("SSLEnabled", "true");
+        Connector httpsConnector = new Connector();
+        httpsConnector.setPort(Integer.parseInt(idpHttpsPort));
+        httpsConnector.setSecure(true);
+        httpsConnector.setScheme("https");
+        httpsConnector.setProperty("keyAlias", "mytomidpkey");
+        httpsConnector.setProperty("keystorePass", "tompass");
+        httpsConnector.setProperty("keystoreFile", "test-classes/server.jks");
+        httpsConnector.setProperty("truststorePass", "tompass");
+        httpsConnector.setProperty("truststoreFile", "test-classes/server.jks");
+        httpsConnector.setProperty("clientAuth", "want");
+        // httpsConnector.setProperty("clientAuth", "false");
+        httpsConnector.setProperty("sslProtocol", "TLS");
+        httpsConnector.setProperty("SSLEnabled", "true");
 
-            idpServer.getService().addConnector(httpsConnector);
+        idpServer.getService().addConnector(httpsConnector);
 
-            idpServer.addWebapp("/fediz-idp-sts", "fediz-idp-sts");
-            idpServer.addWebapp("/fediz-idp", "fediz-idp");
+        idpServer.addWebapp("/fediz-idp-sts", "fediz-idp-sts");
+        idpServer.addWebapp("/fediz-idp", "fediz-idp");
 
-            idpServer.start();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        idpServer.start();
     }
 
-    private static void initRp() {
-        try {
-            rpServer = new Tomcat();
-            rpServer.setPort(0);
-            String currentDir = new File(".").getCanonicalPath();
-            rpServer.setBaseDir(currentDir + File.separator + "target");
+    private static void initRp() throws LifecycleException {
+        rpServer = new Tomcat();
+        rpServer.setPort(0);
+        final Path targetDir = Paths.get("target").toAbsolutePath();
+        rpServer.setBaseDir(targetDir.toString());
 
-            rpServer.getHost().setAppBase("tomcat/rp/webapps");
-            rpServer.getHost().setAutoDeploy(true);
-            rpServer.getHost().setDeployOnStartup(true);
+        rpServer.getHost().setAppBase("tomcat/rp/webapps");
+        rpServer.getHost().setAutoDeploy(true);
+        rpServer.getHost().setDeployOnStartup(true);
 
-            Connector httpsConnector = new Connector();
-            httpsConnector.setPort(Integer.parseInt(rpHttpsPort));
-            httpsConnector.setSecure(true);
-            httpsConnector.setScheme("https");
-            httpsConnector.setProperty("keyAlias", "mytomidpkey");
-            httpsConnector.setProperty("keystorePass", "tompass");
-            httpsConnector.setProperty("keystoreFile", "test-classes/server.jks");
-            httpsConnector.setProperty("truststorePass", "tompass");
-            httpsConnector.setProperty("truststoreFile", "test-classes/server.jks");
-            // httpsConnector.setProperty("clientAuth", "false");
-            httpsConnector.setProperty("clientAuth", "want");
-            httpsConnector.setProperty("sslProtocol", "TLS");
-            httpsConnector.setProperty("SSLEnabled", "true");
+        Connector httpsConnector = new Connector();
+        httpsConnector.setPort(Integer.parseInt(rpHttpsPort));
+        httpsConnector.setSecure(true);
+        httpsConnector.setScheme("https");
+        httpsConnector.setProperty("keyAlias", "mytomidpkey");
+        httpsConnector.setProperty("keystorePass", "tompass");
+        httpsConnector.setProperty("keystoreFile", "test-classes/server.jks");
+        httpsConnector.setProperty("truststorePass", "tompass");
+        httpsConnector.setProperty("truststoreFile", "test-classes/server.jks");
+        // httpsConnector.setProperty("clientAuth", "false");
+        httpsConnector.setProperty("clientAuth", "want");
+        httpsConnector.setProperty("sslProtocol", "TLS");
+        httpsConnector.setProperty("SSLEnabled", "true");
 
-            rpServer.getService().addConnector(httpsConnector);
+        rpServer.getService().addConnector(httpsConnector);
 
-            rpServer.addWebapp("/fedizhelloworld", "cxfWebapp");
-            rpServer.addWebapp("/fedizhelloworldnoreqvalidation", "cxfWebapp");
+        rpServer.addWebapp("/fedizhelloworld", "cxfWebapp");
+        rpServer.addWebapp("/fedizhelloworldnoreqvalidation", "cxfWebapp");
 
-            rpServer.start();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        rpServer.start();
     }
 
     @AfterClass
-    public static void cleanup() {
-        shutdownServer(idpServer);
-        shutdownServer(rpServer);
+    public static void cleanup() throws Exception {
+        try {
+            shutdownServer(idpServer);
+        } finally {
+            shutdownServer(rpServer);
+        }
     }
 
-    private static void shutdownServer(Tomcat server) {
-        try {
-            if (server != null && server.getServer() != null
-                && server.getServer().getState() != LifecycleState.DESTROYED) {
-                if (server.getServer().getState() != LifecycleState.STOPPED) {
-                    server.stop();
-                }
-                server.destroy();
+    private static void shutdownServer(Tomcat server) throws LifecycleException {
+        if (server != null && server.getServer() != null
+            && server.getServer().getState() != LifecycleState.DESTROYED) {
+            if (server.getServer().getState() != LifecycleState.STOPPED) {
+                server.stop();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+            server.destroy();
         }
     }
 
