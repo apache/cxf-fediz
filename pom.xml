@@ -53,14 +53,14 @@
         <htmlunit.version>2.44.0</htmlunit.version>
         <jackson.version>2.10.5</jackson.version>
         <jaxb.version>2.3.2</jaxb.version>
-        <jetty9.version>9.4.33.v20201020</jetty9.version>
+        <jetty9.version>9.4.35.v20201120</jetty9.version>
         <junit.version>4.13.1</junit.version>
         <kerby.version>2.0.1</kerby.version>
         <log4j.version>1.2.17</log4j.version>
         <openjpa.version>3.1.2</openjpa.version>
         <servlet.version>3.1.0</servlet.version>
         <slf4j.version>1.7.30</slf4j.version>
-        <spring.version>4.3.29.RELEASE</spring.version>
+        <spring.version>4.3.30.RELEASE</spring.version>
         <spring-ldap-core.version>2.3.3.RELEASE</spring-ldap-core.version>
         <spring.security.version>4.2.19.RELEASE</spring.security.version>
         <spring-webflow.version>2.5.1.RELEASE</spring-webflow.version>
