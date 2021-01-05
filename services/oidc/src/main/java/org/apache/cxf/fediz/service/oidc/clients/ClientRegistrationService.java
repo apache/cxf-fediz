@@ -465,16 +465,15 @@ public class ClientRegistrationService {
 
     private static boolean isValidURI(String uri, boolean requireHttps) {
 
-        final UrlValidator urlValidator;
+        final String[] schemes;
 
         if (requireHttps) {
-            String[] schemes = {"https"};
-            urlValidator = new UrlValidator(schemes, UrlValidator.ALLOW_LOCAL_URLS);
+            schemes = new String[] {"https"};
         } else {
-            urlValidator = new UrlValidator(UrlValidator.ALLOW_LOCAL_URLS
-                                                     + UrlValidator.ALLOW_ALL_SCHEMES);
+            schemes = new String[] {"https", "http"};
         }
 
+        UrlValidator urlValidator = new UrlValidator(schemes, UrlValidator.ALLOW_LOCAL_URLS);
         if (!urlValidator.isValid(uri)) {
             return false;
         }
