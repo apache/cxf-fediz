@@ -19,10 +19,10 @@
 
 package org.apache.cxf.fediz.core.samlsso;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.URI;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
@@ -37,8 +37,6 @@ import javax.crypto.SecretKey;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.servlet.http.HttpServletRequest;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -57,6 +55,7 @@ import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.apache.cxf.fediz.core.processor.SAMLProcessorImpl;
+import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.crypto.CryptoFactory;
 import org.apache.wss4j.common.crypto.CryptoType;
@@ -99,31 +98,22 @@ public class SAMLEncryptedResponseTest {
     static final String TEST_IDP_ISSUER = "http://url_to_the_issuer";
     static final String TEST_CLIENT_ADDRESS = "https://127.0.0.1";
 
-    private static final String CONFIG_FILE = "fediz_test_config_saml.xml";
+    private static final String CONFIG_FILE = "/fediz_test_config_saml.xml";
 
     private static Crypto crypto;
     private static CallbackHandler cbPasswordHandler;
     private static FedizConfigurator configurator;
-    private static DocumentBuilderFactory docBuilderFactory;
 
     static {
         OpenSAMLUtil.initSamlEngine();
-        docBuilderFactory = DocumentBuilderFactory.newInstance();
-        docBuilderFactory.setNamespaceAware(true);
     }
 
 
     @BeforeClass
-    public static void init() {
-        try {
-            crypto = CryptoFactory.getInstance("signature.properties");
-            cbPasswordHandler = new KeystoreCallbackHandler();
-            getFederationConfigurator();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        Assert.assertNotNull(configurator);
-
+    public static void init() throws Exception {
+        crypto = CryptoFactory.getInstance("signature.properties");
+        cbPasswordHandler = new KeystoreCallbackHandler();
+        getFederationConfigurator();
     }
 
     @AfterClass
@@ -132,21 +122,14 @@ public class SAMLEncryptedResponseTest {
     }
 
 
-    private static FedizConfigurator getFederationConfigurator() {
-        if (configurator != null) {
-            return configurator;
+    private static FedizConfigurator getFederationConfigurator() throws Exception {
+        if (configurator == null) {
+            try (Reader r = new InputStreamReader(SAMLEncryptedResponseTest.class.getResourceAsStream(CONFIG_FILE))) {
+                configurator = new FedizConfigurator();
+                configurator.loadConfig(r);
+            }
         }
-        try {
-            configurator = new FedizConfigurator();
-            final URL resource = Thread.currentThread().getContextClassLoader()
-                    .getResource(CONFIG_FILE);
-            File f = new File(resource.toURI());
-            configurator.loadConfig(f);
-            return configurator;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+        return configurator;
     }
 
     @org.junit.Test
@@ -346,7 +329,7 @@ public class SAMLEncryptedResponseTest {
         }
     }
 
-    private String createSamlResponseStr(AbstractSAMLCallbackHandler saml2CallbackHandler,
+    private static String createSamlResponseStr(AbstractSAMLCallbackHandler saml2CallbackHandler,
                                          String requestId,
                                          boolean signAssertion) throws Exception {
         ConditionsBean cp = new ConditionsBean();
@@ -371,7 +354,7 @@ public class SAMLEncryptedResponseTest {
         return encodeResponse(response);
     }
 
-    private Element createEncryptedSamlResponse(SamlAssertionWrapper assertion, String alias,
+    private static Element createEncryptedSamlResponse(SamlAssertionWrapper assertion, String alias,
                                        boolean sign, String requestID)
             throws IOException, UnsupportedCallbackException, WSSecurityException, Exception {
         WSPasswordCallback[] cb = {new WSPasswordCallback(alias, WSPasswordCallback.SIGNATURE)};
@@ -382,8 +365,6 @@ public class SAMLEncryptedResponseTest {
             assertion.signAssertion(alias, password, crypto, false);
         }
 
-        DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-
         Status status =
                 SAML2PResponseComponentBuilder.createStatus(
                         "urn:oasis:names:tc:SAML:2.0:status:Success", null
@@ -393,7 +374,7 @@ public class SAMLEncryptedResponseTest {
                         assertion.getIssuerString(),
                         status);
 
-        Document assertionDoc = docBuilder.newDocument();
+        Document assertionDoc = DOMUtils.createDocument();
         Element elem = assertion.toDOM(assertionDoc);
 
         Element encryptedAssertionElement =
@@ -416,7 +397,7 @@ public class SAMLEncryptedResponseTest {
         encryptElement(assertionDoc, elem, WSConstants.AES_256, secretKey,
                 WSConstants.KEYTRANSPORT_RSAOAEP, certs[0], false);
 
-        Document doc = docBuilder.newDocument();
+        Document doc = DOMUtils.createDocument();
         Element policyElement = OpenSAMLUtil.toDom(response, doc);
         Element statusElement =
                 (Element)policyElement.getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:protocol",
@@ -438,7 +419,7 @@ public class SAMLEncryptedResponseTest {
         assertTrue(found);
     }
 
-    private String encodeResponse(Element response) throws IOException {
+    private static String encodeResponse(Element response) throws IOException {
         String responseMessage = DOM2Writer.nodeToString(response);
 
         byte[] deflatedBytes = CompressionUtils.deflate(responseMessage.getBytes(StandardCharsets.UTF_8));
@@ -446,7 +427,7 @@ public class SAMLEncryptedResponseTest {
         return Base64.getEncoder().encodeToString(deflatedBytes);
     }
 
-    private void encryptElement(
+    private static void encryptElement(
             Document document,
             Element elementToEncrypt,
             String algorithm,
@@ -467,9 +448,6 @@ public class SAMLEncryptedResponseTest {
             org.apache.xml.security.keys.KeyInfo encryptedKeyKeyInfo = encryptedKey.getKeyInfo();
             if (encryptedKeyKeyInfo == null) {
                 encryptedKeyKeyInfo = new org.apache.xml.security.keys.KeyInfo(document);
-                encryptedKeyKeyInfo.getElement().setAttributeNS(
-                        "http://www.w3.org/2000/xmlns/", "xmlns:dsig", "http://www.w3.org/2000/09/xmldsig#"
-                );
                 encryptedKey.setKeyInfo(encryptedKeyKeyInfo);
             }
 
@@ -484,9 +462,6 @@ public class SAMLEncryptedResponseTest {
             org.apache.xml.security.keys.KeyInfo builderKeyInfo = builder.getKeyInfo();
             if (builderKeyInfo == null) {
                 builderKeyInfo = new org.apache.xml.security.keys.KeyInfo(document);
-                builderKeyInfo.getElement().setAttributeNS(
-                        "http://www.w3.org/2000/xmlns/", "xmlns:dsig", "http://www.w3.org/2000/09/xmldsig#"
-                );
                 builder.setKeyInfo(builderKeyInfo);
             }
 
