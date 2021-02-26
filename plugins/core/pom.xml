@@ -74,6 +74,12 @@
             <version>${slf4j.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>2.12.1</version>
+            <scope>test</scope>
+       </dependency>
     </dependencies>
     <build>
         <plugins>

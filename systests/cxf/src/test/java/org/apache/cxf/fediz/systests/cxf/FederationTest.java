@@ -56,7 +56,6 @@ public class FederationTest extends AbstractTests {
     @BeforeClass
     public static void init() throws Exception {
         idpHttpsPort = System.getProperty("idp.https.port");
-        // idpHttpsPort = "12345";
         Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
         rpHttpsPort = System.getProperty("rp.https.port");
         Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
