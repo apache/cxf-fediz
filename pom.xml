@@ -46,7 +46,6 @@
         <cxf.version>3.4.2</cxf.version>
         <cxf.build-utils.version>3.4.4</cxf.build-utils.version>
         <easymock.version>4.0.2</easymock.version>
-        <ehcache.version>2.10.6</ehcache.version>
         <ehcache3.version>3.8.1</ehcache3.version>
         <jcache.version>1.0.0</jcache.version>
         <hsqldb.version>2.5.1</hsqldb.version>
