@@ -40,29 +40,12 @@
             <artifactId>fediz-core</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
-            <!-- TODO Remove when we pick up WSS4J 2.3.0-SNAPSHOT -->
-            <exclusions>
-                <exclusion>
-                    <groupId>net.sf.ehcache</groupId>
-                    <artifactId>ehcache</artifactId>
-                </exclusion>
-            </exclusions> 
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-rs-security-sso-oidc</artifactId>
             <version>${cxf.version}</version>
         </dependency>
-        <dependency>
-            <groupId>javax.cache</groupId>
-            <artifactId>cache-api</artifactId>
-            <version>${jcache.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.ehcache</groupId>
-            <artifactId>ehcache</artifactId>
-            <version>${ehcache3.version}</version>
-        </dependency> 
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-rs-extension-providers</artifactId>

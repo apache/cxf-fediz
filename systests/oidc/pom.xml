@@ -84,6 +84,11 @@
             <version>${cxf.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>javax.cache</groupId>
+            <artifactId>cache-api</artifactId>
+            <version>${jcache.version}</version>
+        </dependency>
         <!-- org.apache.cxf.ws.security.trust.STSLoginModule -->
         <dependency>
             <groupId>org.apache.cxf</groupId>
@@ -152,7 +157,7 @@
                                     <type>war</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/tomcat/rp/webapps/fediz-oidc-tomcat</outputDirectory>
-                                    <excludes>META-INF/context.xml,**/jakarta.xml.bind-api-*.jar</excludes>
+                                    <excludes>META-INF/context.xml,**/jakarta.xml.bind-api-*.jar,**/ehcache-*.jar</excludes>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz</groupId>
@@ -189,7 +194,7 @@
                         <configuration>
                             <outputDirectory>${project.build.directory}/tomcat/rp/webapps/fediz-oidc-tomcat/WEB-INF/lib</outputDirectory>
                             <includeScope>compile</includeScope>
-                            <excludeGroupIds>org.springframework.security,org.apache.cxf.fediz,jakarta.xml.bind</excludeGroupIds>
+                            <excludeGroupIds>org.springframework.security,org.apache.cxf.fediz,jakarta.xml.bind,javax.cache,org.ehcache</excludeGroupIds>
                         </configuration>
                     </execution>
                     <execution>
@@ -200,7 +205,7 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${project.build.directory}/tomcat/rp/webapps/fediz-oidc-spring/WEB-INF/lib</outputDirectory>
-                             <includeScope>compile</includeScope>
+                            <includeScope>compile</includeScope>
                         </configuration>
                     </execution>
                 </executions>

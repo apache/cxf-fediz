@@ -250,12 +250,12 @@ public class FedizContext implements Closeable {
         final String cacheKey = CACHE_KEY_PREFIX + '-' + config.getName();
         try {
             final Path diskstorePath = Files.createTempDirectory("fediz");
-            if (replayCacheString == null || "".equals(replayCacheString)) {
+            if (replayCacheString == null || replayCacheString.isEmpty()) {
                 replayCache = new EHCacheReplayCache(cacheKey, diskstorePath);
             } else {
                 try {
                     Class<?> replayCacheClass = Loader.loadClass(replayCacheString);
-                    replayCache = (ReplayCache) replayCacheClass.newInstance();
+                    replayCache = (ReplayCache) replayCacheClass.getDeclaredConstructor().newInstance();
                 } catch (ReflectiveOperationException e) {
                     replayCache = new EHCacheReplayCache(cacheKey, diskstorePath);
                 }
