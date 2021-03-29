@@ -84,11 +84,6 @@
             <version>${cxf.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>javax.cache</groupId>
-            <artifactId>cache-api</artifactId>
-            <version>${jcache.version}</version>
-        </dependency>
         <!-- org.apache.cxf.ws.security.trust.STSLoginModule -->
         <dependency>
             <groupId>org.apache.cxf</groupId>
@@ -157,7 +152,7 @@
                                     <type>war</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/tomcat/rp/webapps/fediz-oidc-tomcat</outputDirectory>
-                                    <excludes>META-INF/context.xml,**/jakarta.xml.bind-api-*.jar,**/ehcache-*.jar</excludes>
+                                    <excludes>META-INF/context.xml,**/jakarta.xml.bind-api-*.jar</excludes>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.cxf.fediz</groupId>

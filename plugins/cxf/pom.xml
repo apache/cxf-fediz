@@ -62,11 +62,6 @@
             <version>${cxf.version}</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>org.ehcache</groupId>
-            <artifactId>ehcache</artifactId>
-            <version>${ehcache3.version}</version>
-        </dependency>
 
         <dependency>
             <groupId>junit</groupId>
