@@ -77,7 +77,6 @@ import org.opensaml.saml.saml2.encryption.Decrypter;
 import org.opensaml.saml.saml2.encryption.EncryptedElementTypeEncryptedKeyResolver;
 import org.opensaml.security.x509.BasicX509Credential;
 import org.opensaml.xmlsec.encryption.support.ChainingEncryptedKeyResolver;
-import org.opensaml.xmlsec.encryption.support.EncryptedKeyResolver;
 import org.opensaml.xmlsec.encryption.support.InlineEncryptedKeyResolver;
 import org.opensaml.xmlsec.encryption.support.SimpleKeyInfoReferenceEncryptedKeyResolver;
 import org.opensaml.xmlsec.encryption.support.SimpleRetrievalMethodEncryptedKeyResolver;
@@ -149,43 +148,12 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
         RequestState requestState =
             processRelayState(request.getState(), request.getRequestState(), config);
 
-        InputStream tokenStream = null;
-        try {
-            byte[] deflatedToken = Base64.getDecoder().decode(request.getResponseToken());
-            if (protocol.isDisableDeflateEncoding()) {
-                tokenStream = new ByteArrayInputStream(deflatedToken);
-            } else {
-                tokenStream = CompressionUtils.inflate(deflatedToken);
-            }
-        } catch (IllegalArgumentException | DataFormatException ex) {
-            LOG.warn("Invalid data format", ex);
-            throw new ProcessingException(TYPE.INVALID_REQUEST);
-        }
-
-        Document doc = null;
-        Element el = null;
-        try {
-            doc = DOMUtils.readXml(tokenStream);
-            el = doc.getDocumentElement();
-
-        } catch (Exception e) {
-            LOG.warn("Failed to parse token", e);
-            throw new ProcessingException(TYPE.INVALID_REQUEST);
-        }
-
-        LOG.debug("Received response: " + DOM2Writer.nodeToString(el));
-
-        XMLObject responseObject = null;
-        try {
-            responseObject = OpenSAMLUtil.fromDom(el);
-        } catch (WSSecurityException ex) {
-            LOG.debug(ex.getMessage(), ex);
-            throw new ProcessingException(TYPE.INVALID_REQUEST);
-        }
+        final XMLObject responseObject = getXMLObjectFromToken(request.getResponseToken(),
+            protocol.isDisableDeflateEncoding());
         if (!(responseObject instanceof org.opensaml.saml.saml2.core.Response)) {
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
-        
+
         // Decrypt encrypted assertions
         decryptEncryptedAssertions((org.opensaml.saml.saml2.core.Response) responseObject, config);
 
@@ -309,7 +277,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
                 StaticKeyInfoCredentialResolver resolver = new StaticKeyInfoCredentialResolver(cred);
                 
                 ChainingEncryptedKeyResolver keyResolver = new ChainingEncryptedKeyResolver(
-                        Arrays.<EncryptedKeyResolver>asList(
+                        Arrays.asList(
                                 new InlineEncryptedKeyResolver(),
                                 new EncryptedElementTypeEncryptedKeyResolver(), 
                                 new SimpleRetrievalMethodEncryptedKeyResolver(),
@@ -339,39 +307,8 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
     private FedizResponse processSignOutResponse(FedizRequest request, FedizContext config) throws ProcessingException {
         SAMLProtocol protocol = (SAMLProtocol)config.getProtocol();
 
-        InputStream tokenStream = null;
-        try {
-            byte[] deflatedToken = Base64.getDecoder().decode(request.getResponseToken());
-            if (protocol.isDisableDeflateEncoding()) {
-                tokenStream = new ByteArrayInputStream(deflatedToken);
-            } else {
-                tokenStream = CompressionUtils.inflate(deflatedToken);
-            }
-        } catch (IllegalArgumentException | DataFormatException ex) {
-            LOG.warn("Invalid data format", ex);
-            throw new ProcessingException(TYPE.INVALID_REQUEST);
-        }
-
-        Document doc = null;
-        Element el = null;
-        try {
-            doc = DOMUtils.readXml(tokenStream);
-            el = doc.getDocumentElement();
-
-        } catch (Exception e) {
-            LOG.warn("Failed to parse token", e);
-            throw new ProcessingException(TYPE.INVALID_REQUEST);
-        }
-
-        LOG.debug("Received response: " + DOM2Writer.nodeToString(el));
-
-        XMLObject responseObject = null;
-        try {
-            responseObject = OpenSAMLUtil.fromDom(el);
-        } catch (WSSecurityException ex) {
-            LOG.debug(ex.getMessage(), ex);
-            throw new ProcessingException(TYPE.INVALID_REQUEST);
-        }
+        final XMLObject responseObject = getXMLObjectFromToken(request.getResponseToken(),
+            protocol.isDisableDeflateEncoding());
         if (!(responseObject instanceof org.opensaml.saml.saml2.core.LogoutResponse)) {
             throw new ProcessingException(TYPE.INVALID_REQUEST);
         }
@@ -400,6 +337,41 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             logoutResponse.getID());
 
         return fedResponse;
+    }
+
+    private static XMLObject getXMLObjectFromToken(String token, boolean isDisableDeflateEncoding)
+        throws ProcessingException {
+        final InputStream tokenStream;
+        try {
+            byte[] deflatedToken = Base64.getDecoder().decode(token);
+            if (isDisableDeflateEncoding) {
+                tokenStream = new ByteArrayInputStream(deflatedToken);
+            } else {
+                tokenStream = CompressionUtils.inflate(deflatedToken);
+            }
+        } catch (IllegalArgumentException | DataFormatException ex) {
+            LOG.warn("Invalid data format", ex);
+            throw new ProcessingException(TYPE.INVALID_REQUEST);
+        }
+
+        final Element el;
+        try (InputStream is = tokenStream) {
+            el = DOMUtils.readXml(is).getDocumentElement();
+        } catch (Exception e) {
+            LOG.warn("Failed to parse token", e);
+            throw new ProcessingException(TYPE.INVALID_REQUEST);
+        }
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Received response: " + DOM2Writer.nodeToString(el));
+        }
+
+        try {
+            return OpenSAMLUtil.fromDom(el);
+        } catch (WSSecurityException ex) {
+            LOG.debug(ex.getMessage(), ex);
+            throw new ProcessingException(TYPE.INVALID_REQUEST);
+        }
     }
 
     /**

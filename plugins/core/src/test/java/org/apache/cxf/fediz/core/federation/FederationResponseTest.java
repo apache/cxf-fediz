@@ -28,6 +28,8 @@ import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.List;
 
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
@@ -77,6 +79,7 @@ import org.apache.wss4j.common.saml.bean.ConditionsBean;
 import org.apache.wss4j.common.saml.builder.SAML1Constants;
 import org.apache.wss4j.common.saml.builder.SAML2Constants;
 import org.apache.wss4j.common.util.DOM2Writer;
+import org.apache.wss4j.common.util.KeyUtils;
 import org.apache.wss4j.common.util.XMLUtils;
 import org.apache.wss4j.dom.WSConstants;
 import org.apache.wss4j.dom.message.WSSecEncrypt;
@@ -1757,8 +1760,12 @@ public class FederationResponseTest {
         encryptionPart.setElement(token);
 
         Crypto encrCrypto = CryptoFactory.getInstance("signature.properties");
-        builder.prepare(encrCrypto);
-        builder.encryptForRef(null, Collections.singletonList(encryptionPart));
+
+        KeyGenerator keyGen = KeyUtils.getKeyGenerator(builder.getSymmetricEncAlgorithm());
+        SecretKey symmetricKey = keyGen.generateKey();
+
+        builder.prepare(encrCrypto, symmetricKey);
+        builder.encryptForRef(null, Collections.singletonList(encryptionPart), symmetricKey);
 
         // return doc.getDocumentElement();
         return DOM2Writer.nodeToString(doc);

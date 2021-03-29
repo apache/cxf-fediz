@@ -25,12 +25,12 @@
 <!-- SSL ContextFactory configuration                              -->
 <!-- ============================================================= -->
 <Configure id="sslContextFactory" class="org.eclipse.jetty.util.ssl.SslContextFactory">
-  <Set name="KeyStorePath"><Property name="jetty.base" default="." />/<Property name="jetty.sslContext.keyStorePath" deprecated="jetty.keystore" default="${basedir}/../../examples/samplekeys/idp-ssl-key.jks"/></Set>
+  <Set name="KeyStorePath"><Property name="jetty.base" default="${project.build.directory}" />/<Property name="jetty.sslContext.keyStorePath" deprecated="jetty.keystore" default="/test-classes/idp-ssl-key.jks"/></Set>
   <Set name="KeyStorePassword"><Property name="jetty.sslContext.keyStorePassword" deprecated="jetty.keystore.password" default="tompass"/></Set>
   <Set name="KeyStoreType"><Property name="jetty.sslContext.keyStoreType" default="JKS"/></Set>
   <Set name="KeyStoreProvider"><Property name="jetty.sslContext.keyStoreProvider"/></Set>
   <Set name="KeyManagerPassword"><Property name="jetty.sslContext.keyManagerPassword" deprecated="jetty.keymanager.password" default="tompass"/></Set>
-  <Set name="TrustStorePath"><Property name="jetty.base" default="." />/<Property name="jetty.sslContext.trustStorePath" deprecated="jetty.truststore" default="${basedir}/../../examples/samplekeys/idp-ssl-key.jks"/></Set>
+  <Set name="TrustStorePath"><Property name="jetty.base" default="${project.build.directory}" />/<Property name="jetty.sslContext.trustStorePath" deprecated="jetty.truststore" default="/test-classes/idp-ssl-key.jks"/></Set>
   <Set name="TrustStorePassword"><Property name="jetty.sslContext.trustStorePassword" deprecated="jetty.truststore.password" default="tompass"/></Set>
   <Set name="TrustStoreType"><Property name="jetty.sslContext.trustStoreType"/></Set>
   <Set name="TrustStoreProvider"><Property name="jetty.sslContext.trustStoreProvider"/></Set>
