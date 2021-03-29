@@ -49,6 +49,7 @@ import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuers;
 import org.apache.cxf.fediz.core.config.jaxb.ValidationType;
+import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.processor.ClaimsProcessor;
 import org.apache.wss4j.common.cache.EHCacheReplayCache;
 import org.apache.wss4j.common.cache.MemoryReplayCache;
@@ -350,7 +351,7 @@ public class FedizConfigurationTest {
     }
 
     @org.junit.Test
-    public void testTokenReplayCacheFederation() throws JAXBException, IOException {
+    public void testTokenReplayCacheFederation() throws Exception {
         FedizConfig config = createConfiguration(true);
 
         // Test the default TokenReplayCache
@@ -375,7 +376,7 @@ public class FedizConfigurationTest {
     }
 
     @org.junit.Test
-    public void testTokenReplayCacheSAML() throws JAXBException, IOException {
+    public void testTokenReplayCacheSAML() throws Exception {
         FedizConfig config = createConfiguration(false);
 
         // Test the default TokenReplayCache
@@ -400,7 +401,7 @@ public class FedizConfigurationTest {
     }
 
     private ReplayCache parseConfigAndReturnTokenReplayCache(FedizConfig config)
-        throws JAXBException {
+        throws JAXBException, ProcessingException {
         final JAXBContext jaxbContext = JAXBContext.newInstance(FedizConfig.class);
 
         StringWriter writer = new StringWriter();

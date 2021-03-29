@@ -389,7 +389,7 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
             }
 
             return ssoResponseValidator.validateSamlResponse(samlResponse, post);
-        } catch (WSSecurityException ex) {
+        } catch (Exception ex) {
             LOG.debug(ex.getMessage(), ex);
             throw ExceptionUtils.toBadRequestException(ex, null);
         }
@@ -399,7 +399,7 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
         this.replayCache = replayCache;
     }
 
-    public TokenReplayCache<String> getReplayCache() {
+    public TokenReplayCache<String> getReplayCache() throws IllegalAccessException, ReflectiveOperationException {
         if (replayCache == null) {
             replayCache = new EHCacheTokenReplayCache();
         }

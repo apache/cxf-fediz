@@ -19,7 +19,6 @@
 package org.apache.cxf.fediz.core.samlsso;
 
 import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 
 import org.w3c.dom.Element;
@@ -228,10 +227,8 @@ public class SAMLSSOResponseValidator {
         // Need to keep bearer assertion IDs based on NotOnOrAfter to detect replay attacks
         if (postBinding && replayCache != null) {
             if (replayCache.contains(id)) {
-                Date expires = subjectConfData.getNotOnOrAfter().toDate();
-                Date currentTime = new Date();
-                long ttl = expires.getTime() - currentTime.getTime();
-                replayCache.add(id, ttl / 1000L);
+                Instant expires = subjectConfData.getNotOnOrAfter().toDate().toInstant();
+                replayCache.add(id, expires);
             } else {
                 LOG.debug("Replay attack with token id: " + id);
                 throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
