@@ -59,9 +59,9 @@
         <openjpa.version>3.1.2</openjpa.version>
         <servlet.version>3.1.0</servlet.version>
         <slf4j.version>1.7.30</slf4j.version>
-        <spring.version>5.2.9.RELEASE</spring.version>
+        <spring.version>5.3.5</spring.version>
         <spring-ldap-core.version>2.3.3.RELEASE</spring-ldap-core.version>
-        <spring.security.version>5.4.1</spring.security.version>
+        <spring.security.version>5.4.5</spring.security.version>
         <spring-webflow.version>2.5.1.RELEASE</spring-webflow.version>
         <tomcat.version>9.0.44</tomcat.version>
         <validation-api.version>2.0.2</validation-api.version>
