@@ -59,10 +59,8 @@ public class ApplicationDAOJPAImpl implements ApplicationDAO {
     public List<Application> getApplications(int start, int size, List<String> expandList) {
         List<Application> list = new ArrayList<>();
 
-        Query query = null;
-        query = em.createQuery("select a from Application a");
+        Query query = em.createQuery("select a from Application a");
 
-        //@SuppressWarnings("rawtypes")
         List<?> serviceEntities = query
             .setFirstResult(start)
             .setMaxResults(size)
@@ -93,11 +91,9 @@ public class ApplicationDAOJPAImpl implements ApplicationDAO {
 
     @Override
     public void updateApplication(String realm, Application application) {
-        Query query = null;
-        query = em.createQuery("select a from Application a where a.realm=:realm");
+        Query query = em.createQuery("select a from Application a where a.realm=:realm");
         query.setParameter("realm", realm);
 
-        //@SuppressWarnings("rawtypes")
         ApplicationEntity applicationEntity = (ApplicationEntity)query.getSingleResult();
 
         domain2entity(application, applicationEntity);
@@ -110,11 +106,9 @@ public class ApplicationDAOJPAImpl implements ApplicationDAO {
 
     @Override
     public void deleteApplication(String realm) {
-        Query query = null;
-        query = em.createQuery("select a from Application a where a.realm=:realm");
+        Query query = em.createQuery("select a from Application a where a.realm=:realm");
         query.setParameter("realm", realm);
 
-        //@SuppressWarnings("rawtypes")
         Object applObj = query.getSingleResult();
         em.remove(applObj);
 
@@ -124,12 +118,11 @@ public class ApplicationDAOJPAImpl implements ApplicationDAO {
 
     @Override
     public void addClaimToApplication(Application application, RequestClaim claim) {
-        ApplicationEntity applicationEntity = null;
+        final ApplicationEntity applicationEntity;
         if (application.getId() != 0) {
             applicationEntity = em.find(ApplicationEntity.class, application.getId());
         } else {
-            Query query = null;
-            query = em.createQuery("select a from Application a where a.realm=:realm");
+            Query query = em.createQuery("select a from Application a where a.realm=:realm");
             query.setParameter("realm", application.getRealm());
 
             applicationEntity = (ApplicationEntity)query.getSingleResult();
@@ -148,12 +141,11 @@ public class ApplicationDAOJPAImpl implements ApplicationDAO {
 
     @Override
     public void removeClaimFromApplication(Application application, RequestClaim claim) {
-        ApplicationEntity applicationEntity = null;
+        final ApplicationEntity applicationEntity;
         if (application.getId() != 0) {
             applicationEntity = em.find(ApplicationEntity.class, application.getId());
         } else {
-            Query query = null;
-            query = em.createQuery("select a from Application a where a.realm=:realm");
+            Query query = em.createQuery("select a from Application a where a.realm=:realm");
             query.setParameter("realm", application.getRealm());
 
             applicationEntity = (ApplicationEntity)query.getSingleResult();
@@ -175,11 +167,9 @@ public class ApplicationDAOJPAImpl implements ApplicationDAO {
 
 
     static ApplicationEntity getApplicationEntity(String realm, EntityManager em) {
-        Query query = null;
-        query = em.createQuery("select a from Application a where a.realm=:realm");
+        Query query = em.createQuery("select a from Application a where a.realm=:realm");
         query.setParameter("realm", realm);
 
-        //@SuppressWarnings("rawtypes")
         return (ApplicationEntity)query.getSingleResult();
     }
 

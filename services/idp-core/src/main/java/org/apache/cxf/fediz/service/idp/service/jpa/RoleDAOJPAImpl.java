@@ -52,10 +52,8 @@ public class RoleDAOJPAImpl implements RoleDAO {
     public List<Role> getRoles(int start, int size, List<String> expandList) {
         List<Role> list = new ArrayList<>();
 
-        Query query = null;
-        query = em.createQuery("select r from Role r");
+        Query query = em.createQuery("select r from Role r");
 
-        //@SuppressWarnings("rawtypes")
         List<?> roleEntities = query
             .setFirstResult(start)
             .setMaxResults(size)
@@ -70,11 +68,9 @@ public class RoleDAOJPAImpl implements RoleDAO {
 
     @Override
     public Role getRole(String name, List<String> expandList) {
-        Query query = null;
-        query = em.createQuery("select r from Role r where r.name=:name");
+        Query query = em.createQuery("select r from Role r where r.name=:name");
         query.setParameter("name", name);
 
-        //@SuppressWarnings("rawtypes")
         Object roleObj = query.getSingleResult();
         return entity2domain((RoleEntity)roleObj, expandList);
     }
@@ -91,11 +87,9 @@ public class RoleDAOJPAImpl implements RoleDAO {
 
     @Override
     public void updateRole(String name, Role role) {
-        Query query = null;
-        query = em.createQuery("select r from Role r where r.name=:name");
+        Query query = em.createQuery("select r from Role r where r.name=:name");
         query.setParameter("name", name);
 
-        //@SuppressWarnings("rawtypes")
         RoleEntity roleEntity = (RoleEntity)query.getSingleResult();
 
         domain2entity(role, roleEntity);
@@ -107,11 +101,9 @@ public class RoleDAOJPAImpl implements RoleDAO {
 
     @Override
     public void deleteRole(String name) {
-        Query query = null;
-        query = em.createQuery("select r from Role r where r.name=:name");
+        Query query = em.createQuery("select r from Role r where r.name=:name");
         query.setParameter("name", name);
 
-        //@SuppressWarnings("rawtypes")
         Object roleObj = query.getSingleResult();
         em.remove(roleObj);
 
@@ -120,14 +112,14 @@ public class RoleDAOJPAImpl implements RoleDAO {
 
     @Override
     public void addEntitlementToRole(Role role, Entitlement entitlement) {
-        RoleEntity roleEntity = null;
+        final RoleEntity roleEntity;
         if (role.getId() != 0) {
             roleEntity = em.find(RoleEntity.class, role.getId());
         } else {
             roleEntity = getRoleEntity(role.getName(), em);
         }
 
-        EntitlementEntity entitlementEntity = null;
+        final EntitlementEntity entitlementEntity;
         if (entitlement.getId() != 0) {
             entitlementEntity = em.find(EntitlementEntity.class, entitlement.getId());
         } else {
@@ -141,14 +133,14 @@ public class RoleDAOJPAImpl implements RoleDAO {
 
     @Override
     public void removeEntitlementFromRole(Role role, Entitlement entitlement) {
-        RoleEntity roleEntity = null;
+        final RoleEntity roleEntity;
         if (role.getId() != 0) {
             roleEntity = em.find(RoleEntity.class, role.getId());
         } else {
             roleEntity = getRoleEntity(role.getName(), em);
         }
 
-        EntitlementEntity entitlementEntity = null;
+        final EntitlementEntity entitlementEntity;
         if (entitlement.getId() != 0) {
             entitlementEntity = em.find(EntitlementEntity.class, entitlement.getId());
         } else {
@@ -167,11 +159,9 @@ public class RoleDAOJPAImpl implements RoleDAO {
     }
 
     static RoleEntity getRoleEntity(String realm, EntityManager em) {
-        Query query = null;
-        query = em.createQuery("select i from IDP i where i.realm=:realm");
+        Query query = em.createQuery("select i from IDP i where i.realm=:realm");
         query.setParameter("realm", realm);
 
-        //@SuppressWarnings("rawtypes")
         return (RoleEntity)query.getSingleResult();
     }
 

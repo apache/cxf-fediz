@@ -24,8 +24,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
@@ -47,6 +45,7 @@ import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.util.CertsUtils;
 import org.apache.cxf.fediz.core.util.DOMUtils;
 import org.apache.cxf.fediz.core.util.SignatureUtils;
+import org.apache.cxf.fediz.core.util.StringUtils;
 import org.apache.xml.security.stax.impl.util.IDGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +61,6 @@ public class MetadataWriter {
 
     private static final XMLOutputFactory XML_OUTPUT_FACTORY = XMLOutputFactory.newInstance();
 
-    //CHECKSTYLE:OFF
     public Document getMetaData(
         HttpServletRequest request, FedizContext config
     ) throws ProcessingException {
@@ -81,7 +79,7 @@ public class MetadataWriter {
 
             String serviceURL = protocol.getApplicationServiceURL();
             if (serviceURL == null) {
-                serviceURL = extractFullContextPath(request);
+                serviceURL = StringUtils.extractFullContextPath(request);
             }
 
             writer.writeAttribute("entityID", serviceURL);
@@ -235,9 +233,9 @@ public class MetadataWriter {
 
             String logoutURL = config.getLogoutURL();
             if (logoutURL.startsWith("/")) {
-                logoutURL = extractFullContextPath(request).concat(logoutURL.substring(1));
+                logoutURL = StringUtils.extractFullContextPath(request).concat(logoutURL.substring(1));
             } else {
-                logoutURL = extractFullContextPath(request).concat(logoutURL);
+                logoutURL = StringUtils.extractFullContextPath(request).concat(logoutURL);
             }
             writer.writeAttribute("Location", logoutURL);
 
@@ -315,24 +313,4 @@ public class MetadataWriter {
         writer.writeEndElement(); // SPSSODescriptor
     }
 
-    private String extractFullContextPath(HttpServletRequest request) throws MalformedURLException {
-        String result = null;
-        String contextPath = request.getContextPath();
-        String requestUrl = request.getRequestURL().toString();
-        String requestPath = new URL(requestUrl).getPath();
-        // Cut request path of request url and add context path if not ROOT
-        if (requestPath != null && requestPath.length() > 0) {
-            int lastIndex = requestUrl.lastIndexOf(requestPath);
-            result = requestUrl.substring(0, lastIndex);
-        } else {
-            result = requestUrl;
-        }
-        if (contextPath != null && contextPath.length() > 0) {
-            // contextPath contains starting slash
-            result = result + contextPath + "/";
-        } else {
-            result = result + "/";
-        }
-        return result;
-    }
 }

@@ -163,7 +163,7 @@ public class FedizConfigurationTest {
 
         config.setTrustedIssuers(trustedIssuers);
 
-        ProtocolType protocol = null;
+        final ProtocolType protocol;
 
         if (federation) {
             protocol = new FederationProtocolType();

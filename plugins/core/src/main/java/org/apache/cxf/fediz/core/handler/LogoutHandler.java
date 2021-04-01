@@ -205,10 +205,10 @@ public class LogoutHandler implements RequestHandler<Boolean> {
             LOG.warn("Could not write logout.jpg");
             return;
         }
-        int read = 0;
         byte[] buf = new byte[1024];
         try (ServletOutputStream responseOutputStream = response.getOutputStream()) {
             response.setContentType("image/jpeg");
+            int read;
             while ((read = inputStream.read(buf)) != -1) {
                 responseOutputStream.write(buf, 0, read);
             }

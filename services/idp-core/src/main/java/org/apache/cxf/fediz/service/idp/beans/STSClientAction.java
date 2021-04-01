@@ -291,7 +291,7 @@ public class STSClientAction {
             }
         }
 
-        Element rpToken = null;
+        final Element rpToken;
         try {
             rpToken = sts.requestSecurityTokenResponse(realm);
         } catch (SoapFault ex) {

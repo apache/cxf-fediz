@@ -62,23 +62,24 @@ import org.junit.runner.RunWith;
         allowAnonAccess = false,
         enableChangeLog = true,
         partitions = {
-      @CreatePartition(
-          name = "fediz",
-          suffix = "dc=fediz,dc=org",
-          indexes = {
-              @CreateIndex(attribute = "objectClass"),
-              @CreateIndex(attribute = "dc"),
-              @CreateIndex(attribute = "ou")
-          }
-      ) }
+            @CreatePartition(
+                name = "fediz",
+                suffix = "dc=fediz,dc=org",
+                indexes = {
+                    @CreateIndex(attribute = "objectClass"),
+                    @CreateIndex(attribute = "dc"),
+                    @CreateIndex(attribute = "ou")
+                }
+            )
+        }
   )
 
 @CreateLdapServer(
-  transports = {
-      @CreateTransport(protocol = "LDAP", address = "localhost")
-      // @CreateTransport(protocol = "LDAP", address = "localhost", port = 12345)
-      }
-  )
+    transports = {
+        @CreateTransport(protocol = "LDAP", address = "localhost")
+        // @CreateTransport(protocol = "LDAP", address = "localhost", port = 12345)
+    }
+)
 
 //Inject an file containing entries
 @ApplyLdifFiles("ldap.ldif")

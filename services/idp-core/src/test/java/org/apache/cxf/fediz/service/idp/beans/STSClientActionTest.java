@@ -18,7 +18,6 @@
  */
 package org.apache.cxf.fediz.service.idp.beans;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -34,7 +33,7 @@ public class STSClientActionTest {
     private static final int LOCAL_PORT = 8080;
 
     @Test
-    public void testWsdlWithDefaultPort() {
+    public void testWsdlWithDefaultPort() throws Exception {
         String wsdlLocation = "http://someserver/sts";
         STSClientAction action = new STSClientAction();
         action.setWsdlLocation(wsdlLocation);
@@ -43,7 +42,7 @@ public class STSClientActionTest {
     }
 
     @Test
-    public void testWsdlWithExplicitPort() {
+    public void testWsdlWithExplicitPort() throws Exception {
         String wsdlLocation = "http://someserver:91/sts";
         STSClientAction action = new STSClientAction();
         action.setWsdlLocation(wsdlLocation);
@@ -52,7 +51,7 @@ public class STSClientActionTest {
     }
 
     @Test
-    public void testWsdlWithPort0() {
+    public void testWsdlWithPort0() throws Exception {
         String wsdlLocation = "http://someserver:0/sts";
         STSClientAction action = new STSClientAction();
         action.setWsdlLocation(wsdlLocation);
@@ -60,26 +59,18 @@ public class STSClientActionTest {
         assertEquals("http://someserver:" + LOCAL_PORT + "/sts", action.getWsdlLocation());
     }
 
-    private void callProcessWsdlLocation(STSClientAction action, RequestContext requestContext) {
-        Method method = null;
-        try {
-            method = action.getClass().getDeclaredMethod("processWsdlLocation", RequestContext.class);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
+    private static void callProcessWsdlLocation(STSClientAction action, RequestContext requestContext)
+        throws ReflectiveOperationException, SecurityException {
+        Method method = action.getClass().getDeclaredMethod("processWsdlLocation", RequestContext.class);
         method.setAccessible(true);
-        try {
-            method.invoke(action, requestContext);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
+        method.invoke(action, requestContext);
     }
 
     /**
      * Forces local port to pre-defined value to test if it's used
      * by STSClientAction to compute STS urls.
      */
-    private RequestContext mockRequestContext() {
+    private static RequestContext mockRequestContext() {
         MockRequestContext requestContext = new MockRequestContext();
         MockHttpServletRequest servletRequest = new MockHttpServletRequest();
         servletRequest.setLocalPort(LOCAL_PORT);

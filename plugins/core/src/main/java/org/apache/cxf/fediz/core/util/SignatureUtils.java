@@ -88,7 +88,7 @@ public final class SignatureUtils {
         }
         X509Certificate cert = issuerCerts[0];
 */
-        String signatureMethod = null;
+        final String signatureMethod;
         if ("SHA1withDSA".equals(cert.getSigAlgName())) {
             signatureMethod = SignatureMethod.DSA_SHA1;
         } else if ("SHA1withRSA".equals(cert.getSigAlgName())) {

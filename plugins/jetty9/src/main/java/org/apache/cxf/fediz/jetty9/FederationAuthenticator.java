@@ -336,7 +336,7 @@ public class FederationAuthenticator extends LoginAuthenticator {
             LOG.warn("Could not write logout.jpg");
             return Authentication.SEND_FAILURE;
         }
-        int read = 0;
+        int read;
         byte[] buf = new byte[1024];
         while ((read = inputStream.read(buf)) != -1) {
             responseOutputStream.write(buf, 0, read);

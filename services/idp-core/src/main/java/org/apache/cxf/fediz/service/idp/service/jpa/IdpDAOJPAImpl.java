@@ -55,14 +55,12 @@ public class IdpDAOJPAImpl implements IdpDAO {
     public List<Idp> getIdps(int start, int size, List<String> expandList) {
         List<Idp> list = new ArrayList<>();
 
-        Query query = null;
-        query = em.createQuery("select i from IDP i");
+        Query query = em.createQuery("select i from IDP i");
 
         /*List serviceEntities = query.setFirstResult(start)
             .setMaxResults(size)
             .getResultList();*/
 
-        //@SuppressWarnings("rawtypes")
         List<?> idpEntities = query
             .setFirstResult(start)
             .setMaxResults(size)
@@ -77,11 +75,9 @@ public class IdpDAOJPAImpl implements IdpDAO {
 
     @Override
     public Idp getIdp(String realm, List<String> expandList) {
-        Query query = null;
-        query = em.createQuery("select i from IDP i where i.realm=:realm");
+        Query query = em.createQuery("select i from IDP i where i.realm=:realm");
         query.setParameter("realm", realm);
 
-        //@SuppressWarnings("rawtypes")
         Object idpObj = query.getSingleResult();
         return entity2domain((IdpEntity)idpObj, expandList);
     }
@@ -98,11 +94,9 @@ public class IdpDAOJPAImpl implements IdpDAO {
 
     @Override
     public void updateIdp(String realm, Idp idp) {
-        Query query = null;
-        query = em.createQuery("select i from IDP i where i.realm=:realm");
+        Query query = em.createQuery("select i from IDP i where i.realm=:realm");
         query.setParameter("realm", realm);
 
-        //@SuppressWarnings("rawtypes")
         IdpEntity idpEntity = (IdpEntity)query.getSingleResult();
 
         domain2entity(idp, idpEntity);
@@ -114,11 +108,9 @@ public class IdpDAOJPAImpl implements IdpDAO {
 
     @Override
     public void deleteIdp(String realm) {
-        Query query = null;
-        query = em.createQuery("select i from IDP i where i.realm=:realm");
+        Query query = em.createQuery("select i from IDP i where i.realm=:realm");
         query.setParameter("realm", realm);
 
-        //@SuppressWarnings("rawtypes")
         Object idpObj = query.getSingleResult();
         em.remove(idpObj);
 
@@ -127,14 +119,14 @@ public class IdpDAOJPAImpl implements IdpDAO {
 
     @Override
     public void addApplicationToIdp(Idp idp, Application application) {
-        IdpEntity idpEntity = null;
+        final IdpEntity idpEntity;
         if (idp.getId() != 0) {
             idpEntity = em.find(IdpEntity.class, idp.getId());
         } else {
             idpEntity = getIdpEntity(idp.getRealm(), em);
         }
 
-        ApplicationEntity applicationEntity = null;
+        final ApplicationEntity applicationEntity;
         if (application.getId() != 0) {
             applicationEntity = em.find(ApplicationEntity.class, application.getId());
         } else {
@@ -148,14 +140,14 @@ public class IdpDAOJPAImpl implements IdpDAO {
 
     @Override
     public void removeApplicationFromIdp(Idp idp, Application application) {
-        IdpEntity idpEntity = null;
+        final IdpEntity idpEntity;
         if (idp.getId() != 0) {
             idpEntity = em.find(IdpEntity.class, idp.getId());
         } else {
             idpEntity = getIdpEntity(idp.getRealm(), em);
         }
 
-        ApplicationEntity applicationEntity = null;
+        final ApplicationEntity applicationEntity;
         if (application.getId() != 0) {
             applicationEntity = em.find(ApplicationEntity.class, application.getId());
         } else {
@@ -175,14 +167,14 @@ public class IdpDAOJPAImpl implements IdpDAO {
 
     @Override
     public void addTrustedIdpToIdp(Idp idp, TrustedIdp trustedIdp) {
-        IdpEntity idpEntity = null;
+        final IdpEntity idpEntity;
         if (idp.getId() != 0) {
             idpEntity = em.find(IdpEntity.class, idp.getId());
         } else {
             idpEntity = getIdpEntity(idp.getRealm(), em);
         }
 
-        TrustedIdpEntity trustedIdpEntity = null;
+        final TrustedIdpEntity trustedIdpEntity;
         if (trustedIdp.getId() != 0) {
             trustedIdpEntity = em.find(TrustedIdpEntity.class, trustedIdp.getId());
         } else {
@@ -196,14 +188,14 @@ public class IdpDAOJPAImpl implements IdpDAO {
 
     @Override
     public void removeTrustedIdpFromIdp(Idp idp, TrustedIdp trustedIdp) {
-        IdpEntity idpEntity = null;
+        final IdpEntity idpEntity;
         if (idp.getId() != 0) {
             idpEntity = em.find(IdpEntity.class, idp.getId());
         } else {
             idpEntity = getIdpEntity(idp.getRealm(), em);
         }
 
-        TrustedIdpEntity trustedIdpEntity = null;
+        final TrustedIdpEntity trustedIdpEntity;
         if (trustedIdp.getId() != 0) {
             trustedIdpEntity = em.find(TrustedIdpEntity.class, trustedIdp.getId());
         } else {
@@ -217,14 +209,14 @@ public class IdpDAOJPAImpl implements IdpDAO {
 
     @Override
     public void addClaimToIdp(Idp idp, Claim claim) {
-        IdpEntity idpEntity = null;
+        final IdpEntity idpEntity;
         if (idp.getId() != 0) {
             idpEntity = em.find(IdpEntity.class, idp.getId());
         } else {
             idpEntity = getIdpEntity(idp.getRealm(), em);
         }
 
-        ClaimEntity claimEntity = null;
+        final ClaimEntity claimEntity;
         if (claim.getId() != 0) {
             claimEntity = em.find(ClaimEntity.class, claim.getId());
         } else {
@@ -238,7 +230,7 @@ public class IdpDAOJPAImpl implements IdpDAO {
 
     @Override
     public void removeClaimFromIdp(Idp idp, Claim claim) {
-        IdpEntity idpEntity = null;
+        final IdpEntity idpEntity;
         if (idp.getId() != 0) {
             idpEntity = em.find(IdpEntity.class, idp.getId());
         } else {
@@ -248,7 +240,7 @@ public class IdpDAOJPAImpl implements IdpDAO {
             throw new EntityNotFoundException("IdpEntity not found");
         }
 
-        ClaimEntity claimEntity = null;
+        final ClaimEntity claimEntity;
         if (claim.getId() != 0) {
             claimEntity = em.find(ClaimEntity.class, claim.getId());
         } else {
@@ -266,11 +258,9 @@ public class IdpDAOJPAImpl implements IdpDAO {
     }
 
     static IdpEntity getIdpEntity(String realm, EntityManager em) {
-        Query query = null;
-        query = em.createQuery("select i from IDP i where i.realm=:realm");
+        Query query = em.createQuery("select i from IDP i where i.realm=:realm");
         query.setParameter("realm", realm);
 
-        //@SuppressWarnings("rawtypes")
         return (IdpEntity)query.getSingleResult();
     }
 

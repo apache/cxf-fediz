@@ -51,10 +51,8 @@ public class ClaimDAOJPAImpl implements ClaimDAO {
     public List<Claim> getClaims(int start, int size) {
         List<Claim> list = new ArrayList<>();
 
-        Query query = null;
-        query = em.createQuery("select c from Claim c");
+        Query query = em.createQuery("select c from Claim c");
 
-        //@SuppressWarnings("rawtypes")
         List<?> claimEntities = query
             .setFirstResult(start)
             .setMaxResults(size)
@@ -85,11 +83,9 @@ public class ClaimDAOJPAImpl implements ClaimDAO {
 
     @Override
     public void updateClaim(String claimType, Claim claim) {
-        Query query = null;
-        query = em.createQuery("select c from Claim c where c.claimtype=:claimtype");
+        Query query = em.createQuery("select c from Claim c where c.claimtype=:claimtype");
         query.setParameter("claimtype", claimType);
 
-        //@SuppressWarnings("rawtypes")
         ClaimEntity claimEntity = (ClaimEntity)query.getSingleResult();
 
         domain2entity(claim, claimEntity);
@@ -100,11 +96,9 @@ public class ClaimDAOJPAImpl implements ClaimDAO {
 
     @Override
     public void deleteClaim(String claimType) {
-        Query query = null;
-        query = em.createQuery("select c from Claim c where c.claimType=:claimtype");
+        Query query = em.createQuery("select c from Claim c where c.claimType=:claimtype");
         query.setParameter("claimtype", claimType);
 
-        //@SuppressWarnings("rawtypes")
         Object claimObj = query.getSingleResult();
         em.remove(claimObj);
 
@@ -112,11 +106,9 @@ public class ClaimDAOJPAImpl implements ClaimDAO {
     }
 
     static ClaimEntity getClaimEntity(String claimType, EntityManager em) {
-        Query query = null;
-        query = em.createQuery("select c from Claim c where c.claimType=:claimtype");
+        Query query = em.createQuery("select c from Claim c where c.claimType=:claimtype");
         query.setParameter("claimtype", claimType);
 
-        //@SuppressWarnings("rawtypes")
         return (ClaimEntity)query.getSingleResult();
     }
 

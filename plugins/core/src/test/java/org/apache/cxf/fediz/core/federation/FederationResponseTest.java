@@ -320,7 +320,7 @@ public class FederationResponseTest {
 
         wfProc = new FederationProcessorImpl();
         try {
-            wfRes = wfProc.processRequest(wfReq, config);
+            wfProc.processRequest(wfReq, config);
             Assert.fail("Processing must fail because of invalid subject cert constraint");
         } catch (ProcessingException ex) {
             // expected
