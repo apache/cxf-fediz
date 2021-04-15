@@ -119,15 +119,14 @@ public class FedizContext implements Closeable {
         for (TrustManagersType manager : trustManagers) {
             TrustManager tm = new TrustManager(manager);
 
-            Crypto crypto = null;
             try {
-                if (manager.getKeyStore().getType().equalsIgnoreCase("PEM")) {
-                    X509Certificate[] certificates = new X509Certificate[1];
-                    certificates[0] = CertsUtils.getX509CertificateFromFile(tm.getName(), classloader);
-                    crypto = new CertificateStore(certificates);
+                final Crypto crypto;
+                if ("PEM".equalsIgnoreCase(manager.getKeyStore().getType())) {
+                    crypto = new CertificateStore(new X509Certificate[] {
+                        CertsUtils.getX509CertificateFromFile(tm.getName(), classloader)
+                    });
                 } else {
-                    Properties sigProperties = createCryptoProperties(manager);
-                    crypto = CryptoFactory.getInstance(sigProperties);
+                    crypto = CryptoFactory.getInstance(createCryptoProperties(manager));
                 }
                 tm.setCrypto(crypto);
                 certificateStores.add(tm);

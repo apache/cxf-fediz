@@ -95,12 +95,10 @@ public class SAMLTokenValidator implements TokenValidator {
         //Iterate through all trust certificates
         for (TrustManager trustManager : config.getCertificateStores()) {
             try {
-                if (trustManager.getTrustManagersType().getKeyStore().getType().equalsIgnoreCase("PEM")) {
-                    X509Certificate[] certificates = new X509Certificate[1];
-                    certificates[0] = CertsUtils.
-                            getX509CertificateFromFile(trustManager.getName(), config.getClassloader());
-                    
-                    SAMLKeyInfo samlKeyInfo = new SAMLKeyInfo(certificates);
+                if ("PEM".equalsIgnoreCase(trustManager.getTrustManagersType().getKeyStore().getType())) {
+                    SAMLKeyInfo samlKeyInfo = new SAMLKeyInfo(new X509Certificate[] {
+                        CertsUtils.getX509CertificateFromFile(trustManager.getName(), config.getClassloader())
+                    });
                     assertion.verifySignature(samlKeyInfo);
                     return samlKeyInfo;
                 } else {
@@ -110,11 +108,9 @@ public class SAMLTokenValidator implements TokenValidator {
                         while (allAliases.hasMoreElements()) {
                             String keyAlias = allAliases.nextElement();
                             
-                            X509Certificate[] certificates = new X509Certificate[1];
-                            certificates[0] = CertsUtils.
-                                    getX509CertificateFromCrypto(trustManager.getCrypto(), keyAlias);
-                            
-                            SAMLKeyInfo samlKeyInfo = new SAMLKeyInfo(certificates);
+                            SAMLKeyInfo samlKeyInfo = new SAMLKeyInfo(new X509Certificate[] {
+                                CertsUtils.getX509CertificateFromCrypto(trustManager.getCrypto(), keyAlias)
+                            });
                             try {
                                 assertion.verifySignature(samlKeyInfo);
                                 return samlKeyInfo;
@@ -167,7 +163,7 @@ public class SAMLTokenValidator implements TokenValidator {
                 // Verify the signature
                 Signature sig = assertion.getSignature();
                 KeyInfo keyInfo = sig.getKeyInfo();
-                SAMLKeyInfo samlKeyInfo = null;
+                final SAMLKeyInfo samlKeyInfo;
                 if (keyInfo != null) {
                     samlKeyInfo =
                         org.apache.wss4j.common.saml.SAMLUtil.getCredentialFromKeyInfo(
@@ -255,7 +251,7 @@ public class SAMLTokenValidator implements TokenValidator {
             }
 
             String audience = null;
-            List<Claim> claims = null;
+            List<Claim> claims;
             if (assertion.getSamlVersion().equals(SAMLVersion.VERSION_20)) {
                 claims = parseClaimsInAssertion(assertion.getSaml2());
                 audience = getAudienceRestriction(assertion.getSaml2());
@@ -507,7 +503,7 @@ public class SAMLTokenValidator implements TokenValidator {
 
 
     private Instant getExpires(SamlAssertionWrapper assertion) {
-        DateTime validTill = null;
+        final DateTime validTill;
         if (assertion.getSamlVersion().equals(SAMLVersion.VERSION_20)) {
             validTill = assertion.getSaml2().getConditions().getNotOnOrAfter();
         } else {
@@ -521,7 +517,7 @@ public class SAMLTokenValidator implements TokenValidator {
     }
 
     private Instant getCreated(SamlAssertionWrapper assertion) {
-        DateTime validFrom = null;
+        final DateTime validFrom;
         if (assertion.getSamlVersion().equals(SAMLVersion.VERSION_20)) {
             validFrom = assertion.getSaml2().getConditions().getNotBefore();
         } else {

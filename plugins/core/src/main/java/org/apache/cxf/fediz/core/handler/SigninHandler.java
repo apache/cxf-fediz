@@ -66,7 +66,7 @@ public class SigninHandler<T> implements RequestHandler<T> {
 
     @Override
     public T handleRequest(HttpServletRequest request, HttpServletResponse response) {
-        if (request.getMethod().equals("POST")) {
+        if ("POST".equals(request.getMethod())) {
             LOG.debug("Sign-In-Response received");
             String responseToken = getResponseToken(request);
             if (responseToken != null) {

@@ -79,7 +79,7 @@ public class FederationLoginService extends AbstractLifeCycle implements LoginSe
     public UserIdentity login(String username, Object credentials, FedizContext config) {
 
         try {
-            FedizResponse wfRes = null;
+            final FedizResponse wfRes;
             FedizRequest wfReq = (FedizRequest)credentials;
 
             if (LOG.isDebugEnabled()) {

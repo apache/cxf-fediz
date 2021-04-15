@@ -94,16 +94,12 @@ public class FederationServlet extends HttpServlet {
         Element el = SecurityTokenThreadLocal.getToken();
         if (el != null) {
             out.println("<p>Bootstrap token...");
-            String token = null;
             try {
-                TransformerFactory transFactory = TransformerFactory.newInstance();
-                Transformer transformer = transFactory.newTransformer();
-                StringWriter buffer = new StringWriter();
+                Transformer transformer = TransformerFactory.newInstance().newTransformer();
+                StringWriter token = new StringWriter();
                 transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-                transformer.transform(new DOMSource(el),
-                                      new StreamResult(buffer));
-                token = buffer.toString();
-                out.println("<p>" + HtmlUtils.htmlEscape(token));
+                transformer.transform(new DOMSource(el), new StreamResult(token));
+                out.println("<p>" + HtmlUtils.htmlEscape(token.toString()));
             } catch (Exception ex) {
                 out.println("<p>Failed to transform cached element to string: " + ex.toString());
             }

@@ -19,7 +19,6 @@
 package org.apache.cxf.fediz.service.oidc.clients;
 
 import java.util.Collection;
-import java.util.Collections;
 
 import org.apache.cxf.rs.security.oauth2.common.Client;
 import org.apache.cxf.rs.security.oauth2.common.ServerAccessToken;
@@ -27,8 +26,8 @@ import org.apache.cxf.rs.security.oauth2.tokens.refresh.RefreshToken;
 
 public class ClientTokens {
     private Client client;
-    private Collection<ServerAccessToken> accessTokens = Collections.emptyList();
-    private Collection<RefreshToken> refreshTokens = Collections.emptyList();
+    private final Collection<ServerAccessToken> accessTokens;
+    private final Collection<RefreshToken> refreshTokens;
     public ClientTokens(Client c,
         Collection<ServerAccessToken> accessTokens,
         Collection<RefreshToken> refreshTokens) {

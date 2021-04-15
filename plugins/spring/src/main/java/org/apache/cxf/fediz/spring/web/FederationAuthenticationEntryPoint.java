@@ -107,7 +107,7 @@ public class FederationAuthenticationEntryPoint implements AuthenticationEntryPo
             return;
         }
 
-        String redirectUrl = null;
+        final String redirectUrl;
         try {
             FedizProcessor wfProc =
                 FedizProcessorFactory.newFedizProcessor(fedContext.getProtocol());

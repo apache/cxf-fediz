@@ -50,10 +50,8 @@ public class EntitlementDAOJPAImpl implements EntitlementDAO {
     public List<Entitlement> getEntitlements(int start, int size) {
         List<Entitlement> list = new ArrayList<>();
 
-        Query query = null;
-        query = em.createQuery("select e from Entitlement e");
+        Query query = em.createQuery("select e from Entitlement e");
 
-        //@SuppressWarnings("rawtypes")
         List<?> entitlementEntities = query
             .setFirstResult(start)
             .setMaxResults(size)
@@ -84,11 +82,9 @@ public class EntitlementDAOJPAImpl implements EntitlementDAO {
 
     @Override
     public void updateEntitlement(String name, Entitlement entitlement) {
-        Query query = null;
-        query = em.createQuery("select e from Entitlement e where e.name=:name");
+        Query query = em.createQuery("select e from Entitlement e where e.name=:name");
         query.setParameter("name", name);
 
-        //@SuppressWarnings("rawtypes")
         EntitlementEntity entitlementEntity = (EntitlementEntity)query.getSingleResult();
 
         domain2entity(entitlement, entitlementEntity);
@@ -99,11 +95,9 @@ public class EntitlementDAOJPAImpl implements EntitlementDAO {
 
     @Override
     public void deleteEntitlement(String name) {
-        Query query = null;
-        query = em.createQuery("select e from Entitlement e where e.name=:name");
+        Query query = em.createQuery("select e from Entitlement e where e.name=:name");
         query.setParameter("name", name);
 
-        //@SuppressWarnings("rawtypes")
         Object entitlementObj = query.getSingleResult();
         em.remove(entitlementObj);
 
@@ -111,11 +105,9 @@ public class EntitlementDAOJPAImpl implements EntitlementDAO {
     }
 
     static EntitlementEntity getEntitlementEntity(String name, EntityManager em) {
-        Query query = null;
-        query = em.createQuery("select e from Entitlement e where e.name=:name");
+        Query query = em.createQuery("select e from Entitlement e where e.name=:name");
         query.setParameter("name", name);
 
-        //@SuppressWarnings("rawtypes")
         return (EntitlementEntity)query.getSingleResult();
     }
 

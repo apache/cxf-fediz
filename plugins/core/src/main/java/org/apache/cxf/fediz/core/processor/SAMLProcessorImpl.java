@@ -20,7 +20,6 @@
 package org.apache.cxf.fediz.core.processor;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -436,16 +435,16 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
     public RedirectionResponse createSignInRequest(HttpServletRequest request, FedizContext config)
         throws ProcessingException {
 
-        String redirectURL = null;
         try {
             if (!(config.getProtocol() instanceof SAMLProtocol)) {
                 LOG.error("Unsupported protocol");
                 throw new IllegalStateException("Unsupported protocol");
             }
 
+            String redirectURL = null;
             String issuerURL = resolveIssuer(request, config);
             LOG.info("Issuer url: " + issuerURL);
-            if (issuerURL != null && issuerURL.length() > 0) {
+            if (issuerURL != null && !issuerURL.isEmpty()) {
                 redirectURL = issuerURL;
             }
 
@@ -457,7 +456,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
 
             // Create the AuthnRequest
             String reply = resolveReply(request, config);
-            if (reply == null || reply.length() == 0) {
+            if (reply == null || reply.isEmpty()) {
                 reply = request.getRequestURL().toString();
             } else {
                 try {
@@ -496,9 +495,8 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
 
             String signInQuery = resolveSignInQuery(request, config);
 
-            StringBuilder sb = new StringBuilder();
-            sb.append(SAMLSSOConstants.SAML_REQUEST).append('=').append(urlEncodedRequest);
-            sb.append('&').append(SAMLSSOConstants.RELAY_STATE).append('=').append(relayState);
+            StringBuilder sb = new StringBuilder(SAMLSSOConstants.SAML_REQUEST).append('=').append(urlEncodedRequest)
+                .append('&').append(SAMLSSOConstants.RELAY_STATE).append('=').append(relayState);
 
             if (((SAMLProtocol)config.getProtocol()).isSignRequest()) {
                 String signature = signRequest(config, sb);
@@ -515,8 +513,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             response.addHeader("Pragma", "no-cache");
             response.setRequestState(requestState);
 
-            redirectURL = redirectURL + "?" + sb.toString();
-            response.setRedirectionURL(redirectURL);
+            response.setRedirectionURL(redirectURL + '?' + sb.toString());
 
             return response;
         } catch (Exception ex) {
@@ -558,7 +555,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
         String sigAlgo = WSConstants.RSA_SHA1;
         String jceSigAlgo = "SHA1withRSA";
         LOG.debug("automatic sig algo detection: " + privateKey.getAlgorithm());
-        if (privateKey.getAlgorithm().equalsIgnoreCase("DSA")) {
+        if ("DSA".equalsIgnoreCase(privateKey.getAlgorithm())) {
             sigAlgo = WSConstants.DSA;
             jceSigAlgo = "SHA1withDSA";
         } else {
@@ -599,7 +596,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
         return URLEncoder.encode(encodedSignature, "UTF-8");
     }
 
-    protected String encodeAuthnRequest(Element authnRequest) throws IOException {
+    protected String encodeAuthnRequest(Element authnRequest) {
         String requestMessage = DOM2Writer.nodeToString(authnRequest);
 
         byte[] deflatedBytes = CompressionUtils.deflate(requestMessage.getBytes(StandardCharsets.UTF_8));
@@ -613,18 +610,17 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
                                                     FedizContext config)
         throws ProcessingException {
 
-        String redirectURL = null;
         try {
             if (!(config.getProtocol() instanceof SAMLProtocol)) {
                 LOG.error("Unsupported protocol");
                 throw new IllegalStateException("Unsupported protocol");
             }
 
-            redirectURL = ((SAMLProtocol)config.getProtocol()).getIssuerLogoutURL();
+            String redirectURL = ((SAMLProtocol)config.getProtocol()).getIssuerLogoutURL();
             if (redirectURL == null) {
                 String issuerURL = resolveIssuer(request, config);
                 LOG.info("Issuer url: " + issuerURL);
-                if (issuerURL != null && issuerURL.length() > 0) {
+                if (issuerURL != null && !issuerURL.isEmpty()) {
                     redirectURL = issuerURL;
                 }
             }
@@ -657,9 +653,8 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             String urlEncodedRequest =
                 URLEncoder.encode(logoutRequestEncoded, "UTF-8");
 
-            StringBuilder sb = new StringBuilder();
-            sb.append(SAMLSSOConstants.SAML_REQUEST).append('=').append(urlEncodedRequest);
-            sb.append('&').append(SAMLSSOConstants.RELAY_STATE).append('=').append(relayState);
+            StringBuilder sb = new StringBuilder(SAMLSSOConstants.SAML_REQUEST).append('=').append(urlEncodedRequest)
+                .append('&').append(SAMLSSOConstants.RELAY_STATE).append('=').append(relayState);
 
             if (((SAMLProtocol)config.getProtocol()).isSignRequest()) {
                 String signature = signRequest(config, sb);
@@ -671,8 +666,7 @@ public class SAMLProcessorImpl extends AbstractFedizProcessor {
             response.addHeader("Pragma", "no-cache");
             response.setState(relayState);
 
-            redirectURL = redirectURL + "?" + sb.toString();
-            response.setRedirectionURL(redirectURL);
+            response.setRedirectionURL(redirectURL + '?' + sb.toString());
 
             return response;
         } catch (Exception ex) {

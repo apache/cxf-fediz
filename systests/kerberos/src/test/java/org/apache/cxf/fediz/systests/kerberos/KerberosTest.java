@@ -290,7 +290,7 @@ public class KerberosTest {
 
     private String getEncodedKerberosTicket(boolean spnego) throws Exception {
 
-        Oid kerberos5Oid = null;
+        final Oid kerberos5Oid;
         if (spnego) {
             kerberos5Oid = new Oid("1.3.6.1.5.5.2");
         } else {

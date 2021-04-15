@@ -53,7 +53,7 @@ public class FederationSignOutCleanupFilter extends GenericFilterBean {
                 LOG.warn("Could not write logout.jpg");
                 return;
             }
-            int read = 0;
+            int read;
             byte[] buf = new byte[1024];
             while ((read = inputStream.read(buf)) != -1) {
                 responseOutputStream.write(buf, 0, read);

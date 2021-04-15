@@ -169,7 +169,7 @@ public class SamlSso {
         String responseMessage = DOM2Writer.nodeToString(response);
         System.out.println("RESP: " + responseMessage);
 
-        byte[] deflatedBytes = null;
+        final byte[] deflatedBytes;
         if (redirect) {
             DeflateEncoderDecoder encoder = new DeflateEncoderDecoder();
             deflatedBytes = encoder.deflateToken(responseMessage.getBytes(StandardCharsets.UTF_8));

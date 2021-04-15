@@ -50,8 +50,7 @@ public class TrustedIdpDAOJPAImpl implements TrustedIdpDAO {
     public List<TrustedIdp> getTrustedIDPs(int start, int size) {
         List<TrustedIdp> list = new ArrayList<>();
 
-        Query query = null;
-        query = em.createQuery("select t from TrustedIDP t");
+        Query query = em.createQuery("select t from TrustedIDP t");
 
         List<?> idpEntities = query
             .setFirstResult(start)
@@ -93,11 +92,9 @@ public class TrustedIdpDAOJPAImpl implements TrustedIdpDAO {
 
     @Override
     public void deleteTrustedIDP(String realm) {
-        Query query = null;
-        query = em.createQuery("select t from TrustedIDP t where t.realm=:realm");
+        Query query = em.createQuery("select t from TrustedIDP t where t.realm=:realm");
         query.setParameter("realm", realm);
 
-        //@SuppressWarnings("rawtypes")
         Object trustedIdpObj = query.getSingleResult();
         em.remove(trustedIdpObj);
 
@@ -105,11 +102,9 @@ public class TrustedIdpDAOJPAImpl implements TrustedIdpDAO {
     }
 
     static TrustedIdpEntity getTrustedIdpEntity(String realm, EntityManager em) {
-        Query query = null;
-        query = em.createQuery("select t from TrustedIDP t where t.realm=:realm");
+        Query query = em.createQuery("select t from TrustedIDP t where t.realm=:realm");
         query.setParameter("realm", realm);
 
-        //@SuppressWarnings("rawtypes")
         return (TrustedIdpEntity)query.getSingleResult();
     }
 

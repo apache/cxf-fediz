@@ -21,7 +21,6 @@ package org.apache.cxf.fediz.service.oidc.logout;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
 import javax.ws.rs.BadRequestException;
@@ -102,7 +101,7 @@ public class LogoutService extends JoseJwtConsumer {
         if (tokenHint == null) {
             return null;
         }
-        JwtToken token = null;
+        final JwtToken token;
         try {
             token = super.getJwtToken(tokenHint);
         } catch (JoseException ex) {
@@ -119,7 +118,7 @@ public class LogoutService extends JoseJwtConsumer {
         final String uriStr;
         if (uris.length > 1) {
             if (clientLogoutUriParam == null
-                    || !new HashSet<>(Arrays.asList(uris)).contains(clientLogoutUriParam)) {
+                    || !Arrays.asList(uris).contains(clientLogoutUriParam)) {
                 throw new BadRequestException();
             }
             uriStr = clientLogoutUriParam;

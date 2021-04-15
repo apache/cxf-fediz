@@ -121,10 +121,9 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
 
     protected FedizResponse processSignInRequest(FedizRequest request, FedizContext config) throws ProcessingException {
 
-        final Document doc;
-        Element el = null;
+        Element el;
         try {
-            doc = DOMUtils.readXml(new StringReader(request.getResponseToken()));
+            final Document doc = DOMUtils.readXml(new StringReader(request.getResponseToken()));
             el = doc.getDocumentElement();
 
         } catch (Exception e) {

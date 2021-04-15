@@ -114,7 +114,7 @@ public class CallbackHandlerTest {
         audienceUris.getAudienceItem().add(AUDIENCE_URI);
         config.setAudienceUris(audienceUris);
 
-        ProtocolType protocol = null;
+        final ProtocolType protocol;
 
         if (federation) {
             protocol = new FederationProtocolType();

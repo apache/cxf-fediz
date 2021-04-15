@@ -26,9 +26,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.w3c.dom.Document;
 
@@ -89,13 +89,15 @@ public class AuthnRequestParser {
     private static final String RSA_SHA1_MGF1 = "http://www.w3.org/2007/05/xmldsig-more#sha1-rsa-MGF1";
     private static final String RSA_SHA256_MGF1 = "http://www.w3.org/2007/05/xmldsig-more#sha256-rsa-MGF1";
     private static final String DSA_SHA256 = "http://www.w3.org/2009/xmldsig11#dsa-sha256";
-    private static final List<String> SIG_ALGS;
-
-    static {
-        List<String> sigAlgs = Arrays.asList(SSOConstants.RSA_SHA1, SSOConstants.DSA_SHA1, RSA_SHA256, RSA_SHA384,
-                                             RSA_SHA512, RSA_SHA1_MGF1, RSA_SHA256_MGF1, DSA_SHA256);
-        SIG_ALGS = Collections.unmodifiableList(sigAlgs);
-    }
+    private static final Set<String> SIG_ALGS = new HashSet<>(Arrays.asList(
+        SSOConstants.RSA_SHA1,
+        SSOConstants.DSA_SHA1,
+        RSA_SHA256,
+        RSA_SHA384,
+        RSA_SHA512,
+        RSA_SHA1_MGF1,
+        RSA_SHA256_MGF1,
+        DSA_SHA256));
 
     private boolean supportDeflateEncoding;
     private boolean requireSignature = true;
@@ -108,7 +110,7 @@ public class AuthnRequestParser {
             WebUtils.removeAttribute(context, IdpConstants.SAML_AUTHN_REQUEST);
             throw new ProcessingException(TYPE.BAD_REQUEST);
         } else {
-            RequestAbstractType parsedRequest = null;
+            final RequestAbstractType parsedRequest;
             try {
                 parsedRequest = extractRequest(context, samlRequest);
             } catch (Exception ex) {
@@ -325,7 +327,7 @@ public class AuthnRequestParser {
         X509Certificate validatingCert = getValidatingCertificate(idp, realm);
 
         // Process the received SigAlg parameter - fall back to RSA SHA1
-        String processedSigAlg = null;
+        final String processedSigAlg;
         if (sigAlg != null && SIG_ALGS.contains(sigAlg)) {
             processedSigAlg = sigAlg;
         } else {
@@ -339,9 +341,9 @@ public class AuthnRequestParser {
 
         // Recreate request to sign
         String requestToSign =
-                SSOConstants.SAML_REQUEST + "=" + URLEncoder.encode(samlRequest, StandardCharsets.UTF_8.name())
-                + "&" + SSOConstants.RELAY_STATE + "=" + URLEncoder.encode(relayState, StandardCharsets.UTF_8.name())
-                + "&" + SSOConstants.SIG_ALG + "=" + URLEncoder.encode(processedSigAlg, StandardCharsets.UTF_8.name());
+                SSOConstants.SAML_REQUEST + '=' + URLEncoder.encode(samlRequest, StandardCharsets.UTF_8.name())
+                + '&' + SSOConstants.RELAY_STATE + '=' + URLEncoder.encode(relayState, StandardCharsets.UTF_8.name())
+                + '&' + SSOConstants.SIG_ALG + '=' + URLEncoder.encode(processedSigAlg, StandardCharsets.UTF_8.name());
 
         sig.update(requestToSign.getBytes(StandardCharsets.UTF_8));
 
@@ -442,7 +444,7 @@ public class AuthnRequestParser {
             throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
         }
 
-        BasicCredential credential = null;
+        final BasicCredential credential;
         if (samlKeyInfo.getCerts() != null) {
             credential = new BasicX509Credential(samlKeyInfo.getCerts()[0]);
         } else if (samlKeyInfo.getPublicKey() != null) {

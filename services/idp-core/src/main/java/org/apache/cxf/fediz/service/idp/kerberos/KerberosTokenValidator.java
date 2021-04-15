@@ -109,7 +109,7 @@ public class KerberosTokenValidator {
         }
 
         // Get a TGT from the KDC using JAAS
-        LoginContext loginContext = null;
+        final LoginContext loginContext;
         if (callbackHandler != null) {
             loginContext = new LoginContext(getContextName(), callbackHandler);
         } else {

@@ -160,13 +160,10 @@ public final class CertsUtils {
      * Get a Crypto instance from a file
      */
     public static Crypto getCryptoFromFile(String filename) {
-        Crypto crypto = null;
         Properties prop = new Properties();
-        try {
-            //load a properties file
-            InputStream is = Merlin.loadInputStream(Thread.currentThread().getContextClassLoader(), filename);
+        try (InputStream is = Merlin.loadInputStream(Thread.currentThread().getContextClassLoader(), filename)) {
             prop.load(is);
-            crypto = CryptoFactory.getInstance(prop);
+            return CryptoFactory.getInstance(prop);
         } catch (WSSecurityException ex) {
             LOG.error("Failed to load keystore " + prop.toString(), ex);
             throw new RuntimeException("Failed to load keystore " + prop.toString());
@@ -174,7 +171,6 @@ public final class CertsUtils {
             LOG.error("Failed to read signing metadata key", ex);
             throw new RuntimeException("Failed to read signing metadata key");
         }
-        return crypto;
     }
 
     /**
