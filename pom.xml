@@ -51,8 +51,8 @@
         <hsqldb.version>2.5.2</hsqldb.version>
         <htmlunit.version>2.47.1</htmlunit.version>
         <jackson.version>2.11.4</jackson.version>
-        <jaxb.version>2.3.2</jaxb.version>
-        <jetty9.version>9.4.39.v20210325</jetty9.version>
+        <jaxb.version>2.3.3</jaxb.version>
+        <jetty9.version>9.4.40.v20210413</jetty9.version>
         <junit.version>4.13.2</junit.version>
         <kerby.version>2.0.1</kerby.version>
         <log4j.version>1.2.17</log4j.version>
@@ -60,10 +60,10 @@
         <servlet.version>3.1.0</servlet.version>
         <slf4j.version>1.7.30</slf4j.version>
         <spring.version>5.3.6</spring.version>
-        <spring-ldap-core.version>2.3.3.RELEASE</spring-ldap-core.version>
+        <spring-ldap-core.version>2.3.4.RELEASE</spring-ldap-core.version>
         <spring.security.version>5.4.6</spring.security.version>
         <spring-webflow.version>2.5.1.RELEASE</spring-webflow.version>
-        <tomcat.version>9.0.45</tomcat.version>
+        <tomcat.version>9.0.46</tomcat.version>
         <validation-api.version>2.0.2</validation-api.version>
         <wss4j.version>2.3.1</wss4j.version>
 
