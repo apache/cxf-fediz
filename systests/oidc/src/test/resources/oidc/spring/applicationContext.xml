@@ -37,7 +37,7 @@
         http://www.springframework.org/schema/util/spring-util-4.3.xsd
         http://cxf.apache.org/transports/http/configuration
         http://cxf.apache.org/schemas/configuration/http-conf.xsd
-        http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-4.2.xsd 
+        http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd 
         http://cxf.apache.org/configuration/security
         http://cxf.apache.org/schemas/configuration/security.xsd">
 

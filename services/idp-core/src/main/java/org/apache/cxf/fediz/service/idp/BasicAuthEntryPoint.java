@@ -21,7 +21,6 @@ package org.apache.cxf.fediz.service.idp;
 
 import java.io.IOException;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -39,7 +38,7 @@ import org.springframework.stereotype.Component;
 public class BasicAuthEntryPoint extends BasicAuthenticationEntryPoint {
 
     public void commence(HttpServletRequest request, HttpServletResponse response,
-                         AuthenticationException ex) throws IOException, ServletException {
+                         AuthenticationException ex) throws IOException {
         if (ex instanceof AuthenticationServiceException) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.flushBuffer();
@@ -49,7 +48,7 @@ public class BasicAuthEntryPoint extends BasicAuthenticationEntryPoint {
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         setRealmName("Fediz");
         super.afterPropertiesSet();
     }
