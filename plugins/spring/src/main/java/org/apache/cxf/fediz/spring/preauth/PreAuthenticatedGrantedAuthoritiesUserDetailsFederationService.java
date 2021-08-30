@@ -37,7 +37,7 @@ import org.springframework.util.Assert;
  * object based solely on the information contained in the given
  * PreAuthenticatedAuthenticationToken. The user name is set to the name as
  * returned by PreAuthenticatedAuthenticationToken.getName(), the password is
- * set to a fixed dummy value (it will not be used by the
+ * set to a fixed "N/A" value (it will not be used by the
  * PreAuthenticatedAuthenticationProvider anyway), and the Granted Authorities
  * are retrieved from the details object as returned by
  * PreAuthenticatedAuthenticationToken.getDetails().
