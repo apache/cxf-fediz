@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
-        <version>23</version>
+        <version>24</version>
     </parent>
 
     <prerequisites>
@@ -94,6 +94,7 @@
         <fediz.downloadSources>true</fediz.downloadSources>
 
         <fediz.resources.base.path />
+        <project.build.outputTimestamp>1</project.build.outputTimestamp>
     </properties>
 
     <scm>
