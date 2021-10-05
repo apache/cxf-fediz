@@ -44,7 +44,7 @@
         <commons.text.version>1.9</commons.text.version>
         <commons.validator.version>1.7</commons.validator.version>
         <cxf.version>3.4.5</cxf.version>
-        <cxf.build-utils.version>3.4.5</cxf.build-utils.version>
+        <cxf.build-utils.version>3.4.4</cxf.build-utils.version>
         <easymock.version>4.0.2</easymock.version>
         <ehcache3.version>3.8.1</ehcache3.version>
         <jcache.version>1.1.1</jcache.version>
