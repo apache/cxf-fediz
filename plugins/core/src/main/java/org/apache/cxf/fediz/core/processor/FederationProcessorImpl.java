@@ -21,7 +21,6 @@ package org.apache.cxf.fediz.core.processor;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.cert.Certificate;
@@ -61,7 +60,6 @@ import org.apache.cxf.fediz.core.metadata.MetadataWriter;
 import org.apache.cxf.fediz.core.spi.FreshnessCallback;
 import org.apache.cxf.fediz.core.spi.HomeRealmCallback;
 import org.apache.cxf.fediz.core.spi.ReplyConstraintCallback;
-import org.apache.cxf.fediz.core.spi.SignInQueryCallback;
 import org.apache.cxf.fediz.core.spi.SignOutQueryCallback;
 import org.apache.cxf.fediz.core.spi.WAuthCallback;
 import org.apache.cxf.fediz.core.spi.WReqCallback;
@@ -123,10 +121,9 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
 
     protected FedizResponse processSignInRequest(FedizRequest request, FedizContext config) throws ProcessingException {
 
-        final Document doc;
-        Element el = null;
+        Element el;
         try {
-            doc = DOMUtils.readXml(new StringReader(request.getResponseToken()));
+            final Document doc = DOMUtils.readXml(new StringReader(request.getResponseToken()));
             el = doc.getDocumentElement();
 
         } catch (Exception e) {
@@ -550,36 +547,6 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
         RedirectionResponse response = new RedirectionResponse();
         response.setRedirectionURL(redirectURL);
         return response;
-    }
-
-    private String resolveSignInQuery(HttpServletRequest request, FedizContext config) throws IOException,
-        UnsupportedCallbackException, UnsupportedEncodingException {
-        Object signInQueryObj = ((FederationProtocol)config.getProtocol()).getSignInQuery();
-        String signInQuery = null;
-        if (signInQueryObj != null) {
-            if (signInQueryObj instanceof String) {
-                signInQuery = (String)signInQueryObj;
-            } else if (signInQueryObj instanceof CallbackHandler) {
-                CallbackHandler frCB = (CallbackHandler)signInQueryObj;
-                SignInQueryCallback callback = new SignInQueryCallback(request);
-                frCB.handle(new Callback[] {
-                    callback
-                });
-                Map<String, String> signInQueryMap = callback.getSignInQueryParamMap();
-                if (signInQueryMap != null) {
-                    StringBuilder sbQuery = new StringBuilder();
-                    for (Entry<String, String> entry : signInQueryMap.entrySet()) {
-                        if (sbQuery.length() > 0) {
-                            sbQuery.append('&');
-                        }
-                        sbQuery.append(entry.getKey()).append('=').append(encode(entry.getValue(), UTF_8.name()));
-                    }
-                    signInQuery = sbQuery.toString();
-                }
-
-            }
-        }
-        return signInQuery;
     }
 
     private Pattern resolveLogoutRedirectToConstraint(HttpServletRequest request, FedizContext config)

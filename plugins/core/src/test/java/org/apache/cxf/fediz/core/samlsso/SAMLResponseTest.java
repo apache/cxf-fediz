@@ -1548,6 +1548,90 @@ public class SAMLResponseTest {
         }
     }
 
+    @org.junit.Test
+    public void validateSAMLResponseWithoutKeyInfo() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("ROOT2");
+
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                TEST_IDP_ISSUER,
+                requestId,
+                TEST_REQUEST_URL,
+                (String)config.getProtocol().getIssuer(),
+                null,
+                relayState,
+                System.currentTimeMillis());
+
+        // Create SAML Response
+        String responseStr = createSamlResponseStrWithoutKeyInfo(requestId);
+
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(responseStr);
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+        wfReq.setRequestState(requestState);
+
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        FedizResponse wfRes = wfProc.processRequest(wfReq, config);
+
+        Assert.assertEquals("Principal name wrong", TEST_USER,
+                wfRes.getUsername());
+        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
+        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
+                .size());
+        Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
+        assertClaims(wfRes.getClaims(), ClaimTypes.COUNTRY);
+        assertClaims(wfRes.getClaims(), AbstractSAMLCallbackHandler.CLAIM_TYPE_LANGUAGE);
+    }
+
+    @org.junit.Test
+    public void validateSAMLResponseWithoutKeyInfoIncorrectTrustStore() throws Exception {
+        // Mock up a Request
+        FedizContext config = getFederationConfigurator().getFedizContext("CLIENT_TRUST");
+
+        String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+
+        String relayState = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
+        RequestState requestState = new RequestState(TEST_REQUEST_URL,
+                TEST_IDP_ISSUER,
+                requestId,
+                TEST_REQUEST_URL,
+                (String)config.getProtocol().getIssuer(),
+                null,
+                relayState,
+                System.currentTimeMillis());
+
+        // Create SAML Response
+        String responseStr = createSamlResponseStrWithoutKeyInfo(requestId);
+
+        HttpServletRequest req = EasyMock.createMock(HttpServletRequest.class);
+        EasyMock.expect(req.getRequestURL()).andReturn(new StringBuffer(TEST_REQUEST_URL));
+        EasyMock.expect(req.getRemoteAddr()).andReturn(TEST_CLIENT_ADDRESS);
+        EasyMock.replay(req);
+
+        FedizRequest wfReq = new FedizRequest();
+        wfReq.setResponseToken(responseStr);
+        wfReq.setState(relayState);
+        wfReq.setRequest(req);
+        wfReq.setRequestState(requestState);
+
+        FedizProcessor wfProc = new SAMLProcessorImpl();
+        try {
+            wfProc.processRequest(wfReq, config);
+            fail("Failure expected on incorrect trust store");
+        } catch (ProcessingException ex) {
+            // expected
+        }
+    }
+
     private String createSamlResponseStr(String requestId) throws Exception {
         // Create SAML Assertion
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -1614,6 +1698,69 @@ public class SAMLResponseTest {
         doc.appendChild(policyElement);
 
         return policyElement;
+    }
+
+    private String createSamlResponseStrWithoutKeyInfo(String requestId) throws Exception {
+        // Create SAML Assertion
+        SAML2CallbackHandler saml2CallbackHandler = new SAML2CallbackHandler();
+        saml2CallbackHandler.setAlsoAddAuthnStatement(true);
+        saml2CallbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
+        saml2CallbackHandler.setConfirmationMethod(SAML2Constants.CONF_BEARER);
+        saml2CallbackHandler.setIssuer(TEST_IDP_ISSUER);
+        saml2CallbackHandler.setSubjectName(TEST_USER);
+
+        ConditionsBean cp = new ConditionsBean();
+        AudienceRestrictionBean audienceRestriction = new AudienceRestrictionBean();
+        audienceRestriction.getAudienceURIs().add(TEST_REQUEST_URL);
+        cp.setAudienceRestrictions(Collections.singletonList(audienceRestriction));
+        saml2CallbackHandler.setConditions(cp);
+
+        // Subject Confirmation Data
+        SubjectConfirmationDataBean subjectConfirmationData = new SubjectConfirmationDataBean();
+        subjectConfirmationData.setAddress(TEST_CLIENT_ADDRESS);
+        subjectConfirmationData.setInResponseTo(requestId);
+        subjectConfirmationData.setNotAfter(new DateTime().plusMinutes(5));
+        subjectConfirmationData.setRecipient(TEST_REQUEST_URL);
+        saml2CallbackHandler.setSubjectConfirmationData(subjectConfirmationData);
+
+        SAMLCallback samlCallback = new SAMLCallback();
+        SAMLUtil.doSAMLCallback(saml2CallbackHandler, samlCallback);
+        SamlAssertionWrapper assertion = new SamlAssertionWrapper(samlCallback);
+
+        String alias = "mystskey";
+        WSPasswordCallback[] cb = {new WSPasswordCallback(alias, WSPasswordCallback.SIGNATURE)};
+        cbPasswordHandler.handle(cb);
+        String password = cb[0].getPassword();
+
+        // Sign the Assertion without a KeyInfo
+        Signature signature = OpenSAMLUtil.buildSignature();
+        signature.setCanonicalizationAlgorithm("http://www.w3.org/2001/10/xml-exc-c14n#");
+        CryptoType cryptoType = new CryptoType(CryptoType.TYPE.ALIAS);
+        cryptoType.setAlias(alias);
+        X509Certificate[] issuerCerts = crypto.getX509Certificates(cryptoType);
+        PrivateKey privateKey = crypto.getPrivateKey(alias, password);
+        signature.setSignatureAlgorithm("http://www.w3.org/2000/09/xmldsig#rsa-sha1");
+        BasicX509Credential signingCredential = new BasicX509Credential(issuerCerts[0], privateKey);
+        signature.setSigningCredential(signingCredential);
+        assertion.setSignature(signature, "http://www.w3.org/2000/09/xmldsig#sha1");
+
+        DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+
+        Status status =
+                SAML2PResponseComponentBuilder.createStatus(
+                        "urn:oasis:names:tc:SAML:2.0:status:Success", null
+                );
+        Response response =
+                SAML2PResponseComponentBuilder.createSAMLResponse(requestId,
+                        assertion.getIssuerString(),
+                        status);
+        response.getAssertions().add(assertion.getSaml2());
+
+        Document doc = docBuilder.newDocument();
+        Element policyElement = OpenSAMLUtil.toDom(response, doc);
+        doc.appendChild(policyElement);
+
+        return encodeResponse(policyElement);
     }
 
     private Element createLogoutResponse(String statusValue, String destination,

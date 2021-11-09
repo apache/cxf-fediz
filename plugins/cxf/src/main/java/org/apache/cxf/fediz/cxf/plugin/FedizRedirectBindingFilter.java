@@ -146,7 +146,7 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
 
             long currentTime = System.currentTimeMillis();
             Instant notOnOrAfter = wfRes.getTokenExpires();
-            long expiresAt = 0;
+            final long expiresAt;
             if (notOnOrAfter != null) {
                 expiresAt = notOnOrAfter.toEpochMilli();
             } else {
@@ -402,7 +402,7 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
                     LOG.warn("Could not write logout.jpg");
                     return true;
                 }
-                int read = 0;
+                int read;
                 byte[] buf = new byte[1024];
                 while ((read = inputStream.read(buf)) != -1) {
                     responseOutputStream.write(buf, 0, read);

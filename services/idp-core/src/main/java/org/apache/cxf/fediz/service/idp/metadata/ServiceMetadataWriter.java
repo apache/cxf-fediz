@@ -50,7 +50,6 @@ public class ServiceMetadataWriter {
 
     private static final Logger LOG = LoggerFactory.getLogger(ServiceMetadataWriter.class);
 
-    //CHECKSTYLE:OFF
     public Document getMetaData(Idp config, TrustedIdp serviceConfig) throws ProcessingException {
 
         try {

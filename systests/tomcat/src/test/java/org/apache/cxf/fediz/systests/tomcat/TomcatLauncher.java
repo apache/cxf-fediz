@@ -67,13 +67,13 @@ public abstract class TomcatLauncher {
         httpsConnector.setPort(Integer.parseInt(port));
         httpsConnector.setSecure(true);
         httpsConnector.setScheme("https");
-        httpsConnector.setAttribute("sslProtocol", "TLS");
-        httpsConnector.setAttribute("SSLEnabled", true);
-        httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
-        httpsConnector.setAttribute("keystorePass", "tompass");
-        httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
-        httpsConnector.setAttribute("truststorePass", "tompass");
-        httpsConnector.setAttribute("clientAuth", "want");
+        httpsConnector.setProperty("sslProtocol", "TLS");
+        httpsConnector.setProperty("SSLEnabled", "true");
+        httpsConnector.setProperty("keystoreFile", "test-classes/server.jks");
+        httpsConnector.setProperty("keystorePass", "tompass");
+        httpsConnector.setProperty("truststoreFile", "test-classes/server.jks");
+        httpsConnector.setProperty("truststorePass", "tompass");
+        httpsConnector.setProperty("clientAuth", "want");
         server.getService().addConnector(httpsConnector);
 
         if (null == servletContextName) { // IDP

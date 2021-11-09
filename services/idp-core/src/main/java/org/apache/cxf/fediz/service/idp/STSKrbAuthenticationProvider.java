@@ -164,10 +164,10 @@ public class STSKrbAuthenticationProvider extends STSAuthenticationProvider {
                 + "credential delegation");
             return null;
         }
-        KerberosServiceContext kerberosContext;
-        Principal kerberosPrincipal = null;
+
+        final Principal kerberosPrincipal;
         try {
-            kerberosContext = kerberosTokenValidator.validate(token);
+            KerberosServiceContext kerberosContext = kerberosTokenValidator.validate(token);
             if (kerberosContext == null || kerberosContext.getDelegationCredential() == null) {
                 LOG.info("Kerberos Validation failure");
                 return null;

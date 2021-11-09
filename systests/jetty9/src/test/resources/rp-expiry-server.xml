@@ -27,7 +27,7 @@
         </Call>
     </Call>
 
-    <New id="sslContextFactory" class="org.eclipse.jetty.util.ssl.SslContextFactory">
+    <New id="sslContextFactory" class="org.eclipse.jetty.util.ssl.SslContextFactory$Server">
       <Set name="KeyStorePath">./target/test-classes/server.jks</Set>
       <Set name="KeyStorePassword">tompass</Set>
       <Set name="KeyManagerPassword">tompass</Set>

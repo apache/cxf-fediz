@@ -149,7 +149,7 @@ public class KerberosAuthenticationProcessingFilter extends GenericFilterBean {
      * This handler is called after a failure authentication. In most cases you
      * only get Kerberos/SPNEGO failures with a wrong server or network
      * configurations and not during runtime. If the client encounters an error,
-     * he will just stop the communication with server and therefore this
+     * it will just stop the communication with server and therefore this
      * handler will not be called in this case.<br />
      * Default is null, which means that the Filter returns the HTTP 500 code
      *

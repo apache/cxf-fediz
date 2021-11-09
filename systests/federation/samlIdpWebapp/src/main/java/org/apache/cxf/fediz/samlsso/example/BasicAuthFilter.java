@@ -74,7 +74,7 @@ public class BasicAuthFilter implements ContainerRequestFilter {
             credential = validator.validate(credential, data);
 
             // Create a Principal/SecurityContext
-            Principal p = null;
+            final Principal p;
             if (credential != null && credential.getPrincipal() != null) {
                 p = credential.getPrincipal();
             } else {

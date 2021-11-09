@@ -143,17 +143,17 @@ abstract class AbstractOIDCTest {
         httpsConnector.setPort(port);
         httpsConnector.setSecure(true);
         httpsConnector.setScheme("https");
-        httpsConnector.setAttribute("sslProtocol", "TLS");
-        httpsConnector.setAttribute("SSLEnabled", true);
-        httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
-        httpsConnector.setAttribute("keystorePass", "tompass");
+        httpsConnector.setProperty("sslProtocol", "TLS");
+        httpsConnector.setProperty("SSLEnabled", "true");
+        httpsConnector.setProperty("keystoreFile", "test-classes/server.jks");
+        httpsConnector.setProperty("keystorePass", "tompass");
 
         if (null == servletContextName) { // IDP
             server.getHost().setAppBase("tomcat/idp/webapps");
 
-            httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
-            httpsConnector.setAttribute("truststorePass", "tompass");
-            httpsConnector.setAttribute("clientAuth", "want");
+            httpsConnector.setProperty("truststoreFile", "test-classes/server.jks");
+            httpsConnector.setProperty("truststorePass", "tompass");
+            httpsConnector.setProperty("clientAuth", "want");
 
             Path stsWebapp = targetDir.resolve(server.getHost().getAppBase()).resolve("fediz-idp-sts");
             server.addWebapp("/fediz-idp-sts", stsWebapp.toString());
@@ -163,7 +163,7 @@ abstract class AbstractOIDCTest {
         } else { // RP
             server.getHost().setAppBase("tomcat/rp/webapps");
 
-            httpsConnector.setAttribute("clientAuth", "false");
+            httpsConnector.setProperty("clientAuth", "false");
 
             Path rpWebapp = targetDir.resolve(server.getHost().getAppBase()).resolve(servletContextName);
             Context ctx = server.addWebapp(servletContextName, rpWebapp.toString());
@@ -264,8 +264,8 @@ abstract class AbstractOIDCTest {
     private static String getClientIdByName(String clientName, HtmlPage registeredClientsPage) {
         final HtmlTable table = registeredClientsPage.getHtmlElementById("registered_clients");
         for (final HtmlTableRow row : table.getRows()) {
-            if (clientName.equals(row.getCell(0).asText())) {
-                final String clientId = row.getCell(1).asText();
+            if (clientName.equals(row.getCell(0).asNormalizedText())) {
+                final String clientId = row.getCell(1).asNormalizedText();
                 assertNotNull(clientId);
                 return clientId;
             }
@@ -275,8 +275,8 @@ abstract class AbstractOIDCTest {
 
     private static String getClientSecret(final HtmlPage registeredClientPage, String clientId) throws IOException {
         final HtmlTable table = registeredClientPage.getHtmlElementById("client");
-        assertEquals(clientId, table.getCellAt(1, 0).asText());
-        return table.getCellAt(1, 2).asText();
+        assertEquals(clientId, table.getCellAt(1, 0).asNormalizedText());
+        return table.getCellAt(1, 2).asNormalizedText();
     }
 
     private static HtmlPage registerConfidentialClient(HtmlPage registerPage,
@@ -319,9 +319,9 @@ abstract class AbstractOIDCTest {
 
             // Get the client identifier
             HtmlTable table = registeredClientsPage.getHtmlElementById("registered_clients");
-            String clientId = table.getCellAt(1, 1).asText();
+            String clientId = table.getCellAt(1, 1).asNormalizedText();
             assertNotNull(clientId);
-            String clientId2 = table.getCellAt(2, 1).asText();
+            String clientId2 = table.getCellAt(2, 1).asNormalizedText();
             assertNotNull(clientId2);
 
             // Now go to the specific client page
@@ -367,18 +367,18 @@ abstract class AbstractOIDCTest {
             assertEquals(table.getRows().size(), 3);
 
             // Now check the first client
-            String clientId = table.getCellAt(1, 1).asText();
+            String clientId = table.getCellAt(1, 1).asNormalizedText();
             assertNotNull(clientId);
 
             // Check the Date
-            String date = table.getCellAt(1, 2).asText();
+            String date = table.getCellAt(1, 2).asNormalizedText();
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.US);
             dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
             assertEquals(dateFormat.format(new Date()), date);
 
             // Check the redirect URI
-            String redirectURI = table.getCellAt(1, 3).asText().trim(); // <br/>
-            assertTrue(REDIRECT_URL.equals(redirectURI));
+            String redirectURI = table.getCellAt(1, 3).asNormalizedText().trim(); // <br/>
+            assertEquals(REDIRECT_URL, redirectURI);
         }
     }
 
@@ -414,7 +414,7 @@ abstract class AbstractOIDCTest {
             assertEquals("2 clients", table.getRows().size(), 3);
             boolean updatedClientFound = false;
             for (final HtmlTableRow row : table.getRows()) {
-                if (newClientName.equals(row.getCell(0).asText())) {
+                if (newClientName.equals(row.getCell(0).asNormalizedText())) {
                     updatedClientFound = true;
                     break;
                 }
@@ -539,7 +539,7 @@ abstract class AbstractOIDCTest {
             // Now try to register a new client
             HtmlPage errorPage = registerConfidentialClient(registerPage, "asfxyz", "https://127.0.0.1//",
                           "https://cxf.apache.org", "https://localhost:12345");
-            assertTrue(errorPage.asText().contains("Invalid Client Registration"));
+            assertTrue(errorPage.asNormalizedText().contains("Invalid Client Registration"));
         }
     }
 
@@ -552,7 +552,7 @@ abstract class AbstractOIDCTest {
             // Now try to register a new client
             HtmlPage errorPage = registerConfidentialClient(registerPage, "asfxyz", "https://127.0.0.1#fragment",
                           "https://cxf.apache.org", "https://localhost:12345");
-            assertTrue(errorPage.asText().contains("Invalid Client Registration"));
+            assertTrue(errorPage.asNormalizedText().contains("Invalid Client Registration"));
         }
     }
 
@@ -565,7 +565,7 @@ abstract class AbstractOIDCTest {
             // Now try to register a new client
             HtmlPage errorPage = registerConfidentialClient(registerPage, "asfxyz", "https://127.0.0.1/",
                           "https://cxf.apache.org//", "https://localhost:12345");
-            assertTrue(errorPage.asText().contains("Invalid Client Registration"));
+            assertTrue(errorPage.asNormalizedText().contains("Invalid Client Registration"));
         }
     }
 
@@ -578,7 +578,7 @@ abstract class AbstractOIDCTest {
             // Now try to register a new client
             HtmlPage errorPage = registerConfidentialClient(registerPage, "asfxyz", "https://127.0.0.1/",
                           "https://cxf.apache.org/", "https://localhost:12345//");
-            assertTrue(errorPage.asText().contains("Invalid Client Registration"));
+            assertTrue(errorPage.asNormalizedText().contains("Invalid Client Registration"));
         }
     }
 
@@ -591,7 +591,7 @@ abstract class AbstractOIDCTest {
             // Now try to register a new client
             HtmlPage errorPage = registerConfidentialClient(registerPage, "asfxyz", "https://127.0.0.1",
                           "https://cxf.apache.org#fragment", "https://localhost:12345");
-            assertTrue(errorPage.asText().contains("Invalid Client Registration"));
+            assertTrue(errorPage.asNormalizedText().contains("Invalid Client Registration"));
         }
     }
 
@@ -630,7 +630,7 @@ abstract class AbstractOIDCTest {
             // Register a client with an unsupported TLD
             HtmlPage errorPage = registerConfidentialClient(registerPage, "tld2", "https://www.apache.corp2",
                                                    "https://cxf.apache.org", "https://localhost:12345");
-            assertTrue(errorPage.asText().contains("Invalid Client Registration"));
+            assertTrue(errorPage.asNormalizedText().contains("Invalid Client Registration"));
 
             // Delete the first client above
             deleteClient(webClient.getPage(clientsUrl.resolveTemplate("path", clientId).build().toURL()));

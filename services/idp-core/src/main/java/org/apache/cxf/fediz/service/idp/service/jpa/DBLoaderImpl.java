@@ -19,10 +19,8 @@
 package org.apache.cxf.fediz.service.idp.service.jpa;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.Collections;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -35,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
-//CHECKSTYLE:OFF
 public class DBLoaderImpl implements DBLoader {
 
     public static final String NAME = "DEMODBLOADER";
@@ -54,6 +51,7 @@ public class DBLoaderImpl implements DBLoader {
         return NAME;
     }
 
+    //CHECKSTYLE:OFF: ExecutableStatementCount
     @Override
     public void load() {
 
@@ -137,21 +135,21 @@ public class DBLoaderImpl implements DBLoader {
             idpEntity.setServiceDescription("IDP of Realm A");
             idpEntity.setUri("realma");
             idpEntity.setProvideIdpList(true);
-            Map<String, String> authUris = new HashMap<>();
-            authUris.put("default", "/login/default");
-            idpEntity.setAuthenticationURIs(authUris);
-            List<String> protocols = new ArrayList<>();
-            protocols.add("http://docs.oasis-open.org/wsfed/federation/200706");
-            protocols.add("http://docs.oasis-open.org/ws-sx/ws-trust/200512");
-            idpEntity.setSupportedProtocols(protocols);
+            idpEntity.setAuthenticationURIs(
+                Collections.singletonMap("default", "/login/default")
+            );
+            idpEntity.setSupportedProtocols(Arrays.asList(
+                "http://docs.oasis-open.org/wsfed/federation/200706",
+                "http://docs.oasis-open.org/ws-sx/ws-trust/200512"
+            ));
             idpEntity.getClaimTypesOffered().add(claimEntity1);
             idpEntity.getClaimTypesOffered().add(claimEntity2);
             idpEntity.getClaimTypesOffered().add(claimEntity3);
             idpEntity.getClaimTypesOffered().add(claimEntity4);
-            List<String> tokenTypes = new ArrayList<>();
-            tokenTypes.add(WSConstants.SAML2_NS);
-            tokenTypes.add(WSConstants.SAML_NS);
-            idpEntity.setTokenTypesOffered(tokenTypes);
+            idpEntity.setTokenTypesOffered(Arrays.asList(
+                WSConstants.SAML2_NS,
+                WSConstants.SAML_NS
+            ));
             idpEntity.setUseCurrentIdp(true);
             em.persist(idpEntity);
 

@@ -207,8 +207,6 @@ public class TrustedIdpWSFedProtocolHandler extends AbstractTrustedIdpProtocolHa
 
         FedizContext fedContext = new FedizContext(config);
         if (!isCertificateLocation) {
-            CertificateStore cs = null;
-
             X509Certificate cert;
             try {
                 cert = CertsUtils.parseX509Certificate(trustedIdpConfig.getCertificate());
@@ -216,7 +214,7 @@ public class TrustedIdpWSFedProtocolHandler extends AbstractTrustedIdpProtocolHa
                 LOG.error("Failed to parse trusted certificate", ex);
                 throw new ProcessingException("Failed to parse trusted certificate");
             }
-            cs = new CertificateStore(Collections.singletonList(cert).toArray(new X509Certificate[0]));
+            CertificateStore cs = new CertificateStore(Collections.singletonList(cert).toArray(new X509Certificate[0]));
 
             TrustManager tm = new TrustManager(cs);
             fedContext.getCertificateStores().add(tm);

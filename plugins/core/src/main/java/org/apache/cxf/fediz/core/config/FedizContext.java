@@ -24,6 +24,8 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -44,10 +46,11 @@ import org.apache.cxf.fediz.core.config.jaxb.TrustManagersType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuers;
 import org.apache.cxf.fediz.core.exception.IllegalConfigurationException;
+import org.apache.cxf.fediz.core.exception.ProcessingException;
 import org.apache.cxf.fediz.core.processor.ClaimsProcessor;
 import org.apache.cxf.fediz.core.util.CertsUtils;
+import org.apache.wss4j.common.cache.EHCacheReplayCache;
 import org.apache.wss4j.common.cache.ReplayCache;
-import org.apache.wss4j.common.cache.ReplayCacheFactory;
 import org.apache.wss4j.common.crypto.CertificateStore;
 import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.crypto.CryptoFactory;
@@ -116,15 +119,14 @@ public class FedizContext implements Closeable {
         for (TrustManagersType manager : trustManagers) {
             TrustManager tm = new TrustManager(manager);
 
-            Crypto crypto = null;
             try {
-                if (manager.getKeyStore().getType().equalsIgnoreCase("PEM")) {
-                    X509Certificate[] certificates = new X509Certificate[1];
-                    certificates[0] = CertsUtils.getX509CertificateFromFile(tm.getName(), classloader);
-                    crypto = new CertificateStore(certificates);
+                final Crypto crypto;
+                if ("PEM".equalsIgnoreCase(manager.getKeyStore().getType())) {
+                    crypto = new CertificateStore(new X509Certificate[] {
+                        CertsUtils.getX509CertificateFromFile(tm.getName(), classloader)
+                    });
                 } else {
-                    Properties sigProperties = createCryptoProperties(manager);
-                    crypto = CryptoFactory.getInstance(sigProperties);
+                    crypto = CryptoFactory.getInstance(createCryptoProperties(manager));
                 }
                 tm.setCrypto(crypto);
                 certificateStores.add(tm);
@@ -239,26 +241,26 @@ public class FedizContext implements Closeable {
 
     }
 
-    public ReplayCache getTokenReplayCache() {
+    public ReplayCache getTokenReplayCache() throws ProcessingException {
         if (replayCache != null) {
             return replayCache;
         }
-        String replayCacheString = config.getTokenReplayCache();
-        String cacheKey = CACHE_KEY_PREFIX + "-" + config.getName();
-        ReplayCacheFactory replayCacheFactory = ReplayCacheFactory.newInstance();
-        if (replayCacheString == null || "".equals(replayCacheString)) {
-            replayCache = replayCacheFactory.newReplayCache(cacheKey, "/fediz-ehcache.xml");
-        } else {
-            try {
-                Class<?> replayCacheClass = Loader.loadClass(replayCacheString);
-                replayCache = (ReplayCache) replayCacheClass.newInstance();
-            } catch (ClassNotFoundException e) {
-                replayCache = replayCacheFactory.newReplayCache(cacheKey, "/fediz-ehcache.xml");
-            } catch (InstantiationException e) {
-                replayCache = replayCacheFactory.newReplayCache(cacheKey, "/fediz-ehcache.xml");
-            } catch (IllegalAccessException e) {
-                replayCache = replayCacheFactory.newReplayCache(cacheKey, "/fediz-ehcache.xml");
+        final String replayCacheString = config.getTokenReplayCache();
+        final String cacheKey = CACHE_KEY_PREFIX + '-' + config.getName();
+        try {
+            final Path diskstorePath = Files.createTempDirectory("fediz");
+            if (replayCacheString == null || replayCacheString.isEmpty()) {
+                replayCache = new EHCacheReplayCache(cacheKey, diskstorePath);
+            } else {
+                try {
+                    Class<?> replayCacheClass = Loader.loadClass(replayCacheString);
+                    replayCache = (ReplayCache) replayCacheClass.getDeclaredConstructor().newInstance();
+                } catch (ReflectiveOperationException e) {
+                    replayCache = new EHCacheReplayCache(cacheKey, diskstorePath);
+                }
             }
+        } catch (Exception e) {
+            throw new ProcessingException(e.getMessage(), e);
         }
         return replayCache;
     }

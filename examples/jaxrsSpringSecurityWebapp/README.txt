@@ -31,7 +31,7 @@ Demo Web Application
 The main code lives in the class FederationService. This JAX-RS Service is protected
 and can be accessed only if the browser user is authenticated. The purpose of
 the FederationService is to illustrate the usage of the Java Servlet Security
-API to get the authenticated user and to check the roles he has. Further, 
+API to get the authenticated user and to check the roles they have. Further, 
 the FederationService shows how to access claims data (user data) which were 
 stored in the SAML token by using the Fediz interface FedizPrincipal.
 Beyond that, the FederationService illustrates how to access the SAML token

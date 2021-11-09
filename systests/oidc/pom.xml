@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.apache.cxf.fediz</groupId>
         <artifactId>fediz-systests</artifactId>
-        <version>1.5.1-SNAPSHOT</version>
+        <version>1.6.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>org.apache.cxf.fediz.systests</groupId>
@@ -189,7 +189,7 @@
                         <configuration>
                             <outputDirectory>${project.build.directory}/tomcat/rp/webapps/fediz-oidc-tomcat/WEB-INF/lib</outputDirectory>
                             <includeScope>compile</includeScope>
-                            <excludeGroupIds>org.springframework.security,org.apache.cxf.fediz,jakarta.xml.bind</excludeGroupIds>
+                            <excludeGroupIds>org.springframework.security,org.apache.cxf.fediz,jakarta.xml.bind,javax.cache,org.ehcache</excludeGroupIds>
                         </configuration>
                     </execution>
                     <execution>
@@ -200,7 +200,7 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${project.build.directory}/tomcat/rp/webapps/fediz-oidc-spring/WEB-INF/lib</outputDirectory>
-                             <includeScope>compile</includeScope>
+                            <includeScope>compile</includeScope>
                         </configuration>
                     </execution>
                 </executions>

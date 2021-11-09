@@ -151,7 +151,7 @@ public class FedizConfigurationWriterTest {
         audienceUris.getAudienceItem().add(AUDIENCE_URI_1);
         config.setAudienceUris(audienceUris);
 
-        ProtocolType protocol = null;
+        final ProtocolType protocol;
 
         if (federation) {
             protocol = new FederationProtocolType();

@@ -21,14 +21,12 @@ package org.apache.cxf.fediz.cxf.plugin.state;
 import java.io.IOException;
 import java.net.URL;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Ehcache;
-import net.sf.ehcache.Element;
-import net.sf.ehcache.config.CacheConfiguration;
 import org.apache.cxf.fediz.core.RequestState;
-import org.apache.wss4j.common.cache.EHCacheManagerHolder;
 import org.apache.wss4j.common.util.Loader;
+import org.ehcache.Cache;
+import org.ehcache.CacheManager;
+import org.ehcache.config.builders.CacheManagerBuilder;
+import org.ehcache.xml.XmlConfiguration;
 
 /**
  * An in-memory EHCache implementation of the SPStateManager interface.
@@ -36,137 +34,82 @@ import org.apache.wss4j.common.util.Loader;
  */
 public class EHCacheSPStateManager implements SPStateManager {
 
-    public static final long DEFAULT_TTL = 60L * 5L;
     public static final String REQUEST_CACHE_KEY = "cxf.fediz.samlp.request.state.cache";
     public static final String RESPONSE_CACHE_KEY = "cxf.fediz.samlp.response.state.cache";
 
-    private Ehcache requestCache;
-    private Ehcache responseCache;
+    private Cache<String, RequestState> requestCache;
+    private Cache<String, ResponseState> responseCache;
     private CacheManager cacheManager;
-    private long ttl = DEFAULT_TTL;
 
     public EHCacheSPStateManager(String configFile) {
         this(getConfigFileURL(configFile));
     }
 
     public EHCacheSPStateManager(URL configFileURL) {
-        this(EHCacheManagerHolder.getCacheManager("", configFileURL));
+        XmlConfiguration xmlConfig = new XmlConfiguration(configFileURL);
+        cacheManager = CacheManagerBuilder.newCacheManager(xmlConfig); 
+        cacheManager.init();
+        initCache();
     }
 
     public EHCacheSPStateManager(CacheManager cacheManager) {
         this.cacheManager = cacheManager;
-
-        CacheConfiguration requestCC = EHCacheManagerHolder.getCacheConfiguration(REQUEST_CACHE_KEY, cacheManager);
-
-        Ehcache newCache = new Cache(requestCC);
-        requestCache = cacheManager.addCacheIfAbsent(newCache);
-
-        CacheConfiguration responseCC = EHCacheManagerHolder.getCacheConfiguration(RESPONSE_CACHE_KEY, cacheManager);
-
-        newCache = new Cache(responseCC);
-        responseCache = cacheManager.addCacheIfAbsent(newCache);
+        initCache();
     }
 
-    private static URL getConfigFileURL(Object o) {
-        if (o instanceof String) {
-            try {
-                URL url = Loader.getResource((String)o);
-                if (url == null) {
-                    url = new URL((String)o);
-                }
-                return url;
-            } catch (IOException e) {
-                // Do nothing
+    private static URL getConfigFileURL(String configFile) {
+        try {
+            URL url = Loader.getResource(configFile);
+            if (url == null) {
+                url = new URL(configFile);
             }
-        } else if (o instanceof URL) {
-            return (URL)o;
+            return url;
+        } catch (IOException e) {
+            // Do nothing
         }
         return null;
     }
 
-    /**
-     * Set a new (default) TTL value in seconds
-     * @param newTtl a new (default) TTL value in seconds
-     */
-    public void setTTL(long newTtl) {
-        ttl = newTtl;
-    }
-
-    /**
-     * Get the (default) TTL value in seconds
-     * @return the (default) TTL value in seconds
-     */
-    public long getTTL() {
-        return ttl;
+    private void initCache() {
+        requestCache = cacheManager.getCache(REQUEST_CACHE_KEY, String.class, RequestState.class);
+        responseCache = cacheManager.getCache(RESPONSE_CACHE_KEY, String.class, ResponseState.class);
     }
 
     public void setRequestState(String relayState, RequestState state) {
-        if (relayState == null || "".equals(relayState)) {
-            return;
+        if (relayState != null && !relayState.isEmpty()) {
+            requestCache.put(relayState, state);
         }
-
-        int parsedTTL = (int)ttl;
-        if (ttl != (long)parsedTTL) {
-            // Fall back to 60 minutes if the default TTL is set incorrectly
-            parsedTTL = 3600;
-        }
-
-        Element element = new Element(relayState, state);
-        element.setTimeToLive(parsedTTL);
-        element.setTimeToIdle(parsedTTL);
-        requestCache.put(element);
     }
 
     public RequestState removeRequestState(String relayState) {
-        Element element = requestCache.get(relayState);
-        if (element != null) {
+        RequestState state = requestCache.get(relayState);
+        if (state != null) {
             requestCache.remove(relayState);
-            return (RequestState)element.getObjectValue();
         }
-        return null;
+        return state;
     }
 
     public ResponseState getResponseState(String securityContextKey) {
-        Element element = responseCache.get(securityContextKey);
-        if (element != null) {
-            if (responseCache.isExpired(element)) {
-                responseCache.remove(securityContextKey);
-                return null;
-            }
-            return (ResponseState)element.getObjectValue();
-        }
-        return null;
-    }
-
-    public ResponseState removeResponseState(String securityContextKey) {
-        Element element = responseCache.get(securityContextKey);
-        if (element != null) {
-            responseCache.remove(securityContextKey);
-            return (ResponseState)element.getObjectValue();
-        }
-        return null;
+        return responseCache.get(securityContextKey);
     }
 
     public void setResponseState(String securityContextKey, ResponseState state) {
-        if (securityContextKey == null || "".equals(securityContextKey)) {
-            return;
+        if (securityContextKey != null && !securityContextKey.isEmpty()) {
+            responseCache.put(securityContextKey, state);
         }
+    }
 
-        int parsedTTL = (int)ttl;
-        if (ttl != (long)parsedTTL) {
-            // Fall back to 5 minutes if the default TTL is set incorrectly
-            parsedTTL = 60 * 5;
+    public ResponseState removeResponseState(String securityContextKey) {
+        ResponseState state = responseCache.get(securityContextKey);
+        if (state != null) {
+            responseCache.remove(securityContextKey);
         }
-        Element element = new Element(securityContextKey, state);
-        element.setTimeToLive(parsedTTL);
-        element.setTimeToIdle(parsedTTL);
-
-        responseCache.put(element);
+        return state;
     }
 
     public void close() throws IOException {
         if (cacheManager != null) {
-            cacheManager.shutdown();
+            cacheManager.close();
             cacheManager = null;
             requestCache = null;
             responseCache = null;

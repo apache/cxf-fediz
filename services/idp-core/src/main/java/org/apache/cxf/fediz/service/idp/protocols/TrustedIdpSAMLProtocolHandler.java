@@ -23,6 +23,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -292,32 +294,31 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
 
         String samlResponseDecoded = samlResponse;
 
-        InputStream tokenStream = null;
+        final Reader reader;
         if (isBooleanPropertyConfigured(trustedIdp, SUPPORT_BASE64_ENCODING, true)) {
             try {
                 byte[] deflatedToken = Base64Utility.decode(samlResponseDecoded);
-                tokenStream = isBooleanPropertyConfigured(trustedIdp, SUPPORT_DEFLATE_ENCODING, false)
+                final InputStream tokenStream = isBooleanPropertyConfigured(trustedIdp, SUPPORT_DEFLATE_ENCODING, false)
                     ? new DeflateEncoderDecoder().inflateToken(deflatedToken)
                     : new ByteArrayInputStream(deflatedToken);
-            } catch (Base64Exception ex) {
-                throw ExceptionUtils.toBadRequestException(ex, null);
-            } catch (DataFormatException ex) {
+                reader = new InputStreamReader(tokenStream, StandardCharsets.UTF_8);
+            } catch (Base64Exception | DataFormatException ex) {
                 throw ExceptionUtils.toBadRequestException(ex, null);
             }
         } else {
-            tokenStream = new ByteArrayInputStream(samlResponseDecoded.getBytes(StandardCharsets.UTF_8));
+            reader = new StringReader(samlResponseDecoded);
         }
 
-        Document responseDoc = null;
+        final Document responseDoc;
         try {
-            responseDoc = StaxUtils.read(new InputStreamReader(tokenStream, StandardCharsets.UTF_8));
+            responseDoc = StaxUtils.read(reader);
         } catch (Exception ex) {
             throw new WebApplicationException(400);
         }
 
         LOG.debug("Received response: " + DOM2Writer.nodeToString(responseDoc.getDocumentElement()));
 
-        XMLObject responseObject = null;
+        final XMLObject responseObject;
         try {
             responseObject = OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
         } catch (WSSecurityException ex) {
@@ -389,7 +390,7 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
             }
 
             return ssoResponseValidator.validateSamlResponse(samlResponse, post);
-        } catch (WSSecurityException ex) {
+        } catch (Exception ex) {
             LOG.debug(ex.getMessage(), ex);
             throw ExceptionUtils.toBadRequestException(ex, null);
         }
@@ -399,7 +400,7 @@ public class TrustedIdpSAMLProtocolHandler extends AbstractTrustedIdpProtocolHan
         this.replayCache = replayCache;
     }
 
-    public TokenReplayCache<String> getReplayCache() {
+    public TokenReplayCache<String> getReplayCache() throws IllegalAccessException, ReflectiveOperationException {
         if (replayCache == null) {
             replayCache = new EHCacheTokenReplayCache();
         }

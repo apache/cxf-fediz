@@ -53,7 +53,7 @@ public class SamlResponseErrorCreator extends AbstractSamlResponseCreator {
 
         Status status =
             SAML2PResponseComponentBuilder.createStatus(statusValue, null);
-        Element responseElement = null;
+        final Element responseElement;
         try {
             if (logout) {
                 responseElement = createLogoutResponse(idp, statusValue, destination, requestID);

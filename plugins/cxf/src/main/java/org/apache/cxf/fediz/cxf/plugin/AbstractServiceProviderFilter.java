@@ -21,7 +21,6 @@ package org.apache.cxf.fediz.cxf.plugin;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
@@ -117,12 +116,9 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
             } catch (JAXBException e) {
                 LOG.error("Error in parsing configuration", e);
                 throw e;
-            } catch (MalformedURLException e) {
+            } catch (IOException e) {
                 LOG.error("Error in loading configuration file", e);
                 throw e;
-            } catch (Exception e) {
-                LOG.error("Error in loading configuration file", e);
-                throw new IOException(e);
             }
         }
 
@@ -146,7 +142,9 @@ public abstract class AbstractServiceProviderFilter implements ContainerRequestF
             }
         }
 
-        stateManager.close();
+        if (stateManager != null) {
+            stateManager.close();
+        }
     }
 
     protected boolean checkSecurityContext(FedizContext fedConfig, Message m, MultivaluedMap<String, String> params) {

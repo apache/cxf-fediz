@@ -27,8 +27,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-import javax.servlet.ServletException;
-
 import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -98,8 +96,7 @@ public class WSFedTest {
         rpServer = startServer(ServerType.RP, RP_HTTPS_PORT);
     }
 
-    private static Tomcat startServer(ServerType serverType, String port)
-        throws ServletException, LifecycleException, IOException {
+    private static Tomcat startServer(ServerType serverType, String port) throws LifecycleException {
         Tomcat server = new Tomcat();
         server.setPort(0);
 
@@ -113,14 +110,14 @@ public class WSFedTest {
         httpsConnector.setPort(Integer.parseInt(port));
         httpsConnector.setSecure(true);
         httpsConnector.setScheme("https");
-        httpsConnector.setAttribute("sslProtocol", "TLS");
-        httpsConnector.setAttribute("SSLEnabled", true);
-        httpsConnector.setAttribute("keystorePass", "tompass");
-        httpsConnector.setAttribute("keystoreFile", "test-classes/server.jks");
-        httpsConnector.setAttribute("keyAlias", "mytomidpkey");
-        httpsConnector.setAttribute("truststorePass", "tompass");
-        httpsConnector.setAttribute("truststoreFile", "test-classes/server.jks");
-        httpsConnector.setAttribute("clientAuth", "want");
+        httpsConnector.setProperty("sslProtocol", "TLS");
+        httpsConnector.setProperty("SSLEnabled", "true");
+        httpsConnector.setProperty("keystorePass", "tompass");
+        httpsConnector.setProperty("keystoreFile", "test-classes/server.jks");
+        httpsConnector.setProperty("keyAlias", "mytomidpkey");
+        httpsConnector.setProperty("truststorePass", "tompass");
+        httpsConnector.setProperty("truststoreFile", "test-classes/server.jks");
+        httpsConnector.setProperty("clientAuth", "want");
 
         if (serverType == ServerType.IDP) {
             server.getHost().setAppBase("tomcat/idp/webapps");
@@ -151,7 +148,7 @@ public class WSFedTest {
         } else {
             server.getHost().setAppBase("tomcat/rp/webapps");
 
-            httpsConnector.setAttribute("clientAuth", "false");
+            httpsConnector.setProperty("clientAuth", "false");
 
             FederationAuthenticator fa = new FederationAuthenticator();
             fa.setConfigFile(targetDir.resolve("test-classes").resolve("fediz_config_wsfed.xml").toString());

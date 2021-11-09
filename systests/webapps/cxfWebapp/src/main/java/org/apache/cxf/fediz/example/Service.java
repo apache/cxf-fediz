@@ -79,7 +79,7 @@ public class Service {
         return "<html>\n"
             + "<head><title>WS Federation Systests Examples</title></head>\n"
             + "<body>\n"
-            + "<P><H3>Secure Test</H3><P></P>"
+            + "<P><H3>Secure Test</H3></P>"
             + "</body>\n";
     }
 
@@ -99,9 +99,9 @@ public class Service {
 
         String[] roleListToCheck = new String[]{"Admin", "Manager", "User", "Authenticated"};
         for (String item: roleListToCheck) {
-            out.append("<p>role:" + item + "="
-                + ((messageContext.getSecurityContext().isUserInRole(item)) ? "true" : "false")
-                + "</p>\n");
+            out.append("<p>role:").append(item).append('=')
+                .append(messageContext.getSecurityContext().isUserInRole(item) ? "true" : "false")
+                .append("</p>\n");
         }
 
         if (p instanceof FedizPrincipal) {
@@ -109,7 +109,7 @@ public class Service {
 
             ClaimCollection claims = fp.getClaims();
             for (Claim c: claims) {
-                out.append("<p>" + c.getClaimType().toString() + "=" + c.getValue() + "</p>\n");
+                out.append("<p>").append(c.getClaimType()).append('=').append(c.getValue()).append("</p>\n");
             }
 
             Element el = fp.getLoginToken();

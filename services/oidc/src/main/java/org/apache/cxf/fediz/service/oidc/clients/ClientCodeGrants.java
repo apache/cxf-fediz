@@ -19,14 +19,13 @@
 package org.apache.cxf.fediz.service.oidc.clients;
 
 import java.util.Collection;
-import java.util.Collections;
 
 import org.apache.cxf.rs.security.oauth2.common.Client;
 import org.apache.cxf.rs.security.oauth2.grants.code.ServerAuthorizationCodeGrant;
 
 public class ClientCodeGrants {
     private Client client;
-    private Collection<ServerAuthorizationCodeGrant> codeGrants = Collections.emptyList();
+    private Collection<ServerAuthorizationCodeGrant> codeGrants;
     public ClientCodeGrants(Client c, Collection<ServerAuthorizationCodeGrant> codeGrants) {
         this.client = c;
         this.codeGrants = codeGrants;
