@@ -23,11 +23,11 @@
     xmlns:util="http://www.springframework.org/schema/util"
     xsi:schemaLocation="
         http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/security
         http://www.springframework.org/schema/security/spring-security.xsd
         http://www.springframework.org/schema/util
-        http://www.springframework.org/schema/util/spring-util-4.3.xsd
+        http://www.springframework.org/schema/util/spring-util.xsd
         ">
 
     <!-- DISABLE in production as it might log confidential information about the user -->

@@ -45,6 +45,7 @@ import javax.servlet.ServletResponse;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 
+import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
@@ -91,8 +92,8 @@ import static org.junit.Assert.fail;
  */
 abstract class AbstractOIDCTest {
 
-    private static final Integer IDP_HTTPS_PORT = Integer.getInteger("idp.https.port");
-    private static final Integer RP_HTTPS_PORT = Integer.getInteger("rp.https.port");
+    private static final Integer IDP_HTTPS_PORT = Integer.getInteger("idp.https.port", 12345);
+    private static final Integer RP_HTTPS_PORT = Integer.getInteger("rp.https.port", 23456);
 
     private static final String CALLBACK_CONTEXT = "/callback";
     private static final String REDIRECT_URL = "https://localhost:" + RP_HTTPS_PORT + CALLBACK_CONTEXT;
@@ -469,6 +470,69 @@ abstract class AbstractOIDCTest {
 
         // Check the IdToken
         validateIdToken(getIdToken(json), clientId);
+    }
+
+    @org.junit.Test
+    public void testOIDCLoginDifferentClients() throws Exception {
+        final UriBuilder authorizationUrlConfidential = oidcEndpointBuilder("/idp/authorize")
+            .queryParam("client_id", confidentialClientId)
+            .queryParam("response_type", "code")
+            .queryParam("scope", "openid");
+
+        CookieManager cookieManager = new CookieManager();
+        WebClient webClient = setupWebClientIDP("alice", "ecila");
+        webClient.setCookieManager(cookieManager);
+
+
+        // Login to the OIDC authorization endpoint + get the authorization code
+//        String authorizationCode = webClient.getPage(authorizationUrlConfidential.build().toURL()).getWebResponse().getContentAsString();
+        String authorizationCode = login(authorizationUrlConfidential, webClient).getWebResponse().getContentAsString();
+        System.out.println("authorizationCode " + authorizationCode);
+
+        // Now use the code to get an IdToken
+        final Map<String, Object> jsonConfidential =
+            getTokenJson(authorizationCode, confidentialClientId, confidentialClientSecret);
+        System.out.println(jsonConfidential);
+
+        // Check the IdToken
+        validateIdToken(getIdToken(jsonConfidential), confidentialClientId);
+
+        final UriBuilder authorizationUrlPublic = oidcEndpointBuilder("/idp/authorize")
+            .queryParam("client_id", publicClientId)
+            .queryParam("response_type", "code")
+            .queryParam("scope", "openid")
+            .queryParam("redirect_uri", REDIRECT_URL);
+
+        // Login to the OIDC authorization endpoint + get the authorization code
+        authorizationCode = webClient.getPage(authorizationUrlPublic.build().toURL()).getWebResponse().getContentAsString();
+        System.out.println("authorizationCode " + authorizationCode);
+
+        // Now use the code to get an IdToken
+        final Map<String, Object> jsonPublic =
+            getTokenJson(authorizationCode, publicClientId, null);
+        System.out.println(jsonPublic);
+
+        // Check the IdToken
+        validateIdToken(getIdToken(jsonPublic), publicClientId);
+    }
+
+    @org.junit.Test
+    public void testImplicitFlow() throws Exception {
+        final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
+            .queryParam("client_id", publicClientId)
+            .queryParam("response_type", "id_token")
+            .queryParam("scope", "openid")
+            .queryParam("redirect_uri", REDIRECT_URL)
+            .queryParam("nonce", "1234565635");
+
+        CookieManager cookieManager = new CookieManager();
+        WebClient webClient = setupWebClientIDP("alice", "ecila");
+        webClient.setCookieManager(cookieManager);
+
+
+        // Login to the OIDC authorization endpoint + get the authorization code
+        String authorizationCode = loginAndGetAuthorizationCode(authorizationUrl, "alice", "ecila");
+        System.out.println("authorizationCode " + authorizationCode);
     }
 
     @org.junit.Test
@@ -1007,6 +1071,7 @@ abstract class AbstractOIDCTest {
 
     private static WebClient setupWebClient(int port, String user, String password) {
         final WebClient webClient = new WebClient();
+
         webClient.getOptions().setUseInsecureSSL(true);
         if (-1 != port && null != password) {
             webClient.getCredentialsProvider().setCredentials(
