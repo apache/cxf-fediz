@@ -20,13 +20,13 @@
 package org.apache.cxf.fediz.systests.samlsso;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
-
-import javax.servlet.ServletException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Objects;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -57,6 +57,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 /**
  * Some tests for SAML SSO with the Tomcat plugin, invoking on the Fediz IdP configured for SAML SSO.
  */
@@ -70,26 +71,16 @@ public class TomcatPluginTest extends AbstractTests {
 
     @BeforeClass
     public static void init() throws Exception {
-        Assert.assertNotNull("Property 'idp.https.port' null", IDP_HTTPS_PORT);
-        Assert.assertNotNull("Property 'rp.https.port' null", RP_HTTPS_PORT);
-
-        idpServer = startServer(true, IDP_HTTPS_PORT);
-        rpServer = startServer(false, RP_HTTPS_PORT);
+        idpServer = startServer(true, Objects.requireNonNull(IDP_HTTPS_PORT, "Property 'idp.https.port' null"));
+        rpServer = startServer(false, Objects.requireNonNull(RP_HTTPS_PORT, "Property 'rp.https.port' null"));
     }
 
-    private static Tomcat startServer(boolean idp, String port)
-        throws ServletException, LifecycleException, IOException {
-        Tomcat server = new Tomcat();
+    private static Tomcat startServer(boolean idp, String port) throws LifecycleException, IOException {
+        final Tomcat server = new Tomcat();
         server.setPort(0);
-        String currentDir = new File(".").getCanonicalPath();
-        String baseDir = currentDir + File.separator + "target";
-        server.setBaseDir(baseDir);
+        final Path targetDir = Paths.get("target").toAbsolutePath();
+        server.setBaseDir(targetDir.toString());
 
-        if (idp) {
-            server.getHost().setAppBase("tomcat/idp/webapps");
-        } else {
-            server.getHost().setAppBase("tomcat/rp/webapps");
-        }
         server.getHost().setAutoDeploy(true);
         server.getHost().setDeployOnStartup(true);
 
@@ -110,30 +101,32 @@ public class TomcatPluginTest extends AbstractTests {
         server.getService().addConnector(httpsConnector);
 
         if (idp) {
-            File stsWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp-sts");
-            server.addWebapp("/fediz-idp-sts", stsWebapp.getAbsolutePath());
+            server.getHost().setAppBase("tomcat/idp/webapps");
 
-            File idpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "fediz-idp");
-            server.addWebapp("/fediz-idp", idpWebapp.getAbsolutePath());
+            Path stsWebapp = targetDir.resolve(server.getHost().getAppBase()).resolve("fediz-idp-sts");
+            server.addWebapp("/fediz-idp-sts", stsWebapp.toString());
+
+            Path idpWebapp = targetDir.resolve(server.getHost().getAppBase()).resolve("fediz-idp");
+            server.addWebapp("/fediz-idp", idpWebapp.toString());
         } else {
-            File rpWebapp = new File(baseDir + File.separator + server.getHost().getAppBase(), "simpleWebapp");
-            Context cxt = server.addWebapp("/fedizhelloworld", rpWebapp.getAbsolutePath());
+            server.getHost().setAppBase("tomcat/rp/webapps");
+
+            Path rpWebapp = targetDir.resolve(server.getHost().getAppBase()).resolve("simpleWebapp");
+            Context ctx = server.addWebapp("/fedizhelloworld", rpWebapp.toString());
 
             // Substitute the IDP port. Necessary if running the test in eclipse where port filtering doesn't seem
             // to work
-            File f = new File(currentDir + "/src/test/resources/fediz_config.xml");
-            String content = new String(Files.readAllBytes(f.toPath()), "UTF-8");
-            if (content.contains("idp.https.port")) {
-                content = content.replaceAll("\\$\\{idp.https.port\\}", IDP_HTTPS_PORT);
-
-                File f2 = new File(baseDir + "/test-classes/fediz_config.xml");
-                Files.write(f2.toPath(), content.getBytes());
+            Path fedizConfig = targetDir.resolve("tomcat").resolve("fediz_config.xml");
+            try (InputStream is = TomcatPluginTest.class.getResourceAsStream("/fediz_config.xml")) {
+                byte[] content = new byte[is.available()];
+                is.read(content);
+                Files.write(fedizConfig,
+                    new String(content).replace("${idp.https.port}", IDP_HTTPS_PORT).getBytes());
             }
 
             FederationAuthenticator fa = new FederationAuthenticator();
-            fa.setConfigFile(currentDir + File.separator + "target" + File.separator
-                             + "test-classes" + File.separator + "fediz_config.xml");
-            cxt.getPipeline().addValve(fa);
+            fa.setConfigFile(fedizConfig.toString());
+            ctx.getPipeline().addValve(fa);
         }
 
         server.start();
@@ -252,7 +245,7 @@ public class TomcatPluginTest extends AbstractTests {
 
         webClient.close();
     }
-    
+
     @Test
     public void testAliceModifiedContext() throws Exception {
 
