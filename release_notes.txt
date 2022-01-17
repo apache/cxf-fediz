@@ -1,4 +1,4 @@
-Apache CXF Fediz 1.5.0 Release Notes
+Apache CXF Fediz 1.6.0 Release Notes
 ------------------------------------
 
 1. Overview
@@ -66,13 +66,17 @@ N.A.
 
 8. Specific issues, features, and improvements fixed in this version
 
+Release Notes - CXF-Fediz - Version 1.6.0
+
+Dependency upgrade
+    [FEDIZ-250] - Migrate to Spring 5 & Spring Security 5
+
 Release Notes - CXF-Fediz - Version 1.5.1
 
 Improvement
 
     [FEDIZ-251] - Support SAML token signature without KeyInfo
     [FEDIZ-252] - Extend 'signinQuery' functionality to SAML SSO protocol
-
 
 Release Notes - CXF-Fediz - Version 1.5.0
 
