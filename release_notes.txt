@@ -68,6 +68,9 @@ N.A.
 
 Release Notes - CXF-Fediz - Version 1.6.0
 
+Improvement
+    [FEDIZ-255] - Switch to Log4J2 for the webapps
+
 Dependency upgrade
     [FEDIZ-250] - Migrate to Spring 5 & Spring Security 5
 
