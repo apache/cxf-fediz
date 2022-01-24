@@ -29,7 +29,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
     <!-- DISABLE in production as it might log confidential information about the user -->
-    <sec:debug />
+    <!--<sec:debug />-->
 
     <sec:http entry-point-ref="federationEntryPoint" use-expressions="true">
         <sec:intercept-url pattern="/" access="permitAll"/>

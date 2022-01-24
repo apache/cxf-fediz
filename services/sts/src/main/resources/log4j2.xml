@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="info" name="Fediz STS" packages="">
+  <Appenders>
+    <File name="STS" fileName="${sys:catalina.base}/logs/sts.log">
+      <PatternLayout>
+        <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+      </PatternLayout>
+    </File>
+    <File name="Audit" fileName="${sys:catalina.base}/logs/audit.log">
+      <PatternLayout>
+        <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+      </PatternLayout>
+    </File>
+    <Async name="Async">
+      <AppenderRef ref="STS"/>
+    </Async>
+    <Async name="AsyncAudit">
+      <AppenderRef ref="Audit"/>
+    </Async>
+  </Appenders>
+  <Loggers>
+    <Root level="info">
+      <AppenderRef ref="Async"/>
+    </Root>
+    <Logger name="org.apache.cxf.sts.event.map.MapEventLogger" level="debug" additivity="false">
+      <AppenderRef ref="AsyncAudit"/>
+    </Logger>
+  </Loggers>
+</Configuration>
