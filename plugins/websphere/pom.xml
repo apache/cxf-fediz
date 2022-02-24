@@ -140,7 +140,7 @@
                         <id>zip-file</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>attached</goal>
+                            <goal>single</goal>
                         </goals>
                         <configuration>
                             <descriptors>
