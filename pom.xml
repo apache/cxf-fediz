@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
-        <version>24</version>
+        <version>26</version>
     </parent>
 
     <prerequisites>
@@ -156,6 +156,7 @@
             </releases>
         </repository>
     </repositories>
+
     <pluginRepositories>
         <pluginRepository>
             <id>apache.snapshots</id>
@@ -180,7 +181,6 @@
                 <enabled>true</enabled>
             </releases>
         </pluginRepository>
-
     </pluginRepositories>
 
     <inceptionYear>2011</inceptionYear>
@@ -309,7 +309,6 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-release-plugin</artifactId>
-                    <version>3.0.0-M5</version>
                     <configuration>
                         <useReleaseProfile>false</useReleaseProfile>
                         <preparationGoals>clean install</preparationGoals>
@@ -321,7 +320,6 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.4.0</version>
                     <configuration>
                         <attach>true</attach>
                         <source>${jdk.version}</source>
@@ -335,13 +333,7 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <version>3.2.1</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.10.1</version>
                     <configuration>
                         <source>${jdk.version}</source>
                         <target>${jdk.version}</target>
@@ -353,35 +345,11 @@
                             <path>
                                 <groupId>com.google.errorprone</groupId>
                                 <artifactId>error_prone_core</artifactId>
-                                <version>2.3.4</version>
+                                <!-- the latest version to support running on JDK 8 -->
+                                <version>2.10.0</version>
                             </path>
                         </annotationProcessorPaths>
                     </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.2.2</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.2.0</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-assembly-plugin</artifactId>
-                    <version>3.3.0</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.3.0</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-report-plugin</artifactId>
-                    <version>2.22.2</version>
                 </plugin>
                 <!-- TODO commented out for now
                 <plugin>
@@ -395,8 +363,16 @@
                             </manifestEntries>
                         </archive>
                     </configuration>
+                </plugin>-->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <configuration>
+                        <descriptors>
+                            <descriptor>src/main/assembly/assembly.xml</descriptor>
+                        </descriptors>
+                    </configuration>
                 </plugin>
-                -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-eclipse-plugin</artifactId>
@@ -514,7 +490,6 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.22.2</version>
                     <configuration>
                         <includes>
                             <include>**/*Test.java</include>
@@ -574,7 +549,6 @@
                 <plugin>
                     <groupId>org.apache.rat</groupId>
                     <artifactId>apache-rat-plugin</artifactId>
-                    <version>0.12</version>
                     <configuration>
                         <numUnapprovedLicenses>350</numUnapprovedLicenses>
                         <excludeSubProjects>false</excludeSubProjects>
@@ -612,13 +586,7 @@
                         <version>2.1</version>
                       </dependency>
                     </dependencies>
-                </plugin>
--->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-war-plugin</artifactId>
-                    <version>3.3.2</version>
-               </plugin>
+                </plugin>-->
             </plugins>
         </pluginManagement>
         <plugins>
@@ -646,7 +614,6 @@
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-compiler-plugin</artifactId>
-                            <version>3.10.1</version>
                             <configuration>
                                 <source>${jdk.version}</source>
                                 <target>${jdk.version}</target>
