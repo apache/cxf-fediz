@@ -135,7 +135,7 @@ public final class HTTPTestUtils {
 
         Assert.assertEquals("IDP SignOut Response Page", idpPage.getTitleText());
 
-        Assert.assertTrue(idpPage.asText().contains("CXF Fediz IDP successful logout"));
+        Assert.assertTrue(idpPage.asNormalizedText().contains("CXF Fediz IDP successful logout"));
 
         DomNodeList<DomElement> images = idpPage.getElementsByTagName("img");
         Assert.assertEquals(1, images.getLength());
