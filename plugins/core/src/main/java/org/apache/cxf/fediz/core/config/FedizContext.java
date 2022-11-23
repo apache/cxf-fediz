@@ -246,7 +246,8 @@ public class FedizContext implements Closeable {
             return replayCache;
         }
         final String replayCacheString = config.getTokenReplayCache();
-        final String cacheKey = CACHE_KEY_PREFIX + '-' + config.getName();
+        // replace special characters
+        final String cacheKey = CACHE_KEY_PREFIX + '-' + config.getName().replace('/', '_');
         try {
             final Path diskstorePath = Files.createTempDirectory("fediz");
             if (replayCacheString == null || replayCacheString.isEmpty()) {
