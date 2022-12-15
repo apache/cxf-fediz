@@ -143,7 +143,7 @@
             <releases>
                 <enabled>true</enabled>
             </releases>
-        </repository-->
+        </repository
         <repository>
             <id>wasdev-maven-repo</id>
             <name>wasdev-maven-repo</name>
@@ -155,20 +155,11 @@
                 <enabled>true</enabled>
             </releases>
         </repository>
+        -->
     </repositories>
 
+    <!--
     <pluginRepositories>
-        <pluginRepository>
-            <id>apache.snapshots</id>
-            <url>https://repository.apache.org/snapshots/</url>
-            <name>Apache Snapshot Repo</name>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-        </pluginRepository>
         <pluginRepository>
             <id>Liberty</id>
             <name>Liberty Repository</name>
@@ -182,6 +173,7 @@
             </releases>
         </pluginRepository>
     </pluginRepositories>
+    -->
 
     <inceptionYear>2011</inceptionYear>
     <mailingLists>
