@@ -38,7 +38,7 @@
       <module>jetty9</module>
       <module>tomcat</module>
       <module>spring</module>
-      <module>cxf</module>
+      <!--<module>cxf</module>-->
       <module>federation</module>
       <module>kerberos</module>
       <module>ldap</module>
