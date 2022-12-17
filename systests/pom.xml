@@ -43,7 +43,7 @@
       <module>kerberos</module>
       <module>ldap</module>
       <module>oidc</module>
-      <module>samlsso</module>
+      <!--<module>samlsso</module>-->
    </modules>
    
    <profiles>
