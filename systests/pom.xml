@@ -32,18 +32,7 @@
 
    <modules>
       <module>tests</module>
-      <module>idp</module>
-      <module>webapps</module>
-      <module>custom</module>
-      <module>jetty9</module>
-      <module>tomcat</module>
-      <module>spring</module>
-      <!--<module>cxf</module>-->
-      <module>federation</module>
-      <module>kerberos</module>
-      <module>ldap</module>
-      <module>oidc</module>
-      <!--<module>samlsso</module>-->
+      <module>cxf</module>
    </modules>
    
    <profiles>
