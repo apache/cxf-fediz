@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.apache.cxf.fediz</groupId>
     <artifactId>fediz</artifactId>
-    <version>1.6.1-SNAPSHOT</version>
+    <version>1.6.1</version>
     <name>Apache Fediz</name>
     <packaging>pom</packaging>
 
@@ -94,13 +94,13 @@
         <fediz.downloadSources>true</fediz.downloadSources>
 
         <fediz.resources.base.path />
-        <project.build.outputTimestamp>1</project.build.outputTimestamp>
+        <project.build.outputTimestamp>1671452601</project.build.outputTimestamp>
     </properties>
 
     <scm>
         <connection>scm:git:https://gitbox.apache.org/repos/asf/cxf-fediz.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/cxf-fediz.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>fediz-1.6.1</tag>
     </scm>
 
     <issueManagement>
@@ -143,8 +143,7 @@
             <releases>
                 <enabled>true</enabled>
             </releases>
-        </repository
-        <repository>
+        </repository <repository>
             <id>wasdev-maven-repo</id>
             <name>wasdev-maven-repo</name>
             <url>https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/wasdev/maven/repository/</url>
