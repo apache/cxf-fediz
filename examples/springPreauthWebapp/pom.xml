@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.apache.cxf.fediz</groupId>
         <artifactId>examples</artifactId>
-        <version>1.6.1</version>
+        <version>1.6.2-SNAPSHOT</version>
     </parent>
     <groupId>org.apache.cxf.fediz.examples</groupId>
     <artifactId>springPreauthWebapp</artifactId>
@@ -83,8 +83,4 @@
         <!-- Name of the generated WAR file -->
         <finalName>fedizhelloworld</finalName>
     </build>
-
-  <scm>
-    <tag>fediz-1.6.1</tag>
-  </scm>
 </project>
