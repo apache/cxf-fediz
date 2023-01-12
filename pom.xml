@@ -38,7 +38,7 @@
 
     <properties>
         <apacheds.version>2.0.0.AM26</apacheds.version>
-        <bval.version>2.0.5</bval.version>
+        <bval.version>2.0.6</bval.version>
         <commons.dbcp2.version>2.9.0</commons.dbcp2.version>
         <commons.logging.version>1.2</commons.logging.version>
         <commons.text.version>1.10.0</commons.text.version>
