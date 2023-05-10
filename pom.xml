@@ -43,7 +43,7 @@
         <commons.logging.version>1.2</commons.logging.version>
         <commons.text.version>1.10.0</commons.text.version>
         <commons.validator.version>1.7</commons.validator.version>
-        <cxf.version>3.5.5</cxf.version>
+        <cxf.version>3.6.0</cxf.version>
         <cxf.build-utils.version>3.4.4</cxf.build-utils.version>
         <easymock.version>5.1.0</easymock.version>
         <ehcache3.version>3.9.11</ehcache3.version>
