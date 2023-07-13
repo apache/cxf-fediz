@@ -63,7 +63,7 @@
         <spring.version>5.3.27</spring.version>
         <spring-ldap-core.version>2.4.1</spring-ldap-core.version>
         <spring.security.version>5.6.10</spring.security.version>
-        <spring-webflow.version>2.5.1.RELEASE</spring-webflow.version>
+        <spring-webflow.version>3.0.0</spring-webflow.version>
         <tomcat.version>9.0.74</tomcat.version>
         <validation-api.version>2.0.2</validation-api.version>
         <wss4j.version>2.4.1</wss4j.version>
