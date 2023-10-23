@@ -51,7 +51,7 @@
         <hsqldb.version>2.5.2</hsqldb.version>
         <htmlunit.version>2.70.0</htmlunit.version>
         <jackson.version>2.15.3</jackson.version>
-        <jaxb.runtime.version>2.3.8</jaxb.runtime.version>
+        <jaxb.runtime.version>2.3.9</jaxb.runtime.version>
         <jaxb.version>2.3.3</jaxb.version>
         <jetty9.version>9.4.53.v20231009</jetty9.version>
         <junit.version>4.13.2</junit.version>
