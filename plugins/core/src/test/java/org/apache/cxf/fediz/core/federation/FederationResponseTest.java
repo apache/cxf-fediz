@@ -86,11 +86,11 @@ import org.apache.wss4j.dom.message.WSSecEncrypt;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Some tests for the WS-Federation "FederationProcessor".
@@ -121,7 +121,7 @@ public class FederationResponseTest {
     private static FedizConfigurator configurator;
 
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         try {
             crypto = CryptoFactory.getInstance("signature.properties");
@@ -130,11 +130,11 @@ public class FederationResponseTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Assert.assertNotNull(configurator);
+        Assertions.assertNotNull(configurator);
 
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         SecurityTestUtil.cleanup();
     }
@@ -161,7 +161,7 @@ public class FederationResponseTest {
     /**
      * Validate RSTR without RequestedSecurityToken element
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateRSTRWithoutToken() throws Exception {
         Document doc = STSUtil.toSOAPPart(STSUtil.SAMPLE_RSTR_COLL_MSG);
 
@@ -186,7 +186,7 @@ public class FederationResponseTest {
     /**
      * Validate FederationRequest with unknown action
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateRequestUnknownAction() throws Exception {
         Document doc = STSUtil.toSOAPPart(STSUtil.SAMPLE_RSTR_COLL_MSG);
 
@@ -211,7 +211,7 @@ public class FederationResponseTest {
     /**
      *Validate FederationRequest with invalid RSTR/wresult
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSignInInvalidWResult() throws Exception {
         FedizRequest wfReq = new FedizRequest();
         wfReq.setAction(FederationConstants.ACTION_SIGNIN);
@@ -231,7 +231,7 @@ public class FederationResponseTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateTokenAndCreateMetadata() throws Exception {
         validateSAML2Token();
         FederationMetaDataTest other = new FederationMetaDataTest();
@@ -242,7 +242,7 @@ public class FederationResponseTest {
      * Validate SAML 2 token which includes the role attribute with 2 values
      * Roles are encoded as a multi-value saml attribute
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2Token() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -270,17 +270,15 @@ public class FederationResponseTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_RSTR_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
+        Assertions.assertEquals(TEST_AUDIENCE, wfRes.getAudience(), "Audience wrong");
         assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
 
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testChainTrust() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -309,10 +307,9 @@ public class FederationResponseTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_RSTR_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(TEST_AUDIENCE, wfRes.getAudience(), "Audience wrong");
 
         // Test unsuccessful trust validation (bad subject cert constraint)
         configurator = null;
@@ -321,7 +318,7 @@ public class FederationResponseTest {
         wfProc = new FederationProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
-            Assert.fail("Processing must fail because of invalid subject cert constraint");
+            Assertions.fail("Processing must fail because of invalid subject cert constraint");
         } catch (ProcessingException ex) {
             // expected
         }
@@ -332,7 +329,7 @@ public class FederationResponseTest {
      * Roles are encoded as a multi-value saml attribute
      * Not RequestedSecurityTokenCollection in this test, default in all others
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenRSTR() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -360,15 +357,13 @@ public class FederationResponseTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_RSTR_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
+        Assertions.assertEquals(TEST_AUDIENCE, wfRes.getAudience(), "Audience wrong");
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenSubjectWithComment() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -397,18 +392,16 @@ public class FederationResponseTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", subject,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+        Assertions.assertEquals(subject, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_RSTR_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
+        Assertions.assertEquals(TEST_AUDIENCE, wfRes.getAudience(), "Audience wrong");
     }
 
     /**
      * Validate SAML 2 token which doesn't include the role SAML attribute
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenWithoutRoles() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -437,18 +430,17 @@ public class FederationResponseTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("No roles must be found", null, wfRes.getRoles());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_RSTR_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertNull(wfRes.getRoles());
+        Assertions.assertEquals(TEST_AUDIENCE, wfRes.getAudience(), "Audience wrong");
     }
 
     /**
      * Validate SAML 2 token where role information is provided
      * within another SAML attribute
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenDifferentRoleURI() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -477,10 +469,10 @@ public class FederationResponseTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER, wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles().size());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_RSTR_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
+        Assertions.assertEquals(TEST_AUDIENCE, wfRes.getAudience(), "Audience wrong");
         assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
     }
 
@@ -488,7 +480,7 @@ public class FederationResponseTest {
      * Validate SAML 1 token where role information is provided
      * within another SAML attribute
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML1TokenDifferentRoleURI() throws Exception {
         SAML1CallbackHandler callbackHandler = new SAML1CallbackHandler();
         callbackHandler.setStatement(SAML1CallbackHandler.Statement.ATTR);
@@ -517,10 +509,10 @@ public class FederationResponseTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER, wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles().size());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_RSTR_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
+        Assertions.assertEquals(TEST_AUDIENCE, wfRes.getAudience(), "Audience wrong");
         assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
     }
 
@@ -528,7 +520,7 @@ public class FederationResponseTest {
      * Validate SAML 2 token which includes role attribute
      * but RoleURI is not configured
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenRoleURINotConfigured() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -557,18 +549,17 @@ public class FederationResponseTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", null, wfRes.getRoles());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_RSTR_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertNull(wfRes.getRoles());
+        Assertions.assertEquals(TEST_AUDIENCE, wfRes.getAudience(), "Audience wrong");
     }
 
     /**
      * Validate SAML 1.1 token which includes the role attribute with 2 values
      * Roles are encoded as a multi-value saml attribute
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML1Token() throws Exception {
         SAML1CallbackHandler callbackHandler = new SAML1CallbackHandler();
         callbackHandler.setStatement(SAML1CallbackHandler.Statement.ATTR);
@@ -596,12 +587,10 @@ public class FederationResponseTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_RSTR_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
+        Assertions.assertEquals(TEST_AUDIENCE, wfRes.getAudience(), "Audience wrong");
         assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
     }
 
@@ -610,7 +599,7 @@ public class FederationResponseTest {
      * Roles are encoded as a multi-value saml attribute
      * Token embedded in RSTR 2005/02 - WS Federation 1.0
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML1TokenWSFed10() throws Exception {
         SAML1CallbackHandler callbackHandler = new SAML1CallbackHandler();
         callbackHandler.setStatement(SAML1CallbackHandler.Statement.ATTR);
@@ -637,19 +626,17 @@ public class FederationResponseTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_RSTR_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
+        Assertions.assertEquals(TEST_AUDIENCE, wfRes.getAudience(), "Audience wrong");
     }
 
     /**
      * Validate SAML 2 token which includes the role attribute with 2 values
      * Roles are encoded as a multiple saml attributes with the same name
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenRoleMultiAttributes() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -678,11 +665,9 @@ public class FederationResponseTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_RSTR_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
         assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
     }
 
@@ -690,7 +675,7 @@ public class FederationResponseTest {
      * Validate SAML 2 token which includes the role attribute with 2 values
      * Roles are encoded as a single saml attribute with encoded value
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenRoleEncodedValue() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -721,15 +706,13 @@ public class FederationResponseTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_RSTR_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
         assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
     }
     
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenEmptyRole() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -760,14 +743,13 @@ public class FederationResponseTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals(1, wfRes.getRoles().size());
-        Assert.assertEquals("", wfRes.getRoles().get(0));
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_RSTR_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(1, wfRes.getRoles().size());
+        Assertions.assertEquals("", wfRes.getRoles().get(0));
     }
     
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenNoRoleValue() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -798,10 +780,9 @@ public class FederationResponseTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals(null, wfRes.getRoles());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_RSTR_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertNull(wfRes.getRoles());
     }
 
     /**
@@ -811,8 +792,8 @@ public class FederationResponseTest {
      *
      * Ignored because PeerTrust ignores subject attribute
      */
-    @org.junit.Test
-    @org.junit.Ignore
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.Disabled
     public void validateSAML2TokenUntrustedIssuer() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -842,7 +823,7 @@ public class FederationResponseTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
-            Assert.fail("Processing must fail because of untrusted issuer configured");
+            Assertions.fail("Processing must fail because of untrusted issuer configured");
         } catch (ProcessingException ex) {
             if (!TYPE.ISSUER_NOT_TRUSTED.equals(ex.getType())) {
                 fail("Expected ProcessingException with ISSUER_NOT_TRUSTED type");
@@ -855,7 +836,7 @@ public class FederationResponseTest {
      * The configured subject of the trusted issuer doesn't match with
      * the issuer of the SAML token
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateUnsignedSAML2Token() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -884,7 +865,7 @@ public class FederationResponseTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
-            Assert.fail("Processing must fail because of missing signature");
+            Assertions.fail("Processing must fail because of missing signature");
         } catch (ProcessingException ex) {
             if (!TYPE.TOKEN_NO_SIGNATURE.equals(ex.getType())) {
                 fail("Expected ProcessingException with TOKEN_NO_SIGNATURE type");
@@ -892,7 +873,7 @@ public class FederationResponseTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testUnsignedAssertionAfterSignedAssertion() throws Exception {
         // First assertion
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -939,10 +920,10 @@ public class FederationResponseTest {
 
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse fedizResponse = wfProc.processRequest(wfReq, config);
-        Assert.assertEquals(TEST_USER, fedizResponse.getUsername());
+        Assertions.assertEquals(TEST_USER, fedizResponse.getUsername());
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSignedAssertionAfterUnsignedAssertion() throws Exception {
         // First assertion
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -990,7 +971,7 @@ public class FederationResponseTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
-            Assert.fail("Processing must fail because of missing signature");
+            Assertions.fail("Processing must fail because of missing signature");
         } catch (ProcessingException ex) {
             if (!TYPE.TOKEN_NO_SIGNATURE.equals(ex.getType())) {
                 fail("Expected ProcessingException with TOKEN_NO_SIGNATURE type");
@@ -998,7 +979,7 @@ public class FederationResponseTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testWrappingAttack() throws Exception {
         // First assertion
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
@@ -1052,7 +1033,7 @@ public class FederationResponseTest {
 
         List<Element> requestedTokenElements =
             XMLUtils.findElements(doc, "RequestedSecurityToken", FederationConstants.WS_TRUST_13_NS);
-        Assert.assertEquals(2, requestedTokenElements.size());
+        Assertions.assertEquals(2, requestedTokenElements.size());
         requestedTokenElements.get(0).appendChild(token1);
         requestedTokenElements.get(1).appendChild(token2);
 
@@ -1070,7 +1051,7 @@ public class FederationResponseTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
-            Assert.fail("Processing must fail because of bad signature");
+            Assertions.fail("Processing must fail because of bad signature");
         } catch (ProcessingException ex) {
             // expected
         }
@@ -1100,7 +1081,7 @@ public class FederationResponseTest {
 
         List<Element> requestedTokenElements =
             XMLUtils.findElements(doc, "RequestedSecurityToken", FederationConstants.WS_TRUST_13_NS);
-        Assert.assertEquals(2, requestedTokenElements.size());
+        Assertions.assertEquals(2, requestedTokenElements.size());
         requestedTokenElements.get(0).appendChild(token1);
         requestedTokenElements.get(1).appendChild(token2);
 
@@ -1111,7 +1092,7 @@ public class FederationResponseTest {
      * Validate SAML 2 token twice which causes an exception
      * due to replay attack
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testReplayAttack() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -1139,9 +1120,8 @@ public class FederationResponseTest {
 
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_RSTR_ISSUER, wfRes.getIssuer(), "Issuer wrong");
 
         wfProc = new FederationProcessorImpl();
         try {
@@ -1160,7 +1140,7 @@ public class FederationResponseTest {
      * The configured subject of the trusted issuer doesn't match with
      * the issuer of the SAML token
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenSeveralCertStore() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -1189,11 +1169,9 @@ public class FederationResponseTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_RSTR_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
     }
 
     /**
@@ -1201,7 +1179,7 @@ public class FederationResponseTest {
      * The configured subject of the trusted issuer doesn't match with
      * the issuer of the SAML token
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenSeveralCertStoreTrustedIssuer() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -1230,17 +1208,15 @@ public class FederationResponseTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_RSTR_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
     }
 
     /**
      * Validate SAML 2 token which is expired
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenExpired() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -1287,7 +1263,7 @@ public class FederationResponseTest {
      * Validate SAML 2 token which is not yet valid (in 30 seconds)
      * but within the maximum clock skew range (60 seconds)
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenClockSkewRange() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -1323,18 +1299,16 @@ public class FederationResponseTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_RSTR_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
     }
 
     /**
      * "Validate" SAML 2 token with a custom token validator
      * If a validator is configured it precedes the SAMLTokenValidator as part of Fediz
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenCustomValidator() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -1361,23 +1335,22 @@ public class FederationResponseTest {
         FedizContext config = getFederationConfigurator().getFedizContext("CUSTTOK");
         Protocol protocol = config.getProtocol();
         List<TokenValidator> validators = protocol.getTokenValidators();
-        Assert.assertEquals("Two validators must be found", 2, validators.size());
-        Assert.assertEquals("First validator must be custom validator",
-                            CustomValidator.class.getName(), validators.get(0).getClass().getName());
+        Assertions.assertEquals(2, validators.size());
+        Assertions.assertEquals(CustomValidator.class.getName(), validators.get(0).getClass().getName(),
+                "First validator must be custom validator");
 
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_RSTR_ISSUER, wfRes.getIssuer(), "Issuer wrong");
     }
 
     /**
      * "Validate" SAML 2 token with a custom token validator
      * If a validator is configured it precedes the SAMLTokenValidator as part of Fediz
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenMaxClockSkewNotDefined() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -1406,19 +1379,17 @@ public class FederationResponseTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_RSTR_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
+        Assertions.assertEquals(TEST_AUDIENCE, wfRes.getAudience(), "Audience wrong");
     }
 
     /**
      * Validate an encrypted SAML 2 token which includes the role attribute with 2 values
      * Roles are encoded as a multi-value saml attribute
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateEncryptedSAML2Token() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -1448,19 +1419,17 @@ public class FederationResponseTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_RSTR_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
+        Assertions.assertEquals(TEST_AUDIENCE, wfRes.getAudience(), "Audience wrong");
         assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
     }
 
     /**
      * Validate a HolderOfKey SAML 2 token
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateHOKSAML2Token() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.AUTHN);
@@ -1525,7 +1494,7 @@ public class FederationResponseTest {
         wfProc.processRequest(wfReq, config);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenWithConfigCreatedWithAPI() throws Exception {
 
         ContextConfig config = new ContextConfig();
@@ -1587,18 +1556,16 @@ public class FederationResponseTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, fedContext);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_RSTR_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
+        Assertions.assertEquals(TEST_AUDIENCE, wfRes.getAudience(), "Audience wrong");
 
         fedContext.close();
 
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testModifiedSignature() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -1656,7 +1623,7 @@ public class FederationResponseTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testTrustFailure() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -1690,7 +1657,7 @@ public class FederationResponseTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testUnableToFindTruststore() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -1803,11 +1770,10 @@ public class FederationResponseTest {
     private void assertClaims(List<Claim> claims, String roleClaimType) {
         URI roleClaimTypeURI = URI.create(roleClaimType);
         for (Claim c : claims) {
-            Assert.assertTrue("Invalid ClaimType URI: " + c.getClaimType(),
-                              c.getClaimType().equals(roleClaimTypeURI)
+            Assertions.assertTrue(c.getClaimType().equals(roleClaimTypeURI)
                               || c.getClaimType().equals(ClaimTypes.COUNTRY)
-                              || c.getClaimType().equals(AbstractSAMLCallbackHandler.CLAIM_TYPE_LANGUAGE)
-                              );
+                              || c.getClaimType().equals(AbstractSAMLCallbackHandler.CLAIM_TYPE_LANGUAGE),
+                    "Invalid ClaimType URI: " + c.getClaimType());
         }
     }
 

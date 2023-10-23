@@ -27,15 +27,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.util.Assert;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(locations = { "classpath:testContext.xml" })
 public class ClaimDAOJPATest {
 
@@ -43,7 +44,7 @@ public class ClaimDAOJPATest {
     private ClaimDAO claimDAO;
 
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         System.setProperty("spring.profiles.active", "jpa");
     }
@@ -68,9 +69,11 @@ public class ClaimDAOJPATest {
     }
 
 
-    @Test(expected = EmptyResultDataAccessException.class)
+    @Test
     public void testTryReadNonexistingClaim() {
-        claimDAO.getClaim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givennamenotexist");
+        Assertions.assertThrows(EmptyResultDataAccessException.class, () -> {
+            claimDAO.getClaim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givennamenotexist");
+        });
     }
 
 
@@ -87,27 +90,33 @@ public class ClaimDAOJPATest {
     }
 
 
-    @Test(expected = DataIntegrityViolationException.class)
+    @Test
     public void testTryAddExistingClaim() {
-        Claim claim5 = new Claim();
-        claim5.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"));
-        claim5.setDisplayName("firstname");
-        claim5.setDescription("Description for firstname");
-        claimDAO.addClaim(claim5);
+        Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
+            Claim claim5 = new Claim();
+            claim5.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"));
+            claim5.setDisplayName("firstname");
+            claim5.setDescription("Description for firstname");
+            claimDAO.addClaim(claim5);
+        });
     }
 
 
-    @Test(expected = EmptyResultDataAccessException.class)
+    @Test
     public void testTryRemoveUnknownClaim() {
-        claimDAO.deleteClaim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/town/WRONG");
+        Assertions.assertThrows(EmptyResultDataAccessException.class, () -> {
+            claimDAO.deleteClaim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/town/WRONG");
+        });
     }
 
 
-    @Test(expected = EmptyResultDataAccessException.class)
+    @Test
     public void testRemoveExistingClaim() {
-        claimDAO.deleteClaim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/email");
+        Assertions.assertThrows(EmptyResultDataAccessException.class, () -> {
+            claimDAO.deleteClaim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/email");
 
-        claimDAO.getClaim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/email");
+            claimDAO.getClaim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/email");
+        });
     }
 
 

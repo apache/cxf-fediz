@@ -20,8 +20,8 @@
 package org.apache.cxf.fediz.systests.oidc;
 
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 /**
  * Some OIDC tests where the OIDC is deployed and secured by the Fediz Spring plugin.
@@ -30,12 +30,12 @@ public class OIDCSpringTest extends AbstractOIDCTest {
 
     private static final String SERVLET_CONTEXT_NAME = "fediz-oidc-spring";
 
-    @BeforeClass
+    @BeforeAll
     public static void init() throws Exception {
         startServer(SERVLET_CONTEXT_NAME, "fediz_config_spring.xml");
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws Exception {
         shutdownServer(SERVLET_CONTEXT_NAME);
     }

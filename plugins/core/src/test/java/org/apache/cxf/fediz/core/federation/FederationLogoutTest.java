@@ -36,9 +36,9 @@ import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.handler.LogoutHandler;
 
 import org.easymock.EasyMock;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 
 /**
  * Some tests for logout for WS-Federation
@@ -60,13 +60,13 @@ public class FederationLogoutTest {
     }
 
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         getFederationConfigurator();
-        Assert.assertNotNull(configurator);
+        Assertions.assertNotNull(configurator);
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         SecurityTestUtil.cleanup();
     }
@@ -89,7 +89,7 @@ public class FederationLogoutTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSignoutCustomURL() throws Exception {
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
 
@@ -103,7 +103,7 @@ public class FederationLogoutTest {
         EasyMock.replay(req);
 
         LogoutHandler logoutHandler = new LogoutHandler(config);
-        Assert.assertTrue(logoutHandler.canHandleRequest(req));
+        Assertions.assertTrue(logoutHandler.canHandleRequest(req));
 
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
         String expectedRedirectToIdP =
@@ -115,7 +115,7 @@ public class FederationLogoutTest {
         logoutHandler.handleRequest(req, resp);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSignoutCustomURLWithWReply() throws Exception {
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
 
@@ -129,7 +129,7 @@ public class FederationLogoutTest {
         EasyMock.replay(req);
 
         LogoutHandler logoutHandler = new LogoutHandler(config);
-        Assert.assertTrue(logoutHandler.canHandleRequest(req));
+        Assertions.assertTrue(logoutHandler.canHandleRequest(req));
 
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
         String expectedRedirectToIdP =
@@ -141,7 +141,7 @@ public class FederationLogoutTest {
         logoutHandler.handleRequest(req, resp);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSignoutCustomURLWithBadWReply() throws Exception {
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
 
@@ -155,7 +155,7 @@ public class FederationLogoutTest {
         EasyMock.replay(req);
 
         LogoutHandler logoutHandler = new LogoutHandler(config);
-        Assert.assertTrue(logoutHandler.canHandleRequest(req));
+        Assertions.assertTrue(logoutHandler.canHandleRequest(req));
 
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
         String expectedRedirectToIdP =
@@ -167,7 +167,7 @@ public class FederationLogoutTest {
         logoutHandler.handleRequest(req, resp);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSignoutValidatorWithWReply() throws Exception {
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT5");
 
@@ -181,7 +181,7 @@ public class FederationLogoutTest {
         EasyMock.replay(req);
 
         LogoutHandler logoutHandler = new LogoutHandler(config);
-        Assert.assertTrue(logoutHandler.canHandleRequest(req));
+        Assertions.assertTrue(logoutHandler.canHandleRequest(req));
 
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
         String expectedRedirectToIdP =
@@ -193,7 +193,7 @@ public class FederationLogoutTest {
         logoutHandler.handleRequest(req, resp);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSignoutValidatorWithBadWReply() throws Exception {
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT5");
 
@@ -207,7 +207,7 @@ public class FederationLogoutTest {
         EasyMock.replay(req);
 
         LogoutHandler logoutHandler = new LogoutHandler(config);
-        Assert.assertTrue(logoutHandler.canHandleRequest(req));
+        Assertions.assertTrue(logoutHandler.canHandleRequest(req));
 
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
         String expectedRedirectToIdP =
@@ -219,7 +219,7 @@ public class FederationLogoutTest {
         logoutHandler.handleRequest(req, resp);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSignoutCustomURLWithNoConfiguredConstraint() throws Exception {
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT2");
 
@@ -233,7 +233,7 @@ public class FederationLogoutTest {
         EasyMock.replay(req);
 
         LogoutHandler logoutHandler = new LogoutHandler(config);
-        Assert.assertTrue(logoutHandler.canHandleRequest(req));
+        Assertions.assertTrue(logoutHandler.canHandleRequest(req));
 
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
         String expectedRedirectToIdP =
@@ -245,7 +245,7 @@ public class FederationLogoutTest {
         logoutHandler.handleRequest(req, resp);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSignoutWithAbsoluteURL() throws Exception {
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT4");
 
@@ -259,7 +259,7 @@ public class FederationLogoutTest {
         EasyMock.replay(req);
 
         LogoutHandler logoutHandler = new LogoutHandler(config);
-        Assert.assertTrue(logoutHandler.canHandleRequest(req));
+        Assertions.assertTrue(logoutHandler.canHandleRequest(req));
 
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
         String expectedRedirectToIdP =
@@ -271,7 +271,7 @@ public class FederationLogoutTest {
         logoutHandler.handleRequest(req, resp);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSignoutAction() throws Exception {
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
 
@@ -286,7 +286,7 @@ public class FederationLogoutTest {
         EasyMock.replay(req);
 
         LogoutHandler logoutHandler = new LogoutHandler(config);
-        Assert.assertTrue(logoutHandler.canHandleRequest(req));
+        Assertions.assertTrue(logoutHandler.canHandleRequest(req));
 
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
         String expectedRedirectToIdP =
@@ -298,7 +298,7 @@ public class FederationLogoutTest {
         logoutHandler.handleRequest(req, resp);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSignoutActionWithWReply() throws Exception {
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
 
@@ -313,7 +313,7 @@ public class FederationLogoutTest {
         EasyMock.replay(req);
 
         LogoutHandler logoutHandler = new LogoutHandler(config);
-        Assert.assertTrue(logoutHandler.canHandleRequest(req));
+        Assertions.assertTrue(logoutHandler.canHandleRequest(req));
 
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
         String expectedRedirectToIdP =
@@ -325,7 +325,7 @@ public class FederationLogoutTest {
         logoutHandler.handleRequest(req, resp);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSignoutActionWithBadWReply() throws Exception {
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
 
@@ -340,7 +340,7 @@ public class FederationLogoutTest {
         EasyMock.replay(req);
 
         LogoutHandler logoutHandler = new LogoutHandler(config);
-        Assert.assertTrue(logoutHandler.canHandleRequest(req));
+        Assertions.assertTrue(logoutHandler.canHandleRequest(req));
 
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
         String expectedRedirectToIdP =
@@ -352,7 +352,7 @@ public class FederationLogoutTest {
         logoutHandler.handleRequest(req, resp);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSignoutActionWithNoConfiguredConstraint() throws Exception {
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT2");
 
@@ -367,7 +367,7 @@ public class FederationLogoutTest {
         EasyMock.replay(req);
 
         LogoutHandler logoutHandler = new LogoutHandler(config);
-        Assert.assertTrue(logoutHandler.canHandleRequest(req));
+        Assertions.assertTrue(logoutHandler.canHandleRequest(req));
 
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
         String expectedRedirectToIdP =
@@ -379,7 +379,7 @@ public class FederationLogoutTest {
         logoutHandler.handleRequest(req, resp);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSignoutCleanupWithWReply() throws Exception {
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
 
@@ -393,7 +393,7 @@ public class FederationLogoutTest {
         EasyMock.replay(req);
 
         LogoutHandler logoutHandler = new LogoutHandler(config);
-        Assert.assertTrue(logoutHandler.canHandleRequest(req));
+        Assertions.assertTrue(logoutHandler.canHandleRequest(req));
 
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
         String encodedResponse = "https%3A%2F%2Flocalhost%2Ffedizhelloworld%2Fsecure%2Fwreply.html";
@@ -405,7 +405,7 @@ public class FederationLogoutTest {
         logoutHandler.handleRequest(req, resp);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSignoutCleanupWithBadWReply() throws Exception {
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
 
@@ -419,7 +419,7 @@ public class FederationLogoutTest {
         EasyMock.replay(req);
 
         LogoutHandler logoutHandler = new LogoutHandler(config);
-        Assert.assertTrue(logoutHandler.canHandleRequest(req));
+        Assertions.assertTrue(logoutHandler.canHandleRequest(req));
 
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
         resp.setContentType("image/jpeg");
@@ -430,7 +430,7 @@ public class FederationLogoutTest {
         logoutHandler.handleRequest(req, resp);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSignoutCleanupWithNoConfiguredConstraint() throws Exception {
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT2");
 
@@ -444,7 +444,7 @@ public class FederationLogoutTest {
         EasyMock.replay(req);
 
         LogoutHandler logoutHandler = new LogoutHandler(config);
-        Assert.assertTrue(logoutHandler.canHandleRequest(req));
+        Assertions.assertTrue(logoutHandler.canHandleRequest(req));
 
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
         resp.setContentType("image/jpeg");
@@ -455,7 +455,7 @@ public class FederationLogoutTest {
         logoutHandler.handleRequest(req, resp);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSignoutCustomQueryParameter() throws Exception {
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT3");
 
@@ -469,7 +469,7 @@ public class FederationLogoutTest {
         EasyMock.replay(req);
 
         LogoutHandler logoutHandler = new LogoutHandler(config);
-        Assert.assertTrue(logoutHandler.canHandleRequest(req));
+        Assertions.assertTrue(logoutHandler.canHandleRequest(req));
 
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
         String expectedRedirectToIdP =

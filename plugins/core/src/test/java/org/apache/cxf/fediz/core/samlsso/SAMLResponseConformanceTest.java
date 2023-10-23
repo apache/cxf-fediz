@@ -69,11 +69,11 @@ import org.opensaml.saml.saml2.core.Response;
 import org.opensaml.saml.saml2.core.Status;
 
 import org.easymock.EasyMock;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Some tests for processing SAMLResponses using the SAMLProcessorImpl, where the SAML Response
@@ -99,7 +99,7 @@ public class SAMLResponseConformanceTest {
     }
 
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         try {
             crypto = CryptoFactory.getInstance("signature.properties");
@@ -108,11 +108,11 @@ public class SAMLResponseConformanceTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Assert.assertNotNull(configurator);
+        Assertions.assertNotNull(configurator);
 
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         SecurityTestUtil.cleanup();
     }
@@ -135,7 +135,7 @@ public class SAMLResponseConformanceTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testWrongIssuerFormat() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -209,7 +209,7 @@ public class SAMLResponseConformanceTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testRightIssuerFormat() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -275,15 +275,13 @@ public class SAMLResponseConformanceTest {
         FedizProcessor wfProc = new SAMLProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
-        Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_IDP_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
+        Assertions.assertEquals(TEST_REQUEST_URL, wfRes.getAudience(), "Audience wrong");
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testNoAuthnStatement() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -349,7 +347,7 @@ public class SAMLResponseConformanceTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testAudienceRestriction() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -413,7 +411,7 @@ public class SAMLResponseConformanceTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testNonMatchingAudienceRestriction() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -480,7 +478,7 @@ public class SAMLResponseConformanceTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testNoBearerSubjectConfirmation() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -547,7 +545,7 @@ public class SAMLResponseConformanceTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testNonMatchingRecipient() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -614,7 +612,7 @@ public class SAMLResponseConformanceTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testNonMatchingInResponseTo() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -681,7 +679,7 @@ public class SAMLResponseConformanceTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testNonMatchingAddress() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -748,7 +746,7 @@ public class SAMLResponseConformanceTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testNotBefore() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -816,7 +814,7 @@ public class SAMLResponseConformanceTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testNotOnOfAfter() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -882,7 +880,7 @@ public class SAMLResponseConformanceTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testFailingStatusWithValidAssertion() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -977,7 +975,7 @@ public class SAMLResponseConformanceTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testIssuerEnforcementFailure() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -1049,7 +1047,7 @@ public class SAMLResponseConformanceTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testIssuerEnforcementDisable() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -1112,9 +1110,9 @@ public class SAMLResponseConformanceTest {
         // Disable the issuer enforcement check
         FedizProcessor wfProc = new SAMLProcessorImpl();
         ((SAMLProtocol)config.getProtocol()).setDoNotEnforceKnownIssuer(true);
-        Assert.assertTrue(((SAMLProtocol)config.getProtocol()).isDoNotEnforceKnownIssuer());
+        Assertions.assertTrue(((SAMLProtocol)config.getProtocol()).isDoNotEnforceKnownIssuer());
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
-        Assert.assertEquals("Principal name wrong", TEST_USER, wfRes.getUsername());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
 
     }
 

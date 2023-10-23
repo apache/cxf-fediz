@@ -60,9 +60,9 @@ import org.apache.wss4j.common.saml.builder.SAML2Constants;
 import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.wss4j.common.util.XMLUtils;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 
 
 // This testcases tests the encoding implemented before CXF-4484
@@ -78,7 +78,7 @@ public class SAMLTokenValidatorOldTest {
     private static FedizConfigurator configurator;
 
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         try {
             crypto = CryptoFactory.getInstance("signature.properties");
@@ -87,11 +87,11 @@ public class SAMLTokenValidatorOldTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Assert.assertNotNull(configurator);
+        Assertions.assertNotNull(configurator);
 
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         SecurityTestUtil.cleanup();
     }
@@ -118,7 +118,7 @@ public class SAMLTokenValidatorOldTest {
      * Validate SAML 2 token which includes the role attribute with 2 values
      * Roles are encoded as a multi-value saml attribute
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2Token() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -151,12 +151,10 @@ public class SAMLTokenValidatorOldTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_RSTR_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
+        Assertions.assertEquals(TEST_AUDIENCE, wfRes.getAudience(), "Audience wrong");
         assertClaims(wfRes.getClaims(), ClaimTypes.URI_BASE.toString() + "/" + callbackHandler.getRoleAttributeName());
 
     }
@@ -165,7 +163,7 @@ public class SAMLTokenValidatorOldTest {
      * Validate SAML 2 token where role information is provided
      * within another SAML attribute
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenDifferentRoleURI() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -198,10 +196,10 @@ public class SAMLTokenValidatorOldTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER, wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles().size());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_RSTR_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
+        Assertions.assertEquals(TEST_AUDIENCE, wfRes.getAudience(), "Audience wrong");
         assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
     }
 
@@ -209,7 +207,7 @@ public class SAMLTokenValidatorOldTest {
      * Validate SAML 2 token where role information is provided
      * within another SAML attribute
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML1TokenDifferentRoleURI() throws Exception {
         SAML1CallbackHandler callbackHandler = new SAML1CallbackHandler();
         callbackHandler.setStatement(SAML1CallbackHandler.Statement.ATTR);
@@ -241,10 +239,10 @@ public class SAMLTokenValidatorOldTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER, wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles().size());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_RSTR_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
+        Assertions.assertEquals(TEST_AUDIENCE, wfRes.getAudience(), "Audience wrong");
         assertClaims(wfRes.getClaims(), callbackHandler.getRoleAttributeName());
     }
 
@@ -252,7 +250,7 @@ public class SAMLTokenValidatorOldTest {
      * Validate SAML 1.1 token which includes the role attribute with 2 values
      * Roles are encoded as a multi-value saml attribute
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML1Token() throws Exception {
         SAML1CallbackHandler callbackHandler = new SAML1CallbackHandler();
         callbackHandler.setStatement(SAML1CallbackHandler.Statement.ATTR);
@@ -285,12 +283,10 @@ public class SAMLTokenValidatorOldTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_RSTR_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
-        Assert.assertEquals("Audience wrong", TEST_AUDIENCE, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_RSTR_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
+        Assertions.assertEquals(TEST_AUDIENCE, wfRes.getAudience(), "Audience wrong");
         assertClaims(wfRes.getClaims(), ClaimTypes.URI_BASE.toString() + "/" + callbackHandler.getRoleAttributeName());
     }
 
@@ -327,11 +323,10 @@ public class SAMLTokenValidatorOldTest {
 
     private void assertClaims(List<Claim> claims, String roleClaimType) {
         for (Claim c : claims) {
-            Assert.assertTrue("Invalid ClaimType URI: " + c.getClaimType(),
-                              c.getClaimType().toString().equals(roleClaimType)
+            Assertions.assertTrue(c.getClaimType().toString().equals(roleClaimType)
                               || c.getClaimType().equals(ClaimTypes.COUNTRY)
-                              || c.getClaimType().equals(AbstractSAMLCallbackHandler.CLAIM_TYPE_LANGUAGE)
-                              );
+                              || c.getClaimType().equals(AbstractSAMLCallbackHandler.CLAIM_TYPE_LANGUAGE),
+                    "Invalid ClaimType URI: " + c.getClaimType());
         }
     }
 

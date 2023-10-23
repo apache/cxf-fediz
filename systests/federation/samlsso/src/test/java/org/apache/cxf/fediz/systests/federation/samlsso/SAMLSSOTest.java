@@ -44,9 +44,9 @@ import org.apache.catalina.startup.Tomcat;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 
 /**
  * This is a test for federation using a SAML SSO enabled web application (using CXF interceptors). The web
@@ -73,18 +73,18 @@ public class SAMLSSOTest {
     private static Tomcat idpOIDCServer;
     private static Tomcat rpServer;
 
-    @BeforeClass
+    @BeforeAll
     public static void init() throws Exception {
         idpHttpsPort = System.getProperty("idp.https.port");
-        Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
+        Assertions.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
         idpRealmbHttpsPort = System.getProperty("idp.realmb.https.port");
-        Assert.assertNotNull("Property 'idp.realmb.https.port' null", idpRealmbHttpsPort);
+        Assertions.assertNotNull("Property 'idp.realmb.https.port' null", idpRealmbHttpsPort);
         idpSamlSSOHttpsPort = System.getProperty("idp.samlsso.https.port");
-        Assert.assertNotNull("Property 'idp.samlsso.https.port' null", idpSamlSSOHttpsPort);
+        Assertions.assertNotNull("Property 'idp.samlsso.https.port' null", idpSamlSSOHttpsPort);
         idpOIDCHttpsPort = System.getProperty("idp.oidc.https.port");
-        Assert.assertNotNull("Property 'idp.oidc.https.port' null", idpOIDCHttpsPort);
+        Assertions.assertNotNull("Property 'idp.oidc.https.port' null", idpOIDCHttpsPort);
         rpHttpsPort = System.getProperty("rp.https.port");
-        Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
+        Assertions.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
 
         idpServer = startServer(ServerType.IDP, idpHttpsPort);
         idpRealmbServer = startServer(ServerType.REALMB, idpRealmbHttpsPort);
@@ -153,7 +153,7 @@ public class SAMLSSOTest {
         return server;
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         shutdownServer(idpServer);
         shutdownServer(idpRealmbServer);
@@ -191,7 +191,7 @@ public class SAMLSSOTest {
         return "fedizhelloworld";
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testWSFederation() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/samlsso/app1/services/25";
         //System.out.println(url);
@@ -203,11 +203,11 @@ public class SAMLSSOTest {
         final String bodyTextContent =
             login(url, user, password, getIdpRealmbHttpsPort(), getIdpHttpsPort());
 
-        Assert.assertTrue(bodyTextContent.contains("This is the double number response"));
+        Assertions.assertTrue(bodyTextContent.contains("This is the double number response"));
 
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSAMLSSOFedizIdP() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/samlsso/app2/services/25";
         // System.out.println(url);
@@ -218,10 +218,10 @@ public class SAMLSSOTest {
         final String bodyTextContent =
             login(url, user, password, getIdpRealmbHttpsPort(), getIdpHttpsPort(), true);
 
-        Assert.assertTrue(bodyTextContent.contains("This is the double number response"));
+        Assertions.assertTrue(bodyTextContent.contains("This is the double number response"));
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testOIDC() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/samlsso/app3/services/25";
         String user = "ALICE";  // realm b credentials
@@ -230,7 +230,7 @@ public class SAMLSSOTest {
         final String bodyTextContent =
             loginOIDC(url, user, password, idpOIDCHttpsPort, idpHttpsPort);
 
-        Assert.assertTrue(bodyTextContent.contains("This is the double number response"));
+        Assertions.assertTrue(bodyTextContent.contains("This is the double number response"));
     }
 
 
@@ -251,7 +251,7 @@ public class SAMLSSOTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         HtmlPage idpPage = webClient.getPage(url);
 
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // Now redirect back to the IdP for Realm A
         HtmlForm form = idpPage.getFormByName("signinresponseform");
@@ -260,7 +260,7 @@ public class SAMLSSOTest {
 
         HtmlPage idpPageRealmA = button.click();
 
-        Assert.assertTrue("SAML IDP Response Form".equals(idpPage.getTitleText())
+        Assertions.assertTrue("SAML IDP Response Form".equals(idpPage.getTitleText())
                           || "IDP SignIn Response Form".equals(idpPage.getTitleText()));
         form = idpPageRealmA.getFormByName("samlsigninresponseform");
 
@@ -291,7 +291,7 @@ public class SAMLSSOTest {
         HtmlPage idpPage = webClient.getPage(url);
 
         if (postBinding) {
-            Assert.assertTrue("SAML IDP Response Form".equals(idpPage.getTitleText())
+            Assertions.assertTrue("SAML IDP Response Form".equals(idpPage.getTitleText())
                                 || "IDP SignIn Response Form".equals(idpPage.getTitleText()));
             for (HtmlForm form : idpPage.getForms()) {
                 String name = form.getAttributeNS(null, "name");
@@ -302,7 +302,7 @@ public class SAMLSSOTest {
             }
         }
 
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // Now redirect back to the RP
         final HtmlForm form = idpPage.getFormByName("samlsigninresponseform");
@@ -352,7 +352,7 @@ public class SAMLSSOTest {
 
         HtmlPage idpPage = webClient.getPage(request);
 
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // Now redirect back to the RP
         final HtmlForm form = idpPage.getFormByName("samlsigninresponseform");

@@ -55,8 +55,8 @@ import org.apache.wss4j.common.cache.EHCacheReplayCache;
 import org.apache.wss4j.common.cache.MemoryReplayCache;
 import org.apache.wss4j.common.cache.ReplayCache;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 
 public class FedizConfigurationTest {
 
@@ -95,7 +95,7 @@ public class FedizConfigurationTest {
 
     private static final String CONFIG_FILE = "./target/fedizconfig.xml";
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         SecurityTestUtil.cleanup();
     }
@@ -230,7 +230,7 @@ public class FedizConfigurationTest {
 
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void readWriteConfigFederation() throws JAXBException {
 
         final JAXBContext jaxbContext = JAXBContext
@@ -244,7 +244,7 @@ public class FedizConfigurationTest {
         jaxbContext.createUnmarshaller().unmarshal(reader);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void readWriteConfigSAML() throws JAXBException {
 
         final JAXBContext jaxbContext = JAXBContext
@@ -258,7 +258,7 @@ public class FedizConfigurationTest {
         jaxbContext.createUnmarshaller().unmarshal(reader);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSaveAndLoadConfigFederation() throws JAXBException, IOException {
         final JAXBContext jaxbContext = JAXBContext
                 .newInstance(FedizConfig.class);
@@ -281,7 +281,7 @@ public class FedizConfigurationTest {
         configurator.loadConfig(f);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSaveAndLoadConfigSAML() throws JAXBException, IOException {
         final JAXBContext jaxbContext = JAXBContext
                 .newInstance(FedizConfig.class);
@@ -304,7 +304,7 @@ public class FedizConfigurationTest {
         configurator.loadConfig(f);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void verifyConfigFederation() throws JAXBException {
 
         final JAXBContext jaxbContext = JAXBContext
@@ -318,18 +318,18 @@ public class FedizConfigurationTest {
         configurator.loadConfig(reader);
 
         ContextConfig config = configurator.getContextConfig(CONFIG_NAME);
-        Assert.assertNotNull(config);
+        Assertions.assertNotNull(config);
         AudienceUris audience = config.getAudienceUris();
-        Assert.assertEquals(3, audience.getAudienceItem().size());
-        Assert.assertTrue(config.getProtocol() instanceof FederationProtocolType);
+        Assertions.assertEquals(3, audience.getAudienceItem().size());
+        Assertions.assertTrue(config.getProtocol() instanceof FederationProtocolType);
         FederationProtocolType fp = (FederationProtocolType) config
                 .getProtocol();
 
-        Assert.assertEquals(HOME_REALM_CLASS, fp.getHomeRealm().getValue());
+        Assertions.assertEquals(HOME_REALM_CLASS, fp.getHomeRealm().getValue());
 
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void verifyConfigSAML() throws JAXBException {
 
         final JAXBContext jaxbContext = JAXBContext
@@ -343,61 +343,61 @@ public class FedizConfigurationTest {
         configurator.loadConfig(reader);
 
         ContextConfig config = configurator.getContextConfig(CONFIG_NAME);
-        Assert.assertNotNull(config);
+        Assertions.assertNotNull(config);
         AudienceUris audience = config.getAudienceUris();
-        Assert.assertEquals(3, audience.getAudienceItem().size());
-        Assert.assertTrue(config.getProtocol() instanceof SamlProtocolType);
+        Assertions.assertEquals(3, audience.getAudienceItem().size());
+        Assertions.assertTrue(config.getProtocol() instanceof SamlProtocolType);
 
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testTokenReplayCacheFederation() throws Exception {
         FedizConfig config = createConfiguration(true);
 
         // Test the default TokenReplayCache
         ReplayCache defaultReplayCache = parseConfigAndReturnTokenReplayCache(config);
-        Assert.assertNotNull(defaultReplayCache);
-        Assert.assertTrue(defaultReplayCache instanceof EHCacheReplayCache);
+        Assertions.assertNotNull(defaultReplayCache);
+        Assertions.assertTrue(defaultReplayCache instanceof EHCacheReplayCache);
 
         // Now test setting another TokenReplayCache
         ContextConfig contextConfig = config.getContextConfig().get(0);
         contextConfig.setTokenReplayCache("org.apache.wss4j.common.cache.MemoryReplayCache");
 
         ReplayCache newReplayCache = parseConfigAndReturnTokenReplayCache(config);
-        Assert.assertNotNull(newReplayCache);
-        Assert.assertTrue(newReplayCache instanceof MemoryReplayCache);
+        Assertions.assertNotNull(newReplayCache);
+        Assertions.assertTrue(newReplayCache instanceof MemoryReplayCache);
 
         // Now test setting another TokenReplayCache
         contextConfig.setTokenReplayCache("org.apache.wss4j.common.cache.EHCacheReplayCache");
 
         newReplayCache = parseConfigAndReturnTokenReplayCache(config);
-        Assert.assertNotNull(newReplayCache);
-        Assert.assertTrue(newReplayCache instanceof EHCacheReplayCache);
+        Assertions.assertNotNull(newReplayCache);
+        Assertions.assertTrue(newReplayCache instanceof EHCacheReplayCache);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testTokenReplayCacheSAML() throws Exception {
         FedizConfig config = createConfiguration(false);
 
         // Test the default TokenReplayCache
         ReplayCache defaultReplayCache = parseConfigAndReturnTokenReplayCache(config);
-        Assert.assertNotNull(defaultReplayCache);
-        Assert.assertTrue(defaultReplayCache instanceof EHCacheReplayCache);
+        Assertions.assertNotNull(defaultReplayCache);
+        Assertions.assertTrue(defaultReplayCache instanceof EHCacheReplayCache);
 
         // Now test setting another TokenReplayCache
         ContextConfig contextConfig = config.getContextConfig().get(0);
         contextConfig.setTokenReplayCache("org.apache.wss4j.common.cache.MemoryReplayCache");
 
         ReplayCache newReplayCache = parseConfigAndReturnTokenReplayCache(config);
-        Assert.assertNotNull(newReplayCache);
-        Assert.assertTrue(newReplayCache instanceof MemoryReplayCache);
+        Assertions.assertNotNull(newReplayCache);
+        Assertions.assertTrue(newReplayCache instanceof MemoryReplayCache);
 
         // Now test setting another TokenReplayCache
         contextConfig.setTokenReplayCache("org.apache.wss4j.common.cache.EHCacheReplayCache");
 
         newReplayCache = parseConfigAndReturnTokenReplayCache(config);
-        Assert.assertNotNull(newReplayCache);
-        Assert.assertTrue(newReplayCache instanceof EHCacheReplayCache);
+        Assertions.assertNotNull(newReplayCache);
+        Assertions.assertTrue(newReplayCache instanceof EHCacheReplayCache);
     }
 
     private ReplayCache parseConfigAndReturnTokenReplayCache(FedizConfig config)
@@ -412,21 +412,21 @@ public class FedizConfigurationTest {
         configurator.loadConfig(reader);
 
         FedizContext fedContext = configurator.getFedizContext(CONFIG_NAME);
-        Assert.assertNotNull(fedContext);
+        Assertions.assertNotNull(fedContext);
 
         return fedContext.getTokenReplayCache();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testDefaultValues() throws JAXBException, IOException {
         ContextConfig config = new ContextConfig();
 
-        Assert.assertTrue(config.getMaximumClockSkew().intValue() == 5);
-        Assert.assertFalse(config.isTokenExpirationValidation());
-        Assert.assertTrue(config.isRequestStateValidation());
+        Assertions.assertTrue(config.getMaximumClockSkew().intValue() == 5);
+        Assertions.assertFalse(config.isTokenExpirationValidation());
+        Assertions.assertTrue(config.isRequestStateValidation());
     }
     
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testClaimProcessor() throws JAXBException, IOException {
         final JAXBContext jaxbContext = JAXBContext.newInstance(FedizConfig.class);
         FedizConfigurator configurator = new FedizConfigurator();
@@ -438,8 +438,8 @@ public class FedizConfigurationTest {
         
         FedizContext fedContext = configurator.getFedizContext(CONFIG_NAME);
         List<ClaimsProcessor> claimsProcessor = fedContext.getClaimsProcessor();
-        Assert.assertNotNull(claimsProcessor);
-        Assert.assertEquals(1, claimsProcessor.size());
+        Assertions.assertNotNull(claimsProcessor);
+        Assertions.assertEquals(1, claimsProcessor.size());
         
         List<org.apache.cxf.fediz.core.Claim> inputClaims = new ArrayList<>();
         org.apache.cxf.fediz.core.Claim claim = new org.apache.cxf.fediz.core.Claim();
@@ -447,7 +447,7 @@ public class FedizConfigurationTest {
         claim.setValue("Alice");
         inputClaims.add(claim);
         List<org.apache.cxf.fediz.core.Claim> processedClaims = claimsProcessor.get(0).processClaims(inputClaims);
-        Assert.assertEquals(inputClaims, processedClaims);
+        Assertions.assertEquals(inputClaims, processedClaims);
     }
 
 }

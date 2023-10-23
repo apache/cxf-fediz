@@ -27,10 +27,10 @@ import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.cxf.fediz.systests.common.AbstractTests;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 
 /**
  * Some tests for SAML SSO with the Jetty (9) plugin, invoking on the Fediz IdP configured for SAML SSO.
@@ -42,17 +42,17 @@ public class JettyTest extends AbstractTests {
 
     private static Tomcat idpServer;
 
-    @BeforeClass
+    @BeforeAll
     public static void init() throws Exception {
-        Assert.assertNotNull("Property 'idp.https.port' null", IDP_HTTPS_PORT);
-        Assert.assertNotNull("Property 'rp.jetty.https.port' null", RP_HTTPS_PORT);
+        Assertions.assertNotNull("Property 'idp.https.port' null", IDP_HTTPS_PORT);
+        Assertions.assertNotNull("Property 'rp.jetty.https.port' null", RP_HTTPS_PORT);
 
         initIdp();
 
         JettyUtils.initRpServer("rp-server.xml");
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws Exception {
         if (idpServer != null && idpServer.getServer() != null
             && idpServer.getServer().getState() != LifecycleState.DESTROYED) {
@@ -120,13 +120,13 @@ public class JettyTest extends AbstractTests {
         return false;
     }
 
-    @Ignore("This tests is currently failing on Jetty")
+    @Disabled("This tests is currently failing on Jetty")
     @Override
     public void testConcurrentRequests() throws Exception {
         // super.testConcurrentRequests();
     }
 
-    @Ignore("This tests is currently failing on Jetty")
+    @Disabled("This tests is currently failing on Jetty")
     public void testRPLogout() throws Exception {
         //
     }

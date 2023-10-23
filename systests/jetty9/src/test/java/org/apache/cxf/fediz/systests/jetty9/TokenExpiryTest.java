@@ -21,9 +21,9 @@ package org.apache.cxf.fediz.systests.jetty9;
 
 import org.apache.cxf.fediz.systests.common.AbstractExpiryTests;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 
 /**
  * Some token expiry tests
@@ -32,14 +32,14 @@ public class TokenExpiryTest extends AbstractExpiryTests {
 
     private static final String RP_HTTPS_PORT = System.getProperty("rp.https.port");
 
-    @BeforeClass
+    @BeforeAll
     public static void init() throws Exception {
-        Assert.assertNotNull("Property 'rp.jetty.https.port' null", RP_HTTPS_PORT);
+        Assertions.assertNotNull("Property 'rp.jetty.https.port' null", RP_HTTPS_PORT);
         TomcatUtils.initIdpServer();
         JettyUtils.initRpServer("rp-expiry-server.xml");
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws Exception {
         TomcatUtils.stopIdpServer();
         JettyUtils.stopRpServer();

@@ -40,10 +40,10 @@ import org.apache.cxf.fediz.systests.common.AbstractTests;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 
 public class SpringTest extends AbstractTests {
 
@@ -53,18 +53,18 @@ public class SpringTest extends AbstractTests {
     private static Tomcat idpServer;
     private static Tomcat rpServer;
 
-    @BeforeClass
+    @BeforeAll
     public static void init() throws Exception {
         idpHttpsPort = System.getProperty("idp.https.port");
-        Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
+        Assertions.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
         rpHttpsPort = System.getProperty("rp.https.port");
-        Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
+        Assertions.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
 
         idpServer = startServer(true, idpHttpsPort);
         rpServer = startServer(false, rpHttpsPort);
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         shutdownServer(idpServer);
         shutdownServer(rpServer);
@@ -149,14 +149,14 @@ public class SpringTest extends AbstractTests {
         return "fedizhelloworld";
     }
 
-    @Ignore("This tests is currently failing on Spring")
+    @Disabled("This tests is currently failing on Spring")
     @Override
     public void testConcurrentRequests() throws Exception {
         // super.testConcurrentRequests();
     }
 
     @Override
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testCSRFAttack() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/j_spring_fediz_security_check";
@@ -164,14 +164,14 @@ public class SpringTest extends AbstractTests {
     }
 
     @Override
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testCSRFAttack2() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/j_spring_fediz_security_check";
         csrfAttackTest2(url);
     }
     
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testNoRequestValidation() throws Exception {
 
         String url = "https://localhost:" + getRpHttpsPort()
@@ -191,7 +191,7 @@ public class SpringTest extends AbstractTests {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // Parse the form to remove the context
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
@@ -208,7 +208,7 @@ public class SpringTest extends AbstractTests {
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
 
         final HtmlPage rpPage = button.click();
-        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
+        Assertions.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
                           || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
 
         webClient.close();

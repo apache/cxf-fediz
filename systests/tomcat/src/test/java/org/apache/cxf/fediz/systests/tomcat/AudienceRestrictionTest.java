@@ -29,9 +29,9 @@ import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 
 /**
  * A test to make sure that audience restriction validation is working correctly in the plugin.
@@ -40,17 +40,17 @@ public class AudienceRestrictionTest {
 
     private static final String SERVLET_CONTEXT_NAME = "fedizhelloworld_audrestr";
 
-    @BeforeClass
+    @BeforeAll
     public static void init() throws Exception {
         TomcatLauncher.startServer(SERVLET_CONTEXT_NAME);
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws Exception {
         TomcatLauncher.shutdownServer();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSAMLTokenWithNonMatchingAudienceRestriction() throws Exception {
         String url = "https://localhost:" + TomcatLauncher.getRpHttpsPort() + '/' + SERVLET_CONTEXT_NAME
                 + "/secure/fedservlet";
@@ -66,16 +66,16 @@ public class AudienceRestrictionTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         final HtmlForm form = idpPage.getFormByName("signinresponseform");
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
 
         try {
             button.click();
-            Assert.fail("Failure expected on a bad audience restriction value");
+            Assertions.fail("Failure expected on a bad audience restriction value");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 401);
+            Assertions.assertEquals(ex.getStatusCode(), 401);
         }
 
         webClient.close();

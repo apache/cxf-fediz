@@ -92,12 +92,12 @@ import org.opensaml.xmlsec.signature.Signature;
 import org.opensaml.xmlsec.signature.support.SignatureConstants;
 
 import org.easymock.EasyMock;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Some tests for processing SAMLResponses using the SAMLProcessorImpl
@@ -123,7 +123,7 @@ public class SAMLResponseTest {
     }
 
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         try {
             crypto = CryptoFactory.getInstance("signature.properties");
@@ -132,11 +132,11 @@ public class SAMLResponseTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Assert.assertNotNull(configurator);
+        Assertions.assertNotNull(configurator);
 
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         SecurityTestUtil.cleanup();
     }
@@ -162,7 +162,7 @@ public class SAMLResponseTest {
     /**
      * Successfully validate a SAMLResponse
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAMLResponse() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -196,12 +196,10 @@ public class SAMLResponseTest {
         FedizProcessor wfProc = new SAMLProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
-        Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_IDP_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
+        Assertions.assertEquals(TEST_REQUEST_URL, wfRes.getAudience(), "Audience wrong");
         assertClaims(wfRes.getClaims(), ClaimTypes.COUNTRY);
         assertClaims(wfRes.getClaims(), AbstractSAMLCallbackHandler.CLAIM_TYPE_LANGUAGE);
     }
@@ -209,7 +207,7 @@ public class SAMLResponseTest {
     /**
      * Validate SAMLResponse with a Response without an internal token parameter
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateResponseWithoutToken() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -250,7 +248,7 @@ public class SAMLResponseTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testMissingRelayState() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -290,7 +288,7 @@ public class SAMLResponseTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testMissingRelayStateAllowed() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT_NO_REQ_STATE_VALIDATION");
@@ -322,12 +320,10 @@ public class SAMLResponseTest {
         FedizProcessor wfProc = new SAMLProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
-        Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_IDP_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
+        Assertions.assertEquals(TEST_REQUEST_URL, wfRes.getAudience(), "Audience wrong");
         assertClaims(wfRes.getClaims(), ClaimTypes.COUNTRY);
         assertClaims(wfRes.getClaims(), AbstractSAMLCallbackHandler.CLAIM_TYPE_LANGUAGE);
     }
@@ -335,7 +331,7 @@ public class SAMLResponseTest {
     /**
      * Validate SAML 1 token (this is not allowed / supported)
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML1Token() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("CUSTOMROLEURI");
@@ -387,7 +383,7 @@ public class SAMLResponseTest {
     /**
      * Validate SAML 2 token which doesn't include the role SAML attribute
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenWithoutRoles() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -429,11 +425,10 @@ public class SAMLResponseTest {
         FedizProcessor wfProc = new SAMLProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("No roles must be found", null, wfRes.getRoles());
-        Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_IDP_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertNull(wfRes.getRoles());
+        Assertions.assertEquals(TEST_REQUEST_URL, wfRes.getAudience(), "Audience wrong");
     }
 
 
@@ -441,7 +436,7 @@ public class SAMLResponseTest {
      * Validate SAML 2 token where role information is provided
      * within another SAML attribute
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenDifferentRoleURI() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("CUSTOMROLEURI");
@@ -483,11 +478,10 @@ public class SAMLResponseTest {
         FedizProcessor wfProc = new SAMLProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles().size());
-        Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_IDP_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
+        Assertions.assertEquals(TEST_REQUEST_URL, wfRes.getAudience(), "Audience wrong");
         assertClaims(wfRes.getClaims(), ClaimTypes.COUNTRY);
         assertClaims(wfRes.getClaims(), AbstractSAMLCallbackHandler.CLAIM_TYPE_LANGUAGE);
     }
@@ -496,7 +490,7 @@ public class SAMLResponseTest {
      * Validate SAML 2 token which includes role attribute
      * but RoleURI is not configured
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenRoleURINotConfigured() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("CUSTOMROLEURI");
@@ -539,11 +533,10 @@ public class SAMLResponseTest {
         FedizProcessor wfProc = new SAMLProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", null, wfRes.getRoles());
-        Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_IDP_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertNull(wfRes.getRoles());
+        Assertions.assertEquals(TEST_REQUEST_URL, wfRes.getAudience(), "Audience wrong");
     }
 
 
@@ -551,7 +544,7 @@ public class SAMLResponseTest {
      * Validate SAML 2 token which includes the role attribute with 2 values
      * Roles are encoded as a multiple saml attributes with the same name
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenRoleMultiAttributes() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -593,11 +586,10 @@ public class SAMLResponseTest {
         FedizProcessor wfProc = new SAMLProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles().size());
-        Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_IDP_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
+        Assertions.assertEquals(TEST_REQUEST_URL, wfRes.getAudience(), "Audience wrong");
         assertClaims(wfRes.getClaims(), ClaimTypes.COUNTRY);
         assertClaims(wfRes.getClaims(), AbstractSAMLCallbackHandler.CLAIM_TYPE_LANGUAGE);
     }
@@ -606,7 +598,7 @@ public class SAMLResponseTest {
      * Validate SAML 2 token which includes the role attribute with 2 values
      * Roles are encoded as a single saml attribute with encoded value
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenRoleEncodedValue() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -649,11 +641,10 @@ public class SAMLResponseTest {
         FedizProcessor wfProc = new SAMLProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles().size());
-        Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_IDP_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
+        Assertions.assertEquals(TEST_REQUEST_URL, wfRes.getAudience(), "Audience wrong");
         assertClaims(wfRes.getClaims(), ClaimTypes.COUNTRY);
         assertClaims(wfRes.getClaims(), AbstractSAMLCallbackHandler.CLAIM_TYPE_LANGUAGE);
     }
@@ -663,7 +654,7 @@ public class SAMLResponseTest {
      * The configured subject of the trusted issuer doesn't match with
      * the issuer of the SAML token
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateUnsignedSAML2Token() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -722,7 +713,7 @@ public class SAMLResponseTest {
         FedizProcessor wfProc = new SAMLProcessorImpl();
         try {
             wfProc.processRequest(wfReq, config);
-            Assert.fail("Processing must fail because of missing signature");
+            Assertions.fail("Processing must fail because of missing signature");
         } catch (ProcessingException ex) {
             // expected
         }
@@ -732,7 +723,7 @@ public class SAMLResponseTest {
      * Validate SAML 2 token twice which causes an exception
      * due to replay attack
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testReplayAttack() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -774,9 +765,8 @@ public class SAMLResponseTest {
         FedizProcessor wfProc = new SAMLProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_IDP_ISSUER, wfRes.getIssuer(), "Issuer wrong");
 
         wfProc = new SAMLProcessorImpl();
         try {
@@ -794,7 +784,7 @@ public class SAMLResponseTest {
      * The configured subject of the trusted issuer doesn't match with
      * the issuer of the SAML token
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenSeveralCertStore() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT2");
@@ -835,11 +825,9 @@ public class SAMLResponseTest {
         FedizProcessor wfProc = new SAMLProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_IDP_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
     }
 
     /**
@@ -847,7 +835,7 @@ public class SAMLResponseTest {
      * The configured subject of the trusted issuer doesn't match with
      * the issuer of the SAML token
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenSeveralCertStoreTrustedIssuer() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT3");
@@ -888,17 +876,15 @@ public class SAMLResponseTest {
         FedizProcessor wfProc = new SAMLProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_IDP_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
     }
 
     /**
      * Validate SAML 2 token which is expired
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenExpired() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -975,7 +961,7 @@ public class SAMLResponseTest {
      * Validate SAML 2 token which is not yet valid (in 30 seconds)
      * but within the maximum clock skew range (60 seconds)
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenClockSkewRange() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -1041,26 +1027,24 @@ public class SAMLResponseTest {
         FedizProcessor wfProc = new SAMLProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_IDP_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
     }
 
     /**
      * "Validate" SAML 2 token with a custom token validator
      * If a validator is configured it precedes the SAMLTokenValidator as part of Fediz
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenCustomValidator() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("CUSTTOK");
         Protocol protocol = config.getProtocol();
         List<TokenValidator> validators = protocol.getTokenValidators();
-        Assert.assertEquals("Two validators must be found", 2, validators.size());
-        Assert.assertEquals("First validator must be custom validator",
-                            CustomValidator.class.getName(), validators.get(0).getClass().getName());
+        Assertions.assertEquals(2, validators.size());
+        Assertions.assertEquals(CustomValidator.class.getName(), validators.get(0).getClass().getName(),
+                "First validator must be custom validator");
 
         String requestId = URLEncoder.encode(UUID.randomUUID().toString(), "UTF-8");
 
@@ -1098,16 +1082,15 @@ public class SAMLResponseTest {
         FedizProcessor wfProc = new SAMLProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_IDP_ISSUER, wfRes.getIssuer(), "Issuer wrong");
     }
 
     /**
      * "Validate" SAML 2 token with a custom token validator
      * If a validator is configured it precedes the SAMLTokenValidator as part of Fediz
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAML2TokenMaxClockSkewNotDefined() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("NOCLOCKSKEW");
@@ -1148,15 +1131,13 @@ public class SAMLResponseTest {
         FedizProcessor wfProc = new SAMLProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
-        Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_IDP_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
+        Assertions.assertEquals(TEST_REQUEST_URL, wfRes.getAudience(), "Audience wrong");
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testModifiedSignature() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -1258,7 +1239,7 @@ public class SAMLResponseTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testTrustFailure() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("CLIENT_TRUST");
@@ -1298,7 +1279,7 @@ public class SAMLResponseTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateLogoutResponse() throws Exception {
         // Mock up a LogoutResponse
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -1324,7 +1305,7 @@ public class SAMLResponseTest {
         wfProc.processRequest(wfReq, config);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateUnsignedLogoutResponse() throws Exception {
         // Mock up a LogoutResponse
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -1355,7 +1336,7 @@ public class SAMLResponseTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateUntrustedLogoutResponse() throws Exception {
         // Mock up a LogoutResponse
         FedizContext config = getFederationConfigurator().getFedizContext("CLIENT_TRUST");
@@ -1386,7 +1367,7 @@ public class SAMLResponseTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateBadStatusInLogoutResponse() throws Exception {
         // Mock up a LogoutResponse
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -1417,7 +1398,7 @@ public class SAMLResponseTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateBadDestinationLogoutResponse() throws Exception {
         // Mock up a LogoutResponse
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -1448,7 +1429,7 @@ public class SAMLResponseTest {
         }
     }
     
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAMLResponseWithRequiredClaims() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("REQUIRED_CLAIMS");
@@ -1490,18 +1471,16 @@ public class SAMLResponseTest {
         FedizProcessor wfProc = new SAMLProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                            wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                            .size());
-        Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_IDP_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
+        Assertions.assertEquals(TEST_REQUEST_URL, wfRes.getAudience(), "Audience wrong");
         assertClaims(wfRes.getClaims(), ClaimTypes.COUNTRY);
         assertClaims(wfRes.getClaims(), AbstractSAMLCallbackHandler.CLAIM_TYPE_LANGUAGE);
         assertClaims(wfRes.getClaims(), ClaimTypes.FIRSTNAME);
     }
     
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAMLResponseWithoutRequiredClaims() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("REQUIRED_CLAIMS");
@@ -1548,7 +1527,7 @@ public class SAMLResponseTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAMLResponseWithoutKeyInfo() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT2");
@@ -1582,17 +1561,15 @@ public class SAMLResponseTest {
         FedizProcessor wfProc = new SAMLProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                .size());
-        Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_IDP_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
+        Assertions.assertEquals(TEST_REQUEST_URL, wfRes.getAudience(), "Audience wrong");
         assertClaims(wfRes.getClaims(), ClaimTypes.COUNTRY);
         assertClaims(wfRes.getClaims(), AbstractSAMLCallbackHandler.CLAIM_TYPE_LANGUAGE);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSAMLResponseWithoutKeyInfoIncorrectTrustStore() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("CLIENT_TRUST");

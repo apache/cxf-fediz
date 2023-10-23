@@ -80,9 +80,9 @@ import org.apache.wss4j.common.saml.builder.SAML2Constants;
 import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.wss4j.common.util.XMLUtils;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 
 /**
  * Test for claim transformations with ClaimsProcessor
@@ -112,7 +112,7 @@ public class ClaimsProcessorTest {
     private static Crypto crypto;
     private static CallbackHandler cbPasswordHandler = new KeystoreCallbackHandler();
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         try {
             crypto = CryptoFactory.getInstance("signature.properties");
@@ -122,7 +122,7 @@ public class ClaimsProcessorTest {
 
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         SecurityTestUtil.cleanup();
     }
@@ -215,7 +215,7 @@ public class ClaimsProcessorTest {
 
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testWithoutCustomClaimProcessor() throws Exception {
         String originalClaimValue = "Alice";
         String claimsProcessorClass = null;
@@ -229,10 +229,10 @@ public class ClaimsProcessorTest {
             }
         }
 
-        Assert.assertEquals(originalClaimValue, claimValue);
+        Assertions.assertEquals(originalClaimValue, claimValue);
     }
     
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testCustomClaimProcessor() throws Exception {
         String originalClaimValue = "Alice";
         String claimsProcessorClass = COPY_CLAIMS_PROCESSOR_CLASS;
@@ -246,10 +246,10 @@ public class ClaimsProcessorTest {
             }
         }
 
-        Assert.assertEquals(originalClaimValue, claimValue);
+        Assertions.assertEquals(originalClaimValue, claimValue);
     }
     
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testClaimModificationProcessor() throws Exception {
         String originalClaimValue = "Alice";
         String claimsProcessorClass = MUTATE_CLAIMS_PROCESSOR_CLASS;
@@ -260,7 +260,7 @@ public class ClaimsProcessorTest {
         Object firstname = null;
         Object lastname = null;
         
-        Assert.assertEquals(2, wfRes.getClaims().size());
+        Assertions.assertEquals(2, wfRes.getClaims().size());
         
         for (Claim c : wfRes.getClaims()) {
             if (ClaimTypes.FIRSTNAME.equals(c.getClaimType())) {
@@ -270,11 +270,11 @@ public class ClaimsProcessorTest {
             }
         }
 
-        Assert.assertEquals("alice", firstname);
-        Assert.assertEquals("ALICE", lastname);
+        Assertions.assertEquals("alice", firstname);
+        Assertions.assertEquals("ALICE", lastname);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testNonURIClaimType() throws Exception {
         String originalClaimValue = "Alice";
         String claimsProcessorClass = null;
@@ -288,10 +288,10 @@ public class ClaimsProcessorTest {
             }
         }
 
-        Assert.assertEquals(originalClaimValue, claimValue);
+        Assertions.assertEquals(originalClaimValue, claimValue);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testNonURIClaimTypeWithSpace() throws Exception {
         String originalClaimValue = "Alice";
         String claimsProcessorClass = null;
@@ -307,7 +307,7 @@ public class ClaimsProcessorTest {
             }
         }
 
-        Assert.assertEquals(originalClaimValue, claimValue);
+        Assertions.assertEquals(originalClaimValue, claimValue);
     }
 
     private FedizResponse performLogin(String claimType, String claimValue, String claimsProcessorClass)

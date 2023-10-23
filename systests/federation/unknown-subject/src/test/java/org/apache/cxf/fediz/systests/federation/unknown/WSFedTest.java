@@ -44,9 +44,9 @@ import org.apache.cxf.fediz.tomcat.FederationAuthenticator;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 
 /**
  * This is a test for federation using a WS-Federation enabled web application. The web application is configured
@@ -69,14 +69,14 @@ public class WSFedTest {
     private static Tomcat idpRealmbServer;
     private static Tomcat rpServer;
 
-    @BeforeClass
+    @BeforeAll
     public static void init() throws Exception {
         idpHttpsPort = System.getProperty("idp.https.port");
-        Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
+        Assertions.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
         idpRealmbHttpsPort = System.getProperty("idp.realmb.https.port");
-        Assert.assertNotNull("Property 'idp.realmb.https.port' null", idpRealmbHttpsPort);
+        Assertions.assertNotNull("Property 'idp.realmb.https.port' null", idpRealmbHttpsPort);
         rpHttpsPort = System.getProperty("rp.https.port");
-        Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
+        Assertions.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
 
         idpServer = startServer(ServerType.IDP, idpHttpsPort);
         idpRealmbServer = startServer(ServerType.REALMB, idpRealmbHttpsPort);
@@ -144,7 +144,7 @@ public class WSFedTest {
         return server;
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         shutdownServer(idpServer);
         shutdownServer(idpRealmbServer);
@@ -181,7 +181,7 @@ public class WSFedTest {
         return "fedizhelloworld";
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testWSFederationUnknownSubject() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/wsfed/secure/fedservlet";
         // System.out.println(url);
@@ -193,12 +193,11 @@ public class WSFedTest {
             login(url, user, password, getIdpRealmbHttpsPort(), idpHttpsPort);
 
         // Test for "realm b" principal here
-        Assert.assertTrue("Principal not ALICE",
-                          bodyTextContent.contains("userPrincipal=ALICE"));
+        Assertions.assertTrue(bodyTextContent.contains("userPrincipal=ALICE"), "Principal not ALICE");
 
         String claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realmb.org'",
-                          bodyTextContent.contains(claim + "=alice@realmb.org"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=alice@realmb.org"),
+                "User " + user + " claim " + claim + " is not 'alice@realmb.org'");
     }
 
     private static String login(String url, String user, String password,
@@ -218,7 +217,7 @@ public class WSFedTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // For some reason, redirecting back to the IdP for "realm a" is not working with htmlunit. So extract
         // the parameters manually from the form, and access the IdP for "realm a" with them
@@ -237,7 +236,7 @@ public class WSFedTest {
                 wtrealm = result.getAttributeNS(null, "value");
             }
         }
-        Assert.assertTrue(wctx != null && wresult != null && wtrealm != null);
+        Assertions.assertTrue(wctx != null && wresult != null && wtrealm != null);
         webClient.close();
 
         // Invoke on the IdP for "realm a"
@@ -254,7 +253,7 @@ public class WSFedTest {
         webClient2.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage2 = webClient2.getPage(url2);
         webClient2.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage2.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage2.getTitleText());
 
         // Now redirect back to the RP
         final HtmlForm form2 = idpPage2.getFormByName("signinresponseform");
@@ -262,7 +261,7 @@ public class WSFedTest {
         final HtmlSubmitInput button2 = form2.getInputByName("_eventId_submit");
 
         final HtmlPage rpPage = button2.click();
-        Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
+        Assertions.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
 
         webClient2.close();
         return rpPage.getBody().getTextContent();

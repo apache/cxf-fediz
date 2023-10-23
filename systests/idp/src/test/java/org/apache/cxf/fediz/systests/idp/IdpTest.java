@@ -53,10 +53,10 @@ import org.apache.wss4j.dom.engine.WSSConfig;
 import org.apache.xml.security.keys.KeyInfo;
 import org.apache.xml.security.signature.XMLSignature;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * Some tests invoking directly on the IdP
@@ -68,13 +68,13 @@ public class IdpTest {
 
     private static Tomcat idpServer;
 
-    @BeforeClass
+    @BeforeAll
     public static void init() throws Exception {
 
         idpHttpsPort = System.getProperty("idp.https.port");
-        Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
+        Assertions.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
         rpHttpsPort = System.getProperty("rp.https.port");
-        Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
+        Assertions.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
 
         idpServer = startServer(true, idpHttpsPort);
 
@@ -118,7 +118,7 @@ public class IdpTest {
         return server;
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws Exception {
         shutdownServer(idpServer);
     }
@@ -145,7 +145,7 @@ public class IdpTest {
         return "fedizhelloworld";
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSuccessfulInvokeOnIdP() throws Exception {
         String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
         url += "wa=wsignin1.0";
@@ -166,7 +166,7 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // Parse the form to get the token (wresult)
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
@@ -179,12 +179,12 @@ public class IdpTest {
             }
         }
 
-        Assert.assertNotNull(wresult);
+        Assertions.assertNotNull(wresult);
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSuccessfulSSOInvokeOnIdP() throws Exception {
         String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
         url += "wa=wsignin1.0";
@@ -208,7 +208,7 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // Parse the form to get the token (wresult)
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
@@ -221,7 +221,7 @@ public class IdpTest {
             }
         }
 
-        Assert.assertNotNull(wresult);
+        Assertions.assertNotNull(wresult);
 
         //
         // Second invocation - change the credentials to make sure the session is set up correctly
@@ -234,7 +234,7 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // Parse the form to get the token (wresult)
         results = idpPage.getElementsByTagName("input");
@@ -247,7 +247,7 @@ public class IdpTest {
             }
         }
 
-        Assert.assertNotNull(wresult);
+        Assertions.assertNotNull(wresult);
 
         webClient.close();
     }
@@ -264,7 +264,7 @@ public class IdpTest {
 
         final XmlPage rpPage = webClient.getPage(url);
         final String xmlContent = rpPage.asXml();
-        Assert.assertTrue(xmlContent.startsWith("<md:EntityDescriptor"));
+        Assertions.assertTrue(xmlContent.startsWith("<md:EntityDescriptor"));
 
         // Now validate the Signature
         Document doc = rpPage.getXmlDocument();
@@ -273,14 +273,14 @@ public class IdpTest {
 
         Node signatureNode =
             DOMUtils.getChild(doc.getDocumentElement(), "Signature");
-        Assert.assertNotNull(signatureNode);
+        Assertions.assertNotNull(signatureNode);
 
         XMLSignature signature = new XMLSignature((Element)signatureNode, "");
         KeyInfo ki = signature.getKeyInfo();
-        Assert.assertNotNull(ki);
-        Assert.assertNotNull(ki.getX509Certificate());
+        Assertions.assertNotNull(ki);
+        Assertions.assertNotNull(ki.getX509Certificate());
 
-        Assert.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
+        Assertions.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
 
         webClient.close();
     }
@@ -297,7 +297,7 @@ public class IdpTest {
 
         final XmlPage rpPage = webClient.getPage(url);
         final String xmlContent = rpPage.asXml();
-        Assert.assertTrue(xmlContent.startsWith("<md:EntityDescriptor"));
+        Assertions.assertTrue(xmlContent.startsWith("<md:EntityDescriptor"));
 
         // Now validate the Signature
         Document doc = rpPage.getXmlDocument();
@@ -306,14 +306,14 @@ public class IdpTest {
 
         Node signatureNode =
             DOMUtils.getChild(doc.getDocumentElement(), "Signature");
-        Assert.assertNotNull(signatureNode);
+        Assertions.assertNotNull(signatureNode);
 
         XMLSignature signature = new XMLSignature((Element)signatureNode, "");
         KeyInfo ki = signature.getKeyInfo();
-        Assert.assertNotNull(ki);
-        Assert.assertNotNull(ki.getX509Certificate());
+        Assertions.assertNotNull(ki);
+        Assertions.assertNotNull(ki.getX509Certificate());
 
-        Assert.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
+        Assertions.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
 
         webClient.close();
     }
@@ -330,7 +330,7 @@ public class IdpTest {
 
         final XmlPage rpPage = webClient.getPage(url);
         final String xmlContent = rpPage.asXml();
-        Assert.assertTrue(xmlContent.startsWith("<md:EntityDescriptor"));
+        Assertions.assertTrue(xmlContent.startsWith("<md:EntityDescriptor"));
 
         // Now validate the Signature
         Document doc = rpPage.getXmlDocument();
@@ -339,20 +339,20 @@ public class IdpTest {
 
         Node signatureNode =
             DOMUtils.getChild(doc.getDocumentElement(), "Signature");
-        Assert.assertNotNull(signatureNode);
+        Assertions.assertNotNull(signatureNode);
 
         XMLSignature signature = new XMLSignature((Element)signatureNode, "");
         KeyInfo ki = signature.getKeyInfo();
-        Assert.assertNotNull(ki);
-        Assert.assertNotNull(ki.getX509Certificate());
+        Assertions.assertNotNull(ki);
+        Assertions.assertNotNull(ki.getX509Certificate());
 
-        Assert.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
+        Assertions.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
 
         webClient.close();
     }
 
     // Send an unknown wreq value
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testBadWReq() throws Exception {
         String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
         url += "wa=wsignin1.0";
@@ -379,16 +379,16 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         try {
             webClient.getPage(url);
-            Assert.fail("Failure expected on a bad wreq value");
+            Assertions.fail("Failure expected on a bad wreq value");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
+            Assertions.assertEquals(ex.getStatusCode(), 400);
         }
 
         webClient.close();
     }
 
     // Send an entity expansion attack for the wreq value
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testEntityExpansionWReq() throws Exception {
         String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
         url += "wa=wsignin1.0";
@@ -417,16 +417,16 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         try {
             webClient.getPage(url);
-            Assert.fail("Failure expected on a bad wreq value");
+            Assertions.fail("Failure expected on a bad wreq value");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
+            Assertions.assertEquals(ex.getStatusCode(), 400);
         }
 
         webClient.close();
     }
 
     // Send an entity expansion attack for the wreq value
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testEntityExpansionWReq2() throws Exception {
         String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
         url += "wa=wsignin1.0";
@@ -456,16 +456,16 @@ public class IdpTest {
 
         try {
             webClient.getPage(url);
-            Assert.fail("Failure expected on a bad wreq value");
+            Assertions.fail("Failure expected on a bad wreq value");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
+            Assertions.assertEquals(ex.getStatusCode(), 400);
         }
 
         webClient.close();
     }
 
     // Send an malformed wreq value
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testMalformedWReq() throws Exception {
         String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
         url += "wa=wsignin1.0";
@@ -492,16 +492,16 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         try {
             webClient.getPage(url);
-            Assert.fail("Failure expected on a bad wreq value");
+            Assertions.fail("Failure expected on a bad wreq value");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
+            Assertions.assertEquals(ex.getStatusCode(), 400);
         }
 
         webClient.close();
     }
 
     // Send an unknown wa value
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testBadWa() throws Exception {
         String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
         url += "wa=wsignin2.0";
@@ -522,16 +522,16 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         try {
             webClient.getPage(url);
-            Assert.fail("Failure expected on a bad wa value");
+            Assertions.fail("Failure expected on a bad wa value");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
+            Assertions.assertEquals(ex.getStatusCode(), 400);
         }
 
         webClient.close();
     }
 
     // Send an unknown whr value
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testBadWHR() throws Exception {
         String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
         url += "wa=wsignin1.0";
@@ -552,16 +552,16 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         try {
             webClient.getPage(url);
-            Assert.fail("Failure expected on a bad whr value");
+            Assertions.fail("Failure expected on a bad whr value");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 500);
+            Assertions.assertEquals(ex.getStatusCode(), 500);
         }
 
         webClient.close();
     }
 
     // Send an unknown wtrealm value
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testBadWtRealm() throws Exception {
         String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
         url += "wa=wsignin1.0";
@@ -582,16 +582,16 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         try {
             webClient.getPage(url);
-            Assert.fail("Failure expected on a bad wtrealm value");
+            Assertions.fail("Failure expected on a bad wtrealm value");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
+            Assertions.assertEquals(ex.getStatusCode(), 400);
         }
 
         webClient.close();
     }
 
     // Send an malformed wreply value
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testMalformedWReply() throws Exception {
         String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
         url += "wa=wsignin1.0";
@@ -612,16 +612,16 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         try {
             webClient.getPage(url);
-            Assert.fail("Failure expected on a bad wreply value");
+            Assertions.fail("Failure expected on a bad wreply value");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
+            Assertions.assertEquals(ex.getStatusCode(), 400);
         }
 
         webClient.close();
     }
 
     // Send a bad wreply value
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testBadWReply() throws Exception {
         String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
         url += "wa=wsignin1.0";
@@ -643,15 +643,15 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         try {
             webClient.getPage(url);
-            Assert.fail("Failure expected on a bad wreply value");
+            Assertions.fail("Failure expected on a bad wreply value");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
+            Assertions.assertEquals(ex.getStatusCode(), 400);
         }
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testValidWReplyWrongApplication() throws Exception {
         String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
         url += "wa=wsignin1.0";
@@ -672,15 +672,15 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         try {
             webClient.getPage(url);
-            Assert.fail("Failure expected on a bad wreply value");
+            Assertions.fail("Failure expected on a bad wreply value");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
+            Assertions.assertEquals(ex.getStatusCode(), 400);
         }
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testWReplyExactMatchingSuccess() throws Exception {
         String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
         url += "wa=wsignin1.0";
@@ -704,7 +704,7 @@ public class IdpTest {
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testWReplyExactMatchingFailure() throws Exception {
         String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
         url += "wa=wsignin1.0";
@@ -726,15 +726,15 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         try {
             webClient.getPage(url);
-            Assert.fail("Failure expected on a bad wreply value");
+            Assertions.fail("Failure expected on a bad wreply value");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
+            Assertions.assertEquals(ex.getStatusCode(), 400);
         }
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testNoEndpointAddressOrConstraint() throws Exception {
         String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
         url += "wa=wsignin1.0";
@@ -756,9 +756,9 @@ public class IdpTest {
         // This is an error in the IdP
         try {
             webClient.getPage(url);
-            Assert.fail("Failure expected on a bad wreply value");
+            Assertions.fail("Failure expected on a bad wreply value");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
+            Assertions.assertEquals(ex.getStatusCode(), 400);
         }
 
         webClient.close();
@@ -766,7 +766,7 @@ public class IdpTest {
 
     // Send a bad wreply value. This will pass the reg ex validation but fail the commons-validator
     // validation
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testWReplyWithDoubleSlashes() throws Exception {
         String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
         url += "wa=wsignin1.0";
@@ -788,16 +788,16 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         try {
             webClient.getPage(url);
-            Assert.fail("Failure expected on a bad wreply value");
+            Assertions.fail("Failure expected on a bad wreply value");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
+            Assertions.assertEquals(ex.getStatusCode(), 400);
         }
 
         webClient.close();
     }
 
     // Send a query parameter that's too big
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testLargeQueryParameterRejected() throws Exception {
         String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?"
             + "wa=wsignin1.0"
@@ -824,16 +824,16 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         try {
             webClient.getPage(url);
-            Assert.fail("Failure expected on a bad wreply value");
+            Assertions.fail("Failure expected on a bad wreply value");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
+            Assertions.assertEquals(ex.getStatusCode(), 400);
         }
 
         webClient.close();
     }
 
     // Send a query parameter that's bigger than the accepted default, but is allowed by configuration
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testLargeQueryParameterAccepted() throws Exception {
         String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?"
             + "wa=wsignin1.0"
@@ -889,7 +889,7 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
         webClient.close();
 
         // 2. now we logout from IdP
@@ -901,7 +901,7 @@ public class IdpTest {
         webClient.getOptions().setUseInsecureSSL(true);
         idpPage = webClient.getPage(idpLogoutUrl);
 
-        Assert.assertEquals("IDP SignOut Confirmation Response Page", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignOut Confirmation Response Page", idpPage.getTitleText());
 
         HtmlForm form = idpPage.getFormByName("signoutconfirmationresponseform");
         HtmlSubmitInput button = form.getInputByName("_eventId_submit");
@@ -917,7 +917,7 @@ public class IdpTest {
         webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
         idpPage = webClient.getPage(url);
 
-        Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
+        Assertions.assertEquals(401, idpPage.getWebResponse().getStatusCode());
 
         webClient.close();
     }
@@ -948,7 +948,7 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
         webClient.close();
 
         // 2. now we logout from IdP
@@ -960,7 +960,7 @@ public class IdpTest {
         webClient.getOptions().setUseInsecureSSL(true);
         idpPage = webClient.getPage(idpLogoutUrl);
 
-        Assert.assertEquals("IDP SignOut Response Page", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignOut Response Page", idpPage.getTitleText());
 
         webClient.close();
 
@@ -972,7 +972,7 @@ public class IdpTest {
         webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
         idpPage = webClient.getPage(url);
 
-        Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
+        Assertions.assertEquals(401, idpPage.getWebResponse().getStatusCode());
 
         webClient.close();
     }
@@ -1003,7 +1003,7 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
         webClient.close();
 
         // 2. now we logout from IdP using a bad wreply
@@ -1018,9 +1018,9 @@ public class IdpTest {
         webClient.getOptions().setUseInsecureSSL(true);
         try {
             webClient.getPage(idpLogoutUrl);
-            Assert.fail("Failure expected on a bad wreply value");
+            Assertions.fail("Failure expected on a bad wreply value");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
+            Assertions.assertEquals(ex.getStatusCode(), 400);
         }
 
         webClient.close();
@@ -1034,7 +1034,7 @@ public class IdpTest {
         webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
         idpPage = webClient.getPage(url);
 
-        Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
+        Assertions.assertEquals(401, idpPage.getWebResponse().getStatusCode());
 
         webClient.close();
     }
@@ -1065,7 +1065,7 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
         webClient.close();
 
         // 2. now we logout from IdP
@@ -1079,7 +1079,7 @@ public class IdpTest {
         webClient.getOptions().setUseInsecureSSL(true);
         idpPage = webClient.getPage(idpLogoutUrl);
 
-        Assert.assertEquals("IDP SignOut Confirmation Response Page", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignOut Confirmation Response Page", idpPage.getTitleText());
 
         HtmlForm form = idpPage.getFormByName("signoutconfirmationresponseform");
         HtmlSubmitInput button = form.getInputByName("_eventId_submit");
@@ -1095,7 +1095,7 @@ public class IdpTest {
         webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
         idpPage = webClient.getPage(url);
 
-        Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
+        Assertions.assertEquals(401, idpPage.getWebResponse().getStatusCode());
 
         webClient.close();
     }
@@ -1126,7 +1126,7 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
         webClient.close();
 
         // 2. now we logout from IdP
@@ -1140,9 +1140,9 @@ public class IdpTest {
         webClient.getOptions().setUseInsecureSSL(true);
         try {
             webClient.getPage(idpLogoutUrl);
-            Assert.fail("Failure expected on a non-matching wreply address");
+            Assertions.fail("Failure expected on a non-matching wreply address");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
+            Assertions.assertEquals(ex.getStatusCode(), 400);
         }
 
         webClient.close();
@@ -1174,7 +1174,7 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
         webClient.close();
 
         // 2. now we logout from IdP
@@ -1187,9 +1187,9 @@ public class IdpTest {
         webClient.getOptions().setUseInsecureSSL(true);
         try {
             webClient.getPage(idpLogoutUrl);
-            Assert.fail("Failure expected on a non-matching wreply address");
+            Assertions.fail("Failure expected on a non-matching wreply address");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
+            Assertions.assertEquals(ex.getStatusCode(), 400);
         }
 
         webClient.close();
@@ -1221,7 +1221,7 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
         webClient.close();
 
         // 2. now we logout from IdP
@@ -1235,7 +1235,7 @@ public class IdpTest {
         webClient.getOptions().setUseInsecureSSL(true);
         idpPage = webClient.getPage(idpLogoutUrl);
 
-        Assert.assertEquals("IDP SignOut Confirmation Response Page", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignOut Confirmation Response Page", idpPage.getTitleText());
 
         HtmlForm form = idpPage.getFormByName("signoutconfirmationresponseform");
         HtmlSubmitInput button = form.getInputByName("_eventId_submit");
@@ -1251,7 +1251,7 @@ public class IdpTest {
         webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
         idpPage = webClient.getPage(url);
 
-        Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
+        Assertions.assertEquals(401, idpPage.getWebResponse().getStatusCode());
 
         webClient.close();
     }
@@ -1282,7 +1282,7 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
         webClient.close();
 
         // 2. now we logout from IdP
@@ -1296,9 +1296,9 @@ public class IdpTest {
         webClient.getOptions().setUseInsecureSSL(true);
         try {
             webClient.getPage(idpLogoutUrl);
-            Assert.fail("Failure expected on a non-matching wreply address");
+            Assertions.fail("Failure expected on a non-matching wreply address");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
+            Assertions.assertEquals(ex.getStatusCode(), 400);
         }
 
         webClient.close();
@@ -1330,7 +1330,7 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
         webClient.close();
 
         // 2. now we logout from IdP
@@ -1344,15 +1344,15 @@ public class IdpTest {
         webClient.getOptions().setUseInsecureSSL(true);
         try {
             webClient.getPage(idpLogoutUrl);
-            Assert.fail("Failure expected on a non-matching wreply address");
+            Assertions.fail("Failure expected on a non-matching wreply address");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
+            Assertions.assertEquals(ex.getStatusCode(), 400);
         }
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSwagger() throws Exception {
         String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/services/rs/swagger.json";
 
@@ -1367,9 +1367,9 @@ public class IdpTest {
 
         final UnexpectedPage swaggerPage = webClient.getPage(url);
         WebResponse response = swaggerPage.getWebResponse();
-        Assert.assertEquals("application/json", response.getContentType());
+        Assertions.assertEquals("application/json", response.getContentType());
         String json = response.getContentAsString();
-        Assert.assertTrue(json.contains("Claims"));
+        Assertions.assertTrue(json.contains("Claims"));
 
         webClient.close();
     }

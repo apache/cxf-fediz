@@ -38,15 +38,16 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.util.Assert;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(locations = { "classpath:testContext.xml" })
 public class IdpDAOJPATest {
 
@@ -54,7 +55,7 @@ public class IdpDAOJPATest {
     private IdpDAO idpDAO;
 
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         System.setProperty("spring.profiles.active", "jpa");
     }
@@ -146,9 +147,11 @@ public class IdpDAOJPATest {
     }
 
 
-    @Test(expected = EmptyResultDataAccessException.class)
+    @Test
     public void testTryReadNonexistingIdp() {
-        idpDAO.getIdp("urn:org:apache:cxf:fediz:idp:NOTEXIST", null);
+        Assertions.assertThrows(EmptyResultDataAccessException.class, () -> {
+            idpDAO.getIdp("urn:org:apache:cxf:fediz:idp:NOTEXIST", null);
+        });
     }
 
 
@@ -217,28 +220,34 @@ public class IdpDAOJPATest {
     }
 
 
-    @Test(expected = DataIntegrityViolationException.class)
+    @Test
     public void testTryAddExistingIdp() throws MalformedURLException {
-        Idp idp = createIdp("urn:org:apache:cxf:fediz:idp:realm-A");
-        idpDAO.addIdp(idp);
+        Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
+            Idp idp = createIdp("urn:org:apache:cxf:fediz:idp:realm-A");
+            idpDAO.addIdp(idp);
+        });
     }
 
 
-    @Test(expected = EmptyResultDataAccessException.class)
+    @Test
     public void testTryRemoveUnknownIdp() {
-        idpDAO.deleteIdp("urn:org:apache:cxf:fediz:idp:NOTEXIST");
+        Assertions.assertThrows(EmptyResultDataAccessException.class, () -> {
+            idpDAO.deleteIdp("urn:org:apache:cxf:fediz:idp:NOTEXIST");
+        });
     }
 
 
-    @Test(expected = EmptyResultDataAccessException.class)
+    @Test
     public void testRemoveExistingIdp() throws MalformedURLException {
-        Idp idp = createIdp("urn:org:apache:cxf:fediz:idp:testdelete");
+        Assertions.assertThrows(EmptyResultDataAccessException.class, () -> {
+            Idp idp = createIdp("urn:org:apache:cxf:fediz:idp:testdelete");
 
-        idpDAO.addIdp(idp);
+            idpDAO.addIdp(idp);
 
-        idpDAO.deleteIdp("urn:org:apache:cxf:fediz:idp:testdelete");
+            idpDAO.deleteIdp("urn:org:apache:cxf:fediz:idp:testdelete");
 
-        idpDAO.getIdp("urn:org:apache:cxf:fediz:idp:testdelete", null);
+            idpDAO.getIdp("urn:org:apache:cxf:fediz:idp:testdelete", null);
+        });
     }
 
     @Test
@@ -308,36 +317,38 @@ public class IdpDAOJPATest {
 
     }
 
-    @Test(expected = EmptyResultDataAccessException.class)
+    @Test
     public void testUpdateUnknownIdp() throws MalformedURLException {
-        String realm = "urn:org:apache:cxf:fediz:idp:testupdate2";
+        Assertions.assertThrows(EmptyResultDataAccessException.class, () -> {
+            String realm = "urn:org:apache:cxf:fediz:idp:testupdate2";
 
-        //Prepare
-        Idp idp = createIdp(realm);
-        idpDAO.addIdp(idp);
+            //Prepare
+            Idp idp = createIdp(realm);
+            idpDAO.addIdp(idp);
 
-        //Testcase
-        idp = new Idp();
-        idp.setRealm(realm);
-        idp.setCertificate("UstsKeystoreA.properties");
-        idp.setCertificatePassword("Urealma");
-        idp.setIdpUrl(new URL("https://localhost:9443/fediz-idp/federationUU"));
-        idp.setStsUrl(new URL("https://localhost:9443/fediz-idp-sts/REALMNUU"));
-        idp.setServiceDisplayName("UNEW REALM");
-        idp.setServiceDescription("UIDP of New Realm");
-        idp.setUri("Urealmn");
-        idp.setProvideIdpList(true);
-        Map<String, String> authUris = new HashMap<>();
-        authUris.put("default", "/login/default");
-        idp.setAuthenticationURIs(authUris);
-        List<String> protocols = new ArrayList<>();
-        protocols.add("http://docs.oasis-open.org/wsfed/federation/200706");
-        idp.setSupportedProtocols(protocols);
-        List<String> tokenTypes = new ArrayList<>();
-        tokenTypes.add(WSConstants.SAML2_NS);
-        idp.setTokenTypesOffered(tokenTypes);
-        idp.setUseCurrentIdp(false);
-        idpDAO.updateIdp("urn:UNKNOWN", idp);
+            //Testcase
+            idp = new Idp();
+            idp.setRealm(realm);
+            idp.setCertificate("UstsKeystoreA.properties");
+            idp.setCertificatePassword("Urealma");
+            idp.setIdpUrl(new URL("https://localhost:9443/fediz-idp/federationUU"));
+            idp.setStsUrl(new URL("https://localhost:9443/fediz-idp-sts/REALMNUU"));
+            idp.setServiceDisplayName("UNEW REALM");
+            idp.setServiceDescription("UIDP of New Realm");
+            idp.setUri("Urealmn");
+            idp.setProvideIdpList(true);
+            Map<String, String> authUris = new HashMap<>();
+            authUris.put("default", "/login/default");
+            idp.setAuthenticationURIs(authUris);
+            List<String> protocols = new ArrayList<>();
+            protocols.add("http://docs.oasis-open.org/wsfed/federation/200706");
+            idp.setSupportedProtocols(protocols);
+            List<String> tokenTypes = new ArrayList<>();
+            tokenTypes.add(WSConstants.SAML2_NS);
+            idp.setTokenTypesOffered(tokenTypes);
+            idp.setUseCurrentIdp(false);
+            idpDAO.updateIdp("urn:UNKNOWN", idp);
+        });
     }
 
     @Test
@@ -359,26 +370,30 @@ public class IdpDAOJPATest {
         Assert.isTrue(1 == idp.getClaimTypesOffered().size(), "claimTypesOffered size doesn't match");
     }
 
-    @Test(expected = DataIntegrityViolationException.class)
+    @Test
     public void testTryAddExistingClaimToIdp() {
-        Idp idp = new Idp();
-        idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
+        Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
+            Idp idp = new Idp();
+            idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
 
-        Claim claim = new Claim();
-        claim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"));
+            Claim claim = new Claim();
+            claim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"));
 
-        idpDAO.addClaimToIdp(idp, claim);
+            idpDAO.addClaimToIdp(idp, claim);
+        });
     }
 
-    @Test(expected = EmptyResultDataAccessException.class)
+    @Test
     public void testTryAddUnknownClaimToIdp() {
-        Idp idp = new Idp();
-        idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
+        Assertions.assertThrows(EmptyResultDataAccessException.class, () -> {
+            Idp idp = new Idp();
+            idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
 
-        Claim claim = new Claim();
-        claim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/UNKOWN"));
+            Claim claim = new Claim();
+            claim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/UNKOWN"));
 
-        idpDAO.addClaimToIdp(idp, claim);
+            idpDAO.addClaimToIdp(idp, claim);
+        });
 
     }
 
@@ -404,26 +419,30 @@ public class IdpDAOJPATest {
                       "claimTypesOffered size doesn't match [" + idp.getClaimTypesOffered().size() + "]");
     }
 
-    @Test(expected = JpaObjectRetrievalFailureException.class)
+    @Test
     public void testTryRemoveNotAssignedClaimFromIdp() {
-        Idp idp = new Idp();
-        idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
+        Assertions.assertThrows(JpaObjectRetrievalFailureException.class, () -> {
+            Idp idp = new Idp();
+            idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
 
-        Claim claim = new Claim();
-        claim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/city"));
+            Claim claim = new Claim();
+            claim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/city"));
 
-        idpDAO.removeClaimFromIdp(idp, claim);
+            idpDAO.removeClaimFromIdp(idp, claim);
+        });
     }
 
-    @Test(expected = EmptyResultDataAccessException.class)
+    @Test
     public void testTryRemoveUnknownClaimFromIdp() {
-        Idp idp = new Idp();
-        idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
+        Assertions.assertThrows(EmptyResultDataAccessException.class, () -> {
+            Idp idp = new Idp();
+            idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
 
-        Claim claim = new Claim();
-        claim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/UNKNOWN"));
+            Claim claim = new Claim();
+            claim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/UNKNOWN"));
 
-        idpDAO.removeClaimFromIdp(idp, claim);
+            idpDAO.removeClaimFromIdp(idp, claim);
+        });
     }
 
     @Test
@@ -446,26 +465,30 @@ public class IdpDAOJPATest {
     }
 
 
-    @Test(expected = DataIntegrityViolationException.class)
+    @Test
     public void testTryAddExistingApplicationToIdp() {
-        Idp idp = new Idp();
-        idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
+        Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
+            Idp idp = new Idp();
+            idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
 
-        Application app = new Application();
-        app.setRealm("urn:org:apache:cxf:fediz:fedizhelloworld");
+            Application app = new Application();
+            app.setRealm("urn:org:apache:cxf:fediz:fedizhelloworld");
 
-        idpDAO.addApplicationToIdp(idp, app);
+            idpDAO.addApplicationToIdp(idp, app);
+        });
     }
 
-    @Test(expected = EmptyResultDataAccessException.class)
+    @Test
     public void testTryAddUnknownApplicationToIdp() {
-        Idp idp = new Idp();
-        idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
+        Assertions.assertThrows(EmptyResultDataAccessException.class, () -> {
+            Idp idp = new Idp();
+            idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
 
-        Application app = new Application();
-        app.setRealm("urn:org:apache:cxf:fediz:UNKNOWN");
+            Application app = new Application();
+            app.setRealm("urn:org:apache:cxf:fediz:UNKNOWN");
 
-        idpDAO.addApplicationToIdp(idp, app);
+            idpDAO.addApplicationToIdp(idp, app);
+        });
 
     }
 
@@ -492,27 +515,31 @@ public class IdpDAOJPATest {
     }
 
 
-    @Test(expected = JpaObjectRetrievalFailureException.class)
+    @Test
     public void testTryRemoveNotAssignedApplicationFromIdp() {
-        Idp idp = new Idp();
-        idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
+        Assertions.assertThrows(JpaObjectRetrievalFailureException.class, () -> {
+            Idp idp = new Idp();
+            idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
 
-        Application app = new Application();
-        app.setRealm("myrealm2");
+            Application app = new Application();
+            app.setRealm("myrealm2");
 
-        idpDAO.removeApplicationFromIdp(idp, app);
+            idpDAO.removeApplicationFromIdp(idp, app);
+        });
     }
 
 
-    @Test(expected = EmptyResultDataAccessException.class)
+    @Test
     public void testTryRemoveUnknownApplicationFromIdp() {
-        Idp idp = new Idp();
-        idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
+        Assertions.assertThrows(EmptyResultDataAccessException.class, () -> {
+            Idp idp = new Idp();
+            idp.setRealm("urn:org:apache:cxf:fediz:idp:realm-A");
 
-        Application app = new Application();
-        app.setRealm("urn:org:apache:cxf:fediz:UNKNOWN");
+            Application app = new Application();
+            app.setRealm("urn:org:apache:cxf:fediz:UNKNOWN");
 
-        idpDAO.removeApplicationFromIdp(idp, app);
+            idpDAO.removeApplicationFromIdp(idp, app);
+        });
     }
 
 

@@ -26,7 +26,7 @@ import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 public final class TomcatUtils {
 
@@ -38,7 +38,7 @@ public final class TomcatUtils {
     }
 
     public static void initIdpServer() throws Exception {
-        Assert.assertNotNull("Property 'idp.https.port' null", IDP_HTTPS_PORT);
+        Assertions.assertNotNull("Property 'idp.https.port' null", IDP_HTTPS_PORT);
         if (idpServer == null) {
             idpServer = new Tomcat();
             idpServer.setPort(0);

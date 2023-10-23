@@ -80,13 +80,13 @@ import org.opensaml.saml.saml2.core.Response;
 import org.opensaml.saml.saml2.core.Status;
 
 import org.easymock.EasyMock;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Some tests for processing SAMLResponses containing EncryptedAssertions using the SAMLProcessorImpl
@@ -109,14 +109,14 @@ public class SAMLEncryptedResponseTest {
     }
 
 
-    @BeforeClass
+    @BeforeAll
     public static void init() throws Exception {
         crypto = CryptoFactory.getInstance("signature.properties");
         cbPasswordHandler = new KeystoreCallbackHandler();
         getFederationConfigurator();
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         SecurityTestUtil.cleanup();
     }
@@ -132,7 +132,7 @@ public class SAMLEncryptedResponseTest {
         return configurator;
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSignedEncryptedSAMLResponse() throws Exception {
         // Mock up a Request
         FedizContext config =
@@ -173,16 +173,14 @@ public class SAMLEncryptedResponseTest {
         FedizProcessor wfProc = new SAMLProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                .size());
-        Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_IDP_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
+        Assertions.assertEquals(TEST_REQUEST_URL, wfRes.getAudience(), "Audience wrong");
         assertClaims(wfRes.getClaims(), ClaimTypes.COUNTRY);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateSignedButNotRequiredEncryptedSAMLResponse() throws Exception {
         // Mock up a Request
         FedizContext config =
@@ -223,16 +221,14 @@ public class SAMLEncryptedResponseTest {
         FedizProcessor wfProc = new SAMLProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                .size());
-        Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_IDP_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
+        Assertions.assertEquals(TEST_REQUEST_URL, wfRes.getAudience(), "Audience wrong");
         assertClaims(wfRes.getClaims(), ClaimTypes.COUNTRY);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateUnsignedEncryptedSAMLResponse() throws Exception {
         // Mock up a Request
         FedizContext config =
@@ -273,16 +269,14 @@ public class SAMLEncryptedResponseTest {
         FedizProcessor wfProc = new SAMLProcessorImpl();
         FedizResponse wfRes = wfProc.processRequest(wfReq, config);
 
-        Assert.assertEquals("Principal name wrong", TEST_USER,
-                wfRes.getUsername());
-        Assert.assertEquals("Issuer wrong", TEST_IDP_ISSUER, wfRes.getIssuer());
-        Assert.assertEquals("Two roles must be found", 2, wfRes.getRoles()
-                .size());
-        Assert.assertEquals("Audience wrong", TEST_REQUEST_URL, wfRes.getAudience());
+        Assertions.assertEquals(TEST_USER, wfRes.getUsername(), "Principal name wrong");
+        Assertions.assertEquals(TEST_IDP_ISSUER, wfRes.getIssuer(), "Issuer wrong");
+        Assertions.assertEquals(2, wfRes.getRoles().size());
+        Assertions.assertEquals(TEST_REQUEST_URL, wfRes.getAudience(), "Audience wrong");
         assertClaims(wfRes.getClaims(), ClaimTypes.COUNTRY);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void rejectUnsignedEncryptedAssertionByDefault() throws Exception {
         // Mock up a Request
         FedizContext config =

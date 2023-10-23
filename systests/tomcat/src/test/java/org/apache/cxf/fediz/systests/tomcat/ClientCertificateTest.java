@@ -21,8 +21,8 @@ package org.apache.cxf.fediz.systests.tomcat;
 
 import org.apache.cxf.fediz.systests.common.AbstractClientCertTests;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 /**
  * In this test-case, the IdP is set up to require client authentication, rather than authenticating using a
@@ -32,12 +32,12 @@ public class ClientCertificateTest extends AbstractClientCertTests {
 
     private static final String SERVLET_CONTEXT_NAME = "fedizhelloworld_client_cert";
 
-    @BeforeClass
+    @BeforeAll
     public static void init() throws Exception {
         TomcatLauncher.startServer(SERVLET_CONTEXT_NAME);
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws Exception {
         TomcatLauncher.shutdownServer();
     }

@@ -33,8 +33,8 @@ import org.apache.cxf.ws.security.tokenstore.SecurityToken;
 import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.opensaml.saml.saml2.core.Attribute;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 
 /**
  * Some unit tests for the CXF STSClient Issue Binding.
@@ -44,11 +44,11 @@ public class ITCrossRealmTest extends AbstractSTSTest {
     static String stsHttpsPort;
 
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
 
         stsHttpsPort = System.getProperty("sts.https.port");
-        Assert.assertNotNull("Property 'sts.https.port' null", stsHttpsPort);
+        Assertions.assertNotNull("Property 'sts.https.port' null", stsHttpsPort);
 
     }
 
@@ -57,7 +57,7 @@ public class ITCrossRealmTest extends AbstractSTSTest {
     /**
      * Test issuing a token from REALM A and re-issue a token from REALM B
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testRealmAtoRealmB() throws Exception {
 
         SpringBusFactory bf = new SpringBusFactory();
@@ -79,7 +79,7 @@ public class ITCrossRealmTest extends AbstractSTSTest {
         String user = testProps.getProperty(PROPERTY_USER);
         String password = testProps.getProperty(PROPERTY_PASSWORD);
         String appliesTo = testProps.getProperty(PROPERTY_APPLIESTO);
-        Assert.assertNotNull("Property '" + PROPERTY_APPLIESTO + "' null", appliesTo);
+        Assertions.assertNotNull(appliesTo, "Property '" + PROPERTY_APPLIESTO + "' null");
 
         // Get a token
         SecurityToken idpToken = requestSecurityTokenUsernamePassword(
@@ -92,8 +92,8 @@ public class ITCrossRealmTest extends AbstractSTSTest {
                                                                       tlsClientParameters,
                                                                       stsUrl);
 
-        Assert.assertTrue(SAML2_TOKEN_TYPE.equals(idpToken.getTokenType()));
-        Assert.assertTrue(idpToken.getToken() != null);
+        Assertions.assertTrue(SAML2_TOKEN_TYPE.equals(idpToken.getTokenType()));
+        Assertions.assertTrue(idpToken.getToken() != null);
 
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(idpToken.getToken());
         validateIssuer(assertion, "STS Realm A");
@@ -123,8 +123,8 @@ public class ITCrossRealmTest extends AbstractSTSTest {
                                                                tlsClientParameters,
                                                                stsUrl);
 
-        Assert.assertTrue(SAML2_TOKEN_TYPE.equals(rpToken.getTokenType()));
-        Assert.assertTrue(rpToken.getToken() != null);
+        Assertions.assertTrue(SAML2_TOKEN_TYPE.equals(rpToken.getTokenType()));
+        Assertions.assertTrue(rpToken.getToken() != null);
 
         assertion = new SamlAssertionWrapper(rpToken.getToken());
         this.validateSubject(testProps, assertion);
@@ -143,7 +143,7 @@ public class ITCrossRealmTest extends AbstractSTSTest {
     /**
      * Test issuing a token from REALM A and re-issue a token from REALM B
      */
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testRealmAtoRealmBWithClaims() throws Exception {
 
         SpringBusFactory bf = new SpringBusFactory();
@@ -165,7 +165,7 @@ public class ITCrossRealmTest extends AbstractSTSTest {
         String user = testProps.getProperty(PROPERTY_USER);
         String password = testProps.getProperty(PROPERTY_PASSWORD);
         String appliesTo = testProps.getProperty(PROPERTY_APPLIESTO);
-        Assert.assertNotNull("Property '" + PROPERTY_APPLIESTO + "' null", appliesTo);
+        Assertions.assertNotNull(appliesTo, "Property '" + PROPERTY_APPLIESTO + "' null");
 
         // Get a token
         SecurityToken idpToken = requestSecurityTokenUsernamePassword(
@@ -178,8 +178,8 @@ public class ITCrossRealmTest extends AbstractSTSTest {
                                                                       tlsClientParameters,
                                                                       stsUrl);
 
-        Assert.assertTrue(SAML2_TOKEN_TYPE.equals(idpToken.getTokenType()));
-        Assert.assertTrue(idpToken.getToken() != null);
+        Assertions.assertTrue(SAML2_TOKEN_TYPE.equals(idpToken.getTokenType()));
+        Assertions.assertTrue(idpToken.getToken() != null);
 
         SamlAssertionWrapper assertion = new SamlAssertionWrapper(idpToken.getToken());
         validateIssuer(assertion, "STS Realm A");
@@ -209,8 +209,8 @@ public class ITCrossRealmTest extends AbstractSTSTest {
                                                                tlsClientParameters,
                                                                stsUrl);
 
-        Assert.assertTrue(SAML2_TOKEN_TYPE.equals(rpToken.getTokenType()));
-        Assert.assertTrue(rpToken.getToken() != null);
+        Assertions.assertTrue(SAML2_TOKEN_TYPE.equals(rpToken.getTokenType()));
+        Assertions.assertTrue(rpToken.getToken() != null);
 
         assertion = new SamlAssertionWrapper(rpToken.getToken());
         this.validateSubject(testProps, assertion);

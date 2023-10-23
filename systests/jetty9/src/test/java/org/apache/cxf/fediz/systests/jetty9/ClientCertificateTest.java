@@ -21,9 +21,9 @@ package org.apache.cxf.fediz.systests.jetty9;
 
 import org.apache.cxf.fediz.systests.common.AbstractClientCertTests;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 
 /**
  * In this test-case, the IdP is set up to require client authentication, rather than authenticating using a
@@ -33,14 +33,14 @@ public class ClientCertificateTest extends AbstractClientCertTests {
 
     private static final String RP_HTTPS_PORT = System.getProperty("rp.https.port");
 
-    @BeforeClass
+    @BeforeAll
     public static void init() throws Exception {
-        Assert.assertNotNull("Property 'rp.jetty.https.port' null", RP_HTTPS_PORT);
+        Assertions.assertNotNull(RP_HTTPS_PORT, "Property 'rp.jetty.https.port' null");
         TomcatUtils.initIdpServer();
         JettyUtils.initRpServer("rp-client-cert-server.xml");
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws Exception {
         TomcatUtils.stopIdpServer();
         JettyUtils.stopRpServer();

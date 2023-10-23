@@ -61,9 +61,9 @@ import org.opensaml.xmlsec.signature.Signature;
 import org.opensaml.xmlsec.signature.support.SignatureConstants;
 
 import org.easymock.EasyMock;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 
 /**
  * Some tests for logout for SAML SSO
@@ -89,7 +89,7 @@ public class SAMLLogoutTest {
     }
 
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         try {
             crypto = CryptoFactory.getInstance("signature.properties");
@@ -98,10 +98,10 @@ public class SAMLLogoutTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Assert.assertNotNull(configurator);
+        Assertions.assertNotNull(configurator);
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         SecurityTestUtil.cleanup();
     }
@@ -124,7 +124,7 @@ public class SAMLLogoutTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testLogoutResponse() throws Exception {
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
 
@@ -144,7 +144,7 @@ public class SAMLLogoutTest {
         EasyMock.replay(req);
 
         LogoutHandler logoutHandler = new LogoutHandler(config);
-        Assert.assertTrue(logoutHandler.canHandleRequest(req));
+        Assertions.assertTrue(logoutHandler.canHandleRequest(req));
 
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
         String expectedLogoutRedirect = "https://localhost/secure/logout/redir.html";
@@ -155,7 +155,7 @@ public class SAMLLogoutTest {
         logoutHandler.handleRequest(req, resp);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testUnsignedLogoutResponse() throws Exception {
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
 
@@ -175,7 +175,7 @@ public class SAMLLogoutTest {
         EasyMock.replay(req);
 
         LogoutHandler logoutHandler = new LogoutHandler(config);
-        Assert.assertTrue(logoutHandler.canHandleRequest(req));
+        Assertions.assertTrue(logoutHandler.canHandleRequest(req));
 
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
         resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to validate SAMLResponse.");
@@ -184,7 +184,7 @@ public class SAMLLogoutTest {
         logoutHandler.handleRequest(req, resp);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testUntrustedLogoutResponse() throws Exception {
         FedizContext config = getFederationConfigurator().getFedizContext("CLIENT_TRUST");
 
@@ -204,7 +204,7 @@ public class SAMLLogoutTest {
         EasyMock.replay(req);
 
         LogoutHandler logoutHandler = new LogoutHandler(config);
-        Assert.assertTrue(logoutHandler.canHandleRequest(req));
+        Assertions.assertTrue(logoutHandler.canHandleRequest(req));
 
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
         resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to validate SAMLResponse.");
@@ -213,7 +213,7 @@ public class SAMLLogoutTest {
         logoutHandler.handleRequest(req, resp);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateBadStatusInLogoutResponse() throws Exception {
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
 
@@ -233,7 +233,7 @@ public class SAMLLogoutTest {
         EasyMock.replay(req);
 
         LogoutHandler logoutHandler = new LogoutHandler(config);
-        Assert.assertTrue(logoutHandler.canHandleRequest(req));
+        Assertions.assertTrue(logoutHandler.canHandleRequest(req));
 
         HttpServletResponse resp = EasyMock.createMock(HttpServletResponse.class);
         resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to validate SAMLResponse.");
