@@ -40,10 +40,10 @@ import org.apache.cxf.fediz.systests.common.AbstractTests;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 
 /**
  * Some tests for SAML SSO with the Spring (4) plugin, invoking on the Fediz IdP configured for SAML SSO.
@@ -56,7 +56,7 @@ public class SpringTest extends AbstractTests {
     private static Tomcat idpServer;
     private static Tomcat rpServer;
 
-    @BeforeClass
+    @BeforeAll
     public static void init() throws Exception {
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
 
@@ -66,14 +66,14 @@ public class SpringTest extends AbstractTests {
 
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.commons.httpclient", "debug");
 
-        Assert.assertNotNull("Property 'idp.https.port' null", IDP_HTTPS_PORT);
-        Assert.assertNotNull("Property 'rp.spring.https.port' null", RP_HTTPS_PORT);
+        Assertions.assertNotNull("Property 'idp.https.port' null", IDP_HTTPS_PORT);
+        Assertions.assertNotNull("Property 'rp.spring.https.port' null", RP_HTTPS_PORT);
 
         idpServer = startServer(true, IDP_HTTPS_PORT);
         rpServer = startServer(false, RP_HTTPS_PORT);
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         shutdownServer(idpServer);
         shutdownServer(rpServer);
@@ -163,19 +163,19 @@ public class SpringTest extends AbstractTests {
         return false;
     }
 
-    @Ignore("This tests is currently failing on Spring")
+    @Disabled("This tests is currently failing on Spring")
     @Override
     public void testConcurrentRequests() throws Exception {
         // super.testConcurrentRequests();
     }
 
-    @Ignore("This tests is currently failing on Spring")
+    @Disabled("This tests is currently failing on Spring")
     public void testRPLogout() throws Exception {
         //
     }
 
     @Override
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testCSRFAttack() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/j_spring_fediz_security_check";
@@ -183,14 +183,14 @@ public class SpringTest extends AbstractTests {
     }
 
     @Override
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testCSRFAttack2() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
             + "/j_spring_fediz_security_check";
         csrfAttackTest2(url);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testNoRequestValidation() throws Exception {
 
         String url = "https://localhost:" + getRpHttpsPort()
@@ -210,7 +210,7 @@ public class SpringTest extends AbstractTests {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // Parse the form to remove the context
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
@@ -227,7 +227,7 @@ public class SpringTest extends AbstractTests {
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
 
         final HtmlPage rpPage = button.click();
-        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
+        Assertions.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
                           || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
 
         webClient.close();

@@ -26,15 +26,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.util.Assert;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(locations = { "classpath:testContext.xml" })
 public class EntitlementDAOJPATest {
 
@@ -42,7 +43,7 @@ public class EntitlementDAOJPATest {
     private EntitlementDAO entitlementDAO;
 
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         System.setProperty("spring.profiles.active", "jpa");
     }
@@ -64,9 +65,11 @@ public class EntitlementDAOJPATest {
     }
 
 
-    @Test(expected = EmptyResultDataAccessException.class)
+    @Test
     public void testTryReadNonexistingEntitlement() {
-        entitlementDAO.getEntitlement("CLAIM_NOT_EXIST");
+        Assertions.assertThrows(EmptyResultDataAccessException.class, () -> {
+            entitlementDAO.getEntitlement("CLAIM_NOT_EXIST");
+        });
     }
 
 
@@ -82,32 +85,37 @@ public class EntitlementDAOJPATest {
     }
 
 
-    @Test(expected = DataIntegrityViolationException.class)
+    @Test
     public void testTryAddExistingEntitlement() {
-        Entitlement entitlement5 = new Entitlement();
-        entitlement5.setName("CLAIM_DELETE");
-        entitlement5.setDescription("Description for CLAIM_DELETE");
-        entitlementDAO.addEntitlement(entitlement5);
+        Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
+            Entitlement entitlement5 = new Entitlement();
+            entitlement5.setName("CLAIM_DELETE");
+            entitlement5.setDescription("Description for CLAIM_DELETE");
+            entitlementDAO.addEntitlement(entitlement5);
+        });
     }
 
 
-    @Test(expected = EmptyResultDataAccessException.class)
+    @Test
     public void testTryRemoveUnknownEntitlement() {
-        entitlementDAO.deleteEntitlement("GUGUS_NOT_EXIST");
+        Assertions.assertThrows(EmptyResultDataAccessException.class, () -> {
+            entitlementDAO.deleteEntitlement("GUGUS_NOT_EXIST");
+        });
     }
 
 
-    @Test(expected = EmptyResultDataAccessException.class)
+    @Test
     public void testRemoveExistingEntitlement() {
+        Assertions.assertThrows(EmptyResultDataAccessException.class, () -> {
+            Entitlement entitlement5 = new Entitlement();
+            entitlement5.setName("CLAIM_TO_DELETE");
+            entitlement5.setDescription("Description for CLAIM_TO_DELETE");
+            entitlementDAO.addEntitlement(entitlement5);
 
-        Entitlement entitlement5 = new Entitlement();
-        entitlement5.setName("CLAIM_TO_DELETE");
-        entitlement5.setDescription("Description for CLAIM_TO_DELETE");
-        entitlementDAO.addEntitlement(entitlement5);
+            entitlementDAO.deleteEntitlement("CLAIM_TO_DELETE");
 
-        entitlementDAO.deleteEntitlement("CLAIM_TO_DELETE");
-
-        entitlementDAO.getEntitlement("CLAIM_TO_DELETE");
+            entitlementDAO.getEntitlement("CLAIM_TO_DELETE");
+        });
     }
 
 

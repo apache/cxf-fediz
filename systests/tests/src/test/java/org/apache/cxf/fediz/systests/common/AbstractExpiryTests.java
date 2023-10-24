@@ -29,8 +29,8 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.wss4j.dom.engine.WSSConfig;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Some tests for token expiry
@@ -70,13 +70,13 @@ public abstract class AbstractExpiryTests {
         webClient.getOptions().setJavaScriptEnabled(false);
         HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         HtmlForm form = idpPage.getFormByName("signinresponseform");
         HtmlSubmitInput button = form.getInputByName("_eventId_submit");
 
         HtmlPage rpPage = button.click();
-        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
+        Assertions.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
                             || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
 
         String bodyTextContent = rpPage.getBody().getTextContent();
@@ -90,13 +90,13 @@ public abstract class AbstractExpiryTests {
         webClient.getOptions().setJavaScriptEnabled(false);
         idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         form = idpPage.getFormByName("signinresponseform");
         button = form.getInputByName("_eventId_submit");
 
         rpPage = button.click();
-        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
+        Assertions.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
                             || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
 
         bodyTextContent = rpPage.getBody().getTextContent();
@@ -107,7 +107,7 @@ public abstract class AbstractExpiryTests {
 
     // Test what happens when the IdP token expires. This is "mocked" by setting wfresh to "0" in the
     // plugin configuration.
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testIdPTokenExpiry() throws Exception {
         // 1. Login
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName()
@@ -134,14 +134,13 @@ public abstract class AbstractExpiryTests {
     }
 
     private void verifyApplication(String user, String bodyTextContent) {
-        Assert.assertTrue("Principal not " + user,
-                          bodyTextContent.contains("userPrincipal=" + user));
-        Assert.assertTrue("User " + user + " does not have role Admin",
-                          bodyTextContent.contains("role:Admin=false"));
-        Assert.assertTrue("User " + user + " does not have role Manager",
-                          bodyTextContent.contains("role:Manager=false"));
-        Assert.assertTrue("User " + user + " must have role User",
-                          bodyTextContent.contains("role:User=true"));
+        Assertions.assertTrue(bodyTextContent.contains("userPrincipal=" + user), "Principal not " + user);
+        Assertions.assertTrue(bodyTextContent.contains("role:Admin=false"),
+                "User " + user + " does not have role Admin");
+        Assertions.assertTrue(bodyTextContent.contains("role:Manager=false"),
+                "User " + user + " does not have role Manager");
+        Assertions.assertTrue(bodyTextContent.contains("role:User=true"),
+                "User " + user + " must have role User");
     }
 
 }

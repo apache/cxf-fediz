@@ -75,9 +75,9 @@ import org.apache.wss4j.common.saml.builder.SAML2Constants;
 import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.wss4j.common.util.XMLUtils;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 
 /**
  * Test for requested claims
@@ -107,7 +107,7 @@ public class RequestedClaimsTest {
     private static Crypto crypto;
     private static CallbackHandler cbPasswordHandler = new KeystoreCallbackHandler();
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         try {
             crypto = CryptoFactory.getInstance("signature.properties");
@@ -117,7 +117,7 @@ public class RequestedClaimsTest {
 
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         SecurityTestUtil.cleanup();
     }
@@ -208,7 +208,7 @@ public class RequestedClaimsTest {
 
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testRequiredClaimIncluded() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -257,10 +257,10 @@ public class RequestedClaimsTest {
             }
         }
 
-        Assert.assertEquals("xyz", claimValue);
+        Assertions.assertEquals("xyz", claimValue);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testRequiredClaimNotIncluded() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -302,7 +302,7 @@ public class RequestedClaimsTest {
         FedizProcessor wfProc = new FederationProcessorImpl();
         try {
             wfProc.processRequest(wfReq, context);
-            Assert.fail("Failure expected on a mandatory claim not being included");
+            Assertions.fail("Failure expected on a mandatory claim not being included");
         } catch (ProcessingException ex) {
             // expected
         }

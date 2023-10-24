@@ -46,9 +46,9 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.wss4j.dom.engine.WSSConfig;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 
 /**
  * Some tests invoking directly on the IdP and sending custom parameters
@@ -61,10 +61,10 @@ public class CustomParametersTest {
     private static Tomcat idpServer;
     private static Tomcat rpServer;
 
-    @BeforeClass
+    @BeforeAll
     public static void init() throws Exception {
-        Assert.assertNotNull("Property 'idp.https.port' null", IDP_HTTPS_PORT);
-        Assert.assertNotNull("Property 'rp.https.port' null", RP_HTTPS_PORT);
+        Assertions.assertNotNull("Property 'idp.https.port' null", IDP_HTTPS_PORT);
+        Assertions.assertNotNull("Property 'rp.https.port' null", RP_HTTPS_PORT);
 
         idpServer = startServer(true, IDP_HTTPS_PORT);
         rpServer = startServer(false, RP_HTTPS_PORT);
@@ -133,7 +133,7 @@ public class CustomParametersTest {
         return server;
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         shutdownServer(idpServer);
         shutdownServer(rpServer);
@@ -166,7 +166,7 @@ public class CustomParametersTest {
     }
 
     // Test a custom parameter that gets passed through to the STS
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testCustomParameter() throws Exception {
         String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/federation?";
         url += "wa=wsignin1.0";
@@ -191,7 +191,7 @@ public class CustomParametersTest {
             + URLEncoder.encode("<realm xmlns=\"http://cxf.apache.org/custom\">custom-realm</realm>", "UTF-8");
         HtmlPage idpPage = webClient.getPage(authUrl);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // Parse the form to get the token (wresult)
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
@@ -204,7 +204,7 @@ public class CustomParametersTest {
             }
         }
 
-        Assert.assertNotNull(wresult);
+        Assertions.assertNotNull(wresult);
 
         webClient.close();
 
@@ -220,15 +220,15 @@ public class CustomParametersTest {
             + URLEncoder.encode("<realm xmlns=\"http://cxf.apache.org/custom\">unknown-realm</realm>", "UTF-8");
         try {
             webClient.getPage(authUrl);
-            Assert.fail("Failure expected on a bad auth_realm value");
+            Assertions.fail("Failure expected on a bad auth_realm value");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 401);
+            Assertions.assertEquals(ex.getStatusCode(), 401);
         }
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testCustomParameterViaRP() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         String user = "alice";
@@ -237,24 +237,23 @@ public class CustomParametersTest {
         final String bodyTextContent =
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), "signinresponseform");
 
-        Assert.assertTrue("Principal not " + user,
-                          bodyTextContent.contains("userPrincipal=" + user));
-        Assert.assertTrue("User " + user + " does not have role Admin",
-                          bodyTextContent.contains("role:Admin=false"));
-        Assert.assertTrue("User " + user + " does not have role Manager",
-                          bodyTextContent.contains("role:Manager=false"));
-        Assert.assertTrue("User " + user + " must have role User",
-                          bodyTextContent.contains("role:User=true"));
+        Assertions.assertTrue(bodyTextContent.contains("userPrincipal=" + user), "Principal not " + user);
+        Assertions.assertTrue(bodyTextContent.contains("role:Admin=false"),
+                "User " + user + " does not have role Admin");
+        Assertions.assertTrue(bodyTextContent.contains("role:Manager=false"),
+                "User " + user + " does not have role Manager");
+        Assertions.assertTrue(bodyTextContent.contains("role:User=true"),
+                "User " + user + " must have role User");
 
         String claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
-                          bodyTextContent.contains(claim + "=Alice"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=Alice"),
+                "User " + user + " claim " + claim + " is not 'Alice'");
         claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
-                          bodyTextContent.contains(claim + "=Smith"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=Smith"),
+                "User " + user + " claim " + claim + " is not 'Smith'");
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
-                          bodyTextContent.contains(claim + "=alice@realma.org"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=alice@realma.org"),
+                "User " + user + " claim " + claim + " is not 'alice@realma.org'");
 
     }
 

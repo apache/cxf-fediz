@@ -32,7 +32,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * Some basic HTTP-based functionality for use in the tests
@@ -54,13 +54,13 @@ public final class HTTPTestUtils {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         final HtmlForm form = idpPage.getFormByName(formName);
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
 
         final HtmlPage rpPage = button.click();
-        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
+        Assertions.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
                             || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
 
         webClient.close();
@@ -79,13 +79,13 @@ public final class HTTPTestUtils {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         final HtmlForm form = idpPage.getFormByName(formName);
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
 
         final HtmlPage rpPage = button.click();
-        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
+        Assertions.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
                           || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
 
         webClient.close();
@@ -98,7 +98,7 @@ public final class HTTPTestUtils {
         webClient.getOptions().setUseInsecureSSL(true);
         final HtmlPage idpPage = webClient.getPage(url);
 
-        Assert.assertEquals("IDP SignOut Confirmation Response Page", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignOut Confirmation Response Page", idpPage.getTitleText());
 
         final HtmlForm form = idpPage.getFormByName("signoutconfirmationresponseform");
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
@@ -109,7 +109,7 @@ public final class HTTPTestUtils {
 
         if (wsfed) {
             DomNodeList<DomElement> images = idpLogoutPage.getElementsByTagName("img");
-            Assert.assertEquals(1, images.getLength());
+            Assertions.assertEquals(1, images.getLength());
             for (int i = 0; i < images.size(); i++) {
                 DomElement domElement = images.get(i);
                 String imgSrc = domElement.getAttribute("src");
@@ -133,12 +133,12 @@ public final class HTTPTestUtils {
         webClient.getOptions().setUseInsecureSSL(true);
         final HtmlPage idpPage = webClient.getPage(url);
 
-        Assert.assertEquals("IDP SignOut Response Page", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignOut Response Page", idpPage.getTitleText());
 
-        Assert.assertTrue(idpPage.asNormalizedText().contains("CXF Fediz IDP successful logout"));
+        Assertions.assertTrue(idpPage.asNormalizedText().contains("CXF Fediz IDP successful logout"));
 
         DomNodeList<DomElement> images = idpPage.getElementsByTagName("img");
-        Assert.assertEquals(1, images.getLength());
+        Assertions.assertEquals(1, images.getLength());
         for (int i = 0; i < images.size(); i++) {
             DomElement domElement = images.get(i);
             String imgSrc = domElement.getAttribute("src");

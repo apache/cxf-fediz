@@ -20,12 +20,12 @@ package org.apache.cxf.fediz.cxf.plugin.state;
 
 import org.apache.cxf.fediz.core.RequestState;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class EHCacheSPStateManagerTest {
 
@@ -40,7 +40,7 @@ public class EHCacheSPStateManagerTest {
             stateManager.setRequestState(String.valueOf(i), requestState);
         }
         for (int i = 0; i < 2 * HEAP_ENTRIES; ++i) {
-            assertNotNull(String.valueOf(i), stateManager.removeRequestState(String.valueOf(i)));
+            assertNotNull(stateManager.removeRequestState(String.valueOf(i)));
             assertNull(stateManager.removeRequestState(String.valueOf(i)));
         }
     }
@@ -53,8 +53,8 @@ public class EHCacheSPStateManagerTest {
             stateManager.setResponseState(String.valueOf(i), responseState);
         }
         for (int i = 0; i < 2 * HEAP_ENTRIES; ++i) {
-            assertNotNull(String.valueOf(i), stateManager.getResponseState(String.valueOf(i)));
-            assertNotNull(String.valueOf(i), stateManager.removeResponseState(String.valueOf(i)));
+            assertNotNull(stateManager.getResponseState(String.valueOf(i)));
+            assertNotNull(stateManager.removeResponseState(String.valueOf(i)));
             assertNull(stateManager.removeResponseState(String.valueOf(i)));
         }
     }
@@ -66,12 +66,12 @@ public class EHCacheSPStateManagerTest {
         }
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         stateManager = new EHCacheSPStateManager("fediz-ehcache.xml");
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() throws Exception {
         stateManager.close();
     }

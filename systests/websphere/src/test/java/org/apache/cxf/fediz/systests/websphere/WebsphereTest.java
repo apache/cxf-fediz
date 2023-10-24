@@ -24,10 +24,10 @@ import java.io.File;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Ignore;
 
 public class WebsphereTest extends AbstractTests {
 
@@ -37,7 +37,7 @@ public class WebsphereTest extends AbstractTests {
     private static Tomcat idpServer;
     private static Tomcat rpServer;
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
         System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
@@ -50,9 +50,9 @@ public class WebsphereTest extends AbstractTests {
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf", "info");
 
         idpHttpsPort = System.getProperty("idp.https.port");
-        Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
+        Assertions.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
         rpHttpsPort = System.getProperty("rp.https.port");
-        Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
+        Assertions.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
 
         initIdp();
     }
@@ -93,7 +93,7 @@ public class WebsphereTest extends AbstractTests {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         try {
             if (idpServer.getServer() != null && idpServer.getServer().getState() != LifecycleState.DESTROYED) {

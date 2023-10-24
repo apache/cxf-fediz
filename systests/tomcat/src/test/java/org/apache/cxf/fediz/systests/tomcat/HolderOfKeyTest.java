@@ -30,9 +30,9 @@ import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 
 /**
  * A test for sending a "PublicKey" KeyType request to the IdP via the "wreq" parameter. This
@@ -42,17 +42,17 @@ public class HolderOfKeyTest {
 
     private static final String SERVLET_CONTEXT_NAME = "fedizhelloworld_hok";
 
-    @BeforeClass
+    @BeforeAll
     public static void init() throws Exception {
         TomcatLauncher.startServer(SERVLET_CONTEXT_NAME);
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws Exception {
         TomcatLauncher.shutdownServer();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testHolderOfKey() throws Exception {
         String url = "https://localhost:" + TomcatLauncher.getRpHttpsPort() + '/' + SERVLET_CONTEXT_NAME
                 + "/secure/fedservlet";
@@ -70,7 +70,7 @@ public class HolderOfKeyTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         final HtmlForm form = idpPage.getFormByName("signinresponseform");
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
@@ -85,32 +85,31 @@ public class HolderOfKeyTest {
                 break;
             }
         }
-        Assert.assertTrue(wresult != null
+        Assertions.assertTrue(wresult != null
             && wresult.contains("urn:oasis:names:tc:SAML:2.0:cm:holder-of-key"));
 
 
         final HtmlPage rpPage = button.click();
-        Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
+        Assertions.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
 
         final String bodyTextContent = rpPage.getBody().getTextContent();
-        Assert.assertTrue("Principal not " + user,
-                          bodyTextContent.contains("userPrincipal=" + user));
-        Assert.assertTrue("User " + user + " does not have role Admin",
-                          bodyTextContent.contains("role:Admin=false"));
-        Assert.assertTrue("User " + user + " does not have role Manager",
-                          bodyTextContent.contains("role:Manager=false"));
-        Assert.assertTrue("User " + user + " must have role User",
-                          bodyTextContent.contains("role:User=true"));
+        Assertions.assertTrue(bodyTextContent.contains("userPrincipal=" + user), "Principal not " + user);
+        Assertions.assertTrue(bodyTextContent.contains("role:Admin=false"),
+                "User " + user + " does not have role Admin");
+        Assertions.assertTrue(bodyTextContent.contains("role:Manager=false"),
+                "User " + user + " does not have role Manager");
+        Assertions.assertTrue(bodyTextContent.contains("role:User=true"),
+                "User " + user + " must have role User");
 
         String claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
-                          bodyTextContent.contains(claim + "=Alice"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=Alice"),
+                "User " + user + " claim " + claim + " is not 'Alice'");
         claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
-                          bodyTextContent.contains(claim + "=Smith"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=Smith"),
+                "User " + user + " claim " + claim + " is not 'Smith'");
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
-                          bodyTextContent.contains(claim + "=alice@realma.org"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=alice@realma.org"),
+                "User " + user + " claim " + claim + " is not 'alice@realma.org'");
 
         webClient.close();
     }

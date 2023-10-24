@@ -37,7 +37,7 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import org.apache.cxf.fediz.core.ClaimTypes;
 import org.apache.wss4j.dom.engine.WSSConfig;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 public abstract class AbstractClientCertTests {
 
@@ -55,7 +55,7 @@ public abstract class AbstractClientCertTests {
 
     public abstract String getRpHttpsPort();
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testClientAuthentication() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
 
@@ -67,7 +67,7 @@ public abstract class AbstractClientCertTests {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         final HtmlForm form = idpPage.getFormByName("signinresponseform");
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
@@ -82,38 +82,37 @@ public abstract class AbstractClientCertTests {
                 break;
             }
         }
-        Assert.assertTrue(wresult != null
+        Assertions.assertTrue(wresult != null
             && wresult.contains("urn:oasis:names:tc:SAML:2.0:cm:holder-of-key"));
 
         final HtmlPage rpPage = button.click();
-        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
+        Assertions.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
                           || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
 
         final String bodyTextContent = rpPage.getBody().getTextContent();
         String user = "alice";
-        Assert.assertTrue("Principal not " + user,
-                          bodyTextContent.contains("userPrincipal=" + user));
-        Assert.assertTrue("User " + user + " does not have role Admin",
-                          bodyTextContent.contains("role:Admin=false"));
-        Assert.assertTrue("User " + user + " does not have role Manager",
-                          bodyTextContent.contains("role:Manager=false"));
-        Assert.assertTrue("User " + user + " must have role User",
-                          bodyTextContent.contains("role:User=true"));
+        Assertions.assertTrue(bodyTextContent.contains("userPrincipal=" + user), "Principal not " + user);
+        Assertions.assertTrue(bodyTextContent.contains("role:Admin=false"),
+                "User " + user + " does not have role Admin");
+        Assertions.assertTrue(bodyTextContent.contains("role:Manager=false"),
+                "User " + user + " does not have role Manager");
+        Assertions.assertTrue(bodyTextContent.contains("role:User=true"),
+                "User " + user + " must have role User");
 
         String claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
-                          bodyTextContent.contains(claim + "=Alice"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=Alice"),
+                "User " + user + " claim " + claim + " is not 'Alice'");
         claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
-                          bodyTextContent.contains(claim + "=Smith"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=Smith"),
+                "User " + user + " claim " + claim + " is not 'Smith'");
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
-                          bodyTextContent.contains(claim + "=alice@realma.org"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=alice@realma.org"),
+                "User " + user + " claim " + claim + " is not 'alice@realma.org'");
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testDifferentClientCertificate() throws Exception {
         // Get the initial wresult from the IdP
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
@@ -128,7 +127,7 @@ public abstract class AbstractClientCertTests {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // Test the Subject Confirmation method here
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
@@ -146,8 +145,8 @@ public abstract class AbstractClientCertTests {
                 wtrealm = result.getAttributeNS(null, "value");
             }
         }
-        Assert.assertTrue(wctx != null && wtrealm != null);
-        Assert.assertTrue(wresult != null
+        Assertions.assertTrue(wctx != null && wtrealm != null);
+        Assertions.assertTrue(wresult != null
             && wresult.contains("urn:oasis:names:tc:SAML:2.0:cm:holder-of-key"));
         webClient.close();
 
@@ -168,10 +167,10 @@ public abstract class AbstractClientCertTests {
 
         try {
             webClient2.getPage(request);
-            Assert.fail("Exception expected");
+            Assertions.fail("Exception expected");
         } catch (FailingHttpStatusCodeException ex) {
             // expected
-            Assert.assertTrue(401 == ex.getStatusCode() || 403 == ex.getStatusCode());
+            Assertions.assertTrue(401 == ex.getStatusCode() || 403 == ex.getStatusCode());
         }
 
         webClient2.close();

@@ -54,8 +54,8 @@ import org.apache.cxf.fediz.core.spi.SignInQueryCallback;
 import org.apache.cxf.fediz.core.spi.WAuthCallback;
 import org.apache.cxf.fediz.core.spi.WReqCallback;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 
 public class CallbackHandlerTest {
 
@@ -77,7 +77,7 @@ public class CallbackHandlerTest {
     private static final String TEST_SIGNIN_QUERY = "pubid=myid";
 
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         SecurityTestUtil.cleanup();
     }
@@ -229,7 +229,7 @@ public class CallbackHandlerTest {
         return config;
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testParamsWithCallbackHandlerFederation() throws Exception {
 
         final JAXBContext jaxbContext = JAXBContext.newInstance(FedizConfig.class);
@@ -246,66 +246,66 @@ public class CallbackHandlerTest {
         FederationProtocol fp = (FederationProtocol)ctx.getProtocol();
 
         Object issuerObj = fp.getIssuer();
-        Assert.assertTrue(issuerObj instanceof CallbackHandler);
+        Assertions.assertTrue(issuerObj instanceof CallbackHandler);
         CallbackHandler issuerCB = (CallbackHandler)issuerObj;
         IDPCallback callbackIDP = new IDPCallback(null);
         issuerCB.handle(new Callback[] {callbackIDP});
         String issuerURL = callbackIDP.getIssuerUrl().toString();
-        Assert.assertEquals(TestCallbackHandler.TEST_IDP, issuerURL);
+        Assertions.assertEquals(TestCallbackHandler.TEST_IDP, issuerURL);
 
         Object wAuthObj = fp.getAuthenticationType();
-        Assert.assertTrue(wAuthObj instanceof CallbackHandler);
+        Assertions.assertTrue(wAuthObj instanceof CallbackHandler);
         CallbackHandler wauthCB = (CallbackHandler)wAuthObj;
         WAuthCallback callbackWA = new WAuthCallback(null);
         wauthCB.handle(new Callback[] {callbackWA});
         String wAuth = callbackWA.getWauth();
-        Assert.assertEquals(TestCallbackHandler.TEST_WAUTH, wAuth);
+        Assertions.assertEquals(TestCallbackHandler.TEST_WAUTH, wAuth);
 
         Object wReqObj = fp.getRequest();
-        Assert.assertTrue(wReqObj instanceof CallbackHandler);
+        Assertions.assertTrue(wReqObj instanceof CallbackHandler);
         CallbackHandler wreqCB = (CallbackHandler)wReqObj;
         WReqCallback callbackReq = new WReqCallback(null);
         wreqCB.handle(new Callback[] {callbackReq});
         String wReq = callbackReq.getWreq();
-        Assert.assertEquals(TestCallbackHandler.TEST_WREQ, wReq);
+        Assertions.assertEquals(TestCallbackHandler.TEST_WREQ, wReq);
 
         Object homeRealmObj = fp.getHomeRealm();
-        Assert.assertTrue(homeRealmObj instanceof CallbackHandler);
+        Assertions.assertTrue(homeRealmObj instanceof CallbackHandler);
         CallbackHandler hrCB = (CallbackHandler)homeRealmObj;
         HomeRealmCallback callbackHR = new HomeRealmCallback(null);
         hrCB.handle(new Callback[] {callbackHR});
         String hr = callbackHR.getHomeRealm();
-        Assert.assertEquals(TestCallbackHandler.TEST_HOME_REALM, hr);
+        Assertions.assertEquals(TestCallbackHandler.TEST_HOME_REALM, hr);
 
         Object wtRealmObj = fp.getRealm();
-        Assert.assertTrue(wtRealmObj instanceof CallbackHandler);
+        Assertions.assertTrue(wtRealmObj instanceof CallbackHandler);
         CallbackHandler wtrCB = (CallbackHandler)wtRealmObj;
         RealmCallback callbackWTR = new RealmCallback(null);
         wtrCB.handle(new Callback[]{callbackWTR});
         String wtr = callbackWTR.getRealm();
-        Assert.assertEquals(TestCallbackHandler.TEST_WTREALM, wtr);
+        Assertions.assertEquals(TestCallbackHandler.TEST_WTREALM, wtr);
 
         Object signInQueryObj = fp.getSignInQuery();
-        Assert.assertTrue(signInQueryObj instanceof CallbackHandler);
+        Assertions.assertTrue(signInQueryObj instanceof CallbackHandler);
         CallbackHandler siqCB = (CallbackHandler)signInQueryObj;
         SignInQueryCallback callbackSIQ = new SignInQueryCallback(null);
         siqCB.handle(new Callback[] {callbackSIQ});
         Map<String, String> signinQueryMap = callbackSIQ.getSignInQueryParamMap();
-        Assert.assertEquals(2, signinQueryMap.size());
-        Assert.assertEquals("myid", signinQueryMap.get("pubid"));
-        Assert.assertEquals("<=>", signinQueryMap.get("testenc"));
+        Assertions.assertEquals(2, signinQueryMap.size());
+        Assertions.assertEquals("myid", signinQueryMap.get("pubid"));
+        Assertions.assertEquals("<=>", signinQueryMap.get("testenc"));
 
         Object replyObj = fp.getReply();
-        Assert.assertTrue(replyObj instanceof CallbackHandler);
+        Assertions.assertTrue(replyObj instanceof CallbackHandler);
         CallbackHandler replyCB = (CallbackHandler)replyObj;
         ReplyCallback callbackReply = new ReplyCallback(null);
         replyCB.handle(new Callback[] {callbackReply});
         String reply = callbackReply.getReply();
-        Assert.assertEquals(TestCallbackHandler.TEST_REPLY, reply);
+        Assertions.assertEquals(TestCallbackHandler.TEST_REPLY, reply);
 
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testParamsWithCallbackHandlerSAML() throws Exception {
 
         final JAXBContext jaxbContext = JAXBContext.newInstance(FedizConfig.class);
@@ -322,25 +322,25 @@ public class CallbackHandlerTest {
         SAMLProtocol protocol = (SAMLProtocol)ctx.getProtocol();
 
         Object issuerObj = protocol.getIssuer();
-        Assert.assertTrue(issuerObj instanceof CallbackHandler);
+        Assertions.assertTrue(issuerObj instanceof CallbackHandler);
         CallbackHandler issuerCB = (CallbackHandler)issuerObj;
         IDPCallback callbackIDP = new IDPCallback(null);
         issuerCB.handle(new Callback[] {callbackIDP});
         String issuerURL = callbackIDP.getIssuerUrl().toString();
-        Assert.assertEquals(TestCallbackHandler.TEST_IDP, issuerURL);
+        Assertions.assertEquals(TestCallbackHandler.TEST_IDP, issuerURL);
 
         Object signInQueryObj = protocol.getSignInQuery();
-        Assert.assertTrue(signInQueryObj instanceof CallbackHandler);
+        Assertions.assertTrue(signInQueryObj instanceof CallbackHandler);
         CallbackHandler siqCB = (CallbackHandler)signInQueryObj;
         SignInQueryCallback callbackSIQ = new SignInQueryCallback(null);
         siqCB.handle(new Callback[] {callbackSIQ});
         Map<String, String> signinQueryMap = callbackSIQ.getSignInQueryParamMap();
-        Assert.assertEquals(2, signinQueryMap.size());
-        Assert.assertEquals("myid", signinQueryMap.get("pubid"));
-        Assert.assertEquals("<=>", signinQueryMap.get("testenc"));
+        Assertions.assertEquals(2, signinQueryMap.size());
+        Assertions.assertEquals("myid", signinQueryMap.get("pubid"));
+        Assertions.assertEquals("<=>", signinQueryMap.get("testenc"));
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testParamsWithoutCallbackHandlerFederation() throws Exception {
 
         final JAXBContext jaxbContext = JAXBContext.newInstance(FedizConfig.class);
@@ -357,32 +357,32 @@ public class CallbackHandlerTest {
         FederationProtocol fp = (FederationProtocol)ctx.getProtocol();
 
         Object issuerObj = fp.getIssuer();
-        Assert.assertTrue(issuerObj instanceof String);
+        Assertions.assertTrue(issuerObj instanceof String);
         String issuerURL = (String)issuerObj;
-        Assert.assertEquals(TestCallbackHandler.TEST_IDP, issuerURL);
+        Assertions.assertEquals(TestCallbackHandler.TEST_IDP, issuerURL);
 
         Object wAuthObj = fp.getAuthenticationType();
-        Assert.assertTrue(wAuthObj instanceof String);
+        Assertions.assertTrue(wAuthObj instanceof String);
         String wAuth = (String)wAuthObj;
-        Assert.assertEquals(TestCallbackHandler.TEST_WAUTH, wAuth);
+        Assertions.assertEquals(TestCallbackHandler.TEST_WAUTH, wAuth);
 
         Object wReqObj = fp.getRequest();
-        Assert.assertTrue(wReqObj instanceof String);
+        Assertions.assertTrue(wReqObj instanceof String);
         String wReq = (String)wReqObj;
-        Assert.assertEquals(TestCallbackHandler.TEST_WREQ, wReq);
+        Assertions.assertEquals(TestCallbackHandler.TEST_WREQ, wReq);
 
         Object homeRealmObj = fp.getHomeRealm();
-        Assert.assertTrue(homeRealmObj instanceof String);
+        Assertions.assertTrue(homeRealmObj instanceof String);
         String hr = (String)homeRealmObj;
-        Assert.assertEquals(TestCallbackHandler.TEST_HOME_REALM, hr);
+        Assertions.assertEquals(TestCallbackHandler.TEST_HOME_REALM, hr);
 
         Object signInQueryObj = fp.getSignInQuery();
-        Assert.assertTrue(signInQueryObj instanceof String);
+        Assertions.assertTrue(signInQueryObj instanceof String);
         String signInQuery = (String)signInQueryObj;
-        Assert.assertEquals(TestCallbackHandler.TEST_SIGNIN_QUERY, signInQuery);
+        Assertions.assertEquals(TestCallbackHandler.TEST_SIGNIN_QUERY, signInQuery);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testParamsWithoutCallbackHandlerSAML() throws Exception {
 
         final JAXBContext jaxbContext = JAXBContext.newInstance(FedizConfig.class);
@@ -399,14 +399,14 @@ public class CallbackHandlerTest {
         Protocol protocol = ctx.getProtocol();
 
         Object issuerObj = protocol.getIssuer();
-        Assert.assertTrue(issuerObj instanceof String);
+        Assertions.assertTrue(issuerObj instanceof String);
         String issuerURL = (String)issuerObj;
-        Assert.assertEquals(TestCallbackHandler.TEST_IDP, issuerURL);
+        Assertions.assertEquals(TestCallbackHandler.TEST_IDP, issuerURL);
 
         Object signInQueryObj = protocol.getSignInQuery();
-        Assert.assertTrue(signInQueryObj instanceof String);
+        Assertions.assertTrue(signInQueryObj instanceof String);
         String signInQuery = (String)signInQueryObj;
-        Assert.assertEquals(TestCallbackHandler.TEST_SIGNIN_QUERY, signInQuery);
+        Assertions.assertEquals(TestCallbackHandler.TEST_SIGNIN_QUERY, signInQuery);
     }
 
 

@@ -93,10 +93,10 @@ import org.opensaml.xmlsec.signature.KeyInfo;
 import org.opensaml.xmlsec.signature.Signature;
 import org.opensaml.xmlsec.signature.support.SignatureConstants;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -113,10 +113,10 @@ public class IdpTest {
 
     private static Tomcat idpServer;
 
-    @BeforeClass
+    @BeforeAll
     public static void init() throws Exception {
-        Assert.assertNotNull("Property 'idp.https.port' null", IDP_HTTPS_PORT);
-        Assert.assertNotNull("Property 'rp.https.port' null", RP_HTTPS_PORT);
+        Assertions.assertNotNull("Property 'idp.https.port' null", IDP_HTTPS_PORT);
+        Assertions.assertNotNull("Property 'rp.https.port' null", RP_HTTPS_PORT);
 
         idpServer = startServer(IDP_HTTPS_PORT);
 
@@ -162,7 +162,7 @@ public class IdpTest {
         return server;
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         shutdownServer(idpServer);
     }
@@ -197,7 +197,7 @@ public class IdpTest {
     // Successful tests
     //
     /*
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testBrowser() throws Exception {
         OpenSAMLUtil.initSamlEngine();
 
@@ -243,7 +243,7 @@ public class IdpTest {
 
         final XmlPage rpPage = webClient.getPage(url);
         final String xmlContent = rpPage.asXml();
-        Assert.assertTrue(xmlContent.startsWith("<md:EntityDescriptor"));
+        Assertions.assertTrue(xmlContent.startsWith("<md:EntityDescriptor"));
 
         // Now validate the Signature
         Document doc = rpPage.getXmlDocument();
@@ -252,19 +252,19 @@ public class IdpTest {
 
         Node signatureNode =
             DOMUtils.getChild(doc.getDocumentElement(), "Signature");
-        Assert.assertNotNull(signatureNode);
+        Assertions.assertNotNull(signatureNode);
 
         XMLSignature signature = new XMLSignature((Element)signatureNode, "");
         org.apache.xml.security.keys.KeyInfo ki = signature.getKeyInfo();
-        Assert.assertNotNull(ki);
-        Assert.assertNotNull(ki.getX509Certificate());
+        Assertions.assertNotNull(ki);
+        Assertions.assertNotNull(ki.getX509Certificate());
 
-        Assert.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
+        Assertions.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSuccessfulInvokeOnIdP() throws Exception {
         OpenSAMLUtil.initSamlEngine();
 
@@ -294,26 +294,26 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         org.opensaml.saml.saml2.core.Response samlResponse =
             parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
         String expected = "urn:oasis:names:tc:SAML:2.0:status:Success";
-        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
 
         // Check claims
         String parsedResponse = DOM2Writer.nodeToString(samlResponse.getDOM().getOwnerDocument());
         String claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
         claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSuccessfulInvokeOnIdPUsingPOST() throws Exception {
         OpenSAMLUtil.initSamlEngine();
 
@@ -357,26 +357,26 @@ public class IdpTest {
         final HtmlPage idpPage = webClient.getPage(request);
 
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         org.opensaml.saml.saml2.core.Response samlResponse =
             parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
         String expected = "urn:oasis:names:tc:SAML:2.0:status:Success";
-        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
 
         // Check claims
         String parsedResponse = DOM2Writer.nodeToString(samlResponse.getDOM().getOwnerDocument());
         String claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
         claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSeparateSignature() throws Exception {
         OpenSAMLUtil.initSamlEngine();
 
@@ -430,26 +430,26 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         org.opensaml.saml.saml2.core.Response samlResponse =
             parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
         String expected = "urn:oasis:names:tc:SAML:2.0:status:Success";
-        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
 
         // Check claims
         String parsedResponse = DOM2Writer.nodeToString(samlResponse.getDOM().getOwnerDocument());
         String claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
         claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSeparateSignatureRSASHA256() throws Exception {
         OpenSAMLUtil.initSamlEngine();
 
@@ -506,26 +506,26 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         org.opensaml.saml.saml2.core.Response samlResponse =
             parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
         String expected = "urn:oasis:names:tc:SAML:2.0:status:Success";
-        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
 
         // Check claims
         String parsedResponse = DOM2Writer.nodeToString(samlResponse.getDOM().getOwnerDocument());
         String claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
         claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSuccessfulSSOInvokeOnIdP() throws Exception {
         OpenSAMLUtil.initSamlEngine();
 
@@ -558,21 +558,21 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         org.opensaml.saml.saml2.core.Response samlResponse =
             parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
         String expected = "urn:oasis:names:tc:SAML:2.0:status:Success";
-        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
 
         // Check claims
         String parsedResponse = DOM2Writer.nodeToString(samlResponse.getDOM().getOwnerDocument());
         String claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
         claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
 
         //
         // Second invocation - change the credentials to make sure the session is set up correctly
@@ -585,25 +585,25 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         samlResponse = parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
         expected = "urn:oasis:names:tc:SAML:2.0:status:Success";
-        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
 
         // Check claims
         parsedResponse = DOM2Writer.nodeToString(samlResponse.getDOM().getOwnerDocument());
         claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
         claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSuccessfulSSOInvokeOnIdPWithForceAuthn() throws Exception {
         OpenSAMLUtil.initSamlEngine();
 
@@ -640,21 +640,21 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         org.opensaml.saml.saml2.core.Response samlResponse =
             parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
         String expected = "urn:oasis:names:tc:SAML:2.0:status:Success";
-        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
 
         // Check claims
         String parsedResponse = DOM2Writer.nodeToString(samlResponse.getDOM().getOwnerDocument());
         String claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
         claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
 
         //
         // Second invocation
@@ -663,20 +663,20 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         samlResponse = parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
         expected = "urn:oasis:names:tc:SAML:2.0:status:Success";
-        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
 
         // Check claims
         parsedResponse = DOM2Writer.nodeToString(samlResponse.getDOM().getOwnerDocument());
         claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
         claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
 
         webClient.close();
 
@@ -692,15 +692,15 @@ public class IdpTest {
 
         try {
             newWebClient.getPage(url);
-            Assert.fail("Failure expected on no credentials");
+            Assertions.fail("Failure expected on no credentials");
         }  catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 401);
+            Assertions.assertEquals(ex.getStatusCode(), 401);
         }
 
         newWebClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSuccessfulSSOInvokeOnIdPWithForceAuthnSeparateSignature() throws Exception {
         OpenSAMLUtil.initSamlEngine();
 
@@ -761,21 +761,21 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         org.opensaml.saml.saml2.core.Response samlResponse =
             parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
         String expected = "urn:oasis:names:tc:SAML:2.0:status:Success";
-        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
 
         // Check claims
         String parsedResponse = DOM2Writer.nodeToString(samlResponse.getDOM().getOwnerDocument());
         String claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
         claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
 
         //
         // Second invocation
@@ -784,20 +784,20 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         samlResponse = parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
         expected = "urn:oasis:names:tc:SAML:2.0:status:Success";
-        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
 
         // Check claims
         parsedResponse = DOM2Writer.nodeToString(samlResponse.getDOM().getOwnerDocument());
         claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
         claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
 
         webClient.close();
 
@@ -813,9 +813,9 @@ public class IdpTest {
 
         try {
             newWebClient.getPage(url);
-            Assert.fail("Failure expected on no credentials");
+            Assertions.fail("Failure expected on no credentials");
         }  catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 401);
+            Assertions.assertEquals(ex.getStatusCode(), 401);
         }
 
         newWebClient.close();
@@ -825,7 +825,7 @@ public class IdpTest {
     // Negative tests
     //
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testBadIssuer() throws Exception {
         OpenSAMLUtil.initSamlEngine();
 
@@ -858,12 +858,12 @@ public class IdpTest {
         org.opensaml.saml.saml2.core.Response samlResponse =
             parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
         String expected = "urn:oasis:names:tc:SAML:2.0:status:Requester";
-        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testNoIssuer() throws Exception {
         OpenSAMLUtil.initSamlEngine();
 
@@ -896,12 +896,12 @@ public class IdpTest {
         org.opensaml.saml.saml2.core.Response samlResponse =
             parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
         String expected = "urn:oasis:names:tc:SAML:2.0:status:Requester";
-        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testBadIssuerFormat() throws Exception {
         OpenSAMLUtil.initSamlEngine();
 
@@ -962,12 +962,12 @@ public class IdpTest {
         org.opensaml.saml.saml2.core.Response samlResponse =
             parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
         String expected = "urn:oasis:names:tc:SAML:2.0:status:Requester";
-        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testMissingDestination() throws Exception {
         OpenSAMLUtil.initSamlEngine();
 
@@ -999,12 +999,12 @@ public class IdpTest {
         org.opensaml.saml.saml2.core.Response samlResponse =
             parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
         String expected = "urn:oasis:names:tc:SAML:2.0:status:Requester";
-        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testMissingRelayState() throws Exception {
         OpenSAMLUtil.initSamlEngine();
 
@@ -1032,15 +1032,15 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         try {
             webClient.getPage(url);
-            Assert.fail("Failure expected on not sending the RelayState");
+            Assertions.fail("Failure expected on not sending the RelayState");
         }  catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
+            Assertions.assertEquals(ex.getStatusCode(), 400);
         }
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testUnsignedRequest() throws Exception {
         OpenSAMLUtil.initSamlEngine();
 
@@ -1072,12 +1072,12 @@ public class IdpTest {
         org.opensaml.saml.saml2.core.Response samlResponse =
             parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
         String expected = "urn:oasis:names:tc:SAML:2.0:status:Requester";
-        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testEmptySeparateSignature() throws Exception {
         OpenSAMLUtil.initSamlEngine();
 
@@ -1111,12 +1111,12 @@ public class IdpTest {
         org.opensaml.saml.saml2.core.Response samlResponse =
             parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
         String expected = "urn:oasis:names:tc:SAML:2.0:status:Requester";
-        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testBase64DecodingErrorSeparateSignature() throws Exception {
         OpenSAMLUtil.initSamlEngine();
 
@@ -1173,12 +1173,12 @@ public class IdpTest {
         org.opensaml.saml.saml2.core.Response samlResponse =
             parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
         String expected = "urn:oasis:names:tc:SAML:2.0:status:Requester";
-        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testChangedSeparateSignature() throws Exception {
         OpenSAMLUtil.initSamlEngine();
 
@@ -1240,12 +1240,12 @@ public class IdpTest {
         org.opensaml.saml.saml2.core.Response samlResponse =
             parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
         String expected = "urn:oasis:names:tc:SAML:2.0:status:Requester";
-        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSeparateSignatureWrongSignedContent() throws Exception {
         OpenSAMLUtil.initSamlEngine();
 
@@ -1302,12 +1302,12 @@ public class IdpTest {
         org.opensaml.saml.saml2.core.Response samlResponse =
             parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
         String expected = "urn:oasis:names:tc:SAML:2.0:status:Requester";
-        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testUnknownRACS() throws Exception {
         OpenSAMLUtil.initSamlEngine();
 
@@ -1340,12 +1340,12 @@ public class IdpTest {
         org.opensaml.saml.saml2.core.Response samlResponse =
             parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
         String expected = "urn:oasis:names:tc:SAML:2.0:status:Requester";
-        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testProblemWithParsingRequest() throws Exception {
         OpenSAMLUtil.initSamlEngine();
 
@@ -1382,15 +1382,15 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         try {
             webClient.getPage(url);
-            Assert.fail("Failure expected on parsing the request in the IdP");
+            Assertions.fail("Failure expected on parsing the request in the IdP");
         }  catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
+            Assertions.assertEquals(ex.getStatusCode(), 400);
         }
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testForceAuthnWrongCredentials() throws Exception {
         OpenSAMLUtil.initSamlEngine();
 
@@ -1424,21 +1424,21 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         org.opensaml.saml.saml2.core.Response samlResponse =
             parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
         String expected = "urn:oasis:names:tc:SAML:2.0:status:Success";
-        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
 
         // Check claims
         String parsedResponse = DOM2Writer.nodeToString(samlResponse.getDOM().getOwnerDocument());
         String claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
         claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue(parsedResponse.contains(claim));
+        Assertions.assertTrue(parsedResponse.contains(claim));
 
         //
         // Second invocation - change the credentials, this should fail
@@ -1451,15 +1451,15 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         try {
             webClient.getPage(url);
-            Assert.fail("Authentication failure expected");
+            Assertions.fail("Authentication failure expected");
         }  catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 401);
+            Assertions.assertEquals(ex.getStatusCode(), 401);
         }
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testIdPLogout() throws Exception {
         OpenSAMLUtil.initSamlEngine();
 
@@ -1494,14 +1494,14 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         org.opensaml.saml.saml2.core.Response samlResponse =
             parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
         String expected = "urn:oasis:names:tc:SAML:2.0:status:Success";
-        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
         NameID nameID = samlResponse.getAssertions().get(0).getSubject().getNameID();
-        Assert.assertNotNull(nameID);
+        Assertions.assertNotNull(nameID);
         nameID.detach();
 
         webClient.close();
@@ -1535,7 +1535,7 @@ public class IdpTest {
         idpPage = webClient.getPage(logoutURL);
         webClient.getOptions().setJavaScriptEnabled(true);
 
-        Assert.assertEquals("IDP SignOut Confirmation Response Page", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignOut Confirmation Response Page", idpPage.getTitleText());
 
         HtmlForm form = idpPage.getFormByName("signoutconfirmationresponseform");
         HtmlSubmitInput button = form.getInputByName("_eventId_submit");
@@ -1544,25 +1544,25 @@ public class IdpTest {
         // Check Response
         HtmlForm responseForm = signoutPage.getFormByName("samlsignoutresponseform");
         String logoutResponseURL = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/logout";
-        Assert.assertEquals(logoutResponseURL, responseForm.getActionAttribute());
+        Assertions.assertEquals(logoutResponseURL, responseForm.getActionAttribute());
         String responseValue = responseForm.getInputByName("SAMLResponse").getAttributeNS(null, "value");
-        Assert.assertNotNull(responseValue);
+        Assertions.assertNotNull(responseValue);
         String receivedRelayState = responseForm.getInputByName("RelayState").getAttributeNS(null, "value");
-        Assert.assertEquals(relayState, receivedRelayState);
+        Assertions.assertEquals(relayState, receivedRelayState);
 
         byte[] deflatedToken = Base64Utility.decode(responseValue);
         InputStream tokenStream = new ByteArrayInputStream(deflatedToken);
         Document responseDoc = StaxUtils.read(new InputStreamReader(tokenStream, UTF_8));
 
         LogoutResponse logoutResponse = (LogoutResponse)OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
-        Assert.assertNotNull(logoutResponse);
-        Assert.assertEquals(logoutResponseURL, logoutResponse.getDestination());
+        Assertions.assertNotNull(logoutResponse);
+        Assertions.assertEquals(logoutResponseURL, logoutResponse.getDestination());
         String expectedIssuer = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml";
-        Assert.assertEquals(expectedIssuer, logoutResponse.getIssuer().getValue());
+        Assertions.assertEquals(expectedIssuer, logoutResponse.getIssuer().getValue());
         String success = "urn:oasis:names:tc:SAML:2.0:status:Success";
-        Assert.assertEquals(success, logoutResponse.getStatus().getStatusCode().getValue());
+        Assertions.assertEquals(success, logoutResponse.getStatus().getStatusCode().getValue());
 
-        Assert.assertNotNull(logoutResponse.getSignature());
+        Assertions.assertNotNull(logoutResponse.getSignature());
 
         webClient.close();
 
@@ -1574,12 +1574,12 @@ public class IdpTest {
         webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
         idpPage = webClient.getPage(url);
 
-        Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
+        Assertions.assertEquals(401, idpPage.getWebResponse().getStatusCode());
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testIdpLogoutRequestExpired() throws Exception {
         OpenSAMLUtil.initSamlEngine();
 
@@ -1614,14 +1614,14 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         org.opensaml.saml.saml2.core.Response samlResponse =
             parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
         String expected = "urn:oasis:names:tc:SAML:2.0:status:Success";
-        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
         NameID nameID = samlResponse.getAssertions().get(0).getSubject().getNameID();
-        Assert.assertNotNull(nameID);
+        Assertions.assertNotNull(nameID);
         nameID.detach();
 
         webClient.close();
@@ -1660,25 +1660,25 @@ public class IdpTest {
         // Check Response
         HtmlForm responseForm = idpPage.getFormByName("samlsignoutresponseform");
         String logoutResponseURL = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/logout";
-        Assert.assertEquals(logoutResponseURL, responseForm.getActionAttribute());
+        Assertions.assertEquals(logoutResponseURL, responseForm.getActionAttribute());
         String responseValue = responseForm.getInputByName("SAMLResponse").getAttributeNS(null, "value");
-        Assert.assertNotNull(responseValue);
+        Assertions.assertNotNull(responseValue);
         String receivedRelayState = responseForm.getInputByName("RelayState").getAttributeNS(null, "value");
-        Assert.assertEquals(relayState, receivedRelayState);
+        Assertions.assertEquals(relayState, receivedRelayState);
 
         byte[] deflatedToken = Base64Utility.decode(responseValue);
         InputStream tokenStream = new ByteArrayInputStream(deflatedToken);
         Document responseDoc = StaxUtils.read(new InputStreamReader(tokenStream, UTF_8));
 
         LogoutResponse logoutResponse = (LogoutResponse)OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
-        Assert.assertNotNull(logoutResponse);
-        Assert.assertEquals(logoutResponseURL, logoutResponse.getDestination());
+        Assertions.assertNotNull(logoutResponse);
+        Assertions.assertEquals(logoutResponseURL, logoutResponse.getDestination());
         String expectedIssuer = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml";
-        Assert.assertEquals(expectedIssuer, logoutResponse.getIssuer().getValue());
+        Assertions.assertEquals(expectedIssuer, logoutResponse.getIssuer().getValue());
         String success = "urn:oasis:names:tc:SAML:2.0:status:Requester";
-        Assert.assertEquals(success, logoutResponse.getStatus().getStatusCode().getValue());
+        Assertions.assertEquals(success, logoutResponse.getStatus().getStatusCode().getValue());
 
-        Assert.assertNotNull(logoutResponse.getSignature());
+        Assertions.assertNotNull(logoutResponse.getSignature());
         webClient.close();
 
         // 3. now we try to access the idp without authentication but with the existing cookies
@@ -1689,12 +1689,12 @@ public class IdpTest {
         webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
         idpPage = webClient.getPage(url);
 
-        Assert.assertEquals(200, idpPage.getWebResponse().getStatusCode());
+        Assertions.assertEquals(200, idpPage.getWebResponse().getStatusCode());
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testIdpLogoutCancelled() throws Exception {
         OpenSAMLUtil.initSamlEngine();
 
@@ -1729,14 +1729,14 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         org.opensaml.saml.saml2.core.Response samlResponse =
             parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
         String expected = "urn:oasis:names:tc:SAML:2.0:status:Success";
-        Assert.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
         NameID nameID = samlResponse.getAssertions().get(0).getSubject().getNameID();
-        Assert.assertNotNull(nameID);
+        Assertions.assertNotNull(nameID);
         nameID.detach();
 
         webClient.close();
@@ -1770,7 +1770,7 @@ public class IdpTest {
         idpPage = webClient.getPage(logoutURL);
         webClient.getOptions().setJavaScriptEnabled(true);
 
-        Assert.assertEquals("IDP SignOut Confirmation Response Page", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignOut Confirmation Response Page", idpPage.getTitleText());
 
         HtmlForm form = idpPage.getFormByName("signoutconfirmationresponseform");
         HtmlSubmitInput button = form.getInputByName("_eventId_cancel");
@@ -1779,25 +1779,25 @@ public class IdpTest {
         // Check Response
         HtmlForm responseForm = signoutPage.getFormByName("samlsignoutresponseform");
         String logoutResponseURL = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/logout";
-        Assert.assertEquals(logoutResponseURL, responseForm.getActionAttribute());
+        Assertions.assertEquals(logoutResponseURL, responseForm.getActionAttribute());
         String responseValue = responseForm.getInputByName("SAMLResponse").getAttributeNS(null, "value");
-        Assert.assertNotNull(responseValue);
+        Assertions.assertNotNull(responseValue);
         String receivedRelayState = responseForm.getInputByName("RelayState").getAttributeNS(null, "value");
-        Assert.assertEquals(relayState, receivedRelayState);
+        Assertions.assertEquals(relayState, receivedRelayState);
 
         byte[] deflatedToken = Base64Utility.decode(responseValue);
         InputStream tokenStream = new ByteArrayInputStream(deflatedToken);
         Document responseDoc = StaxUtils.read(new InputStreamReader(tokenStream, UTF_8));
 
         LogoutResponse logoutResponse = (LogoutResponse)OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
-        Assert.assertNotNull(logoutResponse);
-        Assert.assertEquals(logoutResponseURL, logoutResponse.getDestination());
+        Assertions.assertNotNull(logoutResponse);
+        Assertions.assertEquals(logoutResponseURL, logoutResponse.getDestination());
         String expectedIssuer = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml";
-        Assert.assertEquals(expectedIssuer, logoutResponse.getIssuer().getValue());
+        Assertions.assertEquals(expectedIssuer, logoutResponse.getIssuer().getValue());
         String success = "urn:oasis:names:tc:SAML:2.0:status:Requester";
-        Assert.assertEquals(success, logoutResponse.getStatus().getStatusCode().getValue());
+        Assertions.assertEquals(success, logoutResponse.getStatus().getStatusCode().getValue());
 
-        Assert.assertNotNull(logoutResponse.getSignature());
+        Assertions.assertNotNull(logoutResponse.getSignature());
         webClient.close();
 
         // 3. now we try to access the idp without authentication but with the existing cookies
@@ -1808,7 +1808,7 @@ public class IdpTest {
         webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
         idpPage = webClient.getPage(url);
 
-        Assert.assertEquals(200, idpPage.getWebResponse().getStatusCode());
+        Assertions.assertEquals(200, idpPage.getWebResponse().getStatusCode());
 
         webClient.close();
     }
@@ -1867,7 +1867,7 @@ public class IdpTest {
                                                                     String consumerURL,
                                                                     String authnRequestId
     ) throws Exception {
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // Parse the form to get the token (SAMLResponse)
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
@@ -1879,20 +1879,20 @@ public class IdpTest {
                 samlResponse = result.getAttributeNS(null, "value");
             } else if ("RelayState".equals(result.getAttributeNS(null, "name"))) {
                 foundRelayState = true;
-                Assert.assertEquals(result.getAttributeNS(null, "value"), relayState);
+                Assertions.assertEquals(result.getAttributeNS(null, "value"), relayState);
             }
         }
 
-        Assert.assertNotNull(samlResponse);
-        Assert.assertTrue(foundRelayState);
+        Assertions.assertNotNull(samlResponse);
+        Assertions.assertTrue(foundRelayState);
 
         // Check the "action"
         DomNodeList<DomElement> formResults = idpPage.getElementsByTagName("form");
-        Assert.assertFalse(formResults.isEmpty());
+        Assertions.assertFalse(formResults.isEmpty());
 
         DomElement formResult = formResults.get(0);
         String action = formResult.getAttributeNS(null, "action");
-        Assert.assertTrue(action.equals(consumerURL));
+        Assertions.assertTrue(action.equals(consumerURL));
 
         // Decode + verify response
         byte[] deflatedToken = Base64Utility.decode(samlResponse);
@@ -1901,11 +1901,11 @@ public class IdpTest {
         Document responseDoc = StaxUtils.read(new InputStreamReader(inputStream, UTF_8.name()));
 
         XMLObject responseObject = OpenSAMLUtil.fromDom(responseDoc.getDocumentElement());
-        Assert.assertTrue(responseObject instanceof org.opensaml.saml.saml2.core.Response);
+        Assertions.assertTrue(responseObject instanceof org.opensaml.saml.saml2.core.Response);
 
         org.opensaml.saml.saml2.core.Response samlResponseObject =
             (org.opensaml.saml.saml2.core.Response)responseObject;
-        Assert.assertTrue(authnRequestId.equals(samlResponseObject.getInResponseTo()));
+        Assertions.assertTrue(authnRequestId.equals(samlResponseObject.getInResponseTo()));
 
         return samlResponseObject;
     }

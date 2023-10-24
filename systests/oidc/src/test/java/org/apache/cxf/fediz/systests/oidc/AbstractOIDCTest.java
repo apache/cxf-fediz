@@ -79,12 +79,12 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.wss4j.common.util.Loader;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Some OIDC tests.
@@ -110,8 +110,8 @@ abstract class AbstractOIDCTest {
     private static String publicClientId;
 
     protected static void startServer(String servletContextName, String fedizConfigPath) throws Exception {
-        assertNotNull("Property 'idp.https.port' null", IDP_HTTPS_PORT);
-        assertNotNull("Property 'rp.https.port' null", RP_HTTPS_PORT);
+        assertNotNull(IDP_HTTPS_PORT, "Property 'idp.https.port' null");
+        assertNotNull(RP_HTTPS_PORT, "Property 'rp.https.port' null");
 
         idpServer = startServer(IDP_HTTPS_PORT, null, null);
         rpServer = startServer(RP_HTTPS_PORT, servletContextName, fedizConfigPath);
@@ -222,7 +222,7 @@ abstract class AbstractOIDCTest {
 
     protected abstract String getServletContextName();
 
-    // Runs as BeforeClass: Login to the OIDC Clients page + create two new clients
+    // Runs as BeforeAll: Login to the OIDC Clients page + create two new clients
     private static void loginToClientsPage(String servletContext) throws IOException {
         // Login to the client page successfully
         try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
@@ -310,7 +310,7 @@ abstract class AbstractOIDCTest {
         return button.click();
     }
 
-    // Runs as AfterClass: Login to the OIDC Clients page + delete the created clients!
+    // Runs as AfterAll: Login to the OIDC Clients page + delete the created clients!
     private static void loginToClientsPageAndDeleteClient(String servletContext) throws IOException {
         // Login to the client page successfully
         try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
@@ -352,7 +352,7 @@ abstract class AbstractOIDCTest {
     }
 
     // Test that we managed to create the clients ok
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testCreatedClients() throws Exception {
         // Login to the client page successfully
         try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
@@ -382,7 +382,7 @@ abstract class AbstractOIDCTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testEditClient() throws Exception {
         try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
             HtmlPage registeredClientPage = login(oidcEndpointBuilder("/console/clients/" + publicClientId),
@@ -411,7 +411,7 @@ abstract class AbstractOIDCTest {
             final HtmlPage registeredClientsPage = registeredClientPage.getAnchorByText("registered Clients").click();
 
             HtmlTable table = registeredClientsPage.getHtmlElementById("registered_clients");
-            assertEquals("2 clients", table.getRows().size(), 3);
+            assertEquals(3, table.getRows().size(), "2 clients");
             boolean updatedClientFound = false;
             for (final HtmlTableRow row : table.getRows()) {
                 if (newClientName.equals(row.getCell(0).asNormalizedText())) {
@@ -424,7 +424,7 @@ abstract class AbstractOIDCTest {
     }
 
     // Test that "bob" can't see the clients created by "alice"
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testRegisteredClientsAsBob() throws Exception {
         // Login to the client page successfully
         try (WebClient webClient = setupWebClientIDP("bob", "bob")) {
@@ -440,7 +440,7 @@ abstract class AbstractOIDCTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testOIDCLoginForConfidentialClient() throws IOException {
         final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
             .queryParam("client_id", confidentialClientId)
@@ -449,7 +449,7 @@ abstract class AbstractOIDCTest {
         testOIDCLogin(authorizationUrl, confidentialClientId, confidentialClientSecret);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testOIDCLoginForPublicClient() throws IOException {
         final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
             .queryParam("client_id", publicClientId)
@@ -471,7 +471,7 @@ abstract class AbstractOIDCTest {
         validateIdToken(getIdToken(json), clientId);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testUsingCodeForOtherClient() throws Exception {
         // Get the code for the first client
         final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
@@ -490,7 +490,7 @@ abstract class AbstractOIDCTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testBadClientId() throws Exception {
         final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
             .queryParam("client_id", confidentialClientId.substring(1))
@@ -502,7 +502,7 @@ abstract class AbstractOIDCTest {
         assertTrue(response.contains("invalid_request"));
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testEmptyClientId() throws Exception {
         final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
             .queryParam("client_id", "")
@@ -514,7 +514,7 @@ abstract class AbstractOIDCTest {
         assertTrue(response.contains("invalid_request"));
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testIncorrectRedirectURI() throws Exception {
         final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
             .queryParam("client_id", confidentialClientId)
@@ -530,7 +530,7 @@ abstract class AbstractOIDCTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testCreateClientWithInvalidRegistrationURI() throws Exception {
         // Login to the client page successfully
         try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
@@ -543,7 +543,7 @@ abstract class AbstractOIDCTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testCreateClientWithRegistrationURIFragment() throws Exception {
         // Login to the client page successfully
         try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
@@ -556,7 +556,7 @@ abstract class AbstractOIDCTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testCreateClientWithInvalidAudienceURI() throws Exception {
         // Login to the client page successfully
         try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
@@ -569,7 +569,7 @@ abstract class AbstractOIDCTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testCreateClientWithInvalidLogoutURI() throws Exception {
         // Login to the client page successfully
         try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
@@ -582,7 +582,7 @@ abstract class AbstractOIDCTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testCreateClientWithAudienceURIFragment() throws Exception {
         // Login to the client page successfully
         try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
@@ -595,7 +595,7 @@ abstract class AbstractOIDCTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testClientCredentialsSTS() throws Exception {
         final URL url = oidcEndpoint("/oauth2/token");
         WebRequest request = new WebRequest(url, HttpMethod.POST);
@@ -611,7 +611,7 @@ abstract class AbstractOIDCTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testCreateClientWithSupportedTLD() throws Exception {
         // Login to the client page successfully
         try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
@@ -637,7 +637,7 @@ abstract class AbstractOIDCTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testLogout() throws Exception {
         // 1. Log in
         final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
@@ -673,7 +673,7 @@ abstract class AbstractOIDCTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testLogoutForConfidentialClientViaTokenHint() throws IOException {
         final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
             .queryParam("client_id", confidentialClientId)
@@ -682,7 +682,7 @@ abstract class AbstractOIDCTest {
         testLogoutViaTokenHint(authorizationUrl, confidentialClientId, confidentialClientSecret);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testLogoutForPublicClientViaTokenHint() throws IOException {
         final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
             .queryParam("client_id", publicClientId)
@@ -724,7 +724,7 @@ abstract class AbstractOIDCTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testLogoutWrongPostLogoutRedirectUri() throws Exception {
         // 1. Log in
         final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
@@ -760,7 +760,7 @@ abstract class AbstractOIDCTest {
     }
 
     // Test that the form has the correct CSRF token in it when creating a client
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testCSRFClientRegistration() throws Exception {
         // Login to the client page successfully
         try (WebClient webClient = setupWebClientIDP("alice", "ecila")) {
@@ -783,7 +783,7 @@ abstract class AbstractOIDCTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testOIDCLoginForConfidentialClientWithRoles() throws Exception {
         final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
             .queryParam("client_id", confidentialClientId)
@@ -802,7 +802,7 @@ abstract class AbstractOIDCTest {
         validateIdToken(getIdToken(json), confidentialClientId, "User");
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testOIDCLoginForConfidentialClientWithRolesScope() throws Exception {
         final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
             .queryParam("client_id", confidentialClientId)
@@ -820,7 +820,7 @@ abstract class AbstractOIDCTest {
         validateIdToken(getIdToken(json), confidentialClientId, "User");
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testOIDCLoginForPublicClientWithRefreshTokenScope() throws Exception {
         final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
             .queryParam("client_id", publicClientId)
@@ -857,7 +857,7 @@ abstract class AbstractOIDCTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testAccessTokenRevocation() throws Exception {
         final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
             .queryParam("client_id", confidentialClientId)
@@ -902,7 +902,7 @@ abstract class AbstractOIDCTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testAccessTokenRevocationWrongClient() throws Exception {
         final UriBuilder authorizationUrl = oidcEndpointBuilder("/idp/authorize")
             .queryParam("client_id", confidentialClientId)
@@ -964,7 +964,7 @@ abstract class AbstractOIDCTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testJWKKeyService2() throws Exception {
         final String response;
         try (WebClient webClient = setupWebClient()) {

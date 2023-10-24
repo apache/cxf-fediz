@@ -29,14 +29,14 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.util.Assert;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class MetadataWriterTest {
 
     private static ApplicationContext applicationContext;
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         applicationContext = new ClassPathXmlApplicationContext("/idp-config.xml");
     }

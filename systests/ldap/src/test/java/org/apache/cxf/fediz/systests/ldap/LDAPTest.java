@@ -44,17 +44,19 @@ import org.apache.directory.server.core.integ.AbstractLdapTestUnit;
 import org.apache.directory.server.core.integ.FrameworkRunner;
 import org.apache.wss4j.dom.engine.WSSConfig;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.apache.directory.server.core.integ.ApacheDSTestExtension;
+import org.junit.jupiter.api.After;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Before;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.jupiter.api.extension.ExtendWith;
 
 /**
  * A test that configures the STS to authenticate user (and retrieve claims) from an LDAP backend.
  */
 
-@RunWith(FrameworkRunner.class)
+@ExtendWith( { ApacheDSTestExtension.class } )
 
 //Define the DirectoryService
 @CreateDS(name = "LDAPTest-class",
@@ -96,9 +98,9 @@ public class LDAPTest extends AbstractLdapTestUnit {
     @Before
     public void init() throws Exception {
         idpHttpsPort = System.getProperty("idp.https.port");
-        Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
+        Assertions.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
         rpHttpsPort = System.getProperty("rp.https.port");
-        Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
+        Assertions.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
 
         WSSConfig.init();
 
@@ -191,7 +193,7 @@ public class LDAPTest extends AbstractLdapTestUnit {
         return server;
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         shutdownServer(idpServer);
         shutdownServer(rpServer);
@@ -241,24 +243,23 @@ public class LDAPTest extends AbstractLdapTestUnit {
         final String bodyTextContent =
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), "signinresponseform");
 
-        Assert.assertTrue("Principal not " + user,
-                          bodyTextContent.contains("userPrincipal=" + user));
-        Assert.assertTrue("User " + user + " does not have role Admin",
-                          bodyTextContent.contains("role:Admin=false"));
-        Assert.assertTrue("User " + user + " does not have role Manager",
-                          bodyTextContent.contains("role:Manager=false"));
-        Assert.assertTrue("User " + user + " must have role User",
-                          bodyTextContent.contains("role:User=true"));
+        Assertions.assertTrue(bodyTextContent.contains("userPrincipal=" + user), "Principal not " + user);
+        Assertions.assertTrue(bodyTextContent.contains("role:Admin=false"),
+                "User " + user + " does not have role Admin");
+        Assertions.assertTrue(bodyTextContent.contains("role:Manager=false"),
+                "User " + user + " does not have role Manager");
+        Assertions.assertTrue(bodyTextContent.contains("role:User=true"),
+                "User " + user + " must have role User");
 
         String claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
-                          bodyTextContent.contains(claim + "=Alice"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=Alice"),
+                "User " + user + " claim " + claim + " is not 'Alice'");
         claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
-                          bodyTextContent.contains(claim + "=Smith"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=Smith"),
+                "User " + user + " claim " + claim + " is not 'Smith'");
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
-                          bodyTextContent.contains(claim + "=alice@realma.org"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=alice@realma.org"),
+                "User " + user + " claim " + claim + " is not 'alice@realma.org'");
 
     }
 

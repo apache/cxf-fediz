@@ -49,9 +49,9 @@ import org.ietf.jgss.GSSManager;
 import org.ietf.jgss.GSSName;
 import org.ietf.jgss.Oid;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 
 /**
  * A test that sends a Kerberos ticket to the IdP for authentication. The IdP must be configured
@@ -70,12 +70,12 @@ public class KerberosTest {
 
     private static SimpleKdcServer kerbyServer;
 
-    @BeforeClass
+    @BeforeAll
     public static void init() throws Exception {
         idpHttpsPort = System.getProperty("idp.https.port");
-        Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
+        Assertions.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
         rpHttpsPort = System.getProperty("rp.https.port");
-        Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
+        Assertions.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
 
         WSSConfig.init();
 
@@ -164,7 +164,7 @@ public class KerberosTest {
         return server;
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         shutdownServer(idpServer);
         shutdownServer(rpServer);
@@ -196,7 +196,7 @@ public class KerberosTest {
         return "fedizhelloworld";
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testKerberos() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         // Get a Kerberos Ticket +  Base64 encode it
@@ -209,41 +209,40 @@ public class KerberosTest {
         webClient.addRequestHeader("Authorization", "Negotiate " + ticket);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         final HtmlForm form = idpPage.getFormByName("signinresponseform");
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
 
         final HtmlPage rpPage = button.click();
-        Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
+        Assertions.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
 
         final String bodyTextContent = rpPage.getBody().getTextContent();
         String user = "alice";
-        Assert.assertTrue("Principal not " + user,
-                          bodyTextContent.contains("userPrincipal=" + user));
-        Assert.assertTrue("User " + user + " does not have role Admin",
-                          bodyTextContent.contains("role:Admin=false"));
-        Assert.assertTrue("User " + user + " does not have role Manager",
-                          bodyTextContent.contains("role:Manager=false"));
-        Assert.assertTrue("User " + user + " must have role User",
-                          bodyTextContent.contains("role:User=true"));
+        Assertions.assertTrue(bodyTextContent.contains("userPrincipal=" + user), "Principal not " + user);
+        Assertions.assertTrue(bodyTextContent.contains("role:Admin=false"),
+                "User " + user + " does not have role Admin");
+        Assertions.assertTrue(bodyTextContent.contains("role:Manager=false"),
+                "User " + user + " does not have role Manager");
+        Assertions.assertTrue(bodyTextContent.contains("role:User=true"),
+                "User " + user + " must have role User");
 
         String claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
-                          bodyTextContent.contains(claim + "=Alice"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=Alice"),
+                "User " + user + " claim " + claim + " is not 'Alice'");
         claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
-                          bodyTextContent.contains(claim + "=Smith"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=Smith"),
+                "User " + user + " claim " + claim + " is not 'Smith'");
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
-                          bodyTextContent.contains(claim + "=alice@realma.org"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=alice@realma.org"),
+                "User " + user + " claim " + claim + " is not 'alice@realma.org'");
 
         webClient.close();
     }
 
     // To get this test to work, uncomment the "spnego" configuration in the STS's kerberos.xml
-    @org.junit.Test
-    @org.junit.Ignore
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.Disabled
     public void testSpnego() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         // Get a Kerberos Ticket +  Base64 encode it
@@ -256,34 +255,33 @@ public class KerberosTest {
         webClient.addRequestHeader("Authorization", "Negotiate " + ticket);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         final HtmlForm form = idpPage.getFormByName("signinresponseform");
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
 
         final HtmlPage rpPage = button.click();
-        Assert.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
+        Assertions.assertEquals("WS Federation Systests Examples", rpPage.getTitleText());
 
         final String bodyTextContent = rpPage.getBody().getTextContent();
         String user = "alice";
-        Assert.assertTrue("Principal not " + user,
-                          bodyTextContent.contains("userPrincipal=" + user));
-        Assert.assertTrue("User " + user + " does not have role Admin",
-                          bodyTextContent.contains("role:Admin=false"));
-        Assert.assertTrue("User " + user + " does not have role Manager",
-                          bodyTextContent.contains("role:Manager=false"));
-        Assert.assertTrue("User " + user + " must have role User",
-                          bodyTextContent.contains("role:User=true"));
+        Assertions.assertTrue(bodyTextContent.contains("userPrincipal=" + user), "Principal not " + user);
+        Assertions.assertTrue(bodyTextContent.contains("role:Admin=false"),
+                "User " + user + " does not have role Admin");
+        Assertions.assertTrue(bodyTextContent.contains("role:Manager=false"),
+                "User " + user + " does not have role Manager");
+        Assertions.assertTrue(bodyTextContent.contains("role:User=true"),
+                "User " + user + " must have role User");
 
         String claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
-                          bodyTextContent.contains(claim + "=Alice"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=Alice"),
+                "User " + user + " claim " + claim + " is not 'Alice'");
         claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
-                          bodyTextContent.contains(claim + "=Smith"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=Smith"),
+                "User " + user + " claim " + claim + " is not 'Smith'");
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
-                          bodyTextContent.contains(claim + "=alice@realma.org"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=alice@realma.org"),
+                "User " + user + " claim " + claim + " is not 'alice@realma.org'");
 
         webClient.close();
     }

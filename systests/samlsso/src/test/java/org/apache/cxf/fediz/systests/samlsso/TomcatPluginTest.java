@@ -53,10 +53,10 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.wss4j.common.util.DOM2Writer;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * Some tests for SAML SSO with the Tomcat plugin, invoking on the Fediz IdP configured for SAML SSO.
@@ -69,7 +69,7 @@ public class TomcatPluginTest extends AbstractTests {
     private static Tomcat idpServer;
     private static Tomcat rpServer;
 
-    @BeforeClass
+    @BeforeAll
     public static void init() throws Exception {
         idpServer = startServer(true, Objects.requireNonNull(IDP_HTTPS_PORT, "Property 'idp.https.port' null"));
         rpServer = startServer(false, Objects.requireNonNull(RP_HTTPS_PORT, "Property 'rp.https.port' null"));
@@ -134,7 +134,7 @@ public class TomcatPluginTest extends AbstractTests {
         return server;
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         shutdownServer(idpServer);
         shutdownServer(rpServer);
@@ -174,8 +174,8 @@ public class TomcatPluginTest extends AbstractTests {
         return false;
     }
 
-    @org.junit.Test
-    @org.junit.Ignore
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.Disabled
     public void testBrowser() throws Exception {
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
 
@@ -203,7 +203,7 @@ public class TomcatPluginTest extends AbstractTests {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // Parse the form to get the token (wresult)
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
@@ -237,10 +237,10 @@ public class TomcatPluginTest extends AbstractTests {
 
         try {
             button.click();
-            Assert.fail("Failure expected on a modified signature");
+            Assertions.fail("Failure expected on a modified signature");
         } catch (FailingHttpStatusCodeException ex) {
             // expected
-            Assert.assertTrue(401 == ex.getStatusCode() || 403 == ex.getStatusCode());
+            Assertions.assertTrue(401 == ex.getStatusCode() || 403 == ex.getStatusCode());
         }
 
         webClient.close();
@@ -266,7 +266,7 @@ public class TomcatPluginTest extends AbstractTests {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // Parse the form to get the token (wresult)
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
@@ -287,10 +287,10 @@ public class TomcatPluginTest extends AbstractTests {
 
         try {
             button.click();
-            Assert.fail("Failure expected on a modified context");
+            Assertions.fail("Failure expected on a modified context");
         } catch (FailingHttpStatusCodeException ex) {
             // Request Timeout expected here, as the context isn't known - the session is presumed to have expired
-            Assert.assertTrue(408 == ex.getStatusCode());
+            Assertions.assertTrue(408 == ex.getStatusCode());
         }
 
         webClient.close();

@@ -56,8 +56,8 @@ import org.apache.wss4j.dom.engine.WSSConfig;
 import org.apache.xml.security.keys.KeyInfo;
 import org.apache.xml.security.signature.XMLSignature;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public abstract class AbstractTests {
 
@@ -108,24 +108,23 @@ public abstract class AbstractTests {
         final String bodyTextContent =
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), getLoginFormName());
 
-        Assert.assertTrue("Principal not " + user,
-                          bodyTextContent.contains("userPrincipal=" + user));
-        Assert.assertTrue("User " + user + " does not have role Admin",
-                          bodyTextContent.contains("role:Admin=false"));
-        Assert.assertTrue("User " + user + " does not have role Manager",
-                          bodyTextContent.contains("role:Manager=false"));
-        Assert.assertTrue("User " + user + " must have role User",
-                          bodyTextContent.contains("role:User=true"));
+        Assertions.assertTrue(bodyTextContent.contains("userPrincipal=" + user), "Principal not " + user);
+        Assertions.assertTrue(bodyTextContent.contains("role:Admin=false"),
+                "User " + user + " does not have role Admin");
+        Assertions.assertTrue(bodyTextContent.contains("role:Manager=false"),
+                "User " + user + " does not have role Manager");
+        Assertions.assertTrue(bodyTextContent.contains("role:User=true"),
+                "User " + user + " must have role User");
 
         String claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Alice'",
-                          bodyTextContent.contains(claim + "=Alice"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=Alice"),
+                "User " + user + " claim " + claim + " is not 'Alice'");
         claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Smith'",
-                          bodyTextContent.contains(claim + "=Smith"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=Smith"),
+                "User " + user + " claim " + claim + " is not 'Smith'");
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'alice@realma.org'",
-                          bodyTextContent.contains(claim + "=alice@realma.org"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=alice@realma.org"),
+                "User " + user + " claim " + claim + " is not 'alice@realma.org'");
 
     }
 
@@ -139,14 +138,13 @@ public abstract class AbstractTests {
         final String bodyTextContent =
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), getLoginFormName());
 
-        Assert.assertTrue("Principal not " + user,
-                          bodyTextContent.contains("userPrincipal=" + user));
-        Assert.assertTrue("User " + user + " does not have role Admin",
-                          bodyTextContent.contains("role:Admin=false"));
-        Assert.assertTrue("User " + user + " does not have role Manager",
-                          bodyTextContent.contains("role:Manager=false"));
-        Assert.assertTrue("User " + user + " must have role User",
-                          bodyTextContent.contains("role:User=true"));
+        Assertions.assertTrue(bodyTextContent.contains("userPrincipal=" + user), "Principal not " + user);
+        Assertions.assertTrue(bodyTextContent.contains("role:Admin=false"),
+                "User " + user + " does not have role Admin");
+        Assertions.assertTrue(bodyTextContent.contains("role:Manager=false"),
+                "User " + user + " does not have role Manager");
+        Assertions.assertTrue(bodyTextContent.contains("role:User=true"),
+                "User " + user + " must have role User");
     }
 
     @Test
@@ -158,9 +156,9 @@ public abstract class AbstractTests {
 
         try {
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), getLoginFormName());
-            Assert.fail("Exception expected");
+            Assertions.fail("Exception expected");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 403);
+            Assertions.assertEquals(ex.getStatusCode(), 403);
         }
     }
 
@@ -173,9 +171,9 @@ public abstract class AbstractTests {
 
         try {
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), getLoginFormName());
-            Assert.fail("Exception expected");
+            Assertions.fail("Exception expected");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 403);
+            Assertions.assertEquals(ex.getStatusCode(), 403);
         }
     }
 
@@ -188,9 +186,9 @@ public abstract class AbstractTests {
 
         try {
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), getLoginFormName());
-            Assert.fail("Exception expected");
+            Assertions.fail("Exception expected");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 401);
+            Assertions.assertEquals(ex.getStatusCode(), 401);
         }
     }
 
@@ -204,24 +202,23 @@ public abstract class AbstractTests {
         final String bodyTextContent =
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), getLoginFormName());
 
-        Assert.assertTrue("Principal not " + user,
-                          bodyTextContent.contains("userPrincipal=" + user));
-        Assert.assertTrue("User " + user + " does not have role Admin",
-                          bodyTextContent.contains("role:Admin=true"));
-        Assert.assertTrue("User " + user + " does not have role Manager",
-                          bodyTextContent.contains("role:Manager=true"));
-        Assert.assertTrue("User " + user + " must have role User",
-                          bodyTextContent.contains("role:User=true"));
+        Assertions.assertTrue(bodyTextContent.contains("userPrincipal=" + user), "Principal not " + user);
+        Assertions.assertTrue(bodyTextContent.contains("role:Admin=true"),
+                "User " + user + " does not have role Admin");
+        Assertions.assertTrue(bodyTextContent.contains("role:Manager=true"),
+                "User " + user + " does not have role Manager");
+        Assertions.assertTrue(bodyTextContent.contains("role:User=true"),
+                "User " + user + " must have role User");
 
         String claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Bob'",
-                          bodyTextContent.contains(claim + "=Bob"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=Bob"),
+                "User " + user + " claim " + claim + " is not 'Bob'");
         claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Windsor'",
-                          bodyTextContent.contains(claim + "=Windsor"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=Windsor"),
+                "User " + user + " claim " + claim + " is not 'Windsor'");
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'bobwindsor@realma.org'",
-                          bodyTextContent.contains(claim + "=bobwindsor@realma.org"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=bobwindsor@realma.org"),
+                "User " + user + " claim " + claim + " is not 'bobwindsor@realma.org'");
     }
 
     @Test
@@ -234,14 +231,13 @@ public abstract class AbstractTests {
         final String bodyTextContent =
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), getLoginFormName());
 
-        Assert.assertTrue("Principal not " + user,
-                          bodyTextContent.contains("userPrincipal=" + user));
-        Assert.assertTrue("User " + user + " does not have role Admin",
-                          bodyTextContent.contains("role:Admin=true"));
-        Assert.assertTrue("User " + user + " does not have role Manager",
-                          bodyTextContent.contains("role:Manager=true"));
-        Assert.assertTrue("User " + user + " must have role User",
-                          bodyTextContent.contains("role:User=true"));
+        Assertions.assertTrue(bodyTextContent.contains("userPrincipal=" + user), "Principal not " + user);
+        Assertions.assertTrue(bodyTextContent.contains("role:Admin=true"),
+                "User " + user + " does not have role Admin");
+        Assertions.assertTrue(bodyTextContent.contains("role:Manager=true"),
+                "User " + user + " does not have role Manager");
+        Assertions.assertTrue(bodyTextContent.contains("role:User=true"),
+                "User " + user + " must have role User");
     }
 
     @Test
@@ -254,14 +250,13 @@ public abstract class AbstractTests {
         final String bodyTextContent =
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), getLoginFormName());
 
-        Assert.assertTrue("Principal not " + user,
-                          bodyTextContent.contains("userPrincipal=" + user));
-        Assert.assertTrue("User " + user + " does not have role Admin",
-                          bodyTextContent.contains("role:Admin=true"));
-        Assert.assertTrue("User " + user + " does not have role Manager",
-                          bodyTextContent.contains("role:Manager=true"));
-        Assert.assertTrue("User " + user + " must have role User",
-                          bodyTextContent.contains("role:User=true"));
+        Assertions.assertTrue(bodyTextContent.contains("userPrincipal=" + user), "Principal not " + user);
+        Assertions.assertTrue(bodyTextContent.contains("role:Admin=true"),
+                "User " + user + " does not have role Admin");
+        Assertions.assertTrue(bodyTextContent.contains("role:Manager=true"),
+                "User " + user + " does not have role Manager");
+        Assertions.assertTrue(bodyTextContent.contains("role:User=true"),
+                "User " + user + " must have role User");
     }
 
     @Test
@@ -274,14 +269,13 @@ public abstract class AbstractTests {
         final String bodyTextContent =
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), getLoginFormName());
 
-        Assert.assertTrue("Principal not " + user,
-                          bodyTextContent.contains("userPrincipal=" + user));
-        Assert.assertTrue("User " + user + " does not have role Admin",
-                          bodyTextContent.contains("role:Admin=true"));
-        Assert.assertTrue("User " + user + " does not have role Manager",
-                          bodyTextContent.contains("role:Manager=true"));
-        Assert.assertTrue("User " + user + " must have role User",
-                          bodyTextContent.contains("role:User=true"));
+        Assertions.assertTrue(bodyTextContent.contains("userPrincipal=" + user), "Principal not " + user);
+        Assertions.assertTrue(bodyTextContent.contains("role:Admin=true"),
+                "User " + user + " does not have role Admin");
+        Assertions.assertTrue(bodyTextContent.contains("role:Manager=true"),
+                "User " + user + " does not have role Manager");
+        Assertions.assertTrue(bodyTextContent.contains("role:User=true"),
+                "User " + user + " must have role User");
     }
 
     @Test
@@ -294,24 +288,23 @@ public abstract class AbstractTests {
         final String bodyTextContent =
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), getLoginFormName());
 
-        Assert.assertTrue("Principal not " + user,
-                          bodyTextContent.contains("userPrincipal=" + user));
-        Assert.assertTrue("User " + user + " does not have role Admin",
-                          bodyTextContent.contains("role:Admin=false"));
-        Assert.assertTrue("User " + user + " does not have role Manager",
-                          bodyTextContent.contains("role:Manager=false"));
-        Assert.assertTrue("User " + user + " must have role User",
-                          bodyTextContent.contains("role:User=false"));
+        Assertions.assertTrue(bodyTextContent.contains("userPrincipal=" + user), "Principal not " + user);
+        Assertions.assertTrue(bodyTextContent.contains("role:Admin=false"),
+                "User " + user + " does not have role Admin");
+        Assertions.assertTrue(bodyTextContent.contains("role:Manager=false"),
+                "User " + user + " does not have role Manager");
+        Assertions.assertTrue(bodyTextContent.contains("role:User=false"),
+                "User " + user + " must have role User");
 
         String claim = ClaimTypes.FIRSTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Ted'",
-                          bodyTextContent.contains(claim + "=Ted"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=Ted"),
+                "User " + user + " claim " + claim + " is not 'Ted'");
         claim = ClaimTypes.LASTNAME.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'Cooper'",
-                          bodyTextContent.contains(claim + "=Cooper"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=Cooper"),
+                "User " + user + " claim " + claim + " is not 'Cooper'");
         claim = ClaimTypes.EMAILADDRESS.toString();
-        Assert.assertTrue("User " + user + " claim " + claim + " is not 'tcooper@realma.org'",
-                          bodyTextContent.contains(claim + "=tcooper@realma.org"));
+        Assertions.assertTrue(bodyTextContent.contains(claim + "=tcooper@realma.org"),
+                "User " + user + " claim " + claim + " is not 'tcooper@realma.org'");
     }
 
     @Test
@@ -323,9 +316,9 @@ public abstract class AbstractTests {
 
         try {
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), getLoginFormName());
-            Assert.fail("Exception expected");
+            Assertions.fail("Exception expected");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 403);
+            Assertions.assertEquals(ex.getStatusCode(), 403);
         }
     }
 
@@ -338,9 +331,9 @@ public abstract class AbstractTests {
 
         try {
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), getLoginFormName());
-            Assert.fail("Exception expected");
+            Assertions.fail("Exception expected");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 403);
+            Assertions.assertEquals(ex.getStatusCode(), 403);
         }
     }
 
@@ -353,9 +346,9 @@ public abstract class AbstractTests {
 
         try {
             HTTPTestUtils.login(url, user, password, getIdpHttpsPort(), getLoginFormName());
-            Assert.fail("Exception expected");
+            Assertions.fail("Exception expected");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 403);
+            Assertions.assertEquals(ex.getStatusCode(), 403);
         }
     }
 
@@ -376,7 +369,7 @@ public abstract class AbstractTests {
 
         final XmlPage rpPage = webClient.getPage(url);
         final String xmlContent = rpPage.asXml();
-        Assert.assertTrue(xmlContent.startsWith("<md:EntityDescriptor"));
+        Assertions.assertTrue(xmlContent.startsWith("<md:EntityDescriptor"));
 
         // Now validate the Signature
         Document doc = rpPage.getXmlDocument();
@@ -385,14 +378,14 @@ public abstract class AbstractTests {
 
         Node signatureNode =
             DOMUtils.getChild(doc.getDocumentElement(), "Signature");
-        Assert.assertNotNull(signatureNode);
+        Assertions.assertNotNull(signatureNode);
 
         XMLSignature signature = new XMLSignature((Element)signatureNode, "");
         KeyInfo ki = signature.getKeyInfo();
-        Assert.assertNotNull(ki);
-        Assert.assertNotNull(ki.getX509Certificate());
+        Assertions.assertNotNull(ki);
+        Assertions.assertNotNull(ki.getX509Certificate());
 
-        Assert.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
+        Assertions.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
 
         webClient.close();
     }
@@ -416,7 +409,7 @@ public abstract class AbstractTests {
         webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);
         final HtmlPage rpPage = webClient.getPage(url);
-        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
+        Assertions.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
                           || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
 
         // 3. now we logout from RP
@@ -435,7 +428,7 @@ public abstract class AbstractTests {
         webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
         final HtmlPage idpPage = webClient.getPage(url);
 
-        Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
+        Assertions.assertEquals(401, idpPage.getWebResponse().getStatusCode());
 
         webClient.close();
     }
@@ -463,7 +456,7 @@ public abstract class AbstractTests {
         webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);
         final HtmlPage rpPage = webClient.getPage(url);
-        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
+        Assertions.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
                           || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
 
         // 3. now we logout from RP
@@ -482,7 +475,7 @@ public abstract class AbstractTests {
         webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
         final HtmlPage idpPage = webClient.getPage(url);
 
-        Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
+        Assertions.assertEquals(401, idpPage.getWebResponse().getStatusCode());
 
         webClient.close();
     }
@@ -510,7 +503,7 @@ public abstract class AbstractTests {
         webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);
         final HtmlPage rpPage = webClient.getPage(url);
-        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
+        Assertions.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
                           || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
 
         // 3. now we logout from IdP
@@ -529,7 +522,7 @@ public abstract class AbstractTests {
         webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
         final HtmlPage idpPage = webClient.getPage(url);
 
-        Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
+        Assertions.assertEquals(401, idpPage.getWebResponse().getStatusCode());
 
         webClient.close();
     }
@@ -557,7 +550,7 @@ public abstract class AbstractTests {
         webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);
         final HtmlPage rpPage = webClient.getPage(url);
-        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
+        Assertions.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
                           || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
 
         // 3. now we logout from IdP
@@ -576,7 +569,7 @@ public abstract class AbstractTests {
         webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
         final HtmlPage idpPage = webClient.getPage(url);
 
-        Assert.assertEquals(401, idpPage.getWebResponse().getStatusCode());
+        Assertions.assertEquals(401, idpPage.getWebResponse().getStatusCode());
 
         webClient.close();
     }
@@ -601,7 +594,7 @@ public abstract class AbstractTests {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // Parse the form to get the token (wresult)
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
@@ -626,10 +619,10 @@ public abstract class AbstractTests {
 
         try {
             button.click();
-            Assert.fail("Failure expected on a modified signature");
+            Assertions.fail("Failure expected on a modified signature");
         } catch (FailingHttpStatusCodeException ex) {
             // expected
-            Assert.assertTrue(401 == ex.getStatusCode() || 403 == ex.getStatusCode());
+            Assertions.assertTrue(401 == ex.getStatusCode() || 403 == ex.getStatusCode());
         }
 
         webClient.close();
@@ -656,20 +649,19 @@ public abstract class AbstractTests {
         final HtmlPage idpPage1 = webClient.getPage(url1);
         final HtmlPage idpPage2 = webClient.getPage(url2);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage1.getTitleText());
-        Assert.assertEquals("IDP SignIn Response Form", idpPage2.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage1.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage2.getTitleText());
 
         // Invoke back on the page1 RP
         final HtmlForm form = idpPage1.getFormByName(getLoginFormName());
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
         final HtmlPage rpPage1 = button.click();
-        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage1.getTitleText())
+        Assertions.assertTrue("WS Federation Systests Examples".equals(rpPage1.getTitleText())
                           || "WS Federation Systests Spring Examples".equals(rpPage1.getTitleText()));
 
         String bodyTextContent1 = rpPage1.getBody().getTextContent();
 
-        Assert.assertTrue("Principal not " + user,
-                          bodyTextContent1.contains("userPrincipal=" + user));
+        Assertions.assertTrue(bodyTextContent1.contains("userPrincipal=" + user), "Principal not " + user);
 
         // Invoke back on the page2 RP
         final HtmlForm form2 = idpPage2.getFormByName(getLoginFormName());
@@ -677,12 +669,12 @@ public abstract class AbstractTests {
         final HtmlPage rpPage2 = button2.click();
         String bodyTextContent2 = rpPage2.getBody().getTextContent();
 
-        Assert.assertTrue("Unexpected content of RP page", bodyTextContent2.contains("Secure Test"));
+        Assertions.assertTrue(bodyTextContent2.contains("Secure Test"), "Unexpected content of RP page");
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testMaliciousRedirect() throws Exception {
         if (!isWSFederation()) {
             return;
@@ -703,7 +695,7 @@ public abstract class AbstractTests {
         webClient.setCookieManager(cookieManager);
         webClient.getOptions().setUseInsecureSSL(true);
         HtmlPage rpPage = webClient.getPage(url);
-        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
+        Assertions.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
                           || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
 
         // 3. Now a malicious user sends the client a URL with a bad "wreply" address to the IdP
@@ -725,9 +717,9 @@ public abstract class AbstractTests {
         webClient2.getOptions().setJavaScriptEnabled(false);
         try {
             webClient2.getPage(idpUrl);
-            Assert.fail("Failure expected on a bad wreply address");
+            Assertions.fail("Failure expected on a bad wreply address");
         } catch (FailingHttpStatusCodeException ex) {
-            Assert.assertEquals(ex.getStatusCode(), 400);
+            Assertions.assertEquals(ex.getStatusCode(), 400);
         }
         webClient2.close();
     }
@@ -751,7 +743,7 @@ public abstract class AbstractTests {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // Parse the form to get the token (wresult)
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
@@ -795,10 +787,10 @@ public abstract class AbstractTests {
 
         try {
             button.click();
-            Assert.fail("Failure expected on an entity expansion attack");
+            Assertions.fail("Failure expected on an entity expansion attack");
         } catch (FailingHttpStatusCodeException ex) {
             // expected
-            Assert.assertTrue(401 == ex.getStatusCode() || 403 == ex.getStatusCode());
+            Assertions.assertTrue(401 == ex.getStatusCode() || 403 == ex.getStatusCode());
         }
 
         webClient.close();
@@ -823,7 +815,7 @@ public abstract class AbstractTests {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // Parse the form to get the token (wresult)
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
@@ -867,16 +859,16 @@ public abstract class AbstractTests {
 
         try {
             button.click();
-            Assert.fail("Failure expected on an entity expansion attack");
+            Assertions.fail("Failure expected on an entity expansion attack");
         } catch (FailingHttpStatusCodeException ex) {
             // expected
-            Assert.assertTrue(401 == ex.getStatusCode() || 403 == ex.getStatusCode());
+            Assertions.assertTrue(401 == ex.getStatusCode() || 403 == ex.getStatusCode());
         }
 
         webClient.close();
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testCSRFAttack() throws Exception {
 
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
@@ -898,13 +890,13 @@ public abstract class AbstractTests {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         final HtmlForm form = idpPage.getFormByName(getLoginFormName());
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
 
         final HtmlPage rpPage = button.click();
-        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
+        Assertions.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
                             || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
 
 
@@ -918,7 +910,7 @@ public abstract class AbstractTests {
         webClient2.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage2 = webClient2.getPage(url);
         webClient2.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage2.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage2.getTitleText());
 
         // 3. Now instead of clicking on the form, send the form via alice's WebClient instead
 
@@ -947,7 +939,7 @@ public abstract class AbstractTests {
 
         try {
             webClient.getPage(request);
-            Assert.fail("Failure expected on a CSRF attack");
+            Assertions.fail("Failure expected on a CSRF attack");
         } catch (FailingHttpStatusCodeException ex) {
             // expected
         }
@@ -957,7 +949,7 @@ public abstract class AbstractTests {
 
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testCSRFAttack2() throws Exception {
 
         String url = "https://localhost:" + getRpHttpsPort() + "/" + getServletContextName() + "/secure/fedservlet";
@@ -977,7 +969,7 @@ public abstract class AbstractTests {
         webClient2.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage2 = webClient2.getPage(url);
         webClient2.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage2.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage2.getTitleText());
 
         // 2. Now instead of clicking on the form, send the form via alice's WebClient instead
 
@@ -1009,7 +1001,7 @@ public abstract class AbstractTests {
 
         try {
             webClient.getPage(request);
-            Assert.fail("Failure expected on a CSRF attack");
+            Assertions.fail("Failure expected on a CSRF attack");
         } catch (FailingHttpStatusCodeException ex) {
             // expected
         }

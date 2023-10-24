@@ -35,9 +35,9 @@ import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.core.processor.RedirectionResponse;
 
 import org.easymock.EasyMock;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 
 /**
  * Some tests for creating WS-Federation requests using the FederationProcessorImpl
@@ -60,13 +60,13 @@ public class FederationRequestTest {
     }
 
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         getFederationConfigurator();
-        Assert.assertNotNull(configurator);
+        Assertions.assertNotNull(configurator);
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         SecurityTestUtil.cleanup();
     }
@@ -89,7 +89,7 @@ public class FederationRequestTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void createFederationSignInRequest() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -105,16 +105,16 @@ public class FederationRequestTest {
         RedirectionResponse response = wfProc.createSignInRequest(req, config);
 
         String redirectionURL = response.getRedirectionURL();
-        Assert.assertTrue(redirectionURL.startsWith(TEST_IDP_ISSUER));
-        Assert.assertTrue(redirectionURL.contains("wa=wsignin1.0"));
-        Assert.assertTrue(redirectionURL.contains("wreq=REQUEST"));
-        Assert.assertTrue(redirectionURL.contains("wfresh=10000"));
-        Assert.assertTrue(redirectionURL.contains("wct="));
-        Assert.assertTrue(redirectionURL.contains("wtrealm=target+realm"));
-        Assert.assertTrue(redirectionURL.contains("wreply="));
+        Assertions.assertTrue(redirectionURL.startsWith(TEST_IDP_ISSUER));
+        Assertions.assertTrue(redirectionURL.contains("wa=wsignin1.0"));
+        Assertions.assertTrue(redirectionURL.contains("wreq=REQUEST"));
+        Assertions.assertTrue(redirectionURL.contains("wfresh=10000"));
+        Assertions.assertTrue(redirectionURL.contains("wct="));
+        Assertions.assertTrue(redirectionURL.contains("wtrealm=target+realm"));
+        Assertions.assertTrue(redirectionURL.contains("wreply="));
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void createFederationSignInRequestWithUrlDefinedHomeRealm() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -131,18 +131,18 @@ public class FederationRequestTest {
         RedirectionResponse response = wfProc.createSignInRequest(req, config);
 
         String redirectionURL = response.getRedirectionURL();
-        Assert.assertTrue(redirectionURL.startsWith(TEST_IDP_ISSUER));
-        Assert.assertTrue(redirectionURL.contains("wa=wsignin1.0"));
-        Assert.assertTrue(redirectionURL.contains("wreq=REQUEST"));
-        Assert.assertTrue(redirectionURL.contains("wfresh=10000"));
-        Assert.assertTrue(redirectionURL.contains("wct="));
-        Assert.assertTrue(redirectionURL.contains("wtrealm=target+realm"));
-        Assert.assertTrue(redirectionURL.contains("wreply="));
-        Assert.assertTrue(redirectionURL.contains("whr="
+        Assertions.assertTrue(redirectionURL.startsWith(TEST_IDP_ISSUER));
+        Assertions.assertTrue(redirectionURL.contains("wa=wsignin1.0"));
+        Assertions.assertTrue(redirectionURL.contains("wreq=REQUEST"));
+        Assertions.assertTrue(redirectionURL.contains("wfresh=10000"));
+        Assertions.assertTrue(redirectionURL.contains("wct="));
+        Assertions.assertTrue(redirectionURL.contains("wtrealm=target+realm"));
+        Assertions.assertTrue(redirectionURL.contains("wreply="));
+        Assertions.assertTrue(redirectionURL.contains("whr="
                                                 + URLEncoder.encode("urn:org:apache:cxf:fediz:idp:realm-A", "UTF-8")));
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void createFederationSignOutRequest() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -157,8 +157,8 @@ public class FederationRequestTest {
         RedirectionResponse response = wfProc.createSignOutRequest(req, null, config);
 
         String redirectionURL = response.getRedirectionURL();
-        Assert.assertTrue(redirectionURL.startsWith(TEST_IDP_ISSUER));
-        Assert.assertTrue(redirectionURL.contains("wa=wsignout1.0"));
+        Assertions.assertTrue(redirectionURL.startsWith(TEST_IDP_ISSUER));
+        Assertions.assertTrue(redirectionURL.contains("wa=wsignout1.0"));
     }
 
 }

@@ -31,15 +31,15 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.util.Assert;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(locations = { "classpath:testContext.xml" })
 public class ApplicationDAOJPATest {
 
@@ -47,7 +47,7 @@ public class ApplicationDAOJPATest {
     private ApplicationDAO applicationDAO;
 
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         System.setProperty("spring.profiles.active", "jpa");
     }
@@ -104,9 +104,11 @@ public class ApplicationDAOJPATest {
     }
 
 
-    @Test(expected = EmptyResultDataAccessException.class)
+    @Test
     public void testTryReadNonexistingApplication() {
-        applicationDAO.getApplication("urn:org:apache:cxf:fediz:fedizhelloworld:NOTEXIST", null);
+        Assertions.assertThrows(EmptyResultDataAccessException.class, () -> {
+            applicationDAO.getApplication("urn:org:apache:cxf:fediz:fedizhelloworld:NOTEXIST", null);
+        });
     }
 
 
@@ -187,38 +189,44 @@ public class ApplicationDAOJPATest {
                       "Number of claims doesn't match");
     }
 
-    @Test(expected = DataIntegrityViolationException.class)
+    @Test
     public void testTryAddExistingApplication() {
-        Application application = new Application();
-        application.setRealm("urn:org:apache:cxf:fediz:fedizhelloworld");
-        application.setEncryptionCertificate("");
-        application.setLifeTime(3600);
-        application.setProtocol("http://docs.oasis-open.org/wsfed/federation/200706");
-        application.setRole("ApplicationServiceType");
-        application.setServiceDescription("Fedizhelloworld description");
-        application.setServiceDisplayName("Fedizhelloworld");
-        application.setTokenType("http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0");
+        Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
+            Application application = new Application();
+            application.setRealm("urn:org:apache:cxf:fediz:fedizhelloworld");
+            application.setEncryptionCertificate("");
+            application.setLifeTime(3600);
+            application.setProtocol("http://docs.oasis-open.org/wsfed/federation/200706");
+            application.setRole("ApplicationServiceType");
+            application.setServiceDescription("Fedizhelloworld description");
+            application.setServiceDisplayName("Fedizhelloworld");
+            application.setTokenType("http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0");
 
-        applicationDAO.addApplication(application);
+            applicationDAO.addApplication(application);
+        });
     }
 
 
-    @Test(expected = EmptyResultDataAccessException.class)
+    @Test
     public void testTryRemoveUnknownApplication() {
-        applicationDAO.deleteApplication("urn:org:apache:cxf:fediz:fedizhelloworld:NOTEXIST");
+        Assertions.assertThrows(EmptyResultDataAccessException.class, () -> {
+            applicationDAO.deleteApplication("urn:org:apache:cxf:fediz:fedizhelloworld:NOTEXIST");
+        });
     }
 
 
-    @Test(expected = EmptyResultDataAccessException.class)
+    @Test
     public void testRemoveExistingApplication() {
-        String realm = "urn:org:apache:cxf:fediz:app:testdelete";
-        Application application = createApplication(realm);
+        Assertions.assertThrows(EmptyResultDataAccessException.class, () -> {
+            String realm = "urn:org:apache:cxf:fediz:app:testdelete";
+            Application application = createApplication(realm);
 
-        applicationDAO.addApplication(application);
+            applicationDAO.addApplication(application);
 
-        applicationDAO.deleteApplication(realm);
+            applicationDAO.deleteApplication(realm);
 
-        applicationDAO.getApplication(realm, null);
+            applicationDAO.getApplication(realm, null);
+        });
     }
 
     @Test
@@ -249,30 +257,33 @@ public class ApplicationDAOJPATest {
         Assert.isTrue(1 == application.getRequestedClaims().size(), "requestedClaims size doesn't match");
     }
 
-    @Test(expected = DataIntegrityViolationException.class)
+    @Test
     public void testTryAddExistingClaimToApplication() {
-        Application application = new Application();
-        application.setRealm("urn:org:apache:cxf:fediz:fedizhelloworld");
+        Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
+            Application application = new Application();
+            application.setRealm("urn:org:apache:cxf:fediz:fedizhelloworld");
 
-        RequestClaim requestClaim = new RequestClaim();
-        requestClaim.setOptional(false);
-        requestClaim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"));
+            RequestClaim requestClaim = new RequestClaim();
+            requestClaim.setOptional(false);
+            requestClaim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"));
 
-        applicationDAO.addClaimToApplication(application, requestClaim);
+            applicationDAO.addClaimToApplication(application, requestClaim);
+        });
     }
 
-    @Test(expected = EmptyResultDataAccessException.class)
+    @Test
     public void testTryAddUnknownClaimToApplication() {
-        Application application = new Application();
-        application.setRealm("urn:org:apache:cxf:fediz:fedizhelloworld");
+        Assertions.assertThrows(EmptyResultDataAccessException.class, () -> {
+            Application application = new Application();
+            application.setRealm("urn:org:apache:cxf:fediz:fedizhelloworld");
 
-        RequestClaim requestClaim = new RequestClaim();
-        requestClaim.setOptional(false);
-        requestClaim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/UNKOWN"));
+            RequestClaim requestClaim = new RequestClaim();
+            requestClaim.setOptional(false);
+            requestClaim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/UNKOWN"));
 
-        applicationDAO.addClaimToApplication(application, requestClaim);
+            applicationDAO.addClaimToApplication(application, requestClaim);
+        });
     }
-
 
     @Test
     public void testRemoveClaimFromApplication() {
@@ -306,28 +317,32 @@ public class ApplicationDAOJPATest {
         Assert.isTrue(0 == application.getRequestedClaims().size(), "requestedClaims size doesn't match");
     }
 
-    @Test(expected = JpaObjectRetrievalFailureException.class)
+    @Test
     public void testTryRemoveNotAssignedClaimFromApplication() {
-        Application application = new Application();
-        application.setRealm("urn:org:apache:cxf:fediz:fedizhelloworld");
+        Assertions.assertThrows(JpaObjectRetrievalFailureException.class, () -> {
+            Application application = new Application();
+            application.setRealm("urn:org:apache:cxf:fediz:fedizhelloworld");
 
-        RequestClaim requestClaim = new RequestClaim();
-        requestClaim.setOptional(false);
-        requestClaim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/city"));
+            RequestClaim requestClaim = new RequestClaim();
+            requestClaim.setOptional(false);
+            requestClaim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/city"));
 
-        applicationDAO.removeClaimFromApplication(application, requestClaim);
+            applicationDAO.removeClaimFromApplication(application, requestClaim);
+        });
     }
 
-    @Test(expected = JpaObjectRetrievalFailureException.class)
+    @Test
     public void testTryRemoveUnknownClaimFromApplication() {
-        Application application = new Application();
-        application.setRealm("urn:org:apache:cxf:fediz:fedizhelloworld");
+        Assertions.assertThrows(JpaObjectRetrievalFailureException.class, () -> {
+            Application application = new Application();
+            application.setRealm("urn:org:apache:cxf:fediz:fedizhelloworld");
 
-        RequestClaim requestClaim = new RequestClaim();
-        requestClaim.setOptional(false);
-        requestClaim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/UNKNOWN"));
+            RequestClaim requestClaim = new RequestClaim();
+            requestClaim.setOptional(false);
+            requestClaim.setClaimType(URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/UNKNOWN"));
 
-        applicationDAO.removeClaimFromApplication(application, requestClaim);
+            applicationDAO.removeClaimFromApplication(application, requestClaim);
+        });
     }
 
     private static Application createApplication(String realm) {

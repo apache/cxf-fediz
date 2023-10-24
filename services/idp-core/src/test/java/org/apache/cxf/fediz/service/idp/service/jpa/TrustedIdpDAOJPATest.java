@@ -28,16 +28,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.util.Assert;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
-
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(locations = { "classpath:testContext.xml" })
 public class TrustedIdpDAOJPATest {
 
@@ -45,7 +45,7 @@ public class TrustedIdpDAOJPATest {
     private TrustedIdpDAO trustedIdpDAO;
 
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         System.setProperty("spring.profiles.active", "jpa");
     }
@@ -80,9 +80,11 @@ public class TrustedIdpDAOJPATest {
     }
 
 
-    @Test(expected = EmptyResultDataAccessException.class)
+    @Test
     public void testTryReadNonexistingTrustedIdp() {
-        trustedIdpDAO.getTrustedIDP("urn:org:apache:cxf:fediz:idp:NOTEXIST");
+        Assertions.assertThrows(EmptyResultDataAccessException.class, () -> {
+            trustedIdpDAO.getTrustedIDP("urn:org:apache:cxf:fediz:idp:NOTEXIST");
+        });
     }
 
 
@@ -158,29 +160,35 @@ public class TrustedIdpDAOJPATest {
     }
 
 
-    @Test(expected = DataIntegrityViolationException.class)
+    @Test
     public void testTryAddExistingTrustedIdp() {
-        TrustedIdp trustedIdp = createTrustedIdp("urn:org:apache:cxf:fediz:idp:realm-B");
-        trustedIdpDAO.addTrustedIDP(trustedIdp);
+        Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
+            TrustedIdp trustedIdp = createTrustedIdp("urn:org:apache:cxf:fediz:idp:realm-B");
+            trustedIdpDAO.addTrustedIDP(trustedIdp);
+        });
     }
 
 
-    @Test(expected = EmptyResultDataAccessException.class)
+    @Test
     public void testTryRemoveUnknownTrustedIdp() {
-        trustedIdpDAO.deleteTrustedIDP("urn:org:apache:cxf:fediz:trusted-idp:NOTEXIST");
+        Assertions.assertThrows(EmptyResultDataAccessException.class, () -> {
+            trustedIdpDAO.deleteTrustedIDP("urn:org:apache:cxf:fediz:trusted-idp:NOTEXIST");
+        });
     }
 
 
-    @Test(expected = EmptyResultDataAccessException.class)
+    @Test
     public void testRemoveExistingTrustedIdp() {
-        String realm = "urn:org:apache:cxf:fediz:trusted-idp:testdelete";
-        TrustedIdp trustedIdp = createTrustedIdp(realm);
+        Assertions.assertThrows(EmptyResultDataAccessException.class, () -> {
+            String realm = "urn:org:apache:cxf:fediz:trusted-idp:testdelete";
+            TrustedIdp trustedIdp = createTrustedIdp(realm);
 
-        trustedIdpDAO.addTrustedIDP(trustedIdp);
+            trustedIdpDAO.addTrustedIDP(trustedIdp);
 
-        trustedIdpDAO.deleteTrustedIDP(realm);
+            trustedIdpDAO.deleteTrustedIDP(realm);
 
-        trustedIdpDAO.getTrustedIDP(realm);
+            trustedIdpDAO.getTrustedIDP(realm);
+        });
     }
 
 

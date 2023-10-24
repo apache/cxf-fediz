@@ -49,8 +49,8 @@ import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuerType;
 import org.apache.cxf.fediz.core.config.jaxb.TrustedIssuers;
 import org.apache.cxf.fediz.core.config.jaxb.ValidationType;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 
 public class FedizConfigurationWriterTest {
 
@@ -92,7 +92,7 @@ public class FedizConfigurationWriterTest {
 
 
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         SecurityTestUtil.cleanup();
     }
@@ -209,7 +209,7 @@ public class FedizConfigurationWriterTest {
 
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void readWriteConfigFederation() throws JAXBException {
 
         final JAXBContext jaxbContext = JAXBContext
@@ -223,7 +223,7 @@ public class FedizConfigurationWriterTest {
         jaxbContext.createUnmarshaller().unmarshal(reader);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void readWriteConfigSAML() throws JAXBException {
 
         final JAXBContext jaxbContext = JAXBContext
@@ -237,7 +237,7 @@ public class FedizConfigurationWriterTest {
         jaxbContext.createUnmarshaller().unmarshal(reader);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSaveAndLoadConfigFederation() throws JAXBException, IOException {
         final JAXBContext jaxbContext = JAXBContext
                 .newInstance(FedizConfig.class);
@@ -259,7 +259,7 @@ public class FedizConfigurationWriterTest {
         configurator.loadConfig(f);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSaveAndLoadConfigSAML() throws JAXBException, IOException {
         final JAXBContext jaxbContext = JAXBContext
                 .newInstance(FedizConfig.class);
@@ -281,7 +281,7 @@ public class FedizConfigurationWriterTest {
         configurator.loadConfig(f);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void verifyConfigFederation() throws JAXBException {
 
         final JAXBContext jaxbContext = JAXBContext
@@ -299,48 +299,48 @@ public class FedizConfigurationWriterTest {
         configurator.loadConfig(reader);
 
         ContextConfig config = configurator.getContextConfig(CONFIG_NAME);
-        Assert.assertNotNull(config);
+        Assertions.assertNotNull(config);
         AudienceUris audience = config.getAudienceUris();
-        Assert.assertEquals(1, audience.getAudienceItem().size());
-        Assert.assertTrue(config.getProtocol() instanceof FederationProtocolType);
+        Assertions.assertEquals(1, audience.getAudienceItem().size());
+        Assertions.assertTrue(config.getProtocol() instanceof FederationProtocolType);
         FederationProtocolType fp = (FederationProtocolType)config.getProtocol();
 
-        Assert.assertEquals(HOME_REALM_CLASS, fp.getHomeRealm().getValue());
-        //Assert.assertEquals(config.getCertificateValidation(),ValidationType.CHAIN_TRUST);
+        Assertions.assertEquals(HOME_REALM_CLASS, fp.getHomeRealm().getValue());
+        //Assertions.assertEquals(config.getCertificateValidation(),ValidationType.CHAIN_TRUST);
 
         /**
          * Check Runtime configuration
          */
         FedizContext fedContext = configurator.getFedizContext(CONFIG_NAME);
         Protocol protocol = fedContext.getProtocol();
-        Assert.assertTrue(protocol instanceof FederationProtocol);
+        Assertions.assertTrue(protocol instanceof FederationProtocol);
         FederationProtocol fedProtocol = (FederationProtocol) protocol;
-        Assert.assertEquals(TARGET_REALM, fedProtocol.getRealm());
+        Assertions.assertEquals(TARGET_REALM, fedProtocol.getRealm());
 
         Object auth = fedProtocol.getAuthenticationType();
-        Assert.assertTrue(auth instanceof String);
-        Assert.assertEquals((String)auth, AUTH_TYPE_VALUE);
+        Assertions.assertTrue(auth instanceof String);
+        Assertions.assertEquals((String)auth, AUTH_TYPE_VALUE);
 
         Object wreq = fedProtocol.getRequest();
-        Assert.assertTrue(wreq instanceof String);
-        Assert.assertEquals((String)wreq, TEST_WREQ);
+        Assertions.assertTrue(wreq instanceof String);
+        Assertions.assertEquals((String)wreq, TEST_WREQ);
 
-        //Assert.assertEquals(ValidationMethod.CHAIN_TRUST, fedContext.getCertificateValidation());
+        //Assertions.assertEquals(ValidationMethod.CHAIN_TRUST, fedContext.getCertificateValidation());
         List<String> audienceUris = fedContext.getAudienceUris();
-        Assert.assertEquals(1, audienceUris.size());
+        Assertions.assertEquals(1, audienceUris.size());
         List<TrustedIssuer> trustedIssuers = fedContext.getTrustedIssuers();
-        Assert.assertEquals(1, trustedIssuers.size());
+        Assertions.assertEquals(1, trustedIssuers.size());
         TrustedIssuer issuer = trustedIssuers.get(0);
-        Assert.assertEquals(TRUST_ISSUER_NAME, issuer.getName());
-        Assert.assertEquals(CertificateValidationMethod.CHAIN_TRUST, issuer.getCertificateValidationMethod());
-        Assert.assertEquals(TRUST_ISSUER_CERT_CONSTRAINT, issuer.getSubject());
+        Assertions.assertEquals(TRUST_ISSUER_NAME, issuer.getName());
+        Assertions.assertEquals(CertificateValidationMethod.CHAIN_TRUST, issuer.getCertificateValidationMethod());
+        Assertions.assertEquals(TRUST_ISSUER_CERT_CONSTRAINT, issuer.getSubject());
 
         List<TrustManager> trustManagers = fedContext.getCertificateStores();
-        Assert.assertEquals(1, trustManagers.size());
+        Assertions.assertEquals(1, trustManagers.size());
 
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void verifyConfigSAML() throws JAXBException {
 
         final JAXBContext jaxbContext = JAXBContext
@@ -358,31 +358,31 @@ public class FedizConfigurationWriterTest {
         configurator.loadConfig(reader);
 
         ContextConfig config = configurator.getContextConfig(CONFIG_NAME);
-        Assert.assertNotNull(config);
+        Assertions.assertNotNull(config);
         AudienceUris audience = config.getAudienceUris();
-        Assert.assertEquals(1, audience.getAudienceItem().size());
-        Assert.assertTrue(config.getProtocol() instanceof SamlProtocolType);
+        Assertions.assertEquals(1, audience.getAudienceItem().size());
+        Assertions.assertTrue(config.getProtocol() instanceof SamlProtocolType);
 
         /**
          * Check Runtime configuration
          */
         FedizContext fedContext = configurator.getFedizContext(CONFIG_NAME);
         Protocol protocol = fedContext.getProtocol();
-        Assert.assertTrue(protocol instanceof SAMLProtocol);
+        Assertions.assertTrue(protocol instanceof SAMLProtocol);
         SAMLProtocol samlProtocol = (SAMLProtocol) protocol;
-        Assert.assertEquals(TARGET_REALM, samlProtocol.getRealm());
+        Assertions.assertEquals(TARGET_REALM, samlProtocol.getRealm());
 
         List<String> audienceUris = fedContext.getAudienceUris();
-        Assert.assertEquals(1, audienceUris.size());
+        Assertions.assertEquals(1, audienceUris.size());
         List<TrustedIssuer> trustedIssuers = fedContext.getTrustedIssuers();
-        Assert.assertEquals(1, trustedIssuers.size());
+        Assertions.assertEquals(1, trustedIssuers.size());
         TrustedIssuer issuer = trustedIssuers.get(0);
-        Assert.assertEquals(TRUST_ISSUER_NAME, issuer.getName());
-        Assert.assertEquals(CertificateValidationMethod.CHAIN_TRUST, issuer.getCertificateValidationMethod());
-        Assert.assertEquals(TRUST_ISSUER_CERT_CONSTRAINT, issuer.getSubject());
+        Assertions.assertEquals(TRUST_ISSUER_NAME, issuer.getName());
+        Assertions.assertEquals(CertificateValidationMethod.CHAIN_TRUST, issuer.getCertificateValidationMethod());
+        Assertions.assertEquals(TRUST_ISSUER_CERT_CONSTRAINT, issuer.getSubject());
 
         List<TrustManager> trustManagers = fedContext.getCertificateStores();
-        Assert.assertEquals(1, trustManagers.size());
+        Assertions.assertEquals(1, trustManagers.size());
 
     }
 

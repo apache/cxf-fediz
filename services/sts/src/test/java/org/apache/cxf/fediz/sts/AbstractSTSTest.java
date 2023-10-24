@@ -57,7 +57,7 @@ import org.apache.wss4j.common.saml.SamlAssertionWrapper;
 import org.apache.wss4j.dom.WSConstants;
 import org.opensaml.saml.saml2.core.Attribute;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 
 public abstract class AbstractSTSTest {
@@ -136,7 +136,7 @@ public abstract class AbstractSTSTest {
         HTTPConduit http = (HTTPConduit)stsClient.getClient().getConduit();
         http.setTlsClientParameters(tlsClientParameters);
         TLSClientParameters tlsParameters = http.getTlsClientParameters();
-        Assert.assertNotNull("the http conduit's tlsParameters should not be null", tlsParameters);
+        Assertions.assertNotNull(tlsParameters, "the http conduit's tlsParameters should not be null");
 
         Map<String, Object> properties = new HashMap<>();
         properties.put(SecurityConstants.USERNAME, username);
@@ -167,12 +167,12 @@ public abstract class AbstractSTSTest {
         HTTPConduit http = (HTTPConduit)stsClient.getClient().getConduit();
         http.setTlsClientParameters(tlsClientParameters);
         TLSClientParameters tlsParameters = http.getTlsClientParameters();
-        Assert.assertNotNull("the http conduit's tlsParameters should not be null", tlsParameters);
+        Assertions.assertNotNull(tlsParameters, "the http conduit's tlsParameters should not be null");
 
         Map<String, Object> properties = new HashMap<>();
         properties.put(SecurityConstants.IS_BSP_COMPLIANT, "false");
 
-        Assert.assertNotNull("supportingToken must not be null", supportingToken);
+        Assertions.assertNotNull(supportingToken, "supportingToken must not be null");
         stsClient.setOnBehalfOf(supportingToken);
 
         stsClient.setProperties(properties);
@@ -220,37 +220,37 @@ public abstract class AbstractSTSTest {
         Properties testProps = new Properties();
         String resourceName = "stsclient.properties";
         InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceName);
-        Assert.assertNotNull("Resource '" + resourceName + "' not found", in);
+        Assertions.assertNotNull(in, "Resource '" + resourceName + "' not found");
         try {
             testProps.load(in);
             in.close();
 
         } catch (IOException e) {
-            Assert.fail("Resource '" + resourceName + "' could not be loaded");
+            Assertions.fail("Resource '" + resourceName + "' could not be loaded");
         }
 
         Properties clazzProps = new Properties();
         resourceName = clazz.getSimpleName() + ".properties";
         in = clazz.getResourceAsStream(resourceName);
-        Assert.assertNotNull("Resource '" + resourceName + "' not found", in);
+        Assertions.assertNotNull(in, "Resource '" + resourceName + "' not found");
         try {
             clazzProps.load(in);
             in.close();
 
         } catch (IOException e) {
-            Assert.fail("Resource '" + resourceName + "' could not be loaded");
+            Assertions.fail("Resource '" + resourceName + "' could not be loaded");
         }
         testProps.putAll(clazzProps);
 
         Properties methodProps = new Properties();
         resourceName = clazz.getSimpleName() + "-" + method + ".properties";
         in = clazz.getResourceAsStream(resourceName);
-        Assert.assertNotNull("Resource '" + resourceName + "' not found", in);
+        Assertions.assertNotNull(in, "Resource '" + resourceName + "' not found");
         try {
             methodProps.load(in);
 
         } catch (IOException e) {
-            Assert.fail("Resource '" + resourceName + "' could not be loaded");
+            Assertions.fail("Resource '" + resourceName + "' could not be loaded");
         }
         testProps.putAll(methodProps);
         return testProps;
@@ -259,10 +259,11 @@ public abstract class AbstractSTSTest {
     protected void validateIssuedClaims(List<Attribute> attributes, Properties props) {
         for (Attribute attribute: attributes) {
             String expectedValue = (String)props.get(attribute.getName());
-            Assert.assertNotNull("Claim '" + attribute.getName() + "' not configured in properties file",
-                                 expectedValue);
+            Assertions.assertNotNull(expectedValue,
+                    "Claim '" + attribute.getName() + "' not configured in properties file");
             String value = attribute.getAttributeValues().get(0).getDOM().getTextContent();
-            Assert.assertEquals("Expected claim value '" + expectedValue + "' [" + value + "]", expectedValue, value);
+            Assertions.assertEquals(expectedValue, value,
+                    "Expected claim value '" + expectedValue + "' [" + value + "]");
         }
     }
 
@@ -271,16 +272,16 @@ public abstract class AbstractSTSTest {
         TLSClientParameters tlsClientParameters = new TLSClientParameters();
         String truststore = testProps.getProperty(PROPERTY_TRUSTSTORE);
         String tuststorePw = testProps.getProperty(PROPERTY_TRUSTSTORE_PW);
-        Assert.assertNotNull("Property '" + PROPERTY_TRUSTSTORE + "' null", truststore);
-        Assert.assertNotNull("Property '" + PROPERTY_TRUSTSTORE_PW + "' null", tuststorePw);
+        Assertions.assertNotNull(truststore, "Property '" + PROPERTY_TRUSTSTORE + "' null");
+        Assertions.assertNotNull(tuststorePw, "Property '" + PROPERTY_TRUSTSTORE_PW + "' null");
 
         String keystoreFile = testProps.getProperty(PROPERTY_KEYSTORE);
         if (initKeystore && keystoreFile != null) {
             String keystorePassword = testProps.getProperty(PROPERTY_KEYSTORE_PW);
             String keyPassword = testProps.getProperty(PROPERTY_KEYSTORE_KEY_PW);
-            Assert.assertNotNull("Property '" + PROPERTY_KEYSTORE + "' null", keystoreFile);
-            Assert.assertNotNull("Property '" + PROPERTY_KEYSTORE_PW + "' null", keystorePassword);
-            Assert.assertNotNull("Property '" + PROPERTY_KEYSTORE_KEY_PW + "' null", keyPassword);
+            Assertions.assertNotNull(keystoreFile, "Property '" + PROPERTY_KEYSTORE + "' null");
+            Assertions.assertNotNull(keystorePassword, "Property '" + PROPERTY_KEYSTORE_PW + "' null");
+            Assertions.assertNotNull(keyPassword, "Property '" + PROPERTY_KEYSTORE_KEY_PW + "' null");
             Utils.initTLSClientParameters(tlsClientParameters, keystoreFile, keystorePassword,
                                           keyPassword, truststore, tuststorePw);
         } else {
@@ -293,14 +294,14 @@ public abstract class AbstractSTSTest {
                                    SamlAssertionWrapper assertion) {
         String expectedSamlUser = testProps.getProperty("samluser");
         String samlUser = assertion.getSaml2().getSubject().getNameID().getValue();
-        Assert.assertEquals("Expected SAML subject '" + expectedSamlUser + "' [" + samlUser + "]",
-                            expectedSamlUser.toUpperCase(), samlUser.toUpperCase());
+        Assertions.assertEquals(expectedSamlUser.toUpperCase(), samlUser.toUpperCase(),
+                "Expected SAML subject '" + expectedSamlUser + "' [" + samlUser + "]");
     }
 
     protected void validateIssuer(SamlAssertionWrapper assertion, String realm) {
         String issuer = assertion.getSaml2().getIssuer().getValue();
-        Assert.assertTrue("SAML Token issuer should be " + realm + " instead of [" + issuer + "]",
-                          issuer.toUpperCase().contains(realm.toUpperCase()));
+        Assertions.assertTrue(issuer.toUpperCase().contains(realm.toUpperCase()),
+                "SAML Token issuer should be " + realm + " instead of [" + issuer + "]");
     }
 
 }

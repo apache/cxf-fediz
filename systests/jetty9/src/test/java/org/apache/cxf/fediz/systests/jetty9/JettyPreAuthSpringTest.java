@@ -21,23 +21,23 @@ package org.apache.cxf.fediz.systests.jetty9;
 
 import org.apache.cxf.fediz.systests.common.AbstractTests;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 
 public class JettyPreAuthSpringTest extends AbstractTests {
 
     private static final String RP_HTTPS_PORT = System.getProperty("rp.https.port");
 
-    @BeforeClass
+    @BeforeAll
     public static void init() throws Exception {
-        Assert.assertNotNull("Property 'rp.jetty.https.port' null", RP_HTTPS_PORT);
+        Assertions.assertNotNull(RP_HTTPS_PORT, "Property 'rp.jetty.https.port' null");
         TomcatUtils.initIdpServer();
         JettyUtils.initRpServer("rp-server.xml");
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws Exception {
         TomcatUtils.stopIdpServer();
         JettyUtils.stopRpServer();
@@ -58,7 +58,7 @@ public class JettyPreAuthSpringTest extends AbstractTests {
         return "fedizspringhelloworld";
     }
 
-    @Ignore("This tests is currently failing on Jetty")
+    @Disabled("This tests is currently failing on Jetty")
     @Override
     public void testConcurrentRequests() throws Exception {
         // super.testConcurrentRequests();

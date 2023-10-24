@@ -40,10 +40,10 @@ import org.apache.cxf.fediz.service.idp.rest.Entitlements;
 import org.apache.cxf.fediz.service.idp.rest.Idps;
 import org.apache.cxf.fediz.service.idp.rest.Roles;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class RestITTest {
 
@@ -52,7 +52,7 @@ public class RestITTest {
     private static Bus bus;
 
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
         System.setProperty("org.apache.commons.logging.simplelog.showdatetime", "true");
@@ -65,10 +65,10 @@ public class RestITTest {
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.cxf", "info");
 
         idpHttpsPort = System.getProperty("idp.https.port");
-        Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
+        Assertions.assertNotNull(idpHttpsPort, "Property 'idp.https.port' null");
 
         realm = System.getProperty("realm");
-        Assert.assertNotNull("Property 'realm' null", realm);
+        Assertions.assertNotNull(realm, "Property 'realm' null");
 
         SpringBusFactory bf = new SpringBusFactory();
 
@@ -79,7 +79,7 @@ public class RestITTest {
 
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         if (bus != null) {
             bus.shutdown(true);
@@ -93,69 +93,54 @@ public class RestITTest {
         Idps idps = client.target(address).path("idps")
             .request("application/xml").header("Authorization", getBasicAuthentication("admin", "password"))
             .get(Idps.class);
-        Assert.assertEquals(1L, idps.getIdps().size());
+        Assertions.assertEquals(1L, idps.getIdps().size());
 
         Idp idp = idps.getIdps().iterator().next();
         if ("realm-a".equals(realm)) {
-            Assert.assertEquals("Certificate doesn't match",
-                                "stsKeystoreA.properties", idp.getCertificate());
-            Assert.assertEquals("Certificate password doesn't match",
-                                "realma", idp.getCertificatePassword());
-            Assert.assertEquals("Realm doesn't match",
-                                "urn:org:apache:cxf:fediz:idp:realm-A", idp.getRealm());
-            Assert.assertEquals("ServiceDescription doesn't match",
-                                "IDP of Realm A", idp.getServiceDescription());
-            Assert.assertEquals("ServiceDisplayName doesn't match",
-                                "REALM A", idp.getServiceDisplayName());
-            Assert.assertEquals("IdpUrl doesn't match",
-                                new URL("https://localhost:9443/fediz-idp/federation"), idp.getIdpUrl());
-            Assert.assertEquals("StsUrl doesn't match",
-                                new URL("https://localhost:9443/fediz-idp-sts/REALMA"), idp.getStsUrl());
-            Assert.assertEquals("Uri doesn't match",
-                                "realma", idp.getUri());
-            Assert.assertTrue("ProvideIDPList doesn't match", idp.isProvideIdpList());
-            Assert.assertTrue("UseCurrentIDP doesn't match", idp.isUseCurrentIdp());
-            Assert.assertEquals("Number of AuthenticationURIs doesn't match",
-                                4, idp.getAuthenticationURIs().size());
-            Assert.assertEquals("Number of SupportedProtocols doesn't match",
-                                2, idp.getSupportedProtocols().size());
-            Assert.assertEquals("Number of TokenTypesOffered doesn't match",
-                                2, idp.getTokenTypesOffered().size());
-            Assert.assertEquals("Number of applications doesn't match",
-                                2, idp.getApplications().size());
-            Assert.assertEquals("Number of trusted IDPs doesn't match",
-                                1, idp.getTrustedIdps().size());
-            Assert.assertEquals("Number of claims doesn't match",
-                                4, idp.getClaimTypesOffered().size());
+            Assertions.assertEquals("stsKeystoreA.properties", idp.getCertificate(), "Certificate doesn't match");
+            Assertions.assertEquals("realma", idp.getCertificatePassword(), "Certificate password doesn't match");
+            Assertions.assertEquals("urn:org:apache:cxf:fediz:idp:realm-A", idp.getRealm(), "Realm doesn't match");
+            Assertions.assertEquals("IDP of Realm A", idp.getServiceDescription(), "ServiceDescription doesn't match");
+            Assertions.assertEquals("REALM A", idp.getServiceDisplayName(), "ServiceDisplayName doesn't match");
+            Assertions.assertEquals(new URL("https://localhost:9443/fediz-idp/federation"), idp.getIdpUrl(),
+                    "IdpUrl doesn't match");
+            Assertions.assertEquals(new URL("https://localhost:9443/fediz-idp-sts/REALMA"), idp.getStsUrl(),
+                    "StsUrl doesn't match");
+            Assertions.assertEquals("realma", idp.getUri(), "Uri doesn't match");
+            Assertions.assertTrue(idp.isProvideIdpList(), "ProvideIDPList doesn't match");
+            Assertions.assertTrue(idp.isUseCurrentIdp(), "UseCurrentIDP doesn't match");
+            Assertions.assertEquals(4, idp.getAuthenticationURIs().size(),
+                    "Number of AuthenticationURIs doesn't match");
+            Assertions.assertEquals(2, idp.getSupportedProtocols().size(),
+                    "Number of SupportedProtocols doesn't match");
+            Assertions.assertEquals(2, idp.getTokenTypesOffered().size(),
+                    "Number of TokenTypesOffered doesn't match");
+            Assertions.assertEquals(2, idp.getApplications().size(),
+                    "Number of applications doesn't match");
+            Assertions.assertEquals(1, idp.getTrustedIdps().size(),
+                    "Number of trusted IDPs doesn't match");
+            Assertions.assertEquals(4, idp.getClaimTypesOffered().size(),
+                    "Number of claims doesn't match");
         } else {
-            Assert.assertEquals("Certificate doesn't match",
-                                "stsKeystoreB.properties", idp.getCertificate());
-            Assert.assertEquals("Certificate password doesn't match",
-                                "realmb", idp.getCertificatePassword());
-            Assert.assertEquals("Realm doesn't match",
-                                "urn:org:apache:cxf:fediz:idp:realm-B", idp.getRealm());
-            Assert.assertEquals("ServiceDescription doesn't match",
-                                "IDP of Realm B", idp.getServiceDescription());
-            Assert.assertEquals("ServiceDisplayName doesn't match",
-                                "REALM B", idp.getServiceDisplayName());
-            Assert.assertEquals("IdpUrl doesn't match",
-                                new URL("https://localhost:12443/fediz-idp-remote/federation"), idp.getIdpUrl());
-            Assert.assertEquals("StsUrl doesn't match",
-                                new URL("https://localhost:12443/fediz-idp-sts/REALMB"), idp.getStsUrl());
-            Assert.assertEquals("Uri doesn't match",
-                                "realmb", idp.getUri());
-            Assert.assertTrue("ProvideIDPList doesn't match", idp.isProvideIdpList());
-            Assert.assertTrue("UseCurrentIDP doesn't match", idp.isUseCurrentIdp());
-            Assert.assertEquals("Number of AuthenticationURIs doesn't match",
-                                4, idp.getAuthenticationURIs().size());
-            Assert.assertEquals("Number of SupportedProtocols doesn't match",
-                                2, idp.getSupportedProtocols().size());
-            Assert.assertEquals("Number of TokenTypesOffered doesn't match",
-                                2, idp.getTokenTypesOffered().size());
-            Assert.assertEquals("Number of applications doesn't match",
-                                1, idp.getApplications().size());
-            Assert.assertEquals("Number of claims doesn't match",
-                                4, idp.getClaimTypesOffered().size());
+            Assertions.assertEquals("stsKeystoreB.properties", idp.getCertificate(), "Certificate doesn't match");
+            Assertions.assertEquals("realmb", idp.getCertificatePassword(), "Certificate password doesn't match");
+            Assertions.assertEquals("urn:org:apache:cxf:fediz:idp:realm-B", idp.getRealm(), "Realm doesn't match");
+            Assertions.assertEquals("IDP of Realm B", idp.getServiceDescription(), "ServiceDescription doesn't match");
+            Assertions.assertEquals("REALM B", idp.getServiceDisplayName(), "ServiceDisplayName doesn't match");
+            Assertions.assertEquals(new URL("https://localhost:12443/fediz-idp-remote/federation"), idp.getIdpUrl(),
+                    "IdpUrl doesn't match");
+            Assertions.assertEquals(new URL("https://localhost:12443/fediz-idp-sts/REALMB"), idp.getStsUrl(),
+                    "StsUrl doesn't match");
+            Assertions.assertEquals("realmb", idp.getUri(), "Uri doesn't match");
+            Assertions.assertTrue(idp.isProvideIdpList(), "ProvideIDPList doesn't match");
+            Assertions.assertTrue(idp.isUseCurrentIdp(), "UseCurrentIDP doesn't match");
+            Assertions.assertEquals(4, idp.getAuthenticationURIs().size(),
+                    "Number of AuthenticationURIs doesn't match");
+            Assertions.assertEquals(2, idp.getSupportedProtocols().size(),
+                    "Number of SupportedProtocols doesn't match");
+            Assertions.assertEquals(2, idp.getTokenTypesOffered().size(), "Number of TokenTypesOffered doesn't match");
+            Assertions.assertEquals(1, idp.getApplications().size(), "Number of applications doesn't match");
+            Assertions.assertEquals(4, idp.getClaimTypesOffered().size(), "Number of claims doesn't match");
         }
     }
 
@@ -168,12 +153,12 @@ public class RestITTest {
             Idp idp = client.target(address).path("idps/").path("urn:org:apache:cxf:fediz:idp:realm-A")
                 .request("application/xml").header("Authorization", getBasicAuthentication("admin", "password"))
                 .get(Idp.class);
-            Assert.assertEquals("", "urn:org:apache:cxf:fediz:idp:realm-A", idp.getRealm());
+            Assertions.assertEquals("urn:org:apache:cxf:fediz:idp:realm-A", idp.getRealm());
         } else {
             Idp idp = client.target(address).path("idps/").path("urn:org:apache:cxf:fediz:idp:realm-B")
                 .request("application/xml").header("Authorization", getBasicAuthentication("admin", "password"))
                 .get(Idp.class);
-            Assert.assertEquals("", "urn:org:apache:cxf:fediz:idp:realm-B", idp.getRealm());
+            Assertions.assertEquals("urn:org:apache:cxf:fediz:idp:realm-B", idp.getRealm());
         }
     }
 
@@ -197,7 +182,7 @@ public class RestITTest {
         Response response = client.target(address).path("applications/")
             .request("application/xml").header("Authorization", getBasicAuthentication("admin", "password"))
             .post(Entity.entity(application, MediaType.APPLICATION_XML));
-        Assert.assertEquals(Status.CREATED.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.CREATED.getStatusCode(), response.getStatus());
 
         //Testcase
         RequestClaim requestClaim = new RequestClaim();
@@ -207,13 +192,13 @@ public class RestITTest {
         response = client.target(address).path("applications").path(realmToAdd).path("claims")
             .request("application/xml").header("Authorization", getBasicAuthentication("admin", "password"))
             .post(Entity.entity(requestClaim, MediaType.APPLICATION_XML));
-        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
 
         application = client.target(address).path("applications").path(realmToAdd).queryParam("expand", "claims")
             .request("application/xml").header("Authorization", getBasicAuthentication("admin", "password"))
             .get(Application.class);
-        Assert.assertEquals("Claims size should be 1 instead of " + application.getRequestedClaims().size(),
-                            1, application.getRequestedClaims().size());
+        Assertions.assertEquals(1, application.getRequestedClaims().size(),
+                "Claims size should be 1 instead of " + application.getRequestedClaims().size());
     }
 
     @Test
@@ -223,7 +208,7 @@ public class RestITTest {
         Claims claims = client.target(address).path("claims")
             .request("application/xml").header("Authorization", getBasicAuthentication("admin", "password"))
             .get(Claims.class);
-        Assert.assertEquals(2, claims.getClaims().size());
+        Assertions.assertEquals(2, claims.getClaims().size());
     }
 
     @Test
@@ -233,7 +218,7 @@ public class RestITTest {
         Entitlements entitlements = client.target(address).path("entitlements")
             .request("application/xml").header("Authorization", getBasicAuthentication("admin", "password"))
             .get(Entitlements.class);
-        Assert.assertEquals(5, entitlements.getEntitlements().size());
+        Assertions.assertEquals(5, entitlements.getEntitlements().size());
     }
 
     @Test
@@ -243,7 +228,7 @@ public class RestITTest {
         Roles roles = client.target(address).path("roles")
             .request("application/xml").header("Authorization", getBasicAuthentication("admin", "password"))
             .get(Roles.class);
-        Assert.assertEquals(2, roles.getRoles().size());
+        Assertions.assertEquals(2, roles.getRoles().size());
     }
 
     private static String getBasicAuthentication(String username, String password) {

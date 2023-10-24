@@ -22,8 +22,8 @@ package org.apache.cxf.fediz.systests.tomcat;
 
 import org.apache.cxf.fediz.systests.common.AbstractExpiryTests;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 /**
  * Some token expiry tests
@@ -32,12 +32,12 @@ public class TokenExpiryTest extends AbstractExpiryTests {
 
     private static final String SERVLET_CONTEXT_NAME = "fedizhelloworld_wfresh";
 
-    @BeforeClass
+    @BeforeAll
     public static void init() throws Exception {
         TomcatLauncher.startServer(SERVLET_CONTEXT_NAME);
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws Exception {
         TomcatLauncher.shutdownServer();
     }

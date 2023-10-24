@@ -24,11 +24,11 @@ import java.security.Principal;
 import org.apache.cxf.fediz.service.sts.realms.RealmExtensionIdentityMapper;
 import org.apache.wss4j.common.principal.CustomTokenPrincipal;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * A test implementation of IdentityMapper.

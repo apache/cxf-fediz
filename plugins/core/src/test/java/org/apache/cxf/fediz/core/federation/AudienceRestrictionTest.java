@@ -53,9 +53,9 @@ import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.wss4j.common.util.XMLUtils;
 
 import org.easymock.EasyMock;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 
 /**
  * Some tests for audience restriction
@@ -88,7 +88,7 @@ public class AudienceRestrictionTest {
     private static FedizConfigurator configurator;
 
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         try {
             crypto = CryptoFactory.getInstance("signature.properties");
@@ -97,11 +97,11 @@ public class AudienceRestrictionTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Assert.assertNotNull(configurator);
+        Assertions.assertNotNull(configurator);
 
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         SecurityTestUtil.cleanup();
     }
@@ -124,7 +124,7 @@ public class AudienceRestrictionTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateAudienceThatIsRequired() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -164,10 +164,10 @@ public class AudienceRestrictionTest {
 
         // Now validate the request
         TestSigninHandler signinHandler = new TestSigninHandler(config);
-        Assert.assertNotNull(signinHandler.handleRequest(req, resp));
+        Assertions.assertNotNull(signinHandler.handleRequest(req, resp));
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateAudienceThatIsRequiredAgainstMultipleAudiences() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -207,10 +207,10 @@ public class AudienceRestrictionTest {
 
         // Now validate the request
         TestSigninHandler signinHandler = new TestSigninHandler(config);
-        Assert.assertNotNull(signinHandler.handleRequest(req, resp));
+        Assertions.assertNotNull(signinHandler.handleRequest(req, resp));
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateBadAudienceThatIsRequired() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -250,10 +250,10 @@ public class AudienceRestrictionTest {
 
         // Now validate the request
         TestSigninHandler signinHandler = new TestSigninHandler(config);
-        Assert.assertNull(signinHandler.handleRequest(req, resp));
+        Assertions.assertNull(signinHandler.handleRequest(req, resp));
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateNoAudienceThatIsRequired() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -290,10 +290,10 @@ public class AudienceRestrictionTest {
 
         // Now validate the request
         TestSigninHandler signinHandler = new TestSigninHandler(config);
-        Assert.assertNull(signinHandler.handleRequest(req, resp));
+        Assertions.assertNull(signinHandler.handleRequest(req, resp));
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateNoAudienceThatIsNotRequired() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -330,10 +330,10 @@ public class AudienceRestrictionTest {
 
         // Now validate the request
         TestSigninHandler signinHandler = new TestSigninHandler(config);
-        Assert.assertNotNull(signinHandler.handleRequest(req, resp));
+        Assertions.assertNotNull(signinHandler.handleRequest(req, resp));
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateAudienceThatIsNotRequired() throws Exception {
         SAML2CallbackHandler callbackHandler = new SAML2CallbackHandler();
         callbackHandler.setStatement(SAML2CallbackHandler.Statement.ATTR);
@@ -373,7 +373,7 @@ public class AudienceRestrictionTest {
 
         // Now validate the request
         TestSigninHandler signinHandler = new TestSigninHandler(config);
-        Assert.assertNull(signinHandler.handleRequest(req, resp));
+        Assertions.assertNull(signinHandler.handleRequest(req, resp));
     }
 
     private String createSamlToken(SamlAssertionWrapper assertion, String alias, boolean sign)

@@ -38,9 +38,9 @@ import org.apache.cxf.fediz.systests.common.AbstractTests;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 
 /**
  * A test for WS-Federation using the CXF plugin (deployed in Tomcat).
@@ -53,12 +53,12 @@ public class FederationTest extends AbstractTests {
     private static Tomcat idpServer;
     private static Tomcat rpServer;
 
-    @BeforeClass
+    @BeforeAll
     public static void init() throws Exception {
         idpHttpsPort = System.getProperty("idp.https.port");
-        Assert.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
+        Assertions.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
         rpHttpsPort = System.getProperty("rp.https.port");
-        Assert.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
+        Assertions.assertNotNull("Property 'rp.https.port' null", rpHttpsPort);
 
         initIdp();
         initRp();
@@ -128,7 +128,7 @@ public class FederationTest extends AbstractTests {
         rpServer.start();
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws Exception {
         try {
             shutdownServer(idpServer);
@@ -159,7 +159,7 @@ public class FederationTest extends AbstractTests {
         return "fedizhelloworld";
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testNoRequestValidation() throws Exception {
 
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworldnoreqvalidation/secure/fedservlet";
@@ -178,7 +178,7 @@ public class FederationTest extends AbstractTests {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // Parse the form to remove the context
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
@@ -195,7 +195,7 @@ public class FederationTest extends AbstractTests {
         final HtmlSubmitInput button = form.getInputByName("_eventId_submit");
 
         final HtmlPage rpPage = button.click();
-        Assert.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
+        Assertions.assertTrue("WS Federation Systests Examples".equals(rpPage.getTitleText())
                           || "WS Federation Systests Spring Examples".equals(rpPage.getTitleText()));
 
         webClient.close();

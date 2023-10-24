@@ -33,21 +33,21 @@ import org.apache.cxf.fediz.systests.common.AbstractTests;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class TomcatTest extends AbstractTests {
 
     private static final String SERVLET_CONTEXT_NAME = "fedizhelloworld";
 
-    @BeforeClass
+    @BeforeAll
     public static void init() throws Exception {
         TomcatLauncher.startServer(SERVLET_CONTEXT_NAME);
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws Exception {
         TomcatLauncher.shutdownServer();
     }
@@ -87,7 +87,7 @@ public class TomcatTest extends AbstractTests {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
         webClient.getOptions().setJavaScriptEnabled(true);
-        Assert.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
+        Assertions.assertEquals("IDP SignIn Response Form", idpPage.getTitleText());
 
         // Parse the form to get the token (wresult)
         DomNodeList<DomElement> results = idpPage.getElementsByTagName("input");
@@ -108,10 +108,10 @@ public class TomcatTest extends AbstractTests {
 
         try {
             button.click();
-            Assert.fail("Failure expected on a modified context");
+            Assertions.fail("Failure expected on a modified context");
         } catch (FailingHttpStatusCodeException ex) {
             // Request Timeout expected here, as the context isn't known - the session is presumed to have expired
-            Assert.assertTrue(408 == ex.getStatusCode());
+            Assertions.assertTrue(408 == ex.getStatusCode());
         }
 
         webClient.close();

@@ -47,9 +47,9 @@ import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.LogoutRequest;
 
 import org.easymock.EasyMock;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 
 /**
  * Some tests for creating SAMLRequests using the SAMLProcessorImpl
@@ -72,13 +72,13 @@ public class SAMLRequestTest {
     }
 
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         getFederationConfigurator();
-        Assert.assertNotNull(configurator);
+        Assertions.assertNotNull(configurator);
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         SecurityTestUtil.cleanup();
     }
@@ -101,7 +101,7 @@ public class SAMLRequestTest {
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void createSAMLAuthnRequest() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -116,18 +116,18 @@ public class SAMLRequestTest {
         RedirectionResponse response = wfProc.createSignInRequest(req, config);
 
         String redirectionURL = response.getRedirectionURL();
-        Assert.assertTrue(redirectionURL.startsWith(TEST_IDP_ISSUER));
-        Assert.assertTrue(redirectionURL.contains("SAMLRequest="));
-        Assert.assertTrue(redirectionURL.contains("RelayState="));
+        Assertions.assertTrue(redirectionURL.startsWith(TEST_IDP_ISSUER));
+        Assertions.assertTrue(redirectionURL.contains("SAMLRequest="));
+        Assertions.assertTrue(redirectionURL.contains("RelayState="));
 
         Map<String, String> headers = response.getHeaders();
-        Assert.assertNotNull(headers);
-        Assert.assertFalse(headers.isEmpty());
-        Assert.assertTrue("no-cache, no-store".equals(headers.get("Cache-Control")));
-        Assert.assertTrue("no-cache".equals(headers.get("Pragma")));
+        Assertions.assertNotNull(headers);
+        Assertions.assertFalse(headers.isEmpty());
+        Assertions.assertTrue("no-cache, no-store".equals(headers.get("Cache-Control")));
+        Assertions.assertTrue("no-cache".equals(headers.get("Pragma")));
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testAuthnRelayState() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -144,16 +144,16 @@ public class SAMLRequestTest {
         String redirectionURL = response.getRedirectionURL();
         String relayState =
             redirectionURL.substring(redirectionURL.indexOf("RelayState=") + "RelayState=".length());
-        Assert.assertNotNull(relayState);
+        Assertions.assertNotNull(relayState);
 
         RequestState requestState = response.getRequestState();
 
-        Assert.assertEquals(TEST_IDP_ISSUER, requestState.getIdpServiceAddress());
-        Assert.assertEquals(TEST_REQUEST_URL, requestState.getIssuerId());
-        Assert.assertEquals(TEST_REQUEST_URL, requestState.getTargetAddress());
+        Assertions.assertEquals(TEST_IDP_ISSUER, requestState.getIdpServiceAddress());
+        Assertions.assertEquals(TEST_REQUEST_URL, requestState.getIssuerId());
+        Assertions.assertEquals(TEST_REQUEST_URL, requestState.getTargetAddress());
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSAMLAuthnRequest() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -179,12 +179,12 @@ public class SAMLRequestTest {
         AuthnRequest request =
             (AuthnRequest)OpenSAMLUtil.fromDom(requestDoc.getDocumentElement());
 
-        Assert.assertEquals(TEST_REQUEST_URL, request.getIssuer().getValue());
-        Assert.assertEquals(TEST_REQUEST_URL, request.getAssertionConsumerServiceURL());
-        Assert.assertEquals("2.0",  request.getVersion().toString());
+        Assertions.assertEquals(TEST_REQUEST_URL, request.getIssuer().getValue());
+        Assertions.assertEquals(TEST_REQUEST_URL, request.getAssertionConsumerServiceURL());
+        Assertions.assertEquals("2.0",  request.getVersion().toString());
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSignedSAMLAuthnRequest() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("SIGNED_ROOT");
@@ -201,14 +201,14 @@ public class SAMLRequestTest {
         String redirectionURL = response.getRedirectionURL();
         String signature =
             redirectionURL.substring(redirectionURL.indexOf("Signature=") + "Signature=".length());
-        Assert.assertTrue(signature != null && signature.length() > 0);
+        Assertions.assertTrue(signature != null && signature.length() > 0);
         String signatureAlg =
                 redirectionURL.substring(redirectionURL.indexOf("SigAlg=") + "SigAlg=".length(),
                         redirectionURL.indexOf('&', redirectionURL.indexOf("SigAlg=")));
-        Assert.assertEquals(WSConstants.RSA_SHA1, URLDecoder.decode(signatureAlg, "UTF-8"));
+        Assertions.assertEquals(WSConstants.RSA_SHA1, URLDecoder.decode(signatureAlg, "UTF-8"));
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSignedSAMLAuthnRequestSHA256() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("SIGNED_ROOT_SHA256");
@@ -225,14 +225,14 @@ public class SAMLRequestTest {
         String redirectionURL = response.getRedirectionURL();
         String signature =
                 redirectionURL.substring(redirectionURL.indexOf("Signature=") + "Signature=".length());
-        Assert.assertTrue(signature != null && signature.length() > 0);
+        Assertions.assertTrue(signature != null && signature.length() > 0);
         String signatureAlg =
                 redirectionURL.substring(redirectionURL.indexOf("SigAlg=") + "SigAlg=".length(),
                         redirectionURL.indexOf('&', redirectionURL.indexOf("SigAlg=")));
-        Assert.assertEquals(WSConstants.RSA_SHA256, URLDecoder.decode(signatureAlg, "UTF-8"));
+        Assertions.assertEquals(WSConstants.RSA_SHA256, URLDecoder.decode(signatureAlg, "UTF-8"));
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void createSAMLLogoutRequest() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("ROOT");
@@ -258,10 +258,10 @@ public class SAMLRequestTest {
         LogoutRequest request =
             (LogoutRequest)OpenSAMLUtil.fromDom(requestDoc.getDocumentElement());
 
-        Assert.assertEquals(TEST_REQUEST_URL, request.getIssuer().getValue());
+        Assertions.assertEquals(TEST_REQUEST_URL, request.getIssuer().getValue());
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testSignedSAMLLogoutRequest() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("SIGNED_ROOT");
@@ -278,10 +278,10 @@ public class SAMLRequestTest {
         String redirectionURL = response.getRedirectionURL();
         String signature =
             redirectionURL.substring(redirectionURL.indexOf("Signature=") + "Signature=".length());
-        Assert.assertTrue(signature != null && signature.length() > 0);
+        Assertions.assertTrue(signature != null && signature.length() > 0);
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void testCustomSAMLAuthnRequest() throws Exception {
         // Mock up a Request
         FedizContext config = getFederationConfigurator().getFedizContext("CUSTOM_REQUEST");
@@ -307,8 +307,8 @@ public class SAMLRequestTest {
         AuthnRequest request =
             (AuthnRequest)OpenSAMLUtil.fromDom(requestDoc.getDocumentElement());
 
-        Assert.assertEquals(TEST_REQUEST_URL, request.getIssuer().getValue());
-        Assert.assertEquals(TEST_REQUEST_URL, request.getAssertionConsumerServiceURL());
-        Assert.assertEquals("1.1",  request.getVersion().toString());
+        Assertions.assertEquals(TEST_REQUEST_URL, request.getIssuer().getValue());
+        Assertions.assertEquals(TEST_REQUEST_URL, request.getAssertionConsumerServiceURL());
+        Assertions.assertEquals("1.1",  request.getVersion().toString());
     }
 }

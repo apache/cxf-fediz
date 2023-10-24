@@ -42,10 +42,10 @@ import org.apache.xml.security.signature.XMLSignature;
 import org.apache.xml.security.signature.XMLSignatureException;
 
 import org.easymock.EasyMock;
-import org.junit.AfterClass;
-import org.junit.Assert;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class FederationMetaDataTest {
     private static final String CONFIG_FILE = "fediz_meta_test_config.xml";
@@ -53,7 +53,7 @@ public class FederationMetaDataTest {
         "https://localhost/fedizhelloworld/FederationMetadata/2007-06/FederationMetadata.xml";
     private static final String CONTEXT_PATH = "/fedizhelloworld";
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         SecurityTestUtil.cleanup();
     }
@@ -74,17 +74,17 @@ public class FederationMetaDataTest {
     }
 
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateMetaDataWithAlias() throws ProcessingException, XMLSignatureException, XMLSecurityException {
 
         FedizContext config = loadConfig("ROOT");
 
         FedizProcessor wfProc = new FederationProcessorImpl();
         Document doc = wfProc.getMetaData(null, config);
-        Assert.assertNotNull(doc);
+        Assertions.assertNotNull(doc);
 
         Node signatureNode = doc.getElementsByTagName("Signature").item(0);
-        Assert.assertNotNull(signatureNode);
+        Assertions.assertNotNull(signatureNode);
 
         doc.getDocumentElement().setIdAttributeNS(null, "ID", true);
 
@@ -97,13 +97,13 @@ public class FederationMetaDataTest {
         // Validate the signature
         XMLSignature signature = new XMLSignature((Element)signatureNode, "");
         KeyInfo ki = signature.getKeyInfo();
-        Assert.assertNotNull(ki);
-        Assert.assertNotNull(ki.getX509Certificate());
+        Assertions.assertNotNull(ki);
+        Assertions.assertNotNull(ki.getX509Certificate());
 
-        Assert.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
+        Assertions.assertTrue(signature.checkSignatureValue(ki.getX509Certificate()));
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateMetaDataNoAlias() throws ProcessingException {
 
         try {
@@ -116,14 +116,14 @@ public class FederationMetaDataTest {
 
             FedizProcessor wfProc = new FederationProcessorImpl();
             Document doc = wfProc.getMetaData(req, config);
-            Assert.assertNull(doc);
+            Assertions.assertNull(doc);
             fail("Failure expected as signing store contains more than one certificate");
         } catch (ProcessingException ex) {
             //Expected as signing store contains more than one certificate
         }
     }
 
-    @org.junit.Test
+    @org.junit.jupiter.api.Test
     public void validateMetaDataNoSigningKey() throws ProcessingException {
 
         FedizContext config = loadConfig("ROOT_NO_SIGNINGKEY");
@@ -135,7 +135,7 @@ public class FederationMetaDataTest {
 
         FedizProcessor wfProc = new FederationProcessorImpl();
         Document doc = wfProc.getMetaData(req, config);
-        Assert.assertNotNull(doc);
+        Assertions.assertNotNull(doc);
 
         try {
             DOMUtils.writeXml(doc, System.out);
