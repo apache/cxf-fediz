@@ -41,22 +41,20 @@ import org.apache.directory.server.core.annotations.CreateDS;
 import org.apache.directory.server.core.annotations.CreateIndex;
 import org.apache.directory.server.core.annotations.CreatePartition;
 import org.apache.directory.server.core.integ.AbstractLdapTestUnit;
-import org.apache.directory.server.core.integ.FrameworkRunner;
+import org.apache.directory.server.core.integ.ApacheDSTestExtension;
 import org.apache.wss4j.dom.engine.WSSConfig;
 
-import org.apache.directory.server.core.integ.ApacheDSTestExtension;
-import org.junit.jupiter.api.After;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * A test that configures the STS to authenticate user (and retrieve claims) from an LDAP backend.
  */
 
-@ExtendWith( { ApacheDSTestExtension.class } )
+@ExtendWith({ ApacheDSTestExtension.class })
 
 //Define the DirectoryService
 @CreateDS(name = "LDAPTest-class",
@@ -95,7 +93,7 @@ public class LDAPTest extends AbstractLdapTestUnit {
     private static Tomcat rpServer;
     private static boolean portUpdated;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         idpHttpsPort = System.getProperty("idp.https.port");
         Assertions.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
