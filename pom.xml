@@ -39,7 +39,7 @@
     <properties>
         <apacheds.version>2.0.0.AM27</apacheds.version>
         <bval.version>2.0.6</bval.version>
-        <commons.dbcp2.version>2.9.0</commons.dbcp2.version>
+        <commons.dbcp2.version>2.11.0</commons.dbcp2.version>
         <commons.logging.version>1.2</commons.logging.version>
         <commons.text.version>1.11.0</commons.text.version>
         <commons.validator.version>1.7</commons.validator.version>
