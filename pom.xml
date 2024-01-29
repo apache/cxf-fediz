@@ -448,6 +448,7 @@
                     <configuration>
                         <includeResources>false</includeResources>
                         <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                        <includeTestResources>false</includeTestResources>
                     </configuration>
                     <executions>
                         <execution>
