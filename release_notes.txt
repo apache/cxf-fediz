@@ -1,4 +1,4 @@
-Apache CXF Fediz 1.6.0 Release Notes
+Apache CXF Fediz 1.6.2 Release Notes
 ------------------------------------
 
 1. Overview
@@ -65,6 +65,11 @@ N.A.
 
 
 8. Specific issues, features, and improvements fixed in this version
+
+Release Notes - CXF-Fediz - Version 1.6.2
+
+Bug
+    [FEDIZ-256] - Tomcat authenticationSessionTimeout
 
 Release Notes - CXF-Fediz - Version 1.6.0
 
