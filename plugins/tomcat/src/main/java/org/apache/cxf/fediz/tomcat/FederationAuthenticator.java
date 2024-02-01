@@ -243,6 +243,14 @@ public class FederationAuthenticator extends FormAuthenticator {
             String originalURL = (String)session.getNote(FederationAuthenticator.SESSION_SAVED_URI_PREFIX + contextId);
             session.removeNote(FederationAuthenticator.SESSION_SAVED_URI_PREFIX + contextId); // Cleanup session
 
+            SavedRequest saved = (SavedRequest) session.getNote(SESSION_SAVED_REQUEST_PREFIX
+                    + ((Request)request).getDecodedRequestURI());
+            if (saved != null) {
+                // FEDIZ-256: Restore original session timeout
+                session.setMaxInactiveInterval(saved.getOriginalMaxInactiveInterval());
+                LOG.debug("Session timeout set to {}", session.getMaxInactiveInterval());
+            }
+
             try {
                 if (originalURL != null) {
                     LOG.debug("Restore request to {}", originalURL);
