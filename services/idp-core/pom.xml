@@ -223,7 +223,7 @@
                                 <artifactItem>
                                     <groupId>org.apache.syncope.core</groupId>
                                     <artifactId>syncope-core-persistence-jpa</artifactId>
-                                    <version>2.1.6</version>
+                                    <version>3.0.6</version>
                                     <destFileName>fediz-oidc.war</destFileName>
                                     <outputDirectory>${project.build.outputDirectory}</outputDirectory>
                                     <includes>org/springframework/orm/jpa/vendor/*.class</includes> 
