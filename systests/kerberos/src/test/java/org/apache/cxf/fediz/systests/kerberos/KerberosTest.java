@@ -67,11 +67,20 @@ public class KerberosTest {
 
     private static Tomcat idpServer;
     private static Tomcat rpServer;
+    private static boolean runTests;
 
     private static SimpleKdcServer kerbyServer;
 
     @BeforeAll
     public static void init() throws Exception {
+
+        //
+        // This test fails with the IBM JDK
+        //
+        if (!"IBM Corporation".equals(System.getProperty("java.vendor"))) {
+            runTests = true;
+        }
+
         idpHttpsPort = System.getProperty("idp.https.port");
         Assertions.assertNotNull("Property 'idp.https.port' null", idpHttpsPort);
         rpHttpsPort = System.getProperty("rp.https.port");
@@ -113,6 +122,7 @@ public class KerberosTest {
 
     private static Tomcat startServer(boolean idp, String port)
         throws ServletException, LifecycleException, IOException {
+
         Tomcat server = new Tomcat();
         server.setPort(0);
         String currentDir = new File(".").getCanonicalPath();
@@ -198,6 +208,10 @@ public class KerberosTest {
 
     @org.junit.jupiter.api.Test
     public void testKerberos() throws Exception {
+        if (!runTests) {
+            return;
+        }
+
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         // Get a Kerberos Ticket +  Base64 encode it
         String ticket = getEncodedKerberosTicket(false);
@@ -244,6 +258,10 @@ public class KerberosTest {
     @org.junit.jupiter.api.Test
     @org.junit.jupiter.api.Disabled
     public void testSpnego() throws Exception {
+        if (!runTests) {
+            return;
+        }
+
         String url = "https://localhost:" + getRpHttpsPort() + "/fedizhelloworld/secure/fedservlet";
         // Get a Kerberos Ticket +  Base64 encode it
         String ticket = getEncodedKerberosTicket(true);
