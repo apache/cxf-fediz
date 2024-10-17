@@ -85,11 +85,11 @@
         </security:headers>
     </security:http>
 
-    <security:authentication-manager alias="authenticationManagers" id="authenticationManagers">
+    <!--<security:authentication-manager alias="authenticationManagers" id="authenticationManagers">
         <security:authentication-provider ref="stsUPAuthProvider" />
         <security:authentication-provider ref="stsKrbAuthProvider" />
         <security:authentication-provider ref="stsClientCertAuthProvider" />
-    </security:authentication-manager>
+    </security:authentication-manager>-->
 
     <bean id="entitlementsEnricher" 
           class="org.apache.cxf.fediz.service.idp.service.security.GrantedAuthorityEntitlements" />

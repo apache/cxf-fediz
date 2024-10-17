@@ -45,9 +45,9 @@
     </security:http>
 
     <bean id="bCryptPasswordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" />
-    
+
     <bean id="defaultPasswordEncoder" class="org.springframework.security.crypto.password.StandardPasswordEncoder" />
-    
+
     <security:authentication-manager id="restAuthenticationManager">
         <security:authentication-provider>
           <!-- <security:password-encoder ref="defaultPasswordEncoder" />-->
@@ -61,5 +61,5 @@
         </security:authentication-provider>
         <security:authentication-provider ref="stsUPAuthProvider" />
     </security:authentication-manager>
-    
+
 </beans>

@@ -33,13 +33,13 @@
     <!-- Kerberos entry point -->
     <bean id="kerberosEntryPoint"
           class="org.apache.cxf.fediz.service.idp.kerberos.KerberosEntryPoint" />
-    
+
     <bean id="kerberosAuthenticationProcessingFilter"
           class="org.apache.cxf.fediz.service.idp.kerberos.KerberosAuthenticationProcessingFilter">
-          <property name="authenticationManager" ref="authenticationManagers" />
+          <property name="authenticationManager" ref="krbAuthenticationManager" />
     </bean>
-    
-    <security:http pattern="/federation/krb" use-expressions="true" entry-point-ref="kerberosEntryPoint">
+
+    <security:http pattern="/federation/krb" use-expressions="true" entry-point-ref="kerberosEntryPoint" authentication-manager-ref="krbAuthenticationManager">
         <security:intercept-url requires-channel="https" pattern="/federation/krb/login*" access="isAuthenticated()" />
         <security:custom-filter after="CHANNEL_FILTER" ref="stsKrbPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
@@ -54,7 +54,7 @@
         </security:headers>
     </security:http>
     
-    <security:http pattern="/saml/krb" use-expressions="true" entry-point-ref="kerberosEntryPoint">
+    <security:http pattern="/saml/krb" use-expressions="true" entry-point-ref="kerberosEntryPoint" authentication-manager-ref="krbAuthenticationManager">
         <security:intercept-url requires-channel="https" pattern="/saml/krb/login*" access="isAuthenticated()" />
         <security:custom-filter after="CHANNEL_FILTER" ref="stsKrbPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
@@ -77,8 +77,8 @@
         <property name="contextName" value="bob" />
         <property name="serviceName" value="bob@service.ws.apache.org" />
     </bean>-->
-	
-	<!-- Kerberos authentication provider -->
+
+    <!-- Kerberos authentication provider -->
     <bean id="stsKrbAuthProvider" class="org.apache.cxf.fediz.service.idp.STSKrbAuthenticationProvider">
         <property name="wsdlLocation" value="https://localhost:0/fediz-idp-sts/${realm.STS_URI}/STSServiceTransportKerberos?wsdl" />
         <property name="wsdlEndpoint" value="TransportKerberos_Port" />
@@ -88,5 +88,9 @@
         <!-- <property name="kerberosTokenValidator" ref="kerberosTokenValidator" />
         <property name="requireDelegation" value="true" />-->
     </bean>
+
+    <security:authentication-manager id="krbAuthenticationManager">
+        <security:authentication-provider ref="stsKrbAuthProvider" />
+    </security:authentication-manager>
 
 </beans>

@@ -1,0 +1,7 @@
+# Update 'server.jks'
+
+cp idp-ssl-key.jks server.jks
+
+keytool -import -trustcacerts -keystore server.jks -storepass tompass -alias mytomidpcert -file MyTCIDP.cer -noprompt
+keytool -import -trustcacerts -keystore server.jks -storepass tompass -alias realma -file realma.cert -noprompt
+keytool -import -trustcacerts -keystore server.jks -storepass tompass -alias alice -file alice.cer -noprompt

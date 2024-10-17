@@ -716,7 +716,7 @@ public class FederationProcessorImpl extends AbstractFedizProcessor {
 
     }
 
-    private static class NOOpProcessor implements Processor {
+    private static final class NOOpProcessor implements Processor {
 
         @Override
         public List<WSSecurityEngineResult> handleToken(Element arg0, RequestData arg1)

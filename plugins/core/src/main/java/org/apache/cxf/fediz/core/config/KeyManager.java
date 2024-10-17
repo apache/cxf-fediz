@@ -24,7 +24,7 @@ import org.apache.wss4j.common.crypto.Crypto;
 
 public class KeyManager {
 
-    private KeyManagersType keyManagerType;
+    private final KeyManagersType keyManagerType;
     private Crypto crypto;
     private String name;
 
@@ -62,6 +62,5 @@ public class KeyManager {
     public String getKeyPassword() {
         return keyManagerType.getKeyPassword();
     }
-
 
 }

@@ -126,13 +126,13 @@ public abstract class AbstractFedizProcessor implements FedizProcessor {
         for (Claim c : claims) {
             if (roleURI.equals(c.getClaimType())) {
                 Object oValue = c.getValue();
-                if ((oValue instanceof String) && !"".equals(oValue)) {
+                if (oValue instanceof String && !"".equals(oValue)) {
                     roles = Collections.singletonList((String) oValue);
-                } else if ((oValue instanceof List<?>) && !((List<?>) oValue).isEmpty()) {
+                } else if (oValue instanceof List<?> && !((List<?>) oValue).isEmpty()) {
                     @SuppressWarnings("unchecked")
                     List<String> values = (List<String>) oValue;
                     roles = Collections.unmodifiableList(values);
-                } else if (!((oValue instanceof String) || (oValue instanceof List<?>))) {
+                } else if (!(oValue instanceof String || oValue instanceof List<?>)) {
                     LOG.error("Unsupported value type of Claim value");
                     throw new IllegalStateException("Unsupported value type of Claim value");
                 }

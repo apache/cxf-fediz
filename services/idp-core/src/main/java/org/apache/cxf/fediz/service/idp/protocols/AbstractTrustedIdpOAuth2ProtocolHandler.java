@@ -161,7 +161,7 @@ public abstract class AbstractTrustedIdpOAuth2ProtocolHandler extends AbstractTr
         return assertion;
     }
 
-    private static class SamlCallbackHandler implements CallbackHandler {
+    private static final class SamlCallbackHandler implements CallbackHandler {
         private ConditionsBean conditionsBean;
         private SubjectBean subjectBean;
         private String issuer;

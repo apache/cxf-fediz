@@ -34,7 +34,7 @@
     <!-- <security:debug /> -->
 
     <!-- SSL Client Cert entry point for WS-Federation -->
-    <security:http pattern="/federation/clientcert" use-expressions="true">
+    <security:http pattern="/federation/clientcert" use-expressions="true" authentication-manager-ref="clientCertAuthenticationManager">
         <security:intercept-url requires-channel="https" pattern="/federation/clientcert/login*" access="isAuthenticated()" />
         <security:custom-filter after="CHANNEL_FILTER" ref="stsClientCertPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
@@ -50,7 +50,7 @@
     </security:http>
     
     <!-- SSL Client Cert entry point for SAML SSO -->
-    <security:http pattern="/saml/clientcert" use-expressions="true">
+    <security:http pattern="/saml/clientcert" use-expressions="true" authentication-manager-ref="clientCertAuthenticationManager">
         <security:intercept-url requires-channel="https" pattern="/saml/clientcert/login*" access="isAuthenticated()" />
         <security:custom-filter after="CHANNEL_FILTER" ref="stsClientCertPortFilter" />
         <security:custom-filter after="SERVLET_API_SUPPORT_FILTER" ref="entitlementsEnricher" />
@@ -68,12 +68,12 @@
     <bean id="stsClientCertPortFilter" class="org.apache.cxf.fediz.service.idp.STSPortFilter">
         <property name="authenticationProvider" ref="stsClientCertAuthProvider" />
     </bean>
-    
+
     <util:map id="securityProperties">
         <entry key="ws-security.username" value="idp-user" />
         <entry key="ws-security.password" value="idp-pass" />
     </util:map>
-    
+
     <bean id="stsClientCertAuthProvider" class="org.apache.cxf.fediz.service.idp.STSPreAuthAuthenticationProvider">
         <property name="wsdlLocation" value="https://localhost:0/fediz-idp-sts/${realm.STS_URI}/STSServiceTransportUT?wsdl" />
         <property name="wsdlEndpoint" value="TransportUT_Port" />
@@ -82,5 +82,9 @@
         <property name="tokenType" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV2.0" />
         <property name="properties" ref="securityProperties" />
     </bean>
-    
+
+    <security:authentication-manager id="clientCertAuthenticationManager">
+        <security:authentication-provider ref="stsClientCertAuthProvider" />
+    </security:authentication-manager>
+
 </beans>

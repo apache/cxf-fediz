@@ -41,7 +41,7 @@ public abstract class Protocol {
     private ClassLoader classloader;
     private Object issuer;
     private Object realm;
-    private List<TokenValidator> validators = new ArrayList<>();
+    private final List<TokenValidator> validators = new ArrayList<>();
     private Object reply;
     private Object signInQuery;
 
