@@ -86,8 +86,8 @@ public class FedizSignatureTrustValidator implements Validator {
      */
     public Credential validate(Credential credential, RequestData data) throws WSSecurityException {
         if (credential == null
-            || ((credential.getCertificates() == null || credential.getCertificates().length == 0)
-                && credential.getPublicKey() == null)) {
+            || (credential.getCertificates() == null || credential.getCertificates().length == 0)
+                && credential.getPublicKey() == null) {
             throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "noCredential");
         }
 

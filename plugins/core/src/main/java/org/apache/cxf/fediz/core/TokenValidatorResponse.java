@@ -24,13 +24,13 @@ import java.util.List;
 
 public class TokenValidatorResponse {
 
-    private String username;
-    private String uniqueTokenId;
+    private final String username;
+    private final String uniqueTokenId;
     @Deprecated
     private List<String> roles;
-    private String issuer;
-    private String audience;
-    private List<Claim> claims;
+    private final String issuer;
+    private final String audience;
+    private final List<Claim> claims;
     private Instant expires;
     private Instant created;
 

@@ -487,7 +487,7 @@ public final class DOMUtils {
             Node node = atts.item(i);
             String name = node.getNodeName();
             if (ns.equals(node.getNodeValue())
-                && (name != null && (XMLNAMESPACE.equals(name) || name.startsWith(XMLNAMESPACE + ":")))) {
+                && name != null && (XMLNAMESPACE.equals(name) || name.startsWith(XMLNAMESPACE + ":"))) {
                 return node.getLocalName();
             }
         }
@@ -522,7 +522,7 @@ public final class DOMUtils {
             Node node = atts.item(i);
             String name = node.getNodeName();
             if (namespaceUri.equals(node.getNodeValue())
-                && (name != null && (XMLNAMESPACE.equals(name) || name.startsWith(XMLNAMESPACE + ":")))) {
+                && name != null && (XMLNAMESPACE.equals(name) || name.startsWith(XMLNAMESPACE + ":"))) {
                 prefixes.add(node.getPrefix());
             }
         }

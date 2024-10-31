@@ -65,13 +65,13 @@ public class FedizContext implements Closeable {
 
     private static final Logger LOG = LoggerFactory.getLogger(FedizContext.class);
 
-    private ContextConfig config;
+    private final ContextConfig config;
 
     private boolean detectReplayedTokens = true;
     private String relativePath;
     private ReplayCache replayCache;
     private Protocol protocol;
-    private List<TrustManager> certificateStores = new ArrayList<>();
+    private final List<TrustManager> certificateStores = new ArrayList<>();
     private KeyManager keyManager;
     private KeyManager decryptionKeyManager;
     private ClassLoader classloader;

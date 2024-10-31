@@ -54,8 +54,8 @@ public class FederationAuthenticationToken extends AbstractAuthenticationToken
         final FedizResponse response) {
         super(authorities);
 
-        if ((principal == null) || "".equals(principal) || (credentials == null)
-            || "".equals(credentials) || (authorities == null) || (userDetails == null) || (response == null)) {
+        if (principal == null || "".equals(principal) || credentials == null
+            || "".equals(credentials) || authorities == null || userDetails == null || response == null) {
             throw new IllegalArgumentException("Cannot pass null or empty values to constructor");
         }
 

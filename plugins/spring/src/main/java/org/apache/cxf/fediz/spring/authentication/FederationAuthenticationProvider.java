@@ -96,7 +96,7 @@ public class FederationAuthenticationProvider implements AuthenticationProvider,
         }
 
         // Ensure credentials are provided
-        if ((authentication.getCredentials() == null) || "".equals(authentication.getCredentials())) {
+        if (authentication.getCredentials() == null || "".equals(authentication.getCredentials())) {
             throw new BadCredentialsException(messages.getMessage("FederationAuthenticationProvider.noSignInRequest",
                     "Failed to get SignIn request"));
         }
