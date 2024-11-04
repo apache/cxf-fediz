@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.apache.cxf.fediz</groupId>
         <artifactId>plugin</artifactId>
-        <version>1.6.3-SNAPSHOT</version>
+        <version>1.7.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>fediz-spring</artifactId>

@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.apache.cxf.fediz.examples.wsclientWebapp</groupId>
         <artifactId>webservice</artifactId>
-        <version>1.6.3-SNAPSHOT</version>
+        <version>1.7.0-SNAPSHOT</version>
     </parent>
     <groupId>org.apache.cxf.fediz.examples.wsclientWebapp.webservice</groupId>
     <artifactId>common</artifactId>
