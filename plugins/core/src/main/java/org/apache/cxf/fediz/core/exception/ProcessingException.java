@@ -40,7 +40,7 @@ public class ProcessingException extends Exception {
      * A map of Fault Code to Fault Strings
      */
     private static final java.util.Map<TYPE, String> TYPE_MAP =
-            new java.util.HashMap<>();
+            new java.util.EnumMap<>(TYPE.class);
 
     static {
         TYPE_MAP.put(TYPE.BAD_REQUEST, "The specified request is not understood");
