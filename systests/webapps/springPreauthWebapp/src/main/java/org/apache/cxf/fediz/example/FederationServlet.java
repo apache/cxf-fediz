@@ -98,7 +98,7 @@ public class FederationServlet extends HttpServlet {
         Authentication obj = SecurityContextHolder.getContext().getAuthentication();
         System.out.println("getCredentials: " + obj.getCredentials().toString());
         System.out.println("getDetails: " + obj.getDetails().toString());
-        System.out.println("getName: " + obj.getName().toString());
+        System.out.println("getName: " + obj.getName());
         System.out.println("getAuthorities: " + obj.getAuthorities().toString());
         System.out.println("getPrincipal: " + obj.getPrincipal().toString());
 
