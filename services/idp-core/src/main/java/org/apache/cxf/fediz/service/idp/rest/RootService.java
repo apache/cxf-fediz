@@ -31,6 +31,7 @@ import javax.ws.rs.core.UriInfo;
 
 @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 @Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+@SuppressWarnings("PMD.ImplicitFunctionalInterface")
 public interface RootService {
 
     @HEAD

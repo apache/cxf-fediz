@@ -18,6 +18,7 @@
  */
 package org.apache.cxf.fediz.service.idp.spi;
 
+@SuppressWarnings("PMD.ImplicitFunctionalInterface")
 public interface ProtocolHandler {
 
     String getProtocol();

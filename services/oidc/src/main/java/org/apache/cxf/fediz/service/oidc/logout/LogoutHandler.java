@@ -21,6 +21,7 @@ package org.apache.cxf.fediz.service.oidc.logout;
 import org.apache.cxf.rs.security.oauth2.common.Client;
 import org.apache.cxf.rs.security.oauth2.common.UserSubject;
 
+@SuppressWarnings("PMD.ImplicitFunctionalInterface")
 public interface LogoutHandler {
     void handleLogout(Client client, UserSubject subject);
 }

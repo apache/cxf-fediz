@@ -25,6 +25,7 @@ import org.apache.wss4j.common.saml.bean.AttributeStatementBean;
 /**
  * An interface to convert JWT claims into a SAML AttributeStatementBean.
  */
+@SuppressWarnings("PMD.ImplicitFunctionalInterface")
 public interface ClaimsHandler {
 
     AttributeStatementBean handleClaims(JsonMapObject claims);
