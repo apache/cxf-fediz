@@ -53,7 +53,7 @@
         <jaxb.runtime.version>2.3.9</jaxb.runtime.version>
         <jaxb.version>2.3.3</jaxb.version>
         <jetty9.version>9.4.57.v20241219</jetty9.version>
-        <junit.version>5.12.1</junit.version>
+        <junit.version>5.12.2</junit.version>
         <kerby.version>2.1.0</kerby.version>
         <log4j.version>2.24.3</log4j.version>
         <openjpa.version>3.2.2</openjpa.version>
