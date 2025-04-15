@@ -40,7 +40,7 @@
         <apacheds.version>2.0.0.AM27</apacheds.version>
         <bval.version>2.0.6</bval.version>
         <commons.dbcp2.version>2.13.0</commons.dbcp2.version>
-        <commons.text.version>1.13.0</commons.text.version>
+        <commons.text.version>1.13.1</commons.text.version>
         <commons.validator.version>1.9.0</commons.validator.version>
         <cxf.version>3.6.6</cxf.version>
         <cxf.build-utils.version>4.1.0</cxf.build-utils.version>
