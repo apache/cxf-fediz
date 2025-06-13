@@ -72,7 +72,6 @@
         <dependency>
             <groupId>commons-validator</groupId>
             <artifactId>commons-validator</artifactId>
-            <version>${commons.validator.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
