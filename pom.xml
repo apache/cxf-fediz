@@ -356,7 +356,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.14.0</version>
+                    <version>3.14.1</version>
                     <configuration>
                         <compilerArgs>
                             <arg>-XDcompilePolicy=simple</arg>
@@ -668,7 +668,7 @@
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-compiler-plugin</artifactId>
-                            <version>3.14.0</version>
+                            <version>3.14.1</version>
                             <configuration>
                                 <maxmem>256M</maxmem>
                                 <fork>${compiler.fork}</fork>
