@@ -65,7 +65,7 @@
         <spring-webflow.version>2.5.1.RELEASE</spring-webflow.version>
         <tomcat.version>9.0.111</tomcat.version>
         <validation-api.version>2.0.2</validation-api.version>
-        <wss4j.version>2.4.3</wss4j.version>
+        <wss4j.version>4.0.1</wss4j.version>
 
         <tomcat.url>http://localhost:8080/manager/text</tomcat.url>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
