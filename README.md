@@ -1,5 +1,5 @@
 [![Build Status](https://ci-builds.apache.org/job/CXF/job/CXF-Fediz/badge/icon?subject=Build)](https://ci-builds.apache.org/job/CXF/job/CXF-Fediz/)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.cxf.fediz/fediz/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.apache.cxf.fediz/fediz)
+[![Maven Central](https://maven-badges.sml.io/maven-central/org.apache.cxf.fediz/fediz/badge.svg)](https://maven-badges.sml.io/maven-central/org.apache.cxf.fediz/fediz)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/apache/cxf-fediz/badge)](https://api.securityscorecards.dev/projects/github.com/apache/cxf-fediz)
 
 Welcome to Apache CXF Fediz!
