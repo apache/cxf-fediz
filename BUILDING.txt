@@ -4,8 +4,8 @@ Building Apache CXF Fediz
 Initial Setup
 -------------
 
-1) Install J2SE 8 SDK, which can be downloaded from 
-   http://www.oracle.com/technetwork/java/javase/downloads/index.html
+1) Install J2SE 11 SDK, which can be downloaded from 
+   https://www.oracle.com/java/technologies/javase/jdk11-archive-downloads.html
 
 2) Make sure that your JAVA_HOME environment variable is set to the newly installed 
    JDK location, and that your PATH includes %JAVA_HOME%\bin (Windows) or 

@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.apache.cxf.fediz.core.Claim;
 
-@SuppressWarnings("PMD.ImplicitFunctionalInterface")
 public interface ClaimsProcessor {
 
     /**
