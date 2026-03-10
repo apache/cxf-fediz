@@ -38,8 +38,8 @@ public class KeystoreCallbackHandler implements CallbackHandler {
     private Map<String, String> users = new HashMap<>();
 
     public KeystoreCallbackHandler() {
-        users.put("mystskey", "stskpass");
-        users.put("myclientkey", "ckpass");
+        users.put("mystskey", "stsspass");
+        users.put("myclientkey", "cspass");
         users.put("realma", "realma");
         users.put("realmb", "realmb");
     }

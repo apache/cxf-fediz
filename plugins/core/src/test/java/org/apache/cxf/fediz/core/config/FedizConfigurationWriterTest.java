@@ -73,7 +73,7 @@ public class FedizConfigurationWriterTest {
     private static final String JKS_TYPE = "JKS";
 
     private static final String KEYSTORE_PASSWORD = "storepass";
-    private static final String KEY_PASSWORD = "stskpass";
+    private static final String KEY_PASSWORD = "stsspass";
     private static final String KEY_ALIAS = "mystskey";
 
     private static final String AUDIENCE_URI_1 = "http://host_one:port/url";

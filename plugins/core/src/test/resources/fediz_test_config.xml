@@ -230,7 +230,7 @@
         <trustedIssuers>
             <issuer certificateValidation="PeerTrust" />
         </trustedIssuers>
-        <tokenDecryptionKey keyPassword="stskpass">
+        <tokenDecryptionKey keyPassword="stsspass">
              <keyStore file="stsstore.jks" password="stsspass" type="JKS" />
         </tokenDecryptionKey>
 
