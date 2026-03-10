@@ -195,7 +195,7 @@
 					type="JKS" />
 			</trustManager>		
 		</certificateStores>
-		<signingKey keyPassword="stskpass" keyAlias="mystskey">
+		<signingKey keyPassword="stsspass" keyAlias="mystskey">
              <keyStore file="stsstore.jks" password="stsspass" type="JKS" />
         </signingKey>
 		<trustedIssuers>
@@ -225,7 +225,7 @@
 						  type="JKS" />
 			</trustManager>
 		</certificateStores>
-		<signingKey keyPassword="stskpass" keyAlias="mystskey">
+		<signingKey keyPassword="stsspass" keyAlias="mystskey">
 			<keyStore file="stsstore.jks" password="stsspass" type="JKS" />
 		</signingKey>
 		<trustedIssuers>
@@ -376,7 +376,7 @@
 		<trustedIssuers>
 			<issuer certificateValidation="PeerTrust" />
 		</trustedIssuers>
-		<tokenDecryptionKey keyPassword="stskpass" keyAlias="mystskey">
+		<tokenDecryptionKey keyPassword="stsspass" keyAlias="mystskey">
 			<keyStore file="stsstore.jks" password="stsspass" type="JKS" />
 		</tokenDecryptionKey>
 
@@ -408,7 +408,7 @@
 		<trustedIssuers>
 			<issuer certificateValidation="PeerTrust" />
 		</trustedIssuers>
-		<tokenDecryptionKey keyPassword="stskpass" keyAlias="mystskey">
+		<tokenDecryptionKey keyPassword="stsspass" keyAlias="mystskey">
 			<keyStore file="stsstore.jks" password="stsspass" type="JKS" />
 		</tokenDecryptionKey>
 

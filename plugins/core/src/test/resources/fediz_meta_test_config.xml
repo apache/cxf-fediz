@@ -31,7 +31,7 @@
             <issuer certificateValidation="PeerTrust" />
         </trustedIssuers>
         <maximumClockSkew>1000</maximumClockSkew>
-        <signingKey keyAlias="mystskey" keyPassword="stskpass">
+        <signingKey keyAlias="mystskey" keyPassword="stsspass">
             <keyStore file="stsstore.jks" password="stsspass" type="JKS" />
         </signingKey>
         <protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="federationProtocolType"
@@ -67,7 +67,7 @@
             <issuer certificateValidation="PeerTrust" />
         </trustedIssuers>
         <maximumClockSkew>1000</maximumClockSkew>
-        <signingKey keyPassword="stskpass">
+        <signingKey keyPassword="stsspass">
             <keyStore file="stsstore.jks" password="stsspass" type="JKS" />
         </signingKey>
         <protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="federationProtocolType"
