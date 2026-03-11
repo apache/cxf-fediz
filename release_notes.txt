@@ -1,4 +1,4 @@
-Apache CXF Fediz 1.6.2 Release Notes
+Apache CXF Fediz 1.7.1 Release Notes
 ------------------------------------
 
 1. Overview
@@ -29,7 +29,7 @@ client authentication
 Before installing Apache CXF Fediz, make sure the following products,
 with the specified versions, are installed on your system:
 
-    * Java 8 Development Kit or higher
+    * Java 11 Development Kit or higher
     * Apache Maven 3.x to build the samples
 
 3. Installation Procedures

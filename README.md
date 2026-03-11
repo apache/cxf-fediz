@@ -29,7 +29,7 @@ possession, use, and/or re-export to another country, of
 encryption software.  BEFORE using any encryption software, please 
 check your country's laws, regulations and policies concerning the
 import, possession, or use, and re-export of encryption software, to 
-see if this is permitted.  See <http://www.wassenaar.org/> for more
+see if this is permitted.  See <https://www.wassenaar.org/> for more
 information.
 
 The U.S. Government Department of Commerce, Bureau of Industry and
@@ -44,9 +44,9 @@ code and source code.
 
 The following provides more details on the included cryptographic
 software:
-   http://santuario.apache.org/
-   http://www.bouncycastle.org/
-   http://ws.apache.org/wss4j/
+   https://santuario.apache.org/
+   https://www.bouncycastle.org/
+   https://ws.apache.org/wss4j/
 
 
 
@@ -61,10 +61,10 @@ for installation instructions and list of supported and unsupported
 features.
 
 Check the Fediz website for the latest news:
-http://cxf.apache.org/fediz.html
+https://cxf.apache.org/fediz.html
 
 If you need more help try talking to us on our mailing lists:
-http://cxf.apache.org/mailing-lists.html
+https://cxf.apache.org/mailing-lists.html
  
 If you find any issues with Fediz, please submit reports with JIRA here:
 https://issues.apache.org/jira/browse/FEDIZ
@@ -72,9 +72,9 @@ https://issues.apache.org/jira/browse/FEDIZ
 We welcome contributions, and encourage you to get involved in the CXF
 community. If you'd like to learn more about how you can contribute, please
 see:
-http://cxf.apache.org/getting-involved.html
+https://cxf.apache.org/getting-involved.html
 
 Thank you for using CXF Fediz!
 
 The Apache CXF Team
-http://cxf.apache.org/
+https://cxf.apache.org/
