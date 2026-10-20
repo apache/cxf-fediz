@@ -184,8 +184,18 @@ public class FederationAuthenticator extends FormAuthenticator {
         super.invoke(request, response);
     }
 
+    /**
+     * Main authentication entry point since Tomcat 9.0.121.
+     * {@link org.apache.catalina.authenticator.AuthenticatorBase#invoke} calls this
+     * method (instead of {@link #authenticate(Request, HttpServletResponse)}) and,
+     * if the result is
+     * {@link AuthenticationResult#PASSED_CONSTRAINTS_NEED_REFRESH}, re-evaluates
+     * the security constraints against the restored (non-GET) request before it is
+     * processed.
+     */
     @Override
-    public boolean authenticate(Request request, HttpServletResponse response) throws IOException {
+    protected AuthenticationResult doAuthenticateExtended(Request request, HttpServletResponse response)
+        throws IOException {
 
         LOG.debug("authenticate invoked");
 
@@ -210,7 +220,7 @@ public class FederationAuthenticator extends FormAuthenticator {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
             }
             // The actual login will take place after redirect
-            return false;
+            return AuthenticationResult.FAILED;
         }
 
         // Is this the re-submit of the original request URI after successful
@@ -221,14 +231,24 @@ public class FederationAuthenticator extends FormAuthenticator {
 
         // Check if user was authenticated previously and token is still valid
         if (checkUserAuthentication(request, response, fedCtx)) {
-            return true;
+            return AuthenticationResult.PASSED;
         }
 
         LOG.info("No valid principal found in existing session. Redirecting to IDP");
         redirectToIdp(request, response, fedCtx);
-        return false;
+        return AuthenticationResult.FAILED;
     }
 
+    @Override
+    public boolean authenticate(Request request, HttpServletResponse response) throws IOException {
+        return doAuthenticateExtended(request, response).getAuthenticated();
+    }
+
+    /**
+     * Retained for backwards compatibility. Since Tomcat 9.0.121 the container no longer calls this method;
+     * use {@link #doAuthenticateExtended(Request, HttpServletResponse)} instead.
+     */
+    @Override
     public boolean doAuthenticate(Request request, HttpServletResponse response) throws IOException {
         return authenticate(request, response);
     }
@@ -272,18 +292,19 @@ public class FederationAuthenticator extends FormAuthenticator {
         }
     }
 
-    protected boolean restoreRequest(Request request, HttpServletResponse response) throws IOException {
+    protected AuthenticationResult restoreRequest(Request request, HttpServletResponse response) throws IOException {
 
         Session session = request.getSessionInternal();
         LOG.debug("Restore request from session '{}'", session.getIdInternal());
 
-        if (restoreRequest(request)) {
+        AuthenticationResult result = restoreRequest(request);
+        if (result.getAuthenticated()) {
             LOG.debug("Proceed to restored request");
-            return true;
+            return result;
         } else {
             LOG.warn("Restore of original request failed");
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return false;
+            return AuthenticationResult.FAILED;
         }
     }
 
@@ -364,7 +385,7 @@ public class FederationAuthenticator extends FormAuthenticator {
         }
     }
 
-    protected boolean restoreRequest(Request request) throws IOException {
+    protected AuthenticationResult restoreRequest(Request request) throws IOException {
         Session session = request.getSessionInternal(false);
         String uri = request.getDecodedRequestURI();
         if (session != null && uri != null) {
@@ -373,11 +394,14 @@ public class FederationAuthenticator extends FormAuthenticator {
                 session.removeNote(SESSION_SAVED_REQUEST_PREFIX + uri); // cleanup session
                 synchronized (session) {
                     session.setNote(Constants.FORM_REQUEST_NOTE, saved);
+                    // Since Tomcat 9.0.121 this returns PASSED_CONSTRAINTS_NEED_REFRESH for
+                    // non-GET saved requests so that AuthenticatorBase re-evaluates the
+                    // security constraints against the restored request before processing it.
                     return super.restoreRequest(request, session);
                 }
             }
         }
-        return false;
+        return AuthenticationResult.FAILED;
     }
 
     protected boolean checkUserAuthentication(Request request, HttpServletResponse response, FedizContext fedCtx) {
