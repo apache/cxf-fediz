@@ -386,7 +386,7 @@ public class FedizInterceptor implements TrustAssociationInterceptor {
             return TAIResult.create(HttpServletResponse.SC_FOUND);
 
         } catch (Exception e) {
-            LOG.error("Exception occured validating request", e);
+            LOG.error("Exception occurred validating request", e);
             throw new WebTrustAssociationFailedException(e.getMessage());
         }
     }
