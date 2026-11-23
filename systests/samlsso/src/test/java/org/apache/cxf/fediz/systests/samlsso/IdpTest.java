@@ -853,12 +853,14 @@ public class IdpTest {
             new UsernamePasswordCredentials(USER, PWD));
 
         webClient.getOptions().setJavaScriptEnabled(false);
-        final HtmlPage idpPage = webClient.getPage(url);
-
-        org.opensaml.saml.saml2.core.Response samlResponse =
-            parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
-        String expected = "urn:oasis:names:tc:SAML:2.0:status:Requester";
-        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        // The AssertionConsumerServiceURL cannot be checked against a configured application,
+        // so the IdP must not POST a response to it
+        try {
+            webClient.getPage(url);
+            Assertions.fail("Failure expected on an unknown Issuer");
+        }  catch (FailingHttpStatusCodeException ex) {
+            Assertions.assertEquals(400, ex.getStatusCode());
+        }
 
         webClient.close();
     }
@@ -891,12 +893,14 @@ public class IdpTest {
             new UsernamePasswordCredentials(USER, PWD));
 
         webClient.getOptions().setJavaScriptEnabled(false);
-        final HtmlPage idpPage = webClient.getPage(url);
-
-        org.opensaml.saml.saml2.core.Response samlResponse =
-            parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
-        String expected = "urn:oasis:names:tc:SAML:2.0:status:Requester";
-        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        // The AssertionConsumerServiceURL cannot be checked against a configured application,
+        // so the IdP must not POST a response to it
+        try {
+            webClient.getPage(url);
+            Assertions.fail("Failure expected on a missing Issuer");
+        }  catch (FailingHttpStatusCodeException ex) {
+            Assertions.assertEquals(400, ex.getStatusCode());
+        }
 
         webClient.close();
     }
@@ -1069,6 +1073,74 @@ public class IdpTest {
         webClient.getOptions().setJavaScriptEnabled(false);
         final HtmlPage idpPage = webClient.getPage(url);
 
+        org.opensaml.saml.saml2.core.Response samlResponse =
+            parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
+        String expected = "urn:oasis:names:tc:SAML:2.0:status:Requester";
+        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+
+        webClient.close();
+    }
+
+    @org.junit.jupiter.api.Test
+    public void testUnsignedRequestUnknownConsumerURL() throws Exception {
+        OpenSAMLUtil.initSamlEngine();
+
+        // Unsigned request with an AssertionConsumerServiceURL that is not configured for the application
+        String consumerURL = "https://www.example.com/acs";
+        AuthnRequest authnRequest =
+            new DefaultAuthnRequestBuilder().createAuthnRequest(
+                null, "urn:org:apache:cxf:fediz:fedizhelloworld", consumerURL
+            );
+        authnRequest.setDestination("https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml");
+
+        String authnRequestEncoded = encodeAuthnRequest(authnRequest);
+
+        String relayState = UUID.randomUUID().toString();
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml?"
+                + SSOConstants.RELAY_STATE + "=" + relayState
+                + "&" + SSOConstants.SAML_REQUEST + "=" + URLEncoder.encode(authnRequestEncoded, UTF_8.name());
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        try {
+            webClient.getPage(url);
+            Assertions.fail("Failure expected on an unknown AssertionConsumerServiceURL");
+        }  catch (FailingHttpStatusCodeException ex) {
+            Assertions.assertEquals(400, ex.getStatusCode());
+        }
+
+        webClient.close();
+    }
+
+    @org.junit.jupiter.api.Test
+    public void testUnsignedRequestMaliciousRelayState() throws Exception {
+        OpenSAMLUtil.initSamlEngine();
+
+        String consumerURL = "https://localhost:" + getRpHttpsPort() + "/"
+            + getServletContextName() + "/secure/fedservlet";
+        AuthnRequest authnRequest =
+            new DefaultAuthnRequestBuilder().createAuthnRequest(
+                null, "urn:org:apache:cxf:fediz:fedizhelloworld", consumerURL
+            );
+        authnRequest.setDestination("https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml");
+
+        String authnRequestEncoded = encodeAuthnRequest(authnRequest);
+
+        // The RelayState must be HTML-escaped in the response form rather than injected as markup
+        String relayState = "\"><script>alert(document.domain)</script>";
+        String url = "https://localhost:" + getIdpHttpsPort() + "/fediz-idp/saml?"
+                + SSOConstants.RELAY_STATE + "=" + URLEncoder.encode(relayState, UTF_8.name())
+                + "&" + SSOConstants.SAML_REQUEST + "=" + URLEncoder.encode(authnRequestEncoded, UTF_8.name());
+
+        final WebClient webClient = new WebClient();
+        webClient.getOptions().setUseInsecureSSL(true);
+
+        webClient.getOptions().setJavaScriptEnabled(false);
+        final HtmlPage idpPage = webClient.getPage(url);
+
+        Assertions.assertFalse(idpPage.getWebResponse().getContentAsString().contains(relayState));
         org.opensaml.saml.saml2.core.Response samlResponse =
             parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
         String expected = "urn:oasis:names:tc:SAML:2.0:status:Requester";
@@ -1335,12 +1407,13 @@ public class IdpTest {
             new UsernamePasswordCredentials(USER, PWD));
 
         webClient.getOptions().setJavaScriptEnabled(false);
-        final HtmlPage idpPage = webClient.getPage(url);
-
-        org.opensaml.saml.saml2.core.Response samlResponse =
-            parseSAMLResponse(idpPage, relayState, consumerURL, authnRequest.getID());
-        String expected = "urn:oasis:names:tc:SAML:2.0:status:Requester";
-        Assertions.assertEquals(expected, samlResponse.getStatus().getStatusCode().getValue());
+        // The IdP must not POST a response to an AssertionConsumerServiceURL that is not configured
+        try {
+            webClient.getPage(url);
+            Assertions.fail("Failure expected on an unknown AssertionConsumerServiceURL");
+        }  catch (FailingHttpStatusCodeException ex) {
+            Assertions.assertEquals(400, ex.getStatusCode());
+        }
 
         webClient.close();
     }

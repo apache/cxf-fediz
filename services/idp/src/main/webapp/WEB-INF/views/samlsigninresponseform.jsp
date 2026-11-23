@@ -8,8 +8,8 @@
 </head>
 <body onload='documentLoaded()'>
     <form:form method="POST" id="samlsigninresponseform" name="samlsigninresponseform" action="${samlAction}" htmlEscape="true">
-        <input type="hidden" name="SAMLResponse" value="${samlResponse}" /><br />
-        <input type="hidden" name="RelayState" value="${relayState}" /><br />
+        <input type="hidden" name="SAMLResponse" value="<spring:escapeBody htmlEscape="true">${samlResponse}</spring:escapeBody>" /><br />
+        <input type="hidden" name="RelayState" value="<spring:escapeBody htmlEscape="true">${relayState}</spring:escapeBody>" /><br />
           <noscript>
         <p>Script is disabled. Click Submit to continue.</p>
         <input type="submit" name="_eventId_submit" value="Submit" /><br />

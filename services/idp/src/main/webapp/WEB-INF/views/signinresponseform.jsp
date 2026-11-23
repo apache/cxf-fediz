@@ -12,9 +12,9 @@
         <input type="hidden" name="wresult" value="${fedWResult}" /><br />
         <% String wctx = (String)request.getAttribute("fedWCtx");
            if (wctx != null && !wctx.isEmpty()) { %>
-            <input type="hidden" name="wctx" value="${fedWCtx}" /><br />
+            <input type="hidden" name="wctx" value="<spring:escapeBody htmlEscape="true">${fedWCtx}</spring:escapeBody>" /><br />
         <% } %>
-        <input type="hidden" name="wtrealm" value="${fedWTrealm}" /><br />
+        <input type="hidden" name="wtrealm" value="<spring:escapeBody htmlEscape="true">${fedWTrealm}</spring:escapeBody>" /><br />
         <noscript>
         <p>Script is disabled. Click Submit to continue.</p>
         <input type="submit" name="_eventId_submit" value="Submit" /><br />

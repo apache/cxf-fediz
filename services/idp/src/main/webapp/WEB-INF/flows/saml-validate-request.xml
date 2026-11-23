@@ -274,8 +274,16 @@
         <!-- See if we managed to at least parse the request to get the response URL -->
         <if test="requestScope.samlAction == null or requestScope.samlAction.isEmpty() or requestScope.samlAction == '/'"
             then="viewBadRequestParsingError"/>
+        <!-- For a LogoutRequest the response URL is the configured logout endpoint, not request-supplied -->
         <if test="flowScope.saml_logout_request != null"
-            then="viewBadLogoutRequestResponse" else="viewBadRequestResponse"/>
+            then="viewBadLogoutRequestResponse"/>
+        <!-- The AssertionConsumerServiceURL comes from a request that failed validation (possibly
+             unsigned), so only POST the error response to it if it is an endpoint configured for
+             the application, as on the normal signin path (see validateReturnAddress) -->
+        <if test="commonsURLValidator.isValid(flowRequestContext, requestScope.samlAction)
+                  and endpointAddressValidator.isValidSigninAddress(flowRequestContext, requestScope.samlAction,
+                      authnRequestParser.retrieveRealm(flowRequestContext))"
+            then="viewBadRequestResponse" else="viewBadRequestParsingError"/>
     </decision-state>
     
     <end-state id="viewBadRequestResponse" view="samlsigninresponseform">
