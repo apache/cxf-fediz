@@ -49,7 +49,7 @@
            <% if(client.getRedirectUris() != null) {
                 for (String redirectURI : client.getRedirectUris()) {
 		   %>
-           <%=    redirectURI %><br/>
+           <%= StringEscapeUtils.escapeHtml4(redirectURI) %><br/>
            <%   }
               } %>
            </td>
