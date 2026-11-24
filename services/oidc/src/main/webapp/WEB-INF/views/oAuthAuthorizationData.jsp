@@ -24,15 +24,15 @@
        <tr align="center">
                 <td>
 
-                    <form action="<%= data.getReplyTo() %>" method="POST" onsubmit="prepareSubmit(this)">
+                    <form action="<%= StringEscapeUtils.escapeHtml4(data.getReplyTo()) %>" method="POST" onsubmit="prepareSubmit(this)">
                     
                         <input type="hidden" name="client_id"
-                               value="<%= data.getClientId() %>"/>
+                               value="<%= StringEscapeUtils.escapeHtml4(data.getClientId()) %>"/>
                         <%
                             if (data.getState() != null) {
                         %>       
                         <input type="hidden" name="state"
-                               value="<%= data.getState() %>"/>
+                               value="<%= StringEscapeUtils.escapeHtml4(data.getState()) %>"/>
                         <%
                             }
                         %>
@@ -40,7 +40,7 @@
                             if (data.getClientCodeChallenge() != null) {
                         %>       
                         <input type="hidden" name="code_challenge"
-                               value="<%= data.getClientCodeChallenge() %>"/>
+                               value="<%= StringEscapeUtils.escapeHtml4(data.getClientCodeChallenge()) %>"/>
                         <%
                             }
                         %>
@@ -48,31 +48,31 @@
                             if (data.getNonce() != null) {
                         %>       
                         <input type="hidden" name="nonce"
-                               value="<%= data.getNonce() %>"/>
+                               value="<%= StringEscapeUtils.escapeHtml4(data.getNonce()) %>"/>
                         <%
                             }
                         %>       
                         <input type="hidden" name="scope"
-                               value="<%= data.getProposedScope() %>"/>
+                               value="<%= StringEscapeUtils.escapeHtml4(data.getProposedScope()) %>"/>
                         <input type="hidden" name="response_type"
-                               value="<%= data.getResponseType() %>"/>
+                               value="<%= StringEscapeUtils.escapeHtml4(data.getResponseType()) %>"/>
                         
                         <%
                             if (data.getRedirectUri() != null) {
                         %>       
                         <input type="hidden" name="redirect_uri"
-                               value="<%= data.getRedirectUri() %>"/>
+                               value="<%= StringEscapeUtils.escapeHtml4(data.getRedirectUri()) %>"/>
                         <%
                             }
                         %>                     
                         <input type="hidden"
                                name="<%= org.apache.cxf.rs.security.oauth2.utils.OAuthConstants
                                    .SESSION_AUTHENTICITY_TOKEN %>"
-                               value="<%= data.getAuthenticityToken() %>"/>
+                               value="<%= StringEscapeUtils.escapeHtml4(data.getAuthenticityToken()) %>"/>
 						<%
                             if (data.getApplicationLogoUri() != null) {
                         %>                        
-                        <img src="<%= data.getApplicationLogoUri() %>" alt="Application Logo" width="100" height="100">
+                        <img src="<%= StringEscapeUtils.escapeHtml4(data.getApplicationLogoUri()) %>" alt="Application Logo" width="100" height="100">
                         <%
                             }
                         %>
@@ -94,13 +94,13 @@
                                       }
                                     %> 
                                     checked="checked"
-                                    name="<%= perm.getPermission()%>_status" 
+                                    name="<%= StringEscapeUtils.escapeHtml4(perm.getPermission()) %>_status" 
                                     value="allow"
-                                  ><big><big><%= perm.getDescription() %></big></big></input>
+                                  ><big><big><%= StringEscapeUtils.escapeHtml4(perm.getDescription()) %></big></big></input>
                                     <%
                                       if (perm.isDefaultPermission()) {
                                     %>
-                                    <input type="hidden" name="<%= perm.getPermission()%>_status" value="allow" />
+                                    <input type="hidden" name="<%= StringEscapeUtils.escapeHtml4(perm.getPermission()) %>_status" value="allow" />
                                     <%
                                       }
                                     %>
