@@ -1,6 +1,7 @@
 <%@ page
 	import="javax.servlet.http.HttpServletRequest, java.util.Map, org.apache.cxf.fediz.service.oidc.clients.EditClient,
-        org.apache.cxf.rs.security.oauth2.common.Client, org.apache.cxf.fediz.service.oidc.CSRFUtils"
+        org.apache.cxf.rs.security.oauth2.common.Client, org.apache.cxf.fediz.service.oidc.CSRFUtils,
+        org.apache.commons.text.StringEscapeUtils"
 %>
 <%
     EditClient editClient = (EditClient)request.getAttribute("data");
@@ -26,7 +27,7 @@
 			</div>
 			<div class="form-line">
 				<label for="client_name" id="label_name" class="form-label"> Name </label>
-				<input placeholder="OIDC Client Name" type="text" value="<%=c.getApplicationName()%>"
+				<input placeholder="OIDC Client Name" type="text" value="<%= StringEscapeUtils.escapeHtml4(c.getApplicationName()) %>"
 					size="40" name="client_name" id="input_name" data-type="input-textbox" />
 			</div>
 			<div class="form-line">
@@ -37,19 +38,19 @@
 			</div>
 			<div class="form-line">
 				<label for="client_redirectURI" id="label_redirect" class="form-label"> Redirect URL </label>
-				<input type="text" value="<%= c.getRedirectUris() != null ? String.join(" ", c.getRedirectUris()) : "" %>" size="40" name="client_redirectURI"
+				<input type="text" value="<%= c.getRedirectUris() != null ? StringEscapeUtils.escapeHtml4(String.join(" ", c.getRedirectUris())) : "" %>" size="40" name="client_redirectURI"
 					placeholder="URL of the client to consume OIDC service response"
 					id="input_6" data-type="input-textbox" />
 			</div>
 			<div class="form-line">
 				<label for="client_audience" id="label_audience" class="form-label"> Audience URL </label>
-				<input type="text" value="<%= c.getRegisteredAudiences() != null ? String.join(" ", c.getRegisteredAudiences()) : "" %>" size="40" name="client_audience"
+				<input type="text" value="<%= c.getRegisteredAudiences() != null ? StringEscapeUtils.escapeHtml4(String.join(" ", c.getRegisteredAudiences())) : "" %>" size="40" name="client_audience"
 					placeholder="URL of the server the tokens will be restricted to"
 					id="input_7" data-type="input-textbox" />
 			</div>
 			<div class="form-line">
 				<label for="client_logoutURI" id="label_logout" class="form-label"> Logout URL </label>
-				<input type="text" value="<%= c.getProperties().get("post_logout_redirect_uris") != null ? c.getProperties().get("post_logout_redirect_uris") : "" %>" size="40" name="client_logoutURI"
+				<input type="text" value="<%= c.getProperties().get("post_logout_redirect_uris") != null ? StringEscapeUtils.escapeHtml4(c.getProperties().get("post_logout_redirect_uris")) : "" %>" size="40" name="client_logoutURI"
 					placeholder="URL of the client to finalize OIDC logout process"
 					id="input_6" data-type="input-textbox" />
 			</div>

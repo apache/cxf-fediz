@@ -78,7 +78,7 @@
         homeRealmAlias = "Default - User selection at login";
     }
 %> 
-    <%=  homeRealmAlias %>
+    <%= StringEscapeUtils.escapeHtml4(homeRealmAlias) %>
 </td>
 </tr>
 <tr>
@@ -89,7 +89,7 @@
 <% if (client.getRedirectUris() != null) {
                 for (String redirectURI : client.getRedirectUris()) {
 		   %>
-           <%=    redirectURI %><br/>
+           <%= StringEscapeUtils.escapeHtml4(redirectURI) %><br/>
            <%   }
               } %>
 </td>
@@ -102,7 +102,7 @@
 <% if (client.getRegisteredAudiences() != null) {
                 for (String audURI : client.getRegisteredAudiences()) {
 		   %>
-           <%=    audURI %><br/>
+           <%= StringEscapeUtils.escapeHtml4(audURI) %><br/>
            <%   }
               } %>
 </td>
@@ -113,7 +113,7 @@
 </td>
 <td>
 <% if (client.getProperties().get("post_logout_redirect_uris") != null) { %>
-           <%=    client.getProperties().get("post_logout_redirect_uris") %>
+           <%= StringEscapeUtils.escapeHtml4(client.getProperties().get("post_logout_redirect_uris")) %>
 <% } %>
 </td>
 </tr>
