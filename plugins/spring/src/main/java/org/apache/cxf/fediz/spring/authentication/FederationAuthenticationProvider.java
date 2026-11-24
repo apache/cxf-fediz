@@ -19,6 +19,8 @@
 
 package org.apache.cxf.fediz.spring.authentication;
 
+import java.util.List;
+
 import org.apache.cxf.fediz.core.config.FedizContext;
 import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
@@ -115,6 +117,8 @@ public class FederationAuthenticationProvider implements AuthenticationProvider,
                 FedizProcessorFactory.newFedizProcessor(fedContext.getProtocol());
             FedizResponse wfRes = wfProc.processRequest(wfReq, fedContext);
 
+            validateAudienceRestriction(wfRes.getAudience(), fedContext.getAudienceUris());
+
             final UserDetails userDetails = loadUserByFederationResponse(wfRes);
             userDetailsChecker.check(userDetails);
             return new FederationAuthenticationToken(userDetails, authentication.getCredentials(),
@@ -122,6 +126,35 @@ public class FederationAuthenticationProvider implements AuthenticationProvider,
         } catch (Exception e) {
             LOG.error("Failed to validate SignIn request", e);
             throw new BadCredentialsException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Validate the AudienceRestriction of the received token against the configured list of audience URIs.
+     * A token without an audience is only accepted if no audience URIs are configured, and a token with an
+     * audience is only accepted if it matches one of the configured audience URIs.
+     *
+     * @param audience the audience of the received token (may be null)
+     * @param audienceURIs the configured audience URIs
+     * @throws BadCredentialsException if the audience is not valid for this relying party
+     */
+    protected void validateAudienceRestriction(String audience, List<String> audienceURIs) {
+        boolean validAudience = audienceURIs.isEmpty() && audience == null;
+        if (!validAudience && audience != null) {
+            for (String a : audienceURIs) {
+                if (audience.startsWith(a)) {
+                    validAudience = true;
+                    LOG.debug("Token audience matches with valid URIs.");
+                    break;
+                }
+            }
+        }
+
+        if (!validAudience) {
+            LOG.warn("Token AudienceRestriction [{}] doesn't match with specified list of URIs.", audience);
+            LOG.debug("Authenticated URIs are: {}", audienceURIs);
+            throw new BadCredentialsException(messages.getMessage("FederationAuthenticationProvider.badAudience",
+                    "Token AudienceRestriction doesn't match with the configured audience URIs"));
         }
     }
 
