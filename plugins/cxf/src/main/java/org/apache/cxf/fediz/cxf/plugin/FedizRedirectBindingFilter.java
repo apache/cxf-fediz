@@ -58,6 +58,7 @@ import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
 import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
 import org.apache.cxf.fediz.core.processor.RedirectionResponse;
+import org.apache.cxf.fediz.core.util.AudienceUtils;
 import org.apache.cxf.fediz.core.util.CookieUtils;
 import org.apache.cxf.fediz.cxf.plugin.state.ResponseState;
 import org.apache.cxf.helpers.IOUtils;
@@ -485,31 +486,9 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
     ) {
         // Validate the AudienceRestriction in Security Token (e.g. SAML)
         // against the configured list of audienceURIs
-        if (wfRes.getAudience() == null) {
-            if (!audienceURIs.isEmpty()) {
-                LOG.warn("Token has no AudienceRestriction but a list of audience URIs is configured.");
-                throw ExceptionUtils.toForbiddenException(null, null);
-            }
-        } else {
-            boolean validAudience = false;
-            for (String a : audienceURIs) {
-                if (wfRes.getAudience().startsWith(a)) {
-                    validAudience = true;
-                    break;
-                }
-            }
-
-            if (!validAudience) {
-                LOG.warn("Token AudienceRestriction [" + wfRes.getAudience()
-                         + "] doesn't match with specified list of URIs.");
-                throw ExceptionUtils.toForbiddenException(null, null);
-            }
-
-            if (LOG.isDebugEnabled() && request.getRequestURL().indexOf(wfRes.getAudience()) == -1) {
-                LOG.debug("Token AudienceRestriction doesn't match with request URL ["
-                        + wfRes.getAudience() + "]  ["
-                        + request.getRequestURL() + "]");
-            }
+        if (!AudienceUtils.validateAudienceRestrictions(wfRes.getAudience(), audienceURIs,
+                                                        request.getRequestURL().toString())) {
+            throw ExceptionUtils.toForbiddenException(null, null);
         }
     }
 
