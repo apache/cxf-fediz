@@ -19,7 +19,6 @@
 package org.apache.cxf.fediz.core.handler;
 
 import java.security.cert.X509Certificate;
-import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -36,6 +35,7 @@ import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
 import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
+import org.apache.cxf.fediz.core.util.AudienceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -125,30 +125,7 @@ public class SigninHandler<T> implements RequestHandler<T> {
     }
 
     protected boolean validateAudienceRestrictions(String audience, String requestURL) {
-        // Validate the AudienceRestriction in Security Token (e.g. SAML)
-        // validate against the configured list of audienceURIs
-        List<String> audienceURIs = fedizContext.getAudienceUris();
-        boolean validAudience = audienceURIs.isEmpty() && audience == null;
-        if (!validAudience && audience != null) {
-
-            for (String a : audienceURIs) {
-                if (audience.startsWith(a)) {
-                    validAudience = true;
-                    LOG.debug("Token audience matches with valid URIs.");
-                    break;
-                }
-            }
-
-            if (!validAudience) {
-                LOG.warn("Token AudienceRestriction [{}] doesn't match with specified list of URIs.", audience);
-                LOG.debug("Authenticated URIs are: {}", audienceURIs);
-            }
-
-            if (LOG.isDebugEnabled() && requestURL != null && requestURL.indexOf(audience) == -1) {
-                LOG.debug("Token AudienceRestriction doesn't match with request URL [{}]  [{}]", audience, requestURL);
-            }
-        }
-        return validAudience;
+        return AudienceUtils.validateAudienceRestrictions(audience, fedizContext.getAudienceUris(), requestURL);
     }
 
     public String getResponseToken(HttpServletRequest request) {

@@ -33,6 +33,7 @@ import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
 import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
+import org.apache.cxf.fediz.core.util.AudienceUtils;
 import org.eclipse.jetty.security.IdentityService;
 import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.server.UserIdentity;
@@ -99,26 +100,8 @@ public class FederationLoginService extends AbstractLifeCycle implements LoginSe
 
             // Validate the AudienceRestriction in Security Token (e.g. SAML)
             // against the configured list of audienceURIs
-            List<String> audienceURIs = config.getAudienceUris();
-            if (wfRes.getAudience() == null) {
-                if (!audienceURIs.isEmpty()) {
-                    LOG.warn("Token has no AudienceRestriction but a list of audience URIs is configured.");
-                    return null;
-                }
-            } else {
-                boolean validAudience = false;
-                for (String a : audienceURIs) {
-                    if (wfRes.getAudience().startsWith(a)) {
-                        validAudience = true;
-                        break;
-                    }
-                }
-
-                if (!validAudience) {
-                    LOG.warn("Token AudienceRestriction [" + wfRes.getAudience()
-                             + "] doesn't match with specified list of URIs.");
-                    return null;
-                }
+            if (!AudienceUtils.validateAudienceRestrictions(wfRes.getAudience(), config.getAudienceUris(), null)) {
+                return null;
             }
 
             // Add "Authenticated" role

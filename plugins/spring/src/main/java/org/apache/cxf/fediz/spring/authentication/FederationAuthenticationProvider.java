@@ -26,6 +26,7 @@ import org.apache.cxf.fediz.core.processor.FedizProcessor;
 import org.apache.cxf.fediz.core.processor.FedizProcessorFactory;
 import org.apache.cxf.fediz.core.processor.FedizRequest;
 import org.apache.cxf.fediz.core.processor.FedizResponse;
+import org.apache.cxf.fediz.core.util.AudienceUtils;
 import org.apache.cxf.fediz.spring.FederationConfig;
 import org.apache.cxf.fediz.spring.SpringFedizMessageSource;
 import org.slf4j.Logger;
@@ -139,20 +140,7 @@ public class FederationAuthenticationProvider implements AuthenticationProvider,
      * @throws BadCredentialsException if the audience is not valid for this relying party
      */
     protected void validateAudienceRestriction(String audience, List<String> audienceURIs) {
-        boolean validAudience = audienceURIs.isEmpty() && audience == null;
-        if (!validAudience && audience != null) {
-            for (String a : audienceURIs) {
-                if (audience.startsWith(a)) {
-                    validAudience = true;
-                    LOG.debug("Token audience matches with valid URIs.");
-                    break;
-                }
-            }
-        }
-
-        if (!validAudience) {
-            LOG.warn("Token AudienceRestriction [{}] doesn't match with specified list of URIs.", audience);
-            LOG.debug("Authenticated URIs are: {}", audienceURIs);
+        if (!AudienceUtils.validateAudienceRestrictions(audience, audienceURIs, null)) {
             throw new BadCredentialsException(messages.getMessage("FederationAuthenticationProvider.badAudience",
                     "Token AudienceRestriction doesn't match with the configured audience URIs"));
         }
