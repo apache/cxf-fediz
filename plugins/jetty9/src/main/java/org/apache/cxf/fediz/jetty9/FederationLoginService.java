@@ -99,8 +99,13 @@ public class FederationLoginService extends AbstractLifeCycle implements LoginSe
 
             // Validate the AudienceRestriction in Security Token (e.g. SAML)
             // against the configured list of audienceURIs
-            if (wfRes.getAudience() != null) {
-                List<String> audienceURIs = config.getAudienceUris();
+            List<String> audienceURIs = config.getAudienceUris();
+            if (wfRes.getAudience() == null) {
+                if (!audienceURIs.isEmpty()) {
+                    LOG.warn("Token has no AudienceRestriction but a list of audience URIs is configured.");
+                    return null;
+                }
+            } else {
                 boolean validAudience = false;
                 for (String a : audienceURIs) {
                     if (wfRes.getAudience().startsWith(a)) {
