@@ -485,7 +485,12 @@ public class FedizRedirectBindingFilter extends AbstractServiceProviderFilter
     ) {
         // Validate the AudienceRestriction in Security Token (e.g. SAML)
         // against the configured list of audienceURIs
-        if (wfRes.getAudience() != null) {
+        if (wfRes.getAudience() == null) {
+            if (!audienceURIs.isEmpty()) {
+                LOG.warn("Token has no AudienceRestriction but a list of audience URIs is configured.");
+                throw ExceptionUtils.toForbiddenException(null, null);
+            }
+        } else {
             boolean validAudience = false;
             for (String a : audienceURIs) {
                 if (wfRes.getAudience().startsWith(a)) {
